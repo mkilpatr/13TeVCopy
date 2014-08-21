@@ -2,7 +2,7 @@
 // 
 // EventInfoFiller
 // 
-// Simple class to write some event info into a TTree. To be tested with MiniAOD for now. Sophisticated data management methods to be added later :-)
+// Simple class to write some event info into a TTree.
 // 
 // EventInfoFiller.cc created on Mon Aug 11 10:23:46 CEST 2014 
 // 
@@ -13,12 +13,11 @@
 using namespace ucsbsusy;
 using namespace std;
 
-EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg):
+//--------------------------------------------------------------------------------------------------
+EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
   BaseAnalyzer(cfg),
-  vtxToken_(consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"))),
-  metToken_(consumes<pat::METCollection>(cfg.getParameter<edm::InputTag>("mets"))),
-  outputName_(cfg.getUntrackedParameter<string>("filename")),
-  nEvts_(0),
+  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
+  metTag_(cfg.getParameter<edm::InputTag>("mets")),
   evtInfo_(new EventInfo())
 {
   // Constructor
@@ -26,7 +25,7 @@ EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg):
   EventInfo::Class()->IgnoreTObjectStreamer();
 
 }
-
+//--------------------------------------------------------------------------------------------------
 EventInfoFiller::~EventInfoFiller()
 {
   // Destructor
@@ -35,32 +34,27 @@ EventInfoFiller::~EventInfoFiller()
 
 }
 
-// called at the beginning of the job
-void EventInfoFiller::beginJob()
+//--------------------------------------------------------------------------------------------------
+void EventInfoFiller::book(TTree &t)
 {
+ // Add branch for this filler
 
-  outFile = new TFile(outputName_.c_str(),"RECREATE");
-  nevtHist = new TH1F("NEvents","",1,0,1);
-  evtTree = new TTree("Events","Events");
-
-  evtTree->Branch("EventInfo", &evtInfo_);
+  t.Branch("EventInfo", &evtInfo_);
 
 }
 
-// called for each event
-void EventInfoFiller::analyze(const edm::Event &event, const edm::EventSetup &setup)
+//--------------------------------------------------------------------------------------------------
+void EventInfoFiller::fill(const edm::Event &event)
 {
-
-  nEvts_++;
-  nevtHist->Fill(0);
+  // Called for each event
 
   edm::Handle<reco::VertexCollection> vertices;
-  event.getByToken(vtxToken_, vertices);
+  event.getByLabel(vtxTag_, vertices);
   if (vertices->empty()) return; // skip if no PV found
   const reco::Vertex &PV = vertices->front();
 
   edm::Handle<pat::METCollection> mets;
-  event.getByToken(metToken_, mets);
+  event.getByLabel(metTag_, mets);
   const pat::MET &met = mets->front();
 
   evtInfo_->setRunNum(event.id().run());
@@ -79,24 +73,5 @@ void EventInfoFiller::analyze(const edm::Event &event, const edm::EventSetup &se
   evtInfo_->setGenMET(met.genMET()->pt());
   evtInfo_->setMETUp(met.shiftedPt(pat::MET::JetEnUp));
   evtInfo_->setMETDown(met.shiftedPt(pat::MET::JetEnDown));
-
-  evtTree->Fill();
-
-}
-
-// called at the end of the job
-void EventInfoFiller::endJob()
-{
-
-  nevtHist->Write();
-  outFile->Write();
-  outFile->Close();
-
-  delete outFile;
-  delete nevtHist;
-  delete evtTree;
-
-  outputName_="";
-  nEvts_=0;
 
 }

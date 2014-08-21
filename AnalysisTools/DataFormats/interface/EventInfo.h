@@ -11,7 +11,7 @@
 #ifndef ANALYSISTOOLS_DATAFORMATS_EVENTINFO_H
 #define ANALYSISTOOLS_DATAFORMATS_EVENTINFO_H
 
-#include "TObject.h"
+#include <TObject.h>
 
 namespace ucsbsusy {
 

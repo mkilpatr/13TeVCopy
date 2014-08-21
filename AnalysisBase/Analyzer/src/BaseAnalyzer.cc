@@ -12,12 +12,14 @@
 
 using namespace ucsbsusy;
 
+//--------------------------------------------------------------------------------------------------
 BaseAnalyzer::BaseAnalyzer(const edm::ParameterSet& iConfig)
 {
    // now do what ever initialization is needed
 
 }
 
+//--------------------------------------------------------------------------------------------------
 void
 BaseAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
@@ -25,6 +27,7 @@ BaseAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 }
 
+//--------------------------------------------------------------------------------------------------
 void
 BaseAnalyzer::beginJob()
 {
@@ -32,6 +35,7 @@ BaseAnalyzer::beginJob()
 
 }
 
+//--------------------------------------------------------------------------------------------------
 void
 BaseAnalyzer::endJob()
 {

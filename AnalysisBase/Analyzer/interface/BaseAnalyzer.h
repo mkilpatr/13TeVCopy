@@ -12,6 +12,7 @@
 #define ANALYSISBASE_ANALYZER_BASEANALYZER_H
 
 #include <memory>
+#include <TTree.h>
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -25,7 +26,8 @@ namespace ucsbsusy {
       virtual ~BaseAnalyzer() {}
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
+      virtual void book(TTree &t) = 0;
+      virtual void fill(const edm::Event&) = 0;
 
     private:
       virtual void beginJob() override;
