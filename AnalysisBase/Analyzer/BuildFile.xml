@@ -3,4 +3,5 @@
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="AnalysisTools/DataFormats"/>
+<use name="AnalysisTools/Parang"/>
 <flags EDM_PLUGIN="1"/>

@@ -8,15 +8,57 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
+#include <iostream>
+
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 BaseAnalyzer::BaseAnalyzer(const edm::ParameterSet& iConfig)
-{
-   // now do what ever initialization is needed
+  : plotter(5)
+  , outputPath          (iConfig.getUntrackedParameter<std::string>("outputPath", "").data())
+  , outputInterval      (iConfig.getUntrackedParameter<int             >("outputInterval",-9   ))
+  , randomGenerator     (gRandom = new TRandom3(iConfig.getParameter<unsigned int>("randomSeed")))
+  , numProcessed_       (0)
+  , numAnalyzed_        (0)
+  , runNumber_          (-1)
+  , lumiBlock_          (-1)
+  , eventNumber_        (-1)
 
+{
+  if(outputPath.Length()){
+    std::clog << " ++  outputPath          = " << (outputPath.Length() ? outputPath.Data() : "(n/a)") << std::endl;
+    std::clog << " ++  outputInterval      = " << outputInterval                                      << std::endl;
+  }
+  std::clog << " ++  randomSeed          = " << iConfig.getParameter<unsigned int>("randomSeed")      << std::endl;
+
+}
+
+//--------------------------------------------------------------------------------------------------
+BaseAnalyzer::~BaseAnalyzer(){
+  std::clog << std::endl;
+  std::clog << " \033[1;34m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\033[0m"  << std::endl;
+  std::clog << " \033[1;34m~~\033[0m  Done! There were:" << std::endl;
+  std::clog << " \033[1;34m~~\033[0m   " << TString::Format("%6d", numProcessed()) << " events processed in this job."                   << std::endl;
+  std::clog << " \033[1;34m~~\033[0m   " << TString::Format("%6d", numAnalyzed ()) << " events successfully analyzed."                   << std::endl;
+  if (numProcessed() == 0)
+    std::clog << " \033[31m~~  WARNING : Either the input file(s) are empty, or some error occurred before processing! \033[0m"          << std::endl;
+  std::clog << " \033[1;34m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\033[0m"  << std::endl;
+
+  if (outputPath.Length()) {
+    plotter.write(outputPath);
+    std::clog << "  --->>>  Output written to " << outputPath << std::endl;
+  }
+  else if (plotter.size()) {
+    std::cerr << std::endl;
+    std::cerr << "WARNING : No output file has been specified, but the plotter has the following contents:" << std::endl;
+    plotter.sitrep();
+    std::cerr << "Your plots may be lost!" << std::endl;
+    std::cerr << std::endl;
+  }
+
+  std::clog << std::endl;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -51,4 +93,15 @@ BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
+}
+
+
+//_____________________________________________________________________________
+void BaseAnalyzer::printEventCoordinates(std::ostream& out) const
+{
+  out << TString::Format( "*****  %d:%d:%d = Run %7d, luminosity block %4d, event %10d"
+                        , runNumber(), lumiBlock(), eventNumber()
+                        , runNumber(), lumiBlock(), eventNumber()
+                        )
+      << std::endl;
 }
