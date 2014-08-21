@@ -61,29 +61,7 @@ BaseAnalyzer::~BaseAnalyzer(){
   std::clog << std::endl;
 }
 
-//--------------------------------------------------------------------------------------------------
-void
-BaseAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
-  // do nothing
 
-}
-
-//--------------------------------------------------------------------------------------------------
-void
-BaseAnalyzer::beginJob()
-{
-  // do nothing
-
-}
-
-//--------------------------------------------------------------------------------------------------
-void
-BaseAnalyzer::endJob()
-{
-  // do nothing
-
-}
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
@@ -95,6 +73,29 @@ BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   descriptions.addDefault(desc);
 }
 
+//_____________________________________________________________________________
+bool BaseAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  runNumber_                = iEvent.run();
+  lumiBlock_                = iEvent.luminosityBlock();
+  eventNumber_              = iEvent.id().event();
+
+
+  bool          success     = load    (iEvent, iSetup);
+  if (success)  success    &= filter  ();
+  if (success)                analyze ();
+  if (success)  success    &= produce (iEvent, iSetup);
+
+  ++numProcessed_;
+  if (success)  ++numAnalyzed_;
+
+  if (outputPath.Length() && outputInterval > 0 && numProcessed() % outputInterval == 0 && plotter.size()) {
+    std::clog << " \033[1;34m ... WRITING plots into " << outputPath << " \033[0m " << std::endl;
+    plotter.write(outputPath, "RECREATE", "", true);
+  }
+
+  return success;
+}
 
 //_____________________________________________________________________________
 void BaseAnalyzer::printEventCoordinates(std::ostream& out) const

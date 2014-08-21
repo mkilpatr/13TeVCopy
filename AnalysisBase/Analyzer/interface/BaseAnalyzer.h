@@ -2,7 +2,7 @@
 // 
 // BaseAnalyzer
 // 
-// Base class to define interface for analyzer classes. Implementation of a CMS EDAnalyzer.
+// Base class to define interface for analyzer classes. Implementation of a CMS EDFilter.
 // 
 // BaseAnalyzer.h created on Fri Aug 8 15:50:43 CEST 2014 
 // 
@@ -16,7 +16,7 @@
 #include <TString.h>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDFilter.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -24,17 +24,67 @@
 #include "AnalysisTools/Parang/interface/Plotter.h"
 
 namespace ucsbsusy {
-  class BaseAnalyzer : public edm::EDAnalyzer {
+  class BaseAnalyzer : public edm::EDFilter {
     public:
       BaseAnalyzer(const edm::ParameterSet&);
       virtual ~BaseAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-    private:
-      virtual void beginJob() override;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
+      //_____________________________________________________________________________
+      //     Event processing
+      //_____________________________________________________________________________
+
+
+      //_____________________________________________________________________________
+      /**
+        Calls load() to load collections from the event. If that does not fail, calls
+        analyze() for user code to analyze the event, and then the optional produce()
+        [which is provided in case the user needs to output products].
+
+        Increments numProcessed after all of the above.
+        DO NOT OVERRIDE unless you know what you're doing.
+      */
+      virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+
+      /**
+        Called to load products before filter(), analyze(), and produce(). Will not proceed
+        to filter() etc. if false is returned, but still counts as numProcessed.
+      */
+      virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
+
+      /// Called to process an event, after load(). Return value acts as a filter.
+      virtual bool filter() = 0;
+      /// Called to process an event, after analyze().
+      virtual void analyze() = 0;
+      /// Called to put EDM products into the event, after analyze(). Return value acts as a filter.
+      virtual bool produce(edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
+
+      //~~~ For convenience ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      /// Place in your analysis class declaration to define an analyze() that does nothing.
+      #define DUMMY_ANALYZE  \
+        virtual void analyze()                                    { }
+      /// Place in your analysis class declaration to define a filter() that always returns true.
+      #define DUMMY_FILTER   \
+        virtual bool filter ()                                    { return true; }
+      /// Place in your analysis class declaration to define a produce() that does nothing.
+      #define DUMMY_PRODUCE  \
+        virtual bool produce(edm::Event&, const edm::EventSetup&) { return true; }
+
+      /// Place in your analysis class declaration to only require analyze().
+      #define ANALYZER_MODE  \
+        DUMMY_FILTER         \
+        DUMMY_PRODUCE
+      /// Place in your analysis class declaration to only require produce().
+      #define PRODUCER_MODE  \
+        DUMMY_FILTER         \
+        DUMMY_ANALYZE
+      /// Place in your analysis class declaration to only require filter().
+      #define FILTER_MODE    \
+        DUMMY_ANALYZE        \
+        DUMMY_PRODUCE
+      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
       //_____________________________________________________________________________
