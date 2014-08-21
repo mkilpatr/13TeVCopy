@@ -9,6 +9,7 @@
 #define BASEUTILITIES_H_
 
 #include <TString.h>
+#include <TFile.h>
 
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
@@ -20,6 +21,8 @@ typedef   unsigned char                 multiplicity;
 
 class BaseUtilities {
 public:
+  //_____________________________________________________________________________
+  // Basic sorting
   //_____________________________________________________________________________
   template<typename Field, typename Object>
   struct lesserAbsFirst : public std::binary_function<const std::pair<Field,Object>&, const std::pair<Field,Object>&, Bool_t> {
@@ -46,7 +49,6 @@ public:
     }
   };
 
-  //_____________________________________________________________________________
   template<typename T1, typename T2 = T1>
   struct AbsDeltaPhi {
     double operator()(const T1 & t1, const T2 & t2) const {
@@ -69,61 +71,34 @@ public:
   };
 
   //_____________________________________________________________________________
+  // Number conversion
+  //_____________________________________________________________________________
   template<typename Target, typename Source>
-  Target convertTo(Source source, const char name[], bool lenient = false, bool* good = 0)
-  {
-    Target            converted = static_cast<Target>(source);
+  Target convertTo(Source source, const char name[], bool lenient = false, bool* good = 0);
 
-    if (static_cast<Source>(converted) != source) {
-      const Target    lowest    = !std::numeric_limits<Target>::is_signed
-                                ? 0
-                                : std::numeric_limits<Target>::has_infinity
-                                ? -std::numeric_limits<Target>::infinity()
-                                :  std::numeric_limits<Target>::min()
-                                ;
-      TString         problem;
-      problem.Form( "Source value %.10g outside of target range [%.10g,%.10g] for '%s'."
-                  , (double)  source
-                  , (double)  lowest
-                  , (double)  std::numeric_limits<Target>::max()
-                  , name
-                  );
-      if (good)      *good      = false;
-      if (lenient) {
-        std::cerr << "WARNING: " << problem << std::endl;
-        return  ( source > static_cast<Source>(std::numeric_limits<Target>::max())
-                ? std::numeric_limits<Target>::max()
-                : lowest
-                );
-      }
-      throw cms::Exception("convertTo()", problem.Data());
-    }
-
-    return converted;
-  }
-
+  //_____________________________________________________________________________
+  // vector destruction
   //_____________________________________________________________________________
   template<typename Object>
-  static void trash(std::vector<Object*>& objects)
-  {
-    const size    numObjects  = objects.size();
-    for (size iObj = 0; iObj < numObjects; ++iObj)
-      if (objects[iObj])      delete objects[iObj];
-    objects.clear();
-  }
+  static void trash(std::vector<Object*>& objects);
+
+  template<typename Key, typename Object>
+  static void trash(std::map<Key,Object*>& objects);
 
   //_____________________________________________________________________________
-  template<typename Key, typename Object>
-  static void trash(std::map<Key,Object*>& objects)
-  {
-    const typename std::map<Key,Object*>::const_iterator endObjects  = objects.end();
-    for (typename std::map<Key,Object*>::iterator iObj = objects.begin(); iObj != endObjects; ++iObj)
-      if (iObj->second)       delete iObj->second;
-    objects.clear();
-  }
+  // File opening and object getting
+  //_____________________________________________________________________________
+  static TFile* open(const char* path, const char option[], bool stopIfMissing = true);
+  template<typename Object>
+
+  static Object* getObject(TFile* file, const char* name, const char* alternative = 0, bool stopIfMissing = true);
+  template<typename Object>
+
+  static Object* loadObject(TString objectPath, const char* configName = 0, const char* alternative = 0, bool stopIfMissing = true);
 };
 
 }
 
+#include "AnalysisBase/Analyzer/src/BaseUtilities.icc"
 
 #endif /* BASEUTILITIES_H_ */
