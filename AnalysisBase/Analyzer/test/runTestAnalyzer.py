@@ -19,8 +19,11 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
-process.load("AnalysisBase.Analyzer.EventInfoFiller_cfi")
+process.load("AnalysisBase.Analyzer.TestAnalyzer_cfi")
 
-process.EventInfoFiller.filename = cms.untracked.string(options.outputFile)
+process.TestAnalyzer.filename = cms.untracked.string(options.outputFile)
+process.TestAnalyzer.analyzers = cms.untracked.vstring("EventInfoFiller",
+                                                        "JetFiller"
+)
 
-process.p = cms.Path(process.EventInfoFiller)
+process.p = cms.Path(process.TestAnalyzer)
