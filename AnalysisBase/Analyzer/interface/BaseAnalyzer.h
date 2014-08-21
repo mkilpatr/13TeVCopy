@@ -13,7 +13,6 @@
 
 #include <memory>
 #include <TRandom3.h>
-#include <TString.h>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"
@@ -22,9 +21,10 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "AnalysisTools/Parang/interface/Plotter.h"
+#include "AnalysisBase/Analyzer/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
-  class BaseAnalyzer : public edm::EDFilter {
+  class BaseAnalyzer : public edm::EDFilter, public BaseUtilities {
     public:
       BaseAnalyzer(const edm::ParameterSet&);
       virtual ~BaseAnalyzer();
@@ -85,8 +85,6 @@ namespace ucsbsusy {
         DUMMY_PRODUCE
       //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
       //_____________________________________________________________________________
       //     Functions to return data members
       //_____________________________________________________________________________
@@ -99,8 +97,6 @@ namespace ucsbsusy {
       edm::EventNumber_t            eventNumber   () const        { return eventNumber_;    }
       void printEventCoordinates(std::ostream& out = std::cout) const;
       TString eventCoordinates() const  { return TString::Format("%d:%d:%d", runNumber(), lumiBlock(), eventNumber()); }
-
-
 
       //_____________________________________________________________________________
       /**
