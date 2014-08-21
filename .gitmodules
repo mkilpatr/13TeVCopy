@@ -1,0 +1,3 @@
+[submodule "AnalysisTools/Parang"]
+	path = AnalysisTools/Parang
+	url = git@github.com:UCSBSusy/Parang.git
