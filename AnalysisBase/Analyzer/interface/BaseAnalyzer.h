@@ -98,7 +98,6 @@ namespace ucsbsusy {
       void printEventCoordinates(std::ostream& out = std::cout) const;
       TString eventCoordinates() const  { return TString::Format("%d:%d:%d", runNumber(), lumiBlock(), eventNumber()); }
 
-
       //_____________________________________________________________________________
       //     Basic members to run jobs
       //_____________________________________________________________________________

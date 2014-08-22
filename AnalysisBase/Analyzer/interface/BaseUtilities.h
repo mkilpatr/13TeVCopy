@@ -12,7 +12,6 @@
 #include <TFile.h>
 
 #include "DataFormats/Math/interface/deltaPhi.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
 
 namespace ucsbsusy {
 
@@ -104,12 +103,26 @@ public:
   //_______________________________________________________________________
   // File opening and object getting
   //_____________________________________________________________________________
-  static TFile* open(const char* path, const char option[], bool stopIfMissing = true);
-  template<typename Object>
+  static TFile* open(const char* path, const char option[], bool stopIfMissing = true){
+    if (path == 0 || path[0] == 0)  return 0;
 
+    if (!stopIfMissing) {
+      Long_t    id, flags, modtime;
+      Long64_t  fileSize;
+      if (gSystem->GetPathInfo(path, &id, &fileSize, &flags, &modtime) || flags)
+        return 0;
+    }
+
+    TFile*    file  = TFile::Open(path, option);
+    if (stopIfMissing && file->IsZombie())
+      throw cms::Exception("BaseUtilities.open()", TString::Format("Failed to open '%s' for %s.", path, (file->IsWritable() ? "output" : "input")).Data());
+    return file;
+  }
+
+  template<typename Object>
   static Object* getObject(TFile* file, const char* name, const char* alternative = 0, bool stopIfMissing = true);
-  template<typename Object>
 
+  template<typename Object>
   static Object* loadObject(TString objectPath, const char* configName = 0, const char* alternative = 0, bool stopIfMissing = true);
 };
 
