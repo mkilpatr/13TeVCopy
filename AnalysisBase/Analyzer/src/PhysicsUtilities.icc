@@ -1,0 +1,182 @@
+#ifndef PHYSICSUTILITIES_ICC
+#define PHYSICSUTILITIES_ICC
+
+#include "AnalysisBase/Analyzer/interface/PhysicsUtilities.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
+using namespace ucsbsusy;
+
+/********************/
+/*   Computations   */
+/********************/
+
+//_____________________________________________________________________________
+// Count Objects
+//_____________________________________________________________________________
+template<typename Object, typename ObjectPtr>
+size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta, bool (*test)(const Object&))
+{
+  const size          numObjects    = objects.size();
+  size                count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    if (test && !(*test)(*objects[iObject]))            continue;
+    if (objects[iObject]->pt()              < minPT)    continue;
+    if (TMath::Abs(objects[iObject]->eta()) > maxEta)   continue;
+    ++count;
+  } // end loop over objects
+  return count;
+}
+
+//_____________________________________________________________________________
+template<typename ObjectPtr>
+size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta)
+{
+  const size          numObjects    = objects.size();
+  size                count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    if (objects[iObject]->pt()              < minPT)    continue;
+    if (TMath::Abs(objects[iObject]->eta()) > maxEta)   continue;
+    ++count;
+  } // end loop over objects
+  return count;
+}
+
+//_____________________________________________________________________________
+template<typename Object>
+size PhysicsUtilities::countObjects(const std::vector<Object>& objects, double minPT, double maxEta, bool (*test)(const Object&))
+{
+  const size          numObjects    = objects.size();
+  size                count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Object&     object        = objects[iObject];
+    if (get(object).pt()    < minPT ) continue;
+    if (absEta(get(object)) > maxEta) continue;
+    if (test && !(*test)(object))     continue;
+    ++count;
+  } // end loop over objects
+  return count;
+}
+//_____________________________________________________________________________
+template<typename Object, typename Analyzer>
+size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const)
+{
+  const size            numObjects    = objects.size();
+  size                  count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Object&       object        = objects[iObject];
+    if (analyzer && test && !(analyzer->*test)(object))   continue;
+    ++count;
+  } // end loop over objects
+
+  return count;
+}
+//_____________________________________________________________________________
+template<typename Object, typename Analyzer>
+size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta)
+{
+  const size            numObjects    = objects.size();
+  size                  count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Object&       object        = objects[iObject];
+    if (get(object).pt()    < minPT )                     continue;
+    if (absEta(get(object)) > maxEta)                     continue;
+    if (analyzer && test && !(analyzer->*test)(object))   continue;
+    ++count;
+  } // end loop over objects
+
+  return count;
+}
+//_____________________________________________________________________________
+template<typename Property, typename Object>
+size PhysicsUtilities::countObjectProperties(const std::vector<Object>& objects, const Property& (Object::*getProperty)() const, double minPT, double maxEta, bool (*test)(const Property&))
+{
+  const size          numObjects    = objects.size();
+  size                count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Property&   object        = (objects[iObject].*getProperty)();
+    if (get(object).pt()    < minPT ) continue;
+    if (absEta(get(object)) > maxEta) continue;
+    if (test && !(*test)(object))     continue;
+    ++count;
+  } // end loop over objects
+  return count;
+}
+//_____________________________________________________________________________
+template<typename Object, typename Other>
+size PhysicsUtilities::countDistinctObjects(const std::vector<Object>& objects, const std::vector<Other>& vetoNearby, double minDRnearby, double minPT, double maxEta)
+{
+  const size            numObjects    = objects.size();
+  size                  count         = 0;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Object&       object        = objects[iObject];
+    if (get(object).pt()    < minPT ) continue;
+    if (absEta(get(object)) > maxEta) continue;
+
+    double              nearestDR     = 1e308;
+    for (size iVeto = 0; iVeto < vetoNearby.size(); ++iVeto)
+      nearestDR         = TMath::Min(nearestDR, reco::deltaR(get(object), get(vetoNearby[iVeto])));
+    if (nearestDR > minDRnearby)
+      ++count;
+  } // end loop over objects
+
+  return count;
+}
+//_____________________________________________________________________________
+// Momentum manipuations
+//_____________________________________________________________________________
+template<typename Number>
+CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, Number px, Number py, Number pz, Number E, Number scale){
+  p4.SetCoordinates ( p4.px() + scale * px
+                    , p4.py() + scale * py
+                    , p4.pz() + scale * pz
+                    , p4.E () + scale * E
+                    );
+  return p4;
+}
+//_____________________________________________________________________________
+template<typename Momentum>
+CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum& addend, double scale = 1)
+{
+  p4.SetCoordinates ( p4.px() + scale * addend.px()
+                    , p4.py() + scale * addend.py()
+                    , p4.pz() + scale * addend.pz()
+                    , p4.E () + scale * addend.E ()
+                    );
+  return p4;
+}
+//_____________________________________________________________________________
+template<typename CoordSystem, typename Tag>
+CartLorentzVector PhysicsUtilities::getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1)
+{
+  return CartLorentzVector(            scale  * addend.x()
+                          ,            scale  * addend.y()
+                          ,            scale  * addend.z()
+                          , TMath::Abs(scale) * addend.r()
+                          );
+}
+//_____________________________________________________________________________
+CartLorentzVector PhysicsUtilities::sumMomenta(const std::vector<CartLorentzVector>& p4, double scale)
+{
+  CartLorentzVector   sumP4;
+  for (size index = 0; index < p4.size(); ++index)
+    addTo(sumP4, p4[index], scale);
+  return sumP4;
+}
+//_____________________________________________________________________________
+template<typename Object, typename Analyzer>
+CartLorentzVector PhysicsUtilities::sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale)
+{
+  const size            numObjects    = objects.size();
+  CartLorentzVector     sumP4;
+  for (size iObject = 0; iObject < numObjects; ++iObject) {
+    const Object&       object        = objects[iObject];
+    if (get(object).pt()    < minPT )                   continue;
+    if (absEta(get(object)) > maxEta)                   continue;
+    if (analyzer && test && !(analyzer->*test)(object)) continue;
+    addTo(sumP4, get(object).p4(), scale);
+  } // end loop over objects
+
+  return sumP4;
+}
+//_____________________________________________________________________________
+#endif
