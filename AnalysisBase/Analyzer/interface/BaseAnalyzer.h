@@ -98,63 +98,6 @@ namespace ucsbsusy {
       void printEventCoordinates(std::ostream& out = std::cout) const;
       TString eventCoordinates() const  { return TString::Format("%d:%d:%d", runNumber(), lumiBlock(), eventNumber()); }
 
-      //_____________________________________________________________________________
-      /**
-        Helper function to load a product only if it is part of event content. This
-        decision is stored in the provided isAvailable variable, which MUST be
-        initialized to true before the first event if you want it to check at all.
-      */
-      //_____________________________________________________________________________
-      template<typename Source, typename Tag, typename Product>
-      bool tryToGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool& isAvailable) const
-      {
-        if (!isAvailable)   return false;
-        if (numAnalyzed() == 0) {
-          source.getByLabel(tag, product);
-          return ( isAvailable = product.isValid() );
-        } else {
-          source.getByLabel(tag, product);
-          return product.isValid();
-        }
-        return false;
-      }
-      template<typename Source, typename Product>
-      bool tryToGet(const Source& source, edm::Handle<Product>& product, bool& isAvailable) const
-      {
-        if (!isAvailable)   return false;
-        if (numAnalyzed() == 0) {
-          source.getByType(product);
-          return ( isAvailable = product.isValid() );
-        } else {
-          source.getByType(product);
-          return product.isValid();
-        }
-        return false;
-      }
-      //_____________________________________________________________________________
-      /// Helper function to ensure loading of a product, throwing an exception if this fails.
-      template<typename Source, typename Tag, typename Product>
-      static bool enforceGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool enforcePresence = true)
-      {
-        source.getByLabel(tag, product);
-        if (enforcePresence) {
-          if (product.failedToGet())  throw *product.whyFailed();
-          if (!product.isValid())
-            throw cms::Exception("EventAnalyzer::enforceGet()", ("Product with input tag "+str(tag)+" is not valid.").Data());
-        }
-        return product.isValid();
-      }
-      template<typename Source, typename Product>
-      static bool enforceGet(const Source& source, edm::Handle<Product>& product, bool enforcePresence = true)
-      {
-        source.getByType(product);
-        if (enforcePresence) {
-          if (product.failedToGet())  throw *product.whyFailed();
-          if (!product.isValid())
-            throw cms::Exception("EventAnalyzer::enforceGet()", "No valid products of the given type.");
-        }
-        return product.isValid();
-      }
 
       //_____________________________________________________________________________
       //     Basic members to run jobs

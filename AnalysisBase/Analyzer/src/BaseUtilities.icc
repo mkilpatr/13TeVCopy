@@ -63,6 +63,32 @@ void BaseUtilities::trash(std::map<Key,Object*>& objects)
   objects.clear();
 }
 //_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool BaseUtilities::tryToGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, int numAnalyzed, bool& isAvailable)
+{
+  if (!isAvailable)   return false;
+  if (numAnalyzed == 0) {
+    source.getByLabel(tag, product);
+    return ( isAvailable = product.isValid() );
+  } else {
+    source.getByLabel(tag, product);
+    return product.isValid();
+  }
+  return false;
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool BaseUtilities::enforceGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool enforcePresence)
+{
+  source.getByLabel(tag, product);
+  if (enforcePresence) {
+    if (product.failedToGet())  throw *product.whyFailed();
+    if (!product.isValid())
+      throw cms::Exception("BaseUtilities::enforceGet()", ("Product with input tag "+str(tag)+" is not valid.").Data());
+  }
+  return product.isValid();
+}
+//_____________________________________________________________________________
 TFile* BaseUtilities::open(const char* path, const char option[], bool stopIfMissing)
 {
   if (path == 0 || path[0] == 0)  return 0;
