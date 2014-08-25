@@ -69,6 +69,11 @@ public:
     Bool_t operator()(const ObjectRef& x, const ObjectRef& y) const { return x->pt() > y->pt(); }
   };
 
+  template<typename Object>
+  struct greaterPT : public std::binary_function<const Object&, const Object&, Bool_t> {
+    Bool_t operator()(const Object& x, const Object& y) const { return x.pt() > y.pt(); }
+  };
+
   //_____________________________________________________________________________
   // Number conversion
   //_____________________________________________________________________________
