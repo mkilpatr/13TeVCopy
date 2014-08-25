@@ -15,63 +15,59 @@ using namespace std;
 
 //--------------------------------------------------------------------------------------------------
 EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
-  BaseAnalyzer(cfg),
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   metTag_(cfg.getParameter<edm::InputTag>("mets")),
-  evtInfo_(new EventInfo())
+  obj(0),
+  verticies_(0),
+  primaryVerex_(0),
+  mets_(0),
+  met_(0)
 {
-  // Constructor
-
   EventInfo::Class()->IgnoreTObjectStreamer();
-
 }
+
 //--------------------------------------------------------------------------------------------------
 EventInfoFiller::~EventInfoFiller()
 {
-  // Destructor
-
-  delete evtInfo_;
-
+  delete obj;
 }
 
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::book(TTree &t)
-{
- // Add branch for this filler
+void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr ){
+  enforceGet(iEvent,vtxTag_,verticies_,true);
+  if(verticies_->size() != 0)
+    primaryVerex_ = &verticies_->front();
 
-  t.Branch("EventInfo", &evtInfo_);
 
+  enforceGet(iEvent,metTag_,mets_,true);
+  met_ = &mets_->front();
+
+  if(storeOnlyPtr) return;
+  if(!obj) obj = new EventInfo;
+
+  obj->setRunNum(iEvent.id().run());
+  obj->setLumiSec(iEvent.luminosityBlock());
+  obj->setEvtNum(iEvent.id().event());
+  obj->setIsMC(!iEvent.isRealData());
+
+  obj->setNPV(verticies_->size());
+  obj->setPVx(primaryVerex_ ? primaryVerex_->x() : -99999);
+  obj->setPVy(primaryVerex_ ? primaryVerex_->y() : -99999);
+  obj->setPVz(primaryVerex_ ? primaryVerex_->z() : -99999);
+
+  obj->setMET(met_->pt());
+  obj->setMETPhi(met_->phi());
+  obj->setMETSumET(met_->sumEt());
+  obj->setGenMET(met_->genMET()->pt());
+  obj->setMETUp(met_->shiftedPt(pat::MET::JetEnUp));
+  obj->setMETDown(met_->shiftedPt(pat::MET::JetEnDown));
 }
 
+
+
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::fill(const edm::Event &event)
+void EventInfoFiller::fill(Planter& plant, int& bookMark)
 {
-  // Called for each event
-
-  edm::Handle<reco::VertexCollection> vertices;
-  event.getByLabel(vtxTag_, vertices);
-  if (vertices->empty()) return; // skip if no PV found
-  const reco::Vertex &PV = vertices->front();
-
-  edm::Handle<pat::METCollection> mets;
-  event.getByLabel(metTag_, mets);
-  const pat::MET &met = mets->front();
-
-  evtInfo_->setRunNum(event.id().run());
-  evtInfo_->setLumiSec(event.luminosityBlock());
-  evtInfo_->setEvtNum(event.id().event());
-  evtInfo_->setIsMC(!event.isRealData());
-
-  evtInfo_->setNPV(vertices->size());
-  evtInfo_->setPVx(PV.x());
-  evtInfo_->setPVy(PV.y());
-  evtInfo_->setPVz(PV.z());
-
-  evtInfo_->setMET(met.pt());
-  evtInfo_->setMETPhi(met.phi());
-  evtInfo_->setMETSumET(met.sumEt());
-  evtInfo_->setGenMET(met.genMET()->pt());
-  evtInfo_->setMETUp(met.shiftedPt(pat::MET::JetEnUp));
-  evtInfo_->setMETDown(met.shiftedPt(pat::MET::JetEnDown));
-
+  plant.fill(*obj,"EventInfo");
+  bookMark++;
 }
