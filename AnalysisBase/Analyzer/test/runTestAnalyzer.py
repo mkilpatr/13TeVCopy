@@ -8,7 +8,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing("analysis")
 
 options.outputFile = "evttree.root"
-options.inputFiles = "/store/cmst3/user/gpetrucc/miniAOD/v1/TT_Tune4C_13TeV-pythia8-tauola_PU_S14_PAT.root"
+options.inputFiles = "root://xrootd.unl.edu//store/relval/CMSSW_7_2_0_pre3/RelValTTbar_13/MINIAODSIM/PU50ns_POSTLS172_V4-v1/00000/549EACFF-E41D-E411-8B8F-02163E00A081.root"
 options.maxEvents = -1
 
 options.parseArguments()
@@ -19,11 +19,11 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
-process.load("AnalysisBase.Analyzer.TestAnalyzer_cfi")
-
-process.TestAnalyzer.filename = cms.untracked.string(options.outputFile)
-process.TestAnalyzer.analyzers = cms.untracked.vstring("EventInfoFiller",
-                                                        "JetFiller"
+from AnalysisBase.Analyzer.analyzer_configuration_cfi import *
+process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
+  nominal_configuration
 )
+
+
 
 process.p = cms.Path(process.TestAnalyzer)
