@@ -147,6 +147,6 @@ public:
 
 }
 
-#include "AnalysisBase/Analyzer/src/BaseUtilities.icc"
+#include "AnalysisTools/Utilities/src/BaseUtilities.icc"
 
 #endif /* BASEUTILITIES_H_ */

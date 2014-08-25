@@ -16,7 +16,7 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 
-#include "AnalysisBase/Analyzer/interface/BaseUtilities.h"
+#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
 
@@ -102,6 +102,6 @@ static double computeHT(const std::vector<Momentum>& jets, const double minPT = 
 
 }
 
-#include "AnalysisBase/Analyzer/src/PhysicsUtilities.icc"
+#include "AnalysisTools/Utilities/src/PhysicsUtilities.icc"
 
 #endif /* PHYSICSUTILITIES_H_ */

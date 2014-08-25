@@ -21,7 +21,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "AnalysisTools/Parang/interface/Plotter.h"
-#include "AnalysisBase/Analyzer/interface/BaseUtilities.h"
+#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
   class BaseAnalyzer : public edm::EDFilter, public BaseUtilities {

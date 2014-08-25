@@ -19,8 +19,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "AnalysisTools/Parang/interface/Planter.h"
-#include "AnalysisBase/Analyzer/interface/PhysicsUtilities.h"
-#include "AnalysisBase/Analyzer/interface/BaseUtilities.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
 class BaseFiller : public PhysicsUtilities, public BaseUtilities {

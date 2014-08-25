@@ -3,6 +3,7 @@
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="AnalysisTools/DataFormats"/>
+<use lib="AnalysisTools/Utilities"/>
 <use name="AnalysisTools/Parang"/>
 <export>
   <lib   name="1"/>

@@ -16,7 +16,7 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
-#include "AnalysisBase/Analyzer/interface/PhysicsUtilities.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 //----- Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"

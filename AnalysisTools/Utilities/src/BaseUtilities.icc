@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "AnalysisBase/Analyzer/interface/BaseUtilities.h"
+#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 using namespace ucsbsusy;
 using namespace std;
