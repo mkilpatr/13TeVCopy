@@ -8,7 +8,8 @@ using namespace std;
 
 PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 : BaseAnalyzer(iConfig)
-, eventInfoSource      (iConfig.getParameter<edm::InputTag  >("eventInfoSource"        ))
+, event(0)
+, genEventInfoSource  (iConfig.getParameter<edm::InputTag  >("genEventInfoSource"      ))
 , eventWeight_        (1)
 , isRealData          (iConfig.getParameter<int             >("isData"                 ))
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
@@ -17,6 +18,10 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , crossSection        (iConfig.getParameter<double          >("crossSection"           ))
 , totalEvents         (iConfig.getParameter<int             >("totalEvents"            ))
 , crossSectionScaling (iConfig.getParameter<double          >("crossSectionScaling"    ))
+, planter             (0)
+
+// ---- Configure event information
+, eventInfo           (iConfig)
 
 {
 
@@ -48,11 +53,20 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
   clog << endl;
 
 }
+//_____________________________________________________________________________
+PhysicsAnalyzer::~PhysicsAnalyzer(){
+  if (planter) {
+    plotter.write(planter->getFile());
+    delete planter;
+    outputPath  = "";
+  }
+}
 
+//_____________________________________________________________________________
 bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
   static bool               hasEventInfo  = true;
-  eventWeight_              = tryToGet(iEvent,eventInfoSource, eventInfo,numAnalyzed(),hasEventInfo)
-                            ? eventInfo->weight()
+  eventWeight_              = tryToGet(iEvent,genEventInfoSource, genEventInfo,numAnalyzed(),hasEventInfo)
+                            ? genEventInfo->weight()
                             : 1
                             ;
   bool                      canBeNegative = eventWeight_ < 0 ? true : false;
@@ -62,6 +76,12 @@ bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
 
     if(!canBeNegative) assert(eventWeight_ > 0);
   }
+
+  event = &iEvent;
+
+  if (!planter)
+    planter = new Planter("events", dataset, outputPath);
+  planter->start();
 
   return BaseAnalyzer::filter(iEvent,iSetup);
 }
@@ -81,4 +101,14 @@ bool PhysicsAnalyzer::isMC() const
   if (isRealData < 0)
     throw cms::Exception("PhysicsAnalyzer.isData()", "isRealData not set -- This should only be used if the sample information has been loaded from the database, or when processing the first event.");
   return !isRealData;
+}
+
+//_____________________________________________________________________________
+void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr){
+  filler->load(*event,storeOnlyPtr);
+}
+
+//_____________________________________________________________________________
+void PhysicsAnalyzer::fillObj(BaseFiller* filler){
+  filler->load(*event,bookMark);
 }

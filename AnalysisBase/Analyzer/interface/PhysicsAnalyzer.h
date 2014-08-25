@@ -18,11 +18,14 @@
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 #include "AnalysisBase/Analyzer/interface/PhysicsUtilities.h"
 
+//----- Data products
+#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+
 namespace ucsbsusy {
   class PhysicsAnalyzer : public BaseAnalyzer, public PhysicsUtilities {
     public:
       PhysicsAnalyzer(const edm::ParameterSet& iConfig);
-      virtual ~PhysicsAnalyzer() {};
+      virtual ~PhysicsAnalyzer();
 
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
@@ -35,10 +38,21 @@ namespace ucsbsusy {
       void   setEventWeight(double weight) { eventWeight_  = weight; }
 
       //--------------------------------------------------------------------------------------------------
+      // Function that calls the default load for each object
+      //--------------------------------------------------------------------------------------------------
+      void loadObj(BaseFiller* filler, bool storeOnlyPtr = false);
+
+      //--------------------------------------------------------------------------------------------------
+      // Function that calls the default fill tree function for each object
+      //--------------------------------------------------------------------------------------------------
+      void fillObj(BaseFiller* filler);
+
+      //--------------------------------------------------------------------------------------------------
       // Event info data members
       //--------------------------------------------------------------------------------------------------
     private:
-      const edm::InputTag         eventInfoSource;      ///< To fill the generator info
+      edm::Event*                 event;
+      const edm::InputTag         genEventInfoSource;   ///< To fill the generator info
       double                      eventWeight_;         ///< From generator info
     public:
       const int                   isRealData;           ///< Whether or not processing real data; deduced from input file name and verified once first event is loaded
@@ -52,7 +66,19 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
       // Event data members
       //--------------------------------------------------------------------------------------------------
-      edm::Handle<GenEventInfoProduct>               eventInfo;          ///< Standard RECO collection
+      edm::Handle<GenEventInfoProduct>               genEventInfo;          ///< Standard RECO collection
+
+      //--------------------------------------------------------------------------------------------------
+      // Tree filler
+      //--------------------------------------------------------------------------------------------------
+      Planter * planter;
+      int       bookMark; //keeps track of the number of fills
+
+      //--------------------------------------------------------------------------------------------------
+      // Classes with stored event information
+      //--------------------------------------------------------------------------------------------------
+      EventInfoFiller eventInfo;
+
 
 
 
