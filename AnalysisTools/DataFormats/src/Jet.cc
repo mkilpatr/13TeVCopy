@@ -10,4 +10,8 @@
 
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 
+#include "AnalysisTools/Parang/interface/Planter.h"
+
+template<>  const Char_t*  Planter::MultiVariable<ucsbsusy::Jet >::getTypeName() const { return  "Jet" ; }
+
 ClassImp(ucsbsusy::Jet)
