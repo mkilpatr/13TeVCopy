@@ -1,0 +1,3 @@
+<use name="AnalysisBase/Analyzer"/>
+<library   name="AnalysisBaseAnalyzerPlugins" file="*.cc">
+</library>
