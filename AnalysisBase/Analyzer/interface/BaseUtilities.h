@@ -85,21 +85,35 @@ public:
   static void trash(std::map<Key,Object*>& objects);
 
   //_____________________________________________________________________________
-  // EDM object getting
+  // InputTag name output
   //_____________________________________________________________________________
+  static TString str(const edm::InputTag& tag)  { return tag.encode(); }
+  static TString str(const std::string&   tag)  { return tag.data();   }
+  static TString str(const char*          tag)  { return tag;          }
+  static TString str(const TString&       tag)  { return tag;          }
+
+  //_____________________________________________________________________________
+  // EDM object getting
   //_____________________________________________________________________________
   /**
     Helper function to load a product only if it is part of event content. This
     decision is stored in the provided isAvailable variable, which MUST be
     initialized to true before the first event if you want it to check at all.
   */
-  //_____________________________________________________________________________
   template<typename Source, typename Tag, typename Product>
   static bool tryToGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, int numAnalyzed, bool& isAvailable);
+
+  template<typename Source, typename Tag, typename Product>
+  static bool tryToGet(const Source& source, const Tag& tag, const Product*& product, int numAnalyzed, bool& isAvailable);
+
   //_____________________________________________________________________________
   /// Helper function to ensure loading of a product, throwing an exception if this fails.
   template<typename Source, typename Tag, typename Product>
   static bool enforceGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool enforcePresence = true);
+
+  template<typename Source, typename Tag, typename Product>
+  static bool enforceGet(const Source& source, const Tag& tag, const Product*& product, bool enforcePresence = true);
+
   //_______________________________________________________________________
   // File opening and object getting
   //_____________________________________________________________________________

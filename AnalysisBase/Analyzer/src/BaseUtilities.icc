@@ -78,6 +78,15 @@ bool BaseUtilities::tryToGet(const Source& source, const Tag& tag, edm::Handle<P
 }
 //_____________________________________________________________________________
 template<typename Source, typename Tag, typename Product>
+bool BaseUtilities::tryToGet(const Source& source, const Tag& tag, const Product*& product, int numAnalyzed, bool& isAvailable)
+{
+  edm::Handle<Product> handle;
+  bool returnVal = tryToGet(source,tag,handle,numAnalyzed,isAvailable);
+  product = &(*handle);
+  return returnVal;
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
 bool BaseUtilities::enforceGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool enforcePresence)
 {
   source.getByLabel(tag, product);
@@ -87,6 +96,15 @@ bool BaseUtilities::enforceGet(const Source& source, const Tag& tag, edm::Handle
       throw cms::Exception("BaseUtilities::enforceGet()", ("Product with input tag "+str(tag)+" is not valid.").Data());
   }
   return product.isValid();
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool BaseUtilities::enforceGet(const Source& source, const Tag& tag, const Product*& product, bool enforcePresence)
+{
+  edm::Handle<Product> handle;
+  bool returnVal = enforceGet(source,tag,handle,enforcePresence);
+  product = &(*handle);
+  return returnVal;
 }
 //_____________________________________________________________________________
 template<typename Object>
