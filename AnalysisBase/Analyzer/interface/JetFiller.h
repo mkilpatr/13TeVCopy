@@ -12,24 +12,33 @@
 #define ANALYSISBASE_ANALYZER_JETFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "AnalysisTools/DataFormats/interface/Jet.h"
-#include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 
+#include "AnalysisBase/Analyzer/interface/BaseFiller.h"
+#include "AnalysisTools/DataFormats/interface/Jet.h"
 
 namespace ucsbsusy {
-  class JetFiller : public BaseAnalyzer {
+  class JetFiller : public BaseFiller {
     public:
       JetFiller(const edm::ParameterSet &cfg);
       ~JetFiller();
 
-      void book(TTree &t);
-      void fill(const edm::Event &e);
+      void load(edm::Event& iEvent, bool storeOnlyPtr = false);
+      void fill(Planter& plant, int& bookMark);
+      JetCollection& operator->(){return *obj;}
 
     private:
+      //--------------------------------------------------------------------------------------------------
+      // Input from the config file
+      //--------------------------------------------------------------------------------------------------
+      edm::InputTag jetTag_;
       double jptMin_;
       unsigned int maxNjets_;
-      edm::InputTag jetTag_;
-      JetCollection *jetCol_;
+
+      //--------------------------------------------------------------------------------------------------
+      // Data Members
+      //--------------------------------------------------------------------------------------------------
+      JetCollection            * obj;
+      const pat::JetCollection * jets_;
 
   };
 }

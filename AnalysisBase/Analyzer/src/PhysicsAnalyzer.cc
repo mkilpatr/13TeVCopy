@@ -19,9 +19,11 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , totalEvents         (iConfig.getParameter<int             >("totalEvents"            ))
 , crossSectionScaling (iConfig.getParameter<double          >("crossSectionScaling"    ))
 , planter             (0)
+, bookMark            (0)
 
 // ---- Configure event information
 , eventInfo           (iConfig)
+, jets                (iConfig)
 
 {
 
@@ -110,5 +112,5 @@ void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr){
 
 //_____________________________________________________________________________
 void PhysicsAnalyzer::fillObj(BaseFiller* filler){
-  filler->load(*event,bookMark);
+  filler->fill(*planter,bookMark);
 }

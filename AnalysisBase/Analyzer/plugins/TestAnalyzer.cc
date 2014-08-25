@@ -23,11 +23,13 @@ public:
 
   bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     loadObj(&eventInfo);
+    loadObj(&jets);
     return true;
   }
 
   void analyze(){
     fillObj(&eventInfo);
+    fillObj(&jets);
   }
 };
 

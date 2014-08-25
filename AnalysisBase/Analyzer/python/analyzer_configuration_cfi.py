@@ -36,5 +36,10 @@ nominal_configuration = cms.PSet(
                                       genEventInfoSource      = cms.InputTag (""),                                                                                
                                       
                                       vertices          = cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                      mets              = cms.InputTag("slimmedMETs"),                                                                                                                                                                                              
+                                      mets              = cms.InputTag("slimmedMETs"),  
+                                      
+                                      jets              = cms.InputTag('slimmedJets'),
+                                      minjetpt          = cms.untracked.double(15.0),
+                                      maxnjets          = cms.untracked.uint32(20)
+                                                                                                                                                                                        
                                       )

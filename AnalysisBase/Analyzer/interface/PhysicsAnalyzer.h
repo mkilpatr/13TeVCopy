@@ -20,6 +20,7 @@
 
 //----- Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+#include "AnalysisBase/Analyzer/interface/JetFiller.h"
 
 namespace ucsbsusy {
   class PhysicsAnalyzer : public BaseAnalyzer, public PhysicsUtilities {
@@ -78,6 +79,7 @@ namespace ucsbsusy {
       // Classes with stored event information
       //--------------------------------------------------------------------------------------------------
       EventInfoFiller eventInfo;
+      JetFiller            jets;
 
 
 
