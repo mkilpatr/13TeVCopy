@@ -65,14 +65,19 @@ template<typename Number>
 static CartLorentzVector& addTo(CartLorentzVector& p4, Number px, Number py, Number pz, Number E, Number scale = 1);
 
 template<typename Momentum>
-CartLorentzVector& addTo(CartLorentzVector& p4, const Momentum& addend, double scale = 1);
+static CartLorentzVector& addTo(CartLorentzVector& p4, const Momentum& addend, double scale = 1);
 
 //Get the cartLorentzVector after scaling
 template<typename CoordSystem, typename Tag>
-CartLorentzVector getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1);
+static CartLorentzVector getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1);
 
 /// Sums the 4-momenta of objects
-static CartLorentzVector sumMomenta(const std::vector<CartLorentzVector>& p4, double scale = 1);
+static CartLorentzVector sumMomenta(const std::vector<CartLorentzVector>& p4, double scale = 1){
+  CartLorentzVector   sumP4;
+  for (size index = 0; index < p4.size(); ++index)
+    addTo(sumP4, p4[index], scale);
+  return sumP4;
+}
 
 /// Sums the 4-momenta of objects passing the given test and momentum thresholds.
 template<typename Object, typename Analyzer>

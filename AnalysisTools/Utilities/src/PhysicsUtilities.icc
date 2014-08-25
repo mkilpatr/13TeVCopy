@@ -135,7 +135,7 @@ CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, Number px, Num
 }
 //_____________________________________________________________________________
 template<typename Momentum>
-CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum& addend, double scale = 1)
+CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum& addend, double scale)
 {
   p4.SetCoordinates ( p4.px() + scale * addend.px()
                     , p4.py() + scale * addend.py()
@@ -146,7 +146,7 @@ CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum
 }
 //_____________________________________________________________________________
 template<typename CoordSystem, typename Tag>
-CartLorentzVector PhysicsUtilities::getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1)
+CartLorentzVector PhysicsUtilities::getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale)
 {
   return CartLorentzVector(            scale  * addend.x()
                           ,            scale  * addend.y()
@@ -154,14 +154,7 @@ CartLorentzVector PhysicsUtilities::getP4(const ROOT::Math::DisplacementVector3D
                           , TMath::Abs(scale) * addend.r()
                           );
 }
-//_____________________________________________________________________________
-CartLorentzVector PhysicsUtilities::sumMomenta(const std::vector<CartLorentzVector>& p4, double scale)
-{
-  CartLorentzVector   sumP4;
-  for (size index = 0; index < p4.size(); ++index)
-    addTo(sumP4, p4[index], scale);
-  return sumP4;
-}
+
 //_____________________________________________________________________________
 template<typename Object, typename Analyzer>
 CartLorentzVector PhysicsUtilities::sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale)
