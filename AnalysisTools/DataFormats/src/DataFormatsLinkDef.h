@@ -1,10 +1,6 @@
-#ifndef ANALYSISTOOLS_DATAFORMATS_DATAFORMATSLINKDEF_H
-#define ANALYSISTOOLS_DATAFORMATS_DATAFORMATSLINKDEF_H
-
 #include "AnalysisTools/DataFormats/interface/EventInfo.h"
 #include "AnalysisTools/DataFormats/interface/Particle.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
-#endif
 
 #ifdef __CINT__
 #pragma link off all globals;

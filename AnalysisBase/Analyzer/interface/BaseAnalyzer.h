@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <TRandom3.h>
+#include <TSystem.h>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDFilter.h"

@@ -8,10 +8,15 @@
 #ifndef BASEUTILITIES_H_
 #define BASEUTILITIES_H_
 
+#include <map>
 #include <TString.h>
 #include <TFile.h>
+#include <TSystem.h>
 
+#include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 namespace ucsbsusy {
 
