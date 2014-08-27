@@ -1,3 +1,5 @@
+#define G__DICTIONARY //Needed for cint complimation
+
 #include "AnalysisTools/DataFormats/interface/EventInfo.h"
 #include "AnalysisTools/DataFormats/interface/Particle.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
@@ -10,11 +12,16 @@
 #pragma link C++ nestedtypedef;
 #pragma link C++ namespace ucsbsusy;
 
+
+#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float  >+;
+#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >+;
+
 #pragma link C++ class ucsbsusy::EventInfo+;
 #pragma link C++ class ucsbsusy::Particle+;
 #pragma link C++ class std::vector<ucsbsusy::Particle>+;
 #pragma link C++ class ucsbsusy::Jet+;
 #pragma link C++ class std::vector<ucsbsusy::Jet>+;
+#pragma link C++ typedef ucsbsusy::CylLorentzVectorF;
 #pragma link C++ typedef ucsbsusy::ParticleCollection;
 #pragma link C++ typedef ucsbsusy::JetCollection;
 #endif

@@ -11,21 +11,24 @@
 #ifndef ANALYSISTOOLS_DATAFORMATS_PARTICLE_H
 #define ANALYSISTOOLS_DATAFORMATS_PARTICLE_H
 
+
+
+
 #include <vector>
 #include <TObject.h>
-#include <TLorentzVector.h>
-
+#include "Math/GenVector/LorentzVector.h"
+#include "Math/GenVector/PtEtaPhiM4D.h"
 namespace ucsbsusy {
 
-  class Particle;
-  typedef std::vector<Particle> ParticleCollection;
-
+typedef   ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >  CylLorentzVectorF;
+class Particle;
+typedef std::vector<Particle> ParticleCollection;
   class Particle : public TObject
   {
 
     public :
       Particle() :
-	fMom(0,0,0,0), fCharge(0) {}
+	fMom(), fCharge(0) {}
       ~Particle(){}
 
       enum ParticleType {
@@ -38,29 +41,35 @@ namespace ucsbsusy {
 	kNeutralHadron
       };
 
-      Double_t		pt()			const	{ return fMom.Pt();		}
-      Double_t		eta()			const	{ return fMom.Eta();		}
-      Double_t		phi()			const	{ return fMom.Phi();		}
-      Double_t		mass()			const	{ return fMom.M();		}
-      Double_t		E()			const	{ return fMom.E();		}
-      Double_t		Et()			const	{ return fMom.Et();		}
-      Double_t		mt()			const	{ return fMom.Mt();		}
-      Double_t		px()			const	{ return fMom.Px();		}
-      Double_t		py()			const	{ return fMom.Py();		}
-      Double_t		pz()			const	{ return fMom.Pz();		}
-      Double_t		p()			const	{ return fMom.P();		}
-      Double_t		y()			const	{ return fMom.Rapidity();	}
-      Double_t		theta()			const	{ return fMom.Theta();		}
-      TLorentzVector	mom()			const	{ return fMom;			}
-      Int_t		charge()		const	{ return fCharge;		}
+      // Functions to facilitate momentum operations
+      Float_t		pt()			const	{ return fMom.Pt();	}
+      Float_t		eta()			const	{ return fMom.Eta();		}
+      Float_t		phi()			const	{ return fMom.Phi();		}
+      Float_t		mass()			const	{ return fMom.M();		}
+      Float_t		E()			const	{ return fMom.E();		}
+      Float_t		Et()			const	{ return fMom.Et();		}
+      Float_t		mt()			const	{ return fMom.Mt();		}
+      Float_t		px()			const	{ return fMom.Px();		}
+      Float_t		py()			const	{ return fMom.Py();		}
+      Float_t		pz()			const	{ return fMom.Pz();		}
+      Float_t		p()			const	{ return fMom.P();		}
+      Float_t		y()			const	{ return fMom.Rapidity();	}
+      Float_t		theta()			const	{ return fMom.Theta();		}
 
-      void		setMom(TLorentzVector &v)	{ fMom = v;			}
-      void		setPtEtaPhiM(Double_t ptg, Double_t etag, Double_t phig, Double_t massg)
-							{ TLorentzVector v; v.SetPtEtaPhiM(ptg, etag, phig, massg); setMom(v);	}
+      //Momentum getting and setting functions
+      CylLorentzVectorF& p4()              { return fMom; }
+      const CylLorentzVectorF& p4()   const{ return fMom; }
+
+      template< class Coords >
+      void setP4(const ROOT::Math::LorentzVector<Coords> & v ) {fMom = v;}
+
+
+      //Charge functions
       void		setCharge(Int_t c)		{ fCharge = c;			}
+      Int_t   charge()    const { return fCharge;   }
 
     protected :
-      TLorentzVector	fMom;
+      CylLorentzVectorF	fMom;
       Int_t		fCharge;
 
     ClassDef(Particle, 1)
