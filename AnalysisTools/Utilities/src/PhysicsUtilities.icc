@@ -124,8 +124,8 @@ size PhysicsUtilities::countDistinctObjects(const std::vector<Object>& objects, 
 //_____________________________________________________________________________
 // Momentum manipuations
 //_____________________________________________________________________________
-template<typename Number>
-CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, Number px, Number py, Number pz, Number E, Number scale){
+template<typename CoordSystem, typename Number>
+ROOT::Math::LorentzVector<CoordSystem>& PhysicsUtilities::addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, Number px, Number py, Number pz, Number E, Number scale){
   p4.SetCoordinates ( p4.px() + scale * px
                     , p4.py() + scale * py
                     , p4.pz() + scale * pz
@@ -134,8 +134,8 @@ CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, Number px, Num
   return p4;
 }
 //_____________________________________________________________________________
-template<typename Momentum>
-CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum& addend, double scale)
+template<typename CoordSystem, typename Momentum>
+ROOT::Math::LorentzVector<CoordSystem>& PhysicsUtilities::addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, const Momentum& addend, double scale)
 {
   p4.SetCoordinates ( p4.px() + scale * addend.px()
                     , p4.py() + scale * addend.py()
@@ -146,21 +146,29 @@ CartLorentzVector& PhysicsUtilities::addTo(CartLorentzVector& p4, const Momentum
 }
 //_____________________________________________________________________________
 template<typename CoordSystem, typename Tag>
-CartLorentzVector PhysicsUtilities::getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale)
+ROOT::Math::LorentzVector<CoordSystem> getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1)
 {
-  return CartLorentzVector(            scale  * addend.x()
+  return ROOT::Math::LorentzVector<CoordSystem>
+                          (            scale  * addend.x()
                           ,            scale  * addend.y()
                           ,            scale  * addend.z()
                           , TMath::Abs(scale) * addend.r()
                           );
 }
-
 //_____________________________________________________________________________
-template<typename Object, typename Analyzer>
-CartLorentzVector PhysicsUtilities::sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale)
+template<typename CoordSystem>
+ROOT::Math::LorentzVector<CoordSystem> sumMomenta(const std::vector<ROOT::Math::LorentzVector<CoordSystem> >& p4, double scale){
+  ROOT::Math::LorentzVector<CoordSystem>   sumP4;
+  for (size index = 0; index < p4.size(); ++index)
+    addTo(sumP4, p4[index], scale);
+  return sumP4;
+}
+//_____________________________________________________________________________
+template<typename CoordSystem, typename Object, typename Analyzer>
+ROOT::Math::LorentzVector<CoordSystem> sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale)
 {
   const size            numObjects    = objects.size();
-  CartLorentzVector     sumP4;
+  ROOT::Math::LorentzVector<CoordSystem>     sumP4;
   for (size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&       object        = objects[iObject];
     if (get(object).pt()    < minPT )                   continue;

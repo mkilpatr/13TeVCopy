@@ -62,27 +62,23 @@ static size countDistinctObjects(const std::vector<Object>& objects, const std::
 // Momentum manipulations
 //_____________________________________________________________________________
 //Add a set of coordinates to a CartLorentzVector
-template<typename Number>
-static CartLorentzVector& addTo(CartLorentzVector& p4, Number px, Number py, Number pz, Number E, Number scale = 1);
+template<typename CoordSystem, typename Number>
+static ROOT::Math::LorentzVector<CoordSystem>& addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, Number px, Number py, Number pz, Number E, Number scale = 1);
 
-template<typename Momentum>
-static CartLorentzVector& addTo(CartLorentzVector& p4, const Momentum& addend, double scale = 1);
+template<typename CoordSystem, typename Momentum>
+static ROOT::Math::LorentzVector<CoordSystem>& addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, const Momentum& addend, double scale = 1);
 
 //Get the cartLorentzVector after scaling
 template<typename CoordSystem, typename Tag>
-static CartLorentzVector getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1);
+static ROOT::Math::LorentzVector<CoordSystem> getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1);
 
 /// Sums the 4-momenta of objects
-static CartLorentzVector sumMomenta(const std::vector<CartLorentzVector>& p4, double scale = 1){
-  CartLorentzVector   sumP4;
-  for (size index = 0; index < p4.size(); ++index)
-    addTo(sumP4, p4[index], scale);
-  return sumP4;
-}
+template<typename CoordSystem>
+static ROOT::Math::LorentzVector<CoordSystem> sumMomenta(const std::vector<ROOT::Math::LorentzVector<CoordSystem> >& p4, double scale = 1);
 
 /// Sums the 4-momenta of objects passing the given test and momentum thresholds.
-template<typename Object, typename Analyzer>
-static CartLorentzVector sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale = 1);
+template<typename CoordSystem, typename Object, typename Analyzer>
+static ROOT::Math::LorentzVector<CoordSystem> sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale = 1);
 
 
 //_____________________________________________________________________________
