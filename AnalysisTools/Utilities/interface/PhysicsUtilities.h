@@ -22,6 +22,7 @@ namespace ucsbsusy {
 
 typedef   math::XYZTLorentzVector       CartLorentzVector;
 typedef   math::PtEtaPhiMLorentzVector  CylLorentzVector;
+typedef   math::PtEtaPhiMLorentzVectorF CylLorentzVectorF;
 
 class PhysicsUtilities{
 public:
