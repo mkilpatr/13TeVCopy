@@ -10,6 +10,8 @@
 #include <vector>
 #include <TString.h>
 
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+
 namespace ucsbsusy{
 
 class ParticleInfo
@@ -219,6 +221,17 @@ static int countProducedID(const std::vector<Particle>& particles, int pdgId, bo
 //_____________________________________________________________________________
 
 static double poleMass(int pdgId);
+
+
+//_____________________________________________________________________________
+//    Print GenParticle history
+//_____________________________________________________________________________
+
+/// Prints the history (ancestors and their decays) of the indexed genParticle.
+static std::ostream& printGenHistory(const std::vector<reco::GenParticle>& genParticles, const unsigned int particleIndex);
+
+/// Prints the entire particle creation/decay history, for the first genBound number of genParticles.
+static void printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound = 30);
 
 };  // end class ParticleInfo
 
