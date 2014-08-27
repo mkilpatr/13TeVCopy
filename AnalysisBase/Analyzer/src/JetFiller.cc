@@ -43,8 +43,8 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr ){
     obj->emplace_back();
     Jet& jet = obj->back();
 
-    jet.setPtEtaPhiM(j.pt(), j.eta(), j.phi(), j.mass());
-    jet.setPtRaw(j.pt()*j.jecFactor("Uncorrected"));
+    jet.setP4(j.polarP4());
+    jet.setJECUncorrection(j.jecFactor("Uncorrected"));
     jet.setCSV(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
     jet.setJetArea(j.jetArea());
     jet.setPUJetId(j.userFloat("pileupJetId:fullDiscriminant"));
