@@ -22,6 +22,8 @@ namespace ucsbsusy {
 
 typedef   unsigned int                  size;
 typedef   unsigned char                 multiplicity;
+typedef   std::pair<double,int>         RankedIndex;
+typedef   std::pair<int,int>            CountedIndex;
 
 class BaseUtilities {
 public:
@@ -34,10 +36,18 @@ public:
       return std::abs(x.first) < std::abs(y.first);
     }
   };
+
   template<typename Field, typename Object>
   struct greaterAbsFirst : public std::binary_function<const std::pair<Field,Object>&, const std::pair<Field,Object>&, Bool_t> {
     Bool_t operator()(const std::pair<Field,Object>& x, const std::pair<Field,Object>& y) const {
       return std::abs(x.first) > std::abs(y.first);
+    }
+  };
+
+  template<typename Field, typename Object>
+  struct greaterFirst : public std::binary_function<const std::pair<Field,Object>&, const std::pair<Field,Object>&, Bool_t> {
+    Bool_t operator()(const std::pair<Field,Object>& x, const std::pair<Field,Object>& y) const {
+      return x.first > y.first;
     }
   };
 
@@ -79,11 +89,13 @@ public:
     Bool_t operator()(const Object& x, const Object& y) const { return x.pt() > y.pt(); }
   };
 
+
   //_____________________________________________________________________________
   // Number conversion
   //_____________________________________________________________________________
   template<typename Target, typename Source>
   Target convertTo(Source source, const char name[], bool lenient = false, bool* good = 0);
+
 
   //_____________________________________________________________________________
   // vector destruction
@@ -94,6 +106,7 @@ public:
   template<typename Key, typename Object>
   static void trash(std::map<Key,Object*>& objects);
 
+
   //_____________________________________________________________________________
   // InputTag name output
   //_____________________________________________________________________________
@@ -101,6 +114,7 @@ public:
   static TString str(const std::string&   tag)  { return tag.data();   }
   static TString str(const char*          tag)  { return tag;          }
   static TString str(const TString&       tag)  { return tag;          }
+
 
   //_____________________________________________________________________________
   // EDM object getting
@@ -123,6 +137,7 @@ public:
 
   template<typename Source, typename Tag, typename Product>
   static bool enforceGet(const Source& source, const Tag& tag, const Product*& product, bool enforcePresence = true);
+
 
   //_______________________________________________________________________
   // File opening and object getting
@@ -149,7 +164,6 @@ public:
   template<typename Object>
   static Object* loadObject(TString objectPath, const char* configName = 0, const char* alternative = 0, bool stopIfMissing = true);
 };
-
 }
 
 #include "AnalysisTools/Utilities/src/BaseUtilities.icc"
