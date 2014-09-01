@@ -33,13 +33,13 @@ public:
   // This guy needs to be defined for each implementation and is run once per event
   // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
   //_____________________________________________________________________________
-  virtual void load(edm::Event& iEvent, bool storeOnlyPtr = false) = 0;
+  virtual void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMc = false) = 0;
 
   //_____________________________________________________________________________
   // Tree filling function
   // This guy places a bookmark in the planter at the value presented and increments it accordingly
   //_____________________________________________________________________________
-  virtual void fill(Planter& plant, int& bookMark) = 0;
+  virtual void fill(Planter& plant, int& bookMark, const int& numAnalyzed) = 0;
 };
 
 }

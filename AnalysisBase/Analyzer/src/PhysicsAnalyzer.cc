@@ -107,10 +107,10 @@ bool PhysicsAnalyzer::isMC() const
 
 //_____________________________________________________________________________
 void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr){
-  filler->load(*event,storeOnlyPtr);
+  filler->load(*event,storeOnlyPtr, isMC());
 }
 
 //_____________________________________________________________________________
 void PhysicsAnalyzer::fillObj(BaseFiller* filler){
-  filler->fill(*planter,bookMark);
+  filler->fill(*planter,bookMark,numAnalyzed());
 }
