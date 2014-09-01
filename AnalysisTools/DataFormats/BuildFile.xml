@@ -1,5 +1,5 @@
-<use name="root"/>
-<use name="rootmath"/>
+<use name="FWCore/Framework"/>
+<use lib="AnalysisTools/Utilities"/>
 <export>
   <lib   name="1"/>
 </export>
