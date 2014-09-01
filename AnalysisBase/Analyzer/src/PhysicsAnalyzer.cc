@@ -84,6 +84,7 @@ bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (!planter)
     planter = new Planter("events", dataset, outputPath);
   planter->start();
+  bookMark = 0;
 
   return BaseAnalyzer::filter(iEvent,iSetup);
 }
