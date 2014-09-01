@@ -1,6 +1,6 @@
 <use name="DataFormats/CLHEP"/>
 <use name="FWCore/Framework"/>
-<use lib="AnalysisTools/Utilities"/>
+<use name="AnalysisTools/Utilities"/>
 <export>
   <lib   name="1"/>
 </export>
