@@ -13,6 +13,9 @@
 
 using namespace ucsbsusy;
 
+#define TAGGABLE_TYPE_HACK
+#define REDEFINED_GENJET_HACK
+
 //--------------------------------------------------------------------------------------------------
 JetFiller::JetFiller(const edm::ParameterSet &cfg) :
     jetTag_(cfg.getParameter<edm::InputTag>("jets")),
@@ -54,8 +57,10 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
     edm::Handle<reco::GenParticleCollection> genParticles_;
     enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
-    std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
-    JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
+#ifndef REDEFINED_GENJET_HACK
+        std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
+        JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
+#endif
   }
 
   if(storeOnlyPtr) return;
@@ -73,16 +78,41 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
   }
 
   for(const pat::Jet &j : *jets_) {
+
+#ifdef REDEFINED_GENJET_HACK
+    const reco::GenJetRef gJ = getStdGenJet(j);
+    if(j.pt() < jptMin_ && (fillGenInfo ? (gJ.isNonnull() ? gJ->pt() : 0) < jptMin_ : true)) continue;
+#else
     const reco::GenJet * gJ = fillGenInfo ? &(*getReGenJet(j)) : 0;
-    if(j.pt() < jptMin_ && (fillGenInfo ? gJ->pt() < jptMin_ : true)) continue;
+    if(j.pt() < jptMin_ && (fillGenInfo ? gJ->pt() : 0) < jptMin_ : true)) continue;
+#endif
 
     int index = jets.size();
 
     GenJetF * genJet = 0;
     if(fillGenInfo){
-      v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
-      genJets.emplace_back(gJ->polarP4(), jets.size(),&v_flavor.back());
-      genJet = &genJets.back();
+#ifdef REDEFINED_GENJET_HACK
+    if(gJ.isNonnull()){
+#ifdef TAGGABLE_TYPE_HACK
+    v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
+#else
+    v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
+#endif
+      genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
+    } else{
+      v_flavor.push_back(JetFlavorMatching::numTaggableTypes );
+      MomentumF nullVect;
+      genJets.emplace_back(  nullVect.p4() , index,&v_flavor[index]);
+    }
+#else
+#ifdef TAGGABLE_TYPE_HACK
+    v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
+#else
+    v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
+#endif
+    genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
+#endif
+      genJet = &genJets[index];
     }
 
     v_csv.push_back(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
