@@ -76,6 +76,8 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
     const reco::GenJet * gJ = fillGenInfo ? &(*getReGenJet(j)) : 0;
     if(j.pt() < jptMin_ && (fillGenInfo ? gJ->pt() < jptMin_ : true)) continue;
 
+    int index = jets.size();
+
     GenJetF * genJet = 0;
     if(fillGenInfo){
       v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
@@ -84,7 +86,7 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
     }
 
     v_csv.push_back(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
-    jets.emplace_back(j.polarP4(),jets.size(),&v_csv.back(),genJet);
+    jets.emplace_back(j.polarP4(),index,&v_csv[index],genJet);
   }
 
   std::sort(jets.begin(),jets.end(), greaterPT<RecoJetF>());
