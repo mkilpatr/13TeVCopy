@@ -20,25 +20,44 @@ namespace ucsbsusy {
   class JetFiller : public BaseFiller {
     public:
       JetFiller(const edm::ParameterSet &cfg);
-      ~JetFiller();
+      ~JetFiller() {}
 
-      void load(edm::Event& iEvent, bool storeOnlyPtr = false);
-      void fill(Planter& plant, int& bookMark);
-      JetCollection& operator->(){return *obj;}
+      void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
+      RecoJetFCollection& operator->(){return jets;}
+
+      reco::GenJetRef getReGenJet(const pat::Jet& jet)  const;
+      reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
+
+      static const std::string    REGENJET        ;   ///< userClass label for the redefined genJet of the given jet
 
     private:
       //--------------------------------------------------------------------------------------------------
       // Input from the config file
       //--------------------------------------------------------------------------------------------------
       edm::InputTag jetTag_;
-      double jptMin_;
-      unsigned int maxNjets_;
+      edm::InputTag reGenJetTag_;
+      edm::InputTag stdGenJetTag_;
+      edm::InputTag genParticleTag_;
+      double        jptMin_;
+      bool          fillGenInfo;
 
+    public:
       //--------------------------------------------------------------------------------------------------
       // Data Members
       //--------------------------------------------------------------------------------------------------
-      JetCollection            * obj;
-      const pat::JetCollection * jets_;
+      edm::Handle<pat::JetCollection>         jets_;
+      edm::Handle<reco::GenJetCollection>     reGenJets_;
+      edm::Handle<reco::GenJetCollection>     stdGenJets_;
+
+      RecoJetFCollection                      jets;
+      GenJetFCollection                       genJets;
+
+      vector<float>                           v_csv;
+      vector<JetFlavorMatching::TaggableType> v_flavor;
+
+
+
 
   };
 }
