@@ -16,34 +16,38 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisTools/DataFormats/interface/EventInfo.h"
-
 
 namespace ucsbsusy {
 
   class EventInfoFiller : public BaseFiller {
     public:
       EventInfoFiller(const edm::ParameterSet &cfg);
-      ~EventInfoFiller();
+      ~EventInfoFiller() {};
 
-      void load(edm::Event& iEvent, bool storeOnlyPtr = false);
-      void fill(Planter& plant, int& bookMark);
-      EventInfo& operator->(){return *obj;}
+      void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
 
+      int nVerticies() const {return nVerticies_;}
+      const math::XYZPoint& primaryVertex() const {return primaryVertex_;}
+
+      const pat::MET* met() const { return met_;};
+
+    private:
       //--------------------------------------------------------------------------------------------------
       // Input from the config file
       //--------------------------------------------------------------------------------------------------
       edm::InputTag vtxTag_;
       edm::InputTag metTag_;
 
+    public:
       //--------------------------------------------------------------------------------------------------
       // Data Members
       //--------------------------------------------------------------------------------------------------
-      EventInfo                    * obj;
-      const reco::VertexCollection * verticies_;
-      const reco::Vertex           * primaryVerex_;
-      const pat::METCollection     * mets_;
-      const pat::MET               * met_;
+      edm::Handle<reco::VertexCollection> verticies_;
+      int                                 nVerticies_;
+      math::XYZPoint                      primaryVertex_;
+      edm::Handle<pat::METCollection>     mets_;
+      const pat::MET                    * met_;
   };
 }
 

@@ -17,57 +17,35 @@ using namespace std;
 EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   metTag_(cfg.getParameter<edm::InputTag>("mets")),
-  obj(0),
   verticies_(0),
-  primaryVerex_(0),
+  nVerticies_(0),
   mets_(0),
   met_(0)
-{
-  EventInfo::Class()->IgnoreTObjectStreamer();
-}
-
+{}
 //--------------------------------------------------------------------------------------------------
-EventInfoFiller::~EventInfoFiller()
-{
-  delete obj;
-}
-
-//--------------------------------------------------------------------------------------------------
-void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr ){
+void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC){
   enforceGet(iEvent,vtxTag_,verticies_,true);
-  if(verticies_->size() != 0)
-    primaryVerex_ = &verticies_->front();
-
+  nVerticies_ = verticies_->size();
+  if(nVerticies_ > 0)
+    primaryVertex_ = verticies_->front().position();
+  else
+    primaryVertex_.SetXYZ(0,0,0);
 
   enforceGet(iEvent,metTag_,mets_,true);
   met_ = &mets_->front();
-
-  if(storeOnlyPtr) return;
-  if(!obj) obj = new EventInfo;
-
-  obj->setRunNum(iEvent.id().run());
-  obj->setLumiSec(iEvent.luminosityBlock());
-  obj->setEvtNum(iEvent.id().event());
-  obj->setIsMC(!iEvent.isRealData());
-
-  obj->setNPV(verticies_->size());
-  obj->setPVx(primaryVerex_ ? primaryVerex_->x() : -99999);
-  obj->setPVy(primaryVerex_ ? primaryVerex_->y() : -99999);
-  obj->setPVz(primaryVerex_ ? primaryVerex_->z() : -99999);
-
-  obj->setMET(met_->pt());
-  obj->setMETPhi(met_->phi());
-  obj->setMETSumET(met_->sumEt());
-  obj->setGenMET(met_->genMET()->pt());
-  obj->setMETUp(met_->shiftedPt(pat::MET::JetEnUp));
-  obj->setMETDown(met_->shiftedPt(pat::MET::JetEnDown));
 }
-
-
 
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::fill(Planter& plant, int& bookMark)
+void EventInfoFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed)
 {
-  plant.fill(*obj,"EventInfo");
+  plant.fill(float( primaryVertex_.x()                    ), "pv_x"         , "x(primary vertex)"              );
+  plant.fill(float( primaryVertex_.y()                    ), "pv_y"         , "y(primary vertex)"              );
+  plant.fill(float( primaryVertex_.z()                    ), "pv_z"         , "z(primary vertex)"              );
+  plant.fill(convertTo<multiplicity>( nVerticies_, "num_vertices"          ), "num_vertices"         , "N. primary vertices"      );
+
+  plant.fill(float( met_->pt  () ),"reco_met_pt"      , "|#slash{E}_{T}|"    );
+  plant.fill(float( met_->phi () ),"reco_met_phi"     , "#phi(#slash{E}_{T})");
+
   bookMark++;
 }
+
