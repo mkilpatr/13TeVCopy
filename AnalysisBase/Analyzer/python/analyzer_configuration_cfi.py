@@ -39,7 +39,9 @@ nominal_configuration = cms.PSet(
                                       mets              = cms.InputTag("slimmedMETs"),  
                                       
                                       jets              = cms.InputTag('slimmedJets'),
-                                      minjetpt          = cms.untracked.double(15.0),
-                                      maxnjets          = cms.untracked.uint32(20)
+                                      reGenJets         = cms.InputTag('slimmedGenJets'),
+                                      stdGenJets        = cms.InputTag('slimmedGenJets'),
+                                      genParticles      = cms.InputTag('prunedGenParticles'),
+                                      minJetPt          = cms.untracked.double(15.0),
                                                                                                                                                                                         
                                       )

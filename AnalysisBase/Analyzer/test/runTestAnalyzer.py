@@ -8,7 +8,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing("analysis")
 
 options.outputFile = "evttree.root"
-options.inputFiles = "root://xrootd.unl.edu//store/relval/CMSSW_7_2_0_pre3/RelValTTbar_13/MINIAODSIM/PU50ns_POSTLS172_V4-v1/00000/549EACFF-E41D-E411-8B8F-02163E00A081.root"
+options.inputFiles = "file:////uscms/home/nmccoll/nobackup/2011-04-15-susyra2/CMSSW_7_2_0_pre4/src/7E02B380-1528-E411-907B-00248C55CC7F.root"
 options.maxEvents = -1
 
 options.parseArguments()
