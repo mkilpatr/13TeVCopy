@@ -34,7 +34,6 @@ void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC){
   enforceGet(iEvent,metTag_,mets_,true);
   met_ = &mets_->front();
 }
-
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed)
 {

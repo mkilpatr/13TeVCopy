@@ -84,6 +84,13 @@ bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (!planter)
     planter = new Planter("events", dataset, outputPath);
   planter->start();
+
+  //Probably want to move this to EventInfoFiller
+  planter->fill(float( eventWeight()                        ), "weight"       , "Weight"                         );
+  planter->fill(convertTo<size>(lumiBlock  (), "lumi_block"  ), "lumi_block"  , "Luminosity block number");
+  planter->fill(convertTo<size>(runNumber  (), "run_number"  ), "run_number"  , "Run number"             );
+  planter->fill(convertTo<size>(eventNumber(), "event_number"), "event_number", "Event number"           );
+
   bookMark = 0;
 
   return BaseAnalyzer::filter(iEvent,iSetup);
