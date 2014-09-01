@@ -114,7 +114,7 @@ void JetFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed)
     plant.checkPoint(bookMark + 1);
   }
 
-  for(const RecoJetF jet : jets){
+  for(const RecoJetF& jet : jets){
     //.. Reco quantities ......................................................
     plant.revert(bookMark);
     plant.fills(float( jet.pt     () ));                                               plant.next();
