@@ -145,6 +145,8 @@ public:
 
   static TaggableType getTaggableType(const pat::Jet& jet, int* numMEpartons = 0, double etaAcceptance = 2.4);
 
+  static TaggableType getPATTaggableType(const pat::Jet& jet, int* numMEpartons = 0, double etaAcceptance = 2.4);
+
   template<typename JetRef>
   static TaggableType getTaggableType(const JetRef& jet, const HadronContainments&  mainBHadronsInJet, const reco::JetFlavourMatchingCollection& jetFlavorMatch, double etaAcceptance = 2.4);
 

@@ -363,6 +363,22 @@ JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType(const pat::Je
   return tagType;
 }
 //_____________________________________________________________________________
+JetFlavorMatching::TaggableType JetFlavorMatching::getPATTaggableType(const pat::Jet& jet, int* numMEpartons, double etaAcceptance)
+{
+
+  if (TMath::Abs(jet.eta()) > etaAcceptance)                   return numTaggableTypes;
+  switch(TMath::Abs(jet.partonFlavour())) {
+  case  ParticleInfo::p_b:
+    return TAGGABLE_MONO_B;
+  case  ParticleInfo::p_c:
+    return TAGGABLE_CHARM;
+  case  ParticleInfo::p_g:
+    return TAGGABLE_GLUON;
+  default:
+    return numTaggableTypes;
+  }
+}
+//_____________________________________________________________________________
 reco::GenParticleRef JetFlavorMatching::getMainBQuark(const pat::Jet& jet, const edm::Handle<reco::GenParticleCollection>& genParticles, size which)
 {
   for (size iGen = 0, count = 0; iGen < jet.genParticlesSize(); ++iGen) {
