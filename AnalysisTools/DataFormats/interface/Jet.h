@@ -12,70 +12,91 @@
 #define ANALYSISTOOLS_DATAFORMATS_JET_H
 
 #include <vector>
-#include "AnalysisTools/DataFormats/interface/Particle.h"
 
-namespace ucsbsusy {                                                                                                   
+#include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
+#include "AnalysisTools/DataFormats/interface/Momentum.h"
 
-  class Jet;
-  typedef std::vector<Jet> JetCollection;
+namespace ucsbsusy {
 
-  class Jet : public Particle
-  {
+//_____________________________________________________________________________
+// Basic jet type....used for both reco and gen jets
+//_____________________________________________________________________________
 
-    public :
-      Jet() :
-        fJECUncorrection(0), fCSVBTag(-99), fMatchedMCFlavor(-99), fJetArea(-99), fPUJetId(-99), fNChargedHadron(0), fNNeutralHadron(0), fNElectron(0), fNMuon(0), fNPhoton(0), fNeutralHadFraction(-1), fChargedHadFraction(-1), fNeutralEMFraction(-1), fChargedEMFraction(-1) {}
-      ~Jet(){}
+template <class CoordSystem>
+class Jet : public Momentum<CoordSystem>
+{
+public :
+  Jet() : index_(-1) {}
 
-      Float_t		ptRaw()			const	{ return pt()*fJECUncorrection;		}
-      Float_t		csv()			const	{ return fCSVBTag;		}
-      Int_t		matchedMCFlavor()	const	{ return fMatchedMCFlavor;	}
-      Float_t		jetArea()		const	{ return fJetArea;		}
-      Float_t		puId()			const	{ return fPUJetId;		}
-      UInt_t		nChargedHadron()	const	{ return fNChargedHadron;	}
-      UInt_t		nNeutralHadron()	const	{ return fNNeutralHadron;	}
-      UInt_t		nElectron()		const	{ return fNElectron;		}
-      UInt_t		nMuon()			const	{ return fNMuon;		}
-      UInt_t		nPhoton()		const	{ return fNPhoton;		}
-      Float_t		neutralHadFrac()	const	{ return fNeutralHadFraction;	}
-      Float_t		chargedHadFrac()	const	{ return fChargedHadFraction;	}
-      Float_t		neutralEMFrac()		const	{ return fNeutralEMFraction;	}
-      Float_t		chargedEMFrac()		const	{ return fChargedEMFraction;	}
+  template <class InputCoordSystem>
+  Jet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) : Momentum<CoordSystem>(inMomentum), index_(inIndex) {}
 
-      void		setJECUncorrection(Float_t r)		{ fJECUncorrection = r;			}
-      void		setCSV(Float_t c)		{ fCSVBTag = c;			}
-      void		setMatchedMCFlavor(Float_t f)	{ fMatchedMCFlavor = f;		}
-      void		setJetArea(Float_t a)		{ fJetArea = a;			}
-      void		setPUJetId(Float_t i)		{ fPUJetId = i;			}
-      void		setNChargedHadron(Float_t n)	{ fNChargedHadron = n;		}
-      void		setNNeutralHadron(Float_t n)	{ fNNeutralHadron = n;		}
-      void		setNElectron(UInt_t n)		{ fNElectron = n;		}
-      void		setNMuon(UInt_t n)		{ fNMuon = n;			}
-      void		setNPhoton(UInt_t n)		{ fNPhoton = n;			}
-      void		setNeutralHadFrac(Float_t n)	{ fNeutralHadFraction = n;	}
-      void		setChargedHadFrac(Float_t c)	{ fChargedHadFraction = c;	}
-      void		setNeutralEMFrac(Float_t n)	{ fNeutralEMFraction = n;	}
-      void		setChargedEMFrac(Float_t c)	{ fChargedEMFraction = c;	}
+  ~Jet(){}
 
-    protected :
-      Float_t		fJECUncorrection;
-      Float_t		fCSVBTag;
-      Int_t		  fMatchedMCFlavor;
-      Float_t		fJetArea;
-      Float_t		fPUJetId;
-      UInt_t		fNChargedHadron;
-      UInt_t		fNNeutralHadron;
-      UInt_t		fNElectron;
-      UInt_t		fNMuon;
-      UInt_t		fNPhoton;
-      Float_t		fNeutralHadFraction;
-      Float_t		fChargedHadFraction;
-      Float_t		fNeutralEMFraction;
-      Float_t		fChargedEMFraction;
+  void setIndex(const int& newIndex) {index_ = newIndex;};
+  int index() {return index_;};
 
-    ClassDef(Jet, 1)
+  //----Convenience function for throwing an exception when a member does not exist
+  void checkStorage(void * ptr, std::string message){
+    if(ptr == 0) throw cms::Exception(message, "The object was never loaded!");
+  }
 
-  };
+protected :
+  int      index_;  //Index in Jet vector
+};
+
+template <class CoordSystem>
+class GenJet : public Jet<CoordSystem>
+{
+
+  typedef JetFlavorMatching::TaggableType Flavor;
+
+public :
+  GenJet() :flavor_(0) {}
+
+  template <class InputCoordSystem>
+  GenJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1, Flavor * inFlavor = 0) : Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor) {};
+  ~GenJet(){}
+
+  void setPtr(Flavor * inFlavor) { flavor_ = inFlavor;}
+
+  void   setFlavor(const Flavor& inFlavor) { this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor; }
+  Flavor flavor()    const { this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;       }
+
+protected :
+  Flavor * flavor_;
+};
+
+typedef GenJet<CylLorentzCoordF> GenJetF;
+typedef std::vector<GenJetF> GenJetFCollection;
+
+template <class CoordSystem>
+class RecoJet : public Jet<CoordSystem>
+{
+public :
+
+  RecoJet() : csv_(0), genJet_(0) {}
+
+  template <class InputCoordSystem>
+  RecoJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1,float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) :Jet<CoordSystem>(inMomentum, inIndex), csv_(0), genJet_(0) {}
+  ~RecoJet(){}
+
+  void setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) { csv_ = inCSV; genJet_ = inGenJet;}
+
+  GenJet<CoordSystem>& genJet() { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet(); }
+  const GenJet<CoordSystem> genJet() const { return genJet(); }
+
+  void   setCsv(const float& inCsv) { this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv; }
+  float  csv()    const { this->checkStorage(csv_,"GenJet.csv()"); return *csv_;       }
+
+
+protected :
+  float*       csv_;    //pointer to csv information
+  GenJet<CoordSystem>*      genJet_;  //Matched genJet
+};
+
+typedef RecoJet<CylLorentzCoordF> RecoJetF;
+typedef std::vector<RecoJetF > RecoJetFCollection;
 }
 
 #endif
