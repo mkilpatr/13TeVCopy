@@ -78,13 +78,13 @@ public :
   RecoJet() : csv_(0), genJet_(0) {}
 
   template <class InputCoordSystem>
-  RecoJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1,float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) :Jet<CoordSystem>(inMomentum, inIndex), csv_(0), genJet_(0) {}
+  RecoJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1,float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), genJet_(inGenJet) {}
   ~RecoJet(){}
 
   void setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) { csv_ = inCSV; genJet_ = inGenJet;}
 
-  GenJet<CoordSystem>& genJet() { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet(); }
-  const GenJet<CoordSystem> genJet() const { return genJet(); }
+  const GenJet<CoordSystem>& genJet() const { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_; }
+  GenJet<CoordSystem>& genJet() { return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet()); }
 
   void   setCsv(const float& inCsv) { this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv; }
   float  csv()    const { this->checkStorage(csv_,"RecoJet.csv()"); return *csv_;       }
