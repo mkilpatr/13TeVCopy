@@ -37,7 +37,7 @@ public :
   int index() {return index_;};
 
   //----Convenience function for throwing an exception when a member does not exist
-  void checkStorage(void * ptr, std::string message){
+  static void checkStorage (void * ptr, std::string message){
     if(ptr == 0) throw cms::Exception(message, "The object was never loaded!");
   }
 
@@ -87,7 +87,7 @@ public :
   const GenJet<CoordSystem> genJet() const { return genJet(); }
 
   void   setCsv(const float& inCsv) { this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv; }
-  float  csv()    const { this->checkStorage(csv_,"GenJet.csv()"); return *csv_;       }
+  float  csv()    const { this->checkStorage(csv_,"RecoJet.csv()"); return *csv_;       }
 
 
 protected :
