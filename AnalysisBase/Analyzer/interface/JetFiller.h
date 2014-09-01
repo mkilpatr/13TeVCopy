@@ -24,7 +24,7 @@ namespace ucsbsusy {
 
       void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
       void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
-      RecoJetFCollection& operator->(){return jets;}
+      RecoJetF& operator[] (const int& index) {return jets[index];}
 
       reco::GenJetRef getReGenJet(const pat::Jet& jet)  const;
       reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
