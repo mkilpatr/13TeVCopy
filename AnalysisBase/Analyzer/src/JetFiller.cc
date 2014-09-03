@@ -57,7 +57,7 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
     edm::Handle<reco::GenParticleCollection> genParticles_;
     enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
-#ifndef REDEFINED_GENJET_HACK
+#ifndef TAGGABLE_TYPE_HACK
         std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
         JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
 #endif
