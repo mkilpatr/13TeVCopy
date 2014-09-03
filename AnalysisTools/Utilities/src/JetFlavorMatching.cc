@@ -36,17 +36,17 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
     if (particle.status() == ParticleInfo::status_decayed && pdgId == ParticleInfo::p_b) {
       if (ParticleInfo::isLastInChain(&particle)) {
         bQuarks.push_back(reco::GenParticleRef(particles, iPtcl));
-        size                              maxIndex      = iPtcl;
+//        size                              maxIndex      = iPtcl;
         for (size iDau = 0; iDau < particle.numberOfDaughters(); ++iDau) {
           const reco::Candidate*          daughter      = particle.daughter(iDau);
-          maxIndex                        = TMath::Max(maxIndex, particle.daughterRef(iDau).key());
+//          maxIndex                        = TMath::Max(maxIndex, particle.daughterRef(iDau).key());
           if (!ParticleInfo::isHadronizationModel(daughter->pdgId())) continue;
           if (bHadronizations.size() >= bQuarks.size())
             throw cms::Exception("JetFlavorMatching.getBHadronDecays()", "More than one link encountered in hadronization of a b-quark.");
           bHadronizations.push_back(reco::GenParticleRef(particles, particle.daughterRef(iDau).key()));
         } // end loop over daughters
         if (bHadronizations.size() != bQuarks.size()) {
-          ParticleInfo::printGenInfo(*particles, maxIndex+1);
+          ParticleInfo::printGenInfo(*particles, -1);
           throw cms::Exception("JetFlavorMatching.getBHadronDecays()", TString::Format("Failed to obtain hadronization link for a b-quark (index %d).", iPtcl).Data());
         }
       }
