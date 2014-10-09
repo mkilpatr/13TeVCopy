@@ -16,8 +16,7 @@ using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 BaseAnalyzer::BaseAnalyzer(const edm::ParameterSet& iConfig)
-  : plotter(5)
-  , outputPath          (iConfig.getUntrackedParameter<std::string>("outputPath", "").data())
+  : outputPath          (iConfig.getUntrackedParameter<std::string>("outputPath", "").data())
   , outputInterval      (iConfig.getUntrackedParameter<int             >("outputInterval",-9   ))
   , randomGenerator     (gRandom = new TRandom3(iConfig.getParameter<unsigned int>("randomSeed")))
   , numProcessed_       (0)
@@ -32,6 +31,8 @@ BaseAnalyzer::BaseAnalyzer(const edm::ParameterSet& iConfig)
     std::clog << " ++  outputInterval      = " << outputInterval                                      << std::endl;
   }
   std::clog << " ++  randomSeed          = " << iConfig.getParameter<unsigned int>("randomSeed")      << std::endl;
+  edm::Service<TFileService> fs;
+  eventTree = fs->make<TTree>("Events", "");
 
 }
 
@@ -45,18 +46,6 @@ BaseAnalyzer::~BaseAnalyzer(){
   if (numProcessed() == 0)
     std::clog << " \033[31m~~  WARNING : Either the input file(s) are empty, or some error occurred before processing! \033[0m"          << std::endl;
   std::clog << " \033[1;34m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\033[0m"  << std::endl;
-
-  if (outputPath.Length()) {
-    plotter.write(outputPath);
-    std::clog << "  --->>>  Output written to " << outputPath << std::endl;
-  }
-  else if (plotter.size()) {
-    std::cerr << std::endl;
-    std::cerr << "WARNING : No output file has been specified, but the plotter has the following contents:" << std::endl;
-    plotter.sitrep();
-    std::cerr << "Your plots may be lost!" << std::endl;
-    std::cerr << std::endl;
-  }
 
   std::clog << std::endl;
 }
@@ -88,11 +77,6 @@ bool BaseAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   ++numProcessed_;
   if (success)  ++numAnalyzed_;
-
-  if (outputPath.Length() && outputInterval > 0 && numProcessed() % outputInterval == 0 && plotter.size()) {
-    std::clog << " \033[1;34m ... WRITING plots into " << outputPath << " \033[0m " << std::endl;
-    plotter.write(outputPath, "RECREATE", "", true);
-  }
 
   return success;
 }

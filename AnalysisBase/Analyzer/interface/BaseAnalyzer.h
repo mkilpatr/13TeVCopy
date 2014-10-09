@@ -20,8 +20,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
@@ -103,7 +104,7 @@ namespace ucsbsusy {
       //     Basic members to run jobs
       //_____________________________________________________________________________
     public:
-        mutable PlotterD              plotter;              ///< Object that stores histograms
+        TTree*                        eventTree;
         TString                       outputPath;           ///< Output file that is produced by plotter
         const int                     outputInterval;       ///< Frequency (in terms of number of events) in which to output the currently filled plots
         mutable TRandom*              randomGenerator;      ///< TRandom3 initialized with the given seed (configurable)

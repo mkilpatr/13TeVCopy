@@ -11,6 +11,7 @@
 #include <map>
 #include <TString.h>
 #include <TFile.h>
+#include <TTree.h>
 #include <TSystem.h>
 
 #include "DataFormats/Common/interface/Handle.h"

@@ -27,7 +27,7 @@ namespace ucsbsusy {
       void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
       void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
 
-      int nVerticies() const {return nVerticies_;}
+      int nVertices() const {return nVertices_;}
       const math::XYZPoint& primaryVertex() const {return primaryVertex_;}
 
       const pat::MET* met() const { return met_;};
@@ -43,8 +43,8 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
       // Data Members
       //--------------------------------------------------------------------------------------------------
-      edm::Handle<reco::VertexCollection> verticies_;
-      int                                 nVerticies_;
+      edm::Handle<reco::VertexCollection> vertices_;
+      int                                 nVertices_;
       math::XYZPoint                      primaryVertex_;
       edm::Handle<pat::METCollection>     mets_;
       const pat::MET                    * met_;

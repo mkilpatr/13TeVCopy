@@ -57,11 +57,6 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 }
 //_____________________________________________________________________________
 PhysicsAnalyzer::~PhysicsAnalyzer(){
-  if (planter) {
-    plotter.write(planter->getFile());
-    delete planter;
-    outputPath  = "";
-  }
 }
 
 //_____________________________________________________________________________
@@ -82,7 +77,8 @@ bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
   event = &iEvent;
 
   if (!planter)
-    planter = new Planter("events", dataset, outputPath);
+    //planter = new Planter("events", dataset, outputPath);
+    planter = new Planter(eventTree);
   planter->start();
 
   //Probably want to move this to EventInfoFiller
