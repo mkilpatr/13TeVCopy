@@ -17,17 +17,17 @@ using namespace std;
 EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   metTag_(cfg.getParameter<edm::InputTag>("mets")),
-  verticies_(0),
-  nVerticies_(0),
+  vertices_(0),
+  nVertices_(0),
   mets_(0),
   met_(0)
 {}
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC){
-  enforceGet(iEvent,vtxTag_,verticies_,true);
-  nVerticies_ = verticies_->size();
-  if(nVerticies_ > 0)
-    primaryVertex_ = verticies_->front().position();
+  enforceGet(iEvent,vtxTag_,vertices_,true);
+  nVertices_ = vertices_->size();
+  if(nVertices_ > 0)
+    primaryVertex_ = vertices_->front().position();
   else
     primaryVertex_.SetXYZ(0,0,0);
 
@@ -40,7 +40,7 @@ void EventInfoFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed
   plant.fill(float( primaryVertex_.x()                    ), "pv_x"         , "x(primary vertex)"              );
   plant.fill(float( primaryVertex_.y()                    ), "pv_y"         , "y(primary vertex)"              );
   plant.fill(float( primaryVertex_.z()                    ), "pv_z"         , "z(primary vertex)"              );
-  plant.fill(convertTo<multiplicity>( nVerticies_, "num_vertices"          ), "num_vertices"         , "N. primary vertices"      );
+  plant.fill(convertTo<multiplicity>( nVertices_, "num_vertices"          ), "num_vertices"         , "N. primary vertices"      );
 
   plant.fill(float( met_->pt  () ),"reco_met_pt"      , "|#slash{E}_{T}|"    );
   plant.fill(float( met_->phi () ),"reco_met_phi"     , "#phi(#slash{E}_{T})");
