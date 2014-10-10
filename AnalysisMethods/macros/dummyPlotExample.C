@@ -5,53 +5,36 @@
 //
 //---------------------------------------------------------------------------------------------------------------------------------
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <assert.h>
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "AnalysisMethods/PlotUtils/Style.hh"
-#include "AnalysisTools/DataFormats/interface/EventInfo.h"
-#include "AnalysisTools/DataFormats/interface/Jet.h"
 #endif
-
-using namespace ucsbsusy;
 
 void dummyPlotExample(TString fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root") {
 
   // initialize
   TFile *infile = new TFile(fname); assert(infile);
-  TTree *intree = (TTree*)infile->Get("Events"); assert(intree);
+  TTree *intree = (TTree*)infile->Get("TestAnalyzer/Events"); assert(intree);
 
   // book some histograms
-  TH1F *hNPV = new TH1F("hNPV","", 60, 0, 60);
+  //TH1F *hNPV = new TH1F("hNPV","", 60, 0, 60);
   TH1F *hMet = new TH1F("hMet","", 40, 0, 200);
-  TH1F *hJet1Pt = new TH1F("hJet1Pt","", 100, 0, 500);
-
-  // instance of class which contains event specific information
-  EventInfo *evt = new EventInfo;
-  JetCollection *jetcol = new JetCollection;
 
   // will eventually use a helper class to do this kind of stuff
-  intree->SetBranchAddress("EventInfo", &evt); TBranch *evtBr = intree->GetBranch("EventInfo");
-  intree->SetBranchAddress("Jets", &jetcol); TBranch *jetBr = intree->GetBranch("Jets");
+  //int npv = 0; intree->SetBranchAddress("num_vertices", &npv);
+  float met = 0; intree->SetBranchAddress("reco_met_pt", &met);
 
   // loop over branches of event tree
   for(UInt_t ientry = 0; ientry < intree->GetEntries(); ientry++) {
 
-    evtBr->GetEntry(ientry);
+    intree->GetEntry(ientry);
 
     // fill histograms with info for each event
-    hNPV->Fill(evt->nPV());
-    hMet->Fill(evt->met());
-
-    jetcol->clear();
-    jetBr->GetEntry(ientry);
-
-    for(UInt_t ijet = 0; ijet < jetcol->size(); ijet++) {
-      ucsbsusy::Jet jet = jetcol->at(ijet);
-      if(ijet == 0) hJet1Pt->Fill(jet.pt());
-      else continue;
-    }
+    //hNPV->Fill(npv);
+    hMet->Fill(met);
 
   }
 
@@ -59,25 +42,19 @@ void dummyPlotExample(TString fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/tes
   SetStyle();
   TCanvas *c = MakeCanvas("c","",600,600);
 
-  InitHist(hNPV, "Number of vertices", "Events");
+  //InitHist(hNPV, "Number of vertices", "Events");
   InitHist(hMet, "#slash{E}_{T} [GeV]", "Events");
-  InitHist(hJet1Pt, "Leading jet p_{T} [GeV]", "Events");
 
   c->cd();
 
-  hNPV->Draw("hist");
-  c->SaveAs("npv.png");
+  //hNPV->Draw("hist");
+  //c->SaveAs("npv.png");
 
   hMet->Draw("hist");
   c->SaveAs("met.png");
 
-  hJet1Pt->Draw("hist");
-  c->SaveAs("j1pt.png");
-
   // clean up
   delete c;
-  delete evt;
-  delete jetcol;
   delete intree;
   delete infile;
 
