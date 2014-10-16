@@ -44,4 +44,9 @@ nominal_configuration = cms.PSet(
                                       genParticles      = cms.InputTag('prunedGenParticles'),
                                       minJetPt          = cms.untracked.double(15.0),
                                                                                                                                                                                         
+                                      electrons         = cms.InputTag('slimmedElectrons'),
+                                      minElectronPt     = cms.untracked.double(5.0),
+                                      printElectronIDs  = cms.untracked.bool(False),
+                                      fillElectronIDVars  = cms.untracked.bool(False),
+                                      fillElectronIsoVars  = cms.untracked.bool(True),
                                       )

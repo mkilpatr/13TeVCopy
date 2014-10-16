@@ -53,13 +53,13 @@ reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
 //--------------------------------------------------------------------------------------------------
 void JetFiller::book(TreeWriter& tW)
 {
-  tW.book("jetpt", jetpt_);
-  tW.book("jeteta", jeteta_);
-  tW.book("jetphi", jetphi_);
-  tW.book("jetmass", jetmass_);
-  tW.book("jetptraw", jetptraw_);
-  tW.book("jetpuId", jetpuId_);
-  tW.book("jetcsv", jetcsv_);
+  tW.book("jet_pt", jetpt_);
+  tW.book("jet_eta", jeteta_);
+  tW.book("jet_phi", jetphi_);
+  tW.book("jet_mass", jetmass_);
+  tW.book("jet_ptraw", jetptraw_);
+  tW.book("jet_puId", jetpuId_);
+  tW.book("jet_csv", jetcsv_);
 }
 
 //--------------------------------------------------------------------------------------------------
