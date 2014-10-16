@@ -20,35 +20,43 @@
 namespace ucsbsusy {
 
   class EventInfoFiller : public BaseFiller {
+
     public:
       EventInfoFiller(const edm::ParameterSet &cfg);
       ~EventInfoFiller() {};
 
-      void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
-      void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
+      void			book(TreeWriter& tW);
+      void			reset();
+      void			load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void			fill(TreeWriter& tW, const int& numAnalyzed);
 
-      int nVertices() const {return nVertices_;}
-      const math::XYZPoint& primaryVertex() const {return primaryVertex_;}
+      const math::XYZPoint&	primaryVertex()	  const	{ return primaryVertex_;	}
 
-      const pat::MET* met() const { return met_;};
+      const pat::MET*		met()		  const	{ return met_;			};
 
     private:
-      //--------------------------------------------------------------------------------------------------
       // Input from the config file
-      //--------------------------------------------------------------------------------------------------
-      edm::InputTag vtxTag_;
-      edm::InputTag metTag_;
+      edm::InputTag		vtxTag_;
+      edm::InputTag		metTag_;
+
+      // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
+      int			nVertices_;
+      float			pvx_;
+      float			pvy_;
+      float			pvz_;
+      float			metpt_;
+      float			metphi_;
+      float			metsumEt_;
 
     public:
-      //--------------------------------------------------------------------------------------------------
-      // Data Members
-      //--------------------------------------------------------------------------------------------------
-      edm::Handle<reco::VertexCollection> vertices_;
-      int                                 nVertices_;
-      math::XYZPoint                      primaryVertex_;
-      edm::Handle<pat::METCollection>     mets_;
-      const pat::MET                    * met_;
+      // Data members
+      edm::Handle<reco::VertexCollection>	vertices_;
+      math::XYZPoint				primaryVertex_;
+      edm::Handle<pat::METCollection>		mets_;
+      const pat::MET				*met_;
+
   };
+
 }
 
 #endif

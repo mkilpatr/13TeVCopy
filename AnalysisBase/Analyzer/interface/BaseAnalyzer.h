@@ -24,21 +24,22 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "AnalysisTools/Utilities/interface/BaseUtilities.h"
+#include "AnalysisTools/Utilities/interface/TreeWriter.h"
 
 namespace ucsbsusy {
+
   class BaseAnalyzer : public edm::EDFilter, public BaseUtilities {
+
     public:
       BaseAnalyzer(const edm::ParameterSet&);
       virtual ~BaseAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-      //_____________________________________________________________________________
-      //     Event processing
-      //_____________________________________________________________________________
+      virtual void beginJob() override;
 
+      // Event processing
 
-      //_____________________________________________________________________________
       /**
         Calls load() to load collections from the event. If that does not fail, calls
         analyze() for user code to analyze the event, and then the optional produce()
@@ -62,64 +63,63 @@ namespace ucsbsusy {
       /// Called to put EDM products into the event, after analyze(). Return value acts as a filter.
       virtual bool produce(edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
 
-      //~~~ For convenience ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      /// Place in your analysis class declaration to define an analyze() that does nothing.
-      #define DUMMY_ANALYZE  \
-        virtual void analyze()                                    { }
-      /// Place in your analysis class declaration to define a filter() that always returns true.
-      #define DUMMY_FILTER   \
-        virtual bool filter ()                                    { return true; }
-      /// Place in your analysis class declaration to define a produce() that does nothing.
-      #define DUMMY_PRODUCE  \
-        virtual bool produce(edm::Event&, const edm::EventSetup&) { return true; }
+      // For convenience                                                          
 
-      /// Place in your analysis class declaration to only require analyze().
+      // Place in your analysis class declaration to define an analyze() that does nothing.
+      #define DUMMY_ANALYZE  \
+        virtual void analyze()						{ }
+
+      // Place in your analysis class declaration to define a filter() that always returns true.
+      #define DUMMY_FILTER   \
+        virtual bool filter ()						{ return true;	}
+
+      // Place in your analysis class declaration to define a produce() that does nothing.
+      #define DUMMY_PRODUCE  \
+        virtual bool produce(edm::Event&, const edm::EventSetup&)	{ return true;	}
+
+      // Place in your analysis class declaration to only require analyze().
       #define ANALYZER_MODE  \
         DUMMY_FILTER         \
         DUMMY_PRODUCE
-      /// Place in your analysis class declaration to only require produce().
+
+      // Place in your analysis class declaration to only require produce().
       #define PRODUCER_MODE  \
         DUMMY_FILTER         \
         DUMMY_ANALYZE
-      /// Place in your analysis class declaration to only require filter().
+
+      // Place in your analysis class declaration to only require filter().
       #define FILTER_MODE    \
         DUMMY_ANALYZE        \
         DUMMY_PRODUCE
-      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-      //_____________________________________________________________________________
-      //     Functions to return data members
-      //_____________________________________________________________________________
-    public:
-      int numProcessed() const { return numProcessed_ ; }   ///< Total number of events processed in this job -- incremented after load/filter/analyze/produce for every event
-      int numAnalyzed () const { return numAnalyzed_  ; }   ///< Total number of events analyzed -- incremented after load/filter/analyze/produce if all of them returned true
-      //_____________________________________________________________________________
-      edm::RunNumber_t              runNumber     () const        { return runNumber_  ;    }
-      edm::LuminosityBlockNumber_t  lumiBlock     () const        { return lumiBlock_  ;    }
-      edm::EventNumber_t            eventNumber   () const        { return eventNumber_;    }
-      void printEventCoordinates(std::ostream& out = std::cout) const;
-      TString eventCoordinates() const  { return TString::Format("%d:%d:%d", runNumber(), lumiBlock(), eventNumber()); }
+    public :
+      // Functions to return data members
+      int 				numProcessed()    const	{ return numProcessed_;	}   // Total number of events processed in this job -- incremented after load/filter/analyze/produce for every event
+      int 				numAnalyzed ()	  const	{ return numAnalyzed_;	}   // Total number of events analyzed -- incremented after load/filter/analyze/produce if all of them returned true
+      edm::RunNumber_t			runNumber()	  const	{ return runNumber_;	}
+      edm::LuminosityBlockNumber_t	lumiBlock()	  const	{ return lumiBlock_;	}
+      edm::EventNumber_t		eventNumber()	  const	{ return eventNumber_;	}
+      void 				printEventCoordinates(std::ostream& out = std::cout) const;
+      TString				eventCoordinates() const { return TString::Format("%d:%d:%d", runNumber(), lumiBlock(), eventNumber());	}
+      TreeWriter*			treeWriter()		{ return treeWriter_;	}
 
-      //_____________________________________________________________________________
-      //     Basic members to run jobs
-      //_____________________________________________________________________________
-    public:
-        TTree*                        eventTree;
-        TString                       outputPath;           ///< Output file that is produced by plotter
-        const int                     outputInterval;       ///< Frequency (in terms of number of events) in which to output the currently filled plots
-        mutable TRandom*              randomGenerator;      ///< TRandom3 initialized with the given seed (configurable)
+      // Basic members to run jobs
+      TString				outputPath;           // Output file that is produced by plotter
+      const int				outputInterval;       // Frequency (in terms of number of events) in which to output the currently filled plots
+      mutable TRandom*			randomGenerator;      // TRandom3 initialized with the given seed (configurable)
 
-        //_____________________________________________________________________________
-        //     Event and procesing information
-        //_____________________________________________________________________________
-    private:
-        int                           numProcessed_ ;       ///< Total number of events processed in this job -- incremented after load/filter/analyze/produce for every event
-        int                           numAnalyzed_  ;       ///< Total number of events analyzed -- incremented after load/filter/analyze/produce if all of them returned true
-        edm::RunNumber_t              runNumber_;
-        edm::LuminosityBlockNumber_t  lumiBlock_;
-        edm::EventNumber_t            eventNumber_;
+    private :
+      // Event and procesing information
+      TTree*				eventTree_;
+      TreeWriter*			treeWriter_;
+      int				numProcessed_;        // Total number of events processed in this job -- incremented after load/filter/analyze/produce for every event
+      int				numAnalyzed_;         // Total number of events analyzed -- incremented after load/filter/analyze/produce if all of them returned true
+      edm::RunNumber_t			runNumber_;
+      edm::LuminosityBlockNumber_t	lumiBlock_;
+      edm::EventNumber_t		eventNumber_;
 
   };
+
 }
 
 #endif

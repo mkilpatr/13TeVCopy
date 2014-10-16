@@ -6,10 +6,11 @@ using namespace ucsbsusy;
 using namespace std;
 
 
+//--------------------------------------------------------------------------------------------------
 PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 : BaseAnalyzer(iConfig)
-, event(0)
-, genEventInfoSource  (iConfig.getParameter<edm::InputTag  >("genEventInfoSource"      ))
+, event_(0)
+, genEventInfoSource_ (iConfig.getParameter<edm::InputTag  >("genEventInfoSource"      ))
 , eventWeight_        (1)
 , isRealData          (iConfig.getParameter<int             >("isData"                 ))
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
@@ -18,9 +19,6 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , crossSection        (iConfig.getParameter<double          >("crossSection"           ))
 , totalEvents         (iConfig.getParameter<int             >("totalEvents"            ))
 , crossSectionScaling (iConfig.getParameter<double          >("crossSectionScaling"    ))
-, planter             (0)
-, bookMark            (0)
-
 // ---- Configure event information
 , eventInfo           (iConfig)
 , jets                (iConfig)
@@ -55,14 +53,18 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
   clog << endl;
 
 }
-//_____________________________________________________________________________
-PhysicsAnalyzer::~PhysicsAnalyzer(){
-}
 
-//_____________________________________________________________________________
-bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
+//--------------------------------------------------------------------------------------------------
+PhysicsAnalyzer::~PhysicsAnalyzer() {}
+
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::beginJob() {}
+
+//--------------------------------------------------------------------------------------------------
+bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
   static bool               hasEventInfo  = true;
-  eventWeight_              = tryToGet(iEvent,genEventInfoSource, genEventInfo,numAnalyzed(),hasEventInfo)
+  eventWeight_              = tryToGet(iEvent,genEventInfoSource_, genEventInfo,numAnalyzed(),hasEventInfo)
                             ? genEventInfo->weight()
                             : 1
                             ;
@@ -74,26 +76,13 @@ bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
     if(!canBeNegative) assert(eventWeight_ > 0);
   }
 
-  event = &iEvent;
-
-  if (!planter)
-    //planter = new Planter("events", dataset, outputPath);
-    planter = new Planter(eventTree);
-  planter->start();
-
-  //Probably want to move this to EventInfoFiller
-  planter->fill(float( eventWeight()                        ), "weight"       , "Weight"                         );
-  planter->fill(convertTo<size>(lumiBlock  (), "lumi_block"  ), "lumi_block"  , "Luminosity block number");
-  planter->fill(convertTo<size>(runNumber  (), "run_number"  ), "run_number"  , "Run number"             );
-  planter->fill(convertTo<size>(eventNumber(), "event_number"), "event_number", "Event number"           );
-
-  bookMark = 0;
+  event_ = &iEvent;
 
   return BaseAnalyzer::filter(iEvent,iSetup);
 }
 
 
-//_____________________________________________________________________________
+//--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::isData() const
 {
   if (isRealData < 0)
@@ -101,7 +90,7 @@ bool PhysicsAnalyzer::isData() const
   return  isRealData;
 }
 
-//_____________________________________________________________________________
+//--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::isMC() const
 {
   if (isRealData < 0)
@@ -109,12 +98,20 @@ bool PhysicsAnalyzer::isMC() const
   return !isRealData;
 }
 
-//_____________________________________________________________________________
-void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr){
-  filler->load(*event,storeOnlyPtr, isMC());
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::book(BaseFiller* filler)
+{
+  filler->book(*treeWriter());
 }
 
-//_____________________________________________________________________________
-void PhysicsAnalyzer::fillObj(BaseFiller* filler){
-  filler->fill(*planter,bookMark,numAnalyzed());
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr)
+{
+  filler->load(*event_,storeOnlyPtr, isMC());
+}
+
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::fillObj(BaseFiller* filler)
+{
+  filler->fill(*treeWriter(), numAnalyzed());
 }

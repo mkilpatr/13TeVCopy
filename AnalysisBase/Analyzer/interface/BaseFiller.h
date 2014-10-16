@@ -18,29 +18,34 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "AnalysisTools/Parang/interface/Planter.h"
+#include "AnalysisTools/Utilities/interface/TreeWriter.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
-class BaseFiller : public PhysicsUtilities, public BaseUtilities {
-public:
-  BaseFiller() {};
-  virtual ~BaseFiller() {};
 
-  //_____________________________________________________________________________
-  // Default loading function
-  // This guy needs to be defined for each implementation and is run once per event
-  // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
-  //_____________________________________________________________________________
-  virtual void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMc = false) = 0;
+  class BaseFiller : public PhysicsUtilities, public BaseUtilities {
 
-  //_____________________________________________________________________________
-  // Tree filling function
-  // This guy places a bookmark in the planter at the value presented and increments it accordingly
-  //_____________________________________________________________________________
-  virtual void fill(Planter& plant, int& bookMark, const int& numAnalyzed) = 0;
-};
+  public:
+    BaseFiller() {};
+    virtual ~BaseFiller() {};
+
+    // Create branches needed in the tree
+    virtual void	book(TreeWriter& tW) = 0;
+
+    // Reset objects
+    virtual void	reset() = 0;
+
+    // Default loading function
+    // This guy needs to be defined for each implementation and is run once per event
+    // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
+    virtual void	load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMc = false) = 0;
+
+    // Tree filling function
+    // numAnalyzed is to be used to keep track of number of analyzed events
+    virtual void	fill(TreeWriter& tW, const int& numAnalyzed) = 0;
+
+  };
 
 }
 

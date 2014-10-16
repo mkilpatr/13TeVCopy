@@ -5,7 +5,6 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="AnalysisTools/DataFormats"/>
 <use name="AnalysisTools/Utilities"/>
-<use name="AnalysisTools/Parang"/>
 <export>
   <lib   name="1"/>
 </export>

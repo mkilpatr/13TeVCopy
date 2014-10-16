@@ -23,12 +23,14 @@ JetFiller::JetFiller(const edm::ParameterSet &cfg) :
     stdGenJetTag_(cfg.getParameter<edm::InputTag>("stdGenJets")),
     genParticleTag_(cfg.getParameter<edm::InputTag>("genParticles")),
     jptMin_(cfg.getUntrackedParameter<double>("minJetPt")),
-    fillGenInfo(false),
+    fillGenInfo_(false),
     jets_(0),
     reGenJets_(0),
     stdGenJets_(0)
+{
 
-{}
+}
+
 //--------------------------------------------------------------------------------------------------
 reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
 {
@@ -41,128 +43,129 @@ reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
 
   return reco::GenJetRef(reGenJets_, genPtr.key());
 }
+
 //--------------------------------------------------------------------------------------------------
 reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
 {
   return jet.genJetFwdRef().backRef();
 }
+
 //--------------------------------------------------------------------------------------------------
-void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC ){
+void JetFiller::book(TreeWriter& tW)
+{
+  tW.book("jetpt", jetpt_);
+  tW.book("jeteta", jeteta_);
+  tW.book("jetphi", jetphi_);
+  tW.book("jetmass", jetmass_);
+  tW.book("jetptraw", jetptraw_);
+  tW.book("jetpuId", jetpuId_);
+  tW.book("jetcsv", jetcsv_);
+}
+
+//--------------------------------------------------------------------------------------------------
+void JetFiller::reset()
+{
+  jetpt_.resize(0);
+  jeteta_.resize(0);
+  jetphi_.resize(0);
+  jetmass_.resize(0);
+  jetptraw_.resize(0);
+  jetpuId_.resize(0);
+  jetcsv_.resize(0);
+}
+
+//--------------------------------------------------------------------------------------------------
+void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
+{
+  reset();
   enforceGet(iEvent,jetTag_,jets_,true);
 
   if(isMC){
-    fillGenInfo = true;
+    fillGenInfo_ = true;
     enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     edm::Handle<reco::GenParticleCollection> genParticles_;
     enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
 #ifndef TAGGABLE_TYPE_HACK
-        std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
-        JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
+    std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
+    JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
 #endif
   }
 
   if(storeOnlyPtr) return;
 
-  jets    .clear();
+  recoJets    .clear();
   genJets .clear();
   v_csv   .clear();
   v_flavor.clear();
 
-  jets    .reserve(jets_->size());
+  recoJets    .reserve(jets_->size());
   v_csv   .reserve(jets_->size());
-  if(isMC){
-  genJets .reserve(jets_->size());
-  v_flavor.reserve(jets_->size());
+
+  if(isMC) {
+    genJets .reserve(jets_->size());
+    v_flavor.reserve(jets_->size());
   }
 
   for(const pat::Jet &j : *jets_) {
 
 #ifdef REDEFINED_GENJET_HACK
     const reco::GenJetRef gJ = getStdGenJet(j);
-    if(j.pt() < jptMin_ && (fillGenInfo ? (gJ.isNonnull() ? gJ->pt() : 0) < jptMin_ : true)) continue;
+    if(j.pt() < jptMin_ && (fillGenInfo_ ? (gJ.isNonnull() ? gJ->pt() : 0) < jptMin_ : true)) continue;
 #else
-    const reco::GenJet * gJ = fillGenInfo ? &(*getReGenJet(j)) : 0;
-    if(j.pt() < jptMin_ && (fillGenInfo ? gJ->pt() : 0) < jptMin_ : true)) continue;
+    const reco::GenJet * gJ = fillGenInfo_ ? &(*getReGenJet(j)) : 0;
+    if(j.pt() < jptMin_ && (fillGenInfo_ ? gJ->pt() : 0) < jptMin_ : true) continue;
 #endif
 
-    int index = jets.size();
+    int index = recoJets.size();
 
     GenJetF * genJet = 0;
-    if(fillGenInfo){
+    if(fillGenInfo_) {
 #ifdef REDEFINED_GENJET_HACK
-    if(gJ.isNonnull()){
+      if(gJ.isNonnull()){
 #ifdef TAGGABLE_TYPE_HACK
-    v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
+	v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
 #else
-    v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
+	v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
+#endif
+	genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
+      } else{
+	v_flavor.push_back(JetFlavorMatching::numTaggableTypes );
+	MomentumF nullVect;
+	genJets.emplace_back(  nullVect.p4() , index,&v_flavor[index]);
+      }
+#else
+#ifdef TAGGABLE_TYPE_HACK
+      v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
+#else
+      v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
 #endif
       genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
-    } else{
-      v_flavor.push_back(JetFlavorMatching::numTaggableTypes );
-      MomentumF nullVect;
-      genJets.emplace_back(  nullVect.p4() , index,&v_flavor[index]);
-    }
-#else
-#ifdef TAGGABLE_TYPE_HACK
-    v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
-#else
-    v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
-#endif
-    genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
 #endif
       genJet = &genJets[index];
     }
 
     v_csv.push_back(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
-    jets.emplace_back(j.polarP4(),index,&v_csv[index],genJet);
+    recoJets.emplace_back(j.polarP4(),index,&v_csv[index],genJet);
   }
 
-  std::sort(jets.begin(),jets.end(), greaterPT<RecoJetF>());
+  std::sort(recoJets.begin(),recoJets.end(), greaterPT<RecoJetF>());
 }
+
 //--------------------------------------------------------------------------------------------------
-void JetFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed)
+void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 {
-  if (!numAnalyzed) {
-    plant.checkPoint(bookMark);
-    plant.book<float       >("reco_pt"            , "p_{T}^{reco}"                  );
-    plant.book<float       >("reco_eta"           , "#eta^{reco}"                   );
-    plant.book<float       >("reco_phi"           , "#phi^{reco}"                   );
-    plant.book<float       >("reco_mass"          , "m(recoJet)"                    );
-    plant.book<float       >("reco_csv"           , "D_{b}(CSV)"                    );
-
-    if(fillGenInfo){
-      static const TString   FLAVORNAMES = Procedures::join(JetFlavorMatching::TAGGABLE_NAME, 0, JetFlavorMatching::numTaggableTypes-1, ";") + ";other";
-      plant.book<float       >("gen_pt"         , "p_{T}^{gen}");
-      plant.book<float       >("gen_eta"        , "#eta^{gen}");
-      plant.book<float       >("gen_phi"        , "#phi^{gen}");
-      plant.book<float       >("gen_mass"       , "m(genJet)" );
-      plant.book<multiplicity>("flavor"         , FLAVORNAMES);
-    }
-
-    plant.checkPoint(bookMark + 1);
+  for (const pat::Jet &j : *jets_) {
+    jetpt_.push_back(j.pt());
+    jeteta_.push_back(j.eta());
+    jetphi_.push_back(j.phi());
+    jetmass_.push_back(j.mass());
+    jetptraw_.push_back(j.pt()*j.jecFactor("Uncorrected"));
+    jetpuId_.push_back(j.userFloat("pileupJetId:fullDiscriminant"));
+    jetcsv_.push_back(j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
   }
-
-  for(const RecoJetF& jet : jets){
-    //.. Reco quantities ......................................................
-    plant.revert(bookMark);
-    plant.fills(float( jet.pt     () ));                                               plant.next();
-    plant.fills(float( jet.eta    () ));                                               plant.next();
-    plant.fills(float( jet.phi    () ));                                               plant.next();
-    plant.fills(float( jet.mass   () ));                                               plant.next();
-    plant.fills(float( jet.csv    () ));                                               plant.next();
-
-    if(fillGenInfo){
-      plant.fills(float( jet.genJet().pt     () ));                                               plant.next();
-      plant.fills(float( jet.genJet().eta    () ));                                               plant.next();
-      plant.fills(float( jet.genJet().phi    () ));                                               plant.next();
-      plant.fills(float( jet.genJet().mass   () ));                                               plant.next();
-      plant.fills(convertTo<multiplicity>( jet.genJet().flavor (), "flavor" ));                   plant.next();
-    }
-  }
-
-  plant.revert(++bookMark);
 }
+
 //--------------------------------------------------------------------------------------------------
 const std::string   JetFiller::REGENJET           = "GenPtr";

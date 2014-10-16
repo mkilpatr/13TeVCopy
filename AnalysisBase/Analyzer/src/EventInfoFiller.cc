@@ -17,34 +17,70 @@ using namespace std;
 EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   metTag_(cfg.getParameter<edm::InputTag>("mets")),
-  vertices_(0),
   nVertices_(0),
+  pvx_(0),
+  pvy_(0),
+  pvz_(0),
+  metpt_(0),
+  metphi_(0),
+  metsumEt_(0),
+  vertices_(0),
   mets_(0),
   met_(0)
-{}
+{
+
+}
+
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC){
+void EventInfoFiller::book(TreeWriter& tW)
+{
+
+  tW.book("npv",nVertices_,"I");
+  tW.book("pv_x",pvx_,"F");
+  tW.book("pv_y",pvy_,"F");
+  tW.book("pv_z",pvz_,"F");
+  tW.book("met",metpt_,"F");
+  tW.book("met_phi",metphi_,"F");
+  tW.book("met_sumEt",metsumEt_,"F");
+
+}
+
+//--------------------------------------------------------------------------------------------------
+void EventInfoFiller::reset()
+{
+  nVertices_ = 0;
+  pvx_ = 0;
+  pvy_ = 0;
+  pvz_ = 0;
+  metpt_ = 0;
+  metphi_ = 0;
+  metsumEt_= 0;
+}
+
+//--------------------------------------------------------------------------------------------------
+void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC)
+{
+  reset();
+
   enforceGet(iEvent,vtxTag_,vertices_,true);
-  nVertices_ = vertices_->size();
-  if(nVertices_ > 0)
+  enforceGet(iEvent,metTag_,mets_,true);
+
+  if(vertices_->size() > 0)
     primaryVertex_ = vertices_->front().position();
   else
     primaryVertex_.SetXYZ(0,0,0);
 
-  enforceGet(iEvent,metTag_,mets_,true);
   met_ = &mets_->front();
 }
+
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::fill(Planter& plant, int& bookMark, const int& numAnalyzed)
+void EventInfoFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 {
-  plant.fill(float( primaryVertex_.x()                    ), "pv_x"         , "x(primary vertex)"              );
-  plant.fill(float( primaryVertex_.y()                    ), "pv_y"         , "y(primary vertex)"              );
-  plant.fill(float( primaryVertex_.z()                    ), "pv_z"         , "z(primary vertex)"              );
-  plant.fill(convertTo<multiplicity>( nVertices_, "num_vertices"          ), "num_vertices"         , "N. primary vertices"      );
-
-  plant.fill(float( met_->pt  () ),"reco_met_pt"      , "|#slash{E}_{T}|"    );
-  plant.fill(float( met_->phi () ),"reco_met_phi"     , "#phi(#slash{E}_{T})");
-
-  bookMark++;
+  nVertices_ = vertices_->size();
+  pvx_ = vertices_->front().x();
+  pvy_ = vertices_->front().y();
+  pvz_ = vertices_->front().z();
+  metpt_ = met_->pt();
+  metphi_ = met_->phi();
+  metsumEt_ = met_->sumEt();
 }
-
