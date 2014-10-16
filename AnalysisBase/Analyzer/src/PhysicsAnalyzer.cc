@@ -22,6 +22,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 // ---- Configure event information
 , eventInfo           (iConfig)
 , jets                (iConfig)
+, electrons           (iConfig)
 
 {
 

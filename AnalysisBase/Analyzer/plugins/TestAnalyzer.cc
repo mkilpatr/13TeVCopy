@@ -25,17 +25,20 @@ class TestAnalyzer : public PhysicsAnalyzer {
     void beginJob() {
       book(&eventInfo);
       book(&jets);
+      book(&electrons);
     }
 
     bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       loadObj(&eventInfo);
       loadObj(&jets);
+      loadObj(&electrons);
       return true;
     }
 
     void analyze() {
       fillObj(&eventInfo);
       fillObj(&jets);
+      fillObj(&electrons);
       treeWriter()->fill();
     }
 
