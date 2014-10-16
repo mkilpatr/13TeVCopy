@@ -168,6 +168,7 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
       genjeteta_.push_back(gJ->eta());
       genjetphi_.push_back(gJ->phi());
       genjetmass_.push_back(gJ->mass());
+      genjetflavor_.push_back(jetflavor_[index]);
 #endif
     }
   }
