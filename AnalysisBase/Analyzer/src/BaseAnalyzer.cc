@@ -2,7 +2,7 @@
 // 
 // BaseAnalyzer
 // 
-// Base class to define interface for analyzer classes. Implementation of a CMS EDAnalyzer.
+// Base class to define interface for analyzer classes. Implementation of a CMS EDFilter..
 // 
 // BaseAnalyzer.cc created on Fri Aug 8 15:50:43 CEST 2014 
 // 
@@ -26,18 +26,22 @@ BaseAnalyzer::BaseAnalyzer(const edm::ParameterSet& iConfig)
   , eventNumber_        (-1)
 
 {
-  if(outputPath.Length()){
+  if(outputPath.Length()) {
     std::clog << " ++  outputPath          = " << (outputPath.Length() ? outputPath.Data() : "(n/a)") << std::endl;
     std::clog << " ++  outputInterval      = " << outputInterval                                      << std::endl;
   }
   std::clog << " ++  randomSeed          = " << iConfig.getParameter<unsigned int>("randomSeed")      << std::endl;
+
+  // Create and register TTree
   edm::Service<TFileService> fs;
-  eventTree = fs->make<TTree>("Events", "");
+  eventTree_ = fs->make<TTree>("Events", "");
+  treeWriter_ = new TreeWriter(eventTree_);
 
 }
 
 //--------------------------------------------------------------------------------------------------
-BaseAnalyzer::~BaseAnalyzer(){
+BaseAnalyzer::~BaseAnalyzer()
+{
   std::clog << std::endl;
   std::clog << " \033[1;34m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\033[0m"  << std::endl;
   std::clog << " \033[1;34m~~\033[0m  Done! There were:" << std::endl;
@@ -50,11 +54,15 @@ BaseAnalyzer::~BaseAnalyzer(){
   std::clog << std::endl;
 }
 
-
+//--------------------------------------------------------------------------------------------------
+void BaseAnalyzer::beginJob()
+{
+  // do nothing here
+}
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void
-BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
   // The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -62,7 +70,7 @@ BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   descriptions.addDefault(desc);
 }
 
-//_____________________________________________________________________________
+//--------------------------------------------------------------------------------------------------
 bool BaseAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   runNumber_                = iEvent.run();
@@ -81,7 +89,7 @@ bool BaseAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   return success;
 }
 
-//_____________________________________________________________________________
+//--------------------------------------------------------------------------------------------------
 void BaseAnalyzer::printEventCoordinates(std::ostream& out) const
 {
   out << TString::Format( "*****  %d:%d:%d = Run %7d, luminosity block %4d, event %10d"

@@ -17,49 +17,57 @@
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 
 namespace ucsbsusy {
+
   class JetFiller : public BaseFiller {
+
     public:
       JetFiller(const edm::ParameterSet &cfg);
       ~JetFiller() {}
 
-      void load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
-      void fill(Planter& plant, int& bookMark, const int& numAnalyzed);
-      RecoJetF& operator[] (const int& index) {return jets[index];}
+      void		book(TreeWriter& tW);
+      void		reset();
+      void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void		fill(TreeWriter& tW, const int& numAnalyzed);
 
-      reco::GenJetRef getReGenJet(const pat::Jet& jet)  const;
-      reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
+      RecoJetF&		operator[] (const int& index)		{ return recoJets[index];	}
 
-      static const std::string    REGENJET        ;   ///< userClass label for the redefined genJet of the given jet
+      reco::GenJetRef	getReGenJet(const pat::Jet& jet)  const;
+      reco::GenJetRef	getStdGenJet(const pat::Jet& jet) const;
+
+      static const std::string	REGENJET;   // userClass label for the redefined genJet of the given jet
 
     private:
-      //--------------------------------------------------------------------------------------------------
       // Input from the config file
-      //--------------------------------------------------------------------------------------------------
-      edm::InputTag jetTag_;
-      edm::InputTag reGenJetTag_;
-      edm::InputTag stdGenJetTag_;
-      edm::InputTag genParticleTag_;
-      double        jptMin_;
-      bool          fillGenInfo;
+      edm::InputTag	jetTag_;
+      edm::InputTag	reGenJetTag_;
+      edm::InputTag	stdGenJetTag_;
+      edm::InputTag	genParticleTag_;
+      double		jptMin_;
+      bool		fillGenInfo_;
+
+      // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
+      vector<float>	jetpt_;
+      vector<float>	jeteta_;
+      vector<float>	jetphi_;
+      vector<float>	jetmass_;
+      vector<float>	jetptraw_;
+      vector<float>	jetpuId_;
+      vector<float>	jetcsv_;
 
     public:
-      //--------------------------------------------------------------------------------------------------
-      // Data Members
-      //--------------------------------------------------------------------------------------------------
-      edm::Handle<pat::JetCollection>         jets_;
-      edm::Handle<reco::GenJetCollection>     reGenJets_;
-      edm::Handle<reco::GenJetCollection>     stdGenJets_;
+      // Data members
+      edm::Handle<pat::JetCollection>		jets_;
+      edm::Handle<reco::GenJetCollection>	reGenJets_;
+      edm::Handle<reco::GenJetCollection>	stdGenJets_;
 
-      RecoJetFCollection                      jets;
-      GenJetFCollection                       genJets;
+      RecoJetFCollection			recoJets;
+      GenJetFCollection				genJets;
 
-      vector<float>                           v_csv;
-      vector<JetFlavorMatching::TaggableType> v_flavor;
-
-
-
+      vector<float>				v_csv;
+      vector<JetFlavorMatching::TaggableType>	v_flavor;
 
   };
+
 }
 
 #endif

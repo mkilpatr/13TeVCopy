@@ -15,22 +15,30 @@ using namespace ucsbsusy;
 using namespace std;
 
 class TestAnalyzer : public PhysicsAnalyzer {
-public:
-  ANALYZER_MODE
-  TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg){}
 
-  ~TestAnalyzer(){}
+  public:
+    ANALYZER_MODE
+    TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg) {}
 
-  bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-    loadObj(&eventInfo);
-    loadObj(&jets);
-    return true;
-  }
+    ~TestAnalyzer() {}
 
-  void analyze(){
-    fillObj(&eventInfo);
-    fillObj(&jets);
-  }
+    void beginJob() {
+      book(&eventInfo);
+      book(&jets);
+    }
+
+    bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+      loadObj(&eventInfo);
+      loadObj(&jets);
+      return true;
+    }
+
+    void analyze() {
+      fillObj(&eventInfo);
+      fillObj(&jets);
+      treeWriter()->fill();
+    }
+
 };
 
 DEFINE_FWK_MODULE(TestAnalyzer);
