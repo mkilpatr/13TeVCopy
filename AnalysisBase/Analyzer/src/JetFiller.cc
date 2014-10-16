@@ -18,15 +18,16 @@ using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 JetFiller::JetFiller(const edm::ParameterSet &cfg) :
-    jetTag_(cfg.getParameter<edm::InputTag>("jets")),
-    reGenJetTag_(cfg.getParameter<edm::InputTag>("reGenJets")),
-    stdGenJetTag_(cfg.getParameter<edm::InputTag>("stdGenJets")),
-    genParticleTag_(cfg.getParameter<edm::InputTag>("genParticles")),
-    jptMin_(cfg.getUntrackedParameter<double>("minJetPt")),
-    fillGenInfo_(false),
-    jets_(0),
-    reGenJets_(0),
-    stdGenJets_(0)
+  jetTag_(cfg.getParameter<edm::InputTag>("jets")),
+  reGenJetTag_(cfg.getParameter<edm::InputTag>("reGenJets")),
+  stdGenJetTag_(cfg.getParameter<edm::InputTag>("stdGenJets")),
+  genParticleTag_(cfg.getParameter<edm::InputTag>("genParticles")),
+  jptMin_(cfg.getUntrackedParameter<double>("minJetPt")),
+  fillGenInfo_(cfg.getUntrackedParameter<bool>("fillJetGenInfo",false)),
+  jetsName_(cfg.getUntrackedParameter<string>("jetsType")),
+  jets_(0),
+  reGenJets_(0),
+  stdGenJets_(0)
 {
 
 }
@@ -53,13 +54,21 @@ reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
 //--------------------------------------------------------------------------------------------------
 void JetFiller::book(TreeWriter& tW)
 {
-  tW.book("jet_pt", jetpt_);
-  tW.book("jet_eta", jeteta_);
-  tW.book("jet_phi", jetphi_);
-  tW.book("jet_mass", jetmass_);
-  tW.book("jet_ptraw", jetptraw_);
-  tW.book("jet_puId", jetpuId_);
-  tW.book("jet_csv", jetcsv_);
+  tW.book((jetsName_+"_jet_pt").c_str(), jetpt_);
+  tW.book((jetsName_+"_jet_eta").c_str(), jeteta_);
+  tW.book((jetsName_+"_jet_phi").c_str(), jetphi_);
+  tW.book((jetsName_+"_jet_mass").c_str(), jetmass_);
+  tW.book((jetsName_+"_jet_ptraw").c_str(), jetptraw_);
+  tW.book((jetsName_+"_jet_puId").c_str(), jetpuId_);
+  tW.book((jetsName_+"_jet_csv").c_str(), jetcsv_);
+  tW.book((jetsName_+"_jet_flavor").c_str(), jetflavor_);
+  if(fillGenInfo_) {
+    tW.book((jetsName_+"_matchedgenjet_pt").c_str(), genjetpt_);
+    tW.book((jetsName_+"_matchedgenjet_eta").c_str(), genjeteta_);
+    tW.book((jetsName_+"_matchedgenjet_phi").c_str(), genjetphi_);
+    tW.book((jetsName_+"_matchedgenjet_mass").c_str(), genjetmass_);
+    tW.book((jetsName_+"_matchedgenjet_flavor").c_str(), genjetflavor_);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -72,6 +81,14 @@ void JetFiller::reset()
   jetptraw_.resize(0);
   jetpuId_.resize(0);
   jetcsv_.resize(0);
+  jetflavor_.resize(0);
+  if(fillGenInfo_) {
+    genjetpt_.resize(0);
+    genjeteta_.resize(0);
+    genjetphi_.resize(0);
+    genjetmass_.resize(0);
+    genjetflavor_.resize(0);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -80,8 +97,9 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
   reset();
   enforceGet(iEvent,jetTag_,jets_,true);
 
-  if(isMC){
-    fillGenInfo_ = true;
+  fillGenInfo_ = fillGenInfo_ && isMC;
+
+  if(fillGenInfo_) {
     enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     edm::Handle<reco::GenParticleCollection> genParticles_;
@@ -93,22 +111,13 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
 #endif
   }
 
-  if(storeOnlyPtr) return;
+}
 
-  recoJets    .clear();
-  genJets .clear();
-  v_csv   .clear();
-  v_flavor.clear();
+//--------------------------------------------------------------------------------------------------
+void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
+{
 
-  recoJets    .reserve(jets_->size());
-  v_csv   .reserve(jets_->size());
-
-  if(isMC) {
-    genJets .reserve(jets_->size());
-    v_flavor.reserve(jets_->size());
-  }
-
-  for(const pat::Jet &j : *jets_) {
+  for (const pat::Jet &j : *jets_) {
 
 #ifdef REDEFINED_GENJET_HACK
     const reco::GenJetRef gJ = getStdGenJet(j);
@@ -118,45 +127,6 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
     if(j.pt() < jptMin_ && (fillGenInfo_ ? gJ->pt() : 0) < jptMin_ : true) continue;
 #endif
 
-    int index = recoJets.size();
-
-    GenJetF * genJet = 0;
-    if(fillGenInfo_) {
-#ifdef REDEFINED_GENJET_HACK
-      if(gJ.isNonnull()){
-#ifdef TAGGABLE_TYPE_HACK
-	v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
-#else
-	v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
-#endif
-	genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
-      } else{
-	v_flavor.push_back(JetFlavorMatching::numTaggableTypes );
-	MomentumF nullVect;
-	genJets.emplace_back(  nullVect.p4() , index,&v_flavor[index]);
-      }
-#else
-#ifdef TAGGABLE_TYPE_HACK
-      v_flavor.push_back(JetFlavorMatching::getPATTaggableType(j));
-#else
-      v_flavor.push_back(JetFlavorMatching::getTaggableType(j));
-#endif
-      genJets.emplace_back( gJ->polarP4() ,index,&v_flavor[index]);
-#endif
-      genJet = &genJets[index];
-    }
-
-    v_csv.push_back(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
-    recoJets.emplace_back(j.polarP4(),index,&v_csv[index],genJet);
-  }
-
-  std::sort(recoJets.begin(),recoJets.end(), greaterPT<RecoJetF>());
-}
-
-//--------------------------------------------------------------------------------------------------
-void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
-{
-  for (const pat::Jet &j : *jets_) {
     jetpt_.push_back(j.pt());
     jeteta_.push_back(j.eta());
     jetphi_.push_back(j.phi());
@@ -164,7 +134,45 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     jetptraw_.push_back(j.pt()*j.jecFactor("Uncorrected"));
     jetpuId_.push_back(j.userFloat("pileupJetId:fullDiscriminant"));
     jetcsv_.push_back(j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
+
+    int index = jetpt_.size()-1;
+
+    if(fillGenInfo_) {
+#ifdef REDEFINED_GENJET_HACK
+      if(gJ.isNonnull()) {
+#ifdef TAGGABLE_TYPE_HACK
+	jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
+#else
+	jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
+#endif
+	genjetpt_.push_back(gJ->pt());
+	genjeteta_.push_back(gJ->eta());
+	genjetphi_.push_back(gJ->phi());
+	genjetmass_.push_back(gJ->mass());
+	genjetflavor_.push_back(jetflavor_[index]);
+      } else {
+	jetflavor_.push_back(JetFlavorMatching::numTaggableTypes );
+	genjetpt_.push_back(-99.);
+	genjeteta_.push_back(-99.);
+	genjetphi_.push_back(-99.);
+	genjetmass_.push_back(-99.);
+	genjetflavor_.push_back(-99.);
+      }
+#else
+#ifdef TAGGABLE_TYPE_HACK
+      jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
+#else
+      jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
+#endif
+      genjetpt_.push_back(gJ->pt());
+      genjeteta_.push_back(gJ->eta());
+      genjetphi_.push_back(gJ->phi());
+      genjetmass_.push_back(gJ->mass());
+      genjetflavor_.push_back(jetflavor_[index]);
+#endif
+    }
   }
+
 }
 
 //--------------------------------------------------------------------------------------------------

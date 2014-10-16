@@ -14,7 +14,6 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisTools/DataFormats/interface/Jet.h"
 
 namespace ucsbsusy {
 
@@ -29,8 +28,6 @@ namespace ucsbsusy {
       void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
-      RecoJetF&		operator[] (const int& index)		{ return recoJets[index];	}
-
       reco::GenJetRef	getReGenJet(const pat::Jet& jet)  const;
       reco::GenJetRef	getStdGenJet(const pat::Jet& jet) const;
 
@@ -44,6 +41,7 @@ namespace ucsbsusy {
       edm::InputTag	genParticleTag_;
       double		jptMin_;
       bool		fillGenInfo_;
+      string		jetsName_;          // used as prefix in branch names to specify the type of jets filled (e.g., ak4)
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
       vector<float>	jetpt_;
@@ -53,18 +51,19 @@ namespace ucsbsusy {
       vector<float>	jetptraw_;
       vector<float>	jetpuId_;
       vector<float>	jetcsv_;
+      vector<int>	jetflavor_;
+      // For genjets matched to reco jets
+      vector<float>	genjetpt_;
+      vector<float>	genjeteta_;
+      vector<float>	genjetphi_;
+      vector<float>	genjetmass_;
+      vector<int>	genjetflavor_;
 
     public:
       // Data members
       edm::Handle<pat::JetCollection>		jets_;
       edm::Handle<reco::GenJetCollection>	reGenJets_;
       edm::Handle<reco::GenJetCollection>	stdGenJets_;
-
-      RecoJetFCollection			recoJets;
-      GenJetFCollection				genJets;
-
-      vector<float>				v_csv;
-      vector<JetFlavorMatching::TaggableType>	v_flavor;
 
   };
 
