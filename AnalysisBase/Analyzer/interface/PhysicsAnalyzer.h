@@ -21,6 +21,7 @@
 // Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
+#include "AnalysisBase/Analyzer/interface/MuonFiller.h"
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
 
 namespace ucsbsusy {
@@ -74,6 +75,7 @@ namespace ucsbsusy {
       // "Filler" classes to store event information
       EventInfoFiller		eventInfo;
       JetFiller			jets;
+      MuonFiller		muons;
       ElectronFiller		electrons;
 
   };

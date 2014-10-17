@@ -45,10 +45,16 @@ nominal_configuration = cms.PSet(
                                       minJetPt          = cms.untracked.double(15.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
                                       jetsType          = cms.untracked.string('ak4pfchs'),
-                                                                                                                                                                                        
+
+                                      muons             = cms.InputTag('slimmedMuons'),
+                                      minMuonPt         = cms.untracked.double(5.0),
+                                      requireLooseMuon  = cms.untracked.bool(True),
+                                      fillMuonIDVars    = cms.untracked.bool(False),
+                                      fillMuonIsoVars   = cms.untracked.bool(True),
+
                                       electrons         = cms.InputTag('slimmedElectrons'),
                                       minElectronPt     = cms.untracked.double(5.0),
                                       printElectronIDs  = cms.untracked.bool(False),
                                       fillElectronIDVars  = cms.untracked.bool(False),
                                       fillElectronIsoVars  = cms.untracked.bool(True),
-                                      )
+                                 )
