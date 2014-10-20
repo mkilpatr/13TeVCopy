@@ -17,6 +17,9 @@ using namespace std;
 EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   metTag_(cfg.getParameter<edm::InputTag>("mets")),
+  run_(0),
+  lumi_(0),
+  event_(0),
   nVertices_(0),
   pvx_(0),
   pvy_(0),
@@ -35,6 +38,9 @@ EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
 void EventInfoFiller::book(TreeWriter& tW)
 {
 
+  tW.book("run",run_,"i");
+  tW.book("lumi",lumi_,"i");
+  tW.book("event",event_,"i");
   tW.book("npv",nVertices_,"I");
   tW.book("pv_x",pvx_,"F");
   tW.book("pv_y",pvy_,"F");
@@ -48,6 +54,9 @@ void EventInfoFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::reset()
 {
+  run_ = 0;
+  lumi_ = 0;
+  event_ = 0;
   nVertices_ = 0;
   pvx_ = 0;
   pvy_ = 0;
@@ -71,6 +80,9 @@ void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC)
     primaryVertex_.SetXYZ(0,0,0);
 
   met_ = &mets_->front();
+  run_ = iEvent.run();
+  lumi_ = iEvent.luminosityBlock();
+  event_ = iEvent.id().event();
 }
 
 //--------------------------------------------------------------------------------------------------
