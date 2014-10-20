@@ -40,6 +40,9 @@ namespace ucsbsusy {
       edm::InputTag		metTag_;
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
+      int			run_;
+      int			lumi_;
+      int			event_;
       int			nVertices_;
       float			pvx_;
       float			pvy_;
