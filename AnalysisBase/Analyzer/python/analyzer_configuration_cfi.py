@@ -54,7 +54,9 @@ nominal_configuration = cms.PSet(
 
                                       electrons         = cms.InputTag('slimmedElectrons'),
                                       minElectronPt     = cms.untracked.double(5.0),
+                                      bunchSpacing      = cms.untracked.int32(25),
                                       printElectronIDs  = cms.untracked.bool(False),
                                       fillElectronIDVars  = cms.untracked.bool(False),
-                                      fillElectronIsoVars  = cms.untracked.bool(True),
+                                      fillElectronIsoVars  = cms.untracked.bool(False),
+                                      evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
                                  )
