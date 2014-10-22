@@ -8,8 +8,8 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_UTILITIES_BASEREADER_H
-#define ANALYSISTOOLS_UTILITIES_BASEREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_BASEREADER_H
+#define ANALYSISTOOLS_TREEREADER_BASEREADER_H
 
 #include <string>
 #include <vector>

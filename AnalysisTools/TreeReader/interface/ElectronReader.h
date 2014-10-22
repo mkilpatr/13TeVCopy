@@ -8,10 +8,10 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_UTILITIES_ELECTRONREADER_H
-#define ANALYSISTOOLS_UTILITIES_ELECTRONREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_ELECTRONREADER_H
+#define ANALYSISTOOLS_TREEREADER_ELECTRONREADER_H
 
-#include "AnalysisTools/Utilities/interface/CollectionReader.h"
+#include "AnalysisTools/TreeReader/interface/CollectionReader.h"
 #include "AnalysisTools/DataFormats/interface/Electron.h"
 
 namespace ucsbsusy {

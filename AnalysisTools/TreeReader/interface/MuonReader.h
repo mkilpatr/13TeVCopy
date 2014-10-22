@@ -8,10 +8,10 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_UTILITIES_MUONREADER_H
-#define ANALYSISTOOLS_UTILITIES_MUONREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_MUONREADER_H
+#define ANALYSISTOOLS_TREEREADER_MUONREADER_H
 
-#include "AnalysisTools/Utilities/interface/CollectionReader.h"
+#include "AnalysisTools/TreeReader/interface/CollectionReader.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
 
 namespace ucsbsusy {

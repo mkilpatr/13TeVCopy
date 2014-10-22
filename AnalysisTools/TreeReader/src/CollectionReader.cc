@@ -8,7 +8,7 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#include "AnalysisTools/Utilities/interface/CollectionReader.h"
+#include "AnalysisTools/TreeReader/interface/CollectionReader.h"
 
 using namespace ucsbsusy;
 

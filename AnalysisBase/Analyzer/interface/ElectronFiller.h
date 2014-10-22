@@ -54,6 +54,7 @@ namespace ucsbsusy {
       vector<float>	ele_SCeta_;
       vector<float>	ele_phi_;
       vector<float>	ele_mass_;
+      vector<int>	ele_q_;
       vector<float>	ele_r9_;
       vector<float>	ele_d0_;
       vector<float>	ele_dz_;

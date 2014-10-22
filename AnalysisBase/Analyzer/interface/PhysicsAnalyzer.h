@@ -23,6 +23,7 @@
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisBase/Analyzer/interface/MuonFiller.h"
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
+#include "AnalysisBase/Analyzer/interface/TauFiller.h"
 
 namespace ucsbsusy {
 
@@ -77,6 +78,7 @@ namespace ucsbsusy {
       JetFiller			jets;
       MuonFiller		muons;
       ElectronFiller		electrons;
+      TauFiller			taus;
 
   };
 
