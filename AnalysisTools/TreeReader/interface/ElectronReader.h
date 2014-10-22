@@ -29,6 +29,7 @@ namespace ucsbsusy {
 
     protected :
       ElectronFCollection	electrons;
+      vector<int> *		q;
       vector<float> *		scEta;
       vector<float> *		r9;
       vector<float> *		d0;
