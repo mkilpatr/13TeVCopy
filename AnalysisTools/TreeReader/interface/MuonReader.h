@@ -29,6 +29,7 @@ namespace ucsbsusy {
 
     protected :
       MuonFCollection	muons;
+      vector<int> *	q;
       vector<float> *	d0;
       vector<float> *	dz;
       vector<float> *	pfdbetaiso;

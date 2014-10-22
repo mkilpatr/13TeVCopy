@@ -23,15 +23,15 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : index_(-1), scEta_(0), r9_(0), d0_(0), dz_(0), pfdbetaiso_(0), mvaidnontrig_(0), mvaidtrig_(0), passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
+      Electron() : index_(-1), q_(0), scEta_(0), r9_(0), d0_(0), dz_(0), pfdbetaiso_(0), mvaidnontrig_(0), mvaidtrig_(0), passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
-		int inIndex = -1, float inSCEta = 0, float inR9 = 0, 
+		int inIndex = -1, int inCharge = 0, float inSCEta = 0, float inR9 = 0, 
 		float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, 
 		float inMvaidnontrig = 0, float inMvaidtrig = 0) : 
 		Momentum<CoordSystem>(inMomentum), 
-		index_(inIndex), scEta_(inSCEta), r9_(inR9), 
+		index_(inIndex), q_(inCharge), scEta_(inSCEta), r9_(inR9), 
 		d0_(inD0), dz_(inDz), pfdbetaiso_(inPfdbetaiso), 
 		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
 		passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
@@ -40,6 +40,8 @@ namespace ucsbsusy {
 
       void	setIndex(int newIndex)		{ index_ = newIndex;	}
       int	index() 			{ return index_;	}
+      void	setCharge(int newCharge)	{ q_ = newCharge;	}
+      int	q() 				{ return q_;		}
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       float	scEta() 			{ return scEta_;	}
       void	setR9(float newR9)		{ r9_ = newR9;		}
@@ -63,6 +65,7 @@ namespace ucsbsusy {
 
     protected :
       int	index_;  //Index in electron vector
+      int	q_;
       float	scEta_;
       float	r9_;
       float	d0_;

@@ -19,6 +19,7 @@ bool ElectronReader::initTree()
 
   string prefix = "ele_";
 
+  q = new vector<int>(1, 0);
   scEta = new vector<float>(1, 0.0);
   r9 = new vector<float>(1, 0.0);
   d0 = new vector<float>(1, 0.0);
@@ -26,6 +27,7 @@ bool ElectronReader::initTree()
   pfdbetaiso = new vector<float>(1, 0.0);
   mvaidnontrig = new vector<float>(1, 0.0);
   mvaidtrig = new vector<float>(1, 0.0);
+  getTree()->SetBranchAddress((prefix + "q").c_str(), &q);
   getTree()->SetBranchAddress((prefix + "SCeta").c_str(), &scEta);
   getTree()->SetBranchAddress((prefix + "r9").c_str(), &r9);
   getTree()->SetBranchAddress((prefix + "d0").c_str(), &d0);
@@ -47,8 +49,11 @@ ElectronFCollection ElectronReader::getElectrons()
   electrons.reserve(nelectrons);
 
   for(int iel = 0; iel < nelectrons; iel++) {
-    ROOT::Math::LorentzVector<CylLorentzCoordF> mom(pt->at(iel), eta->at(iel), phi->at(iel), mass->at(iel));
+    CylLorentzVectorF mom(pt->at(iel), eta->at(iel), phi->at(iel), mass->at(iel));
+
     ElectronF ele(mom, iel);
+
+    ele.setCharge(q->at(iel));
     ele.setSCEta(scEta->at(iel));
     ele.setR9(r9->at(iel));
     ele.setD0(d0->at(iel));
@@ -56,6 +61,7 @@ ElectronFCollection ElectronReader::getElectrons()
     ele.setPFDBetaIso(pfdbetaiso->at(iel));
     ele.setMVAIDNonTrig(mvaidnontrig->at(iel));
     ele.setMVAIDTrig(mvaidtrig->at(iel));
+
     electrons.push_back(ele);
   }
 

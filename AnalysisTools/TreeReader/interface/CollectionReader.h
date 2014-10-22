@@ -25,7 +25,7 @@ namespace ucsbsusy {
 
       virtual ~CollectionReader() {}
 
-      enum	objType	{ kAK4Jet, kElectron, kMuon	};
+      enum	objType	{ kAK4Jet, kElectron, kMuon, kTau	};
 
       virtual bool		initTree();
 

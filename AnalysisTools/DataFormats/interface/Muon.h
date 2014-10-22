@@ -23,17 +23,17 @@ namespace ucsbsusy {
   {
 
     public :
-      Muon() : index_(-1), d0_(0), dz_(0), pfdbetaiso_(0), isloose_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), passpogid_(false), passpogiso_(false), isgoodpogmuon_(false) {}
+      Muon() : index_(-1), q_(0), d0_(0), dz_(0), pfdbetaiso_(0), isloose_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), passpogid_(false), passpogiso_(false), isgoodpogmuon_(false) {}
 
       template <class InputCoordSystem>
       Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
-		int inIndex = -1, float inD0 = 0, float inDz = 0,
+		int inIndex = -1, int inCharge = 0, float inD0 = 0, float inDz = 0,
 		float inPfdbetaiso = 0, bool inIsloose = false,
 		bool inIsTight = false, bool inIspf = false,
 		bool inIsglobal = false, bool inIstracker = false,
 		bool inIsstandalone = false) :
 		Momentum<CoordSystem>(inMomentum), 
-		index_(inIndex), d0_(inD0), dz_(inDz),
+		index_(inIndex), q_(inCharge), d0_(inD0), dz_(inDz),
 		pfdbetaiso_(inPfdbetaiso), isloose_(inIsloose),
 		istight_(inIsTight), ispf_(inIspf),
 		isglobal_(inIsglobal), istracker_(inIstracker),
@@ -44,6 +44,8 @@ namespace ucsbsusy {
 
       void	setIndex(int newIndex)			{ index_ = newIndex;		}
       int	index() 				{ return index_;		}
+      void	setCharge(int newCharge)		{ q_ = newCharge;		}
+      int	q() 					{ return q_;			}
       void	setD0(float newD0)			{ d0_ = newD0;			}
       float	d0() 					{ return d0_;			}
       void	setDz(float newDz)			{ dz_ = newDz;			}
@@ -71,6 +73,7 @@ namespace ucsbsusy {
 
     protected :
       int	index_;  //Index in muon vector
+      int	q_;
       float	d0_;
       float	dz_;
       float	pfdbetaiso_;

@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("run")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing("analysis")

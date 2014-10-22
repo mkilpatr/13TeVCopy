@@ -19,6 +19,7 @@ bool CollectionReader::initTree()
   if(fObjType == kAK4Jet) prefix = "ak4pfchs_jet_";
   else if(fObjType == kElectron) prefix = "ele_";
   else if(fObjType == kMuon) prefix = "mu_";
+  else if(fObjType == kTau) prefix = "tau_";
   else {
     cout << "object type " << fObjType << " not known!" << endl;
     return false;
@@ -50,7 +51,8 @@ MomentumFCollection CollectionReader::getMomenta()
   momenta.reserve(nobjects);
 
   for(int iobj = 0; iobj < nobjects; iobj++) {
-    ROOT::Math::LorentzVector<CylLorentzCoordF> mom(pt->at(iobj), eta->at(iobj), phi->at(iobj), mass->at(iobj));
+    CylLorentzVectorF mom(pt->at(iobj), eta->at(iobj), phi->at(iobj), mass->at(iobj));
+
     momenta.emplace_back(mom);
   }
 

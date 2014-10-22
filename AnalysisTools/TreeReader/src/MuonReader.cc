@@ -19,6 +19,7 @@ bool MuonReader::initTree()
 
   string prefix = "mu_";
 
+  q = new vector<int>(1, 0.0);
   d0 = new vector<float>(1, 0.0);
   dz = new vector<float>(1, 0.0);
   pfdbetaiso = new vector<float>(1, 0.0);
@@ -28,6 +29,7 @@ bool MuonReader::initTree()
   isglobal = new vector<bool>(1, false);
   istracker = new vector<bool>(1, false);
   isstandalone = new vector<bool>(1, false);
+  getTree()->SetBranchAddress((prefix + "q").c_str(), &q);
   getTree()->SetBranchAddress((prefix + "d0").c_str(), &d0);
   getTree()->SetBranchAddress((prefix + "dz").c_str(), &dz);
   getTree()->SetBranchAddress((prefix + "pfdbetaiso").c_str(), &pfdbetaiso);
@@ -51,8 +53,11 @@ MuonFCollection MuonReader::getMuons()
   muons.reserve(nmuons);
 
   for(int imu = 0; imu < nmuons; imu++) {
-    ROOT::Math::LorentzVector<CylLorentzCoordF> mom(pt->at(imu), eta->at(imu), phi->at(imu), mass->at(imu));
+    CylLorentzVectorF mom(pt->at(imu), eta->at(imu), phi->at(imu), mass->at(imu));
+
     MuonF mu(mom, imu);
+
+    mu.setCharge(q->at(imu));
     mu.setD0(d0->at(imu));
     mu.setDz(dz->at(imu));
     mu.setPFDBetaIso(pfdbetaiso->at(imu));
@@ -62,6 +67,7 @@ MuonFCollection MuonReader::getMuons()
     mu.setIsGlobal(isglobal->at(imu));
     mu.setIsTracker(istracker->at(imu));
     mu.setIsStandalone(isstandalone->at(imu));
+
     muons.push_back(mu);
   }
 
