@@ -12,8 +12,8 @@
 #define ANALYSISTOOLS_DATAFORMATS_JET_H
 
 #include <vector>
+#include <iostream>
 
-#include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 
 namespace ucsbsusy {
@@ -38,7 +38,8 @@ public :
 
   //----Convenience function for throwing an exception when a member does not exist
   static void checkStorage (void * ptr, std::string message){
-    if(ptr == 0) throw cms::Exception(message, "The object was never loaded!");
+    //if(ptr == 0) throw cms::Exception(message, "The object was never loaded!");
+    if(ptr == 0) throw (message+string("The object was never loaded!"));
   }
 
 protected :
@@ -49,7 +50,7 @@ template <class CoordSystem>
 class GenJet : public Jet<CoordSystem>
 {
 
-  typedef JetFlavorMatching::TaggableType Flavor;
+  typedef TaggableType Flavor;
 
 public :
   GenJet() :flavor_(0) {}

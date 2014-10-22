@@ -144,7 +144,7 @@ int JetFlavorMatching::matchConstituents( const Object& object, const vector<edm
 }
 //_____________________________________________________________________________
 template<typename JetRef>
-JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType( const JetRef& jet, const HadronContainments&  mainBHadronsInJet
+TaggableType JetFlavorMatching::getTaggableType( const JetRef& jet, const HadronContainments&  mainBHadronsInJet
                                                           , const reco::JetFlavourMatchingCollection& jetFlavorMatch, double etaAcceptance
                                                           )
 {

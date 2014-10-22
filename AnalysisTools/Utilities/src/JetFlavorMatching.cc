@@ -323,7 +323,7 @@ void JetFlavorMatching::storeBHadronInfo( const vector<pat::Jet>& recoJets, cons
   storeBHadronInfo       (recoJets,                mainBHadrons, satelliteBHadrons);
 }
 //_____________________________________________________________________________
-JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType(double jetEta, int numMainBHadrons, int partonFlavor, double etaAcceptance)
+TaggableType JetFlavorMatching::getTaggableType(double jetEta, int numMainBHadrons, int partonFlavor, double etaAcceptance)
 {
   if (TMath::Abs(jetEta) > etaAcceptance)                   return numTaggableTypes;
   if (numMainBHadrons == 1)                                 return TAGGABLE_MONO_B;
@@ -333,7 +333,7 @@ JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType(double jetEta
   return TAGGABLE_GLUON;                      // Default since gluons are more numerous
 }
 //_____________________________________________________________________________
-JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType(const pat::Jet& jet, int* numMEpartons, double etaAcceptance)
+TaggableType JetFlavorMatching::getTaggableType(const pat::Jet& jet, int* numMEpartons, double etaAcceptance)
 {
   const vector<CartLorentzVector>*    mainBs  = jet.userData<vector<CartLorentzVector> >(MAIN_B_P4);
   assert( (mainBs != 0) == (TMath::Abs(jet.partonFlavour()) == ParticleInfo::p_b) );
@@ -363,7 +363,7 @@ JetFlavorMatching::TaggableType JetFlavorMatching::getTaggableType(const pat::Je
   return tagType;
 }
 //_____________________________________________________________________________
-JetFlavorMatching::TaggableType JetFlavorMatching::getPATTaggableType(const pat::Jet& jet, int* numMEpartons, double etaAcceptance)
+TaggableType JetFlavorMatching::getPATTaggableType(const pat::Jet& jet, int* numMEpartons, double etaAcceptance)
 {
 
   if (TMath::Abs(jet.eta()) > etaAcceptance)                   return numTaggableTypes;
