@@ -16,7 +16,7 @@
 
 using namespace ucsbsusy;
 
-void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree_numEvent1000.root") {
+void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root") {
 
   // initialize
   TFile *infile = new TFile(fname.c_str()); assert(infile);
