@@ -8,7 +8,7 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#include "AnalysisTools/Utilities/interface/ElectronReader.h"
+#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 
 using namespace ucsbsusy;
 

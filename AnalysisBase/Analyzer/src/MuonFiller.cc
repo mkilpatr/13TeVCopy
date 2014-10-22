@@ -31,6 +31,7 @@ void MuonFiller::book(TreeWriter& tW)
   tW.book("mu_eta", mu_eta_);
   tW.book("mu_phi", mu_phi_);
   tW.book("mu_mass", mu_mass_);
+  tW.book("mu_q", mu_q_);
   tW.book("mu_d0", mu_d0_);
   tW.book("mu_dz", mu_dz_);
   if(fillIDVars_) {
@@ -65,6 +66,7 @@ void MuonFiller::reset()
   mu_eta_.resize(0);
   mu_phi_.resize(0);
   mu_mass_.resize(0);
+  mu_q_.resize(0);
   mu_d0_.resize(0);
   mu_dz_.resize(0);
   if(fillIDVars_) {
@@ -114,6 +116,7 @@ void MuonFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     mu_eta_.push_back(mu.eta());
     mu_phi_.push_back(mu.phi());
     mu_mass_.push_back(mu.mass());
+    mu_q_.push_back(mu.charge());
     mu_d0_.push_back(-1.*mu.muonBestTrack()->dxy(PV.position()));
     mu_dz_.push_back(mu.muonBestTrack()->dz(PV.position()));
     if(fillIDVars_) {

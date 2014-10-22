@@ -46,6 +46,7 @@ namespace ucsbsusy {
       vector<float>	mu_eta_;
       vector<float>	mu_phi_;
       vector<float>	mu_mass_;
+      vector<int>	mu_q_;
       vector<float>	mu_d0_;
       vector<float>	mu_dz_;
       vector<float>	mu_nChi2_;

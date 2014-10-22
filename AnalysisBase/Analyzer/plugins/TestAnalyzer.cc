@@ -27,6 +27,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       book(&jets);
       book(&muons);
       book(&electrons);
+      book(&taus);
     }
 
     bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -34,6 +35,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       loadObj(&jets);
       loadObj(&muons);
       loadObj(&electrons);
+      loadObj(&taus);
       return true;
     }
 
@@ -42,6 +44,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       fillObj(&jets);
       fillObj(&muons);
       fillObj(&electrons);
+      fillObj(&taus);
       treeWriter()->fill();
     }
 

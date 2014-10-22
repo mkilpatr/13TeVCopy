@@ -35,6 +35,8 @@ nominal_configuration = cms.PSet(
                                       crossSectionScaling     = cms.double (1),               #Luminosity to scale to (given the cross section and total events)
                                       genEventInfoSource      = cms.InputTag (""),                                                                                
                                       
+                                      bunchSpacing      = cms.untracked.int32(25),
+
                                       vertices          = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                       mets              = cms.InputTag("slimmedMETs"),  
                                       
@@ -52,11 +54,15 @@ nominal_configuration = cms.PSet(
                                       fillMuonIDVars    = cms.untracked.bool(False),
                                       fillMuonIsoVars   = cms.untracked.bool(True),
 
-                                      electrons         = cms.InputTag('slimmedElectrons'),
-                                      minElectronPt     = cms.untracked.double(5.0),
-                                      bunchSpacing      = cms.untracked.int32(25),
-                                      printElectronIDs  = cms.untracked.bool(False),
-                                      fillElectronIDVars  = cms.untracked.bool(False),
-                                      fillElectronIsoVars  = cms.untracked.bool(False),
+                                      electrons                 = cms.InputTag('slimmedElectrons'),
+                                      minElectronPt             = cms.untracked.double(5.0),
+                                      printElectronIDs          = cms.untracked.bool(False),
+                                      fillElectronIDVars        = cms.untracked.bool(False),
+                                      fillElectronIsoVars       = cms.untracked.bool(False),
                                       evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
+
+                                      taus                      = cms.InputTag('slimmedTaus'),
+                                      minTauPt                  = cms.untracked.double(18.0),
+                                      printTauIDs               = cms.untracked.bool(False),
+                                      fillRawTauDiscriminators  = cms.untracked.bool(False),
                                  )

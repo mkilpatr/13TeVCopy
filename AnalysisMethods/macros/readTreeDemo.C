@@ -9,14 +9,14 @@
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/DataFormats/interface/Electron.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
-#include "AnalysisTools/Utilities/interface/CollectionReader.h"
-#include "AnalysisTools/Utilities/interface/ElectronReader.h"
-#include "AnalysisTools/Utilities/interface/MuonReader.h"
+#include "AnalysisTools/TreeReader/interface/CollectionReader.h"
+#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
+#include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #endif
 
 using namespace ucsbsusy;
 
-void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root") {
+void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree_numEvent1000.root") {
 
   // initialize
   TFile *infile = new TFile(fname.c_str()); assert(infile);

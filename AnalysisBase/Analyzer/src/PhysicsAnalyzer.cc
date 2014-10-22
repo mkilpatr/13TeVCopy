@@ -24,6 +24,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , jets                (iConfig)
 , muons               (iConfig)
 , electrons           (iConfig)
+, taus                (iConfig)
 
 {
 

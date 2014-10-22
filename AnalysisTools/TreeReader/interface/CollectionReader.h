@@ -8,10 +8,10 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_UTILITIES_COLLECTIONREADER_H
-#define ANALYSISTOOLS_UTILITIES_COLLECTIONREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_COLLECTIONREADER_H
+#define ANALYSISTOOLS_TREEREADER_COLLECTIONREADER_H
 
-#include "AnalysisTools/Utilities/interface/BaseReader.h"
+#include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 
 using namespace std;

@@ -75,6 +75,7 @@ void ElectronFiller::book(TreeWriter& tW)
   tW.book("ele_SCeta", ele_SCeta_);
   tW.book("ele_phi", ele_phi_);
   tW.book("ele_mass", ele_mass_);
+  tW.book("ele_q", ele_q_);
   tW.book("ele_r9", ele_r9_);
   tW.book("ele_d0", ele_d0_);
   tW.book("ele_dz", ele_dz_);
@@ -120,6 +121,7 @@ void ElectronFiller::reset()
   ele_SCeta_.resize(0);
   ele_phi_.resize(0);
   ele_mass_.resize(0);
+  ele_q_.resize(0);
   ele_r9_.resize(0);
   ele_d0_.resize(0);
   ele_dz_.resize(0);
@@ -179,6 +181,7 @@ void ElectronFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     ele_SCeta_.push_back(el.superCluster()->eta());
     ele_phi_.push_back(el.phi());
     ele_mass_.push_back(el.mass());
+    ele_q_.push_back(el.charge());
     ele_r9_.push_back(el.r9());
     ele_d0_.push_back(-1.*el.gsfTrack()->dxy(PV.position())); // check if this is right!
     ele_dz_.push_back(el.gsfTrack()->dz(PV.position()));
