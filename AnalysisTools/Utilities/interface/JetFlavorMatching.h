@@ -12,6 +12,7 @@
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
+#include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
@@ -67,7 +68,6 @@ public:
   // Called "taggable" because we say a jet is a b-jet if the gen jet is in pT
   // and eta acceptance
   //_____________________________________________________________________________
-  enum TaggableType         { TAGGABLE_MONO_B, TAGGABLE_MULTI_B, TAGGABLE_CHARM, TAGGABLE_LIGHT, TAGGABLE_GLUON, TAGGABLE_NONB, numTaggableTypes };
   static const TString        TAGGABLE_NAME [numTaggableTypes+1];
 
   //_____________________________________________________________________________

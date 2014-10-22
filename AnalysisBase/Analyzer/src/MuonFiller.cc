@@ -49,6 +49,7 @@ void MuonFiller::book(TreeWriter& tW)
     tW.book("mu_pfphotoniso", mu_pfphotoniso_);
     tW.book("mu_pfpuiso", mu_pfpuiso_);
   }
+  tW.book("mu_pfdbetaiso", mu_pfdbetaiso_);
   tW.book("mu_isLoose", mu_isloose_);
   tW.book("mu_isTight", mu_istight_);
   tW.book("mu_isPF", mu_ispf_);
@@ -82,6 +83,7 @@ void MuonFiller::reset()
     mu_pfphotoniso_.resize(0);
     mu_pfpuiso_.resize(0);
   }
+  mu_pfdbetaiso_.resize(0);
   mu_isloose_.resize(0);
   mu_istight_.resize(0);
   mu_ispf_.resize(0);
@@ -139,6 +141,7 @@ void MuonFiller::fill(TreeWriter& tW, const int& numAnalyzed)
       mu_pfphotoniso_.push_back(mu.pfIsolationR04().sumPhotonEt);
       mu_pfpuiso_.push_back(mu.pfIsolationR04().sumPUPt);
     }
+    mu_pfdbetaiso_.push_back(mu.pfIsolationR04().sumChargedHadronPt + max(0.0 , mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5 * mu.pfIsolationR04().sumPUPt));
     mu_isloose_.push_back(mu.isLooseMuon());
     mu_istight_.push_back(mu.isTightMuon(PV));
     mu_ispf_.push_back(mu.isPFMuon());

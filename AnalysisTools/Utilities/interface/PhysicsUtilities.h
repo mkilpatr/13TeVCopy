@@ -14,18 +14,11 @@
 #include <TMath.h>
 
 #include "DataFormats/Math/interface/deltaPhi.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
 
+#include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 
 namespace ucsbsusy {
-
-typedef   ROOT::Math::PtEtaPhiM4D<double> CylLorentzCoord;
-typedef   ROOT::Math::PtEtaPhiM4D<float>  CylLorentzCoordF;
-
-typedef   math::XYZTLorentzVector         CartLorentzVector;
-typedef   math::PtEtaPhiMLorentzVector    CylLorentzVector;
-typedef   math::PtEtaPhiMLorentzVectorF   CylLorentzVectorF;
 
 class PhysicsUtilities{
 public:

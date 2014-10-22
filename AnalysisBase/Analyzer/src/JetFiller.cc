@@ -10,6 +10,7 @@
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
+#include "AnalysisTools/Utilities/interface/Types.h"
 
 using namespace ucsbsusy;
 
@@ -151,7 +152,7 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 	genjetmass_.push_back(gJ->mass());
 	genjetflavor_.push_back(jetflavor_[index]);
       } else {
-	jetflavor_.push_back(JetFlavorMatching::numTaggableTypes );
+	jetflavor_.push_back(numTaggableTypes);
 	genjetpt_.push_back(-99.);
 	genjeteta_.push_back(-99.);
 	genjetphi_.push_back(-99.);

@@ -60,6 +60,7 @@ namespace ucsbsusy {
       vector<float>	mu_pfneutraliso_;
       vector<float>	mu_pfphotoniso_;
       vector<float>	mu_pfpuiso_;
+      vector<float>	mu_pfdbetaiso_;
       vector<bool>	mu_isloose_;
       vector<bool>	mu_istight_;
       vector<bool>	mu_ispf_;
