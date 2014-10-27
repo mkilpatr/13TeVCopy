@@ -34,7 +34,7 @@ public :
   ~Jet(){}
 
   void setIndex(const int& newIndex) {index_ = newIndex;};
-  int index() {return index_;};
+  int index() const {return index_;};
 
   //----Convenience function for throwing an exception when a member does not exist
   static void checkStorage (void * ptr, std::string message){
