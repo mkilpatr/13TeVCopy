@@ -38,30 +38,31 @@ namespace ucsbsusy {
 
       ~Electron() {}
 
-      void	setIndex(int newIndex)		{ index_ = newIndex;	}
       int	index() 			{ return index_;	}
-      void	setCharge(int newCharge)	{ q_ = newCharge;	}
       int	q() 				{ return q_;		}
-      void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       float	scEta() 			{ return scEta_;	}
-      void	setR9(float newR9)		{ r9_ = newR9;		}
       float	r9() 				{ return r9_;		}
-      void	setD0(float newD0)		{ d0_ = newD0;		}
       float	d0() 				{ return d0_;		}
-      void	setDz(float newDz)		{ dz_ = newDz;		}
       float	dz() 				{ return dz_;		}
-      void	setPFDBetaIso(float newIso)	{ pfdbetaiso_ = newIso;	}
       float	pfdbetaiso() 			{ return pfdbetaiso_;	}
-      void	setMVAIDNonTrig(float newID)	{ mvaidnontrig_ = newID;}
       float	mvaidnontrig() 			{ return mvaidnontrig_;	}
-      void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
       float	mvaidtrig() 			{ return mvaidtrig_;	}
-      void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
       bool	passpogid() 			{ return passpogid_;	}
-      void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
       bool	passpogiso() 			{ return passpogiso_;	}
-      void	setIsGoodPOGElectron(bool flag)	{ isgoodpogelectron_ = flag;	}
       bool	isgoodpogelectron() 		{ return isgoodpogelectron_;	}
+
+      void	setIndex(int newIndex)		{ index_ = newIndex;	}
+      void	setCharge(int newCharge)	{ q_ = newCharge;	}
+      void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
+      void	setR9(float newR9)		{ r9_ = newR9;		}
+      void	setD0(float newD0)		{ d0_ = newD0;		}
+      void	setDz(float newDz)		{ dz_ = newDz;		}
+      void	setPFDBetaIso(float newIso)	{ pfdbetaiso_ = newIso;	}
+      void	setMVAIDNonTrig(float newID)	{ mvaidnontrig_ = newID;}
+      void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
+      void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
+      void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
+      void	setIsGoodPOGElectron(bool flag)	{ isgoodpogelectron_ = flag;	}
 
     protected :
       int	index_;  //Index in electron vector
@@ -89,44 +90,45 @@ namespace ucsbsusy {
 
       ~ExtendedElectron() {}
 
-      void	setEcalEnergy(float newVal)		{ ecalE_ = newVal;		}
       float	ecalE() 				{ return ecalE_;		}
-      void	setEOverPIn(float newVal)		{ eOverPIn_ = newVal;		}
       float	eOverPIn() 				{ return eOverPIn_;		}
-      void	setSigIEtaIEta(float newVal)		{ sigietaieta_ = newVal;	}
       float	sigietaieta() 				{ return sigietaieta_;		}
-      void	setSigIPhiIPhi(float newVal)		{ sigiphiiphi_ = newVal;	}
       float	sigiphiiphi() 				{ return sigiphiiphi_;		}
-      void	setFull5x5SigIEtaIEta(float newVal)	{ full5x5sigietaieta_ = newVal;	}
       float	full5x5sigietaieta() 			{ return full5x5sigietaieta_;	}
-      void	setDEtaIn(float newVal)			{ dEtaIn_ = newVal;		}
       float	dEtaIn() 				{ return dEtaIn_;		}
-      void	setDPhiIn(float newVal)			{ dPhiIn_ = newVal;		}
       float	dPhiIn() 				{ return dPhiIn_;		}
-      void	setHOverE(float newVal)			{ hOverE_ = newVal;		}
       float	hOverE() 				{ return hOverE_;		}
-      void	setFBrem(float newVal)			{ fBrem_ = newVal;		}
       float	fBrem() 				{ return fBrem_;		}
-      void	setNExpHitsInner(int newVal)		{ nExpHitsInner_ = newVal;	}
       int	nExpHitsInner() 			{ return nExpHitsInner_;	}
-      void	setNLostHitsInner(int newVal)		{ nLostHitsInner_ = newVal;	}
       int	nLostHitsInner() 			{ return nLostHitsInner_;	}
-      void	setPassConvVeto(bool newVal)		{ passConvVeto_ = newVal;	}
       bool	passConvVeto() 				{ return passConvVeto_;		}
-      void	setTrackIso(float newVal)		{ trackiso_ = newVal;		}
       float	trackiso() 				{ return trackiso_;		}
-      void	setEcalIso(float newVal)		{ ecaliso_ = newVal;		}
       float	ecaliso() 				{ return ecaliso_;		}
-      void	setHcalIso(float newVal)		{ hcaliso_ = newVal;		}
       float	hcaliso() 				{ return hcaliso_;		}
-      void	setPFChargedIso(float newVal)		{ pfchargediso_ = newVal;	}
       float	pfchargediso() 				{ return pfchargediso_;		}
-      void	setPFNeutralIso(float newVal)		{ pfneutraliso_ = newVal;	}
       float	pfneutraliso() 				{ return pfneutraliso_;		}
-      void	setPFPhotonIso(float newVal)		{ pfphotoniso_ = newVal;	}
       float	pfphotoniso() 				{ return pfphotoniso_;		}
-      void	setPFPUIso(float newVal)		{ pfpuiso_ = newVal;		}
       float	pfpuiso() 				{ return pfpuiso_;		}
+
+      void	setEcalEnergy(float newVal)		{ ecalE_ = newVal;		}
+      void	setEOverPIn(float newVal)		{ eOverPIn_ = newVal;		}
+      void	setSigIEtaIEta(float newVal)		{ sigietaieta_ = newVal;	}
+      void	setSigIPhiIPhi(float newVal)		{ sigiphiiphi_ = newVal;	}
+      void	setFull5x5SigIEtaIEta(float newVal)	{ full5x5sigietaieta_ = newVal;	}
+      void	setDEtaIn(float newVal)			{ dEtaIn_ = newVal;		}
+      void	setDPhiIn(float newVal)			{ dPhiIn_ = newVal;		}
+      void	setHOverE(float newVal)			{ hOverE_ = newVal;		}
+      void	setFBrem(float newVal)			{ fBrem_ = newVal;		}
+      void	setNExpHitsInner(int newVal)		{ nExpHitsInner_ = newVal;	}
+      void	setNLostHitsInner(int newVal)		{ nLostHitsInner_ = newVal;	}
+      void	setPassConvVeto(bool newVal)		{ passConvVeto_ = newVal;	}
+      void	setTrackIso(float newVal)		{ trackiso_ = newVal;		}
+      void	setEcalIso(float newVal)		{ ecaliso_ = newVal;		}
+      void	setHcalIso(float newVal)		{ hcaliso_ = newVal;		}
+      void	setPFChargedIso(float newVal)		{ pfchargediso_ = newVal;	}
+      void	setPFNeutralIso(float newVal)		{ pfneutraliso_ = newVal;	}
+      void	setPFPhotonIso(float newVal)		{ pfphotoniso_ = newVal;	}
+      void	setPFPUIso(float newVal)		{ pfpuiso_ = newVal;		}
 
     protected :
       float	ecalE_;

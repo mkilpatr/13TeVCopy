@@ -39,28 +39,29 @@ namespace ucsbsusy {
 
       ~Tau() {}
 
-      void	setIndex(int newIndex)		{ index_ = newIndex;	}
       int	index() 			{ return index_;	}
-      void	setCharge(int newCharge)	{ q_ = newCharge;	}
       int	q() 				{ return q_;		}
-      void	setDxy(float newDxy)		{ dxy_ = newDxy;	}
       float	dxy() 				{ return dxy_;		}
-      void	setDxyErr(float newDxyErr)	{ dxyerr_ = newDxyErr;	}
       float	dxyerr() 			{ return dxyerr_;	}
-      void	setDxySig(float newDxySig)	{ dxysig_ = newDxySig;	}
       float	dxysig() 			{ return dxysig_;	}
-      void	setHPSId(unsigned long newHPSId){ hpsid_ = newHPSId;	}
       unsigned long	hpsid() 		{ return hpsid_;	}
-      void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
       bool	passpogid() 			{ return passpogid_;	}
-      void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
       bool	passpogiso() 			{ return passpogiso_;	}
-      void	setIsGoodPOGTau(bool flag)	{ isgoodpogtau_ = flag;	}
       bool	isgoodpogtau() 			{ return isgoodpogtau_;	}
       const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
       void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
       const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return leadChargedCand_;	}
       void setLeadChargedCandidate(const Momentum<CoordSystem>& inMom)    { leadChargedCand_ = inMom; }
+
+      void	setIndex(int newIndex)		{ index_ = newIndex;	}
+      void	setCharge(int newCharge)	{ q_ = newCharge;	}
+      void	setDxy(float newDxy)		{ dxy_ = newDxy;	}
+      void	setDxyErr(float newDxyErr)	{ dxyerr_ = newDxyErr;	}
+      void	setDxySig(float newDxySig)	{ dxysig_ = newDxySig;	}
+      void	setHPSId(unsigned long newHPSId){ hpsid_ = newHPSId;	}
+      void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
+      void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
+      void	setIsGoodPOGTau(bool flag)	{ isgoodpogtau_ = flag;	}
 
     protected :
       int	index_;  //Index in tau vector
@@ -87,20 +88,21 @@ namespace ucsbsusy {
 
       ~ExtendedTau() {}
 
-      void	setIsoDB3HitsRaw(float newVal)	{ isodb3hitsraw_ = newVal;	}
       float	isodb3hitsraw() 		{ return isodb3hitsraw_;	}
-      void	setIsoMVANoLTRaw(float newVal)	{ isomvanoltraw_ = newVal;	}
       float	isomvanoltraw() 		{ return isomvanoltraw_;	}
-      void	setIsoMVALTRaw(float newVal)	{ isomvaltraw_ = newVal;	}
       float	isomvaltraw() 			{ return isomvaltraw_;		}
-      void	setAntiEleMVARaw(float newVal)	{ antielemvaraw_ = newVal;	}
       float	antielemvaraw() 		{ return antielemvaraw_;	}
-      void	setAntiEleMVACat(int newVal)	{ antielemvacat_ = newVal;	}
       int	antielemvacat() 		{ return antielemvacat_;	}
-      void	setAntiMuMVARaw(float newVal)	{ antimumvaraw_ = newVal;	}
       float	antimumvaraw() 			{ return antimumvaraw_;		}
-      void	setAntiMuMVACat(int newVal)	{ antimumvacat_ = newVal;	}
       int	antimumvacat() 			{ return antimumvacat_;		}
+
+      void	setIsoDB3HitsRaw(float newVal)	{ isodb3hitsraw_ = newVal;	}
+      void	setIsoMVANoLTRaw(float newVal)	{ isomvanoltraw_ = newVal;	}
+      void	setIsoMVALTRaw(float newVal)	{ isomvaltraw_ = newVal;	}
+      void	setAntiEleMVARaw(float newVal)	{ antielemvaraw_ = newVal;	}
+      void	setAntiEleMVACat(int newVal)	{ antielemvacat_ = newVal;	}
+      void	setAntiMuMVARaw(float newVal)	{ antimumvaraw_ = newVal;	}
+      void	setAntiMuMVACat(int newVal)	{ antimumvacat_ = newVal;	}
 
     protected :
       float	isodb3hitsraw_;
