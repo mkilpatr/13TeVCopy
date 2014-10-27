@@ -59,7 +59,7 @@ public :
 
   int	flavor()	  	const	{ this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;		}
 
-  void	setPtr(int * inFlavor)		{ flavor_ = inFlavor	}
+  void	setPtr(int * inFlavor)		{ flavor_ = inFlavor;	}
   void	setFlavor(const int& inFlavor)	{ this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor;	}
 
 protected :
@@ -84,7 +84,7 @@ public :
   const GenJet<CoordSystem>&	genJet()			  const	{ this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;	}
   GenJet<CoordSystem>&		genJet()				{ return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());	}
 
-  void	setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0)	{ csv_ = inCSV; genJet_ = inGenJet				}
+  void	setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0)	{ csv_ = inCSV; genJet_ = inGenJet;				}
   void	setCsv(const float& inCsv)					{ this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv;	}
 
 protected :
