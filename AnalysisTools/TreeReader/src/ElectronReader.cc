@@ -12,60 +12,64 @@
 
 using namespace ucsbsusy;
 
-bool ElectronReader::initTree()
-{
+const int ElectronReader::defaultOptions = ElectronReader::LOADRECO | ElectronReader::FILLOBJ;
 
-  bool baseinit = CollectionReader::initTree();
-
-  string prefix = "ele_";
-
-  q = new vector<int>(1, 0);
-  scEta = new vector<float>(1, 0.0);
-  r9 = new vector<float>(1, 0.0);
-  d0 = new vector<float>(1, 0.0);
-  dz = new vector<float>(1, 0.0);
-  pfdbetaiso = new vector<float>(1, 0.0);
-  mvaidnontrig = new vector<float>(1, 0.0);
-  mvaidtrig = new vector<float>(1, 0.0);
-  getTree()->SetBranchAddress((prefix + "q").c_str(), &q);
-  getTree()->SetBranchAddress((prefix + "SCeta").c_str(), &scEta);
-  getTree()->SetBranchAddress((prefix + "r9").c_str(), &r9);
-  getTree()->SetBranchAddress((prefix + "d0").c_str(), &d0);
-  getTree()->SetBranchAddress((prefix + "dz").c_str(), &dz);
-  getTree()->SetBranchAddress((prefix + "pfdbetaiso").c_str(), &pfdbetaiso);
-  getTree()->SetBranchAddress((prefix + "mvaidnontrig").c_str(), &mvaidnontrig);
-  getTree()->SetBranchAddress((prefix + "mvaidtrig").c_str(), &mvaidtrig);
-
-  return baseinit;
-
+//--------------------------------------------------------------------------------------------------
+ElectronReader::ElectronReader() : BaseReader(){
+  pt           = new vector<float>;
+  eta          = new vector<float>;
+  phi          = new vector<float>;
+  mass         = new vector<float>;
+  q            = new vector<int>   ;
+  scEta        = new vector<float> ;
+  r9           = new vector<float> ;
+  d0           = new vector<float> ;
+  dz           = new vector<float> ;
+  pfdbetaiso   = new vector<float> ;
+  mvaidnontrig = new vector<float> ;
+  mvaidtrig    = new vector<float> ;
 }
 
-ElectronFCollection ElectronReader::getElectrons()
+//--------------------------------------------------------------------------------------------------
+void ElectronReader::load(TTree *tree, int options, string branchName)
 {
+    const_cast<int&>(options_)    = options;
+    const_cast<string&>(branchName_) = branchName;
 
-  int nelectrons = pt->size();
-
-  electrons.clear();
-  electrons.reserve(nelectrons);
-
-  for(int iel = 0; iel < nelectrons; iel++) {
-    CylLorentzVectorF mom(pt->at(iel), eta->at(iel), phi->at(iel), mass->at(iel));
-
-    ElectronF ele(mom, iel);
-
-    ele.setCharge(q->at(iel));
-    ele.setSCEta(scEta->at(iel));
-    ele.setR9(r9->at(iel));
-    ele.setD0(d0->at(iel));
-    ele.setDz(dz->at(iel));
-    ele.setPFDBetaIso(pfdbetaiso->at(iel));
-    ele.setMVAIDNonTrig(mvaidnontrig->at(iel));
-    ele.setMVAIDTrig(mvaidtrig->at(iel));
-
-    electrons.push_back(ele);
+  if(options_ & LOADRECO){
+    tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
+    tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
+    tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
+    tree->SetBranchAddress((branchName + "_mass"        ).c_str(), &mass);
+    tree->SetBranchAddress((branchName + "_q"           ).c_str(), &q);
+    tree->SetBranchAddress((branchName + "_SCeta"       ).c_str(), &scEta);
+    tree->SetBranchAddress((branchName + "_r9"          ).c_str(), &r9);
+    tree->SetBranchAddress((branchName + "_d0"          ).c_str(), &d0);
+    tree->SetBranchAddress((branchName + "_dz"          ).c_str(), &dz);
+    tree->SetBranchAddress((branchName + "_pfdbetaiso"  ).c_str(), &pfdbetaiso);
+    tree->SetBranchAddress((branchName + "_mvaidnontrig").c_str(), &mvaidnontrig);
+    tree->SetBranchAddress((branchName + "_mvaidtrig"   ).c_str(), &mvaidtrig);
   }
+}
 
-  return electrons;
+//--------------------------------------------------------------------------------------------------
+void ElectronReader::refresh(){
+  if(!(options_ & FILLOBJ)) return;
 
+  if(options_ & LOADRECO){
+    electrons.clear();
+    electrons.reserve(pt->size());
+    for(unsigned int iL = 0; iL < pt->size(); ++iL){
+      electrons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
+      electrons.back().setCharge(q->at(iL));
+      electrons.back().setSCEta(scEta->at(iL));
+      electrons.back().setR9(r9->at(iL));
+      electrons.back().setD0(d0->at(iL));
+      electrons.back().setDz(dz->at(iL));
+      electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
+      electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
+      electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
+    }
+  }
 }
 
