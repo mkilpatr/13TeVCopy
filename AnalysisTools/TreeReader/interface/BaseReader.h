@@ -24,19 +24,14 @@ namespace ucsbsusy {
   class BaseReader {
 
     public :
-      BaseReader(TTree *tree) : fTree(tree) {}
+      BaseReader() : branchName_(""), options_(0) {};
+      virtual ~BaseReader() {};
 
-      virtual ~BaseReader()	{ delete fTree;	}
+      virtual void load(TTree *tree, int options, string branchName) = 0;
+      virtual void refresh() = 0;
 
-      virtual bool	initTree() = 0;
-
-      virtual int	loadEvent(Long64_t entry);
-
-      virtual TTree*	getTree()	{ return fTree;		}
-
-    protected :
-      TTree		*fTree;
-
+      const string branchName_;  //branch prefix
+      const int options_; //filling options
   }; //BaseReader
 
 }
