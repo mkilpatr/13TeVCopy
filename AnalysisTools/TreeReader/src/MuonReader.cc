@@ -38,7 +38,10 @@ void MuonReader::load(TTree *tree, int options, string branchName)
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
+    cout << "Loading (" << branchName << ") muons with: ";
+
   if(options_ & LOADRECO){
+    cout << "reco ";
     tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
     tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
     tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
@@ -54,6 +57,9 @@ void MuonReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName + "_isTracker").c_str(), &istracker);
     tree->SetBranchAddress((branchName + "_isStandAlone").c_str(), &isstandalone);
   }
+  if(options_ & FILLOBJ)
+    cout << "+Objects";
+  cout << endl;
 }
 
 //--------------------------------------------------------------------------------------------------
