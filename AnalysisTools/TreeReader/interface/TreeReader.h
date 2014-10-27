@@ -28,8 +28,19 @@ namespace ucsbsusy {
       //load a new reader
       void load(BaseReader * reader, int options, string branchName);
 
+      //Load an object not included in a reader
+      template<typename varType>
+      varType* loadObject(string branchName){
+        varType * tempVar = new varType;
+        tree->SetBranchAddress(branchName.c_str(),&tempVar);
+        return tempVar;
+      }
+
       //Load the next event from the tree....return false if there are no more events in the tree
       bool nextEvent(bool verbose = false);
+
+      TTree * getTree() {return tree;}
+      int getEntries()  const {return tree->GetEntries();}
 
       int     eventNumber; //current event number
 
