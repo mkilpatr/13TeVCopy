@@ -32,6 +32,8 @@ namespace ucsbsusy {
     void load(VarType type, int options = -1, string branchName = "" );
     //same as above but for non-default readers
     void load(BaseReader * inReader, int options, string branchName) {reader.load(inReader,options,branchName);}
+    //load a non-reader variable from the tree
+    template<typename varType> varType* loadObject(string branchName){ return reader.loadObject<varType>(branchName);}
 
     //load the next event
     bool nextEvent(bool verbose = false);
