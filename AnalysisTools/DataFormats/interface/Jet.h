@@ -49,23 +49,20 @@ protected :
 template <class CoordSystem>
 class GenJet : public Jet<CoordSystem>
 {
-
-  typedef TaggableType Flavor;
-
 public :
   GenJet() :flavor_(0) {}
 
   template <class InputCoordSystem>
-  GenJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1, Flavor * inFlavor = 0) : Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor) {};
+  GenJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1, int * inFlavor = 0) : Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor) {};
   ~GenJet(){}
 
-  void setPtr(Flavor * inFlavor) { flavor_ = inFlavor;}
+  void setPtr(int * inFlavor) { flavor_ = inFlavor;}
 
-  void   setFlavor(const Flavor& inFlavor) { this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor; }
-  Flavor flavor()    const { this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;       }
+  void   setFlavor(const int& inFlavor) { this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor; }
+  int    flavor()    const { this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;       }
 
 protected :
-  Flavor * flavor_;
+  int * flavor_;
 };
 
 typedef GenJet<CylLorentzCoordF> GenJetF;
