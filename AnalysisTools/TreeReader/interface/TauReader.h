@@ -11,24 +11,33 @@
 #ifndef ANALYSISTOOLS_TREEREADER_TAUREADER_H
 #define ANALYSISTOOLS_TREEREADER_TAUREADER_H
 
-#include "AnalysisTools/TreeReader/interface/CollectionReader.h"
+#include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Tau.h"
 
 namespace ucsbsusy {
 
-  class TauReader : public CollectionReader {
+  class TauReader : public BaseReader {
 
     public :
-      TauReader(TTree *tree) : CollectionReader(tree, kTau) {}
+    enum  Options           {
+                              NULLOPT         = 0
+                            , LOADRECO        = (1 <<  1)   ///< Load standard taus
+                            , LOADEXTRECO     = (1 <<  2)   ///< Load extra info
+                            , FILLOBJ         = (1 <<  4)   ///< Fill objects (as opposed to just pointers)
+    };
+    static const int defaultOptions;
 
-      ~TauReader() {}
+    TauReader();
+    ~TauReader() {}
 
-      bool		initTree();
+    void load(TTree *tree, int options, string branchName);
+    void refresh();
 
-      TauFCollection	getTaus();
-
-    protected :
-      TauFCollection		taus;
+    public :
+      vector<float> *   pt;
+      vector<float> *   eta;
+      vector<float> *   phi;
+      vector<float> *   mass;
       vector<float> *		leadcandpt;
       vector<float> *		leadcandeta;
       vector<float> *		leadcandphi;
@@ -42,6 +51,8 @@ namespace ucsbsusy {
       vector<float> *		dxyerr;
       vector<float> *		dxysig;
       vector<unsigned long>  *	hpsid;
+
+      TauFCollection    taus;
 
   };
 

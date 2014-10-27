@@ -12,66 +12,69 @@
 
 using namespace ucsbsusy;
 
-bool MuonReader::initTree()
-{
+const int MuonReader::defaultOptions = MuonReader::LOADRECO | MuonReader::FILLOBJ;
 
-  bool baseinit = CollectionReader::initTree();
-
-  string prefix = "mu_";
-
-  q = new vector<int>(1, 0.0);
-  d0 = new vector<float>(1, 0.0);
-  dz = new vector<float>(1, 0.0);
-  pfdbetaiso = new vector<float>(1, 0.0);
-  isloose = new vector<bool>(1, false);
-  istight = new vector<bool>(1, false);
-  ispf = new vector<bool>(1, false);
-  isglobal = new vector<bool>(1, false);
-  istracker = new vector<bool>(1, false);
-  isstandalone = new vector<bool>(1, false);
-  getTree()->SetBranchAddress((prefix + "q").c_str(), &q);
-  getTree()->SetBranchAddress((prefix + "d0").c_str(), &d0);
-  getTree()->SetBranchAddress((prefix + "dz").c_str(), &dz);
-  getTree()->SetBranchAddress((prefix + "pfdbetaiso").c_str(), &pfdbetaiso);
-  getTree()->SetBranchAddress((prefix + "isLoose").c_str(), &isloose);
-  getTree()->SetBranchAddress((prefix + "isTight").c_str(), &istight);
-  getTree()->SetBranchAddress((prefix + "isPF").c_str(), &ispf);
-  getTree()->SetBranchAddress((prefix + "isGlobal").c_str(), &isglobal);
-  getTree()->SetBranchAddress((prefix + "isTracker").c_str(), &istracker);
-  getTree()->SetBranchAddress((prefix + "isStandAlone").c_str(), &isstandalone);
-
-  return baseinit;
-
+//--------------------------------------------------------------------------------------------------
+MuonReader::MuonReader() : BaseReader(){
+  pt           = new vector<float>;
+  eta          = new vector<float>;
+  phi          = new vector<float>;
+  mass         = new vector<float>;
+  q            = new vector<int>   ;
+  d0           = new vector<float>;
+  dz           = new vector<float>;
+  pfdbetaiso   = new vector<float>;
+  isloose      = new vector<bool>;
+  istight      = new vector<bool>;
+  ispf         = new vector<bool>;
+  isglobal     = new vector<bool>;
+  istracker    = new vector<bool>;
+  isstandalone = new vector<bool>;
 }
 
-MuonFCollection MuonReader::getMuons()
+//--------------------------------------------------------------------------------------------------
+void MuonReader::load(TTree *tree, int options, string branchName)
 {
+    const_cast<int&>(options_)    = options;
+    const_cast<string&>(branchName_) = branchName;
 
-  int nmuons = pt->size();
-
-  muons.clear();
-  muons.reserve(nmuons);
-
-  for(int imu = 0; imu < nmuons; imu++) {
-    CylLorentzVectorF mom(pt->at(imu), eta->at(imu), phi->at(imu), mass->at(imu));
-
-    MuonF mu(mom, imu);
-
-    mu.setCharge(q->at(imu));
-    mu.setD0(d0->at(imu));
-    mu.setDz(dz->at(imu));
-    mu.setPFDBetaIso(pfdbetaiso->at(imu));
-    mu.setIsLoose(isloose->at(imu));
-    mu.setIsTight(istight->at(imu));
-    mu.setIsPF(ispf->at(imu));
-    mu.setIsGlobal(isglobal->at(imu));
-    mu.setIsTracker(istracker->at(imu));
-    mu.setIsStandalone(isstandalone->at(imu));
-
-    muons.push_back(mu);
+  if(options_ & LOADRECO){
+    tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
+    tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
+    tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
+    tree->SetBranchAddress((branchName + "_mass"        ).c_str(), &mass);
+    tree->SetBranchAddress((branchName + "_q").c_str(), &q);
+    tree->SetBranchAddress((branchName + "_d0").c_str(), &d0);
+    tree->SetBranchAddress((branchName + "_dz").c_str(), &dz);
+    tree->SetBranchAddress((branchName + "_pfdbetaiso").c_str(), &pfdbetaiso);
+    tree->SetBranchAddress((branchName + "_isLoose").c_str(), &isloose);
+    tree->SetBranchAddress((branchName + "_isTight").c_str(), &istight);
+    tree->SetBranchAddress((branchName + "_isPF").c_str(), &ispf);
+    tree->SetBranchAddress((branchName + "_isGlobal").c_str(), &isglobal);
+    tree->SetBranchAddress((branchName + "_isTracker").c_str(), &istracker);
+    tree->SetBranchAddress((branchName + "_isStandAlone").c_str(), &isstandalone);
   }
-
-  return muons;
-
 }
 
+//--------------------------------------------------------------------------------------------------
+void MuonReader::refresh(){
+  if(!(options_ & FILLOBJ)) return;
+
+  if(options_ & LOADRECO){
+    muons.clear();
+    muons.reserve(pt->size());
+    for(unsigned int iL = 0; iL < pt->size(); ++iL){
+      muons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
+      muons.back().setCharge(q->at(iL));
+      muons.back().setD0(d0->at(iL));
+      muons.back().setDz(dz->at(iL));
+      muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
+      muons.back().setIsLoose(isloose->at(iL));
+      muons.back().setIsTight(istight->at(iL));
+      muons.back().setIsPF(ispf->at(iL));
+      muons.back().setIsGlobal(isglobal->at(iL));
+      muons.back().setIsTracker(istracker->at(iL));
+      muons.back().setIsStandalone(isstandalone->at(iL));
+    }
+  }
+}

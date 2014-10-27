@@ -20,13 +20,13 @@ namespace ucsbsusy {
   {
 
     public :
-      Tau() : index_(-1), leadCand_(0), leadChargedCand_(0), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0), passpogid_(false), passpogiso_(false), isgoodpogtau_(false) {}
+      Tau() : index_(-1), leadCand_(), leadChargedCand_(), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0), passpogid_(false), passpogiso_(false), isgoodpogtau_(false) {}
 
       template <class InputCoordSystem>
       Tau(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, 
-		Momentum<CoordSystem>* inLeadcand = 0,
-		Momentum<CoordSystem>* inLeadchcand = 0,
+		Momentum<CoordSystem> inLeadcand = Momentum<CoordSystem>(),
+		Momentum<CoordSystem> inLeadchcand = Momentum<CoordSystem>(),
 		int inCharge = 0, float inDxy = 0,
 		float inDxyerr = 0, float inDxysig = 0,
 		unsigned long inHpsid = 0) :
@@ -48,8 +48,10 @@ namespace ucsbsusy {
       bool	passpogid() 			{ return passpogid_;	}
       bool	passpogiso() 			{ return passpogiso_;	}
       bool	isgoodpogtau() 			{ return isgoodpogtau_;	}
-      const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return *leadCand_;		}
-      const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return *leadChargedCand_;	}
+      const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
+      void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
+      const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return leadChargedCand_;	}
+      void setLeadChargedCandidate(const Momentum<CoordSystem>& inMom)    { leadChargedCand_ = inMom; }
 
       void	setIndex(int newIndex)		{ index_ = newIndex;	}
       void	setCharge(int newCharge)	{ q_ = newCharge;	}
@@ -63,8 +65,8 @@ namespace ucsbsusy {
 
     protected :
       int	index_;  //Index in tau vector
-      Momentum<CoordSystem>*	leadCand_;
-      Momentum<CoordSystem>*	leadChargedCand_;
+      Momentum<CoordSystem>	leadCand_;
+      Momentum<CoordSystem>	leadChargedCand_;
       int	q_;
       float	dxy_;
       float	dxyerr_;
