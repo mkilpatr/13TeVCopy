@@ -42,34 +42,35 @@ namespace ucsbsusy {
 
       ~Muon() {}
 
-      void	setIndex(int newIndex)			{ index_ = newIndex;		}
       int	index() 				{ return index_;		}
-      void	setCharge(int newCharge)		{ q_ = newCharge;		}
       int	q() 					{ return q_;			}
-      void	setD0(float newD0)			{ d0_ = newD0;			}
       float	d0() 					{ return d0_;			}
-      void	setDz(float newDz)			{ dz_ = newDz;			}
       float	dz() 					{ return dz_;			}
-      void	setPFDBetaIso(float newIso)		{ pfdbetaiso_ = newIso;		}
       float	pfdbetaiso() 				{ return pfdbetaiso_;		}
-      void	setIsLoose(bool newType)		{ isloose_ = newType;		}
       bool	isloosemuon() 				{ return isloose_;		}
-      void	setIsTight(bool newType)		{ istight_ = newType;		}
       bool	istightmuon() 				{ return istight_;		}
-      void	setIsPF(bool newType)			{ ispf_ = newType;		}
       bool	ispfmuon() 				{ return ispf_;			}
-      void	setIsGlobal(bool newType)		{ isglobal_ = newType;		}
       bool	isglobal() 				{ return isglobal_;		}
-      void	setIsTracker(bool newType)		{ istracker_ = newType;		}
       bool	istracker() 				{ return istracker_;		}
-      void	setIsStandalone(bool newType)		{ isstandalone_ = newType;	}
       bool	isstandalone() 				{ return isstandalone_;		}
-      void	setPassPOGId(bool flag)			{ passpogid_ = flag;		}
       bool	passpogid() 				{ return passpogid_;		}
-      void	setPassPOGIso(bool flag)		{ passpogiso_ = flag;		}
       bool	passpogiso() 				{ return passpogiso_;		}
-      void	setIsGoodPOGMuon(bool flag)		{ isgoodpogmuon_ = flag;	}
       bool	isgoodpogmuon() 			{ return isgoodpogmuon_;	}
+
+      void	setIndex(int newIndex)			{ index_ = newIndex;		}
+      void	setCharge(int newCharge)		{ q_ = newCharge;		}
+      void	setD0(float newD0)			{ d0_ = newD0;			}
+      void	setDz(float newDz)			{ dz_ = newDz;			}
+      void	setPFDBetaIso(float newIso)		{ pfdbetaiso_ = newIso;		}
+      void	setIsLoose(bool newType)		{ isloose_ = newType;		}
+      void	setIsTight(bool newType)		{ istight_ = newType;		}
+      void	setIsPF(bool newType)			{ ispf_ = newType;		}
+      void	setIsGlobal(bool newType)		{ isglobal_ = newType;		}
+      void	setIsTracker(bool newType)		{ istracker_ = newType;		}
+      void	setIsStandalone(bool newType)		{ isstandalone_ = newType;	}
+      void	setPassPOGId(bool flag)			{ passpogid_ = flag;		}
+      void	setPassPOGIso(bool flag)		{ passpogiso_ = flag;		}
+      void	setIsGoodPOGMuon(bool flag)		{ isgoodpogmuon_ = flag;	}
 
     protected :
       int	index_;  //Index in muon vector
@@ -99,30 +100,31 @@ namespace ucsbsusy {
 
       ~ExtendedMuon() {}
 
-      void	setNChi2(float newVal)			{ nChi2_ = newVal;		}
       float	nChi2() 				{ return nChi2_;		}
-      void	setNValidHits(int newVal)		{ nValidHits_ = newVal;		}
       int	nValidHits() 				{ return nValidHits_;		}
-      void	setNMatch(int newVal)			{ nMatch_ = newVal;		}
       int	nMatch() 				{ return nMatch_;		}
-      void	setNPixHits(int newVal)			{ nPixHits_ = newVal;		}
       int	nPixHits() 				{ return nPixHits_;		}
-      void	setNTrackLayers(int newVal)		{ nTrackLayers_ = newVal;	}
       int	nTrackLayers() 				{ return nTrackLayers_;		}
-      void	setTrackIso(float newVal)		{ trackiso_ = newVal;		}
       float	trackiso() 				{ return trackiso_;		}
-      void	setEcalIso(float newVal)		{ ecaliso_ = newVal;		}
       float	ecaliso() 				{ return ecaliso_;		}
-      void	setHcalIso(float newVal)		{ hcaliso_ = newVal;		}
       float	hcaliso() 				{ return hcaliso_;		}
-      void	setPFChargedIso(float newVal)		{ pfchargediso_ = newVal;	}
       float	pfchargediso() 				{ return pfchargediso_;		}
-      void	setPFNeutralIso(float newVal)		{ pfneutraliso_ = newVal;	}
       float	pfneutraliso() 				{ return pfneutraliso_;		}
-      void	setPFPhotonIso(float newVal)		{ pfphotoniso_ = newVal;	}
       float	pfphotoniso() 				{ return pfphotoniso_;		}
-      void	setPFPUIso(float newVal)		{ pfpuiso_ = newVal;		}
       float	pfpuiso() 				{ return pfpuiso_;		}
+
+      void	setNChi2(float newVal)			{ nChi2_ = newVal;		}
+      void	setNValidHits(int newVal)		{ nValidHits_ = newVal;		}
+      void	setNMatch(int newVal)			{ nMatch_ = newVal;		}
+      void	setNPixHits(int newVal)			{ nPixHits_ = newVal;		}
+      void	setNTrackLayers(int newVal)		{ nTrackLayers_ = newVal;	}
+      void	setTrackIso(float newVal)		{ trackiso_ = newVal;		}
+      void	setEcalIso(float newVal)		{ ecaliso_ = newVal;		}
+      void	setHcalIso(float newVal)		{ hcaliso_ = newVal;		}
+      void	setPFChargedIso(float newVal)		{ pfchargediso_ = newVal;	}
+      void	setPFNeutralIso(float newVal)		{ pfneutraliso_ = newVal;	}
+      void	setPFPhotonIso(float newVal)		{ pfphotoniso_ = newVal;	}
+      void	setPFPUIso(float newVal)		{ pfpuiso_ = newVal;		}
 
     protected :
       float	nChi2_;
