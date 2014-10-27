@@ -36,7 +36,7 @@ namespace ucsbsusy {
       void load(BaseReader * reader, int options, string branchName);
 
       //Load the next event from the tree....return false if there are no more events in the tree
-      bool nextEvent();
+      bool nextEvent(bool verbose = false);
 
       bool    isMC;
       int     eventNumber; //current event number

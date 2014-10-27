@@ -41,7 +41,10 @@ void TauReader::load(TTree *tree, int options, string branchName)
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
+    cout << "Loading (" << branchName << ") taus with: ";
+
   if(options_ & LOADRECO){
+    cout <<"reco ";
     tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
     tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
     tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
@@ -60,6 +63,9 @@ void TauReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName + "_dxysig").c_str(), &dxysig);
     tree->SetBranchAddress((branchName + "_idflags").c_str(), &hpsid);
   }
+  if(options_ & FILLOBJ)
+    cout << "+Objects";
+  cout << endl;
 }
 
 //--------------------------------------------------------------------------------------------------

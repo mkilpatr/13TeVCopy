@@ -36,7 +36,10 @@ void ElectronReader::load(TTree *tree, int options, string branchName)
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
+    cout << "Loading (" << branchName << ") electrons with: ";
+
   if(options_ & LOADRECO){
+    cout << "reco ";
     tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
     tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
     tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
@@ -50,6 +53,9 @@ void ElectronReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName + "_mvaidnontrig").c_str(), &mvaidnontrig);
     tree->SetBranchAddress((branchName + "_mvaidtrig"   ).c_str(), &mvaidtrig);
   }
+  if(options_ & FILLOBJ)
+    cout << "+Objects";
+  cout << endl;
 }
 
 //--------------------------------------------------------------------------------------------------

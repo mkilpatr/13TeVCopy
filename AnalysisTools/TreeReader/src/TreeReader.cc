@@ -23,6 +23,8 @@ TreeReader::TreeReader(TString fileName, TString treeName, bool isMCTree, TStrin
     , muons(0)
     , taus(0)
 {
+  cout << "Loading file: "<< fileName <<" and tree: " << treeName <<endl;
+
   file = new TFile(fileName,readOption);
   assert(file);
   tree = (TTree*)(file->Get(treeName) );
@@ -85,10 +87,13 @@ void TreeReader::load(BaseReader * reader, int options, string branchName)
   readers.push_back(reader);
 }
 //--------------------------------------------------------------------------------------------------
-bool TreeReader::nextEvent()
+bool TreeReader::nextEvent(bool verbose)
 {
   if(eventNumber >= tree->GetEntries()) return false;
   tree->GetEntry(eventNumber);
+
+  if(verbose)
+    cout << "Running over event: " << eventNumber << endl;
 
   for(auto reader : readers)
     reader->refresh();

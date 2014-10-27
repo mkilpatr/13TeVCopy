@@ -37,7 +37,10 @@ void JetReader::load(TTree *tree, int options, string branchName)
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
+    cout << "Loading (" << branchName << ") jets with: ";
+
   if(options_ & LOADRECO){
+    cout << "reco ";
     tree->SetBranchAddress((branchName_ + "_jet_pt"    ).c_str(), &jetpt_    );
     tree->SetBranchAddress((branchName_ + "_jet_eta"   ).c_str(), &jeteta_   );
     tree->SetBranchAddress((branchName_ + "_jet_phi"   ).c_str(), &jetphi_   );
@@ -48,12 +51,16 @@ void JetReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName_ + "_jet_flavor").c_str(), &jetflavor_);
   }
   if(options_ & LOADGEN){
+    cout << "gen ";
     tree->SetBranchAddress((branchName_+"_matchedgenjet_pt"    ).c_str(), &genjetpt_    );
     tree->SetBranchAddress((branchName_+"_matchedgenjet_eta"   ).c_str(), &genjeteta_   );
     tree->SetBranchAddress((branchName_+"_matchedgenjet_phi"   ).c_str(), &genjetphi_   );
     tree->SetBranchAddress((branchName_+"_matchedgenjet_mass"  ).c_str(), &genjetmass_  );
     tree->SetBranchAddress((branchName_+"_matchedgenjet_flavor").c_str(), &genjetflavor_);
   }
+  if(options_ & FILLOBJ)
+    cout << "+Objects";
+  cout << endl;
 }
 
 //--------------------------------------------------------------------------------------------------
