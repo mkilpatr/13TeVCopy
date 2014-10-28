@@ -15,6 +15,7 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 #include "AnalysisTools/Utilities/interface/EGammaMvaEleEstimatorCSA14.h"
+#include "AnalysisTools/Utilities/interface/LeptonId.h"
 
 namespace ucsbsusy {
 
@@ -45,6 +46,7 @@ namespace ucsbsusy {
       // Evaluate POG MVA ID
       EGammaMvaEleEstimatorCSA14*	eleMVANonTrig;
       EGammaMvaEleEstimatorCSA14*	eleMVATrig;
+      LeptonId*				eleIdCuts;
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
       // List of stored information to be updated according to our needs
@@ -85,10 +87,10 @@ namespace ucsbsusy {
       vector<float>	ele_mvaidtrig_;
       // Id flags: cut-based electron ID flags stored for pat::Electrons. Q.: are these meaningful at all?
       // Value map: 0: fails, 1: passes electron ID only, 2: passes electron Isolation only, 3: passes electron ID and Isolation only, 4: passes conversion rejection, 5: passes conversion rejection and ID, 6: passes conversion rejection and Isolation, 7: passes the whole selection
-      vector<float>	ele_looseid_;
-      vector<float>	ele_tightid_;
-      vector<float>	ele_robustlooseid_;
-      vector<float>	ele_robusttightid_;
+      vector<bool>	ele_vetoid_;
+      vector<bool>	ele_looseid_;
+      vector<bool>	ele_mediumid_;
+      vector<bool>	ele_tightid_;
 
     public :
       // Data members
