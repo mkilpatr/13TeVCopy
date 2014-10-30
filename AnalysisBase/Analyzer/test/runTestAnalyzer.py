@@ -9,8 +9,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing("analysis")
 
 options.outputFile = "evttree.root"
-#options.inputFiles = "file:////uscms/home/nmccoll/nobackup/2011-04-15-susyra2/CMSSW_7_2_0_pre4/src/7E02B380-1528-E411-907B-00248C55CC7F.root"
-options.inputFiles = "/store/cmst3/user/gpetrucc/miniAOD/v1/TT_Tune4C_13TeV-pythia8-tauola_PU_S14_PAT.root" # if running at CERN
+options.inputFiles = "file:////uscms/home/nmccoll/nobackup/2011-04-15-susyra2/CMSSW_7_2_0_pre4/src/7E02B380-1528-E411-907B-00248C55CC7F.root"
+#options.inputFiles = "/store/cmst3/user/gpetrucc/miniAOD/v1/TT_Tune4C_13TeV-pythia8-tauola_PU_S14_PAT.root" # if running at CERN
 options.maxEvents = -1
 
 options.parseArguments()
