@@ -12,10 +12,12 @@
 #define ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 #include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
+#include "AnalysisTools/Utilities/interface/MCTruth.h"
 
 namespace ucsbsusy {
 
@@ -35,6 +37,7 @@ namespace ucsbsusy {
       // Input from the config file
       edm::InputTag	electronTag_;
       edm::InputTag	vtxTag_;
+      edm::InputTag	genParticleTag_;
       double		eleptMin_;
       int		bunchSpacing_;
       bool		printIds_;
@@ -42,6 +45,7 @@ namespace ucsbsusy {
       bool		fillIDVars_;
       bool		fillIsoVars_;
       bool		evaluatePOGMVA_;
+      bool		fillGenInfo_;
 
       // Evaluate POG MVA ID
       EGammaMvaEleEstimatorCSA14*	eleMVANonTrig;
@@ -91,11 +95,21 @@ namespace ucsbsusy {
       vector<bool>	ele_looseid_;
       vector<bool>	ele_mediumid_;
       vector<bool>	ele_tightid_;
+      // MC truth match information
+      vector<float>	ele_genpt_;
+      vector<float>	ele_geneta_;
+      vector<float>	ele_genphi_;
+      vector<float>	ele_genmass_;
+      vector<int>	ele_genpdgid_;
+      vector<int>	ele_genstatus_;
+      vector<int>	ele_genmotherpdgid_;
+      vector<int>	ele_genmotherstatus_;
 
     public :
       // Data members
       edm::Handle<pat::ElectronCollection>	electrons_;
       edm::Handle<reco::VertexCollection>	vertices_;
+      edm::Handle<pat::PackedGenParticleCollection>	genParticles_;
 
   };
 

@@ -139,20 +139,21 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     int index = jetpt_.size()-1;
 
     if(fillGenInfo_) {
+      jetflavor_.push_back(j.partonFlavour());
 #ifdef REDEFINED_GENJET_HACK
       if(gJ.isNonnull()) {
-#ifdef TAGGABLE_TYPE_HACK
-	jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
-#else
-	jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
-#endif
+//#ifdef TAGGABLE_TYPE_HACK
+//	jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
+//#else
+//	jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
+//#endif
 	genjetpt_.push_back(gJ->pt());
 	genjeteta_.push_back(gJ->eta());
 	genjetphi_.push_back(gJ->phi());
 	genjetmass_.push_back(gJ->mass());
 	genjetflavor_.push_back(jetflavor_[index]);
       } else {
-	jetflavor_.push_back(numTaggableTypes);
+//	jetflavor_.push_back(numTaggableTypes);
 	genjetpt_.push_back(-99.);
 	genjeteta_.push_back(-99.);
 	genjetphi_.push_back(-99.);
@@ -160,11 +161,11 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 	genjetflavor_.push_back(-99.);
       }
 #else
-#ifdef TAGGABLE_TYPE_HACK
-      jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
-#else
-      jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
-#endif
+//#ifdef TAGGABLE_TYPE_HACK
+//      jetflavor_.push_back(JetFlavorMatching::getPATTaggableType(j));
+//#else
+//      jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
+//#endif
       genjetpt_.push_back(gJ->pt());
       genjeteta_.push_back(gJ->eta());
       genjetphi_.push_back(gJ->phi());
