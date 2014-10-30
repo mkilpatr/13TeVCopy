@@ -23,17 +23,21 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : index_(-1), q_(0), scEta_(0), r9_(0), d0_(0), dz_(0), pfdbetaiso_(0), mvaidnontrig_(0), mvaidtrig_(0), passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
+      Electron() : index_(-1), q_(0), scEta_(0), r9_(0), d0_(0), dz_(0), pfdbetaiso_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inCharge = 0, float inSCEta = 0, float inR9 = 0, 
 		float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, 
-		float inMvaidnontrig = 0, float inMvaidtrig = 0) : 
+		float inMvaidnontrig = 0, float inMvaidtrig = 0,
+		bool inIsveto = false, bool inIsloose = false,
+		bool inIsmedium = false, bool inIstight = false) : 
 		Momentum<CoordSystem>(inMomentum), 
 		index_(inIndex), q_(inCharge), scEta_(inSCEta), r9_(inR9), 
 		d0_(inD0), dz_(inDz), pfdbetaiso_(inPfdbetaiso), 
 		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
+		isveto_(inIsveto), isloose_(inIsloose),
+		ismedium_(inIsmedium), istight_(inIstight),
 		passpogid_(false), passpogiso_(false), isgoodpogelectron_(false) {}
 
       ~Electron() {}
@@ -47,6 +51,10 @@ namespace ucsbsusy {
       float	pfdbetaiso() 			{ return pfdbetaiso_;	}
       float	mvaidnontrig() 			{ return mvaidnontrig_;	}
       float	mvaidtrig() 			{ return mvaidtrig_;	}
+      bool	isvetoelectron() 		{ return isveto_;	}
+      bool	islooseelectron() 		{ return isloose_;	}
+      bool	ismediumelectron() 		{ return ismedium_;	}
+      bool	istightelectron() 		{ return istight_;	}
       bool	passpogid() 			{ return passpogid_;	}
       bool	passpogiso() 			{ return passpogiso_;	}
       bool	isgoodpogelectron() 		{ return isgoodpogelectron_;	}
@@ -60,6 +68,10 @@ namespace ucsbsusy {
       void	setPFDBetaIso(float newIso)	{ pfdbetaiso_ = newIso;	}
       void	setMVAIDNonTrig(float newID)	{ mvaidnontrig_ = newID;}
       void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
+      void	setIsVeto(bool newType)		{ isveto_ = newType;	}
+      void	setIsLoose(bool newType)	{ isloose_ = newType;	}
+      void	setIsMedium(bool newType)	{ ismedium_ = newType;	}
+      void	setIsTight(bool newType)	{ istight_ = newType;	}
       void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
       void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
       void	setIsGoodPOGElectron(bool flag)	{ isgoodpogelectron_ = flag;	}
@@ -74,6 +86,10 @@ namespace ucsbsusy {
       float	pfdbetaiso_;
       float	mvaidnontrig_;
       float	mvaidtrig_;
+      bool	isveto_;
+      bool	isloose_;
+      bool	ismedium_;
+      bool	istight_;
       bool	passpogid_;
       bool	passpogiso_;
       bool	isgoodpogelectron_;

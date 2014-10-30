@@ -1,6 +1,7 @@
 <use name="root"/>
 <use name="rootmath"/>
 <use name="AnalysisTools/DataFormats"/>
+<use name="AnalysisTools/ObjectSelection"/>
 <export>
   <lib   name="1"/>
 </export>

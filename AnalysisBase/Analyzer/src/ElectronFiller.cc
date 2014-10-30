@@ -25,6 +25,7 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet &cfg) :
 {
 
   if(evaluatePOGMVA_) initMVA();
+  eleIdCuts = new LeptonId(true, bunchSpacing_);
 
 }
 
@@ -38,19 +39,19 @@ void ElectronFiller::initMVA()
   string base = getenv("CMSSW_BASE");
 
   if(bunchSpacing_ == 50) {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
   } else {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
   }
     
   eleMVANonTrig = new EGammaMvaEleEstimatorCSA14();
@@ -107,10 +108,10 @@ void ElectronFiller::book(TreeWriter& tW)
     tW.book("ele_mvaidnontrig", ele_mvaidnontrig_);
     tW.book("ele_mvaidtrig", ele_mvaidtrig_);
   }
+  tW.book("ele_vetoid", ele_vetoid_);
   tW.book("ele_looseid", ele_looseid_);
+  tW.book("ele_mediumid", ele_mediumid_);
   tW.book("ele_tightid", ele_tightid_);
-  tW.book("ele_robustlooseid", ele_robustlooseid_);
-  tW.book("ele_robusttightid", ele_robusttightid_);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -153,10 +154,10 @@ void ElectronFiller::reset()
     ele_mvaidnontrig_.resize(0);
     ele_mvaidtrig_.resize(0);
   }
+  ele_vetoid_.resize(0);
   ele_looseid_.resize(0);
+  ele_mediumid_.resize(0);
   ele_tightid_.resize(0);
-  ele_robustlooseid_.resize(0);
-  ele_robusttightid_.resize(0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -209,15 +210,26 @@ void ElectronFiller::fill(TreeWriter& tW, const int& numAnalyzed)
       ele_pfphotoniso_.push_back(el.pfIsolationVariables().sumPhotonEt);
       ele_pfpuiso_.push_back(el.pfIsolationVariables().sumPUPt);
     }
-    ele_pfdbetaiso_.push_back(el.pfIsolationVariables().sumChargedHadronPt + max(0.0 , el.pfIsolationVariables().sumNeutralHadronEt + el.pfIsolationVariables().sumPhotonEt - 0.5 * el.pfIsolationVariables().sumPUPt));
+    float dbiso = el.pfIsolationVariables().sumChargedHadronPt + max(0.0 , el.pfIsolationVariables().sumNeutralHadronEt + el.pfIsolationVariables().sumPhotonEt - 0.5 * el.pfIsolationVariables().sumPUPt);
+    ele_pfdbetaiso_.push_back(dbiso);
     if(evaluatePOGMVA_) {
       ele_mvaidnontrig_.push_back(eleMVANonTrig->mvaValue(el, false));
       ele_mvaidtrig_.push_back(eleMVATrig->mvaValue(el, false));
     }
-    ele_looseid_.push_back(el.electronID("eidLoose"));
-    ele_tightid_.push_back(el.electronID("eidTight"));
-    ele_robustlooseid_.push_back(el.electronID("eidRobustLoose"));
-    ele_robusttightid_.push_back(el.electronID("eidRobustTight"));
+
+    bool passveto = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(PV.position())), el.gsfTrack()->dz(PV.position()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::VETO); 
+
+    bool passloose = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(PV.position())), el.gsfTrack()->dz(PV.position()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::LOOSE); 
+
+    bool passmedium = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(PV.position())), el.gsfTrack()->dz(PV.position()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::MEDIUM); 
+
+    bool passtight = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(PV.position())), el.gsfTrack()->dz(PV.position()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::TIGHT); 
+
+    ele_vetoid_.push_back(passveto);
+    ele_looseid_.push_back(passloose);
+    ele_mediumid_.push_back(passmedium);
+    ele_tightid_.push_back(passtight);
+
     if(printIds_) {
       for (std::vector<pat::Electron::IdPair>::const_iterator it = el.electronIDs().begin(), ed = el.electronIDs().end(); it != ed; ++it) {
       std::cout << "Electron ID name: " << it->first << "; value: " << it->second << endl;

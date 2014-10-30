@@ -30,6 +30,7 @@ MuonReader::MuonReader() : BaseReader(){
   isglobal     = new vector<bool>;
   istracker    = new vector<bool>;
   isstandalone = new vector<bool>;
+  muonId       = new LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ void MuonReader::refresh(){
       muons.back().setIsGlobal(isglobal->at(iL));
       muons.back().setIsTracker(istracker->at(iL));
       muons.back().setIsStandalone(isstandalone->at(iL));
+      muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back())));
     }
   }
 }

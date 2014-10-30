@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 
 namespace ucsbsusy {
 
@@ -51,6 +52,9 @@ namespace ucsbsusy {
       vector<bool>  *	isstandalone;
 
       MuonFCollection muons;
+
+    private :
+      LeptonId* muonId;
 
   };
 
