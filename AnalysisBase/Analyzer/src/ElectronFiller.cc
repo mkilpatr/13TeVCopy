@@ -16,12 +16,14 @@ using namespace ucsbsusy;
 ElectronFiller::ElectronFiller(const edm::ParameterSet &cfg) :
   electronTag_(cfg.getParameter<edm::InputTag>("electrons")),
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
+  genParticleTag_(cfg.getParameter<edm::InputTag>("packedGenParticles")),
   eleptMin_(cfg.getUntrackedParameter<double>("minElectronPt", 5.)),
   bunchSpacing_(cfg.getUntrackedParameter<int>("bunchSpacing", 25)),
   printIds_(cfg.getUntrackedParameter<bool>("printElectronIDs", false)),
   fillIDVars_(cfg.getUntrackedParameter<bool>("fillElectronIDVars", false)),
   fillIsoVars_(cfg.getUntrackedParameter<bool>("fillElectronIsoVars", false)),
-  evaluatePOGMVA_(cfg.getUntrackedParameter<bool>("evaluateElectronPOGIDMVA", true))
+  evaluatePOGMVA_(cfg.getUntrackedParameter<bool>("evaluateElectronPOGIDMVA", true)),
+  fillGenInfo_(cfg.getUntrackedParameter<bool>("fillElectronGenInfo",false))
 {
 
   if(evaluatePOGMVA_) initMVA();
@@ -112,6 +114,16 @@ void ElectronFiller::book(TreeWriter& tW)
   tW.book("ele_looseid", ele_looseid_);
   tW.book("ele_mediumid", ele_mediumid_);
   tW.book("ele_tightid", ele_tightid_);
+  if(fillGenInfo_) {
+    tW.book("ele_genpt", ele_genpt_);
+    tW.book("ele_geneta", ele_geneta_);
+    tW.book("ele_genphi", ele_genphi_);
+    tW.book("ele_genmass", ele_genmass_);
+    tW.book("ele_genpdgid", ele_genpdgid_);
+    tW.book("ele_genstatus", ele_genstatus_);
+    tW.book("ele_genmotherpdgid", ele_genmotherpdgid_);
+    tW.book("ele_genmotherstatus", ele_genmotherstatus_);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -158,6 +170,16 @@ void ElectronFiller::reset()
   ele_looseid_.resize(0);
   ele_mediumid_.resize(0);
   ele_tightid_.resize(0);
+  if(fillGenInfo_) {
+    ele_genpt_.resize(0);
+    ele_geneta_.resize(0);
+    ele_genphi_.resize(0);
+    ele_genmass_.resize(0);
+    ele_genpdgid_.resize(0);
+    ele_genstatus_.resize(0);
+    ele_genmotherpdgid_.resize(0);
+    ele_genmotherstatus_.resize(0);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -167,6 +189,12 @@ void ElectronFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
   enforceGet(iEvent, electronTag_,electrons_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
   enforceGet(iEvent,vtxTag_,vertices_,true);
+
+  fillGenInfo_ = fillGenInfo_ && isMC;
+  if(fillGenInfo_) {
+    enforceGet(iEvent,genParticleTag_,genParticles_,true);
+  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -235,6 +263,41 @@ void ElectronFiller::fill(TreeWriter& tW, const int& numAnalyzed)
       std::cout << "Electron ID name: " << it->first << "; value: " << it->second << endl;
       }
     }
+
+    if(fillGenInfo_ && el.genParticle() != nullptr) {
+      ele_genpt_.push_back(el.genParticle()->pt());
+      ele_geneta_.push_back(el.genParticle()->eta());
+      ele_genphi_.push_back(el.genParticle()->phi());
+      ele_genmass_.push_back(el.genParticle()->mass());
+      ele_genpdgid_.push_back(el.genParticle()->pdgId());
+      ele_genstatus_.push_back(el.genParticle()->status());
+      const reco::Candidate* match = el.genParticle();
+      // check this!!
+      bool foundmom = false;
+      for(size_t j=0; j<genParticles_->size();j++){
+	const reco::Candidate* mother = (*genParticles_)[j].mother(0);
+	if(mother != nullptr && MCTruth::isAncestor(mother, match)) {
+	  foundmom = true;
+	  ele_genmotherpdgid_.push_back(mother->pdgId());
+	  ele_genmotherstatus_.push_back(mother->status());
+	  break;
+	}
+      }
+      if(!foundmom) {
+	ele_genmotherpdgid_.push_back(-99);
+	ele_genmotherstatus_.push_back(-99);
+      }
+    } else {
+      ele_genpt_.push_back(-99.0);
+      ele_geneta_.push_back(-99.0);
+      ele_genphi_.push_back(-99.0);
+      ele_genmass_.push_back(-99.0);
+      ele_genpdgid_.push_back(-99);
+      ele_genstatus_.push_back(-99);
+      ele_genmotherpdgid_.push_back(-99);
+      ele_genmotherstatus_.push_back(-99);
+    }
+
   }
 
 }

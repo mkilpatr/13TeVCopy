@@ -36,6 +36,7 @@ nominal_configuration = cms.PSet(
                                       genEventInfoSource      = cms.InputTag (""),                                                                                
                                       
                                       bunchSpacing      = cms.untracked.int32(25),
+                                      packedGenParticles= cms.InputTag('packedGenParticles'),
 
                                       vertices          = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                       mets              = cms.InputTag("slimmedMETs"),  
@@ -53,6 +54,7 @@ nominal_configuration = cms.PSet(
                                       requireLooseMuon  = cms.untracked.bool(True),
                                       fillMuonIDVars    = cms.untracked.bool(False),
                                       fillMuonIsoVars   = cms.untracked.bool(True),
+                                      fillMuonGenInfo   = cms.untracked.bool(True),
 
                                       electrons                 = cms.InputTag('slimmedElectrons'),
                                       minElectronPt             = cms.untracked.double(5.0),
@@ -60,6 +62,7 @@ nominal_configuration = cms.PSet(
                                       fillElectronIDVars        = cms.untracked.bool(False),
                                       fillElectronIsoVars       = cms.untracked.bool(False),
                                       evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
+                                      fillElectronGenInfo       = cms.untracked.bool(True),
 
                                       taus                      = cms.InputTag('slimmedTaus'),
                                       minTauPt                  = cms.untracked.double(18.0),
