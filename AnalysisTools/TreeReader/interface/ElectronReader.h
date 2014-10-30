@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Electron.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 
 namespace ucsbsusy {
 
@@ -46,8 +47,15 @@ namespace ucsbsusy {
       vector<float> *		pfdbetaiso;
       vector<float> *		mvaidnontrig;
       vector<float> *		mvaidtrig;
+      vector<bool>  *		isveto;
+      vector<bool>  *		isloose;
+      vector<bool>  *		ismedium;
+      vector<bool>  *		istight;
 
       ElectronFCollection electrons;
+
+    private :
+      LeptonId* eleId;
 
   };
 

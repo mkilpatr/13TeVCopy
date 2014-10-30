@@ -14,8 +14,8 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
-#include "AnalysisTools/Utilities/interface/EGammaMvaEleEstimatorCSA14.h"
-#include "AnalysisTools/Utilities/interface/LeptonId.h"
+#include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 
 namespace ucsbsusy {
 

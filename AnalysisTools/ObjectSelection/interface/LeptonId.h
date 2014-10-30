@@ -8,26 +8,26 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_UTILITIES_LEPTONID_H
-#define ANALYSISTOOLS_UTILITIES_LEPTONID_H
+#ifndef ANALYSISTOOLS_OBJECTSELECTION_LEPTONID_H
+#define ANALYSISTOOLS_OBJECTSELECTION_LEPTONID_H
 
 #include <map>
-#include <array>
 #include <iostream>
 
 #include "AnalysisTools/DataFormats/interface/Electron.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
+#include "AnalysisTools/DataFormats/interface/Tau.h"
 
 namespace ucsbsusy {
 
-  typedef std::map<std::string, std::array<float, 4> > eleCuts;
+  typedef std::map<std::string, float* > eleCuts;
 
   class LeptonId
   {
 
     public :
       // arguments needed to set up cut values ... this is not very elegant right now
-      LeptonId(int bunchSpacing = 25, bool initElectronIds = true);
+      LeptonId(bool initElectronIds = false, int bunchSpacing = 25);
 
       ~LeptonId();
 
@@ -35,6 +35,11 @@ namespace ucsbsusy {
 
       void setBunchSpacing(int val)		{ bunchSpacing_ = val;	}
       bool initElectronCuts(int bunchSpacing);
+
+      // Standard POG selections
+      bool passElectronId(ElectronF *ele, unsigned int WP = TIGHT);
+      bool passMuonId(MuonF *mu, unsigned int WP = LOOSE); // WP is for isolation cut
+      bool passTauId(TauF *tau, unsigned int isoWP = LOOSE, unsigned int antimuWP = MEDIUM, unsigned int antieleWP = MEDIUM); // choose some defaults for now, to be studied
 
       bool passEleIdCSA14CutBased(ExtendedElectron *ele, unsigned int WP);
       bool passEleIdCSA14CutBased(float elePt, float eleSCeta,
@@ -47,6 +52,8 @@ namespace ucsbsusy {
       bool passEleIdCSA14MVA(ElectronF *ele, unsigned int WP);
       bool passEleIsoCSA14(ElectronF *ele, unsigned int WP);
       bool passEleIsoCSA14(float elePt, float eleSCeta, float elePFdbetaiso, unsigned int WP);
+      bool passMuonIdOnly(MuonF *mu);
+      bool passMuonIso(MuonF *mu, unsigned int WP = LOOSE);
 
     private :
       int	bunchSpacing_;
