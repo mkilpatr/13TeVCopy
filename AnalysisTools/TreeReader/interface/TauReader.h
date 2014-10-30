@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Tau.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 
 namespace ucsbsusy {
 
@@ -53,6 +54,9 @@ namespace ucsbsusy {
       vector<unsigned long>  *	hpsid;
 
       TauFCollection    taus;
+
+    private :
+      LeptonId* tauId;
 
   };
 

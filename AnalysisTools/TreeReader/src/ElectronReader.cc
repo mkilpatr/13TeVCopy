@@ -28,6 +28,11 @@ ElectronReader::ElectronReader() : BaseReader(){
   pfdbetaiso   = new vector<float> ;
   mvaidnontrig = new vector<float> ;
   mvaidtrig    = new vector<float> ;
+  isveto       = new vector<bool>  ;
+  isloose      = new vector<bool>  ;
+  ismedium     = new vector<bool>  ;
+  istight      = new vector<bool>  ;
+  eleId        = new LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -52,6 +57,10 @@ void ElectronReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName + "_pfdbetaiso"  ).c_str(), &pfdbetaiso);
     tree->SetBranchAddress((branchName + "_mvaidnontrig").c_str(), &mvaidnontrig);
     tree->SetBranchAddress((branchName + "_mvaidtrig"   ).c_str(), &mvaidtrig);
+    tree->SetBranchAddress((branchName + "_vetoid"      ).c_str(), &isveto);
+    tree->SetBranchAddress((branchName + "_looseid"     ).c_str(), &isloose);
+    tree->SetBranchAddress((branchName + "_mediumid"    ).c_str(), &ismedium);
+    tree->SetBranchAddress((branchName + "_tightid"     ).c_str(), &istight);
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";
@@ -75,6 +84,11 @@ void ElectronReader::refresh(){
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
       electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
+      electrons.back().setIsVeto(isveto->at(iL));
+      electrons.back().setIsLoose(isloose->at(iL));
+      electrons.back().setIsMedium(ismedium->at(iL));
+      electrons.back().setIsTight(istight->at(iL));
+      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back())));
     }
   }
 }

@@ -25,7 +25,7 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet &cfg) :
 {
 
   if(evaluatePOGMVA_) initMVA();
-  eleIdCuts = new LeptonId(bunchSpacing_);
+  eleIdCuts = new LeptonId(true, bunchSpacing_);
 
 }
 
@@ -39,19 +39,19 @@ void ElectronFiller::initMVA()
   string base = getenv("CMSSW_BASE");
 
   if(bunchSpacing_ == 50) {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
   } else {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/Utilities/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
   }
     
   eleMVANonTrig = new EGammaMvaEleEstimatorCSA14();
