@@ -1,6 +1,7 @@
 <use name="FWCore/Utilities"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="roottmva"/>
 <export>
   <lib   name="1"/>
 </export>

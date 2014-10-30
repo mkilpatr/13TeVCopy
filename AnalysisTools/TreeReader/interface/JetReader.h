@@ -21,9 +21,9 @@ class JetReader : public BaseReader {
 public :
   enum  Options           {
                             NULLOPT         = 0
-                          , LOADRECO        = (1 <<  1)    ///< Load standard reco jets
-                          , LOADGEN         = (1 <<  2)   ///< load gen jets
-                          , FILLOBJ         = (1 <<  3)   ///< Fill objects (as opposed to just pointers
+                          , LOADRECO        = (1 <<  0)    ///< Load standard reco jets
+                          , LOADGEN         = (1 <<  1)   ///< load gen jets
+                          , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
 
