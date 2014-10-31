@@ -6,7 +6,7 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#include "AnalysisTools/TreeReader/interface/BaseTreeAnalyzer.h"
+#include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 
 using namespace ucsbsusy;
 
