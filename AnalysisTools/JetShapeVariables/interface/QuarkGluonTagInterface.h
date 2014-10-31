@@ -6,7 +6,7 @@
 #include <vector>
 #include <utility>
 
-#include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagger.h"
+#include "AnalysisTools/JetShapeVariables/interface/QGLikelihoodCalculator.h"
 
 
 //_____________________________________________________________________________
