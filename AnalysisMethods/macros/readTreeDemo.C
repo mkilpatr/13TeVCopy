@@ -6,7 +6,7 @@
 #include "TString.h"
 #include "TH1F.h"
 #include "TCanvas.h"
-#include "AnalysisTools/TreeReader/interface/BaseTreeAnalyzer.h"
+#include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 
 using namespace ucsbsusy;
 
