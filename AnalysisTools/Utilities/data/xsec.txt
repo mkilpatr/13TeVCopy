@@ -1,0 +1,36 @@
+#######################################################################
+# Sample name	DAS dataset name	MCM xsec [pb]	# events in DAS
+#######################################################################
+T2tt_500_325	/SMS-T2tt_2J_mStop-500_mLSP-325_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.51848	112116
+T2tt_425_325	/SMS-T2tt_2J_mStop-425_mLSP-325_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	1.31169	1045470
+T2tt_650_325	/SMS-T2tt_2J_mStop-650_mLSP-325_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.107045	107131
+T2tt_850_100	/SMS-T2tt_2J_mStop-850_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_PLS170_V7AN1-v1/MINIAODSIM	0.0189612	102839
+T1tttt_1200_800	/SMS-T1tttt_2J_mGl-1200_mLSP-800_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v2/MINIAODSIM	0.0856418	100322
+T1tttt_1500_100	/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v2/MINIAODSIM	0.0141903	105679
+ttbar	/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v2/MINIAODSIM	424.5	25474122
+t_tW	/T_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	35	986100
+tbar_tW	/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	35	971800
+ttW	/TTWJets_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_PLS170_V7AN1-v1/MINIAODSIM	1.152	249415
+ttZ	/TTZJets_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	2.232	248579
+wjets	/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	50100	44190836
+wjets_ht100to200	/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v2/MINIAODSIM	1817	5229141
+wjets_ht200to400	/WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	471.6	4933933
+wjets_ht400to600	/WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	55.61	4642823
+wjets_ht600toinf	/WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	18.81	4634811
+znunu_ht100to200	/ZJetsToNuNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	372.6	4950929
+znunu_ht200to400	/ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	100.8	4548024
+znunu_ht400to600	/ZJetsToNuNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM	11.99	4453911
+znunu_ht600toinf	/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v2/MINIAODSIM	4.113	4546053
+qcd_pt15to30	/QCD_Pt-15to30_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	2237000000	4887459
+qcd_pt30to50	/QCD_Pt-30to50_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	161500000	4848856
+qcd_pt50to80	/QCD_Pt-50to80_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	22110000	4726495
+qcd_pt80to120	/QCD_Pt-80to120_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	3000114.3	4794295
+qcd_pt120to170	/QCD_Pt-120to170_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	493200	4809872
+qcd_pt170to300	/QCD_Pt-170to300_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	120300	2793204
+qcd_pt300to470	/QCD_Pt-300to470_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	7475	2700637
+qcd_pt470to600	/QCD_Pt-470to600_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	587.1	2907137
+qcd_pt600to800	/QCD_Pt-600to800_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	167	2853619
+qcd_pt800to1000	/QCD_Pt-800to1000_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	28.25	2875729
+qcd_pt1000to1400	/QCD_Pt-1000to1400_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	8.195	2884228
+qcd_pt1400to1800	/QCD_Pt-1400to1800_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.7346	2931414
+qcd_pt1800toinf	/QCD_Pt-1800_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.1091	2935195
