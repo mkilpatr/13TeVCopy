@@ -21,7 +21,7 @@ public:
   }
 
   void run(){
-    cout << "MET= " << eventInfo->met << ": number of vertices = " << eventInfo->nPV << endl;
+    cout << "MET= " << evtInfoReader.met.pt() << ": number of vertices = " << evtInfoReader.nPV << endl;
     for(const auto& jet : (*ak4Jets)){
       cout << "Jet " << ": pt = " << jet.pt() << "; eta = " << jet.eta() << "; phi = " << jet.phi()<<endl;
     }
