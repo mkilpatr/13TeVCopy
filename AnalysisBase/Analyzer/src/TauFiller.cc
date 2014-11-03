@@ -14,11 +14,11 @@ using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 TauFiller::TauFiller(const edm::ParameterSet &cfg) :
+  fillRawDiscs_(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators", false)),
   tauTag_(cfg.getParameter<edm::InputTag>("taus")),
   vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
   tauptMin_(cfg.getUntrackedParameter<double>("minTauPt", 18.)),
-  printIds_(cfg.getUntrackedParameter<bool>("printTauIDs", false)),
-  fillRawDiscs_(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators", false))
+  printIds_(cfg.getUntrackedParameter<bool>("printTauIDs", false))
 {
 
   initTauIdNames();
@@ -140,7 +140,7 @@ void TauFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
+void TauFiller::load(edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);

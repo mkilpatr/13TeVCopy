@@ -13,17 +13,17 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-ElectronFiller::ElectronFiller(const edm::ParameterSet &cfg) :
-  electronTag_(cfg.getParameter<edm::InputTag>("electrons")),
-  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
-  genParticleTag_(cfg.getParameter<edm::InputTag>("packedGenParticles")),
-  eleptMin_(cfg.getUntrackedParameter<double>("minElectronPt", 5.)),
-  bunchSpacing_(cfg.getUntrackedParameter<int>("bunchSpacing", 25)),
-  printIds_(cfg.getUntrackedParameter<bool>("printElectronIDs", false)),
+ElectronFiller::ElectronFiller(const edm::ParameterSet &cfg, const bool isMC) :
   fillIDVars_(cfg.getUntrackedParameter<bool>("fillElectronIDVars", false)),
   fillIsoVars_(cfg.getUntrackedParameter<bool>("fillElectronIsoVars", false)),
   evaluatePOGMVA_(cfg.getUntrackedParameter<bool>("evaluateElectronPOGIDMVA", true)),
-  fillGenInfo_(cfg.getUntrackedParameter<bool>("fillElectronGenInfo",false))
+  fillGenInfo_(isMC && cfg.getUntrackedParameter<bool>("fillElectronGenInfo",false)),
+  electronTag_(cfg.getParameter<edm::InputTag>("electrons")),
+  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
+  genParticleTag_(fillGenInfo_ ? cfg.getParameter<edm::InputTag>("packedGenParticles") : edm::InputTag()),
+  eleptMin_(cfg.getUntrackedParameter<double>("minElectronPt", 5.)),
+  bunchSpacing_(cfg.getUntrackedParameter<int>("bunchSpacing", 25)),
+  printIds_(cfg.getUntrackedParameter<bool>("printElectronIDs", false))
 {
 
   if(evaluatePOGMVA_) initMVA();
@@ -183,14 +183,13 @@ void ElectronFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void ElectronFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
+void ElectronFiller::load(edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
   FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
 
-  fillGenInfo_ = fillGenInfo_ && isMC;
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }

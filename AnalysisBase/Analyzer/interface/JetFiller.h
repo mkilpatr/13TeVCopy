@@ -20,12 +20,12 @@ namespace ucsbsusy {
   class JetFiller : public BaseFiller {
 
     public:
-      JetFiller(const edm::ParameterSet &cfg);
+      JetFiller(const edm::ParameterSet &cfg, bool isMC = false);
       ~JetFiller() {}
 
       void		book(TreeWriter& tW);
       void		reset();
-      void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
       reco::GenJetRef	getReGenJet(const pat::Jet& jet)  const;
@@ -35,13 +35,13 @@ namespace ucsbsusy {
 
     private:
       // Input from the config file
-      edm::InputTag	jetTag_;
-      edm::InputTag	reGenJetTag_;
-      edm::InputTag	stdGenJetTag_;
-      edm::InputTag	genParticleTag_;
-      double		jptMin_;
-      bool		fillGenInfo_;
-      string		jetsName_;          // used as prefix in branch names to specify the type of jets filled (e.g., ak4)
+      const bool          fillGenInfo_;
+      const edm::InputTag	jetTag_;
+      const edm::InputTag	reGenJetTag_;
+      const edm::InputTag	stdGenJetTag_;
+      const edm::InputTag	genParticleTag_;
+      const double		    jptMin_;
+      const string		    jetsName_;          // used as prefix in branch names to specify the type of jets filled (e.g., ak4)
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
       vector<float>	jetpt_;

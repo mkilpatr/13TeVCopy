@@ -67,7 +67,7 @@ void EventInfoFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC)
+void EventInfoFiller::load(edm::Event& iEvent)
 {
   reset();
 

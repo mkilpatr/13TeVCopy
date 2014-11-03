@@ -13,15 +13,15 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-MuonFiller::MuonFiller(const edm::ParameterSet &cfg) :
-  muonTag_(cfg.getParameter<edm::InputTag>("muons")),
-  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
-  genParticleTag_(cfg.getParameter<edm::InputTag>("packedGenParticles")),
-  muptMin_(cfg.getUntrackedParameter<double>("minMuonPt", 5.)),
-  requireLoose_(cfg.getUntrackedParameter<bool>("requireLooseMuon", true)),
+MuonFiller::MuonFiller(const edm::ParameterSet &cfg, const bool isMC) :
   fillIDVars_(cfg.getUntrackedParameter<bool>("fillMuonIDVars", false)),
   fillIsoVars_(cfg.getUntrackedParameter<bool>("fillMuonIsoVars", false)),
-  fillGenInfo_(cfg.getUntrackedParameter<bool>("fillMuonGenInfo",false))
+  fillGenInfo_(isMC && cfg.getUntrackedParameter<bool>("fillMuonGenInfo",false)),
+  requireLoose_(cfg.getUntrackedParameter<bool>("requireLooseMuon", true)),
+  muonTag_(cfg.getParameter<edm::InputTag>("muons")),
+  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
+  genParticleTag_(fillGenInfo_ ? cfg.getParameter<edm::InputTag>("packedGenParticles") : edm::InputTag()),
+  muptMin_(cfg.getUntrackedParameter<double>("minMuonPt", 5.))
 {
 
 }
@@ -117,14 +117,13 @@ void MuonFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void MuonFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
+void MuonFiller::load(edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
   FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
 
-  fillGenInfo_ = fillGenInfo_ && isMC;
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }

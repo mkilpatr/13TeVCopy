@@ -27,7 +27,7 @@ namespace ucsbsusy {
 
       void			book(TreeWriter& tW);
       void			reset();
-      void			load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void			load(edm::Event& iEvent);
       void			fill(TreeWriter& tW, const int& numAnalyzed);
 
       const math::XYZPoint&	primaryVertex()	  const	{ return primaryVertex_;	}

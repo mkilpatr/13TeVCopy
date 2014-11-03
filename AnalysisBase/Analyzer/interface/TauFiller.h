@@ -30,10 +30,12 @@ namespace ucsbsusy {
       void		initTauIdNames();
       void		book(TreeWriter& tW);
       void		reset();
-      void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
     private :
+      // Whether or not to store the raw HPS discriminator outputs
+      const bool    fillRawDiscs_;
       // Input from the config file
       edm::InputTag	tauTag_;
       edm::InputTag	vtxTag_;
@@ -41,8 +43,7 @@ namespace ucsbsusy {
       bool		printIds_;
       // Map of HPS discriminator names to flags
       TauIdMap		hpsIds_;
-      // Whether or not to store the raw HPS discriminator outputs
-      bool		fillRawDiscs_;
+
 
       // Members to hold info to be filled in the tree
       // List of stored information to be updated according to our needs

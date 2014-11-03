@@ -22,9 +22,9 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , crossSectionScaling (iConfig.getParameter<double          >("crossSectionScaling"    ))
 // ---- Configure event information
 , eventInfo           (iConfig)
-, jets                (iConfig)
-, muons               (iConfig)
-, electrons           (iConfig)
+, jets                (iConfig, isMC())
+, muons               (iConfig, isMC())
+, electrons           (iConfig, isMC())
 , taus                (iConfig)
 
 {
@@ -109,9 +109,9 @@ void PhysicsAnalyzer::book(BaseFiller* filler)
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::loadObj(BaseFiller* filler, bool storeOnlyPtr)
+void PhysicsAnalyzer::loadObj(BaseFiller* filler)
 {
-  filler->load(*event_,storeOnlyPtr, isMC());
+  filler->load(*event_);
 }
 
 //--------------------------------------------------------------------------------------------------
