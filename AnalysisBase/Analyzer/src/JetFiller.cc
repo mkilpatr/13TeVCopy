@@ -18,20 +18,21 @@ using namespace ucsbsusy;
 #define REDEFINED_GENJET_HACK
 
 //--------------------------------------------------------------------------------------------------
-JetFiller::JetFiller(const edm::ParameterSet &cfg) :
-  jetTag_(cfg.getParameter<edm::InputTag>("jets")),
-  reGenJetTag_(cfg.getParameter<edm::InputTag>("reGenJets")),
-  stdGenJetTag_(cfg.getParameter<edm::InputTag>("stdGenJets")),
-  genParticleTag_(cfg.getParameter<edm::InputTag>("genParticles")),
-  jptMin_(cfg.getUntrackedParameter<double>("minJetPt")),
-  fillGenInfo_(cfg.getUntrackedParameter<bool>("fillJetGenInfo",false)),
-  jetsName_(cfg.getUntrackedParameter<string>("jetsType")),
-  jets_(0),
-  reGenJets_(0),
-  stdGenJets_(0)
-{
-
-}
+JetFiller::JetFiller(const edm::ParameterSet &cfg, const bool isMC) :
+  fillGenInfo_     (isMC && cfg.getUntrackedParameter<bool>("fillJetGenInfo",false)),
+  fillJetShapeInfo_(cfg.getUntrackedParameter<bool>("fillJetGenInfo",false)),
+  jetTag_          (cfg.getParameter<edm::InputTag>("jets")),
+  reGenJetTag_     (cfg.getParameter<edm::InputTag>("reGenJets")),
+  stdGenJetTag_    (cfg.getParameter<edm::InputTag>("stdGenJets")),
+  genParticleTag_  (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("genParticles") : edm::InputTag()),
+  rhoTag_          (fillJetShapeInfo_ ? cfg.getParameter<edm::InputTag>("rho") : edm::InputTag()),
+  jptMin_          (cfg.getUntrackedParameter<double>("minJetPt")),
+  jetsName_        (cfg.getUntrackedParameter<string>("jetsType")),
+  qglInterface_    (fillJetShapeInfo_ ? new QuarkGluonTagInterface : 0),
+  jets_            (0),
+  reGenJets_       (0),
+  stdGenJets_      (0)
+{}
 
 //--------------------------------------------------------------------------------------------------
 reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
@@ -70,6 +71,9 @@ void JetFiller::book(TreeWriter& tW)
     tW.book((jetsName_+"_matchedgenjet_mass").c_str(), genjetmass_);
     tW.book((jetsName_+"_matchedgenjet_flavor").c_str(), genjetflavor_);
   }
+  if(fillJetShapeInfo_) {
+    tW.book((jetsName_+"_jet_qgl").c_str(), jetqgl_);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -90,15 +94,16 @@ void JetFiller::reset()
     genjetmass_.resize(0);
     genjetflavor_.resize(0);
   }
+  if(fillJetShapeInfo_) {
+    jetqgl_.resize(0);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
-void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
+void JetFiller::load(edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
-
-  fillGenInfo_ = fillGenInfo_ && isMC;
 
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
@@ -110,6 +115,10 @@ void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
     std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
     JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
 #endif
+  }
+
+  if(fillJetShapeInfo_){
+    FileUtilities::enforceGet(iEvent,rhoTag_,rho_,true);
   }
 
 }
@@ -172,6 +181,9 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
       genjetmass_.push_back(gJ->mass());
       genjetflavor_.push_back(jetflavor_[index]);
 #endif
+    }
+    if(fillJetShapeInfo_){
+      jetqgl_.push_back(qglInterface_->getDiscriminator(j,*rho_));
     }
   }
 

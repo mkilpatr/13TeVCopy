@@ -4,6 +4,7 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="CommonTools/UtilAlgos"/>
 <use name="AnalysisTools/DataFormats"/>
+<use name="AnalysisTools/JetShapeVariables"/>
 <use name="AnalysisTools/Utilities"/>
 <use name="AnalysisTools/ObjectSelection"/>
 <export>

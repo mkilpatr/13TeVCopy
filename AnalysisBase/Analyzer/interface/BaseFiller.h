@@ -40,7 +40,7 @@ namespace ucsbsusy {
     // Default loading function
     // This guy needs to be defined for each implementation and is run once per event
     // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
-    virtual void	load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMc = false) = 0;
+    virtual void	load(edm::Event& iEvent) = 0;
 
     // Tree filling function
     // numAnalyzed is to be used to keep track of number of analyzed events

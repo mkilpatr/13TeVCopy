@@ -13,10 +13,6 @@
 class QuarkGluonTagInterface {
 protected:
   QGLikelihoodCalculator*   qglikeli_;
-  const int                 indexFlavor;
-  const int                 indexPT;
-
-
 
 public:
   ~QuarkGluonTagInterface() {  delete qglikeli_;}

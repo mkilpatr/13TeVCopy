@@ -4,8 +4,8 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_TREEREADER_BASETREEREADER_H
-#define ANALYSISTOOLS_TREEREADER_BASETREEREADER_H
+#ifndef ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
+#define ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
 
 #include <string>
 #include <vector>
@@ -14,6 +14,11 @@
 #include <TTree.h>
 
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
+#include "AnalysisTools/TreeReader/interface/JetReader.h"
+#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
+#include "AnalysisTools/TreeReader/interface/MuonReader.h"
+#include "AnalysisTools/TreeReader/interface/TauReader.h"
 
 using namespace std;
 
@@ -25,7 +30,7 @@ namespace ucsbsusy {
     enum VarType {EVTINFO, AK4JETS, ELECTRONS, MUONS, TAUS};
 
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
-    ~BaseTreeAnalyzer() {};
+    virtual ~BaseTreeAnalyzer() {};
 
     //Load a variable type to be read from the TTree
     //use the defaultOptions if options is less than 1
@@ -37,7 +42,7 @@ namespace ucsbsusy {
     template<typename varType> varType*	loadObject(string branchName){ return reader.loadObject<varType>(branchName);}
 
     //load the next event
-    bool	nextEvent(int reportFrequency = 100000);
+    virtual bool	nextEvent(int reportFrequency = 100000);
 
     //get event number
     int		getEventNumber()  const	{ return reader.eventNumber;	}
@@ -59,7 +64,6 @@ namespace ucsbsusy {
     TauReader		tauReader;
 
     //Pointers to default objects (for ease of access)
-    EventInfo*			eventInfo;
     RecoJetFCollection*		ak4Jets;
     GenJetFCollection*		ak4GenJets;
     ElectronFCollection*	electrons;

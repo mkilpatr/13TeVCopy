@@ -12,9 +12,6 @@
 #define ANALYSISTOOLS_TREEREADER_BASEREADER_H
 
 #include <string>
-#include <vector>
-#include <assert.h>
-#include <TString.h>
 #include <TTree.h>
 
 using namespace std;

@@ -24,25 +24,26 @@ namespace ucsbsusy {
   class MuonFiller : public BaseFiller {
 
     public :
-      MuonFiller(const edm::ParameterSet &cfg);
+      MuonFiller(const edm::ParameterSet &cfg, const bool isMC);
       ~MuonFiller() {}
 
       void		book(TreeWriter& tW);
       void		reset();
-      void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
     private :
-      // Input from the config file
-      edm::InputTag	muonTag_;
-      edm::InputTag	vtxTag_;
-      edm::InputTag	genParticleTag_;
-      double		muptMin_;
       // Stored information can be customized
-      bool		requireLoose_;         // only store muons which pass "Loose " ID
-      bool		fillIDVars_;
-      bool		fillIsoVars_;
-      bool		fillGenInfo_;
+      const bool    fillIDVars_;
+      const bool    fillIsoVars_;
+      const bool    fillGenInfo_;
+      const bool    requireLoose_;         // only store muons which pass "Loose " ID
+      // Input from the config file
+      const edm::InputTag	muonTag_;
+      const edm::InputTag	vtxTag_;
+      const edm::InputTag	genParticleTag_;
+      const double		muptMin_;
+
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
       // List of stored information to be updated according to our needs

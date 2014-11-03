@@ -10,12 +10,7 @@
 #define ANALYSISTOOLS_TREEREADER_TREEREADER_H
 
 #include <TFile.h>
-
-#include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
-#include "AnalysisTools/TreeReader/interface/JetReader.h"
-#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
-#include "AnalysisTools/TreeReader/interface/MuonReader.h"
-#include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/BaseReader.h"
 
 using namespace std;
 

@@ -24,28 +24,28 @@ namespace ucsbsusy {
   class ElectronFiller : public BaseFiller {
 
     public :
-      ElectronFiller(const edm::ParameterSet &cfg);
+      ElectronFiller(const edm::ParameterSet &cfg, const bool isMC);
       ~ElectronFiller() {}
 
       void		initMVA();
       void		book(TreeWriter& tW);
       void		reset();
-      void		load(edm::Event& iEvent, bool storeOnlyPtr = false, bool isMC = false);
+      void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
     private :
-      // Input from the config file
-      edm::InputTag	electronTag_;
-      edm::InputTag	vtxTag_;
-      edm::InputTag	genParticleTag_;
-      double		eleptMin_;
-      int		bunchSpacing_;
-      bool		printIds_;
       // Stored information can be customized
-      bool		fillIDVars_;
-      bool		fillIsoVars_;
-      bool		evaluatePOGMVA_;
-      bool		fillGenInfo_;
+      const bool    fillIDVars_;
+      const bool    fillIsoVars_;
+      const bool    evaluatePOGMVA_;
+      const bool    fillGenInfo_;
+      // Input from the config file
+      const edm::InputTag	electronTag_;
+      const edm::InputTag	vtxTag_;
+      const edm::InputTag	genParticleTag_;
+      const double		eleptMin_;
+      const int		bunchSpacing_;
+      const bool		printIds_;
 
       // Evaluate POG MVA ID
       EGammaMvaEleEstimatorCSA14*	eleMVANonTrig;

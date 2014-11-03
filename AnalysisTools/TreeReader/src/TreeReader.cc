@@ -6,7 +6,8 @@
 //
 // 
 //--------------------------------------------------------------------------------------------------
-
+#include <assert.h>
+#include <iostream>
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
 
 using namespace ucsbsusy;
@@ -14,14 +15,14 @@ using namespace ucsbsusy;
 //--------------------------------------------------------------------------------------------------
 TreeReader::TreeReader(TString fileName, TString treeName, TString readOption) : eventNumber(0)
 {
-  cout << "Loading file: "<< fileName <<" and tree: " << treeName <<endl;
+  std::cout << "Loading file: "<< fileName <<" and tree: " << treeName <<std::endl;
 
   file = TFile::Open(fileName,readOption);
   assert(file);
   tree = (TTree*)(file->Get(treeName) );
   assert(tree);
 
-  cout << getEntries() << " entries to process" << endl;
+  std::cout << getEntries() << " entries to process" << std::endl;
 
 }
 //--------------------------------------------------------------------------------------------------

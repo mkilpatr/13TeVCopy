@@ -49,7 +49,7 @@ namespace ucsbsusy {
       void reset(BaseFiller* filler);
 
       // Function that calls the default load for each filler
-      void loadObj(BaseFiller* filler, bool storeOnlyPtr = false);
+      void loadObj(BaseFiller* filler);
 
       // Function that calls the default fill tree function for each filler
       void fillObj(BaseFiller* filler);
