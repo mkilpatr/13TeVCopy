@@ -29,6 +29,7 @@ JetReader::JetReader() : BaseReader(){
   genjetphi_   = new vector<float>;
   genjetmass_  = new vector<float>;
   genjetflavor_= new vector<int  >;
+  jetqgl_      = new vector<float>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -58,6 +59,10 @@ void JetReader::load(TTree *tree, int options, string branchName)
     tree->SetBranchAddress((branchName_+"_matchedgenjet_mass"  ).c_str(), &genjetmass_  );
     tree->SetBranchAddress((branchName_+"_matchedgenjet_flavor").c_str(), &genjetflavor_);
   }
+  if(options_ & LOADJETSHAPE){
+    cout << "jetshape ";
+    tree->SetBranchAddress((branchName_+"_jet_qgl"    ).c_str(), &jetqgl_    );
+  }
   if(options_ & FILLOBJ)
     cout << "+Objects";
   cout << endl;
@@ -82,7 +87,6 @@ void JetReader::refresh(){
       recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),
                             iJ,&(*jetcsv_)[iJ], (options_ & LOADGEN) ? &genJets[iJ] : 0);
   }
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -102,6 +106,4 @@ void JetReader::pushToTree(){
       (*jetphi_ )[jet.index()] = jet.phi();
       (*jetmass_)[jet.index()] = jet.mass();
     }
-
-
 }

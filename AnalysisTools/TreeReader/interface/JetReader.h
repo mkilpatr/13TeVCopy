@@ -23,7 +23,8 @@ public :
                             NULLOPT         = 0
                           , LOADRECO        = (1 <<  0)    ///< Load standard reco jets
                           , LOADGEN         = (1 <<  1)   ///< load gen jets
-                          , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers
+                          , LOADJETSHAPE    = (1 <<  2)   ///< load jet shap variables
+                          , FILLOBJ         = (1 <<  3)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
 
@@ -50,6 +51,8 @@ public:
   vector<float>* genjetphi_;
   vector<float>* genjetmass_;
   vector<int>  * genjetflavor_;
+  // jet shape holders
+  vector<float>* jetqgl_;
 
 
   //the actual jet collection
