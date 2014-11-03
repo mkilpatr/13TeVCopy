@@ -120,13 +120,13 @@ void MuonFiller::reset()
 void MuonFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
 {
   reset();
-  enforceGet(iEvent, muonTag_,muons_,true);
+  FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
-  enforceGet(iEvent,vtxTag_,vertices_,true);
+  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
 
   fillGenInfo_ = fillGenInfo_ && isMC;
   if(fillGenInfo_) {
-    enforceGet(iEvent,genParticleTag_,genParticles_,true);
+    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }
 }
 

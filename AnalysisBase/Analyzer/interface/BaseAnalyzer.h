@@ -23,12 +23,11 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
 
 namespace ucsbsusy {
 
-  class BaseAnalyzer : public edm::EDFilter, public BaseUtilities {
+  class BaseAnalyzer : public edm::EDFilter {
 
     public:
       BaseAnalyzer(const edm::ParameterSet&);

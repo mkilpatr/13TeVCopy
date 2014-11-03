@@ -1,8 +1,8 @@
 #ifndef PHYSICSUTILITIES_ICC
 #define PHYSICSUTILITIES_ICC
 
+#include<TString.h>
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "DataFormats/Math/interface/deltaR.h"
 
 using namespace ucsbsusy;
 
@@ -114,70 +114,65 @@ size PhysicsUtilities::countDistinctObjects(const std::vector<Object>& objects, 
 
     double              nearestDR     = 1e308;
     for (size iVeto = 0; iVeto < vetoNearby.size(); ++iVeto)
-      nearestDR         = TMath::Min(nearestDR, reco::deltaR(get(object), get(vetoNearby[iVeto])));
+      nearestDR         = TMath::Min(nearestDR, deltaR(get(object), get(vetoNearby[iVeto])));
     if (nearestDR > minDRnearby)
       ++count;
   } // end loop over objects
 
   return count;
 }
-//_____________________________________________________________________________
-// Momentum manipuations
-//_____________________________________________________________________________
-template<typename CoordSystem, typename Number>
-ROOT::Math::LorentzVector<CoordSystem>& PhysicsUtilities::addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, Number px, Number py, Number pz, Number E, Number scale){
-  p4.SetCoordinates ( p4.px() + scale * px
-                    , p4.py() + scale * py
-                    , p4.pz() + scale * pz
-                    , p4.E () + scale * E
-                    );
-  return p4;
-}
-//_____________________________________________________________________________
-template<typename CoordSystem, typename Momentum>
-ROOT::Math::LorentzVector<CoordSystem>& PhysicsUtilities::addTo(ROOT::Math::LorentzVector<CoordSystem>& p4, const Momentum& addend, double scale)
-{
-  p4.SetCoordinates ( p4.px() + scale * addend.px()
-                    , p4.py() + scale * addend.py()
-                    , p4.pz() + scale * addend.pz()
-                    , p4.E () + scale * addend.E ()
-                    );
-  return p4;
-}
-//_____________________________________________________________________________
-template<typename CoordSystem, typename Tag>
-ROOT::Math::LorentzVector<CoordSystem> getP4(const ROOT::Math::DisplacementVector3D<CoordSystem, Tag>& addend, double scale = 1)
-{
-  return ROOT::Math::LorentzVector<CoordSystem>
-                          (            scale  * addend.x()
-                          ,            scale  * addend.y()
-                          ,            scale  * addend.z()
-                          , TMath::Abs(scale) * addend.r()
-                          );
-}
-//_____________________________________________________________________________
-template<typename CoordSystem>
-ROOT::Math::LorentzVector<CoordSystem> sumMomenta(const std::vector<ROOT::Math::LorentzVector<CoordSystem> >& p4, double scale){
-  ROOT::Math::LorentzVector<CoordSystem>   sumP4;
-  for (size index = 0; index < p4.size(); ++index)
-    addTo(sumP4, p4[index], scale);
-  return sumP4;
-}
-//_____________________________________________________________________________
-template<typename CoordSystem, typename Object, typename Analyzer>
-ROOT::Math::LorentzVector<CoordSystem> sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale)
-{
-  const size            numObjects    = objects.size();
-  ROOT::Math::LorentzVector<CoordSystem>     sumP4;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
-    const Object&       object        = objects[iObject];
-    if (get(object).pt()    < minPT )                   continue;
-    if (absEta(get(object)) > maxEta)                   continue;
-    if (analyzer && test && !(analyzer->*test)(object)) continue;
-    addTo(sumP4, get(object).p4(), scale);
-  } // end loop over objects
 
-  return sumP4;
+//_____________________________________________________________________________
+template<typename Target, typename Source>
+Target PhysicsUtilities::convertTo(Source source, const char name[], bool lenient, bool* good)
+{
+  Target            converted = static_cast<Target>(source);
+
+  if (static_cast<Source>(converted) != source) {
+    const Target    lowest    = !std::numeric_limits<Target>::is_signed
+                              ? 0
+                              : std::numeric_limits<Target>::has_infinity
+                              ? -std::numeric_limits<Target>::infinity()
+                              :  std::numeric_limits<Target>::min()
+                              ;
+    TString         problem;
+    problem.Form( "Source value %.10g outside of target range [%.10g,%.10g] for '%s'."
+                , (double)  source
+                , (double)  lowest
+                , (double)  std::numeric_limits<Target>::max()
+                , name
+                );
+    if (good)      *good      = false;
+    if (lenient) {
+      std::cerr << "WARNING: " << problem << std::endl;
+      return  ( source > static_cast<Source>(std::numeric_limits<Target>::max())
+              ? std::numeric_limits<Target>::max()
+              : lowest
+              );
+    }
+    std::cout << "convertTo()" << problem.Data()<<std::endl;
+    assert(false);
+  }
+
+  return converted;
+}
+
+//_____________________________________________________________________________
+template<typename Object>
+void PhysicsUtilities::trash(std::vector<Object*>& objects)
+{
+  const size    numObjects  = objects.size();
+  for (size iObj = 0; iObj < numObjects; ++iObj)
+    if (objects[iObj])      delete objects[iObj];
+  objects.clear();
 }
 //_____________________________________________________________________________
+template<typename Key, typename Object>
+void PhysicsUtilities::trash(std::map<Key,Object*>& objects)
+{
+  const typename std::map<Key,Object*>::const_iterator endObjects  = objects.end();
+  for (typename std::map<Key,Object*>::iterator iObj = objects.begin(); iObj != endObjects; ++iObj)
+    if (iObj->second)       delete iObj->second;
+  objects.clear();
+}
 #endif

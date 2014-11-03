@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "AnalysisBase/Analyzer/interface/PhysicsAnalyzer.h"
+#include "AnalysisBase/Analyzer/interface/FileUtilities.h"
 
 using namespace ucsbsusy;
 using namespace std;
@@ -67,7 +68,7 @@ void PhysicsAnalyzer::beginJob() {}
 bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   static bool               hasEventInfo  = true;
-  eventWeight_              = tryToGet(iEvent,genEventInfoSource_, genEventInfo,numAnalyzed(),hasEventInfo)
+  eventWeight_              = FileUtilities::tryToGet(iEvent,genEventInfoSource_, genEventInfo,numAnalyzed(),hasEventInfo)
                             ? genEventInfo->weight()
                             : 1
                             ;

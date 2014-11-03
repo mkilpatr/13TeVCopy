@@ -19,12 +19,13 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "AnalysisTools/Utilities/interface/BaseUtilities.h"
+#include "AnalysisBase/Analyzer/interface/FileUtilities.h"
+
+using namespace std;
 
 namespace ucsbsusy {
 
-  class BaseFiller : public PhysicsUtilities, public BaseUtilities {
+  class BaseFiller {
 
   public:
     BaseFiller() {};

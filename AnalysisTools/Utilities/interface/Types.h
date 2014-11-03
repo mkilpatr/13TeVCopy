@@ -22,6 +22,12 @@
 
 namespace ucsbsusy {
 
+  typedef   unsigned int                  size;
+  typedef   unsigned char                 multiplicity;
+  typedef   std::pair<double,int>         RankedIndex;
+  typedef   std::pair<int,int>            CountedIndex;
+
+
   typedef ROOT::Math::PtEtaPhiM4D<double>				CylLorentzCoord;
   typedef ROOT::Math::PtEtaPhiM4D<float> 				CylLorentzCoordF;
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >	XYZTLorentzVectorF;

@@ -143,9 +143,9 @@ void TauFiller::reset()
 void TauFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
 {
   reset();
-  enforceGet(iEvent, tauTag_,taus_,true);
+  FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
-  enforceGet(iEvent,vtxTag_,vertices_,true);
+  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
 }
 
 //--------------------------------------------------------------------------------------------------
