@@ -11,6 +11,7 @@
 
 #include <TFile.h>
 
+#include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
@@ -37,7 +38,7 @@ namespace ucsbsusy {
       }
 
       //Load the next event from the tree....return false if there are no more events in the tree
-      bool nextEvent(bool verbose = false);
+      bool nextEvent(int reportFrequency = 1000000);
 
       TTree * getTree() {return tree;}
       int getEntries()  const {return tree->GetEntries();}
