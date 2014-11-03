@@ -4,8 +4,8 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_TREEREADER_BASETREEREADER_H
-#define ANALYSISTOOLS_TREEREADER_BASETREEREADER_H
+#ifndef ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
+#define ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
 
 #include <string>
 #include <vector>
@@ -14,6 +14,11 @@
 #include <TTree.h>
 
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
+#include "AnalysisTools/TreeReader/interface/JetReader.h"
+#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
+#include "AnalysisTools/TreeReader/interface/MuonReader.h"
+#include "AnalysisTools/TreeReader/interface/TauReader.h"
 
 using namespace std;
 
