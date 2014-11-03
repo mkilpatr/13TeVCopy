@@ -8,6 +8,7 @@
 
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/Parang/interface/Persistables.h"
 
 using namespace ucsbsusy;
 
@@ -65,6 +66,186 @@ template<typename MET,typename Jet>
 double JetKinematics::absDPhiMETJ3(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {
   return (jets.size() > 2 ? absDPhiMETJ(met,*jets[2],minPT,maxEta) : noDist );
+}
+
+//_____________________________________________________________________________
+template<typename Momentum1, typename Momentum2>
+double JetKinematics::transverseMass(const Momentum1& visible, const Momentum2& invisible)
+{
+  const double    cosDPhi   = TMath::Cos( PhysicsUtilities::deltaPhi(visible.phi(), invisible.phi()) );
+  return TMath::Sqrt( 2 * visible.pt() * invisible.pt() * (1 - cosDPhi) );
+}
+
+//_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::htAlongHtAway(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
+{
+  double htAlong = 0;
+  double htAway  = 0;
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    const double            dPhi            = PhysicsUtilities::absDeltaPhi(*jet,met);
+
+    if (dPhi < TMath::PiOver2()) {
+      htAlong              += jet->pt();
+    } else {
+      htAway               += jet->pt();
+    }
+  }
+
+  return htAway == 0 ? 1000 : htAlong        /htAway;
+}
+
+//_____________________________________________________________________________
+template<typename Jet>
+double JetKinematics::ptRMS(const std::vector<Jet*>& jets, const double minPT, const double maxEta)
+{
+  PStatistics               ptStats;
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    ptStats.add(jet->pt());
+  }
+  return ptStats.getRMS();
+}
+
+//_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::deltaPhiMETRMS(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
+{
+  PStatistics               dPhiAwayStats;
+  const double              oppositePhi     = TVector2::Phi_mpi_pi( met.phi() + TMath::Pi() );
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    dPhiAwayStats  .add(PhysicsUtilities::deltaPhi(jet->phi(), oppositePhi  ),jet->pt());  }
+  return dPhiAwayStats.getRMS();
+}
+
+//_____________________________________________________________________________
+template<typename Jet>
+double JetKinematics::bJetInvMass(const std::vector<Jet*>& jets, bool (*isBJet)(const Jet&), const double minPT, const double maxEta){
+  int leadBInd = -1;
+  int secBInd  = -1;
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+    const Jet& jet = *jets[iJ];
+    if (!passCuts(jet,minPT,maxEta)) continue;
+    if (!isBJet(jet)) continue;
+    if(leadBInd == -1)
+      leadBInd = iJ;
+    else{
+      secBInd = iJ;
+      break;
+    }
+  }
+  return secBInd >= 0 ? (jets[leadBInd]->p4() + jets[secBInd]->p4()).mass() : 0;
+}
+
+//_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::bJetTranverseMass(const MET& met, const std::vector<Jet*>& jets, bool (*isBJet)(const Jet&), const double minPT, const double maxEta)
+{
+  double minDPhiMediumB  = 1e308;
+  int    nearBInd        = -1;
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+    const Jet& jet = *jets[iJ];
+    if (!passCuts(jet,minPT,maxEta)) continue;
+    if (!isBJet(jet)) continue;
+    const double            dPhi            = PhysicsUtilities::absDeltaPhi(*jet,met);
+    if(dPhi < minDPhiMediumB){
+      minDPhiMediumB              = dPhi;
+      nearBInd               = iJ;
+    }
+  }
+  return nearBInd >= 0 ? transverseMass(*jets[nearBInd], met) : 0;
+}
+
+//_____________________________________________________________________________
+template<typename Jet>
+double JetKinematics::deltaEtaBJetRMS(const std::vector<Jet*>& jets, bool (*isBJet)(const Jet&), const double minPT, const double maxEta)
+{
+  int leadBInd = -1;
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+    const Jet& jet = *jets[iJ];
+    if (!passCuts(jet,minPT,maxEta)) continue;
+    if (!isBJet(jet)) continue;
+    leadBInd = iJ;
+    continue;
+  }
+  if(leadBInd == -1) return 0;
+
+  PStatistics               JB_DETAStats      ;
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+    if(leadBInd == int(iJ)) continue;
+    const Jet& jet = *jets[iJ];
+    if (!passCuts(jet,minPT,maxEta)) continue;
+    JB_DETAStats.add(deltaEta(jet,*jets[leadBInd]),jet.pt());
+  }
+  return JB_DETAStats.getRMS();
+}
+
+//_____________________________________________________________________________
+template<typename Jet>
+double JetKinematics::highestPTJetPair(const std::vector<Jet*>& jets, const double minPT, const double maxEta){
+  class WSorting {
+  public:
+
+    int jet1Ind;
+    int jet2Ind;
+    int PTInd;
+    int DRInd;
+    double pT;
+    double DR;
+    double mass;
+
+    static bool drSort(const WSorting& a, const WSorting& b){
+      return a.DR < b.DR;
+    }
+    static bool ptSort(const WSorting& a, const WSorting& b){
+      return a.pT > b.pT;
+    }
+
+    static bool wSort(const WSorting& a, const WSorting& b){
+      return TMath::Abs(a.mass - 80.4) < TMath::Abs(b.mass - 80.4);
+    }
+  };
+
+  vector<const Jet*> sortJets;
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    sortJets.push_back(jet);
+  }
+
+  vector<WSorting> allJetCombos;
+  allJetCombos.reserve((sortJets.size()*sortJets.size() - sortJets.size())/2);
+  vector<bool> finalMatched(sortJets.size(),false);
+  for (size iJ = 0; iJ < sortJets.size(); ++iJ) {
+    const Jet & jet = (*sortJets[iJ]);
+
+    for (size iJ2 = iJ + 1; iJ2 < sortJets.size(); ++iJ2) {
+      const Jet & jet2 = (*sortJets[iJ2]);
+
+      WSorting wSort;
+      wSort.jet1Ind = iJ;
+      wSort.jet2Ind = iJ2;
+      wSort.pT = (jet2.p4() + jet.p4()).pt();
+      wSort.DR = PhysicsUtilities::deltaR(jet,jet2);
+      wSort.mass = (jet2.p4() + jet.p4()).mass();
+      allJetCombos.push_back(wSort);
+    }
+  }
+
+  sort(allJetCombos.begin(),allJetCombos.end(),WSorting::drSort);
+
+  vector< WSorting > finalCombos;
+  finalCombos.reserve(ceil(double(sortJets.size())/2));
+  for(unsigned int iP = 0; iP < allJetCombos.size(); ++iP){
+    if(!finalMatched[allJetCombos[iP].jet1Ind]  && !finalMatched[allJetCombos[iP].jet2Ind] ){
+      finalCombos.push_back(allJetCombos[iP]);
+      finalMatched[allJetCombos[iP].jet1Ind] = true;
+      finalMatched[allJetCombos[iP].jet2Ind] = true;
+    }
+  }
+  sort(finalCombos.begin(),finalCombos.end(),WSorting::ptSort);
+  return finalCombos.size() > 0 ? finalCombos[0].mass : 0;
 }
 
 //_____________________________________________________________________________
