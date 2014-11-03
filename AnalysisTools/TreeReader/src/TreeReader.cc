@@ -16,10 +16,13 @@ TreeReader::TreeReader(TString fileName, TString treeName, TString readOption) :
 {
   cout << "Loading file: "<< fileName <<" and tree: " << treeName <<endl;
 
-  file = new TFile(fileName,readOption);
+  file = TFile::Open(fileName,readOption);
   assert(file);
   tree = (TTree*)(file->Get(treeName) );
   assert(tree);
+
+  cout << getEntries() << " entries to process" << endl;
+
 }
 //--------------------------------------------------------------------------------------------------
 TreeReader::~TreeReader()
@@ -34,13 +37,13 @@ void TreeReader::load(BaseReader * reader, int options, string branchName)
   readers.push_back(reader);
 }
 //--------------------------------------------------------------------------------------------------
-bool TreeReader::nextEvent(bool verbose)
+bool TreeReader::nextEvent(int reportFrequency)
 {
   if(eventNumber >= tree->GetEntries()) return false;
   tree->GetEntry(eventNumber);
 
-  if(verbose)
-    cout << "Running over event: " << eventNumber << endl;
+  if(eventNumber%reportFrequency == 0)
+    cout << "Processing event " << eventNumber << endl;
 
   for(auto reader : readers)
     reader->refresh();

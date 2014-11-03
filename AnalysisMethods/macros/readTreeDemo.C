@@ -13,6 +13,7 @@ using namespace ucsbsusy;
 class Analyze : public BaseTreeAnalyzer{
 public:
   Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree)  {
+    load(EVTINFO);
     load(AK4JETS, JetReader::LOADRECO | JetReader::FILLOBJ);
     load(ELECTRONS);
     load(MUONS);
@@ -20,6 +21,7 @@ public:
   }
 
   void run(){
+    cout << "MET= " << eventInfo->met << ": number of vertices = " << eventInfo->nPV << endl;
     for(const auto& jet : (*ak4Jets)){
       cout << "Jet " << ": pt = " << jet.pt() << "; eta = " << jet.eta() << "; phi = " << jet.phi()<<endl;
     }
@@ -49,5 +51,5 @@ public:
 void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
 
   Analyze a(fname, treeName, isMCTree);
-  while(a.nextEvent(true)) a.run();
+  while(a.nextEvent()) a.run();
 }
