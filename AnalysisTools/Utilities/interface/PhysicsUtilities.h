@@ -42,7 +42,7 @@ inline double deltaPhi(const double phi1, const double phi2)
   return TVector2::Phi_mpi_pi(phi1 - phi2);
 }
 template<typename Thing1, typename Thing2>
-inline double deltaPhi(const Thing1& obj1, const Thing2& obj2) { return deltaPhii(getPhi(obj1) , getPhi(obj2)); }
+inline double deltaPhi(const Thing1& obj1, const Thing2& obj2) { return deltaPhi(getPhi(obj1) , getPhi(obj2)); }
 template<typename Thing1, typename Thing2>
 inline double absDeltaPhi(const Thing1& obj1, const Thing2& obj2) { return TMath::Abs(deltaPhi(obj1, obj2)); }
 //_____________________________________________________________________________
