@@ -59,7 +59,6 @@ namespace ucsbsusy {
     TauReader		tauReader;
 
     //Pointers to default objects (for ease of access)
-    EventInfo*			eventInfo;
     RecoJetFCollection*		ak4Jets;
     GenJetFCollection*		ak4GenJets;
     ElectronFCollection*	electrons;

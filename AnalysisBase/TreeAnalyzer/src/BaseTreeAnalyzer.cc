@@ -12,7 +12,6 @@ using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption) : reader(fileName,treeName,readOption),  isMC(isMCTree)
-    , eventInfo(0)
     , ak4Jets (0)
     , ak4GenJets(0)
     , electrons(0)
@@ -28,7 +27,6 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
   switch (type) {
     case EVTINFO : {
       reader.load(&evtInfoReader, 0, "");
-      eventInfo = &evtInfoReader.evtInfo;
       break;
     }
     case AK4JETS : {

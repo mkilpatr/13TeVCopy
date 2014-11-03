@@ -15,33 +15,36 @@ using namespace ucsbsusy;
 EventInfoReader::EventInfoReader()
 {
 
-  evtInfo.run = 0;
-  evtInfo.lumi = 0;
-  evtInfo.event = 0;
-  evtInfo.nPV = 0;
-  evtInfo.pvx = 0;
-  evtInfo.pvy = 0;
-  evtInfo.pvz = 0;
-  evtInfo.met = 0;
-  evtInfo.metphi = 0;
-  evtInfo.metsumEt = 0;
+  run = 0;
+  lumi = 0;
+  event = 0;
+  nPV = 0;
+  pvx = 0;
+  pvy = 0;
+  pvz = 0;
+  met_pt = 0;
+  met_phi = 0;
+  metsumEt = 0;
 
 }
 
 void EventInfoReader::load(TTree *tree, int options, string branchName)
 {
 
-  tree->SetBranchAddress("run", &evtInfo.run);
-  tree->SetBranchAddress("lumi", &evtInfo.lumi);
-  tree->SetBranchAddress("event", &evtInfo.event);
-  tree->SetBranchAddress("npv", &evtInfo.nPV);
-  tree->SetBranchAddress("pv_x", &evtInfo.pvx);
-  tree->SetBranchAddress("pv_y", &evtInfo.pvy);
-  tree->SetBranchAddress("pv_z", &evtInfo.pvz);
-  tree->SetBranchAddress("met", &evtInfo.met);
-  tree->SetBranchAddress("met_phi", &evtInfo.metphi);
-  tree->SetBranchAddress("met_sumEt", &evtInfo.metsumEt);
+  tree->SetBranchAddress("run", &run);
+  tree->SetBranchAddress("lumi", &lumi);
+  tree->SetBranchAddress("event", &event);
+  tree->SetBranchAddress("npv", &nPV);
+  tree->SetBranchAddress("pv_x", &pvx);
+  tree->SetBranchAddress("pv_y", &pvy);
+  tree->SetBranchAddress("pv_z", &pvz);
+  tree->SetBranchAddress("met_pt", &met_pt);
+  tree->SetBranchAddress("met_phi", &met_phi);
+  tree->SetBranchAddress("met_sumEt", &metsumEt);
 
 }
 
-void EventInfoReader::refresh() {}
+void EventInfoReader::refresh()
+{
+  met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+}
