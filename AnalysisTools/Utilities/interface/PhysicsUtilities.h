@@ -251,6 +251,13 @@ void trash(std::vector<Object*>& objects);
 
 template<typename Key, typename Object>
 void trash(std::map<Key,Object*>& objects);
+
+//_____________________________________________________________________________
+// helper functions
+//_____________________________________________________________________________
+template<typename Obj>
+inline bool alwaysTrue(const Obj& obj) {return true;}
+
 };
 }
 
