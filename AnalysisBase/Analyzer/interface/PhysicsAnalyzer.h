@@ -16,7 +16,7 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+//#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 // Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -27,7 +27,7 @@
 
 namespace ucsbsusy {
 
-  class PhysicsAnalyzer : public BaseAnalyzer, public PhysicsUtilities {
+  class PhysicsAnalyzer : public BaseAnalyzer {
 
     public :
       PhysicsAnalyzer(const edm::ParameterSet& iConfig);

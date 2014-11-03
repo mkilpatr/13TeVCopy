@@ -186,13 +186,13 @@ void ElectronFiller::reset()
 void ElectronFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
 {
   reset();
-  enforceGet(iEvent, electronTag_,electrons_,true);
+  FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
-  enforceGet(iEvent,vtxTag_,vertices_,true);
+  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
 
   fillGenInfo_ = fillGenInfo_ && isMC;
   if(fillGenInfo_) {
-    enforceGet(iEvent,genParticleTag_,genParticles_,true);
+    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }
 
 }

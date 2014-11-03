@@ -25,7 +25,7 @@ vector<vector<reco::GenParticleRef> > JetFlavorMatching::matchParticlesToJets(co
     if (jets[iJet].pt())      // Only count nonzero jets in first two passes
       rankedJets.push_back(RankedIndex(jets[iJet].pt(), iJet));
   } // end loop over jets
-  sort(rankedJets.begin(), rankedJets.end(), BaseUtilities::greaterFirst<double,int>());
+  sort(rankedJets.begin(), rankedJets.end(), PhysicsUtilities::greaterFirst<double,int>());
 
   //.. Rank partons by pT .....................................................
   vector<bool>                omitParticle(particles->size(), false);
@@ -54,12 +54,12 @@ vector<vector<reco::GenParticleRef> > JetFlavorMatching::matchParticlesToJets(co
     const Jet&                jet         = jets[iJet];
 
     for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
-      if (!omitParticle[iPtcl] && reco::deltaR((*particles)[iPtcl],jet) <= maxDR) {
+      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
         omitParticle[iPtcl]   = true;
         matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
       }
     } // end loop over particles
-    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), BaseUtilities::greaterRefPT<reco::GenParticleRef>());
+    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
   } // end loop over jets
 
   //.. Third pass: match to zero pT jets ......................................
@@ -68,12 +68,12 @@ vector<vector<reco::GenParticleRef> > JetFlavorMatching::matchParticlesToJets(co
     if (jet.pt())             continue;
 
     for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
-      if (!omitParticle[iPtcl] && reco::deltaR((*particles)[iPtcl],jet) <= maxDR) {
+      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
         omitParticle[iPtcl]   = true;
         matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
       }
     } // end loop over particles
-    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), BaseUtilities::greaterRefPT<reco::GenParticleRef>());
+    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
   } // end loop over jets
 
   return matchedBPartons;

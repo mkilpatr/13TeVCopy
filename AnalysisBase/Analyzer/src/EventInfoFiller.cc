@@ -71,8 +71,8 @@ void EventInfoFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC)
 {
   reset();
 
-  enforceGet(iEvent,vtxTag_,vertices_,true);
-  enforceGet(iEvent,metTag_,mets_,true);
+  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
+  FileUtilities::enforceGet(iEvent,metTag_,mets_,true);
 
   if(vertices_->size() > 0)
     primaryVertex_ = vertices_->front().position();

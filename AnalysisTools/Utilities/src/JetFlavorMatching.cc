@@ -126,7 +126,7 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
       vector<double>&                     dRHadron      = dRQuarkHadron[iQ];
       dRHadron.resize(assocHadrons.size());
       for (size iH = 0; iH < assocHadrons.size(); ++iH)
-        dRHadron[iH]                      = reco::deltaR(*bQuarks[assocQuarks[iQ]], *bDecays[assocHadrons[iH]].hadron);
+        dRHadron[iH]                      = PhysicsUtilities::deltaR(*bQuarks[assocQuarks[iQ]], *bDecays[assocHadrons[iH]].hadron);
     } // end loop over quarks
 
     // Assign closest first, allowing as many assignment to hadrons as the b content according to the PDG ID

@@ -96,15 +96,15 @@ void JetFiller::reset()
 void JetFiller::load(edm::Event& iEvent, bool storeOnlyPtr, bool isMC )
 {
   reset();
-  enforceGet(iEvent,jetTag_,jets_,true);
+  FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
 
   fillGenInfo_ = fillGenInfo_ && isMC;
 
   if(fillGenInfo_) {
-    enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
-    enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
+    FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
+    FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     edm::Handle<reco::GenParticleCollection> genParticles_;
-    enforceGet(iEvent,genParticleTag_,genParticles_,true);
+    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
 #ifndef TAGGABLE_TYPE_HACK
     std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);

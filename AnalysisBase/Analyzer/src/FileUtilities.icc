@@ -1,0 +1,97 @@
+#ifndef FileUtilities_ICC
+#define FileUtilities_ICC
+
+#include <iostream>
+#include <iomanip>
+
+#include "AnalysisBase/Analyzer/interface/FileUtilities.h"
+
+using namespace ucsbsusy;
+using namespace std;
+
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool FileUtilities::tryToGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, int numAnalyzed, bool& isAvailable)
+{
+  if (!isAvailable)   return false;
+  if (numAnalyzed == 0) {
+    source.getByLabel(tag, product);
+    return ( isAvailable = product.isValid() );
+  } else {
+    source.getByLabel(tag, product);
+    return product.isValid();
+  }
+  return false;
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool FileUtilities::tryToGet(const Source& source, const Tag& tag, const Product*& product, int numAnalyzed, bool& isAvailable)
+{
+  edm::Handle<Product> handle;
+  bool returnVal = tryToGet(source,tag,handle,numAnalyzed,isAvailable);
+  product = &(*handle);
+  return returnVal;
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool FileUtilities::enforceGet(const Source& source, const Tag& tag, edm::Handle<Product>& product, bool enforcePresence)
+{
+  source.getByLabel(tag, product);
+  if (enforcePresence) {
+    if (product.failedToGet())  throw *product.whyFailed();
+    if (!product.isValid())
+      throw cms::Exception("FileUtilities::enforceGet()", ("Product with input tag "+str(tag)+" is not valid.").Data());
+  }
+  return product.isValid();
+}
+//_____________________________________________________________________________
+template<typename Source, typename Tag, typename Product>
+bool FileUtilities::enforceGet(const Source& source, const Tag& tag, const Product*& product, bool enforcePresence)
+{
+  edm::Handle<Product> handle;
+  bool returnVal = enforceGet(source,tag,handle,enforcePresence);
+  product = &(*handle);
+  return returnVal;
+}
+//_____________________________________________________________________________
+template<typename Object>
+Object* FileUtilities::getObject(TFile* file, const char* name, const char* alternative, bool stopIfMissing)
+{
+  if (file == 0)    return 0;
+
+  Object*   object  = ( file->IsZombie() ? 0 : dynamic_cast<Object*>(file->Get(name)) );
+  if (object == 0 && alternative)
+    object  = ( file->IsZombie() ? 0 : dynamic_cast<Object*>(file->Get(alternative)) );
+  if (object == 0) {
+    cerr << (stopIfMissing ? "ERROR" : "NOTICE") << " : Failed to read " << name << " from file " << file->GetName() << endl;
+    if (stopIfMissing)  throw cms::Exception("EventAnalyzer::getObject()", name);
+    else                return 0;
+  }
+  return object;
+}
+//_____________________________________________________________________________
+template<typename Object>
+Object* FileUtilities::loadObject(TString objectPath, const char* configName, const char* alternative, bool stopIfMissing)
+{
+  if (objectPath.Length() == 0)     return 0;
+
+  const int           nameIndex     = objectPath.First(':');
+  TString             objectName;
+  if (nameIndex > 0) {
+    objectName        = objectPath(nameIndex + 1, objectPath.Length());
+    objectPath.Resize(nameIndex);
+  }
+
+  TFile*              objectFile    = open(objectPath, "READ", stopIfMissing);
+  if (nameIndex < 0)  throw cms::Exception("EventAnalyzer::loadObject()", "File path and object name must be provided in the syntax 'path:name'.");
+  if (configName)     std::clog << " ++  " << left << setw(20) << configName << "= " << objectPath << " [" << objectName << "]" << std::endl;
+
+  Object*             object        = getObject<Object>(objectFile, objectName, alternative, stopIfMissing);
+  disassociateFromFile(object);
+  objectFile->Close   ();
+
+  return object;
+}
+
+
+#endif
