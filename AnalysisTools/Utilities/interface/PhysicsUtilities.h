@@ -33,16 +33,15 @@ template<typename Thing1, typename Thing2>
 inline double absDeltaEta(const Thing1& obj1, const Thing2& obj2) { return TMath::Abs(deltaEta(obj1, obj2)); }
 //_____________________________________________________________________________
 inline double getPhi(const double& phi)   { return phi;       }
+inline float  getPhi(const float& phi)   { return phi;       }
 inline double getPhi(const TVector2& obj) { return obj.Phi(); }
 template<typename Thing>
 inline double getPhi(const Thing& obj)    { return obj.phi(); }
 //_____________________________________________________________________________
-inline double deltaPhi(const double phi1, const double phi2)
-{
-  return TVector2::Phi_mpi_pi(phi1 - phi2);
-}
+inline double deltaPhi(const float phi1, const float phi2) {return TVector2::Phi_mpi_pi(phi1 - phi2);}
+inline double deltaPhi(const double phi1, const double phi2) {return TVector2::Phi_mpi_pi(phi1 - phi2);}
 template<typename Thing1, typename Thing2>
-inline double deltaPhi(const Thing1& obj1, const Thing2& obj2) { return deltaPhi(getPhi(obj1) , getPhi(obj2)); }
+inline double deltaPhi(const Thing1& obj1, const Thing2& obj2) { return TVector2::Phi_mpi_pi(getPhi(obj1) - getPhi(obj2)); }
 template<typename Thing1, typename Thing2>
 inline double absDeltaPhi(const Thing1& obj1, const Thing2& obj2) { return TMath::Abs(deltaPhi(obj1, obj2)); }
 //_____________________________________________________________________________

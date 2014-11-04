@@ -113,7 +113,7 @@ template<typename MET,typename Jet>
 double JetKinematics::deltaPhiMETRMS(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {
   PStatistics               dPhiAwayStats;
-  const double              oppositePhi     = TVector2::Phi_mpi_pi( met.phi() + TMath::Pi() );
+  const float              oppositePhi     = TVector2::Phi_mpi_pi( met.phi() + TMath::Pi() );
   for(const auto* jet : jets ){
     if (!passCuts(*jet,minPT,maxEta)) continue;
     dPhiAwayStats  .add(PhysicsUtilities::deltaPhi(jet->phi(), oppositePhi  ),jet->pt());  }
@@ -149,7 +149,7 @@ double JetKinematics::bJetTranverseMass(const MET& met, const std::vector<Jet*>&
     const Jet& jet = *jets[iJ];
     if (!passCuts(jet,minPT,maxEta)) continue;
     if (!isBJet(jet)) continue;
-    const double            dPhi            = PhysicsUtilities::absDeltaPhi(*jet,met);
+    const double            dPhi            = PhysicsUtilities::absDeltaPhi(jet,met);
     if(dPhi < minDPhiMediumB){
       minDPhiMediumB              = dPhi;
       nearBInd               = iJ;
@@ -177,7 +177,7 @@ double JetKinematics::deltaEtaBJetRMS(const std::vector<Jet*>& jets, bool (*isBJ
     if(leadBInd == int(iJ)) continue;
     const Jet& jet = *jets[iJ];
     if (!passCuts(jet,minPT,maxEta)) continue;
-    JB_DETAStats.add(deltaEta(jet,*jets[leadBInd]),jet.pt());
+    JB_DETAStats.add(PhysicsUtilities::deltaEta(jet,*jets[leadBInd]),jet.pt());
   }
   return JB_DETAStats.getRMS();
 }
