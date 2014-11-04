@@ -50,10 +50,12 @@ DefaultAnalyzer::~DefaultAnalyzer()
 {
 
   goodLeptons->clear();
+  goodTaus->clear();
   cleanJets->clear();
   cleanBJets->clear();
   cleanNonBJets->clear();
   delete goodLeptons;
+  delete goodTaus;
   delete cleanJets;
   delete cleanBJets;
   delete cleanNonBJets;
