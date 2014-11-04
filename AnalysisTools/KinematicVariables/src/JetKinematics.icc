@@ -168,7 +168,7 @@ double JetKinematics::deltaEtaBJetRMS(const std::vector<Jet*>& jets, bool (*isBJ
     if (!passCuts(jet,minPT,maxEta)) continue;
     if (!isBJet(jet)) continue;
     leadBInd = iJ;
-    continue;
+    break;
   }
   if(leadBInd == -1) return 0;
 

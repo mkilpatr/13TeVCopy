@@ -33,8 +33,8 @@ namespace ucsbsusy {
     void	load(VarType type, int options = -1, string branchName = "" );
     bool  nextEvent(int reportFrequency = 100000);
     void  filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA);
-    static bool  isMediumBTaggedJet (const RecoJetF& jet) {return jet.csv() > .898;}
-    static bool  isTightBTaggedJet(const RecoJetF& jet) {return jet.csv() > .679;}
+    static bool  isMediumBTaggedJet (const RecoJetF& jet) {return jet.csv() > .679;}
+    static bool  isTightBTaggedJet(const RecoJetF& jet) {return jet.csv() > .898;}
     void  fillSearchVars();
     void computeT2BWDiscriminators();
 

@@ -78,6 +78,7 @@ void T2bWTreeAnalyzer::load(VarType type, int options, string branchName)
 bool T2bWTreeAnalyzer::nextEvent(int reportFrequency){
   if(!BaseTreeAnalyzer::nextEvent(reportFrequency)) return false;
   filterJets(jets,minPT,maxETA);
+  fillSearchVars();
   if(loadedT2BW)
     computeT2BWDiscriminators();
   return true;
