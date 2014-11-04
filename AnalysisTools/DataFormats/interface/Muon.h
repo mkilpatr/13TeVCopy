@@ -14,78 +14,57 @@
 #include <vector>
 #include <iostream>
 
-#include "AnalysisTools/DataFormats/interface/Momentum.h"
+#include "AnalysisTools/DataFormats/interface/Lepton.h"
 
 namespace ucsbsusy {
 
   template < class CoordSystem>
-  class Muon : public Momentum<CoordSystem>
+  class Muon : public Lepton<CoordSystem>
   {
 
     public :
-      Muon() : index_(-1), q_(0), d0_(0), dz_(0), pfdbetaiso_(0), isloose_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), passpogid_(false), passpogiso_(false), isgoodpogmuon_(false) {}
+      Muon() : isloose_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false) {}
 
       template <class InputCoordSystem>
       Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
-		int inIndex = -1, int inCharge = 0, float inD0 = 0, float inDz = 0,
+		int inIndex = -1, int inPdgid = 13, int inCharge = 0,
+		float inD0 = 0, float inDz = 0,
 		float inPfdbetaiso = 0, bool inIsloose = false,
 		bool inIsTight = false, bool inIspf = false,
 		bool inIsglobal = false, bool inIstracker = false,
 		bool inIsstandalone = false) :
-		Momentum<CoordSystem>(inMomentum), 
-		index_(inIndex), q_(inCharge), d0_(inD0), dz_(inDz),
-		pfdbetaiso_(inPfdbetaiso), isloose_(inIsloose),
+		Lepton<InputCoordSystem>(inMomentum, inIndex,
+		inPdgid, inCharge, inD0, inDz,
+		inPfdbetaiso), isloose_(inIsloose),
 		istight_(inIsTight), ispf_(inIspf),
 		isglobal_(inIsglobal), istracker_(inIstracker),
-		isstandalone_(inIsstandalone), passpogid_(false), passpogiso_(false),
-		isgoodpogmuon_(false) {}
+		isstandalone_(inIsstandalone), isgoodpogmuon_(false) {}
 
       ~Muon() {}
 
-      int	index() 				{ return index_;		}
-      int	q() 					{ return q_;			}
-      float	d0() 					{ return d0_;			}
-      float	dz() 					{ return dz_;			}
-      float	pfdbetaiso() 				{ return pfdbetaiso_;		}
       bool	isloosemuon() 				{ return isloose_;		}
       bool	istightmuon() 				{ return istight_;		}
       bool	ispfmuon() 				{ return ispf_;			}
       bool	isglobal() 				{ return isglobal_;		}
       bool	istracker() 				{ return istracker_;		}
       bool	isstandalone() 				{ return isstandalone_;		}
-      bool	passpogid() 				{ return passpogid_;		}
-      bool	passpogiso() 				{ return passpogiso_;		}
       bool	isgoodpogmuon() 			{ return isgoodpogmuon_;	}
 
-      void	setIndex(int newIndex)			{ index_ = newIndex;		}
-      void	setCharge(int newCharge)		{ q_ = newCharge;		}
-      void	setD0(float newD0)			{ d0_ = newD0;			}
-      void	setDz(float newDz)			{ dz_ = newDz;			}
-      void	setPFDBetaIso(float newIso)		{ pfdbetaiso_ = newIso;		}
       void	setIsLoose(bool newType)		{ isloose_ = newType;		}
       void	setIsTight(bool newType)		{ istight_ = newType;		}
       void	setIsPF(bool newType)			{ ispf_ = newType;		}
       void	setIsGlobal(bool newType)		{ isglobal_ = newType;		}
       void	setIsTracker(bool newType)		{ istracker_ = newType;		}
       void	setIsStandalone(bool newType)		{ isstandalone_ = newType;	}
-      void	setPassPOGId(bool flag)			{ passpogid_ = flag;		}
-      void	setPassPOGIso(bool flag)		{ passpogiso_ = flag;		}
       void	setIsGoodPOGMuon(bool flag)		{ isgoodpogmuon_ = flag;	}
 
     protected :
-      int	index_;  //Index in muon vector
-      int	q_;
-      float	d0_;
-      float	dz_;
-      float	pfdbetaiso_;
       bool	isloose_;
       bool	istight_;
       bool	ispf_;
       bool	isglobal_;
       bool	istracker_;
       bool	isstandalone_;
-      bool	passpogid_;
-      bool	passpogiso_;
       bool	isgoodpogmuon_;
 
   };
