@@ -50,7 +50,7 @@ namespace ucsbsusy {
     //get number of entries
     int		getEntries()	  const	{ return reader.getEntries();	}
 
-  private:
+  protected:
     TreeReader	reader; //default reader
 
   public:
