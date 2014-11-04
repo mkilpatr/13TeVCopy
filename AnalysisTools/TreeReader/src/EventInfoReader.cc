@@ -38,7 +38,7 @@ void EventInfoReader::load(TTree *tree, int options, string branchName)
   tree->SetBranchAddress("pv_x", &pvx);
   tree->SetBranchAddress("pv_y", &pvy);
   tree->SetBranchAddress("pv_z", &pvz);
-  tree->SetBranchAddress("met_pt", &met_pt);
+  tree->SetBranchAddress("met", &met_pt);
   tree->SetBranchAddress("met_phi", &met_phi);
   tree->SetBranchAddress("met_sumEt", &metsumEt);
 
