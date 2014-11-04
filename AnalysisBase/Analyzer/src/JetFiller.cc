@@ -108,8 +108,8 @@ void JetFiller::load(edm::Event& iEvent)
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
-    edm::Handle<reco::GenParticleCollection> genParticles_;
-    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
+//    edm::Handle<reco::GenParticleCollection> genParticles_;
+//    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
 #ifndef TAGGABLE_TYPE_HACK
     std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
