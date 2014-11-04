@@ -38,7 +38,7 @@ public :
   void	setIndex(const int& newIndex)	{ index_ = newIndex;	}
 
   //----Convenience function for throwing an exception when a member does not exist
-  static void checkStorage (void * ptr, std::string message) {
+  void checkStorage (const void * ptr, std::string message) const {
     if(ptr == 0) throw (message+string("The object was never loaded!"));
   }
 
