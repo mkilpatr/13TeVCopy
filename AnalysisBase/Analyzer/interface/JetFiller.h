@@ -72,7 +72,7 @@ namespace ucsbsusy {
       edm::Handle<pat::JetCollection>		  jets_;
       edm::Handle<reco::GenJetCollection>	reGenJets_;
       edm::Handle<reco::GenJetCollection>	stdGenJets_;
-      edm::Handle<float>                  rho_;
+      edm::Handle<double>                 rho_;
 
   };
 
