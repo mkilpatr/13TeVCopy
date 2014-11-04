@@ -34,7 +34,7 @@ T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMC
 , wInvMass        (0)
 , T2BWDiscValues(NUM_T2BW_SEARCHREGIONS,-10)
 {
-  TString T2BWMVAInputFileName = "";
+  TString T2BWMVAInputFileName = "T2BWSearchRegionMVAs.root";
 
   if (T2BWMVAInputFileName != ""){
     clog << T2BWMVAInputFileName<<endl;
