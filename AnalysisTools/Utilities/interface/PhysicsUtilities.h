@@ -257,6 +257,23 @@ void trash(std::map<Key,Object*>& objects);
 template<typename Obj>
 inline bool alwaysTrue(const Obj& obj) {return true;}
 
+//_____________________________________________________________________________
+// Filters a collection into a vector of pointers
+//_____________________________________________________________________________
+template <typename Obj>
+std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, const double maxEta = 999, bool (*test)(const Obj&) = 0) {
+  const size          numObjects    = objs.size();
+  std::vector<Obj*>   outObjs;
+  outObjs.reserve(numObjects);
+  for(auto& obj : objs){
+    if (obj.pt()    < minPT )            continue;
+    if (TMath::Abs(obj.eta()) > maxEta)  continue;
+    if (test && !(*test)(obj.eta()))     continue;
+    outObjs.push_back(&obj);
+  }
+  return outObjs;
+}
+
 };
 }
 
