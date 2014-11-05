@@ -14,21 +14,23 @@
 #include <string>
 #include <TTree.h>
 
-using namespace std;
-
 namespace ucsbsusy {
-
+  class TreeReader;
   class BaseReader {
 
     public :
-      BaseReader() : branchName_(""), options_(0) {};
+      BaseReader() : branchName_(""), options_(0), loaded_(false) {};
       virtual ~BaseReader() {};
 
-      virtual void load(TTree *tree, int options, string branchName) = 0;
+      virtual void load(TreeReader *treeReader, int options, std::string branchName) = 0;
       virtual void refresh() = 0;
 
-      const string branchName_;  //branch prefix
+      bool isLoaded() const {return loaded_;}
+
+    protected:
+      const std::string branchName_;  //branch prefix
       const int options_; //filling options
+      bool loaded_; //has been loaded
   }; //BaseReader
 
 }

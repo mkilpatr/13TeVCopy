@@ -31,26 +31,26 @@ namespace ucsbsusy {
     ElectronReader();
     ~ElectronReader() {}
 
-    void load(TTree *tree, int options, string branchName);
+    void load(TreeReader *treeReader, int options, std::string branchName);
     void refresh();
 
     public :
-      vector<float> *		pt;
-      vector<float> *		eta;
-      vector<float> *		phi;
-      vector<float> *		mass;
-      vector<int>   *		q;
-      vector<float> *		scEta;
-      vector<float> *		r9;
-      vector<float> *		d0;
-      vector<float> *		dz;
-      vector<float> *		pfdbetaiso;
-      vector<float> *		mvaidnontrig;
-      vector<float> *		mvaidtrig;
-      vector<bool>  *		isveto;
-      vector<bool>  *		isloose;
-      vector<bool>  *		ismedium;
-      vector<bool>  *		istight;
+      std::vector<float> *		pt;
+      std::vector<float> *		eta;
+      std::vector<float> *		phi;
+      std::vector<float> *		mass;
+      std::vector<int>   *		q;
+      std::vector<float> *		scEta;
+      std::vector<float> *		r9;
+      std::vector<float> *		d0;
+      std::vector<float> *		dz;
+      std::vector<float> *		pfdbetaiso;
+      std::vector<float> *		mvaidnontrig;
+      std::vector<float> *		mvaidtrig;
+      std::vector<bool>  *		isveto;
+      std::vector<bool>  *		isloose;
+      std::vector<bool>  *		ismedium;
+      std::vector<bool>  *		istight;
 
       ElectronFCollection electrons;
 

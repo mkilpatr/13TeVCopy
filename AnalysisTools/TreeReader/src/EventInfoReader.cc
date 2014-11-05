@@ -9,7 +9,9 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
+#include "AnalysisTools/TreeReader/interface/TreeReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 EventInfoReader::EventInfoReader()
@@ -28,20 +30,19 @@ EventInfoReader::EventInfoReader()
 
 }
 
-void EventInfoReader::load(TTree *tree, int options, string branchName)
+void EventInfoReader::load(TreeReader *treeReader, int options, string branchName)
 {
-
-  tree->SetBranchAddress("run", &run);
-  tree->SetBranchAddress("lumi", &lumi);
-  tree->SetBranchAddress("event", &event);
-  tree->SetBranchAddress("npv", &nPV);
-  tree->SetBranchAddress("pv_x", &pvx);
-  tree->SetBranchAddress("pv_y", &pvy);
-  tree->SetBranchAddress("pv_z", &pvz);
-  tree->SetBranchAddress("met", &met_pt);
-  tree->SetBranchAddress("met_phi", &met_phi);
-  tree->SetBranchAddress("met_sumEt", &metsumEt);
-
+  loaded_ = true;
+  treeReader->setBranchAddress("run", &run);
+  treeReader->setBranchAddress("lumi", &lumi);
+  treeReader->setBranchAddress("event", &event);
+  treeReader->setBranchAddress("npv", &nPV);
+  treeReader->setBranchAddress("pv_x", &pvx);
+  treeReader->setBranchAddress("pv_y", &pvy);
+  treeReader->setBranchAddress("pv_z", &pvz);
+  treeReader->setBranchAddress("met", &met_pt);
+  treeReader->setBranchAddress("met_phi", &met_phi);
+  treeReader->setBranchAddress("met_sumEt", &metsumEt);
 }
 
 void EventInfoReader::refresh()

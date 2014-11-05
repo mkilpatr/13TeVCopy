@@ -32,24 +32,24 @@ namespace ucsbsusy {
   MuonReader();
   ~MuonReader() {}
 
-  void load(TTree *tree, int options, string branchName);
+  void load(TreeReader *treeReader, int options, std::string branchName);
   void refresh();
 
     public :
-      vector<float> *   pt;
-      vector<float> *   eta;
-      vector<float> *   phi;
-      vector<float> *   mass;
-      vector<int>   *	q     ;
-      vector<float> *	d0    ;
-      vector<float> *	dz    ;
-      vector<float> *	pfdbetaiso;
-      vector<bool>  *	isloose;
-      vector<bool>  *	istight;
-      vector<bool>  *	ispf;
-      vector<bool>  *	isglobal;
-      vector<bool>  *	istracker;
-      vector<bool>  *	isstandalone;
+      std::vector<float> *   pt;
+      std::vector<float> *   eta;
+      std::vector<float> *   phi;
+      std::vector<float> *   mass;
+      std::vector<int>   *	q     ;
+      std::vector<float> *	d0    ;
+      std::vector<float> *	dz    ;
+      std::vector<float> *	pfdbetaiso;
+      std::vector<bool>  *	isloose;
+      std::vector<bool>  *	istight;
+      std::vector<bool>  *	ispf;
+      std::vector<bool>  *	isglobal;
+      std::vector<bool>  *	istracker;
+      std::vector<bool>  *	isstandalone;
 
       MuonFCollection muons;
 

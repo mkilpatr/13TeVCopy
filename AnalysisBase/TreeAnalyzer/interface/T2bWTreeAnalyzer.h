@@ -30,8 +30,9 @@ namespace ucsbsusy {
     T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
     virtual ~T2bWTreeAnalyzer() {};
 
-    void	load(VarType type, int options = -1, string branchName = "" );
-    bool  nextEvent(int reportFrequency = 100000);
+    virtual void	load(VarType type, int options = -1, string branchName = "" );
+    virtual void  processVariables();
+    virtual void run() = 0;
     void  filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA);
     static bool  isMediumBTaggedJet (const RecoJetF& jet) {return jet.csv() > .679;}
     static bool  isTightBTaggedJet(const RecoJetF& jet) {return jet.csv() > .898;}

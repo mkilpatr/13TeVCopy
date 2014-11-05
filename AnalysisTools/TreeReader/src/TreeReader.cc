@@ -6,23 +6,25 @@
 //
 // 
 //--------------------------------------------------------------------------------------------------
+#include <TFile.h>
 #include <assert.h>
-#include <iostream>
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/TreeReader/interface/BaseReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 TreeReader::TreeReader(TString fileName, TString treeName, TString readOption) : eventNumber(0)
 {
-  std::cout << "Loading file: "<< fileName <<" and tree: " << treeName <<std::endl;
+  std::clog << "Loading file: "<< fileName <<" and tree: " << treeName <<std::endl;
 
   file = TFile::Open(fileName,readOption);
   assert(file);
   tree = (TTree*)(file->Get(treeName) );
   assert(tree);
-
-  std::cout << getEntries() << " entries to process" << std::endl;
+  tree->SetBranchStatus("*",0);
+  std::clog << getEntries() << " entries to process" << std::endl;
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -32,9 +34,9 @@ TreeReader::~TreeReader()
   delete file;
 }
 //--------------------------------------------------------------------------------------------------
-void TreeReader::load(BaseReader * reader, int options, string branchName)
+void TreeReader::load(BaseReader * reader, int options, std::string branchName)
 {
-  reader->load(tree,options,branchName);
+  reader->load(this,options,branchName);
   readers.push_back(reader);
 }
 //--------------------------------------------------------------------------------------------------
@@ -44,7 +46,7 @@ bool TreeReader::nextEvent(int reportFrequency)
   tree->GetEntry(eventNumber);
 
   if(eventNumber%reportFrequency == 0)
-    cout << "Processing event " << eventNumber << endl;
+    clog << "Processing event " << eventNumber << endl;
 
   for(auto reader : readers)
     reader->refresh();

@@ -43,15 +43,15 @@ namespace ucsbsusy {
 
       ~Electron() {}
 
-      float	scEta() 			{ return scEta_;	}
-      float	r9() 				{ return r9_;		}
-      float	mvaidnontrig() 			{ return mvaidnontrig_;	}
-      float	mvaidtrig() 			{ return mvaidtrig_;	}
-      bool	isvetoelectron() 		{ return isveto_;	}
-      bool	islooseelectron() 		{ return isloose_;	}
-      bool	ismediumelectron() 		{ return ismedium_;	}
-      bool	istightelectron() 		{ return istight_;	}
-      bool	isgoodpogelectron() 		{ return isgoodpogelectron_;	}
+      float	scEta() 			        const { return scEta_;	}
+      float	r9() 				          const { return r9_;		}
+      float	mvaidnontrig() 			  const { return mvaidnontrig_;	}
+      float	mvaidtrig() 			    const { return mvaidtrig_;	}
+      bool	isvetoelectron() 		  const { return isveto_;	}
+      bool	islooseelectron() 		const { return isloose_;	}
+      bool	ismediumelectron() 		const { return ismedium_;	}
+      bool	istightelectron() 		const { return istight_;	}
+      bool	isgoodpogelectron() 	const { return isgoodpogelectron_;	}
 
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       void	setR9(float newR9)		{ r9_ = newR9;		}

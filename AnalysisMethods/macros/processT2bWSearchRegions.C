@@ -18,7 +18,10 @@ public:
   PlotterD*                       plotter;
   Polybook                        eventPlots;
   TString                         prefix;
-  Analyze(TString fname, string treeName, bool isMCTree) : T2bWTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter)  {
+
+  Analyze(TString fname, string treeName, bool isMCTree) : T2bWTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter) {}
+
+  virtual void loadVariables(){
     load(EVTINFO);
     load(AK4JETS);
   }
@@ -93,6 +96,6 @@ void processT2bWSearchRegions(string fname = "evttree.root", string treeName = "
   name = ((TObjString*)name.Tokenize(".")->At(0))->GetString();
   a.prefix = name;
   a.prefix += "_";
-  while(a.nextEvent()) a.run();
+  a.analyze();
   a.out(TString::Format("%s_plots.root",name.Data()));
 }
