@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 const int ElectronReader::defaultOptions = ElectronReader::LOADRECO | ElectronReader::FILLOBJ;

@@ -11,6 +11,7 @@
 #ifndef ANALYSISTOOLS_TREEREADER_JETREADER_H
 #define ANALYSISTOOLS_TREEREADER_JETREADER_H
 
+
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 
@@ -31,28 +32,28 @@ public :
   JetReader();
   ~JetReader() {}
 
-  void load(TTree *tree, int options, string branchName);
+  void load(TTree *tree, int options, std::string branchName);
   void refresh();
 
   void pushToTree(); //push changes made to the momentum back to the tree
 public:
   // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-  vector<float>* jetpt_;
-  vector<float>* jeteta_;
-  vector<float>* jetphi_;
-  vector<float>* jetmass_;
-  vector<float>* jetptraw_;
-  vector<float>* jetpuId_;
-  vector<float>* jetcsv_;
-  vector<int>  * jetflavor_;
+  std::vector<float>* jetpt_;
+  std::vector<float>* jeteta_;
+  std::vector<float>* jetphi_;
+  std::vector<float>* jetmass_;
+  std::vector<float>* jetptraw_;
+  std::vector<float>* jetpuId_;
+  std::vector<float>* jetcsv_;
+  std::vector<int>  * jetflavor_;
   // For genjets matched to reco jets
-  vector<float>* genjetpt_;
-  vector<float>* genjeteta_;
-  vector<float>* genjetphi_;
-  vector<float>* genjetmass_;
-  vector<int>  * genjetflavor_;
+  std::vector<float>* genjetpt_;
+  std::vector<float>* genjeteta_;
+  std::vector<float>* genjetphi_;
+  std::vector<float>* genjetmass_;
+  std::vector<int>  * genjetflavor_;
   // jet shape holders
-  vector<float>* jetqgl_;
+  std::vector<float>* jetqgl_;
 
 
   //the actual jet collection

@@ -8,13 +8,15 @@
 
 #ifndef ANALYSISTOOLS_TREEREADER_TREEREADER_H
 #define ANALYSISTOOLS_TREEREADER_TREEREADER_H
+#include <TTree.h>
+#include <iostream>
+#include <string>
 
-#include <TFile.h>
-#include "AnalysisTools/TreeReader/interface/BaseReader.h"
 
-using namespace std;
 
 namespace ucsbsusy {
+
+  class BaseReader;
 
   class TreeReader {
   public :
@@ -22,11 +24,11 @@ namespace ucsbsusy {
       ~TreeReader();
 
       //load a new reader
-      void load(BaseReader * reader, int options, string branchName);
+      void load(BaseReader * reader, int options, std::string branchName);
 
       //Load an object not included in a reader
       template<typename varType>
-      varType* loadObject(string branchName){
+      varType* loadObject(std::string branchName){
         varType * tempVar = new varType;
         tree->SetBranchAddress(branchName.c_str(),&tempVar);
         return tempVar;
@@ -43,7 +45,7 @@ namespace ucsbsusy {
   private:
       TFile * file;
       TTree * tree;
-      vector<BaseReader*> readers; //List of loaded readers
+      std::vector<BaseReader*> readers; //List of loaded readers
 
   };
 

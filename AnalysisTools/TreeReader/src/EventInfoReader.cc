@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 EventInfoReader::EventInfoReader()

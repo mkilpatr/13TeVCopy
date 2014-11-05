@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;

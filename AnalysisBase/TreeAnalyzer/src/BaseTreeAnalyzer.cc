@@ -8,6 +8,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------

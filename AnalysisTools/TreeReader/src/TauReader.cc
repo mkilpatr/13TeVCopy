@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 const int TauReader::defaultOptions = TauReader::LOADRECO | TauReader::FILLOBJ;

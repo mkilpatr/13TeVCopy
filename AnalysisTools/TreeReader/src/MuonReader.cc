@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 
+using namespace std;
 using namespace ucsbsusy;
 
 const int MuonReader::defaultOptions = MuonReader::LOADRECO | MuonReader::FILLOBJ;

@@ -31,27 +31,27 @@ namespace ucsbsusy {
     TauReader();
     ~TauReader() {}
 
-    void load(TTree *tree, int options, string branchName);
+    void load(TTree *tree, int options, std::string branchName);
     void refresh();
 
     public :
-      vector<float> *   pt;
-      vector<float> *   eta;
-      vector<float> *   phi;
-      vector<float> *   mass;
-      vector<float> *		leadcandpt;
-      vector<float> *		leadcandeta;
-      vector<float> *		leadcandphi;
-      vector<float> *		leadcandmass;
-      vector<float> *		leadchcandpt;
-      vector<float> *		leadchcandeta;
-      vector<float> *		leadchcandphi;
-      vector<float> *		leadchcandmass;
-      vector<int> *		q;
-      vector<float> *		dxy;
-      vector<float> *		dxyerr;
-      vector<float> *		dxysig;
-      vector<unsigned long>  *	hpsid;
+      std::vector<float> *   pt;
+      std::vector<float> *   eta;
+      std::vector<float> *   phi;
+      std::vector<float> *   mass;
+      std::vector<float> *		leadcandpt;
+      std::vector<float> *		leadcandeta;
+      std::vector<float> *		leadcandphi;
+      std::vector<float> *		leadcandmass;
+      std::vector<float> *		leadchcandpt;
+      std::vector<float> *		leadchcandeta;
+      std::vector<float> *		leadchcandphi;
+      std::vector<float> *		leadchcandmass;
+      std::vector<int> *		q;
+      std::vector<float> *		dxy;
+      std::vector<float> *		dxyerr;
+      std::vector<float> *		dxysig;
+      std::vector<unsigned long>  *	hpsid;
 
       TauFCollection    taus;
 

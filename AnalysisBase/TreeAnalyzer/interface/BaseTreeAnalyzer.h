@@ -20,9 +20,8 @@
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
 
-using namespace std;
-
 namespace ucsbsusy {
+
 
   class BaseTreeAnalyzer{
 
@@ -35,11 +34,11 @@ namespace ucsbsusy {
     //Load a variable type to be read from the TTree
     //use the defaultOptions if options is less than 1
     //use the default branch name prefix if set to an empty string
-    void	load(VarType type, int options = -1, string branchName = "" );
+    void	load(VarType type, int options = -1, std::string branchName = "" );
     //same as above but for non-default readers
-    void	load(BaseReader * inReader, int options, string branchName) {reader.load(inReader,options,branchName);}
+    void	load(BaseReader * inReader, int options, std::string branchName) {reader.load(inReader,options,branchName);}
     //load a non-reader variable from the tree
-    template<typename varType> varType*	loadObject(string branchName){ return reader.loadObject<varType>(branchName);}
+    template<typename varType> varType*	loadObject(std::string branchName){ return reader.loadObject<varType>(branchName);}
 
     //load the next event
     virtual bool	nextEvent(int reportFrequency = 100000);
@@ -57,18 +56,18 @@ namespace ucsbsusy {
     const bool	isMC;
 
     //All default readers
-    EventInfoReader	evtInfoReader;
-    JetReader		ak4Reader;
-    ElectronReader	electronReader;
-    MuonReader		muonReader;
-    TauReader		tauReader;
+    EventInfoReader 	evtInfoReader;
+    JetReader		      ak4Reader;
+    ElectronReader	  electronReader;
+    MuonReader		    muonReader;
+    TauReader	      	tauReader;
 
     //Pointers to default objects (for ease of access)
     RecoJetFCollection*		ak4Jets;
     GenJetFCollection*		ak4GenJets;
     ElectronFCollection*	electrons;
-    MuonFCollection*		muons;
-    TauFCollection*		taus;
+    MuonFCollection*	  	muons;
+    TauFCollection*		    taus;
 
   };
 }
