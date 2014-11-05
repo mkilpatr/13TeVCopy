@@ -32,7 +32,7 @@ public :
   JetReader();
   ~JetReader() {}
 
-  void load(TTree *tree, int options, std::string branchName);
+  void load(TreeReader *treeReader, int options, std::string branchName);
   void refresh();
 
   void pushToTree(); //push changes made to the momentum back to the tree

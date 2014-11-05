@@ -22,7 +22,7 @@ namespace ucsbsusy {
       EventInfoReader();
       ~EventInfoReader() {}
 
-      void	load(TTree *tree, int options=0, std::string branchName="");
+      void	load(TreeReader *treeReader, int options=0, std::string branchName="");
       void	refresh();
 
       unsigned int  run;

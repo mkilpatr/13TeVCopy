@@ -36,7 +36,7 @@ TreeReader::~TreeReader()
 //--------------------------------------------------------------------------------------------------
 void TreeReader::load(BaseReader * reader, int options, std::string branchName)
 {
-  reader->load(tree,options,branchName);
+  reader->load(this,options,branchName);
   readers.push_back(reader);
 }
 //--------------------------------------------------------------------------------------------------

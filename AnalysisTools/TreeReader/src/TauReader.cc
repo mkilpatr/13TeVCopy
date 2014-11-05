@@ -9,6 +9,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/TreeReader.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -38,7 +39,7 @@ TauReader::TauReader() : BaseReader(){
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauReader::load(TTree *tree, int options, string branchName)
+void TauReader::load(TreeReader *treeReader, int options, string branchName)
 {
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
@@ -47,23 +48,23 @@ void TauReader::load(TTree *tree, int options, string branchName)
 
   if(options_ & LOADRECO){
     cout <<"reco ";
-    tree->SetBranchAddress((branchName + "_pt"          ).c_str(), &pt  );
-    tree->SetBranchAddress((branchName + "_eta"         ).c_str(), &eta );
-    tree->SetBranchAddress((branchName + "_phi"         ).c_str(), &phi );
-    tree->SetBranchAddress((branchName + "_mass"        ).c_str(), &mass);
-    tree->SetBranchAddress((branchName + "_leadcand_pt").c_str(), &leadcandpt);
-    tree->SetBranchAddress((branchName + "_leadcand_eta").c_str(), &leadcandeta);
-    tree->SetBranchAddress((branchName + "_leadcand_phi").c_str(), &leadcandphi);
-    tree->SetBranchAddress((branchName + "_leadcand_mass").c_str(), &leadcandmass);
-    tree->SetBranchAddress((branchName + "_leadchargedcand_pt").c_str(), &leadchcandpt);
-    tree->SetBranchAddress((branchName + "_leadchargedcand_eta").c_str(), &leadchcandeta);
-    tree->SetBranchAddress((branchName + "_leadchargedcand_phi").c_str(), &leadchcandphi);
-    tree->SetBranchAddress((branchName + "_leadchargedcand_mass").c_str(), &leadchcandmass);
-    tree->SetBranchAddress((branchName + "_q").c_str(), &q);
-    tree->SetBranchAddress((branchName + "_dxy").c_str(), &dxy);
-    tree->SetBranchAddress((branchName + "_dxyerr").c_str(), &dxyerr);
-    tree->SetBranchAddress((branchName + "_dxysig").c_str(), &dxysig);
-    tree->SetBranchAddress((branchName + "_idflags").c_str(), &hpsid);
+    treeReader->setBranchAddress((branchName + "_pt"          ).c_str(), &pt                    , true);
+    treeReader->setBranchAddress((branchName + "_eta"         ).c_str(), &eta                   , true);
+    treeReader->setBranchAddress((branchName + "_phi"         ).c_str(), &phi                   , true);
+    treeReader->setBranchAddress((branchName + "_mass"        ).c_str(), &mass                  , true);
+    treeReader->setBranchAddress((branchName + "_leadcand_pt").c_str(), &leadcandpt             , true);
+    treeReader->setBranchAddress((branchName + "_leadcand_eta").c_str(), &leadcandeta           , true);
+    treeReader->setBranchAddress((branchName + "_leadcand_phi").c_str(), &leadcandphi           , true);
+    treeReader->setBranchAddress((branchName + "_leadcand_mass").c_str(), &leadcandmass         , true);
+    treeReader->setBranchAddress((branchName + "_leadchargedcand_pt").c_str(), &leadchcandpt    , true);
+    treeReader->setBranchAddress((branchName + "_leadchargedcand_eta").c_str(), &leadchcandeta  , true);
+    treeReader->setBranchAddress((branchName + "_leadchargedcand_phi").c_str(), &leadchcandphi  , true);
+    treeReader->setBranchAddress((branchName + "_leadchargedcand_mass").c_str(), &leadchcandmass, true);
+    treeReader->setBranchAddress((branchName + "_q").c_str(), &q                                , true);
+    treeReader->setBranchAddress((branchName + "_dxy").c_str(), &dxy                            , true);
+    treeReader->setBranchAddress((branchName + "_dxyerr").c_str(), &dxyerr                      , true);
+    treeReader->setBranchAddress((branchName + "_dxysig").c_str(), &dxysig                      , true);
+    treeReader->setBranchAddress((branchName + "_idflags").c_str(), &hpsid                      , true);
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";

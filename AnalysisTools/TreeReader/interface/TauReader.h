@@ -31,7 +31,7 @@ namespace ucsbsusy {
     TauReader();
     ~TauReader() {}
 
-    void load(TTree *tree, int options, std::string branchName);
+    void load(TreeReader *treeReader, int options, std::string branchName);
     void refresh();
 
     public :

@@ -42,22 +42,12 @@ namespace ucsbsusy {
         }
         else {
           if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + branchName );
-          if(verbose)std::cout << " -" <<branchName;
+          if(verbose)std::clog << " -" <<branchName;
         }
       }
 
-
       //load a new reader
       void load(BaseReader * reader, int options, std::string branchName);
-
-      //Load an object not included in a reader
-      template<typename varType>
-      varType* loadObject(TString  branchName){
-        varType * tempVar = new varType;
-        setBranchAddress(branchName,&tempVar);
-        return tempVar;
-      }
-
 
       //Load the next event from the tree....return false if there are no more events in the tree
       bool nextEvent(int reportFrequency = 1000000);

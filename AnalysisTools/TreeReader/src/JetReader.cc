@@ -9,6 +9,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
+#include "AnalysisTools/TreeReader/interface/TreeReader.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -34,39 +35,39 @@ JetReader::JetReader() : BaseReader(){
 }
 
 //--------------------------------------------------------------------------------------------------
-void JetReader::load(TTree *tree, int options, string branchName)
+void JetReader::load(TreeReader *treeReader, int options, string branchName)
 {
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
-    cout << "Loading (" << branchName << ") jets with: ";
+    clog << "Loading (" << branchName << ") jets with: ";
 
   if(options_ & LOADRECO){
-    cout << "reco ";
-    tree->SetBranchAddress((branchName_ + "_jet_pt"    ).c_str(), &jetpt_    );
-    tree->SetBranchAddress((branchName_ + "_jet_eta"   ).c_str(), &jeteta_   );
-    tree->SetBranchAddress((branchName_ + "_jet_phi"   ).c_str(), &jetphi_   );
-    tree->SetBranchAddress((branchName_ + "_jet_mass"  ).c_str(), &jetmass_  );
-    tree->SetBranchAddress((branchName_ + "_jet_ptraw" ).c_str(), &jetptraw_ );
-    tree->SetBranchAddress((branchName_ + "_jet_puId"  ).c_str(), &jetpuId_  );
-    tree->SetBranchAddress((branchName_ + "_jet_csv"   ).c_str(), &jetcsv_   );
-    tree->SetBranchAddress((branchName_ + "_jet_flavor").c_str(), &jetflavor_);
+    clog << "reco ";
+    treeReader->setBranchAddress((branchName_ + "_jet_pt"    ).c_str(), &jetpt_    ,true);
+    treeReader->setBranchAddress((branchName_ + "_jet_eta"   ).c_str(), &jeteta_   ,true);
+    treeReader->setBranchAddress((branchName_ + "_jet_phi"   ).c_str(), &jetphi_   ,true);
+    treeReader->setBranchAddress((branchName_ + "_jet_mass"  ).c_str(), &jetmass_  ,true);
+    treeReader->setBranchAddress((branchName_ + "_jet_ptraw" ).c_str(), &jetptraw_ );
+    treeReader->setBranchAddress((branchName_ + "_jet_puId"  ).c_str(), &jetpuId_  );
+    treeReader->setBranchAddress((branchName_ + "_jet_csv"   ).c_str(), &jetcsv_   ,true);
+    treeReader->setBranchAddress((branchName_ + "_jet_flavor").c_str(), &jetflavor_);
   }
   if(options_ & LOADGEN){
-    cout << "gen ";
-    tree->SetBranchAddress((branchName_+"_matchedgenjet_pt"    ).c_str(), &genjetpt_    );
-    tree->SetBranchAddress((branchName_+"_matchedgenjet_eta"   ).c_str(), &genjeteta_   );
-    tree->SetBranchAddress((branchName_+"_matchedgenjet_phi"   ).c_str(), &genjetphi_   );
-    tree->SetBranchAddress((branchName_+"_matchedgenjet_mass"  ).c_str(), &genjetmass_  );
-    tree->SetBranchAddress((branchName_+"_matchedgenjet_flavor").c_str(), &genjetflavor_);
+    clog << "gen ";
+    treeReader->setBranchAddress((branchName_+"_matchedgenjet_pt"    ).c_str(), &genjetpt_    ,true);
+    treeReader->setBranchAddress((branchName_+"_matchedgenjet_eta"   ).c_str(), &genjeteta_   ,true);
+    treeReader->setBranchAddress((branchName_+"_matchedgenjet_phi"   ).c_str(), &genjetphi_   ,true);
+    treeReader->setBranchAddress((branchName_+"_matchedgenjet_mass"  ).c_str(), &genjetmass_  ,true);
+    treeReader->setBranchAddress((branchName_+"_matchedgenjet_flavor").c_str(), &genjetflavor_,true);
   }
   if(options_ & LOADJETSHAPE){
-    cout << "jetshape ";
-    tree->SetBranchAddress((branchName_+"_jet_qgl"    ).c_str(), &jetqgl_    );
+    clog << "jetshape ";
+    treeReader->setBranchAddress((branchName_+"_jet_qgl"    ).c_str(), &jetqgl_    );
   }
   if(options_ & FILLOBJ)
-    cout << "+Objects";
-  cout << endl;
+    clog << "+Objects";
+  clog << endl;
 }
 
 //--------------------------------------------------------------------------------------------------

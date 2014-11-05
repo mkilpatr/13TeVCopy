@@ -34,11 +34,16 @@ namespace ucsbsusy {
     //Load a variable type to be read from the TTree
     //use the defaultOptions if options is less than 1
     //use the default branch name prefix if set to an empty string
-    void	load(VarType type, int options = -1, std::string branchName = "" );
+    virtual void	load(VarType type, int options = -1, std::string branchName = "" );
     //same as above but for non-default readers
     void	load(BaseReader * inReader, int options, std::string branchName) {reader.load(inReader,options,branchName);}
     //load a non-reader variable from the tree
-    template<typename varType> varType*	loadObject(std::string branchName){ return reader.loadObject<varType>(branchName);}
+    template<typename varType>
+    void setBranchAddress(const TString branchName, varType **var, bool require = false, bool verbose = true)
+      { reader.setBranchAddress(branchName,var,false,true);}
+    template<typename varType>
+    void setBranchAddress(const TString branchName, varType *var, bool require = false, bool verbose = true)
+      { reader.setBranchAddress(branchName,var,false,true);}
 
     //load the next event
     virtual bool	nextEvent(int reportFrequency = 100000);
