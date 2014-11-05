@@ -1,5 +1,6 @@
 <use name="root"/>
 <use name="rootmath"/>
+<use name="AnalysisTools/KinematicVariables"/>
 <use name="AnalysisTools/TreeReader"/>
 <use name="AnalysisTools/Parang"/>
 <export>
