@@ -39,15 +39,15 @@ namespace ucsbsusy {
 
       ~Tau() {}
 
-      int	index() 			{ return index_;	}
-      int	q() 				{ return q_;		}
-      float	dxy() 				{ return dxy_;		}
-      float	dxyerr() 			{ return dxyerr_;	}
-      float	dxysig() 			{ return dxysig_;	}
-      unsigned long	hpsid() 		{ return hpsid_;	}
-      bool	passpogid() 			{ return passpogid_;	}
-      bool	passpogiso() 			{ return passpogiso_;	}
-      bool	isgoodpogtau() 			{ return isgoodpogtau_;	}
+      int	index() 			    const { return index_;	}
+      int	q() 				      const { return q_;		}
+      float	dxy() 				  const { return dxy_;		}
+      float	dxyerr() 			  const { return dxyerr_;	}
+      float	dxysig() 			  const { return dxysig_;	}
+      unsigned long	hpsid() const { return hpsid_;	}
+      bool	passpogid() 		const { return passpogid_;	}
+      bool	passpogiso() 		const { return passpogiso_;	}
+      bool	isgoodpogtau() 	const { return isgoodpogtau_;	}
       const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
       void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
       const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return leadChargedCand_;	}

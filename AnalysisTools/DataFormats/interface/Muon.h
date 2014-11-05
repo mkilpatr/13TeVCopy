@@ -42,13 +42,13 @@ namespace ucsbsusy {
 
       ~Muon() {}
 
-      bool	isloosemuon() 				{ return isloose_;		}
-      bool	istightmuon() 				{ return istight_;		}
-      bool	ispfmuon() 				{ return ispf_;			}
-      bool	isglobal() 				{ return isglobal_;		}
-      bool	istracker() 				{ return istracker_;		}
-      bool	isstandalone() 				{ return isstandalone_;		}
-      bool	isgoodpogmuon() 			{ return isgoodpogmuon_;	}
+      bool	isloosemuon() 	const { return isloose_;		}
+      bool	istightmuon() 	const { return istight_;		}
+      bool	ispfmuon() 			const { return ispf_;			}
+      bool	isglobal() 			const { return isglobal_;		}
+      bool	istracker() 		const { return istracker_;		}
+      bool	isstandalone() 	const { return isstandalone_;		}
+      bool	isgoodpogmuon() const { return isgoodpogmuon_;	}
 
       void	setIsLoose(bool newType)		{ isloose_ = newType;		}
       void	setIsTight(bool newType)		{ istight_ = newType;		}
