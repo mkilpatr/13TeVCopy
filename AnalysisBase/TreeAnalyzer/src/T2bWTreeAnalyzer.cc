@@ -65,7 +65,7 @@ void T2bWTreeAnalyzer::load(VarType type, int options, string branchName)
       break;
     }
     case AK4JETS : {
-      int defaultOptions = (JetReader::defaultOptions | JetReader::LOADJETSHAPE) | (isMC ? JetReader::LOADGEN : JetReader::NULLOPT);
+      int defaultOptions = (JetReader::defaultOptions | JetReader::LOADJETSHAPE) | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
       reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? "ak4pfchs" : branchName);
       break;
     }
@@ -75,13 +75,11 @@ void T2bWTreeAnalyzer::load(VarType type, int options, string branchName)
     }
   }
 }
-bool T2bWTreeAnalyzer::nextEvent(int reportFrequency){
-  if(!BaseTreeAnalyzer::nextEvent(reportFrequency)) return false;
+void T2bWTreeAnalyzer::processVariables(){
   filterJets(jets,minPT,maxETA);
   fillSearchVars();
   if(loadedT2BW)
     computeT2BWDiscriminators();
-  return true;
 }
 void T2bWTreeAnalyzer::filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA){
   newJets.resize(0);
