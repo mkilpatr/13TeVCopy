@@ -76,11 +76,11 @@ namespace ucsbsusy {
     const bool	isMC;
 
     //All default readers
-    EventInfoReader 	evtInfoReader;
-    JetReader		      ak4Reader;
-    ElectronReader	  electronReader;
-    MuonReader		    muonReader;
-    TauReader	      	tauReader;
+    EventInfoReader  evtInfoReader ;
+    JetReader		     ak4Reader     ;
+    ElectronReader   electronReader;
+    MuonReader		   muonReader    ;
+    TauReader	       tauReader     ;
   };
 }
 

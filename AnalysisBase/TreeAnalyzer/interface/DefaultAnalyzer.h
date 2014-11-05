@@ -11,8 +11,8 @@
 #ifndef ANALYSISBASE_TREEANALYZER_DEFAULTANALYZER_H
 #define ANALYSISBASE_TREEANALYZER_DEFAULTANALYZER_H
 
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 namespace ucsbsusy {
 
@@ -20,50 +20,59 @@ namespace ucsbsusy {
 
     public :
       DefaultAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
-      ~DefaultAnalyzer();
+      ~DefaultAnalyzer(){};
 
-      static const float	minElePt;
-      static const float	minMuPt;
-      static const float	minTauPt;
-      static const float	minJetPt;
-      static const float	minBJetPt;
-      static const float	maxEleEta;
-      static const float	maxMuEta;
-      static const float	maxTauEta;
-      static const float	maxJetEta;
-      static const float	maxBJetEta;
-      static const float	minBJetCSV;
-      static const float	minDR;
+      void    defaultLoad();
 
       void		cleanJetsAgainstLeptons(bool clean=true)	{ cleanJetsvLeptons = clean;	}
       void		cleanJetsAgainstTaus(bool clean=true)		{ cleanJetsvTaus = clean;	}
 
-      void		process();
-      bool		nextEvent(int reportFrequency = 100000);
+      void    process();
+      bool    nextEvent(int reportFrequency = 100000);
+
+
+      bool isGoodJet    (const RecoJetF& jet) const;
+      bool isTightBJet  (const RecoJetF& jet) const;
+      bool isMediumBJet (const RecoJetF& jet) const;
+
+      bool isGoodElectron   (const ElectronF& electron) const;
+      bool isGoodMuon       (const MuonF& muon        ) const;
+      bool isGoodTau        (const TauF& tau          ) const;
 
       // accessors for standard event information
-      unsigned int	run()		{ return evtInfoReader.run;		}
-      unsigned int	lumi()		{ return evtInfoReader.lumi;		}
-      unsigned int	event()		{ return evtInfoReader.event;		}
-      float		met()		{ return evtInfoReader.met.pt();	}
-      float		metphi()	{ return evtInfoReader.met.phi();	}
-      int		nPV()		{ return evtInfoReader.nPV;		}
+      unsigned int	run()		const { return evtInfoReader.run;		}
+      unsigned int	lumi()  const { return evtInfoReader.lumi;		}
+      unsigned int	event() const { return evtInfoReader.event;		}
+      int		        nPV()	  const { return evtInfoReader.nPV;		}
   
-      int		nLeptons()	{ return goodLeptons->size();		}
-      int		nTaus()		{ return goodTaus->size();		}
-      int		nJets()		{ return cleanJets->size();		}
-      int		nBJets()	{ return cleanBJets->size();		}
+      int		nLeptons() const {return leptons.size();}
+      int		nTaus()		 const {return taus.size();	  }
+      int		nJets()		 const {return jets.size();	  }
+      int		nBJets()	 const {return bJets.size();  }
 
-      LeptonFCollection*	goodLeptons;
-      TauFCollection*		goodTaus;
-      RecoJetFCollection*	cleanJets;
-      RecoJetFCollection*	cleanBJets;
-      RecoJetFCollection*	cleanNonBJets;
+      MomentumF*               met      ;
+      std::vector<LeptonF*>    leptons  ;
+      std::vector<TauF*>       taus    ;
+      std::vector<RecoJetF*>   jets    ;
+      std::vector<RecoJetF*>   bJets   ;
+      std::vector<RecoJetF*>   nonBJets;
 
     protected :
       bool		cleanJetsvLeptons;
       bool		cleanJetsvTaus;
 
+    public:
+      static const float  minElePt;
+      static const float  minMuPt;
+      static const float  minTauPt;
+      static const float  minJetPt;
+      static const float  minBJetPt;
+      static const float  maxEleEta;
+      static const float  maxMuEta;
+      static const float  maxTauEta;
+      static const float  maxJetEta;
+      static const float  maxBJetEta;
+      static const float  minDR;
   };
 
 }
