@@ -49,6 +49,21 @@ namespace ucsbsusy {
     //get number of entries
     int		getEntries()	  const	{ return reader.getEntries();	}
 
+    // Filters a collection into a vector of pointers
+    template <typename Obj>
+    std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, const double maxEta = 999, bool (*test)(const Obj&) = 0) const {
+      const size          numObjects    = objs.size();
+      std::vector<Obj*>   outObjs;
+      outObjs.reserve(numObjects);
+      for(auto& obj : objs){
+        if (obj.pt()    < minPT )            continue;
+        if (TMath::Abs(obj.eta()) > maxEta)  continue;
+        if (test && !(*test)(obj.eta()))     continue;
+        outObjs.push_back(&obj);
+      }
+      return outObjs;
+    }
+
   protected:
     TreeReader	reader; //default reader
 
@@ -61,14 +76,6 @@ namespace ucsbsusy {
     ElectronReader	  electronReader;
     MuonReader		    muonReader;
     TauReader	      	tauReader;
-
-    //Pointers to default objects (for ease of access)
-    RecoJetFCollection*		ak4Jets;
-    GenJetFCollection*		ak4GenJets;
-    ElectronFCollection*	electrons;
-    MuonFCollection*	  	muons;
-    TauFCollection*		    taus;
-
   };
 }
 
