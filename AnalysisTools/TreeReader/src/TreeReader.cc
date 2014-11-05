@@ -17,14 +17,14 @@ using namespace ucsbsusy;
 //--------------------------------------------------------------------------------------------------
 TreeReader::TreeReader(TString fileName, TString treeName, TString readOption) : eventNumber(0)
 {
-  std::cout << "Loading file: "<< fileName <<" and tree: " << treeName <<std::endl;
+  std::clog << "Loading file: "<< fileName <<" and tree: " << treeName <<std::endl;
 
   file = TFile::Open(fileName,readOption);
   assert(file);
   tree = (TTree*)(file->Get(treeName) );
   assert(tree);
-
-  std::cout << getEntries() << " entries to process" << std::endl;
+  tree->SetBranchStatus("*",0);
+  std::clog << getEntries() << " entries to process" << std::endl;
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ bool TreeReader::nextEvent(int reportFrequency)
   tree->GetEntry(eventNumber);
 
   if(eventNumber%reportFrequency == 0)
-    cout << "Processing event " << eventNumber << endl;
+    clog << "Processing event " << eventNumber << endl;
 
   for(auto reader : readers)
     reader->refresh();
