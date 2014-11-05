@@ -32,6 +32,7 @@ EventInfoReader::EventInfoReader()
 
 void EventInfoReader::load(TreeReader *treeReader, int options, string branchName)
 {
+  loaded_ = true;
   treeReader->setBranchAddress("run", &run);
   treeReader->setBranchAddress("lumi", &lumi);
   treeReader->setBranchAddress("event", &event);

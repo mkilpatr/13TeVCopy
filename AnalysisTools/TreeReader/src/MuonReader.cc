@@ -38,6 +38,7 @@ MuonReader::MuonReader() : BaseReader(){
 //--------------------------------------------------------------------------------------------------
 void MuonReader::load(TreeReader *treeReader, int options, string branchName)
 {
+  loaded_ = true;
     const_cast<int&>(options_)    = options;
     const_cast<string&>(branchName_) = branchName;
 
