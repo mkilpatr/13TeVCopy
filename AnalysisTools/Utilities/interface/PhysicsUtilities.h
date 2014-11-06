@@ -268,7 +268,7 @@ std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, 
   for(auto& obj : objs){
     if (obj.pt()    < minPT )            continue;
     if (TMath::Abs(obj.eta()) > maxEta)  continue;
-    if (test && !(*test)(obj.eta()))     continue;
+    if (test && !(*test)(obj))     continue;
     outObjs.push_back(&obj);
   }
   return outObjs;
