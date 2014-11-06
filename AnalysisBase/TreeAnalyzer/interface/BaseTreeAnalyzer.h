@@ -22,82 +22,72 @@
 
 namespace ucsbsusy {
 
-
-  class BaseTreeAnalyzer{
-    //--------------------------------------------------------------------------------------------------
-    // functions used for basic event processing and loading
-    //--------------------------------------------------------------------------------------------------
+  class BaseTreeAnalyzer {
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
     enum VarType {EVTINFO, AK4JETS, ELECTRONS, MUONS, TAUS};
-    //Load a variable type to be read from the TTree
-    //use the defaultOptions if options is less than 1
-    //use the default branch name prefix if set to an empty string
-    virtual void	load(VarType type, int options = -1, std::string branchName = "" );
-    //same as above but for non-default readers
-    void	load(BaseReader * inReader, int options, std::string branchName) {reader.load(inReader,options,branchName);}
-    //load a non-reader variable from the tree
+
+    // Load a variable type to be read from the TTree
+    // use the defaultOptions if options is less than 1
+    // use the default branch name prefix if set to an empty string
+    virtual void load(VarType type, int options = -1, std::string branchName = "" );
+
+    // Same as above but for non-default readers
+    void         load(BaseReader * inReader, int options, std::string branchName) { reader.load(inReader,options,branchName); }
+
+    // Load a non-reader variable from the tree
     template<typename varType>
     void setBranchAddress(const TString branchName, varType **var, bool require = false, bool verbose = true)
-      { reader.setBranchAddress(branchName,var,false,true);}
+      { reader.setBranchAddress(branchName,var,false,true); }
     template<typename varType>
     void setBranchAddress(const TString branchName, varType *var, bool require = false, bool verbose = true)
-      { reader.setBranchAddress(branchName,var,false,true);}
+      { reader.setBranchAddress(branchName,var,false,true); }
 
   public:
-    //Base function that runs the standard process
+    //--------------------------------------------------------------------------------------------------
+    // Functions used for basic event processing and loading
+    //--------------------------------------------------------------------------------------------------
+
+    // Base function that runs the standard process
     virtual void analyze(int reportFrequency = 10000);
-    //Sub processes that can be overloaded
-    virtual void loadVariables();   //load variables
-    virtual void processVariables();//event processing
-    virtual void run() = 0;             //analysis code
 
+    // Sub processes that can be overloaded
+    virtual void loadVariables();       //load variables
+    virtual void processVariables();    //event processing
+    virtual void runEvent() = 0;        //analysis code
 
-    int		getEventNumber() const	{ return reader.eventNumber;	}
-    int		getEntries()	  const	{ return reader.getEntries();	}
-    bool  isMC()          const {return isMC_;}
-    bool  isLoaded()      const {return isLoaded_;}
+    //--------------------------------------------------------------------------------------------------
+    // Standard information
+    //--------------------------------------------------------------------------------------------------
+    int  getEventNumber() const { return reader.eventNumber;  }
+    int  getEntries()     const { return reader.getEntries(); }
+    bool isMC()           const { return isMC_;               }
+    bool isLoaded()       const { return isLoaded_;           }
 
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
-  public:
-    void    cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons = clean;  }
-    void    cleanJetsAgainstTaus(bool clean=true)   { cleanJetsvTaus = clean; }
+    void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
+    void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
 
     //--------------------------------------------------------------------------------------------------
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
-    bool isGoodJet    (const RecoJetF& jet) const;
-    bool isTightBJet  (const RecoJetF& jet) const;
-    bool isMediumBJet (const RecoJetF& jet) const;
-
-    bool isGoodElectron   (const ElectronF& electron) const;
-    bool isGoodMuon       (const MuonF& muon        ) const;
-    bool isGoodTau        (const TauF& tau          ) const;
-
-    //--------------------------------------------------------------------------------------------------
-    // Accessors to common information
-    //--------------------------------------------------------------------------------------------------
-  public:
-    unsigned int  run()   const { return evtInfoReader.run;   }
-    unsigned int  lumi()  const { return evtInfoReader.lumi;    }
-    unsigned int  event() const { return evtInfoReader.event;   }
-    int           nPV()   const { return evtInfoReader.nPV;   }
-
-    int   nLeptons() const {return leptons.size();}
-    int   nTaus()    const {return taus.size();   }
-    int   nJets()    const {return jets.size();   }
-    int   nBJets()   const {return bJets.size();  }
+    bool isGoodJet     (const RecoJetF& jet) const;
+    bool isTightBJet   (const RecoJetF& jet) const;
+    bool isMediumBJet  (const RecoJetF& jet) const;
+    bool isGoodElectron(const ElectronF& electron) const;
+    bool isGoodMuon    (const MuonF& muon        ) const;
+    bool isGoodTau     (const TauF& tau          ) const;
 
     //--------------------------------------------------------------------------------------------------
     // TTree readers
     //--------------------------------------------------------------------------------------------------
   protected:
-    bool        isLoaded_;
-    TreeReader	reader; //default reader
+    bool             isLoaded_;
+    TreeReader       reader;        // default reader
   public:
     EventInfoReader  evtInfoReader ;
     JetReader        ak4Reader     ;
@@ -105,29 +95,40 @@ namespace ucsbsusy {
     MuonReader       muonReader    ;
     TauReader        tauReader     ;
 
+  public:
+    //--------------------------------------------------------------------------------------------------
+    // Members to access common information
+    //--------------------------------------------------------------------------------------------------
+    unsigned int  run;
+    unsigned int  lumi;
+    unsigned int  event;
+    int   nPV;
+    int   nLeptons;
+    int   nTaus;
+    int   nJets;
+    int   nBJets;
+
     //--------------------------------------------------------------------------------------------------
     // Stored collections
     //--------------------------------------------------------------------------------------------------
-  public:
-    MomentumF*               met      ;
-    std::vector<LeptonF*>    leptons  ;
+    MomentumF*               met     ;
+    std::vector<LeptonF*>    leptons ;
     std::vector<TauF*>       taus    ;
     std::vector<RecoJetF*>   jets    ;
     std::vector<RecoJetF*>   bJets   ;
     std::vector<RecoJetF*>   nonBJets;
 
-    //--------------------------------------------------------------------------------------------------
-    // configuration parameters
-    //--------------------------------------------------------------------------------------------------
   protected:
-    const bool	isMC_;
-    bool    cleanJetsvLeptons;
-    bool    cleanJetsvTaus;
+    //--------------------------------------------------------------------------------------------------
+    // Configuration parameters
+    //--------------------------------------------------------------------------------------------------
+    const bool   isMC_;
+    bool         cleanJetsvLeptons_;
+    bool         cleanJetsvTaus_;
 
     //--------------------------------------------------------------------------------------------------
     // Kinematic settings
     //--------------------------------------------------------------------------------------------------
-  protected:
     const float  minElePt;
     const float  minMuPt;
     const float  minTauPt;
@@ -139,7 +140,9 @@ namespace ucsbsusy {
     const float  maxJetEta;
     const float  maxBJetEta;
     const float  minJetLepDR;
+
   };
+
 }
 
 #endif
