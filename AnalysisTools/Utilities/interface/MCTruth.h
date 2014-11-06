@@ -12,7 +12,7 @@ namespace ucsbsusy {
       MCTruth() {}
 
       static bool isAncestor(const reco::Candidate* ancestor, const reco::Candidate* particle)
-{
+      {
 	//particle is already the ancestor
 	if(ancestor == particle) return true;
 	//otherwise loop on mothers, if any and return true if the ancestor is found
