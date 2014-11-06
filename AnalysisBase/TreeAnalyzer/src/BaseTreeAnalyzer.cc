@@ -9,26 +9,35 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+
 using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption) : isLoaded_(false), reader(fileName,treeName,readOption),
-    met(0),
-    isMC_            (isMCTree),
-    cleanJetsvLeptons(false),
-    cleanJetsvTaus   (false),
-    minElePt         (20.0),
-    minMuPt          (20.0),
-    minTauPt         (20.0),
-    minJetPt         (30.0),
-    minBJetPt        (30.0),
-    maxEleEta        (2.5 ),
-    maxMuEta         (2.4 ),
-    maxTauEta        (2.3 ),
-    maxJetEta        (2.4 ),
-    maxBJetEta       (2.4 ),
-    minJetLepDR      (0.4 )
+    run               (0),
+    lumi              (0),
+    event             (0),
+    nPV               (0),
+    nLeptons          (0),
+    nTaus             (0),
+    nJets             (0),
+    nBJets            (0),
+    met               (0),
+    isMC_             (isMCTree),
+    cleanJetsvLeptons_(false),
+    cleanJetsvTaus_   (false),
+    minElePt          (20.0),
+    minMuPt           (20.0),
+    minTauPt          (20.0),
+    minJetPt          (30.0),
+    minBJetPt         (30.0),
+    maxEleEta         (2.5 ),
+    maxMuEta          (2.4 ),
+    maxTauEta         (2.3 ),
+    maxJetEta         (2.4 ),
+    maxBJetEta        (2.4 ),
+    minJetLepDR       (0.4 )
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 }
@@ -62,7 +71,7 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       break;
     }
     default : {
-      cout << endl << "No settings for type: " << type << " found!"<<endl;
+      cout << endl << "No settings for type: " << type << " found!" << endl;
       break;
     }
   }
@@ -79,7 +88,7 @@ void BaseTreeAnalyzer::loadVariables()
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
 {
-  leptons.resize(0);
+  leptons.clear();
   leptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
   taus.clear();
   taus.reserve(tauReader.taus.size());
@@ -90,8 +99,13 @@ void BaseTreeAnalyzer::processVariables()
   nonBJets.reserve(ak4Reader.recoJets.size());
 
 
-  if(evtInfoReader.isLoaded())
-    met = &evtInfoReader.met;
+  if(evtInfoReader.isLoaded()) {
+    run   = evtInfoReader.run;
+    lumi  = evtInfoReader.lumi;
+    event = evtInfoReader.event;
+    nPV   = evtInfoReader.nPV;
+    met   = &evtInfoReader.met;
+  }
 
   if(electronReader.isLoaded())
     for(auto& electron : electronReader.electrons)
@@ -103,7 +117,7 @@ void BaseTreeAnalyzer::processVariables()
       if(isGoodMuon(muon))
         leptons.push_back(&muon);
 
-  std::sort(leptons.begin(),leptons.end(),PhysicsUtilities::greaterPTDeref<LeptonF>());
+  std::sort(leptons.begin(), leptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
   if(tauReader.isLoaded())
     for(auto& tau : tauReader.taus)
@@ -115,7 +129,7 @@ void BaseTreeAnalyzer::processVariables()
       if(!isGoodJet(jet)) continue;
 
       bool cleanjet = true;
-      if(cleanJetsvLeptons) {
+      if(cleanJetsvLeptons_) {
         for(const auto* glep : leptons) {
           if(PhysicsUtilities::deltaR(*glep, jet) < minJetLepDR) {
             cleanjet = false;
@@ -123,7 +137,7 @@ void BaseTreeAnalyzer::processVariables()
           }
         }
       }
-      if(cleanJetsvTaus) {
+      if(cleanJetsvTaus_) {
         for(const auto* gtau : taus) {
           if(PhysicsUtilities::deltaR(*gtau, jet) < minJetLepDR) {
             cleanjet = false;
@@ -139,6 +153,12 @@ void BaseTreeAnalyzer::processVariables()
       else
         nonBJets.push_back(&jet);
     }
+
+  nLeptons = leptons.size();
+  nTaus    = taus.size();
+  nJets    = jets.size();
+  nBJets   = bJets.size();
+
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency)

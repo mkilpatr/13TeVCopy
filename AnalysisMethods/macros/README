@@ -1,0 +1,34 @@
+Instructions for running for multiple sets of ntuples and combining them for plotting
+-------------------------------------------------------------------------------------
+
+Configuration file
+------------------
+Example: run1lep.conf (in AnalysisMethods/macros)
+What it does: Contains a table of sample names, settings for plots (colors, labels), as well as locations of the ntuples to be run over and the corresponding cross sections to be used for scaling. Just comment out the lines corresponding to samples/files you don't want to run over, or add samples that are missing.
+
+Run macro
+---------
+Example: processSingleLepton.C (in AnalysisMethods/macros)
+What it does: Defines a class derived from the BaseTreeAnalyzer which loads the default objects, applies a selection, initializes and fills a set of histograms. The output (histograms) will be written to a <samplename>_plots.root file.
+
+Scripts for running over multiple samples interactively/using batch submission (located in the run sub-directory)
+-----------------------------------------------------------------------------------------------------------------
+Example: process.py (in AnalysisMethods/macros/run)
+What it does: Parses a given configuration file, and produces a script (the default name is submitall.sh) which you can run to process all the samples you want to run either interactively (quick for the smaller samples, but takes a while for the larger ones) or using the batch systems either at FNAL or CERN (condor/LSF).
+Try
+   cd run/
+   ./process.py -h
+for a list of the various options and defaults, or
+   ./process.py -c run1lep.conf -t interactive
+to try out the interactive running option. A shell script called submitall.sh will be produced, you can edit it to only run on the files you want. Then, just run it:
+   ./submitall.sh
+Et voila! You should have files with plots showing up in a "plots" sub-directory, one file per input file you specified.
+
+Plotting macro
+--------------
+Example: plotAll.C (in AnalysisMethods/macros)
+What it does: Combines all the samples you ran on to produce plots with all backgrounds stacked and the signal overlayed. You can change how things are plotted, for now by digging around a bit in AnalysisMethods/PlotUtils/interface/Plot.hh and AnalysisMethods/PlotUtils/src/Plot.cc. We should add a default set of options for plotting styles. The most relevant functions of the Plot class are the add(...) and addToStack(...) functions, which add histograms to the plot to be plotted either by themselves or as part of a histogram stack. There are also options for drawing ratios, but those will probably need a bit of adaptation depending on what you want to draw.
+To run:
+    root -l -q -b plotAll.C+
+(you'll need to give it the configuration file, input and output directories if these are different from the defaults).
+And that's it! You should see your plots in the "run/plots" directory if you are using the default settings.

@@ -31,6 +31,7 @@
 #include <TLatex.h>
 #include <vector>
 #include <assert.h>
+#include "AnalysisMethods/PlotUtils/interface/StyleTools.hh"
 
 using namespace std;
 
@@ -192,22 +193,14 @@ template<> void Plot::add<TH1F>(TH1F* item, TString drawopt, int color, int fill
   if(!item)
     return;
 
+  StyleTools::InitHist(item, fXTitle, fYTitle, color, fillstyle);
+
   if(linecolor==0)
     item->SetLineColor(color);
   else
     item->SetLineColor(linecolor);
 
   item->SetLineStyle(linestyle);
-  item->SetFillColor(color);
-  item->SetFillStyle(fillstyle);
-
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
-    item->SetMarkerSize(1.3);
-    item->SetMarkerStyle(20);
-    item->SetLineWidth(3);
-  } else {
-    item->SetLineWidth(3);
-  }
 
   fHists1D.push_back(new h1D(item, drawopt));
 
@@ -219,22 +212,14 @@ template<> void Plot::add<TH2F>(TH2F* item, TString drawopt, int color, int fill
   if(!item)
     return;
 
+  StyleTools::InitHist(item, fXTitle, fYTitle, color, fillstyle);
+
   if(linecolor==0)
     item->SetLineColor(color);
   else
     item->SetLineColor(linecolor);
 
   item->SetLineStyle(linestyle);
-  item->SetFillColor(color);
-  item->SetFillStyle(fillstyle);
-
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
-    item->SetMarkerSize(1.3);
-    item->SetMarkerStyle(20);
-    item->SetLineWidth(3);
-  } else {
-    item->SetLineWidth(3);
-  }
 
   fHists2D.push_back(new h2D(item, drawopt));
 

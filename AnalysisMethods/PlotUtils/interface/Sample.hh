@@ -17,13 +17,14 @@ class Sample
     Sample(){}
     ~Sample(){}
 
-    TString		label;
-    unsigned int	color;
-    vector<TString>	filenames;
-    vector<float>	xsecs;
-    vector<float>	weights;
-    vector<int>		types;
-    vector<TString>	jsons;
+    TString      name;
+    TString      label;
+    unsigned int color;
+    std::vector<TString> filenames;
+    std::vector<double>  xsecs;
+    std::vector<double>  weights;
+    std::vector<int>     types;
+    std::vector<TString> jsons;
     
 };
 

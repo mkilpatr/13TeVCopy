@@ -273,8 +273,7 @@ void Plot::drawRatio(TCanvas *c, TH1F *h1, TH1F *h2, bool doSave, TString format
   h2->Draw("hist");
   h1->DrawCopy("same");
   if(fLeg) {
-    fLeg->SetFillStyle(0);
-    fLeg->SetBorderSize(0);
+    StyleTools::SetLegendStyle(fLeg);
     fLeg->Draw();
   }
   c->cd();
@@ -569,7 +568,8 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
       h->SetLineWidth(3);
       char opt[100];
       sprintf(opt,"same%s",vHistOpts[i].Data());
-      if(i!=ifirst) h->Draw(opt);
+      h->Draw(opt);
+      //if(i!=ifirst) h->Draw(opt);
     }
   }  
   c->RedrawAxis();
