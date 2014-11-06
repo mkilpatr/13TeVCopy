@@ -52,7 +52,7 @@ namespace ucsbsusy {
     //Sub processes that can be overloaded
     virtual void loadVariables();   //load variables
     virtual void processVariables();//event processing
-    virtual void run() = 0;             //analysis code
+    virtual void runEvent() = 0;             //analysis code
 
 
     int		getEventNumber() const	{ return reader.eventNumber;	}

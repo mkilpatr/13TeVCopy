@@ -148,7 +148,7 @@ void BaseTreeAnalyzer::analyze(int reportFrequency)
 
   while(reader.nextEvent(reportFrequency)){
     processVariables();
-    run();
+    runEvent();
   }
 }
 //--------------------------------------------------------------------------------------------------

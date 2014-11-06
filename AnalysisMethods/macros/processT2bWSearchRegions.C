@@ -26,7 +26,7 @@ public:
     load(AK4JETS);
   }
 
-  void run(){
+  void runEvent(){
 
     double weight = 1;
 

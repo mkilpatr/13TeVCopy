@@ -32,7 +32,7 @@ namespace ucsbsusy {
 
     virtual void	load(VarType type, int options = -1, string branchName = "" );
     virtual void  processVariables();
-    virtual void run() = 0;
+    virtual void runEvent() = 0;
     void  filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA);
     static bool  isMediumBTaggedJet (const RecoJetF& jet) {return jet.csv() > .679;}
     static bool  isTightBTaggedJet(const RecoJetF& jet) {return jet.csv() > .898;}
