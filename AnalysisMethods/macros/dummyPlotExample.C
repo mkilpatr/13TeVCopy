@@ -10,22 +10,22 @@
 #include "TTree.h"
 #include "TH1F.h"
 #include "TCanvas.h"
-#include "AnalysisMethods/PlotUtils/Style.hh"
+#include "AnalysisMethods/PlotUtils/interface/StyleTools.hh"
 #endif
 
 void dummyPlotExample(TString fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root") {
 
   // initialize
-  TFile *infile = new TFile(fname); assert(infile);
+  TFile *infile = TFile::Open(fname); assert(infile);
   TTree *intree = (TTree*)infile->Get("TestAnalyzer/Events"); assert(intree);
 
   // book some histograms
-  //TH1F *hNPV = new TH1F("hNPV","", 60, 0, 60);
-  TH1F *hMet = new TH1F("hMet","", 40, 0, 200);
+  TH1F *hNPV = new TH1F("hNPV","", 60, 0, 60);
+  TH1F *hMet = new TH1F("hMet","", 60, 0, 600);
 
   // will eventually use a helper class to do this kind of stuff
-  //int npv = 0; intree->SetBranchAddress("num_vertices", &npv);
-  float met = 0; intree->SetBranchAddress("reco_met_pt", &met);
+  int npv = 0; intree->SetBranchAddress("npv", &npv);
+  float met = 0; intree->SetBranchAddress("met", &met);
 
   // loop over branches of event tree
   for(UInt_t ientry = 0; ientry < intree->GetEntries(); ientry++) {
@@ -33,22 +33,22 @@ void dummyPlotExample(TString fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/tes
     intree->GetEntry(ientry);
 
     // fill histograms with info for each event
-    //hNPV->Fill(npv);
+    hNPV->Fill(npv);
     hMet->Fill(met);
 
   }
 
   // now make some plots
-  SetStyle();
-  TCanvas *c = MakeCanvas("c","",600,600);
+  StyleTools::SetStyle();
+  TCanvas *c = StyleTools::MakeCanvas("c","",600,600);
 
-  //InitHist(hNPV, "Number of vertices", "Events");
-  InitHist(hMet, "#slash{E}_{T} [GeV]", "Events");
+  StyleTools::InitHist(hNPV, "Number of vertices", "Events");
+  StyleTools::InitHist(hMet, "#slash{E}_{T} [GeV]", "Events");
 
   c->cd();
 
-  //hNPV->Draw("hist");
-  //c->SaveAs("npv.png");
+  hNPV->Draw("hist");
+  c->SaveAs("npv.png");
 
   hMet->Draw("hist");
   c->SaveAs("met.png");
