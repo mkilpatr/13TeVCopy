@@ -97,7 +97,7 @@ namespace StyleTools {
   
   void SetStyle()
   {
-    TStyle *MyStyle = new TStyle("Htt-Style","The Perfect Style for Plots ;-)");
+    TStyle *MyStyle = new TStyle("New Style","Better than the default style :-)");
     gStyle = MyStyle;
   
     // Canvas
