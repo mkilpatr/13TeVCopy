@@ -119,7 +119,7 @@ void MuonFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void MuonFiller::load(edm::Event& iEvent)
+void MuonFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
@@ -133,7 +133,7 @@ void MuonFiller::load(edm::Event& iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-void MuonFiller::fill(TreeWriter& tW, const int& numAnalyzed)
+void MuonFiller::fill()
 {
 
   const reco::Vertex &PV = vertices_->front();

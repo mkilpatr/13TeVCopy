@@ -30,8 +30,8 @@ namespace ucsbsusy {
       void		initMVA();
       void		book(TreeWriter& tW);
       void		reset();
-      void		load(edm::Event& iEvent);
-      void		fill(TreeWriter& tW, const int& numAnalyzed);
+      void		load(const edm::Event& iEvent);
+      void		fill();
 
     private :
       // Stored information can be customized

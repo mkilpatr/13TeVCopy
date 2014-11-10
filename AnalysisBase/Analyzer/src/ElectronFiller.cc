@@ -185,7 +185,7 @@ void ElectronFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void ElectronFiller::load(edm::Event& iEvent)
+void ElectronFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);
@@ -199,7 +199,7 @@ void ElectronFiller::load(edm::Event& iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-void ElectronFiller::fill(TreeWriter& tW, const int& numAnalyzed)
+void ElectronFiller::fill()
 {
 
   const reco::Vertex &PV = vertices_->front();

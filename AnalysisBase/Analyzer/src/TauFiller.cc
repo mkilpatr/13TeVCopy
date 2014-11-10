@@ -142,7 +142,7 @@ void TauFiller::reset()
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauFiller::load(edm::Event& iEvent)
+void TauFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);
@@ -152,7 +152,7 @@ void TauFiller::load(edm::Event& iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauFiller::fill(TreeWriter& tW, const int& numAnalyzed)
+void TauFiller::fill()
 {
 
   const reco::Vertex &PV = vertices_->front();

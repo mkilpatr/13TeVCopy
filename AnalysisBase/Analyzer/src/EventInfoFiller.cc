@@ -14,30 +14,34 @@ using namespace ucsbsusy;
 using namespace std;
 
 //--------------------------------------------------------------------------------------------------
-EventInfoFiller::EventInfoFiller(const edm::ParameterSet &cfg) :
-  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
-  rhoTag_          (cfg.getParameter<edm::InputTag>("rho")),
-  metTag_(cfg.getParameter<edm::InputTag>("mets")),
+EventInfoFiller::EventInfoFiller(
+    const edm::InputTag vtxTag,
+    const edm::InputTag rhoTag,
+    const edm::InputTag metTag
+) :
+  vtxTag_(vtxTag),
+  rhoTag_ (rhoTag),
+  metTag_(metTag),
   primaryVertexIndex_(-1),
   mets_(0),
   met_(0)
 {
-  run_      = data.add<int  >("","run"      ,"i",0);
-  lumi_     = data.add<int  >("","lumi"     ,"i",0);
-  event_    = data.add<int  >("","event"    ,"i",0);
-  nVertices_= data.add<int  >("","npv"      ,"I",0);
-  rho_      = data.add<float>("","pv_x"     ,"F",0);
-  pvx_      = data.add<float>("","pv_y"     ,"F",0);
-  pvy_      = data.add<float>("","pv_z"     ,"F",0);
-  pvz_      = data.add<float>("","rho"      ,"F",0);
-  metpt_    = data.add<float>("","met_pt"   ,"F",0);
-  metphi_   = data.add<float>("","met_phi"  ,"F",0);
-  metsumEt_ = data.add<float>("","met_sumEt","F",0);
+  run_      = data.add<int  >(branchName_,"run"      ,"i",0);
+  lumi_     = data.add<int  >(branchName_,"lumi"     ,"i",0);
+  event_    = data.add<int  >(branchName_,"event"    ,"i",0);
+  nVertices_= data.add<int  >(branchName_,"npv"      ,"I",0);
+  rho_      = data.add<float>(branchName_,"pv_x"     ,"F",0);
+  pvx_      = data.add<float>(branchName_,"pv_y"     ,"F",0);
+  pvy_      = data.add<float>(branchName_,"pv_z"     ,"F",0);
+  pvz_      = data.add<float>(branchName_,"rho"      ,"F",0);
+  metpt_    = data.add<float>(branchName_,"met_pt"   ,"F",0);
+  metphi_   = data.add<float>(branchName_,"met_phi"  ,"F",0);
+  metsumEt_ = data.add<float>(branchName_,"met_sumEt","F",0);
 
 }
 
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::load(edm::Event& iEvent)
+void EventInfoFiller::load(const edm::Event& iEvent)
 {
   reset();
 
@@ -56,7 +60,7 @@ void EventInfoFiller::load(edm::Event& iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-void EventInfoFiller::fill(TreeWriter& tW, const int& numAnalyzed)
+void EventInfoFiller::fill()
 {
   data.fill<int  >(run_       ,eventCoords.run);
   data.fill<int  >(lumi_      ,eventCoords.lumi);
