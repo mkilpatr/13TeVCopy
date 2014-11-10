@@ -18,7 +18,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
+#include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 #include "AnalysisBase/Analyzer/interface/FileUtilities.h"
 
 using namespace std;
@@ -32,10 +34,10 @@ namespace ucsbsusy {
     virtual ~BaseFiller() {};
 
     // Create branches needed in the tree
-    virtual void	book(TreeWriter& tW) = 0;
+    virtual void	book(TreeWriter& tW) {data.book(&tW);}
 
     // Reset objects
-    virtual void	reset() = 0;
+    virtual void	reset() {isLoaded_ = false; isFilled_ = false; data.reset();}
 
     // Default loading function
     // This guy needs to be defined for each implementation and is run once per event
@@ -50,6 +52,7 @@ namespace ucsbsusy {
     bool isFilled() const {return isFilled_;}
 
   protected:
+    TreeWriterData data;
     bool isLoaded_;
     bool isFilled_;
 

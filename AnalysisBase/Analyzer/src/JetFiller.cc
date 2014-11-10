@@ -37,7 +37,39 @@ JetFiller::JetFiller(const edm::ParameterSet &cfg, const bool isMC, const EventI
   jets_            (0),
   reGenJets_       (0),
   stdGenJets_      (0)
-{}
+{
+  jetpt_     = data.addMulti<float>(jetsName_,"jet_pt"    ,0);
+  jeteta_    = data.addMulti<float>(jetsName_,"jet_eta"   ,0);
+  jetphi_    = data.addMulti<float>(jetsName_,"jet_phi"   ,0);
+  jetmass_   = data.addMulti<float>(jetsName_,"jet_mass"  ,0);
+  jetptraw_  = data.addMulti<float>(jetsName_,"jet_ptraw" ,0);
+  jetpuId_   = data.addMulti<float>(jetsName_,"jet_puId"  ,0);
+  jetcsv_    = data.addMulti<float>(jetsName_,"jet_csv"   ,0);
+  jetflavor_ = data.addMulti<int  >(jetsName_,"jet_flavor",0);
+
+  if(fillGenInfo_) {
+    genjetpt_     = data.addMulti<float>(jetsName_,"matchedgenjet_pt"    ,0);
+    genjeteta_    = data.addMulti<float>(jetsName_,"matchedgenjet_eta"   ,0);
+    genjetphi_    = data.addMulti<float>(jetsName_,"matchedgenjet_phi"   ,0);
+    genjetmass_   = data.addMulti<float>(jetsName_,"matchedgenjet_mass"  ,0);
+    genjetflavor_ = data.addMulti<int  >(jetsName_,"matchedgenjet_flavor",0);
+  }
+
+  if(fillJetShapeInfo_) {
+    jetbetaStar_=data.addMulti<float>(jetsName_,"jet_betaStar",0);
+    jetqgl_     =data.addMulti<float>(jetsName_,"jet_qgl"     ,0);
+    jetptD_     =data.addMulti<float>(jetsName_,"jet_ptD"     ,0);
+    jetaxis1_   =data.addMulti<float>(jetsName_,"jet_axis1"   ,0);
+    jetaxis2_   =data.addMulti<float>(jetsName_,"jet_axis2"   ,0);
+    jetMult_    =data.addMulti<int  >(jetsName_,"jet_jetMult" ,0);
+    if(fillGenInfo_) {
+      genjetptD_  = data.addMulti<float>(jetsName_,"matchedgenjet_ptD"    ,0);
+      genjetaxis1_= data.addMulti<float>(jetsName_,"matchedgenjet_axis1"  ,0);
+      genjetaxis2_= data.addMulti<float>(jetsName_,"matchedgenjet_axis2"  ,0);
+      genjetMult_ = data.addMulti<int  >(jetsName_,"matchedgenjet_jetMult",0);
+    }
+  }
+}
 
 //--------------------------------------------------------------------------------------------------
 reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
@@ -56,112 +88,6 @@ reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
 reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
 {
   return jet.genJetFwdRef().backRef();
-}
-
-//--------------------------------------------------------------------------------------------------
-void JetFiller::book(TreeWriter& tW)
-{
-  tW.book((jetsName_+"_jet_pt").c_str(), jetpt_);
-  tW.book((jetsName_+"_jet_eta").c_str(), jeteta_);
-  tW.book((jetsName_+"_jet_phi").c_str(), jetphi_);
-  tW.book((jetsName_+"_jet_mass").c_str(), jetmass_);
-  tW.book((jetsName_+"_jet_ptraw").c_str(), jetptraw_);
-  tW.book((jetsName_+"_jet_puId").c_str(), jetpuId_);
-  tW.book((jetsName_+"_jet_csv").c_str(), jetcsv_);
-  tW.book((jetsName_+"_jet_flavor").c_str(), jetflavor_);
-  if(fillGenInfo_) {
-    tW.book((jetsName_+"_matchedgenjet_pt").c_str(), genjetpt_);
-    tW.book((jetsName_+"_matchedgenjet_eta").c_str(), genjeteta_);
-    tW.book((jetsName_+"_matchedgenjet_phi").c_str(), genjetphi_);
-    tW.book((jetsName_+"_matchedgenjet_mass").c_str(), genjetmass_);
-    tW.book((jetsName_+"_matchedgenjet_flavor").c_str(), genjetflavor_);
-  }
-  if(fillJetShapeInfo_) {
-    tW.book((jetsName_+"_jet_betaStar").c_str(),jetbetaStar_);
-    tW.book((jetsName_+"_jet_qgl").c_str(),     jetqgl_);
-    tW.book((jetsName_+"_jet_ptD").c_str(),     jetptD_);
-    tW.book((jetsName_+"_jet_axis1").c_str(),   jetaxis1_);
-    tW.book((jetsName_+"_jet_axis2").c_str(),   jetaxis2_);
-    tW.book((jetsName_+"_jet_jetMult").c_str(), jetMult_);
-    if(fillGenInfo_) {
-      tW.book((jetsName_+"_matchedgenjet_ptD").c_str(),     genjetptD_);
-      tW.book((jetsName_+"_matchedgenjet_axis1").c_str(),   genjetaxis1_);
-      tW.book((jetsName_+"_matchedgenjet_axis2").c_str(),   genjetaxis2_);
-      tW.book((jetsName_+"_matchedgenjet_jetMult").c_str(), genjetMult_);
-    }
-  }
-}
-
-//--------------------------------------------------------------------------------------------------
-void JetFiller::reset()
-{
-  isLoaded_ = false;
-  isFilled_ = false;
-
-  jetpt_.resize(0);
-  jeteta_.resize(0);
-  jetphi_.resize(0);
-  jetmass_.resize(0);
-  jetptraw_.resize(0);
-  jetpuId_.resize(0);
-  jetcsv_.resize(0);
-  jetflavor_.resize(0);
-  if(fillGenInfo_) {
-    genjetpt_.resize(0);
-    genjeteta_.resize(0);
-    genjetphi_.resize(0);
-    genjetmass_.resize(0);
-    genjetflavor_.resize(0);
-  }
-  if(fillJetShapeInfo_) {
-    jetbetaStar_.resize(0);
-    jetqgl_     .resize(0);
-    jetptD_     .resize(0);
-    jetaxis1_   .resize(0);
-    jetaxis2_   .resize(0);
-    jetMult_    .resize(0);
-    if(fillGenInfo_){
-      genjetptD_  .resize(0);
-      genjetaxis1_.resize(0);
-      genjetaxis2_.resize(0);
-      genjetMult_ .resize(0);
-    }
-  }
-}
-
-//--------------------------------------------------------------------------------------------------
-void JetFiller::reserve()
-{
-const int nJ = PhysicsUtilities::countObjects(*jets_.product(),jptMin_);
-  jetpt_.reserve(nJ);
-  jeteta_.reserve(nJ);
-  jetphi_.reserve(nJ);
-  jetmass_.reserve(nJ);
-  jetptraw_.reserve(nJ);
-  jetpuId_.reserve(nJ);
-  jetcsv_.reserve(nJ);
-  jetflavor_.reserve(nJ);
-  if(fillGenInfo_) {
-    genjetpt_.reserve(nJ);
-    genjeteta_.reserve(nJ);
-    genjetphi_.reserve(nJ);
-    genjetmass_.reserve(nJ);
-    genjetflavor_.reserve(nJ);
-  }
-  if(fillJetShapeInfo_) {
-    jetbetaStar_.reserve(nJ);
-    jetqgl_     .reserve(nJ);
-    jetptD_     .reserve(nJ);
-    jetaxis1_   .reserve(nJ);
-    jetaxis2_   .reserve(nJ);
-    jetMult_    .reserve(nJ);
-    if(fillGenInfo_){
-      genjetptD_  .reserve(nJ);
-      genjetaxis1_.reserve(nJ);
-      genjetaxis2_.reserve(nJ);
-      genjetMult_ .reserve(nJ);
-    }
-  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -189,7 +115,7 @@ void JetFiller::load(edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 {
-  reserve();
+  int index = -1;
   for (const pat::Jet &j : *jets_) {
 
 #ifdef REDEFINED_GENJET_HACK
@@ -199,19 +125,19 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     const reco::GenJet * gJ = fillGenInfo_ ? &(*getReGenJet(j)) : 0;
     if(j.pt() < jptMin_ && (fillGenInfo_ ? gJ->pt() : 0) < jptMin_ : true) continue;
 #endif
+    index++;
 
-    jetpt_.push_back(j.pt());
-    jeteta_.push_back(j.eta());
-    jetphi_.push_back(j.phi());
-    jetmass_.push_back(j.mass());
-    jetptraw_.push_back(j.pt()*j.jecFactor("Uncorrected"));
-    jetpuId_.push_back(j.userFloat("pileupJetId:fullDiscriminant"));
-    jetcsv_.push_back(j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
+    data.fillMulti<float>(jetpt_   ,j.pt());
+    data.fillMulti<float>(jeteta_  ,j.eta());
+    data.fillMulti<float>(jetphi_  ,j.phi());
+    data.fillMulti<float>(jetmass_ ,j.mass());
+    data.fillMulti<float>(jetptraw_,j.pt()*j.jecFactor("Uncorrected"));
+    data.fillMulti<float>(jetpuId_ ,j.userFloat("pileupJetId:fullDiscriminant"));
+    data.fillMulti<float>(jetcsv_  ,j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
 
-    int index = jetpt_.size()-1;
 
     if(fillGenInfo_) {
-      jetflavor_.push_back(j.partonFlavour());
+      data.fillMulti<int>(jetflavor_,j.partonFlavour());
 #ifdef REDEFINED_GENJET_HACK
       if(gJ.isNonnull()) {
 //#ifdef TAGGABLE_TYPE_HACK
@@ -219,18 +145,18 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 //#else
 //	jetflavor_.push_back(JetFlavorMatching::getTaggableType(j));
 //#endif
-	genjetpt_.push_back(gJ->pt());
-	genjeteta_.push_back(gJ->eta());
-	genjetphi_.push_back(gJ->phi());
-	genjetmass_.push_back(gJ->mass());
-	genjetflavor_.push_back(jetflavor_[index]);
+	data.fillMulti<float>(genjetpt_    ,gJ->pt());
+	data.fillMulti<float>(genjeteta_   ,gJ->eta());
+	data.fillMulti<float>(genjetphi_   ,gJ->phi());
+	data.fillMulti<float>(genjetmass_  ,gJ->mass());
+	data.fillMulti<int  >(genjetflavor_,j.partonFlavour());
       } else {
 //	jetflavor_.push_back(numTaggableTypes);
-	genjetpt_.push_back(-99.);
-	genjeteta_.push_back(-99.);
-	genjetphi_.push_back(-99.);
-	genjetmass_.push_back(-99.);
-	genjetflavor_.push_back(-99.);
+        data.fillMulti<float>(genjetpt_    );
+        data.fillMulti<float>(genjeteta_   );
+        data.fillMulti<float>(genjetphi_   );
+        data.fillMulti<float>(genjetmass_  );
+        data.fillMulti<int  >(genjetflavor_);
       }
 #else
 //#ifdef TAGGABLE_TYPE_HACK
@@ -247,26 +173,26 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     }
     if(fillJetShapeInfo_){
       assert(evtInfofiller_->isLoaded());
-      jetqgl_.push_back(qglInterface_->getDiscriminator(j,*evtInfofiller_->rhoHandle_));
+      data.fillMulti<float>(jetqgl_,qglInterface_->getDiscriminator(j,*evtInfofiller_->rhoHandle_));
       qgTaggingVar_->compute(&j);
-      jetbetaStar_.push_back(qgTaggingVar_->getBetaStar(&j,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_));
-      jetptD_     .push_back(qgTaggingVar_->getPtD());
-      jetaxis1_   .push_back(qgTaggingVar_->getAxis1());
-      jetaxis2_   .push_back(qgTaggingVar_->getAxis2());
-      jetMult_    .push_back(qgTaggingVar_->getTotalMult());
+      data.fillMulti<float>(jetbetaStar_,qgTaggingVar_->getBetaStar(&j,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_));
+      data.fillMulti<float>(jetptD_     ,qgTaggingVar_->getPtD());
+      data.fillMulti<float>(jetaxis1_   ,qgTaggingVar_->getAxis1());
+      data.fillMulti<float>(jetaxis2_   ,qgTaggingVar_->getAxis2());
+      data.fillMulti<int  >(jetMult_    ,qgTaggingVar_->getTotalMult());
 
       if(fillGenInfo_){
         if(gJ.isNonnull()) {
           qgTaggingVar_->compute(gJ.get());
-          genjetptD_     .push_back(qgTaggingVar_->getPtD());
-          genjetaxis1_   .push_back(qgTaggingVar_->getAxis1());
-          genjetaxis2_   .push_back(qgTaggingVar_->getAxis2());
-          genjetMult_    .push_back(qgTaggingVar_->getTotalMult());
+          data.fillMulti<float>(genjetptD_     ,qgTaggingVar_->getPtD());
+          data.fillMulti<float>(genjetaxis1_   ,qgTaggingVar_->getAxis1());
+          data.fillMulti<float>(genjetaxis2_   ,qgTaggingVar_->getAxis2());
+          data.fillMulti<float>(genjetMult_    ,qgTaggingVar_->getTotalMult());
         } else {
-          genjetptD_     .push_back(0);
-          genjetaxis1_   .push_back(0);
-          genjetaxis2_   .push_back(0);
-          genjetMult_    .push_back(0);
+          data.fillMulti<float>(genjetptD_  );
+          data.fillMulti<float>(genjetaxis1_);
+          data.fillMulti<float>(genjetaxis2_);
+          data.fillMulti<int  >(genjetMult_ );
         }
       }
     }
