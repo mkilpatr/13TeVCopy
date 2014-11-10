@@ -35,18 +35,18 @@ namespace ucsbsusy {
     virtual ~BaseFiller() {};
 
     // Create branches needed in the tree
-    virtual void	book(TreeWriter& tW) {data.book(&tW);}
+    virtual void book(TreeWriter& tW) {data.book(&tW);}
 
     // Reset objects
-    virtual void	reset() {isLoaded_ = false; isFilled_ = false; data.reset();}
+    virtual void reset() {isLoaded_ = false; isFilled_ = false; data.reset();}
 
     // Default loading function
     // This guy needs to be defined for each implementation and is run once per event
     // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
-    virtual void	load(const edm::Event& iEvent) = 0;
+    virtual void load(const edm::Event& iEvent) = 0;
 
     // Tree filling function
-    virtual void	fill() = 0;
+    virtual void fill() = 0;
 
     bool isLoaded() const {return isLoaded_;}
     bool isFilled() const {return isFilled_;}

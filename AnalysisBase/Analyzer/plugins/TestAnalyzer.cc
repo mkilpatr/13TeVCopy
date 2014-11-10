@@ -20,11 +20,11 @@ class TestAnalyzer : public PhysicsAnalyzer {
     ANALYZER_MODE
     TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
     {
-      initilize(cfg,EVTINFO);
-      initilize(cfg,AK4JETS);
-      initilize(cfg,ELECTRONS);
-      initilize(cfg,MUONS);
-      initilize(cfg,TAUS);
+      initialize(cfg,EVTINFO);
+      initialize(cfg,AK4JETS);
+      initialize(cfg,ELECTRONS);
+      initialize(cfg,MUONS);
+      initialize(cfg,TAUS);
       book();
     }
 

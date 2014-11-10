@@ -20,24 +20,22 @@ EventInfoFiller::EventInfoFiller(
     const edm::InputTag metTag
 ) :
   vtxTag_(vtxTag),
-  rhoTag_ (rhoTag),
+  rhoTag_(rhoTag),
   metTag_(metTag),
   primaryVertexIndex_(-1),
-  mets_(0),
   met_(0)
 {
-  run_      = data.add<int  >(branchName_,"run"      ,"i",0);
-  lumi_     = data.add<int  >(branchName_,"lumi"     ,"i",0);
-  event_    = data.add<int  >(branchName_,"event"    ,"i",0);
-  nVertices_= data.add<int  >(branchName_,"npv"      ,"I",0);
-  rho_      = data.add<float>(branchName_,"pv_x"     ,"F",0);
-  pvx_      = data.add<float>(branchName_,"pv_y"     ,"F",0);
-  pvy_      = data.add<float>(branchName_,"pv_z"     ,"F",0);
-  pvz_      = data.add<float>(branchName_,"rho"      ,"F",0);
-  metpt_    = data.add<float>(branchName_,"met_pt"   ,"F",0);
-  metphi_   = data.add<float>(branchName_,"met_phi"  ,"F",0);
-  metsumEt_ = data.add<float>(branchName_,"met_sumEt","F",0);
-
+  irun_      = data.add<unsigned int>(branchName_,"run"      ,"i",0);
+  ilumi_     = data.add<unsigned int>(branchName_,"lumi"     ,"i",0);
+  ievent_    = data.add<unsigned int>(branchName_,"event"    ,"i",0);
+  inpv_      = data.add<unsigned int>(branchName_,"npv"      ,"i",0);
+  irho_      = data.add<float>       (branchName_,"rho"      ,"F",0);
+  ipvx_      = data.add<float>       (branchName_,"pv_x"     ,"F",0);
+  ipvy_      = data.add<float>       (branchName_,"pv_y"     ,"F",0);
+  ipvz_      = data.add<float>       (branchName_,"pv_z"     ,"F",0);
+  imetpt_    = data.add<float>       (branchName_,"met_pt"   ,"F",0);
+  imetphi_   = data.add<float>       (branchName_,"met_phi"  ,"F",0);
+  imetsumEt_ = data.add<float>       (branchName_,"met_sumEt","F",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -47,7 +45,7 @@ void EventInfoFiller::load(const edm::Event& iEvent)
 
   FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
   FileUtilities::enforceGet(iEvent,metTag_,mets_,true);
-  FileUtilities::enforceGet(iEvent,rhoTag_,rhoHandle_,true);
+  FileUtilities::enforceGet(iEvent,rhoTag_,rho_,true);
 
   if(vertices_->size() > 0)
     primaryVertexIndex_ = 0;
@@ -62,16 +60,17 @@ void EventInfoFiller::load(const edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::fill()
 {
-  data.fill<int  >(run_       ,eventCoords.run);
-  data.fill<int  >(lumi_      ,eventCoords.lumi);
-  data.fill<int  >(event_     ,eventCoords.event);
-  data.fill<int  >(nVertices_ ,vertices_->size());
-  data.fill<int  >(pvx_       ,(*vertices_)[primaryVertexIndex_].x());
-  data.fill<int  >(pvy_       ,(*vertices_)[primaryVertexIndex_].y());
-  data.fill<int  >(pvz_       ,(*vertices_)[primaryVertexIndex_].z());
-  data.fill<float>(rho_       ,(*rhoHandle_));
-  data.fill<float>(metpt_     ,met_->pt());
-  data.fill<float>(metphi_    ,met_->phi());
-  data.fill<float>(metsumEt_  ,met_->sumEt());
-  data.fill<float>(isFilled_  ,true);
+  data.fill<unsigned int>(irun_       ,eventCoords.run);
+  data.fill<unsigned int>(ilumi_      ,eventCoords.lumi);
+  data.fill<unsigned int>(ievent_     ,eventCoords.event);
+  data.fill<unsigned int>(inpv_       ,vertices_->size());
+  data.fill<float>       (irho_       ,(*rho_));
+  data.fill<float>       (ipvx_       ,(*vertices_)[primaryVertexIndex_].x());
+  data.fill<float>       (ipvy_       ,(*vertices_)[primaryVertexIndex_].y());
+  data.fill<float>       (ipvz_       ,(*vertices_)[primaryVertexIndex_].z());
+  data.fill<float>       (imetpt_     ,met_->pt());
+  data.fill<float>       (imetphi_    ,met_->phi());
+  data.fill<float>       (imetsumEt_  ,met_->sumEt());
+
+  isFilled_ = true;
 }
