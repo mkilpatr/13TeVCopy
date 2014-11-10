@@ -49,32 +49,32 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
     public:
       enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS};
-      virtual void initilize(const edm::ParameterSet& cfg, VarType type, int options = -1, std::string branchName = "" );
-      virtual void initilize(BaseFiller * filler);
+      virtual void initialize(const edm::ParameterSet& cfg, VarType type, int options = -1, std::string branchName = "" );
+      virtual void initialize(BaseFiller * filler);
 
       //--------------------------------------------------------------------------------------------------
       // Functions to manipulate and get stored data members
       //--------------------------------------------------------------------------------------------------
     public:
-      bool	isData() const;
-      bool	isMC  () const;
+      bool isData() const;
+      bool isMC  () const;
 
       //--------------------------------------------------------------------------------------------------
       // Data members owned by this class
       //--------------------------------------------------------------------------------------------------
     public :
-      const int			isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
-      const TString		globalTag;             // Global tag name
+      const int     isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
+      const TString globalTag;             // Global tag name
 
       //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information
       //--------------------------------------------------------------------------------------------------
     public:
-      EventInfoFiller		* eventInfo;
-      JetFiller			    * ak4Jets;
-      MuonFiller		    * muons;
-      ElectronFiller		* electrons;
-      TauFiller			    * taus;
+      EventInfoFiller * eventInfo;
+      JetFiller       * ak4Jets;
+      MuonFiller      * muons;
+      ElectronFiller  * electrons;
+      TauFiller       * taus;
     protected:
       //vector of initialized fillers for automatic processing
       std::vector<BaseFiller*> initializedFillers;

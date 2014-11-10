@@ -78,32 +78,32 @@ void plotAll(const TString conf = "run1lep.conf", const TString inputdir = "run/
     while(TKey *key = (TKey*)nextkey()) {
       TObject *obj = key->ReadObj();
       if(obj->IsA() == TH1F::Class()) {
-	tmphistsv.push_back((TH1F*)obj);
-	if(isam > 0) tmphistsv.back()->SetName(TString::Format("%s_%d",obj->GetName(),isam));
+        tmphistsv.push_back((TH1F*)obj);
+        if(isam > 0) tmphistsv.back()->SetName(TString::Format("%s_%d",obj->GetName(),isam));
       }
     }
-    histsv.push_back(tmphistsv);
-  }
 
-  // switch rows/columns -> columns/rows ... surely there's an easier way :P
-  vector<vector<TH1F*> > rearrangedhistsv;
-  unsigned int nhists = histsv[0].size();
-
-  for(unsigned int ihist = 0; ihist < nhists; ihist++) {
-    tmphistsv.clear();
-    for(unsigned int isam=0; isam < samples.size(); isam++) {
-      tmphistsv.push_back(histsv[isam].at(ihist));
+    unsigned int nhist = 0;
+    for(vector<TH1F*>::iterator ihist = tmphistsv.begin(); ihist != tmphistsv.end(); ++ihist) {
+      if(isam==0) {
+        vector<TH1F*> tmpvec(ihist, ihist+1);
+        histsv.push_back(tmpvec);
+      } else {
+        assert(histsv.size() > nhist);
+        histsv[nhist].push_back(*ihist);
+      }
+      nhist++;
     }
-    rearrangedhistsv.push_back(tmphistsv);
+     
   }
 
   StyleTools::SetStyle();
 
-  for(unsigned int ihist=0; ihist < rearrangedhistsv.size(); ihist++) {
-    TH1F* hist0 = rearrangedhistsv[ihist].at(0);
+  for(unsigned int ihist=0; ihist < histsv.size(); ihist++) {
+    TH1F* hist0 = histsv[ihist].at(0);
     assert(hist0);
 
-    assert(rearrangedhistsv[ihist].size() == samples.size());
+    assert(histsv[ihist].size() == samples.size());
 
     // and ... plot!
     makePlot(outputdir,
@@ -113,7 +113,7 @@ void plotAll(const TString conf = "run1lep.conf", const TString inputdir = "run/
              hist0->GetXaxis()->GetTitle(),
              hist0->GetYaxis()->GetTitle(),
              samples,
-             rearrangedhistsv[ihist]);
+             histsv[ihist]);
 
     // log plot
     makePlot(outputdir,
@@ -123,10 +123,11 @@ void plotAll(const TString conf = "run1lep.conf", const TString inputdir = "run/
              hist0->GetXaxis()->GetTitle(),
              hist0->GetYaxis()->GetTitle(),
              samples,
-             rearrangedhistsv[ihist],
+             histsv[ihist],
              true);
 
   }
+
 
 }
 

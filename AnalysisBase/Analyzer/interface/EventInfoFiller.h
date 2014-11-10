@@ -18,12 +18,14 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 namespace ucsbsusy {
-  struct EventCoords{
+
+  struct EventCoords {
     EventCoords() : run(0),lumi(0),event(0) {}
     unsigned int run;
     unsigned int lumi;
     unsigned int event;
   };
+
   class EventInfoFiller : public BaseFiller {
 
     public:
@@ -32,41 +34,42 @@ namespace ucsbsusy {
           const edm::InputTag rhoTag,
           const edm::InputTag metTag
           );
+
       ~EventInfoFiller() {};
 
-      void			load(const edm::Event& iEvent);
-      void			fill();
+      void load(const edm::Event& iEvent);
+      void fill();
 
-      reco::Vertex::Point	primaryVertex()	  const	{return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point();	}
-      const pat::MET*		met()		  const	{ return met_;			};
+      reco::Vertex::Point primaryVertex() const { return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point(); }
+      const pat::MET*     met()           const { return met_; }
 
     private:
       // Input from the config file
-      const edm::InputTag		vtxTag_;
-      const edm::InputTag   rhoTag_;
-      const edm::InputTag		metTag_;
+      const edm::InputTag vtxTag_;
+      const edm::InputTag rhoTag_;
+      const edm::InputTag metTag_;
 
-      // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-      size		run_      ;
-      size		lumi_     ;
-      size		event_    ;
-      size    nVertices_;
-      size    rho_      ;
-      size    pvx_      ;
-      size    pvy_      ;
-      size    pvz_      ;
-      size    metpt_    ;
-      size    metphi_   ;
-      size    metsumEt_ ;
+      // Members to hold index of most recently filled tree data
+      size irun_      ;
+      size ilumi_     ;
+      size ievent_    ;
+      size inpv_      ;
+      size irho_      ;
+      size ipvx_      ;
+      size ipvy_      ;
+      size ipvz_      ;
+      size imetpt_    ;
+      size imetphi_   ;
+      size imetsumEt_ ;
 
     public:
       // Data members
-      EventCoords eventCoords;
-      edm::Handle<reco::VertexCollection>	vertices_;
-      int primaryVertexIndex_;
-      edm::Handle<double>                 rhoHandle_;
-      edm::Handle<pat::METCollection>		mets_;
-      const pat::MET				*met_;
+      EventCoords    eventCoords;
+      int            primaryVertexIndex_;
+      const pat::MET *met_;
+      edm::Handle<reco::VertexCollection> vertices_;
+      edm::Handle<double>                 rho_;
+      edm::Handle<pat::METCollection>     mets_;
 
   };
 

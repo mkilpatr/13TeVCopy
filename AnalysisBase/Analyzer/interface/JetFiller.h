@@ -31,7 +31,7 @@ class QuarkGluonTaggingVariables;
 
 
     public:
-      JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFille
+      JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
@@ -39,51 +39,57 @@ class QuarkGluonTaggingVariables;
           );
       ~JetFiller() {}
 
-      void		load(const edm::Event& iEvent);
-      void		fill();
+      void load(const edm::Event& iEvent);
+      void fill();
 
-      reco::GenJetRef	getReGenJet(const pat::Jet& jet)  const;
-      reco::GenJetRef	getStdGenJet(const pat::Jet& jet) const;
+      reco::GenJetRef getReGenJet(const pat::Jet& jet)  const;
+      reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
 
-      static const std::string	REGENJET;   // userClass label for the redefined genJet of the given jet
+      static const std::string REGENJET;   // userClass label for the redefined genJet of the given jet
 
     private:
-      const EventInfoFiller     * evtInfofiller_;
+      const EventInfoFiller * evtInfofiller_;
 
     private:
       // Input from the config file
-      const edm::InputTag	jetTag_;
-      const edm::InputTag	reGenJetTag_;
-      const edm::InputTag	stdGenJetTag_;
-//      const edm::InputTag	genParticleTag_;
-      const double		    jptMin_;
+      const edm::InputTag jetTag_;
+      const edm::InputTag reGenJetTag_;
+      const edm::InputTag stdGenJetTag_;
+//      const edm::InputTag genParticleTag_;
+      const double        jptMin_;
 
-      // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-      size jetpt_       ;
-      size jeteta_      ;
-      size jetphi_      ;
-      size jetmass_     ;
-      size jetptraw_    ;
-      size jetpuId_     ;
-      size jetcsv_      ;
-      size jetflavor_   ;
+      // Members to hold index of most recently filled tree data
+      // For standard genjets
+      size igenjetpt_    ;
+      size igenjeteta_   ;
+      size igenjetphi_   ;
+      size igenjetmass_  ;
+      // For reco jets
+      size ijetpt_       ;
+      size ijeteta_      ;
+      size ijetphi_      ;
+      size ijetmass_     ;
+      size ijetptraw_    ;
+      size ijetpuId_     ;
+      size ijetcsv_      ;
+      size ijetflavor_   ;
       // For genjets matched to reco jets
-      size genjetpt_    ;
-      size genjeteta_   ;
-      size genjetphi_   ;
-      size genjetmass_  ;
-      size genjetflavor_;
+      size imatchedgenjetpt_    ;
+      size imatchedgenjeteta_   ;
+      size imatchedgenjetphi_   ;
+      size imatchedgenjetmass_  ;
+      size imatchedgenjetflavor_;
       // For jetShape info
-      size jetbetaStar_;
-      size jetqgl_     ;
-      size jetptD_     ;
-      size jetaxis1_   ;
-      size jetaxis2_   ;
-      size jetMult_    ;
-      size genjetptD_   ;
-      size genjetaxis1_ ;
-      size genjetaxis2_ ;
-      size genjetMult_  ;
+      size ijetbetaStar_;
+      size ijetqgl_     ;
+      size ijetptD_     ;
+      size ijetaxis1_   ;
+      size ijetaxis2_   ;
+      size ijetMult_    ;
+      size imatchedgenjetptD_   ;
+      size imatchedgenjetaxis1_ ;
+      size imatchedgenjetaxis2_ ;
+      size imatchedgenjetMult_  ;
 
     private:
       QuarkGluonTagInterface    * qglInterface_;
@@ -92,9 +98,9 @@ class QuarkGluonTaggingVariables;
 
     public:
       // Data members
-      edm::Handle<pat::JetCollection>		  jets_;
-      edm::Handle<reco::GenJetCollection>	reGenJets_;
-      edm::Handle<reco::GenJetCollection>	stdGenJets_;
+      edm::Handle<pat::JetCollection>     jets_;
+      edm::Handle<reco::GenJetCollection> reGenJets_;
+      edm::Handle<reco::GenJetCollection> stdGenJets_;
 
   };
 

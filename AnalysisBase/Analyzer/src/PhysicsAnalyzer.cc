@@ -59,7 +59,7 @@ void PhysicsAnalyzer::fill()
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::initilize(const edm::ParameterSet& cfg, VarType type, int options, std::string branchName){
+void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int options, std::string branchName){
   switch (type) {
     case EVTINFO : {
       eventInfo = new EventInfoFiller(
@@ -73,11 +73,11 @@ void PhysicsAnalyzer::initilize(const edm::ParameterSet& cfg, VarType type, int 
     case AK4JETS : {
       int defaultOptions = JetFiller::defaultOptions | ((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo")) ? JetFiller::LOADGEN : JetFiller::NULLOPT);
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo")) defaultOptions |= JetFiller::LOADJETSHAPE;
-      ak4Jets = new JetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName, eventInfo
+      ak4Jets = new JetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName, defaults::BRANCH_STDGENJETS, eventInfo
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
-                             , cfg.getUntrackedParameter<double>       ("minJetPt")
+                             , cfg.getUntrackedParameter<double>("minJetPt")
       );
       initializedFillers.push_back(ak4Jets);
       break;
@@ -104,7 +104,7 @@ void PhysicsAnalyzer::initilize(const edm::ParameterSet& cfg, VarType type, int 
   }
 }
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::initilize(BaseFiller * filler){initializedFillers.push_back(filler);}
+void PhysicsAnalyzer::initialize(BaseFiller * filler){initializedFillers.push_back(filler);}
 //--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::isData() const
 {
