@@ -49,8 +49,8 @@ size PhysicsUtilities::countObjects(const std::vector<Object>& objects, double m
   size                count         = 0;
   for (size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&     object        = objects[iObject];
-    if (get(object).pt()    < minPT ) continue;
-    if (absEta(get(object)) > maxEta) continue;
+    if (object.pt()    < minPT ) continue;
+    if (absEta(object) > maxEta) continue;
     if (test && !(*test)(object))     continue;
     ++count;
   } // end loop over objects

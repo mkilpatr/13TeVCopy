@@ -74,6 +74,8 @@ void MuonFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void MuonFiller::reset()
 {
+  isLoaded_ = false;
+  isFilled_ = false;
   mu_pt_.resize(0);
   mu_eta_.resize(0);
   mu_phi_.resize(0);
@@ -127,6 +129,7 @@ void MuonFiller::load(edm::Event& iEvent)
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }
+  isLoaded_ = true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -213,5 +216,5 @@ void MuonFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     }
 
   }
-
+  isFilled_ = true;
 }

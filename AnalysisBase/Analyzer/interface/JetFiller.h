@@ -13,18 +13,22 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
+
 
 namespace ucsbsusy {
+class EventInfoFiller;
+class QuarkGluonTagInterface;
+class QuarkGluonTaggingVariables;
 
   class JetFiller : public BaseFiller {
 
     public:
-      JetFiller(const edm::ParameterSet &cfg, bool isMC = false);
+      JetFiller(const edm::ParameterSet &cfg, bool isMC = false,  const EventInfoFiller * evtInfoFiller = 0);
       ~JetFiller() {}
 
       void		book(TreeWriter& tW);
       void		reset();
+      void    reserve();
       void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
@@ -41,7 +45,6 @@ namespace ucsbsusy {
       const edm::InputTag	reGenJetTag_;
       const edm::InputTag	stdGenJetTag_;
       const edm::InputTag	genParticleTag_;
-      const edm::InputTag rhoTag_;
       const double		    jptMin_;
       const string		    jetsName_;          // used as prefix in branch names to specify the type of jets filled (e.g., ak4)
 
@@ -60,11 +63,22 @@ namespace ucsbsusy {
       vector<float>	genjetphi_;
       vector<float>	genjetmass_;
       vector<int>	  genjetflavor_;
+      vector<float> genjetptD_  ;
+      vector<float> genjetaxis1_;
+      vector<float> genjetaxis2_;
+      vector<int>   genjetMult_ ;
       // For jetShape info
-      vector<float> jetqgl_;
+      vector<float> jetbetaStar_;
+      vector<float> jetqgl_     ;
+      vector<float> jetptD_     ;
+      vector<float> jetaxis1_   ;
+      vector<float> jetaxis2_   ;
+      vector<int>   jetMult_    ;
 
     private:
-      QuarkGluonTagInterface* qglInterface_;
+      const EventInfoFiller     * evtInfofiller_;
+      QuarkGluonTagInterface    * qglInterface_;
+      QuarkGluonTaggingVariables* qgTaggingVar_;
 
 
     public:
@@ -72,7 +86,6 @@ namespace ucsbsusy {
       edm::Handle<pat::JetCollection>		  jets_;
       edm::Handle<reco::GenJetCollection>	reGenJets_;
       edm::Handle<reco::GenJetCollection>	stdGenJets_;
-      edm::Handle<double>                 rho_;
 
   };
 

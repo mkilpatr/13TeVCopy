@@ -107,6 +107,8 @@ void TauFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void TauFiller::reset()
 {
+  isLoaded_ = false;
+  isFilled_ = false;
   tau_pt_.resize(0);
   tau_eta_.resize(0);
   tau_phi_.resize(0);
@@ -146,6 +148,7 @@ void TauFiller::load(edm::Event& iEvent)
   FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);
   // or just pass PV from EventInfoFiller to this class, that would be easier
   FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
+  isLoaded_ = true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -216,5 +219,5 @@ void TauFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     tau_antimumvacat_.push_back(tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
 
   }
-
+  isFilled_ = true;
 }
