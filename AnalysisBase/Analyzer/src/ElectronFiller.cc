@@ -129,6 +129,8 @@ void ElectronFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void ElectronFiller::reset()
 {
+  isLoaded_ = false;
+  isFilled_ = false;
   ele_pt_.resize(0);
   ele_eta_.resize(0);
   ele_SCeta_.resize(0);
@@ -193,7 +195,7 @@ void ElectronFiller::load(edm::Event& iEvent)
   if(fillGenInfo_) {
     FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
   }
-
+  isLoaded_ = true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -298,5 +300,5 @@ void ElectronFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     }
 
   }
-
+  isFilled_ = true;
 }

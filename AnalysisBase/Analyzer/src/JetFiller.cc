@@ -79,6 +79,9 @@ void JetFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void JetFiller::reset()
 {
+  isLoaded_ = false;
+  isFilled_ = false;
+
   jetpt_.resize(0);
   jeteta_.resize(0);
   jetphi_.resize(0);
@@ -120,6 +123,7 @@ void JetFiller::load(edm::Event& iEvent)
   if(fillJetShapeInfo_){
     FileUtilities::enforceGet(iEvent,rhoTag_,rho_,true);
   }
+  isLoaded_ = true;
 
 }
 
@@ -187,6 +191,7 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
     }
   }
 
+  isFilled_ = true;
 }
 
 //--------------------------------------------------------------------------------------------------

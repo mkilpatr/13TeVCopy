@@ -47,7 +47,6 @@ void EventInfoFiller::book(TreeWriter& tW)
   tW.book("pv_x",pvx_,"F");
   tW.book("pv_y",pvy_,"F");
   tW.book("pv_z",pvz_,"F");
-  tW.book("met",metpt_,"F");
   tW.book("rho",rho_,"F");
   tW.book("met_pt",metpt_,"F");
   tW.book("met_phi",metphi_,"F");
@@ -58,6 +57,9 @@ void EventInfoFiller::book(TreeWriter& tW)
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::reset()
 {
+  isLoaded_ = false;
+  isFilled_ = false;
+
   run_ = 0;
   lumi_ = 0;
   event_ = 0;
@@ -88,6 +90,7 @@ void EventInfoFiller::load(edm::Event& iEvent)
   run_ = iEvent.run();
   lumi_ = iEvent.luminosityBlock();
   event_ = iEvent.id().event();
+  isLoaded_ = true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -101,4 +104,5 @@ void EventInfoFiller::fill(TreeWriter& tW, const int& numAnalyzed)
   metpt_ = met_->pt();
   metphi_ = met_->phi();
   metsumEt_ = met_->sumEt();
+  isFilled_ = true;
 }

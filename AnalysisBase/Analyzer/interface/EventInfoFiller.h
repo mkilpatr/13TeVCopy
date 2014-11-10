@@ -43,7 +43,7 @@ namespace ucsbsusy {
       unsigned int		run_;
       unsigned int		lumi_;
       unsigned int		event_;
-      int			nVertices_;
+      int		  	nVertices_;
       float     rho_;
       float			pvx_;
       float			pvy_;

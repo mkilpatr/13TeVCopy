@@ -28,7 +28,7 @@ namespace ucsbsusy {
   class BaseFiller {
 
   public:
-    BaseFiller() {};
+    BaseFiller() : isLoaded_(false), isFilled_(false) {};
     virtual ~BaseFiller() {};
 
     // Create branches needed in the tree
@@ -45,6 +45,13 @@ namespace ucsbsusy {
     // Tree filling function
     // numAnalyzed is to be used to keep track of number of analyzed events
     virtual void	fill(TreeWriter& tW, const int& numAnalyzed) = 0;
+
+    bool isLoaded() const {return isLoaded_;}
+    bool isFilled() const {return isFilled_;}
+
+  protected:
+    bool isLoaded_;
+    bool isFilled_;
 
   };
 
