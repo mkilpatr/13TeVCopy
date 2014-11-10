@@ -39,6 +39,7 @@ nominal_configuration = cms.PSet(
                                       packedGenParticles= cms.InputTag('packedGenParticles'),
 
                                       vertices          = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                                      rho               = cms.InputTag("fixedGridRhoFastjetAll"),
                                       mets              = cms.InputTag("slimmedMETs"),  
                                       
                                       jets              = cms.InputTag('slimmedJets'),
