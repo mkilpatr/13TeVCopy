@@ -8,7 +8,7 @@
 
 #include "AnalysisTools/JetShapeVariables/interface/QGLikelihoodCalculator.h"
 
-
+namespace ucsbsusy{
 //_____________________________________________________________________________
 class QuarkGluonTagInterface {
 protected:
@@ -31,6 +31,6 @@ public:
     return qglikeli_->computeQGLikelihood(corPt,rho,nCharged,nNeutral,ptD);
   }
 };
-
+}
 #endif //__QUARKGLUONTAGINTERFACE_H__
 
