@@ -22,7 +22,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , crossSectionScaling (iConfig.getParameter<double          >("crossSectionScaling"    ))
 // ---- Configure event information
 , eventInfo           (iConfig)
-, jets                (iConfig, isMC())
+, jets                (iConfig, isMC(),&eventInfo)
 , muons               (iConfig, isMC())
 , electrons           (iConfig, isMC())
 , taus                (iConfig)

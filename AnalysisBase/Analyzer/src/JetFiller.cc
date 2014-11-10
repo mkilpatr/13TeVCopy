@@ -12,22 +12,23 @@
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
+#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 using namespace ucsbsusy;
 
 #define TAGGABLE_TYPE_HACK
 #define REDEFINED_GENJET_HACK
 
 //--------------------------------------------------------------------------------------------------
-JetFiller::JetFiller(const edm::ParameterSet &cfg, const bool isMC) :
+JetFiller::JetFiller(const edm::ParameterSet &cfg, const bool isMC, const EventInfoFiller * evtInfoFiller) :
   fillGenInfo_     (isMC && cfg.getUntrackedParameter<bool>("fillJetGenInfo",false)),
   fillJetShapeInfo_(cfg.getUntrackedParameter<bool>("fillJetShapeInfo",false)),
   jetTag_          (cfg.getParameter<edm::InputTag>("jets")),
   reGenJetTag_     (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("reGenJets")  : edm::InputTag()),
   stdGenJetTag_    (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("stdGenJets")  : edm::InputTag()),
   genParticleTag_  (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("genParticles") : edm::InputTag()),
-  rhoTag_          (fillJetShapeInfo_ ? cfg.getParameter<edm::InputTag>("rho") : edm::InputTag()),
   jptMin_          (cfg.getUntrackedParameter<double>("minJetPt")),
   jetsName_        (cfg.getUntrackedParameter<string>("jetsType")),
+  evtInfofiller_   (evtInfoFiller),
   qglInterface_    (fillJetShapeInfo_ ? new QuarkGluonTagInterface : 0),
   jets_            (0),
   reGenJets_       (0),
@@ -120,9 +121,6 @@ void JetFiller::load(edm::Event& iEvent)
 #endif
   }
 
-  if(fillJetShapeInfo_){
-    FileUtilities::enforceGet(iEvent,rhoTag_,rho_,true);
-  }
   isLoaded_ = true;
 
 }
@@ -187,7 +185,8 @@ void JetFiller::fill(TreeWriter& tW, const int& numAnalyzed)
 #endif
     }
     if(fillJetShapeInfo_){
-      jetqgl_.push_back(qglInterface_->getDiscriminator(j,*rho_));
+      assert(evtInfofiller_->isLoaded());
+      jetqgl_.push_back(qglInterface_->getDiscriminator(j,*evtInfofiller_->rhoHandle_));
     }
   }
 
