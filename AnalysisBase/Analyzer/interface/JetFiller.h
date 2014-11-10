@@ -13,10 +13,12 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
+
 
 namespace ucsbsusy {
 class EventInfoFiller;
+class QuarkGluonTagInterface;
+class QuarkGluonTaggingVariables;
 
   class JetFiller : public BaseFiller {
 
@@ -26,6 +28,7 @@ class EventInfoFiller;
 
       void		book(TreeWriter& tW);
       void		reset();
+      void    reserve();
       void		load(edm::Event& iEvent);
       void		fill(TreeWriter& tW, const int& numAnalyzed);
 
@@ -60,11 +63,22 @@ class EventInfoFiller;
       vector<float>	genjetphi_;
       vector<float>	genjetmass_;
       vector<int>	  genjetflavor_;
+      vector<float> genjetptD_  ;
+      vector<float> genjetaxis1_;
+      vector<float> genjetaxis2_;
+      vector<int>   genjetMult_ ;
       // For jetShape info
-      vector<float> jetqgl_;
+      vector<float> jetbetaStar_;
+      vector<float> jetqgl_     ;
+      vector<float> jetptD_     ;
+      vector<float> jetaxis1_   ;
+      vector<float> jetaxis2_   ;
+      vector<int>   jetMult_    ;
 
     private:
-      QuarkGluonTagInterface* qglInterface_;
+      const EventInfoFiller     * evtInfofiller_;
+      QuarkGluonTagInterface    * qglInterface_;
+      QuarkGluonTaggingVariables* qgTaggingVar_;
 
 
     public:
