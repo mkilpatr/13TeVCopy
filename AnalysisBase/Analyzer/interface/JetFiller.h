@@ -21,13 +21,26 @@ class QuarkGluonTagInterface;
 class QuarkGluonTaggingVariables;
 
   class JetFiller : public BaseFiller {
+  public:
+  enum  Options           {
+                            NULLOPT         = 0
+                          , LOADGEN         = (1 <<  0)   ///< load gen jets
+                          , LOADJETSHAPE    = (1 <<  1)   ///< load jet shap variables
+  };
+  static const int defaultOptions;
+
 
     public:
-      JetFiller(const edm::ParameterSet &cfg, bool isMC = false,  const EventInfoFiller * evtInfoFiller = 0);
+      JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFille
+          , const edm::InputTag jetTag
+          , const edm::InputTag reGenJetTag
+          , const edm::InputTag stdGenJetTag
+          , const double jptMin
+          );
       ~JetFiller() {}
 
-      void		load(edm::Event& iEvent);
-      void		fill(TreeWriter& tW, const int& numAnalyzed);
+      void		load(const edm::Event& iEvent);
+      void		fill();
 
       reco::GenJetRef	getReGenJet(const pat::Jet& jet)  const;
       reco::GenJetRef	getStdGenJet(const pat::Jet& jet) const;
@@ -35,15 +48,15 @@ class QuarkGluonTaggingVariables;
       static const std::string	REGENJET;   // userClass label for the redefined genJet of the given jet
 
     private:
+      const EventInfoFiller     * evtInfofiller_;
+
+    private:
       // Input from the config file
-      const bool          fillGenInfo_;
-      const bool          fillJetShapeInfo_;
       const edm::InputTag	jetTag_;
       const edm::InputTag	reGenJetTag_;
       const edm::InputTag	stdGenJetTag_;
-      const edm::InputTag	genParticleTag_;
+//      const edm::InputTag	genParticleTag_;
       const double		    jptMin_;
-      const string		    jetsName_;          // used as prefix in branch names to specify the type of jets filled (e.g., ak4)
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
       size jetpt_       ;
@@ -73,7 +86,6 @@ class QuarkGluonTaggingVariables;
       size genjetMult_  ;
 
     private:
-      const EventInfoFiller     * evtInfofiller_;
       QuarkGluonTagInterface    * qglInterface_;
       QuarkGluonTaggingVariables* qgTaggingVar_;
 

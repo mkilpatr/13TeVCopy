@@ -27,11 +27,15 @@ namespace ucsbsusy {
   class EventInfoFiller : public BaseFiller {
 
     public:
-      EventInfoFiller(const edm::ParameterSet &cfg);
+      EventInfoFiller(
+          const edm::InputTag vtxTag,
+          const edm::InputTag rhoTag,
+          const edm::InputTag metTag
+          );
       ~EventInfoFiller() {};
 
-      void			load(edm::Event& iEvent);
-      void			fill(TreeWriter& tW, const int& numAnalyzed);
+      void			load(const edm::Event& iEvent);
+      void			fill();
 
       reco::Vertex::Point	primaryVertex()	  const	{return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point();	}
       const pat::MET*		met()		  const	{ return met_;			};

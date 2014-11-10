@@ -28,58 +28,56 @@
 namespace ucsbsusy {
 
   class PhysicsAnalyzer : public BaseAnalyzer {
+  public:
 
+
+    //--------------------------------------------------------------------------------------------------
+    // Functions for base-level running
+    //--------------------------------------------------------------------------------------------------
     public :
       PhysicsAnalyzer(const edm::ParameterSet& iConfig);
       virtual ~PhysicsAnalyzer();
 
       virtual void beginJob() override;
+      virtual void book();
+      virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+      virtual void fill();
 
+      //--------------------------------------------------------------------------------------------------
+      // Functions for running the default variable types
+      //--------------------------------------------------------------------------------------------------
+    public:
+      enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS};
+      virtual void initilize(const edm::ParameterSet& cfg, VarType type, int options = -1, std::string branchName = "" );
+      virtual void initilize(BaseFiller * filler);
+
+      //--------------------------------------------------------------------------------------------------
       // Functions to manipulate and get stored data members
+      //--------------------------------------------------------------------------------------------------
+    public:
       bool	isData() const;
       bool	isMC  () const;
-      double	eventWeight   () 	  const	{ return eventWeight_;		}
-      void	setEventWeight(double weight)	{ eventWeight_  = weight;	}
 
-      // Function that calls the default booking function for each filler
-      void book(BaseFiller* filler);
-
-      // Function that calls the default reset function for each filler
-      void reset(BaseFiller* filler);
-
-      // Function that calls the default load for each filler
-      void loadObj(BaseFiller* filler);
-
-      // Function that calls the default fill tree function for each filler
-      void fillObj(BaseFiller* filler);
-
-    private :
-      // Event info data members
-      edm::Event*		event_;
-      const edm::InputTag	genEventInfoSource_;   // To fill the generator info
-      double			eventWeight_;          // From generator info
-
+      //--------------------------------------------------------------------------------------------------
+      // Data members owned by this class
+      //--------------------------------------------------------------------------------------------------
     public :
-      // are all of these needed here?
       const int			isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
       const TString		globalTag;             // Global tag name
-      const TString		process;               // The input process (e.g. ttbar, QCD, etc.)
-      const TString		dataset;               // The input dataset name (process + generator + binning info)
-      double			crossSection;          // MC cross section (if relevant) -- updated every run from input file information if negative
-      const int			totalEvents;           // Total number of events in sample as stored in database
-      const double		crossSectionScaling;   // If nonnegative (and for MC only), multiplies the event weight by this factor, which is the cross-section scaling for the given luminosity (in fb^-1)
 
-      // Event data members
-      edm::Handle<GenEventInfoProduct>	genEventInfo;  // Standard RECO collection
-
+      //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information
-      EventInfoFiller		eventInfo;
-      JetFiller			jets;
-      MuonFiller		muons;
-      ElectronFiller		electrons;
-      TauFiller			taus;
-
+      //--------------------------------------------------------------------------------------------------
+    public:
+      EventInfoFiller		* eventInfo;
+      JetFiller			    * ak4Jets;
+      MuonFiller		    * muons;
+      ElectronFiller		* electrons;
+      TauFiller			    * taus;
+    protected:
+      //vector of initialized fillers for automatic processing
+      std::vector<BaseFiller*> initializedFillers;
   };
 
 }

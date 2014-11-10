@@ -18,34 +18,20 @@ class TestAnalyzer : public PhysicsAnalyzer {
 
   public:
     ANALYZER_MODE
-    TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg) {}
+    TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
+    {
+      initilize(cfg,EVTINFO);
+      initilize(cfg,AK4JETS);
+      initilize(cfg,ELECTRONS);
+      initilize(cfg,MUONS);
+      initilize(cfg,TAUS);
+      book();
+    }
 
     ~TestAnalyzer() {}
 
-    void beginJob() {
-      book(&eventInfo);
-      book(&jets);
-      book(&muons);
-      book(&electrons);
-      book(&taus);
-    }
-
-    bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-      loadObj(&eventInfo);
-      loadObj(&jets);
-      loadObj(&muons);
-      loadObj(&electrons);
-      loadObj(&taus);
-      return true;
-    }
-
     void analyze() {
-      fillObj(&eventInfo);
-      fillObj(&jets);
-      fillObj(&muons);
-      fillObj(&electrons);
-      fillObj(&taus);
-      treeWriter()->fill();
+      fill();
     }
 
 };
