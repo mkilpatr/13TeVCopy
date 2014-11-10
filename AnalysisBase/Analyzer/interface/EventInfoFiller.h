@@ -18,15 +18,18 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 namespace ucsbsusy {
-
+  struct EventCoords{
+    EventCoords() : run(0),lumi(0),event(0) {}
+    unsigned int run;
+    unsigned int lumi;
+    unsigned int event;
+  };
   class EventInfoFiller : public BaseFiller {
 
     public:
       EventInfoFiller(const edm::ParameterSet &cfg);
       ~EventInfoFiller() {};
 
-      void			book(TreeWriter& tW);
-      void			reset();
       void			load(edm::Event& iEvent);
       void			fill(TreeWriter& tW, const int& numAnalyzed);
 
@@ -40,20 +43,21 @@ namespace ucsbsusy {
       const edm::InputTag		metTag_;
 
       // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-      unsigned int		run_;
-      unsigned int		lumi_;
-      unsigned int		event_;
-      int		  	nVertices_;
-      float     rho_;
-      float			pvx_;
-      float			pvy_;
-      float			pvz_;
-      float			metpt_;
-      float			metphi_;
-      float			metsumEt_;
+      size		run_      ;
+      size		lumi_     ;
+      size		event_    ;
+      size    nVertices_;
+      size    rho_      ;
+      size    pvx_      ;
+      size    pvy_      ;
+      size    pvz_      ;
+      size    metpt_    ;
+      size    metphi_   ;
+      size    metsumEt_ ;
 
     public:
       // Data members
+      EventCoords eventCoords;
       edm::Handle<reco::VertexCollection>	vertices_;
       int primaryVertexIndex_;
       edm::Handle<double>                 rhoHandle_;
