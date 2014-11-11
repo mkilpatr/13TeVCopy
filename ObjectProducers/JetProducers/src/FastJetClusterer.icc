@@ -1,0 +1,135 @@
+#include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+#include "RecoJets/JetProducers/interface/JetSpecific.h"
+
+
+
+#define _DEBUG_MODE_  if (0)
+//#define _DEBUG_MODE_  if (1)
+#define _DEBUG_OUT_   _DEBUG_MODE_  std::cout
+
+
+#include <TString.h>
+namespace ucsbsusy {
+/*************************/
+/*      Interface        */
+/*************************/
+
+//_____________________________________________________________________________
+template<typename Particle>
+void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& inputParticles, int status, double minInputPT, double maxInputEta, bool (*select)(const Particle&), double scale)
+{
+  particles.reserve(particles.size() + inputParticles->size());
+  
+
+  for (unsigned int iPtcl = 0; iPtcl < inputParticles->size(); ++iPtcl) {
+    const Particle&    particle    = (*inputParticles)[iPtcl];
+    if (status >= 0 && particle.status() != status)   continue;
+    if (particle.pt()              != particle.pt())  continue;
+    if (particle.pt()              <= minInputPT )    continue;
+    if (TMath::Abs(particle.eta()) >  maxInputEta)    continue;
+    if (select && !(*select)(particle))        continue;
+
+    particles.push_back(fastjet::PseudoJet( particle.px    () * scale
+                                          , particle.py    () * scale
+                                          , particle.pz    () * scale
+                                          , particle.energy() * scale
+                                          ));
+    particles.back().set_user_info(new UserInfo(inputParticles, iPtcl));
+  } // end loop over particles
+}
+
+
+/*************************/
+/*      Computations     */
+/*************************/
+
+//_____________________________________________________________________________
+template<typename Particle, typename Jet>
+void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& inputParticles,const std::vector<fastjet::PseudoJet>& inputJets, std::vector<Jet>& outputJets
+                                  , const edm::EventSetup& eventSetup, bool (*select)(const Particle&),bool keepEmptyJets, bool recomputeP4, const reco::Jet::Point& vertex
+                                  ) 
+{
+  outputJets.reserve(inputJets.size());
+
+  for (unsigned int iJet = 0; iJet < inputJets.size(); ++iJet)
+  {
+    const fastjet::PseudoJet&         inJet         = inputJets[iJet];
+    std::vector<fastjet::PseudoJet>   constituents  = inJet.constituents();
+
+    std::vector<reco::CandidatePtr>   daughters;
+    reco::Particle::LorentzVector     jetP4;
+    if (!recomputeP4)                 jetP4.SetCoordinates(inJet.px(), inJet.py(), inJet.pz(), inJet.E());
+
+
+    double                            ghostArea     = 0;
+    for (unsigned int iCon = 0; iCon < constituents.size(); ++iCon) {
+      const fastjet::PseudoJet&       constituent   = constituents[iCon];
+      
+      if (constituent.has_user_info()) {
+        const UserInfo&               info          = constituent.user_info<UserInfo>();
+        if (info.key() >= inputParticles->size())   continue;
+        const Particle&               particle      = (*inputParticles)[info.key()];
+        if (info.get() != &particle)                continue;
+        if (select && !(*select)(particle))         continue;
+        daughters.push_back(reco::CandidatePtr(inputParticles, info.key()));
+        if (recomputeP4)              jetP4        += particle.p4();
+      }
+      else {
+        ////std::cout << currentGhostArea << std::endl;
+        ghostArea                    += constituent.has_area()
+                                      ? constituent.area()
+                                      : currentGhostArea
+                                      ;
+      }
+    } // end loop over constituents
+
+
+    if (daughters.size() || keepEmptyJets) {
+      outputJets.resize   ( outputJets.size() + 1 );
+
+      Jet&                            outJet        = outputJets.back();
+      reco::writeSpecific ( outJet, jetP4, vertex, daughters, eventSetup );
+      outJet.setJetArea   ( inJet.has_area() ? inJet.area() : ghostArea  );
+    }
+  } // end loop over outputJets
+}
+
+
+//_____________________________________________________________________________
+template<typename Jet>
+void FastJetClusterer::selectJets(double minJetPT, double maxJetEta, std::vector<Jet>& satellites)
+{
+  if (satellites.size() != jets.size())
+    throw cms::Exception("FastJetClusterer.selectJets()", "Requested to keep satellites collection in sync, but the initial size is not equal to that of the current jets.");
+
+  for (int iJet = jets.size(); --iJet >= 0;) {
+    const fastjet::PseudoJet&           jet   = jets[iJet];
+    if (jet.pt() < minJetPT || TMath::Abs(jet.eta()) > maxJetEta) {
+      jets      .erase(jets      .begin() + iJet);
+      satellites.erase(satellites.begin() + iJet);
+    }
+  } // end loop over jets
+}
+}
+
+//_____________________________________________________________________________
+namespace {
+
+struct GreaterPT2 {
+  bool operator()(const fastjet::PseudoJet* x, const fastjet::PseudoJet* y) const {
+    return x->pt2() > y->pt2();
+  }
+};
+
+struct GreaterM2 {
+  bool operator()(const fastjet::PseudoJet* x, const fastjet::PseudoJet* y) const {
+    return x->m2() > y->m2();
+  }
+};
+
+template<typename Field, typename Type, typename Pair = std::pair<Field,Type> >
+struct GreaterFirst : public std::binary_function<Pair, Pair, Bool_t> {
+  Bool_t operator()(const Pair& t1, const Pair& t2) const { return t1.first > t2.first; }
+};
+
+}

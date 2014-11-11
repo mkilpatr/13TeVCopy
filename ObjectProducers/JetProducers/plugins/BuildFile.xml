@@ -1,0 +1,3 @@
+<use name="ObjectProducers/JetProducers"/>
+<library   name="ObjectProducersJetProducerPlugins" file="*.cc">
+</library>
