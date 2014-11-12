@@ -19,6 +19,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
+, genparticles        (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -68,6 +69,14 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
          ,cfg.getParameter<edm::InputTag>("mets")
          );
       initializedFillers.push_back(eventInfo);
+      break;
+    }
+    case GENPARTICLES : {
+      int defaultOptions = GenParticleFiller::defaultOptions | (cfg.getUntrackedParameter<bool>("saveAllGenParticles") ? GenParticleFiller::SAVEALL : GenParticleFiller::NULLOPT);
+      genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options, branchName == "" ? "gen" : branchName,
+          cfg.getParameter<edm::InputTag>("prunedGenParticles")
+         );
+      initializedFillers.push_back(genparticles);
       break;
     }
     case AK4JETS : {

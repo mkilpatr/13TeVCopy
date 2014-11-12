@@ -25,6 +25,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg,ELECTRONS);
       initialize(cfg,MUONS);
       initialize(cfg,TAUS);
+      if(isMC()) initialize(cfg,GENPARTICLES);
       book();
     }
 
