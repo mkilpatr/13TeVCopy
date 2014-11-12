@@ -18,7 +18,7 @@
 namespace ucsbsusy {
 
   struct GenParticleCoords {
-    GenParticleCoords(const std::string inname) : name(inname), ptindex(0), etaindex(0), phiindex(0), massindex(0), statusindex(0), pdgidindex(0) {}
+    GenParticleCoords(const string inname) : name(inname), ptindex(0), etaindex(0), phiindex(0), massindex(0), statusindex(0), pdgidindex(0) {}
     const string name;
     size ptindex;
     size etaindex;

@@ -3,7 +3,6 @@
 
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 namespace ucsbsusy {
 
@@ -92,7 +91,6 @@ namespace ucsbsusy {
         for(size_t i = 0; i < outbosons.size(); ++i) {
           dau1 = 0;
           dau2 = 0;
-          printf("looking for daughter for boson with status %d\n", outbosons[i]->status());
           if(findBosonDaughters(genParticles, outbosons[i], dau1, dau2)) {
             boson = outbosons[i];
             return true;

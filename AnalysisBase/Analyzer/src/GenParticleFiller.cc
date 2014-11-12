@@ -89,30 +89,28 @@ void GenParticleFiller::fill()
   }
 
   // get daughters of W/Z bosons or of taus from W/Z decay
-  vector<const reco::GenParticle*> daughters(2*bosons.size(), 0);
-  vector<const reco::GenParticle*> taudaughters(2*bosons.size(), 0);
-
   for(size_t i = 0; i < bosons.size(); i++) {
-    MCTruth::findBosonDaughters(*genParticles_, bosons[i], daughters[i*2], daughters[(i*2)+1]);
+    const reco::GenParticle *dau1=0, *dau2=0, *taudecay1=0, *taudecay2=0;
+    MCTruth::findBosonDaughters(*genParticles_, bosons[i], dau1, dau2);
     fillDataBlock(*boson, bosons[i]);
 
-    if(daughters[i*2]) {
-      fillDataBlock(*boson_daughter, daughters[i*2]);
+    if(dau1) {
+      fillDataBlock(*boson_daughter, dau1);
       // get tau information if any
-      if(MCTruth::isA(MCTruth::kTau, daughters[i*2])) {
-        MCTruth::findTauDaughter(*genParticles_, daughters[i*2], taudaughters[i*2]);
-        if(taudaughters[i*2])
-          fillDataBlock(*tau_daughter, taudaughters[i*2]);
+      if(MCTruth::isA(MCTruth::kTau, dau1)) {
+        MCTruth::findTauDaughter(*genParticles_, dau1, taudecay1);
+        if(taudecay1)
+          fillDataBlock(*tau_daughter, taudecay1);
       }
     }
 
-    if(daughters[(i*2)+1]) {
-      fillDataBlock(*boson_daughter, daughters[(i*2)+1]);
+    if(dau2) {
+      fillDataBlock(*boson_daughter, dau2);
       // get tau information if any
-      if(MCTruth::isA(MCTruth::kTau, daughters[(i*2)+1])) {
-        MCTruth::findTauDaughter(*genParticles_, daughters[(i*2)+1], taudaughters[(i*2)+1]);
-        if(taudaughters[(i*2)+1])
-          fillDataBlock(*tau_daughter, taudaughters[(i*2)+1]);
+      if(MCTruth::isA(MCTruth::kTau, dau2)) {
+        MCTruth::findTauDaughter(*genParticles_, dau2, taudecay2);
+        if(taudecay2)
+          fillDataBlock(*tau_daughter, taudecay2);
       }
     }
   }
