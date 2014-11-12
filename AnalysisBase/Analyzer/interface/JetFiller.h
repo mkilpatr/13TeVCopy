@@ -36,7 +36,7 @@ public:
   template<typename Jet>
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
-      JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
+      JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag

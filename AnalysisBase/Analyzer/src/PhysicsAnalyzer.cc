@@ -82,7 +82,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
     case AK4JETS : {
       int defaultOptions = PatJetFiller::defaultOptions | ((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo")) ? PatJetFiller::LOADGEN : PatJetFiller::NULLOPT);
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo")) defaultOptions |= PatJetFiller::LOADJETSHAPE;
-      ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName, defaults::BRANCH_STDGENJETS, eventInfo
+      ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName, eventInfo
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
