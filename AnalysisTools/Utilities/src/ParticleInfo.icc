@@ -15,6 +15,29 @@
 using namespace ucsbsusy;
 
 template<typename Particle>
+bool ParticleInfo::isA(int particleID, const Particle* p, bool checkCharge)
+{
+  int id = p->pdgId();
+  if(checkCharge) return (id == particleID);
+  return (fabs(id) == particleID);
+}
+
+//_____________________________________________________________________________
+template<typename ParticleA, typename ParticleB>
+bool ParticleInfo::isAncestor(const ParticleA* ancestor, const ParticleB* particle)
+{
+  //particle is already the ancestor
+  if(ancestor == particle) return true;
+  //otherwise loop on mothers, if any and return true if the ancestor is found
+  for(size_t i=0; i<particle->numberOfMothers(); i++) {
+    if(isAncestor(ancestor,particle->mother(i))) return true;
+  }
+  //if we did not return yet, then particle and ancestor are not relatives
+  return false;
+}
+
+//_____________________________________________________________________________
+template<typename Particle>
 bool ParticleInfo::isOutgoing(const Particle* particle)
 {
   if (particle->status() != status_doc)   return false;

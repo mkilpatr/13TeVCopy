@@ -193,7 +193,7 @@ void MuonFiller::fill()
       bool foundmom = false;
       for(size_t j=0; j<genParticles_->size();j++){
 	const reco::Candidate* mother = (*genParticles_)[j].mother(0);
-	if(mother != nullptr && MCTruth::isAncestor(mother, match)) {
+	if(mother != nullptr && ParticleInfo::isAncestor(mother, match)) {
 	  foundmom = true;
 	  mu_genmotherpdgid_.push_back(mother->pdgId());
 	  mu_genmotherstatus_.push_back(mother->status());
