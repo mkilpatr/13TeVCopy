@@ -86,6 +86,14 @@ static bool isLSP(int pdgId);
 static bool isHadronizationModel(int particleID);
 
 //_____________________________________________________________________________
+// check if particle matches a given pdgId
+template<typename Particle>
+static bool isA(int particleID, const Particle* p, bool checkCharge=false);
+//_____________________________________________________________________________
+// check if second particle is daughter of first
+template<typename ParticleA, typename ParticleB>
+static bool isAncestor(const ParticleA* ancestor, const ParticleB* particle);
+//_____________________________________________________________________________
 //check particle status
 template<typename Particle>
 static bool isOutgoing(const Particle* particle);
@@ -125,6 +133,13 @@ static std::vector<const Particle*> getProgenitors(const std::vector<Particle>& 
 template<typename Particle>
 static std::vector<const Particle*> getDecayProducts(const std::vector<const Particle*>& progenitors);
 
+//_____________________________________________________________________________
+// Find particle decay products
+//_____________________________________________________________________________
+
+static bool findBosonDaughters(const std::vector<reco::GenParticle> &genParticles, const reco::GenParticle* &boson, const reco::GenParticle* &dau1, const reco::GenParticle* &dau2);
+
+static void findTauDaughter(const std::vector<reco::GenParticle> &genParticles, const reco::GenParticle* &tau, const reco::GenParticle* &dau);
 
 //_____________________________________________________________________________
 // Return the parton name and information as a string

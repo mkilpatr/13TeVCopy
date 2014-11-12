@@ -17,7 +17,7 @@
 
 #include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
-#include "AnalysisTools/Utilities/interface/MCTruth.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 namespace ucsbsusy {
 

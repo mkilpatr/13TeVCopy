@@ -17,7 +17,7 @@
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisTools/Utilities/interface/MCTruth.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 namespace ucsbsusy {
 
