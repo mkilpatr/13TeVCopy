@@ -5,6 +5,7 @@
 
 #include "ObjectProducers/JetProducers/plugins/RedefinedJetProducer.h"
 #include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 
 using namespace ucsbsusy;
@@ -13,9 +14,12 @@ using namespace std;
 RedefinedJetProducer::RedefinedJetProducer(const edm::ParameterSet& iConfig) :
           isRealData      (iConfig.getParameter<int             >("isRealData"                 ))
         , produceGen      (isRealData == 0 && iConfig.getParameter<bool            >("produceGen"                 ))
+        , ignoreBosonInv  (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBosonInv"                 ))
+        , ignoreBSMInv    (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBSMInv"                 ))
         , producePU       (iConfig.getParameter<bool            >("producePU"                 ))
         , src             (iConfig.getParameter<edm::InputTag>("src"))
-        , genSrc          (produceGen ? iConfig.getParameter<edm::InputTag>("genSrc") : edm::InputTag())
+        , genMotherSrc    (iConfig.getParameter<edm::InputTag>("genMotherSrc"))
+        , genSrc          (iConfig.getParameter<edm::InputTag>("genSrc"))
         , jetAlgorithmName(iConfig.getParameter<string>       ("jetAlgorithm"))
         , rParameter      (iConfig.getParameter<double>("rParameter"      ))
         , jetPtMin        (iConfig.getParameter<double>("jetPtMin"   ))
@@ -46,9 +50,32 @@ RedefinedJetProducer::RedefinedJetProducer(const edm::ParameterSet& iConfig) :
     }
 
 //--------------------------------------------------------------------------------------------------
+void RedefinedJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
+  for(unsigned int iP = 0; iP < genParticles->size(); ++iP){
+    const pat::PackedGenParticle& p = genParticles->at(iP);
+    if(ignoreBSMInv && ParticleInfo::isLSP(p.pdgId())) {vetoes[iP] = true; continue;}
+    if(!ignoreBosonInv || ParticleInfo::isVisible(p.pdgId())) continue;
+
+    const reco::Candidate * motherInPrunedCollection = p.mother(0);
+    if(motherInPrunedCollection == nullptr) continue;
+    //if its the same as the original lets get the original
+    if(motherInPrunedCollection->pdgId() == p.pdgId())
+      motherInPrunedCollection = ParticleInfo::getOriginal(motherInPrunedCollection);
+    const reco::Candidate * orginator = motherInPrunedCollection->mother(0);
+    if(ParticleInfo::isEWKBoson(orginator->pdgId()))
+      vetoes[iP] = true;
+    if(TMath::Abs(orginator->pdgId()) == ParticleInfo::p_tauminus)
+      vetoes[iP] = true;
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
 void RedefinedJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
   iEvent.getByLabel(src,pfCandidates);
-  iEvent.getByLabel(genSrc,genParticles);
+  if(produceGen){
+    iEvent.getByLabel(genSrc,genParticles);
+    if(ignoreBosonInv) iEvent.getByLabel(genMotherSrc,genMotherParticles);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -58,9 +85,17 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   //-- Cluster jets -----------------------------------------------------------
   FastJetClusterer                                    clusterer(true, true);
 
-  clusterer.addParticles<pat::PackedCandidate>(pfCandidates, -1, minParticlePT, maxParticleEta, &isNonPUParticle );
-  if (produceGen) clusterer.addParticles<pat::PackedGenParticle>( genParticles, -1, minParticlePT, maxParticleEta, 0, 1e-50 );
-  if (producePU)  clusterer.addParticles<pat::PackedCandidate>( pfCandidates , -1 , minParticlePT, maxParticleEta,&isPUParticle, 1e-50);
+  clusterer.addParticles<pat::PackedCandidate>(pfCandidates, -1, minParticlePT, maxParticleEta, &isNonPUParticle,0 );
+  if(produceGen){
+    vector<bool>* vetoes = 0;
+    if(ignoreBosonInv || ignoreBSMInv){
+      vetoes = new vector<bool>(genParticles->size(), false);
+      vetoGenPart(*vetoes);
+    }
+    clusterer.addParticles<pat::PackedGenParticle>( genParticles, -1, minParticlePT, maxParticleEta, 0,vetoes, 1e-50 );
+    delete vetoes;
+  }
+  if (producePU)  clusterer.addParticles<pat::PackedCandidate>( pfCandidates , -1 , minParticlePT, maxParticleEta,&isPUParticle,0, 1e-50);
 
   clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
 
