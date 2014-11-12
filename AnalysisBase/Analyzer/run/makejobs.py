@@ -85,8 +85,8 @@ for isam in range(len(samples)) :
 
         if args.submittype == "interactive" :
             os.system("mkdir -p %s" % args.outdir)
-            script.write("""cmsRun $cfgfile print inputFiles_clear inputFiles_load=$jobdir/{infile} outputFile=$outputdir/{outputname} maxEvents=$maxevents\n""".format(
-            infile=jobfile,outputname=outfile
+            script.write("""cmsRun {pathtocfg}/$cfgfile print inputFiles_clear inputFiles_load=$jobdir/{infile} outputFile=$outputdir/{outputname} maxEvents=$maxevents\n""".format(
+            pathtocfg=args.path,infile=jobfile,outputname=outfile
             ))
 
         elif args.submittype == "lsf" :
