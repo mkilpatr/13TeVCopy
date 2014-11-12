@@ -20,7 +20,7 @@
 
 // Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
-#include "AnalysisBase/Analyzer/interface/JetFiller.h"
+#include "AnalysisBase/Analyzer/interface/PatJetFiller.h"
 #include "AnalysisBase/Analyzer/interface/MuonFiller.h"
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
 #include "AnalysisBase/Analyzer/interface/TauFiller.h"
@@ -72,7 +72,7 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
     public:
       EventInfoFiller * eventInfo;
-      JetFiller       * ak4Jets;
+      PatJetFiller    * ak4Jets;
       MuonFiller      * muons;
       ElectronFiller  * electrons;
       TauFiller       * taus;

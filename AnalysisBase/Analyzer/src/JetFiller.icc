@@ -1,12 +1,5 @@
-//--------------------------------------------------------------------------------------------------
-// 
-// JetFiller
-// 
-// Class to fill some basic jet information for testing. To be developed as needed.
-// 
-// JetFiller.cc created on Thu Aug 14 11:10:55 CEST 2014 
-// 
-//--------------------------------------------------------------------------------------------------
+#ifndef ANALYSISBASE_ANALYZER_JETFILLER_ICC
+#define ANALYSISBASE_ANALYZER_JETFILLER_ICC
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
@@ -16,14 +9,13 @@
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
-using namespace ucsbsusy;
-
 #define TAGGABLE_TYPE_HACK
 
-const int JetFiller::defaultOptions = JetFiller::NULLOPT;
+namespace ucsbsusy{
 
 //--------------------------------------------------------------------------------------------------
-JetFiller::JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
+template<typename Jet>
+JetFiller<Jet>::JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
@@ -74,60 +66,9 @@ JetFiller::JetFiller(const int options, const string branchName, const string ge
     }
   }
 }
-
 //--------------------------------------------------------------------------------------------------
-reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet, const bool enforce) const
-{
-  if (!reGenJets_.isValid())
-    throw cms::Exception("JetFiller.getReGenJet()", "genJets have not been loaded.");
-
-  const reco::CandidatePtr&   genPtr  = jet.userCand(REGENJET);
-
-  if(genPtr.isNull()){
-    if(enforce)
-      throw cms::Exception("JetFiller.getReGenJet()", "Could not find genJet!");
-    else
-      return reco::GenJetRef();
-  }
-
-
-  if (genPtr.id() != reGenJets_.id())
-    throw cms::Exception("JetFiller.getReGenJet()", "Inconsistent reGenJets collection with pat::Jet::userCand(REGENJET).");
-
-  return reco::GenJetRef(reGenJets_, genPtr.key());
-}
-
-//--------------------------------------------------------------------------------------------------
-reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
-{
-  return jet.genJetFwdRef().backRef();
-}
-//_____________________________________________________________________________
-reco::CandidatePtr JetFiller::getRecoJet(size iGen, bool redefined) const
-{
-  vector<reco::CandidatePtr>&        recoJetRef  = ( redefined ? reGenRecoRef_ : stdGenRecoRef_ );
-  if (recoJetRef.size())      return recoJetRef[iGen];
-
-  const edm::Handle<vector<reco::GenJet> >&  genJets = ( redefined ? reGenJets_ : stdGenJets_ );
-  recoJetRef.resize(genJets->size());
-
-  for (size iReco = 0; iReco < jets_->size(); ++iReco) {
-    const pat::Jet&           recoJet     = (*jets_)[iReco];
-    int                       genIndex    = -1;
-    if (redefined) {
-      const reco::GenJetRef  genJetRef                = getReGenJet(recoJet,false);
-      genIndex                = ( genJetRef.isNull() ? -1 : int(genJetRef.key()) );
-    } else {
-      const reco::GenJetRef&  genJetRef   = getStdGenJet(recoJet);
-      genIndex                = ( genJetRef.isNull() ? -1 : int(genJetRef.key()) );
-    }
-    if (genIndex >= 0)        recoJetRef[genIndex]  = reco::CandidatePtr(jets_, iReco);
-  } // end loop over recoJets
-
-  return recoJetRef[iGen];
-}
-//--------------------------------------------------------------------------------------------------
-void JetFiller::load(const edm::Event& iEvent)
+template<typename Jet>
+void JetFiller<Jet>::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
@@ -149,7 +90,8 @@ void JetFiller::load(const edm::Event& iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-void JetFiller::fill()
+template<typename Jet>
+void JetFiller<Jet>::fill()
 {
   vector<int> filledIndex;
   int curGenIndex = -1;
@@ -176,17 +118,16 @@ void JetFiller::fill()
 
 
 
-  for (const pat::Jet &j : *jets_) {
+  for (const auto &j : *jets_) {
     const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j) : getStdGenJet(j);
     if(j.pt() < jptMin_) continue;
-
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
     data.fillMulti<float>(ijetphi_  ,j.phi());
     data.fillMulti<float>(ijetmass_ ,j.mass());
-    data.fillMulti<float>(ijetptraw_,j.pt()*j.jecFactor("Uncorrected"));
-    data.fillMulti<float>(ijetpuId_ ,j.userFloat("pileupJetId:fullDiscriminant"));
-    data.fillMulti<float>(ijetcsv_  ,j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
+    data.fillMulti<float>(ijetptraw_,j.pt()*getJecUncorrection(j));
+    data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
+    data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
 
     if(options_ & LOADGEN) {
       data.fillMulti<int>(ijetflavor_,j.partonFlavour());
@@ -199,7 +140,7 @@ void JetFiller::fill()
 
     if(options_ & LOADJETSHAPE){
       assert(evtInfofiller_->isLoaded());
-      data.fillMulti<float>(ijetqgl_,qglInterface_->getDiscriminator(j,*evtInfofiller_->rho_));
+      data.fillMulti<float>(ijetqgl_,getQGDisc(j));
       qgTaggingVar_->compute(&j);
       data.fillMulti<float>(ijetbetaStar_,qgTaggingVar_->getBetaStar(&j,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_));
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
@@ -212,7 +153,6 @@ void JetFiller::fill()
 
   isFilled_ = true;
 }
+}
 
-
-//--------------------------------------------------------------------------------------------------
-const std::string   JetFiller::REGENJET           = "GenPtr";
+#endif
