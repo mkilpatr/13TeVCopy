@@ -66,7 +66,8 @@ class QuarkGluonTaggingVariables {
    double getPtD() const {return ptD_;}
    int    getTotalMult() const {return totalMult_;}
 
-   double getBetaStar(const pat::Jet * jet, const reco::VertexCollection & verticies, const int primVertIndex) const {
+   template<typename Jet>
+   double getBetaStar(const Jet * jet, const reco::VertexCollection & verticies, const int primVertIndex) const {
      if(verticies.size() == 0) return 10;
      int nConstituents = jet->numberOfDaughters();
      double betaStar = 0;
@@ -80,7 +81,7 @@ class QuarkGluonTaggingVariables {
 
 
        totalPT += pt;
-
+       reco::PFCandidate d;
        double dZ0 = fabs(part->dz(verticies[primVertIndex].position()));
        double dZ  = dZ0;
 

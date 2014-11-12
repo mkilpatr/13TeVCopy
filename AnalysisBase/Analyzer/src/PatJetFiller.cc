@@ -16,7 +16,7 @@ PatJetFiller::PatJetFiller(const int options, const string branchName, const str
 {}
 
 //--------------------------------------------------------------------------------------------------
-reco::GenJetRef PatJetFiller::getReGenJet(const pat::Jet& jet, const bool enforce) const
+reco::GenJetRef PatJetFiller::getReGenJet(const pat::Jet& jet,const int index, const bool enforce) const
 {
   if (!reGenJets_.isValid())
     throw cms::Exception("JetFiller.getReGenJet()", "genJets have not been loaded.");

@@ -118,19 +118,20 @@ void JetFiller<Jet>::fill()
 
 
 
-  for (const auto &j : *jets_) {
-    const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j) : getStdGenJet(j);
+  for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
+    const Jet& j = jets_->at(iJ);
+    const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
     if(j.pt() < jptMin_) continue;
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
     data.fillMulti<float>(ijetphi_  ,j.phi());
     data.fillMulti<float>(ijetmass_ ,j.mass());
-    data.fillMulti<float>(ijetptraw_,j.pt()*getJecUncorrection(j));
+    data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
 
     if(options_ & LOADGEN) {
-      data.fillMulti<int>(ijetflavor_,j.partonFlavour());
+      data.fillMulti<int>(ijetflavor_,getPartonFlavor(j));
       if(gJ.isNonnull()) {
         data.fillMulti<int>(ijetgenindex_,filledIndex[gJ.key()]);
       } else {

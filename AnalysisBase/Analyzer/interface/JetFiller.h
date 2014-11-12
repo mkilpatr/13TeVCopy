@@ -45,13 +45,14 @@ public:
           );
       ~JetFiller() {}
 
-      void load(const edm::Event& iEvent);
+      virtual void load(const edm::Event& iEvent);
       void fill();
 
-      virtual reco::GenJetRef getReGenJet(const Jet& jet, const bool enforce = false) const  = 0;
+      virtual reco::GenJetRef getReGenJet(const Jet& jet,const int index = -1, const bool enforce = false) const  = 0;
       virtual reco::GenJetRef getStdGenJet(const Jet& jet) const = 0;
       virtual reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const = 0;
 
+      virtual int   getPartonFlavor(const Jet& jet) const = 0;
       virtual float getJecUncorrection(const Jet& jet) const = 0;
       virtual float getPUJetId(const Jet& jet) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
