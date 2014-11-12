@@ -1,20 +1,20 @@
 import FWCore.ParameterSet.Config as cms
 
-redefinedAK4Producer = cms.EDProducer('RedefinedJetProducer',
+redAK4             = cms.EDProducer('RedefinedJetProducer',
                                     isRealData = cms.int32(0),
                                     src = cms.InputTag("packedPFCandidates"),                                    
                                     produceGen      = cms.bool(True),
                                     producePU       = cms.bool(False),
                                     genSrc      = cms.InputTag('packedGenParticles'),
                                     jetAlgorithm      = cms.string('AntiKt'),
-                                    rParameter      = cms.double(.4),
-                                    jetPtMin       = cms.double(10),
+                                    rParameter        = cms.double(.4),
+                                    jetPtMin          = cms.double(3),
                                     minParticlePT     = cms.double          (0),
-                                    maxParticleEta    = cms.double          (5),
-                                    ghostArea         = cms.double          (0.001)
+                                    maxParticleEta    = cms.double          (5.0),
+                                    ghostArea         = cms.double          (.01)
 )
 
-redefinedCA1Producer = cms.EDProducer('RedefinedJetProducer',
+redCA1             = cms.EDProducer('RedefinedJetProducer',
                                     isRealData = cms.int32(0),
                                     src = cms.InputTag("packedPFCandidates"),                                    
                                     produceGen      = cms.bool(True),
@@ -25,5 +25,5 @@ redefinedCA1Producer = cms.EDProducer('RedefinedJetProducer',
                                     jetPtMin          = cms.double(20),
                                     minParticlePT     = cms.double          (0),
                                     maxParticleEta    = cms.double          (3),
-                                    ghostArea         = cms.double          (0.001)
+                                    ghostArea         = cms.double          (0.01)
 )
