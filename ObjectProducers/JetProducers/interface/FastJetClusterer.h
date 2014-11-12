@@ -79,6 +79,7 @@ public:
       , double                        minInputPT    = 0
       , double                        maxInputEta   = 5
       , bool                          (*select)(const Particle&) = 0
+      , std::vector<bool>*            vetoes        = 0
       , double                        scale         = 1
                     );
 

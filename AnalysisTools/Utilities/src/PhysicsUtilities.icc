@@ -175,4 +175,131 @@ void PhysicsUtilities::trash(std::map<Key,Object*>& objects)
     if (iObj->second)       delete iObj->second;
   objects.clear();
 }
+//_____________________________________________________________________________
+// Finding objects in a group
+//_____________________________________________________________________________
+template<typename Object1, typename Object2>
+int PhysicsUtilities::findIndex(const Object1* target, const std::vector<Object2>& items, size first, size last)
+{
+  if (items.empty())  return -1;
+  if (last <= first)  last  = items.size() - 1u;
+  for (size item = first; item <= last; ++item)
+    if (&(items[item]) == target)
+      return item;
+  return -1;
+}
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2, typename Comparator, typename Distance>
+int PhysicsUtilities::findByDistance(Comparator comparator, Distance ruler, const Thing1& reference, const std::vector<Thing2>& objects,
+                                  double& bestDistance, double maxDistance, const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  if (numObjects < 0)       numObjects    = static_cast<int>(objects.size());
+  int                       bestIndex     = -1;
+                            bestDistance  = maxDistance;
+  for (int index = 0; index < numObjects; ++index) {
+    if (vetoed && (*vetoed)[index])       continue;
+    if (get(objects[index]).pt() < minPT) continue;
+    const double            distance      = ruler(reference, objects[index]);
+    if (comparator(distance, bestDistance)) {
+      bestIndex             = index;
+      bestDistance          = distance;
+    }
+  } // end loop over objects to check
+  return bestIndex;
+}
+template<typename Thing1, typename Thing2, typename Comparator, typename Distance>
+int PhysicsUtilities::findByDistance(Comparator comparator, Distance ruler, const Thing1& reference, const Thing2& objects,
+                                  double& bestDistance, double maxDistance, const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  if (numObjects < 0)       numObjects    = static_cast<int>(objects.numberOfDaughters());
+  int                       bestIndex     = -1;
+                            bestDistance  = maxDistance;
+  for (int index = 0; index < numObjects; ++index) {
+    if (vetoed && (*vetoed)[index])                 continue;
+    if (get(objects.daughter(index)).pt() < minPT)  continue;
+    const double            distance      = ruler(reference, *(objects.daughter(index)));
+    if (comparator(distance, bestDistance)) {
+      bestIndex             = index;
+      bestDistance          = distance;
+    }
+  } // end loop over objects to check
+  return bestIndex;
+}
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findNearestDR(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDR, double maxDeltaR,
+                                 const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::less<double>          comparator;
+  DeltaR2<Thing1, Thing2>            distance;
+  int near = findByDistance(comparator, distance, reference, objects, nearestDR, maxDeltaR*maxDeltaR, minPT, vetoed, numObjects);
+  nearestDR = TMath::Sqrt(nearestDR);
+  return near;
+}
+
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findNearestDRDeref(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDR, double maxDeltaR,
+                                      const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::less<double>          comparator;
+  DeltaR2Deref<Thing1, Thing2>       distance;
+  int near = findByDistance(comparator, distance, reference, objects, nearestDR, maxDeltaR*maxDeltaR, minPT, vetoed, numObjects);
+  nearestDR = TMath::Sqrt(nearestDR);
+  return near;
+}
+
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findNearestDPhi(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDPhi, double maxDeltaPhi,
+                                   const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::less<double>          comparator;
+  AbsDeltaPhi<Thing1, Thing2>       distance;
+  return findByDistance(comparator, distance, reference, objects, nearestDPhi, maxDeltaPhi, minPT, vetoed, numObjects);
+}
+
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findNearestDPhiDeref(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDPhi, double maxDeltaPhi,
+                                        const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::less<double>          comparator;
+  AbsDeltaPhiDeref<Thing1, Thing2>  distance;
+  return findByDistance(comparator, distance, reference, objects, nearestDPhi, maxDeltaPhi, minPT, vetoed, numObjects);
+}
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findFurthestDR(const Thing1& reference, const std::vector<Thing2>& objects, double& furthestDR, double minDeltaR,
+                                  const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::greater<double> comparator;
+  DeltaR2<Thing1, Thing2>      distance;
+  int fur = findByDistance(comparator, distance, reference, objects, furthestDR, minDeltaR*minDeltaR, minPT, vetoed, numObjects);
+  furthestDR = TMath::Sqrt(furthestDR);
+  return fur;
+}
+template<typename Thing1, typename Thing2>
+int PhysicsUtilities::findFurthestDPhi(const Thing1& reference, const std::vector<Thing2>& objects, double& furthestDR, double minDeltaR,
+                                    const double minPT, const std::vector<bool>* vetoed, int numObjects)
+{
+  static std::greater<double> comparator;
+  AbsDeltaPhi<Thing1, Thing2> distance;
+  return findByDistance(comparator, distance, reference, objects, furthestDR, minDeltaR, minPT, vetoed, numObjects);
+}
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+double PhysicsUtilities::getNearestDR(const Thing1& reference, const std::vector<Thing2>& objects, int thisIndex, const double minPT)
+{
+  const size        numObjects    = objects.size();
+  double            nearestDR     = -1;
+  for (size index = 0; index < numObjects; ++index) {
+    if (static_cast<int>(index) == thisIndex) continue;
+    if (get(objects[index]).pt() < minPT)     continue;
+    const double    dR            = deltaR(reference, objects[index]);
+    if (nearestDR < 0 || dR < nearestDR)
+      nearestDR     = dR;
+  } // end loop over objects to check
+  return nearestDR;
+}
 #endif

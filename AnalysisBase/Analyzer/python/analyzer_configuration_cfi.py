@@ -45,8 +45,9 @@ nominal_configuration = cms.PSet(
                                       mets              = cms.InputTag("slimmedMETs"),  
                                       
                                       jets              = cms.InputTag('slimmedJets'),
-                                      reGenJets         = cms.InputTag('slimmedGenJets'),
+                                      reGenJets         = cms.InputTag('redAK4','Gen'),
                                       stdGenJets        = cms.InputTag('slimmedGenJets'),
+                                      fillReGenJets     = cms.untracked.bool(False),
                                       genParticles      = cms.InputTag('prunedGenParticles'),
                                       minJetPt          = cms.untracked.double(15.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
