@@ -37,6 +37,8 @@ nominal_configuration = cms.PSet(
                                       
                                       bunchSpacing      = cms.untracked.int32(25),
                                       packedGenParticles= cms.InputTag('packedGenParticles'),
+                                      prunedGenParticles= cms.InputTag('prunedGenParticles'),
+                                      saveAllGenParticles = cms.untracked.bool(False),
 
                                       vertices          = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                       rho               = cms.InputTag("fixedGridRhoFastjetAll"),
