@@ -62,6 +62,7 @@ void RedefinedJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
     if(motherInPrunedCollection->pdgId() == p.pdgId())
       motherInPrunedCollection = ParticleInfo::getOriginal(motherInPrunedCollection);
     const reco::Candidate * orginator = motherInPrunedCollection->mother(0);
+    if(orginator == nullptr) orginator = motherInPrunedCollection;
     if(ParticleInfo::isEWKBoson(orginator->pdgId()))
       vetoes[iP] = true;
     if(TMath::Abs(orginator->pdgId()) == ParticleInfo::p_tauminus)

@@ -11,25 +11,30 @@
 #ifndef ANALYSISBASE_ANALYZER_JETFILLER_H
 #define ANALYSISBASE_ANALYZER_JETFILLER_H
 
-#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
+
+#include "DataFormats/JetReco/interface/GenJet.h"
 
 namespace ucsbsusy {
 class EventInfoFiller;
 class QuarkGluonTagInterface;
 class QuarkGluonTaggingVariables;
 
-  class JetFiller : public BaseFiller {
-  public:
+class JetFillerBase {
+public:
   enum  Options           {
                             NULLOPT         = 0
                           , LOADGEN         = (1 <<  0)   ///< load gen jets
                           , LOADJETSHAPE    = (1 <<  1)   ///< load jet shap variables
   };
-  static const int defaultOptions;
+  static const int defaultOptions = NULLOPT;
+  static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
+};
 
 
+  template<typename Jet>
+  class JetFiller : public JetFillerBase, public BaseFiller {
     public:
       JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
           , const edm::InputTag jetTag
@@ -40,19 +45,23 @@ class QuarkGluonTaggingVariables;
           );
       ~JetFiller() {}
 
-      void load(const edm::Event& iEvent);
+      virtual void load(const edm::Event& iEvent);
       void fill();
 
-      reco::GenJetRef getReGenJet(const pat::Jet& jet, const bool enforce = false)  const;
-      reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
-      reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const;
+      virtual reco::GenJetRef getReGenJet(const Jet& jet,const int index = -1, const bool enforce = false) const  = 0;
+      virtual reco::GenJetRef getStdGenJet(const Jet& jet) const = 0;
+      virtual reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const = 0;
 
-      static const std::string REGENJET;   // userClass label for the redefined genJet of the given jet
+      virtual int   getPartonFlavor(const Jet& jet) const = 0;
+      virtual float getJecUncorrection(const Jet& jet) const = 0;
+      virtual float getPUJetId(const Jet& jet) const = 0;
+      virtual float getbDisc(const Jet& jet) const = 0;
+      virtual float getQGDisc(const Jet& jet) const = 0;
 
-    private:
+    protected:
       const EventInfoFiller * evtInfofiller_;
 
-    private:
+    protected:
       // Input from the config file
       const edm::InputTag jetTag_;
       const edm::InputTag reGenJetTag_;
@@ -90,7 +99,7 @@ class QuarkGluonTaggingVariables;
       size igenjetaxis2_ ;
       size igenjetMult_  ;
 
-    private:
+    protected:
       QuarkGluonTagInterface    * qglInterface_;
       QuarkGluonTaggingVariables* qgTaggingVar_;
 
@@ -100,7 +109,7 @@ class QuarkGluonTaggingVariables;
 
     public:
       // Data members
-      edm::Handle<pat::JetCollection>     jets_;
+      edm::Handle<std::vector<Jet>>       jets_;
       edm::Handle<reco::GenJetCollection> reGenJets_;
       edm::Handle<reco::GenJetCollection> stdGenJets_;
 
@@ -108,4 +117,5 @@ class QuarkGluonTaggingVariables;
 
 }
 
+#include "AnalysisBase/Analyzer/src/JetFiller.icc"
 #endif
