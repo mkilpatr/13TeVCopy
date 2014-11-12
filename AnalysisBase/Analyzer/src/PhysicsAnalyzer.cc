@@ -86,6 +86,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
+                             , cfg.getUntrackedParameter<bool>("fillReGenJets")
                              , cfg.getUntrackedParameter<double>("minJetPt")
       );
       initializedFillers.push_back(ak4Jets);

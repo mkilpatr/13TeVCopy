@@ -19,7 +19,6 @@
 using namespace ucsbsusy;
 
 #define TAGGABLE_TYPE_HACK
-#define REDEFINED_GENJET_HACK
 
 const int JetFiller::defaultOptions = JetFiller::NULLOPT;
 
@@ -28,6 +27,7 @@ JetFiller::JetFiller(const int options, const string branchName, const string ge
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const bool   fillReGenJets
   , const double jptMin
 ) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller)
   , jetTag_          (jetTag)
@@ -35,19 +35,13 @@ JetFiller::JetFiller(const int options, const string branchName, const string ge
   , stdGenJetTag_    (stdGenJetTag)
 //  genParticleTag_  (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("genParticles") : edm::InputTag()),
   , jptMin_          (jptMin)
+  , fillReGenJets_   (fillReGenJets)
   , qglInterface_    (new QuarkGluonTagInterface)
   , qgTaggingVar_    (new QuarkGluonTaggingVariables)
   , jets_            (0)
   , reGenJets_       (0)
   , stdGenJets_      (0)
 {
-  if(options_ & LOADGEN) {
-    igenjetpt_            = data.addMulti<float>(genJetsBranchName ,"genjet_pt"    ,0);
-    igenjeteta_           = data.addMulti<float>(genJetsBranchName ,"genjet_eta"   ,0);
-    igenjetphi_           = data.addMulti<float>(genJetsBranchName ,"genjet_phi"   ,0);
-    igenjetmass_          = data.addMulti<float>(genJetsBranchName ,"genjet_mass"  ,0);
-  }
-
   ijetpt_     = data.addMulti<float>(branchName_,"jet_pt"    ,0);
   ijeteta_    = data.addMulti<float>(branchName_,"jet_eta"   ,0);
   ijetphi_    = data.addMulti<float>(branchName_,"jet_phi"   ,0);
@@ -55,14 +49,14 @@ JetFiller::JetFiller(const int options, const string branchName, const string ge
   ijetptraw_  = data.addMulti<float>(branchName_,"jet_ptraw" ,0);
   ijetpuId_   = data.addMulti<float>(branchName_,"jet_puId"  ,0);
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
-  ijetflavor_ = data.addMulti<int  >(branchName_,"jet_flavor",0);
 
   if(options_ & LOADGEN) {
-    imatchedgenjetpt_     = data.addMulti<float>(branchName_,"matchedgenjet_pt"    ,0);
-    imatchedgenjeteta_    = data.addMulti<float>(branchName_,"matchedgenjet_eta"   ,0);
-    imatchedgenjetphi_    = data.addMulti<float>(branchName_,"matchedgenjet_phi"   ,0);
-    imatchedgenjetmass_   = data.addMulti<float>(branchName_,"matchedgenjet_mass"  ,0);
-    imatchedgenjetflavor_ = data.addMulti<int  >(branchName_,"matchedgenjet_flavor",0);
+    ijetflavor_ = data.addMulti<int  >(branchName_,"jet_flavor",0);
+    ijetgenindex_ = data.addMulti<int  >(branchName_,"jet_genIndex",-1);
+    igenjetpt_     = data.addMulti<float>(branchName_,"genjet_pt"    ,0);
+    igenjeteta_    = data.addMulti<float>(branchName_,"genjet_eta"   ,0);
+    igenjetphi_    = data.addMulti<float>(branchName_,"genjet_phi"   ,0);
+    igenjetmass_   = data.addMulti<float>(branchName_,"genjet_mass"  ,0);
   }
 
   if(options_ & LOADJETSHAPE) {
@@ -73,21 +67,30 @@ JetFiller::JetFiller(const int options, const string branchName, const string ge
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<int  >(branchName_,"jet_jetMult" ,0);
     if(options_ & LOADGEN) {
-      imatchedgenjetptD_  = data.addMulti<float>(branchName_,"matchedgenjet_ptD"    ,0);
-      imatchedgenjetaxis1_= data.addMulti<float>(branchName_,"matchedgenjet_axis1"  ,0);
-      imatchedgenjetaxis2_= data.addMulti<float>(branchName_,"matchedgenjet_axis2"  ,0);
-      imatchedgenjetMult_ = data.addMulti<int  >(branchName_,"matchedgenjet_jetMult",0);
+      igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
+      igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
+      igenjetaxis2_= data.addMulti<float>(branchName_,"genjet_axis2"  ,0);
+      igenjetMult_ = data.addMulti<int  >(branchName_,"genjet_jetMult",0);
     }
   }
 }
 
 //--------------------------------------------------------------------------------------------------
-reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet) const
+reco::GenJetRef JetFiller::getReGenJet(const pat::Jet& jet, const bool enforce) const
 {
   if (!reGenJets_.isValid())
     throw cms::Exception("JetFiller.getReGenJet()", "genJets have not been loaded.");
 
   const reco::CandidatePtr&   genPtr  = jet.userCand(REGENJET);
+
+  if(genPtr.isNull()){
+    if(enforce)
+      throw cms::Exception("JetFiller.getReGenJet()", "Could not find genJet!");
+    else
+      return reco::GenJetRef();
+  }
+
+
   if (genPtr.id() != reGenJets_.id())
     throw cms::Exception("JetFiller.getReGenJet()", "Inconsistent reGenJets collection with pat::Jet::userCand(REGENJET).");
 
@@ -99,7 +102,30 @@ reco::GenJetRef JetFiller::getStdGenJet(const pat::Jet& jet) const
 {
   return jet.genJetFwdRef().backRef();
 }
+//_____________________________________________________________________________
+reco::CandidatePtr JetFiller::getRecoJet(size iGen, bool redefined) const
+{
+  vector<reco::CandidatePtr>&        recoJetRef  = ( redefined ? reGenRecoRef_ : stdGenRecoRef_ );
+  if (recoJetRef.size())      return recoJetRef[iGen];
 
+  const edm::Handle<vector<reco::GenJet> >&  genJets = ( redefined ? reGenJets_ : stdGenJets_ );
+  recoJetRef.resize(genJets->size());
+
+  for (size iReco = 0; iReco < jets_->size(); ++iReco) {
+    const pat::Jet&           recoJet     = (*jets_)[iReco];
+    int                       genIndex    = -1;
+    if (redefined) {
+      const reco::GenJetRef  genJetRef                = getReGenJet(recoJet,false);
+      genIndex                = ( genJetRef.isNull() ? -1 : int(genJetRef.key()) );
+    } else {
+      const reco::GenJetRef&  genJetRef   = getStdGenJet(recoJet);
+      genIndex                = ( genJetRef.isNull() ? -1 : int(genJetRef.key()) );
+    }
+    if (genIndex >= 0)        recoJetRef[genIndex]  = reco::CandidatePtr(jets_, iReco);
+  } // end loop over recoJets
+
+  return recoJetRef[iGen];
+}
 //--------------------------------------------------------------------------------------------------
 void JetFiller::load(const edm::Event& iEvent)
 {
@@ -107,8 +133,8 @@ void JetFiller::load(const edm::Event& iEvent)
   FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
 
   if(options_ & LOADGEN) {
-    FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
-    FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
+    if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
+    else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
 //    edm::Handle<reco::GenParticleCollection> genParticles_;
 //    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
 
@@ -125,28 +151,34 @@ void JetFiller::load(const edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void JetFiller::fill()
 {
-
-  // store all standard genjets
-  if(options_ & LOADGEN) {
-    for(const reco::GenJet &gj : *stdGenJets_) {
-      data.fillMulti<float>(igenjetpt_  ,gj.pt());
-      data.fillMulti<float>(igenjeteta_ ,gj.eta());
-      data.fillMulti<float>(igenjetphi_ ,gj.phi());
-      data.fillMulti<float>(igenjetmass_,gj.mass());
+  vector<int> filledIndex;
+  int curGenIndex = -1;
+  if(options_ & LOADGEN){
+    const reco::GenJetCollection& genJets = fillReGenJets_ ? (*reGenJets_.product()) : (*stdGenJets_.product());
+    filledIndex.reserve(genJets.size());
+    for (const reco::Jet &j : genJets) {
+      if(j.pt() < jptMin_){ filledIndex.push_back(-1); continue;}
+      filledIndex.push_back(++curGenIndex);
+      data.fillMulti<float>(igenjetpt_    ,j.pt());
+      data.fillMulti<float>(igenjeteta_   ,j.eta());
+      data.fillMulti<float>(igenjetphi_   ,j.phi());
+      data.fillMulti<float>(igenjetmass_  ,j.mass());
+      if(options_ & LOADJETSHAPE){
+        assert(evtInfofiller_->isLoaded());
+        qgTaggingVar_->compute(&j);
+        data.fillMulti<float>(igenjetptD_     ,qgTaggingVar_->getPtD());
+        data.fillMulti<float>(igenjetaxis1_   ,qgTaggingVar_->getAxis1());
+        data.fillMulti<float>(igenjetaxis2_   ,qgTaggingVar_->getAxis2());
+        data.fillMulti<float>(igenjetMult_    ,qgTaggingVar_->getTotalMult());
+      }
     }
   }
 
-  int index = -1;
-  for (const pat::Jet &j : *jets_) {
 
-#ifdef REDEFINED_GENJET_HACK
-    const reco::GenJetRef gJ = getStdGenJet(j);
-    if(j.pt() < jptMin_ && ((options_ & LOADGEN) ? (gJ.isNonnull() ? gJ->pt() : 0) < jptMin_ : true)) continue;
-#else
-    const reco::GenJet * gJ = fillGenInfo_ ? &(*getReGenJet(j)) : 0;
-    if(j.pt() < jptMin_ && (fillGenInfo_ ? gJ->pt() : 0) < jptMin_ : true) continue;
-#endif
-    index++;
+
+  for (const pat::Jet &j : *jets_) {
+    const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j) : getStdGenJet(j);
+    if(j.pt() < jptMin_) continue;
 
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
@@ -156,23 +188,15 @@ void JetFiller::fill()
     data.fillMulti<float>(ijetpuId_ ,j.userFloat("pileupJetId:fullDiscriminant"));
     data.fillMulti<float>(ijetcsv_  ,j.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags"));
 
-
     if(options_ & LOADGEN) {
       data.fillMulti<int>(ijetflavor_,j.partonFlavour());
       if(gJ.isNonnull()) {
-	data.fillMulti<float>(imatchedgenjetpt_    ,gJ->pt());
-	data.fillMulti<float>(imatchedgenjeteta_   ,gJ->eta());
-	data.fillMulti<float>(imatchedgenjetphi_   ,gJ->phi());
-	data.fillMulti<float>(imatchedgenjetmass_  ,gJ->mass());
-	data.fillMulti<int  >(imatchedgenjetflavor_,j.partonFlavour());
+        data.fillMulti<int>(ijetgenindex_,filledIndex[gJ.key()]);
       } else {
-        data.fillMulti<float>(imatchedgenjetpt_    );
-        data.fillMulti<float>(imatchedgenjeteta_   );
-        data.fillMulti<float>(imatchedgenjetphi_   );
-        data.fillMulti<float>(imatchedgenjetmass_  );
-        data.fillMulti<int  >(imatchedgenjetflavor_);
+        data.fillMulti<int>(ijetgenindex_   );
       }
     }
+
     if(options_ & LOADJETSHAPE){
       assert(evtInfofiller_->isLoaded());
       data.fillMulti<float>(ijetqgl_,qglInterface_->getDiscriminator(j,*evtInfofiller_->rho_));
@@ -182,24 +206,13 @@ void JetFiller::fill()
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
       data.fillMulti<int  >(ijetMult_    ,qgTaggingVar_->getTotalMult());
-      if(options_ & LOADGEN){
-        if(gJ.isNonnull()) {
-          qgTaggingVar_->compute(gJ.get());
-          data.fillMulti<float>(imatchedgenjetptD_     ,qgTaggingVar_->getPtD());
-          data.fillMulti<float>(imatchedgenjetaxis1_   ,qgTaggingVar_->getAxis1());
-          data.fillMulti<float>(imatchedgenjetaxis2_   ,qgTaggingVar_->getAxis2());
-          data.fillMulti<float>(imatchedgenjetMult_    ,qgTaggingVar_->getTotalMult());
-        } else {
-          data.fillMulti<float>(imatchedgenjetptD_  );
-          data.fillMulti<float>(imatchedgenjetaxis1_);
-          data.fillMulti<float>(imatchedgenjetaxis2_);
-          data.fillMulti<int  >(imatchedgenjetMult_ );
-        }
-      }
     }
+
   }
+
   isFilled_ = true;
 }
+
 
 //--------------------------------------------------------------------------------------------------
 const std::string   JetFiller::REGENJET           = "GenPtr";

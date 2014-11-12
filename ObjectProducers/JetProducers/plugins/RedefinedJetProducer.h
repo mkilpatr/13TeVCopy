@@ -25,12 +25,16 @@ public:
 
    static bool isPUParticle(const pat::PackedCandidate& p) {return p.fromPV() == 0; }
    static bool isNonPUParticle(const pat::PackedCandidate& p) {return !isPUParticle(p); }
+   void vetoGenPart(std::vector<bool>& vetoes) const;
 
 protected:
   const int isRealData;
   const bool produceGen;
+  const bool ignoreBosonInv;
+  const bool ignoreBSMInv;
   const bool producePU;
   const edm::InputTag src;
+  const edm::InputTag genMotherSrc;
   const edm::InputTag genSrc;
   const std::string jetAlgorithmName;
   const double rParameter;
@@ -41,6 +45,7 @@ protected:
 
   fastjet::JetAlgorithm jetAlgo;
   edm::Handle<pat::PackedCandidateCollection> pfCandidates;
+  edm::Handle<reco::GenParticle> genMotherParticles;
   edm::Handle<pat::PackedGenParticleCollection> genParticles;
   };
 

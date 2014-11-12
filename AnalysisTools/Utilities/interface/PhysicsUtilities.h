@@ -19,6 +19,11 @@ namespace ucsbsusy {
 
 namespace PhysicsUtilities{
 //_____________________________________________________________________________
+// Basic getters
+//_____________________________________________________________________________
+template<typename Thing>  static const Thing& get(Thing* const& thing)                    { return *thing; }
+template<typename Thing>  static const Thing& get(Thing        const& thing)              { return  thing; }
+//_____________________________________________________________________________
 // Angular properties
 //_____________________________________________________________________________
 inline double getEta(const double& eta)   { return eta;       }
@@ -233,7 +238,17 @@ template<typename Object>
 struct greaterPT : public std::binary_function<const Object&, const Object&, Bool_t> {
   Bool_t operator()(const Object& x, const Object& y) const { return x.pt() > y.pt(); }
 };
-
+template<typename T1, typename T2 = T1>
+struct DeltaR2 {
+  double operator()( const T1 & t1, const T2 & t2 ) const {
+    return deltaR2(t1, t2);
+  }
+};
+template<typename T1, typename T2>
+struct DeltaR2Deref {
+  double operator()( const T1& t1, const T2& t2 ) const { return deltaR2(t1, *t2);
+  }
+};
 
 //_____________________________________________________________________________
 // Number conversion
@@ -273,6 +288,61 @@ std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, 
   }
   return outObjs;
 }
+
+//_____________________________________________________________________________
+// Finding objects in a group
+//_____________________________________________________________________________
+/// Locates the given item in the list.
+template<typename Object1, typename Object2>
+int findIndex(const Object1* target, const std::vector<Object2>& items, size first = 0, size last = 0);
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2, typename Comparator, typename Distance>
+int findByDistance(Comparator comparator, Distance ruler, const Thing1& reference, const std::vector<Thing2>& objects,
+                          double& bestDistance, double maxDistance, const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+template<typename Thing1, typename Thing2, typename Comparator, typename Distance>
+int findByDistance(Comparator comparator, Distance ruler, const Thing1& reference, const Thing2& objects,
+                          double& bestDistance, double maxDistance, const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+int findNearestDR(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDR, double maxDeltaR = 1e308,
+                         const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+template<typename Thing1, typename Thing2>
+int findNearestDRDeref(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDR, double maxDeltaR = 1e308,
+                              const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+template<typename Thing1, typename Thing2>
+int findNearestDPhi(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDPhi, double maxDeltaPhi = 1e308,
+                           const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+template<typename T1, typename T2>
+struct AbsDeltaPhiDeref { double operator()( const T1& t1, const T2& t2 ) const { return absDeltaPhi(t1, *t2); } };
+template<typename Thing1, typename Thing2>
+int findNearestDPhiDeref(const Thing1& reference, const std::vector<Thing2>& objects, double& nearestDPhi, double maxDeltaPhi = 1e308,
+                                const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+int findFurthestDR(const Thing1& reference, const std::vector<Thing2>& objects, double& furthestDR, double minDeltaR = -1e308,
+                          const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+template<typename Thing1, typename Thing2>
+int findFurthestDPhi(const Thing1& reference, const std::vector<Thing2>& objects, double& furthestDR, double minDeltaR = -1e308,
+                            const double minPT = 0, const std::vector<bool>* vetoed = 0, int numObjects = -1);
+
+
+//_____________________________________________________________________________
+template<typename Thing1, typename Thing2>
+double getNearestDR(const Thing1& reference, const std::vector<Thing2>& objects, int thisIndex = -1, const double minPT = 0);
+
+//_____________________________________________________________________________
+template<typename Number>
+int sign(Number x) { return (x < 0 ? -1 : 1); }
+
 
 };
 }

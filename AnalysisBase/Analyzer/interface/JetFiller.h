@@ -35,6 +35,7 @@ class QuarkGluonTaggingVariables;
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
+          , const bool fillReGenJets
           , const double jptMin
           );
       ~JetFiller() {}
@@ -42,8 +43,9 @@ class QuarkGluonTaggingVariables;
       void load(const edm::Event& iEvent);
       void fill();
 
-      reco::GenJetRef getReGenJet(const pat::Jet& jet)  const;
+      reco::GenJetRef getReGenJet(const pat::Jet& jet, const bool enforce = false)  const;
       reco::GenJetRef getStdGenJet(const pat::Jet& jet) const;
+      reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const;
 
       static const std::string REGENJET;   // userClass label for the redefined genJet of the given jet
 
@@ -57,13 +59,10 @@ class QuarkGluonTaggingVariables;
       const edm::InputTag stdGenJetTag_;
 //      const edm::InputTag genParticleTag_;
       const double        jptMin_;
+      const bool          fillReGenJets_;
 
       // Members to hold index of most recently filled tree data
       // For standard genjets
-      size igenjetpt_    ;
-      size igenjeteta_   ;
-      size igenjetphi_   ;
-      size igenjetmass_  ;
       // For reco jets
       size ijetpt_       ;
       size ijeteta_      ;
@@ -73,12 +72,12 @@ class QuarkGluonTaggingVariables;
       size ijetpuId_     ;
       size ijetcsv_      ;
       size ijetflavor_   ;
+      size ijetgenindex_ ;
       // For genjets matched to reco jets
-      size imatchedgenjetpt_    ;
-      size imatchedgenjeteta_   ;
-      size imatchedgenjetphi_   ;
-      size imatchedgenjetmass_  ;
-      size imatchedgenjetflavor_;
+      size igenjetpt_    ;
+      size igenjeteta_   ;
+      size igenjetphi_   ;
+      size igenjetmass_  ;
       // For jetShape info
       size ijetbetaStar_;
       size ijetqgl_     ;
@@ -86,14 +85,17 @@ class QuarkGluonTaggingVariables;
       size ijetaxis1_   ;
       size ijetaxis2_   ;
       size ijetMult_    ;
-      size imatchedgenjetptD_   ;
-      size imatchedgenjetaxis1_ ;
-      size imatchedgenjetaxis2_ ;
-      size imatchedgenjetMult_  ;
+      size igenjetptD_   ;
+      size igenjetaxis1_ ;
+      size igenjetaxis2_ ;
+      size igenjetMult_  ;
 
     private:
       QuarkGluonTagInterface    * qglInterface_;
       QuarkGluonTaggingVariables* qgTaggingVar_;
+
+      mutable std::vector<reco::CandidatePtr>  reGenRecoRef_ ;
+      mutable std::vector<reco::CandidatePtr>  stdGenRecoRef_ ;
 
 
     public:
