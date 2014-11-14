@@ -24,25 +24,28 @@ namespace ucsbsusy {
       ~TreeReader();
 
       template<typename varType>
-      void setBranchAddress(const TString branchName, varType **var, bool require = false, bool verbose = true){
-        if(tree->GetBranch(branchName)){
-          tree->SetBranchStatus(branchName,1);
-          tree->SetBranchAddress(branchName,var);
+      void setBranchAddress(const std::string branchName, const std::string varName, varType **var, bool require = false, bool verbose = true){
+        TString tBranchName = (branchName == "" ? varName : branchName + "_" + varName).c_str();
+        if(tree->GetBranch(tBranchName)){
+          tree->SetBranchStatus(tBranchName,1);
+          tree->SetBranchAddress(tBranchName,var);
         }
         else {
-          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + branchName );
-          if(verbose)std::cout << " -" <<branchName;
+          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + tBranchName );
+          if(verbose)std::cout << " -" <<tBranchName;
         }
       }
+
       template<typename varType>
-      void setBranchAddress(const TString branchName, varType *var, bool require = false, bool verbose = true){
-        if(tree->GetBranch(branchName)){
-          tree->SetBranchStatus(branchName,1);
-          tree->SetBranchAddress(branchName,var);
+      void setBranchAddress(const std::string branchName, const std::string varName, varType *var, bool require = false, bool verbose = true){
+        TString tBranchName = (branchName == "" ? varName : branchName + "_" + varName).c_str();
+        if(tree->GetBranch(tBranchName)){
+          tree->SetBranchStatus(tBranchName,1);
+          tree->SetBranchAddress(tBranchName,var);
         }
         else {
-          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + branchName );
-          if(verbose)std::clog << " -" <<branchName;
+          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + tBranchName );
+          if(verbose)std::clog << " -" <<tBranchName;
         }
       }
 

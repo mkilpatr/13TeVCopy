@@ -46,20 +46,20 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
 
   if(options_ & LOADRECO){
     cout << "reco ";
-    treeReader->setBranchAddress((branchName + "_pt"          ).c_str(), &pt          , true);
-    treeReader->setBranchAddress((branchName + "_eta"         ).c_str(), &eta         , true);
-    treeReader->setBranchAddress((branchName + "_phi"         ).c_str(), &phi         , true);
-    treeReader->setBranchAddress((branchName + "_mass"        ).c_str(), &mass        , true);
-    treeReader->setBranchAddress((branchName + "_q").c_str(), &q                      , true);
-    treeReader->setBranchAddress((branchName + "_d0").c_str(), &d0                    , true);
-    treeReader->setBranchAddress((branchName + "_dz").c_str(), &dz                    , true);
-    treeReader->setBranchAddress((branchName + "_pfdbetaiso").c_str(), &pfdbetaiso    , true);
-    treeReader->setBranchAddress((branchName + "_isLoose").c_str(), &isloose          , true);
-    treeReader->setBranchAddress((branchName + "_isTight").c_str(), &istight          , true);
-    treeReader->setBranchAddress((branchName + "_isPF").c_str(), &ispf                , true);
-    treeReader->setBranchAddress((branchName + "_isGlobal").c_str(), &isglobal        , true);
-    treeReader->setBranchAddress((branchName + "_isTracker").c_str(), &istracker      , true);
-    treeReader->setBranchAddress((branchName + "_isStandAlone").c_str(), &isstandalone, true);
+    treeReader->setBranchAddress(branchName ,"pt"          , &pt          , true);
+    treeReader->setBranchAddress(branchName ,"eta"         , &eta         , true);
+    treeReader->setBranchAddress(branchName ,"phi"         , &phi         , true);
+    treeReader->setBranchAddress(branchName ,"mass"        , &mass        , true);
+    treeReader->setBranchAddress(branchName ,"q", &q                      , true);
+    treeReader->setBranchAddress(branchName ,"d0", &d0                    , true);
+    treeReader->setBranchAddress(branchName ,"dz", &dz                    , true);
+    treeReader->setBranchAddress(branchName ,"pfdbetaiso", &pfdbetaiso    , true);
+    treeReader->setBranchAddress(branchName ,"isLoose", &isloose          , true);
+    treeReader->setBranchAddress(branchName ,"isTight", &istight          , true);
+    treeReader->setBranchAddress(branchName ,"isPF", &ispf                , true);
+    treeReader->setBranchAddress(branchName ,"isGlobal", &isglobal        , true);
+    treeReader->setBranchAddress(branchName ,"isTracker", &istracker      , true);
+    treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";

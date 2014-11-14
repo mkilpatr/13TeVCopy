@@ -45,26 +45,26 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
 
   if(options_ & LOADRECO){
     clog << "reco ";
-    treeReader->setBranchAddress((branchName_ + "_jet_pt"    ).c_str(), &jetpt_    ,true);
-    treeReader->setBranchAddress((branchName_ + "_jet_eta"   ).c_str(), &jeteta_   ,true);
-    treeReader->setBranchAddress((branchName_ + "_jet_phi"   ).c_str(), &jetphi_   ,true);
-    treeReader->setBranchAddress((branchName_ + "_jet_mass"  ).c_str(), &jetmass_  ,true);
-    treeReader->setBranchAddress((branchName_ + "_jet_ptraw" ).c_str(), &jetptraw_ );
-    treeReader->setBranchAddress((branchName_ + "_jet_puId"  ).c_str(), &jetpuId_  );
-    treeReader->setBranchAddress((branchName_ + "_jet_csv"   ).c_str(), &jetcsv_   ,true);
-    treeReader->setBranchAddress((branchName_ + "_jet_flavor").c_str(), &jetflavor_);
+    treeReader->setBranchAddress(branchName_, "et_pt"    , &jetpt_    ,true);
+    treeReader->setBranchAddress(branchName_, "et_eta"   , &jeteta_   ,true);
+    treeReader->setBranchAddress(branchName_, "et_phi"   , &jetphi_   ,true);
+    treeReader->setBranchAddress(branchName_, "et_mass"  , &jetmass_  ,true);
+    treeReader->setBranchAddress(branchName_, "et_ptraw" , &jetptraw_ );
+    treeReader->setBranchAddress(branchName_, "et_puId"  , &jetpuId_  );
+    treeReader->setBranchAddress(branchName_, "et_csv"   , &jetcsv_   ,true);
+    treeReader->setBranchAddress(branchName_, "et_flavor", &jetflavor_);
   }
   if(options_ & LOADGEN){
     clog << "gen ";
-    treeReader->setBranchAddress((branchName_+"_matchedgenjet_pt"    ).c_str(), &genjetpt_    ,true);
-    treeReader->setBranchAddress((branchName_+"_matchedgenjet_eta"   ).c_str(), &genjeteta_   ,true);
-    treeReader->setBranchAddress((branchName_+"_matchedgenjet_phi"   ).c_str(), &genjetphi_   ,true);
-    treeReader->setBranchAddress((branchName_+"_matchedgenjet_mass"  ).c_str(), &genjetmass_  ,true);
-    treeReader->setBranchAddress((branchName_+"_matchedgenjet_flavor").c_str(), &genjetflavor_,true);
+    treeReader->setBranchAddress(branchName_,"matchedgenjet_pt"    , &genjetpt_    ,true);
+    treeReader->setBranchAddress(branchName_,"matchedgenjet_eta"   , &genjeteta_   ,true);
+    treeReader->setBranchAddress(branchName_,"matchedgenjet_phi"   , &genjetphi_   ,true);
+    treeReader->setBranchAddress(branchName_,"matchedgenjet_mass"  , &genjetmass_  ,true);
+    treeReader->setBranchAddress(branchName_,"matchedgenjet_flavor", &genjetflavor_,true);
   }
   if(options_ & LOADJETSHAPE){
     clog << "jetshape ";
-    treeReader->setBranchAddress((branchName_+"_jet_qgl"    ).c_str(), &jetqgl_    );
+    treeReader->setBranchAddress(branchName_,"_jet_qgl", &jetqgl_    );
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";

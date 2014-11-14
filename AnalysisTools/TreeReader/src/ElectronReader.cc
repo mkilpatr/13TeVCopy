@@ -48,22 +48,22 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
 
   if(options_ & LOADRECO){
     clog << "reco ";
-    treeReader->setBranchAddress((branchName + "_pt"          ).c_str(), &pt          , true);
-    treeReader->setBranchAddress((branchName + "_eta"         ).c_str(), &eta         , true);
-    treeReader->setBranchAddress((branchName + "_phi"         ).c_str(), &phi         , true);
-    treeReader->setBranchAddress((branchName + "_mass"        ).c_str(), &mass        , true);
-    treeReader->setBranchAddress((branchName + "_q"           ).c_str(), &q           , true);
-    treeReader->setBranchAddress((branchName + "_SCeta"       ).c_str(), &scEta       , true);
-    treeReader->setBranchAddress((branchName + "_r9"          ).c_str(), &r9          , true);
-    treeReader->setBranchAddress((branchName + "_d0"          ).c_str(), &d0          , true);
-    treeReader->setBranchAddress((branchName + "_dz"          ).c_str(), &dz          , true);
-    treeReader->setBranchAddress((branchName + "_pfdbetaiso"  ).c_str(), &pfdbetaiso  , true);
-    treeReader->setBranchAddress((branchName + "_mvaidnontrig").c_str(), &mvaidnontrig, true);
-    treeReader->setBranchAddress((branchName + "_mvaidtrig"   ).c_str(), &mvaidtrig   , true);
-    treeReader->setBranchAddress((branchName + "_vetoid"      ).c_str(), &isveto      , true);
-    treeReader->setBranchAddress((branchName + "_looseid"     ).c_str(), &isloose     , true);
-    treeReader->setBranchAddress((branchName + "_mediumid"    ).c_str(), &ismedium    , true);
-    treeReader->setBranchAddress((branchName + "_tightid"     ).c_str(), &istight     , true);
+    treeReader->setBranchAddress(branchName , "pt"          , &pt          , true);
+    treeReader->setBranchAddress(branchName , "eta"         , &eta         , true);
+    treeReader->setBranchAddress(branchName , "phi"         , &phi         , true);
+    treeReader->setBranchAddress(branchName , "mass"        , &mass        , true);
+    treeReader->setBranchAddress(branchName , "q"           , &q           , true);
+    treeReader->setBranchAddress(branchName , "SCeta"       , &scEta       , true);
+    treeReader->setBranchAddress(branchName , "r9"          , &r9          , true);
+    treeReader->setBranchAddress(branchName , "d0"          , &d0          , true);
+    treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
+    treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
+    treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
+    treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
+    treeReader->setBranchAddress(branchName , "vetoid"      , &isveto      , true);
+    treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
+    treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
+    treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
