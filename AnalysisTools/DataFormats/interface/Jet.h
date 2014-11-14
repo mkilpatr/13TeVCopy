@@ -77,8 +77,8 @@ public :
       :Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor), csv_(inCSV), genJet_(inGenJet) {}
   ~RecoJet(){}
 
-  const int& flavor()        const { return flavor_;}
-  const float& csv()         const { return csv_;   }
+  int flavor()        const { return flavor_;}
+  float csv()         const { return csv_;   }
   const GenJet<CoordSystem>&  genJet()        const { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;  }
   GenJet<CoordSystem>&        genJet()        { return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());  }
 
