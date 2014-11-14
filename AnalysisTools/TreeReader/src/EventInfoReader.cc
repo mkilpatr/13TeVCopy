@@ -21,6 +21,7 @@ EventInfoReader::EventInfoReader()
   lumi = 0;
   event = 0;
   nPV = 0;
+  rho = 0;
   pvx = 0;
   pvy = 0;
   pvz = 0;
@@ -37,10 +38,11 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress("","lumi", &lumi);
   treeReader->setBranchAddress("","event", &event);
   treeReader->setBranchAddress("","npv", &nPV);
+  treeReader->setBranchAddress("","rho", &rho);
   treeReader->setBranchAddress("","pv_x", &pvx);
   treeReader->setBranchAddress("","pv_y", &pvy);
   treeReader->setBranchAddress("","pv_z", &pvz);
-  treeReader->setBranchAddress("","met", &met_pt);
+  treeReader->setBranchAddress("","met_pt", &met_pt);
   treeReader->setBranchAddress("","met_phi", &met_phi);
   treeReader->setBranchAddress("","met_sumEt", &metsumEt);
 }
