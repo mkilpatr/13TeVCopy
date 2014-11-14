@@ -14,9 +14,9 @@ namespace ucsbsusy {
           , const bool fillReGenJets
           , const double jptMin
           );
-      ~RecoJetFiller() {}
+      virtual ~RecoJetFiller() {}
 
-      void load(const edm::Event& iEvent);
+      virtual void load(const edm::Event& iEvent);
 
       reco::GenJetRef getReGenJet(const reco::PFJet& jet,const int index = -1, const bool enforce = false)  const;
       reco::GenJetRef getStdGenJet(const reco::PFJet& jet) const;
