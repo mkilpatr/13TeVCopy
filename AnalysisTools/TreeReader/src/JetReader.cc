@@ -108,7 +108,7 @@ void JetReader::refresh(){
     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
      GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
       recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
-          &(*jetcsv_)[iJ], (options_ & LOADGEN) ? &jetflavor_->at(iJ) : 0, matchedGen);
+          (*jetcsv_)[iJ], (options_ & LOADGEN) ? jetflavor_->at(iJ) : -1, matchedGen);
     }
   }
 }
