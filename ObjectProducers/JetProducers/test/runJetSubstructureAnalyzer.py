@@ -37,13 +37,28 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
+SplittinessConfig = cms.PSet( mvaVsDirtyDecluster = cms.string("data/decluster_pruning_discriminator_bdt.root:MVAvsDirty_m_dij_z")
+                            , mvaVsMixedDecluster = cms.string("data/decluster_splitting_discriminator_bdt.root:MVAvsMixed_m_t1_t2_t3_t4_dij_cE_sE")
+                            , mvaVsDirtyNsubjetti = cms.string("data/nsubjettiness_pruning_discriminator_bdt.root:MVAvsDirty_pu2_pt2_hP_lP_c_dr")
+                            , mvaVsMixedNsubjetti = cms.string("data/nsubjettiness_splitting_discriminator_bdt.root:MVAvsMixed_m_hP_lP_min_lL_hL_mL_t1_t2_dr")
+                            , mvaVsJunkSubjets    = cms.string("data/subjet_trimming_discriminator_bdt.root:MVAtoTrim_nSub_sDR_sM_rPT_pt")
+                            , partonSpreadFile    = cms.string("data/parton_spread_dr.root")
+                            , puRhoDependence     = cms.string("data/rho_eta_dependence.root:pileUpDistribution")
+
+                            , beta                = cms.double(1)
+                            , rCutoff             = cms.double(10000)
+                            , nSubAxes            = cms.string("1passKT")
+                            )
+
+
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import *
 process.analyzer = cms.EDFilter('JetSubstructureAnalyzer',
+  SplittinessConfig,
   nominal_configuration
 )
 process.analyzer.minJetPt          = 30.0
 
 from ObjectProducers.JetProducers.redefined_jet_producers_cfi import *
 process.redCA1 = redCA1
-
+process.redCA1.producePU       = True
 process.p = cms.Path(process.redCA1 *  process.analyzer)

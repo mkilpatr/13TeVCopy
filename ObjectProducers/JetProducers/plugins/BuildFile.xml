@@ -1,4 +1,5 @@
 <use name="AnalysisTools/Utilities"/>
+<use name="AnalysisBase/Analyzer"/>
 <use name="ObjectProducers/JetProducers"/>
 <library   name="ObjectProducersJetProducerPlugins" file="*.cc">
 </library>
