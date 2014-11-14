@@ -4,6 +4,7 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="RecoJets/JetProducers"/>
+<use name="ObjectProducers/PickyJetUtilities"/>
 <export>
   <lib   name="1"/>
 </export>
