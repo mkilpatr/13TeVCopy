@@ -31,7 +31,7 @@ namespace ucsbsusy {
           tree->SetBranchAddress(tBranchName,var);
         }
         else {
-          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + tBranchName );
+          if(require) throw std::invalid_argument(( TString("TreeReader::setBranchAddress could not load variable: " ) + tBranchName).Data() );
           if(verbose)std::cout << " -" <<tBranchName;
         }
       }
@@ -44,7 +44,7 @@ namespace ucsbsusy {
           tree->SetBranchAddress(tBranchName,var);
         }
         else {
-          if(require) throw (TString("TreeReader::setBranchAddress could not load variable: ") + tBranchName );
+          if(require) throw std::invalid_argument(( TString("TreeReader::setBranchAddress could not load variable: " ) + tBranchName).Data() );
           if(verbose)std::clog << " -" <<tBranchName;
         }
       }
