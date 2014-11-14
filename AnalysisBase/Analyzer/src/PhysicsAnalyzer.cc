@@ -32,7 +32,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 }
 
 //--------------------------------------------------------------------------------------------------
-PhysicsAnalyzer::~PhysicsAnalyzer() {}
+PhysicsAnalyzer::~PhysicsAnalyzer() {for(auto f : initializedFillers) delete f; }
 
 //--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::beginJob() {}
