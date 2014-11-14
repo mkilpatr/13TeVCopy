@@ -38,6 +38,8 @@ protected :
 
 
 };
+typedef GenParticle<CylLorentzCoordF> GenParticleF;
+typedef std::vector<GenParticleF>     GenParticleFCollection;
 }
 
 #endif
