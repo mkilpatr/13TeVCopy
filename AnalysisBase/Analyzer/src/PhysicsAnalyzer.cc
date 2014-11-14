@@ -73,7 +73,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
     }
     case GENPARTICLES : {
       int defaultOptions = GenParticleFiller::defaultOptions | (cfg.getUntrackedParameter<bool>("saveAllGenParticles") ? GenParticleFiller::SAVEALL : GenParticleFiller::NULLOPT);
-      genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options, branchName == "" ? "gen" : branchName,
+      genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName,
           cfg.getParameter<edm::InputTag>("prunedGenParticles")
          );
       initializedFillers.push_back(genparticles);

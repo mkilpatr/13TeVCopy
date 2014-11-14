@@ -19,6 +19,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     lumi              (0),
     event             (0),
     nPV               (0),
+    rho               (0),
     nLeptons          (0),
     nTaus             (0),
     nJets             (0),
@@ -70,6 +71,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&tauReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TAUS : branchName );
       break;
     }
+    case GENPARTICLES : {
+      int defaultOptions = GenParticleReader::defaultOptions;
+      reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
+      break;
+    }
     default : {
       cout << endl << "No settings for type: " << type << " found!" << endl;
       break;
@@ -84,6 +90,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(ELECTRONS);
   load(MUONS);
   load(TAUS);
+  if(isMC()) load(GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
@@ -104,6 +111,7 @@ void BaseTreeAnalyzer::processVariables()
     lumi  = evtInfoReader.lumi;
     event = evtInfoReader.event;
     nPV   = evtInfoReader.nPV;
+    rho   = evtInfoReader.rho;
     met   = &evtInfoReader.met;
   }
 
@@ -158,6 +166,15 @@ void BaseTreeAnalyzer::processVariables()
   nTaus    = taus.size();
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+
+  if(genParticleReader.isLoaded()){
+    genParts.clear();
+    genParts.reserve(3);
+    for(auto& p : genParticleReader.thirdGenQuarks.particles) genParts.push_back(&p);
+    for(auto& p : genParticleReader.bosons.particles) genParts.push_back(&p);
+    for(auto& p : genParticleReader.bosonDaughters.particles) genParts.push_back(&p);
+  }
 
 }
 //--------------------------------------------------------------------------------------------------
