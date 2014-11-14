@@ -16,7 +16,7 @@ namespace ucsbsusy {
 
 //_____________________________________________________________________________
 template<typename Particle>
-void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& inputParticles, int status, double minInputPT, double maxInputEta, bool (*select)(const Particle&), std::vector<bool>* vetoes, double scale)
+void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& inputParticles, PRTTYPE type, int status, double minInputPT, double maxInputEta, bool (*select)(const Particle&), std::vector<bool>* vetoes, double scale)
 {
   particles.reserve(particles.size() + inputParticles->size());
   
@@ -35,7 +35,7 @@ void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& i
                                           , particle.pz    () * scale
                                           , particle.energy() * scale
                                           ));
-    particles.back().set_user_info(new UserInfo(inputParticles, iPtcl));
+    particles.back().set_user_info(new UserInfo(inputParticles, iPtcl,type));
   } // end loop over particles
 }
 
