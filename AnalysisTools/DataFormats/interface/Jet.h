@@ -11,6 +11,9 @@
 #ifndef ANALYSISTOOLS_DATAFORMATS_JET_H
 #define ANALYSISTOOLS_DATAFORMATS_JET_H
 
+
+#define FLVRECOASSOC
+
 #include <vector>
 #include <iostream>
 
@@ -46,7 +49,54 @@ protected :
   int	index_;  //Index in Jet vector
 
 };
+#ifdef FLVRECOASSOC
+template <class CoordSystem>
+class GenJet : public Jet<CoordSystem>
+{
+public :
+  GenJet() {}
 
+  template <class InputCoordSystem>
+  GenJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) : Jet<CoordSystem>(inMomentum, inIndex){};
+  ~GenJet(){}
+};
+
+typedef GenJet<CylLorentzCoordF> GenJetF;
+typedef std::vector<GenJetF> GenJetFCollection;
+
+template <class CoordSystem>
+class RecoJet : public Jet<CoordSystem>
+{
+public :
+
+  RecoJet() : flavor_(0), csv_(0), genJet_(0) {}
+
+  template <class InputCoordSystem>
+  RecoJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1,
+      float* inCSV = 0,int * inFlavor = 0, GenJet<CoordSystem>* inGenJet = 0)
+      :Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor), csv_(inCSV), genJet_(inGenJet) {}
+  ~RecoJet(){}
+
+  int flavor()               const { this->checkStorage(flavor_,"RecoJet.flavor()"); return *flavor_;   }
+  float csv()                const { this->checkStorage(csv_,"RecoJet.csv()"); return *csv_;   }
+  const GenJet<CoordSystem>&  genJet()        const { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;  }
+  GenJet<CoordSystem>&    genJet()        { return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());  }
+
+  void  setPtr(float* inCSV = 0, int* inFlavor = 0, GenJet<CoordSystem>* inGenJet = 0) { csv_ = inCSV; flavor_ = inFlavor; genJet_ = inGenJet;       }
+  void  setCsv(const float inCsv)          { this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv; }
+  void  setFlavor(const int inFlavor)          { this->checkStorage(flavor_,"RecoJet.setFlavor()"); (*flavor_) = inFlavor; }
+
+protected :
+  int * flavor_;
+  float*    csv_;     //pointer to csv information
+  GenJet<CoordSystem>*  genJet_;  //Matched genJet
+
+};
+
+typedef RecoJet<CylLorentzCoordF> RecoJetF;
+typedef std::vector<RecoJetF>   RecoJetFCollection;
+}
+#else
 template <class CoordSystem>
 class GenJet : public Jet<CoordSystem>
 {
@@ -57,10 +107,10 @@ public :
   GenJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1, int * inFlavor = 0) : Jet<CoordSystem>(inMomentum, inIndex), flavor_(inFlavor) {};
   ~GenJet(){}
 
-  int	flavor()	  	const	{ this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;		}
+  int flavor()      const { this->checkStorage(flavor_,"GenJet.flavor()"); return *flavor_;   }
 
-  void	setPtr(int * inFlavor)		{ flavor_ = inFlavor;	}
-  void	setFlavor(const int& inFlavor)	{ this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor;	}
+  void  setPtr(int * inFlavor)    { flavor_ = inFlavor; }
+  void  setFlavor(const int& inFlavor)  { this->checkStorage(flavor_,"GenJet.setflavor()"); (*flavor_) = inFlavor;  }
 
 protected :
   int * flavor_;
@@ -80,21 +130,22 @@ public :
   RecoJet(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1,float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), genJet_(inGenJet) {}
   ~RecoJet(){}
 
-  float	csv()							  const	{ this->checkStorage(csv_,"RecoJet.csv()"); return *csv_;		}
-  const GenJet<CoordSystem>&	genJet()			  const	{ this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;	}
-  GenJet<CoordSystem>&		genJet()				{ return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());	}
+  float csv()               const { this->checkStorage(csv_,"RecoJet.csv()"); return *csv_;   }
+  const GenJet<CoordSystem>&  genJet()        const { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;  }
+  GenJet<CoordSystem>&    genJet()        { return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());  }
 
-  void	setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0)	{ csv_ = inCSV; genJet_ = inGenJet;				}
-  void	setCsv(const float& inCsv)					{ this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv;	}
+  void  setPtr(float* inCSV = 0, GenJet<CoordSystem>* inGenJet = 0) { csv_ = inCSV; genJet_ = inGenJet;       }
+  void  setCsv(const float& inCsv)          { this->checkStorage(csv_,"RecoJet.setCsv()"); (*csv_) = inCsv; }
 
 protected :
-  float*		csv_;     //pointer to csv information
-  GenJet<CoordSystem>*	genJet_;  //Matched genJet
+  float*    csv_;     //pointer to csv information
+  GenJet<CoordSystem>*  genJet_;  //Matched genJet
 
 };
 
-typedef RecoJet<CylLorentzCoordF>	RecoJetF;
-typedef std::vector<RecoJetF>		RecoJetFCollection;
+typedef RecoJet<CylLorentzCoordF> RecoJetF;
+typedef std::vector<RecoJetF>   RecoJetFCollection;
 }
+#endif
 
 #endif
