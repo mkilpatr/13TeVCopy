@@ -8,8 +8,8 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_TREEREADER_JETREADER_H
-#define ANALYSISTOOLS_TREEREADER_JETREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_GENPARTICLEREADER_H
+#define ANALYSISTOOLS_TREEREADER_GENPARTICLEREADER_H
 
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"

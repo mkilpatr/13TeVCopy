@@ -42,7 +42,7 @@ void GenParticleReader::DataContainer::load(const std::string branchName,const s
   treeReader->setBranchAddress(branchName,collectionName + "_eta"     , &eta   ,true);
   treeReader->setBranchAddress(branchName,collectionName + "_phi"     , &phi   ,true);
   treeReader->setBranchAddress(branchName,collectionName + "_mass"    , &mass  ,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_stats"   , &status,true);
+  treeReader->setBranchAddress(branchName,collectionName + "_status"  , &status,true);
   treeReader->setBranchAddress(branchName,collectionName + "_pdgid"   , &pdgid ,true);
 }
 //--------------------------------------------------------------------------------------------------
