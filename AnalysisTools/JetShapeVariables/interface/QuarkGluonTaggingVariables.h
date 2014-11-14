@@ -53,11 +53,11 @@ class QuarkGluonTaggingVariables {
      const double l1 = ((m11 + m22) + lp)/2;
      const double l2 = ((m11 + m22) - lp)/2;
 
-     assert(l1 >= 0);
-     assert(l2 >= 0);
 
-     axis1_ = TMath::Sqrt(l1 / sumPT2);
-     axis2_ = TMath::Sqrt(l2 / sumPT2);
+
+
+     axis1_ = TMath::Sqrt((l1 < 0 ? 0 : l1) / sumPT2);
+     axis2_ = TMath::Sqrt((l2 < 0 ? 0 : l2) / sumPT2);
      ptD_ = TMath::Sqrt(sumPT2)/sumPT;
    }
 
