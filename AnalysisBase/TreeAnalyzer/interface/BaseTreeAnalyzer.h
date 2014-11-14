@@ -19,6 +19,7 @@
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
 
@@ -27,7 +28,7 @@ namespace ucsbsusy {
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS, ELECTRONS, MUONS, TAUS};
+    enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -89,11 +90,12 @@ namespace ucsbsusy {
     bool             isLoaded_;
     TreeReader       reader;        // default reader
   public:
-    EventInfoReader  evtInfoReader ;
-    JetReader        ak4Reader     ;
-    ElectronReader   electronReader;
-    MuonReader       muonReader    ;
-    TauReader        tauReader     ;
+    EventInfoReader   evtInfoReader         ;
+    JetReader         ak4Reader             ;
+    ElectronReader    electronReader        ;
+    MuonReader        muonReader            ;
+    TauReader         tauReader             ;
+    GenParticleReader genParticleReader     ;
 
   public:
     //--------------------------------------------------------------------------------------------------
@@ -103,6 +105,7 @@ namespace ucsbsusy {
     unsigned int  lumi;
     unsigned int  event;
     int   nPV;
+    float rho;
     int   nLeptons;
     int   nTaus;
     int   nJets;
@@ -111,12 +114,13 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     // Stored collections
     //--------------------------------------------------------------------------------------------------
-    MomentumF*               met     ;
-    std::vector<LeptonF*>    leptons ;
-    std::vector<TauF*>       taus    ;
-    std::vector<RecoJetF*>   jets    ;
-    std::vector<RecoJetF*>   bJets   ;
-    std::vector<RecoJetF*>   nonBJets;
+    MomentumF*                 met     ;
+    std::vector<LeptonF*>      leptons ;
+    std::vector<TauF*>         taus    ;
+    std::vector<RecoJetF*>     jets    ;
+    std::vector<RecoJetF*>     bJets   ;
+    std::vector<RecoJetF*>     nonBJets;
+    std::vector<GenParticleF*> genParts;
 
   protected:
     //--------------------------------------------------------------------------------------------------
