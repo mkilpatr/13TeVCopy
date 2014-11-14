@@ -18,3 +18,6 @@ TFile* FileUtilities::open(const char* path, const char option[], bool stopIfMis
     throw cms::Exception("BaseUtilities.open()", TString::Format("Failed to open '%s' for %s.", path, (file->IsWritable() ? "output" : "input")).Data());
   return file;
 }
+
+void FileUtilities::disassociateFromFile(TH1*         object)  { object->SetDirectory(0); }
+void FileUtilities::disassociateFromFile(TGraph2D*    object)  { object->SetDirectory(0); }

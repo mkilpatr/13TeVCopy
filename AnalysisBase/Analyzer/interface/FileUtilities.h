@@ -13,6 +13,8 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TSystem.h>
+#include <TH1.h>
+#include <TGraph2D.h>
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Utilities/interface/InputTag.h"
@@ -66,8 +68,16 @@ Object* getObject(TFile* file, const char* name, const char* alternative = 0, bo
 
 template<typename Object>
 Object* loadObject(TString objectPath, const char* configName = 0, const char* alternative = 0, bool stopIfMissing = true);
+
+void disassociateFromFile(TH1*         object);
+void disassociateFromFile(TGraph2D*    object);
+template<typename Object>
+void disassociateFromFile(Object*      object)  { }
+
 }
 }
+
+
 
 #include "AnalysisBase/Analyzer/src/FileUtilities.icc"
 

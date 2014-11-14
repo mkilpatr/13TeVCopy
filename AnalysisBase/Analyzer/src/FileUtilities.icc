@@ -92,6 +92,4 @@ Object* FileUtilities::loadObject(TString objectPath, const char* configName, co
 
   return object;
 }
-
-
 #endif
