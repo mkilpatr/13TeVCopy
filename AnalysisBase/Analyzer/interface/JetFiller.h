@@ -36,7 +36,7 @@ public:
   template<typename Jet>
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
-      JetFiller(const int options, const string branchName, const string genJetsBranchName, const EventInfoFiller * evtInfoFiller
+      JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
@@ -46,7 +46,7 @@ public:
       ~JetFiller() {}
 
       virtual void load(const edm::Event& iEvent);
-      void fill();
+      virtual void fill();
 
       virtual reco::GenJetRef getReGenJet(const Jet& jet,const int index = -1, const bool enforce = false) const  = 0;
       virtual reco::GenJetRef getStdGenJet(const Jet& jet) const = 0;

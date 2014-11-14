@@ -86,17 +86,17 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   //-- Cluster jets -----------------------------------------------------------
   FastJetClusterer                                    clusterer(true, true);
 
-  clusterer.addParticles<pat::PackedCandidate>(pfCandidates, -1, minParticlePT, maxParticleEta, &isNonPUParticle,0 );
+  clusterer.addParticles<pat::PackedCandidate>(pfCandidates,FastJetClusterer::RECO, -1, minParticlePT, maxParticleEta, &isNonPUParticle,0 );
   if(produceGen){
     vector<bool>* vetoes = 0;
     if(ignoreBosonInv || ignoreBSMInv){
       vetoes = new vector<bool>(genParticles->size(), false);
       vetoGenPart(*vetoes);
     }
-    clusterer.addParticles<pat::PackedGenParticle>( genParticles, -1, minParticlePT, maxParticleEta, 0,vetoes, 1e-50 );
+    clusterer.addParticles<pat::PackedGenParticle>( genParticles,FastJetClusterer::GEN, -1, minParticlePT, maxParticleEta, 0,vetoes, 1e-50 );
     delete vetoes;
   }
-  if (producePU)  clusterer.addParticles<pat::PackedCandidate>( pfCandidates , -1 , minParticlePT, maxParticleEta,&isPUParticle,0, 1e-50);
+  if (producePU)  clusterer.addParticles<pat::PackedCandidate>( pfCandidates ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,&isPUParticle,0, 1e-50);
 
   clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
 
@@ -170,8 +170,7 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
   if(producePU){
     //-- Associate PU in recoJets -----------------------------------------------
-    std::vector<reco::CandidatePtr>                     vPUPtr(puInJets->size());
-    edm::OrphanHandle<reco::PFJetCollection>            puJetsHandle  = iEvent.put(puInJets, "PU");
+    std::vector<reco::CandidatePtr>                     vPUPtr(puJetsHandle->size());
     for (unsigned int iPU = 0; iPU < vPUPtr.size(); ++iPU)
       vPUPtr[iPU]                                       = reco::CandidatePtr(puJetsHandle, iPU);
 

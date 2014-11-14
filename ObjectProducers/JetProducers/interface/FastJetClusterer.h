@@ -31,11 +31,13 @@ class FastJetClusterer
 /*   Supporting Types    */
 /*************************/
 public:
+  enum PRTTYPE {RECO,GEN,PU};
   class UserInfo : public fastjet::PseudoJet::UserInfoBase, public reco::CandidatePtr {
   public:
+    PRTTYPE type;
     template<typename ParticleCollection>
-    UserInfo(const ParticleCollection& inputParticles, unsigned int index)
-      : reco::CandidatePtr(inputParticles, index)
+    UserInfo(const ParticleCollection& inputParticles, const unsigned int index, const PRTTYPE type_)
+      : reco::CandidatePtr(inputParticles, index), type(type_)
     { }
   };
   
@@ -75,6 +77,7 @@ public:
   virtual ~FastJetClusterer();
   template<typename Particle>
   void addParticles ( const edm::Handle<std::vector<Particle> >& inputParticles
+      , PRTTYPE                       type
       , int                           status        = -1
       , double                        minInputPT    = 0
       , double                        maxInputEta   = 5

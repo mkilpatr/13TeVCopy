@@ -1,0 +1,146 @@
+/**
+  @file         Splittiness.cc
+  @author       Sue Ann Koay (sakoay@cern.ch)
+*/
+
+
+#include <fastjet/GridJetPlugin.hh>
+#include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+
+using namespace ucsbsusy;
+//=============================================================================
+//    Services
+//=============================================================================
+
+
+#if 0
+//_____________________________________________________________________________
+template<typename Particle>
+CartLorentzVector Splittiness::computePileUp(const std::vector<Particle>& ghosts, double rho) const
+{
+  CartLorentzVector             sumPileUp;
+  for (size iGhost = 0; iGhost < ghosts.size(); ++iGhost) {
+    const PopulationF*          l1FastInfo  = l1FastPFchs->get( EventAnalyzer::get(ghosts[iGhost]).eta() );
+    const double                l1FastRho   = l1FastInfo->getBinContent(1) + rho * (l1FastInfo->getBinContent(2) + l1FastInfo->getBinContent(3) * rho);
+    
+    assert(l1FastInfo);
+    assert(EventAnalyzer::get(ghosts[iGhost]).area());
+    CylLorentzVector            puP4( EventAnalyzer::get(ghosts[iGhost]).area() * l1FastRho
+                                    , EventAnalyzer::get(ghosts[iGhost]).eta()
+                                    , EventAnalyzer::get(ghosts[iGhost]).phi()
+                                    , 0
+                                    );
+    addTo(sumPileUp, puP4);
+  } // end loop over ghosts
+
+  return sumPileUp;
+}
+
+//_____________________________________________________________________________
+template<typename Particle>
+CartLorentzVector Splittiness::expectedPFchsPileUp(const std::vector<Particle>& junks, double rho, double* sumPFchsPT) const
+{
+  CartLorentzVector             sumPileUp;
+  if (sumPFchsPT)              *sumPFchsPT  = 0;
+
+  for (size iJunk = 0; iJunk < junks.size(); ++iJunk) {
+    const PopulationF*          l1CHSInfo   = l1FastPFchs->get( EventAnalyzer::get(junks[iJunk]).eta() );
+    const double                l1CHSRho    = l1CHSInfo->getBinContent(1) + rho * (l1CHSInfo->getBinContent(2) + l1CHSInfo->getBinContent(3) * rho);
+    const PopulationF*          l1AllInfo   = l1FastPFall->get( EventAnalyzer::get(junks[iJunk]).eta() );
+    const double                l1AllRho    = l1AllInfo->getBinContent(1) + rho * (l1AllInfo->getBinContent(2) + l1AllInfo->getBinContent(3) * rho);
+    
+    CylLorentzVector            puP4( EventAnalyzer::get(junks[iJunk]).pt() / (l1AllRho/l1CHSRho - 1)
+                                    , EventAnalyzer::get(junks[iJunk]).eta()
+                                    , EventAnalyzer::get(junks[iJunk]).phi()
+                                    , 0
+                                    );
+    if (sumPFchsPT)            *sumPFchsPT += puP4.pt();
+    addTo(sumPileUp, puP4);
+  } // end loop over junks
+
+  return sumPileUp;
+}
+#endif
+
+//_____________________________________________________________________________
+template<typename Particles>
+void Splittiness::computeMedianPU ( const Particles& particles, double& rhoPT, double& rhoMass, double maxParticleEta, double maxPatchEta
+                                  , double rParameter, double ghostArea, size ignoreNHardest, std::vector<PUPatchInfo>* patchInfos
+                                  , const std::vector<bool>* selected
+                                  )
+{
+  //-- Cluster event into patches ---------------------------------------------
+  FastJetClusterer                        clusterer(rParameter > 0);
+  clusterer  .addParticles( particles, -1, 0, maxParticleEta, 0, selected );
+
+  double                                  patchArea   = -9;
+  if (rParameter > 0)
+    clusterer.clusterJets ( fastjet::kt_algorithm, rParameter, 0, maxParticleEta, ghostArea );
+  else {
+    fastjet::GridJetPlugin*               plugin      = new fastjet::GridJetPlugin(maxParticleEta, -rParameter);
+    clusterer.clusterJets ( plugin );
+    patchArea                             = sqr(plugin->R()) * fastjet::pi;
+  }
+
+  const std::vector<fastjet::PseudoJet>&  patches     = clusterer.getJets();
+  if (patches.empty()) {
+    rhoPT                                 = 0;
+    rhoMass                               = 0;
+    return;
+  }
+
+
+  //-- Compute rho's per patch ------------------------------------------------
+  std::vector<double>                     patchPTs, patchDMasses;
+  patchPTs    .reserve(patches.size());
+  patchDMasses.reserve(patches.size());
+  if (patchInfos)   patchInfos->reserve(patches.size());
+
+  for (size iPatch = 0; iPatch < patches.size(); ++iPatch) {
+    if (TMath::Abs(patches[iPatch].eta()) > maxPatchEta)  continue;
+
+    const std::vector<fastjet::PseudoJet> particles   = patches[iPatch].constituents();
+    double                                sumPT       = 0;
+    double                                sumDMass    = 0;
+
+    for (size iPtcl = 0; iPtcl < particles.size(); ++iPtcl) {
+      const fastjet::PseudoJet&           particle    = particles[iPtcl];
+      const reco::PFCandidate*            pfCandidate = dynamic_cast<const reco::PFCandidate*>( particle.user_info<FastJetClusterer::UserInfo>().get() );
+      assert(pfCandidate);
+
+      const double                        mass        = pfCandidate->particleId() == reco::PFCandidate::h_HF
+                                                      ? ParticleInfo::poleMass(ParticleInfo::p_piplus)
+                                                      : pfCandidate->particleId() == reco::PFCandidate::egamma_HF
+                                                      ? 0.
+                                                      : ParticleInfo::poleMass(pfCandidate->pdgId())
+                                                      ;
+      sumPT                              += particle.pt();
+      sumDMass                           += sqrt(mass*mass + particle.pt2()) - particle.pt();
+    } // end loop over particles
+
+    const double                          area        = ( patchArea < 0 ? patches[iPatch].area() : patchArea );
+    patchPTs    .push_back( sumPT    / area );
+    patchDMasses.push_back( sumDMass / area );
+
+    if (patchInfos)
+      patchInfos->push_back({ patches[iPatch] .eta()
+                            , patchPTs        .back()
+                            , patchDMasses    .back()
+                            });
+  } // end loop over jets
+
+
+  //-- Compute median rho's ---------------------------------------------------
+  const int                               iMedian     = ( patchPTs.size() > 2 * ignoreNHardest
+                                                        ? patchPTs.size() - ignoreNHardest
+                                                        : patchPTs.size()
+                                                        )
+                                                        / 2
+                                                        ;
+  std::nth_element( patchPTs    .begin(), patchPTs    .begin()+iMedian, patchPTs    .end() );
+  std::nth_element( patchDMasses.begin(), patchDMasses.begin()+iMedian, patchDMasses.end() );
+  rhoPT                                   = patchPTs    [iMedian];
+  rhoMass                                 = patchDMasses[iMedian];
+}
