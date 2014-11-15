@@ -33,7 +33,7 @@ public:
 
 ///Analysis code ran in every event is put here .... must be defined
   void runEvent(){
-    cout << "MET= " << met->pt() << ": number of vertices = " << nPV() << endl;
+    cout << "MET= " << met->pt() << ": number of vertices = " << nPV << endl;
     for(const auto* jet : (jets)){
       cout << "Jet " << ": pt = " << jet->pt() << "; eta = " << jet->eta() << "; phi = " << jet->phi()<<endl;
     }
