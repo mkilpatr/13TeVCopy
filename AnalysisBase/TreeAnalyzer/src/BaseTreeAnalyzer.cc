@@ -189,10 +189,6 @@ void BaseTreeAnalyzer::analyze(int reportFrequency)
   }
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodJet(const RecoJetF& jet) const {
-  return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);
-}
-//--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
   return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
 }

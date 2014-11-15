@@ -76,7 +76,8 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
-    bool isGoodJet     (const RecoJetF& jet) const;
+    template <typename Jet>
+    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
     bool isGoodElectron(const ElectronF& electron) const;

@@ -50,7 +50,7 @@ void GenParticleReader::DataContainer::refresh(){
   particles.clear();
   particles.reserve(pt->size());
   for(unsigned int iJ = 0; iJ < pt->size(); ++iJ)
-    particles.emplace_back(CylLorentzVectorF(pt->at(iJ),pt->at(iJ),pt->at(iJ),pt->at(iJ)),iJ,
+    particles.emplace_back(CylLorentzVectorF(pt->at(iJ),eta->at(iJ),phi->at(iJ),mass->at(iJ)),iJ,
         status->at(iJ),pdgid->at(iJ)
     );
 }

@@ -111,7 +111,7 @@ void JetFiller<Jet>::fill()
         data.fillMulti<float>(igenjetptD_     ,qgTaggingVar_->getPtD());
         data.fillMulti<float>(igenjetaxis1_   ,qgTaggingVar_->getAxis1());
         data.fillMulti<float>(igenjetaxis2_   ,qgTaggingVar_->getAxis2());
-        data.fillMulti<float>(igenjetMult_    ,qgTaggingVar_->getTotalMult());
+        data.fillMulti<int  >(igenjetMult_    ,qgTaggingVar_->getTotalMult());
       }
     }
   }

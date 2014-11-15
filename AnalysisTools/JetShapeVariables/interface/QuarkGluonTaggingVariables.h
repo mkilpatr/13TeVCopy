@@ -44,9 +44,9 @@ class QuarkGluonTaggingVariables {
        double dEta = PhysicsUtilities::deltaEta(*daughter,*jet);
        double dPhi = PhysicsUtilities::deltaPhi(*daughter,*jet);
 
-       m11 += sumPT2*dEta*dEta;
-       m22 += sumPT2*dPhi*dPhi;
-       m12 += sumPT2*dPhi*dEta;
+       m11 += pT*pT*dEta*dEta;
+       m22 += pT*pT*dPhi*dPhi;
+       m12 += pT*pT*dPhi*dEta;
      }
 
      const double lp = TMath::Sqrt(4*m12*m12 + (m11 - m22)*(m11 - m22) );
