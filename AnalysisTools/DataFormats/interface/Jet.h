@@ -49,6 +49,9 @@ protected :
   int	index_;  //Index in Jet vector
 
 };
+
+typedef Jet<CylLorentzCoordF> JetF;
+
 #ifdef FLVRECOASSOC
 template <class CoordSystem>
 class GenJet : public Jet<CoordSystem>
@@ -79,8 +82,8 @@ public :
 
   int flavor()        const { return flavor_;}
   float csv()         const { return csv_;   }
-  const GenJet<CoordSystem>&  genJet()        const { this->checkStorage(genJet_,"RecoJet.genJet()"); return *genJet_;  }
-  GenJet<CoordSystem>&        genJet()        { return const_cast<GenJet<CoordSystem>&>(static_cast<const RecoJet<CoordSystem>*>(this)->genJet());  }
+  const GenJet<CoordSystem>*  genJet()        const { return genJet_;  }
+  GenJet<CoordSystem>*        genJet()        { return genJet_;  }
 
   void  setPtr(GenJet<CoordSystem>* inGenJet = 0) { genJet_ = inGenJet;       }
   void  setCsv(const float inCsv)               {csv_ = inCsv; }
