@@ -5,6 +5,7 @@
 #include <vector>
 #include <assert.h>
 
+#include "AnalysisTools/Utilities/interface/TreeWriter.h"
 
 namespace ucsbsusy {
 class TreeWriter;
