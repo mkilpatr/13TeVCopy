@@ -121,13 +121,13 @@ void Analyzer::out(TString outputName, TString outputPath)
 }
 
 // Process file belonging to specified sample with a given cross section
-void processSingleLepton(TString sname,                        // sample name
+void processSingleLepton(TString sname = "test",               // sample name
                          const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
                          const bool isMC = true,               // data or MC
                          const TString fname = "evttree.root", // path of file to be processed
                          const double xsec = 1.0,              // cross section to be used with this file
                          const TString outputdir = "run/plots",    // directory to which files with histograms will be written
-                         const TString fileprefix = "root://cmseos:1094//eos/uscms/") // prefix for file name, needed e.g. to access files with xrootd
+                         const TString fileprefix = "file://$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
