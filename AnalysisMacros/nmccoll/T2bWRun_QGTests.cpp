@@ -1,3 +1,7 @@
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/processQGInvestigations.C+("ZnunuQGTree.root")'
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/flattenQGTree.C+("ZnunuQGTree.root","TestAnalyzer/Events","ZnunuQGTree_flatGen.root",false)'
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/flattenQGTree.C+("ZnunuQGTree.root","TestAnalyzer/Events","ZnunuQGTree_flatReco.root",true)'
+
    //Q/G plots                              
 {
    Plot::cache("13TeV.root");
