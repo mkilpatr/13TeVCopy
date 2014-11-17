@@ -29,6 +29,7 @@ namespace ucsbsusy {
         if(tree->GetBranch(tBranchName)){
           tree->SetBranchStatus(tBranchName,1);
           tree->SetBranchAddress(tBranchName,var);
+          branchList[(*var)] = tBranchName;
         }
         else {
           if(require) throw std::invalid_argument(( TString("TreeReader::setBranchAddress could not load variable: " ) + tBranchName).Data() );
@@ -42,11 +43,18 @@ namespace ucsbsusy {
         if(tree->GetBranch(tBranchName)){
           tree->SetBranchStatus(tBranchName,1);
           tree->SetBranchAddress(tBranchName,var);
+          branchList[var] = tBranchName;
         }
         else {
           if(require) throw std::invalid_argument(( TString("TreeReader::setBranchAddress could not load variable: " ) + tBranchName).Data() );
           if(verbose)std::clog << " -" <<tBranchName;
         }
+      }
+
+      std::string getBranchName(const void * var) const {
+        std::map<const void *,std::string>::const_iterator it = branchList.find(var);
+        if(it == branchList.end()) return "";
+        else return it->second;
       }
 
       //load a new reader
@@ -64,6 +72,7 @@ namespace ucsbsusy {
       TFile * file;
       TTree * tree;
       std::vector<BaseReader*> readers; //List of loaded readers
+      std::map<const void *,std::string> branchList;
 
   };
 
