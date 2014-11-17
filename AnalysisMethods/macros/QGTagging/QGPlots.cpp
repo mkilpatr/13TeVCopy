@@ -2,6 +2,10 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/Ana
 root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/flattenQGTree.C+("ZnunuQGTree.root","TestAnalyzer/Events","ZnunuQGTree_flatGen.root",false)'
 root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/flattenQGTree.C+("ZnunuQGTree.root","TestAnalyzer/Events","ZnunuQGTree_flatReco.root",true)'
 
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/produceQGMVA.C+("ZnunuQGTree_flatGen.root","Events","QGDisc_gen.root",false)'
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/QGTagging/produceQGMVA.C+("ZnunuQGTree_flatReco.root","Events","QGDisc_reco.root",true)'
+
+
    //Q/G plots                              
 {
    Plot::cache("13TeV.root");
