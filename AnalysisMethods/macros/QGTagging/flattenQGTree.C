@@ -28,16 +28,18 @@ public:
   bool fillEvent() {
     if(reco){
       flv.resize(ak4Reader.jetpt_->size());
-      for(unsigned int iF = 0; iF < flv.size(); ++iF )
-        flv[iF] = U;
-      for(const auto& j : recoJets)
-        flv[j.origInd] = j.type;
+      for(unsigned int iF = 0; iF < flv.size(); ++iF ) flv[iF] = U;
+      for(const auto& j : recoJets) flv[j.origInd] = j.type;
+
+      absEta.resize(ak4Reader.jeteta_->size());
+      for(unsigned int iJ = 0; iJ < absEta.size(); ++iJ ) absEta[iJ] = TMath::Abs(ak4Reader.jeteta_->at(iJ));
     } else {
       flv.resize(ak4Reader.genjetpt_->size());
-      for(unsigned int iF = 0; iF < flv.size(); ++iF )
-        flv[iF] = U;
-      for(const auto& j : genJets)
-        flv[j.origInd] = j.type;
+      for(unsigned int iF = 0; iF < flv.size(); ++iF ) flv[iF] = U;
+      for(const auto& j : genJets) flv[j.origInd] = j.type;
+
+      absEta.resize(ak4Reader.genjeteta_->size());
+      for(unsigned int iJ = 0; iJ < absEta.size(); ++iJ ) absEta[iJ] = TMath::Abs(ak4Reader.genjeteta_->at(iJ));
     }
     return true;
   }
@@ -51,14 +53,14 @@ public:
       addLinkedMulti(ak4Reader.jetaxis2_,"F");
       addLinkedMulti(ak4Reader.jetMult_,"I");
       addLinkedMulti(ak4Reader.jetpt_,"F");
-      addLinkedMulti(ak4Reader.jeteta_,"F");
+      addLinkedMulti(&absEta,"ak4pfchs_jet_eta","F");
     } else {
       addLinkedMulti(ak4Reader.genjetptD_,"F");
       addLinkedMulti(ak4Reader.genjetaxis1_,"F");
       addLinkedMulti(ak4Reader.genjetaxis2_,"F");
       addLinkedMulti(ak4Reader.genjetMult_,"I");
       addLinkedMulti(ak4Reader.genjetpt_,"F");
-      addLinkedMulti(ak4Reader.genjeteta_,"F");
+      addLinkedMulti(&absEta,"ak4pfchs_genjet_eta","F");
     }
     addLinkedMulti(&flv,"flavor","I");
     addLinked(&evtInfoReader.rho,"F");
@@ -68,6 +70,7 @@ public:
 
   bool reco;
   vector<int> flv;
+  vector<float> absEta;
   std::vector<subJet> genJets ;
   std::vector<subJet> recoJets ;
 
