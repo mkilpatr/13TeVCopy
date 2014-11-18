@@ -27,3 +27,5 @@ correctedAK4PFJetsPuppi = cms.EDProducer('PFJetCorrectionProducer',
 
 puppiJetSequence = cms.Sequence(puppi * ak4PFJetsPuppi)
 puppiCorrJetSequence = cms.Sequence(puppiJetSequence * correctedAK4PFJetsPuppi)
+
+# to be added later : btagging

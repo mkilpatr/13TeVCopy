@@ -21,7 +21,7 @@ namespace ucsbsusy {
       reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const;
 
       int   getPartonFlavor(const pat::Jet& jet) const {return jet.partonFlavour();}
-      float getJecUncorrection(const pat::Jet& jet) const { return jet.jecFactor("Uncorrected");}
+      float getJecUncorrection(const pat::Jet& jet) const { return jet.pt()*jet.jecFactor("Uncorrected");}
       float getPUJetId(const pat::Jet& jet) const {return jet.userFloat("pileupJetId:fullDiscriminant");}
       float getbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("combinedInclusiveSecondaryVertexBJetTags");}
       float getQGDisc(const pat::Jet& jet) const{ return qglInterface_->getDiscriminator(jet,*evtInfofiller_->rho_);}
