@@ -99,6 +99,7 @@ public:
   {}
   virtual ~SubJetFiller() {delete recoJetVars; delete genJetVars;}
   virtual void load(const edm::Event& iEvent) {
+    reset();
     FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
     FileUtilities::enforceGet(iEvent,prtSrc_,pfCandidates,true);
     if(options_ & LOADGEN){
