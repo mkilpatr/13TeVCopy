@@ -210,6 +210,7 @@ public:
     data.fillMulti<float>(vars->splitDisc            );
     data.fillMulti<int  >(vars->shouldSplit          );
     }
+    PhysicsUtilities::trash(subJets);
 
 
   }
