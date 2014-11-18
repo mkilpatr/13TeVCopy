@@ -22,12 +22,12 @@ physicsAnalyzer_configuration = cms.PSet(
                                       )
 
 nominal_configuration = cms.PSet(
-                                      outputPath       = cms.untracked.string ('plots.root'), #give an output path if you want plotter to produce one
+                                      outputPath       = cms.untracked.string ("evttree.root"), #give an output path if you want plotter to produce one
                                       outputInterval   = cms.untracked.int32 (-9),            #how rewuesntly to update the outputfile
                                       randomSeed       = cms.uint32 (1234),                   #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                      #True if running on data
-                                      globalTag        = cms.string ("?"),                    
+                                      globalTag        = cms.string ("PLS170_V7AN1::All"),                    
                                       process          = cms.string ("?"),                    #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ("?"),                    #Full dataset name
                                       crossSection     = cms.double (-99),                    #Input process cross section
@@ -52,6 +52,13 @@ nominal_configuration = cms.PSet(
                                       minJetPt          = cms.untracked.double(15.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
                                       fillJetShapeInfo  = cms.untracked.bool(True),
+
+                                      jetsPuppi         = cms.InputTag('correctedAK4PFJetsPuppi'),
+                                      #jetsPuppi         = cms.InputTag('ak4PFJetsPuppi'),
+                                      reGenJetsPuppi    = cms.InputTag(''),
+                                      stdGenJetsPuppi   = cms.InputTag('slimmedGenJets'),
+                                      fillReGenJetsPuppi= cms.untracked.bool(False),
+                                      minJetPtPuppi     = cms.untracked.double(20.0),
 
                                       muons             = cms.InputTag('slimmedMuons'),
                                       minMuonPt         = cms.untracked.double(5.0),

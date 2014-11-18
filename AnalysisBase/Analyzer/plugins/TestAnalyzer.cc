@@ -22,6 +22,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
     {
       initialize(cfg,EVTINFO);
       initialize(cfg,AK4JETS);
+      //initialize(cfg,PUPPIJETS);           // use to add puppi jets
       initialize(cfg,ELECTRONS);
       initialize(cfg,MUONS);
       initialize(cfg,TAUS);

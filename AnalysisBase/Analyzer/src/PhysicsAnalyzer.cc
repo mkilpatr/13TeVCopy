@@ -92,6 +92,18 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
       initializedFillers.push_back(ak4Jets);
       break;
     }
+    case PUPPIJETS : {
+      int defaultOptions = RecoJetFiller::defaultOptions;
+      puppiJets = new RecoJetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName, eventInfo
+                             , cfg.getParameter<edm::InputTag>("jetsPuppi")
+                             , cfg.getParameter<edm::InputTag>("reGenJetsPuppi")
+                             , cfg.getParameter<edm::InputTag>("stdGenJetsPuppi")
+                             , cfg.getUntrackedParameter<bool>("fillReGenJetsPuppi")
+                             , cfg.getUntrackedParameter<double>("minJetPtPuppi")
+      );
+      initializedFillers.push_back(puppiJets);
+      break;
+    }
     case ELECTRONS : {
       electrons = new ElectronFiller(cfg, isMC());
       initializedFillers.push_back(electrons);
