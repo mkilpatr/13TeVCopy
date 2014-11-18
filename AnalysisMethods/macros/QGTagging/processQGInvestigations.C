@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Parang/interface/Polybook.h"
+#include "AnalysisTools/Parang/interface/Panvariate.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -23,7 +24,79 @@ public:
   Polybook                        eventPlots;
   TString                         prefix;
 
-  Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter) {};
+  Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter)
+  {
+    ParamatrixMVA* temp;
+    TFile*              genFile    = TFile::Open("QGDisc_gen.root", "READ");
+    temp = dynamic_cast<ParamatrixMVA*>(genFile->Get("QG_0"));
+    genMVA = temp->getOne();
+    delete genFile;
+
+    cout << genMVA << endl;
+
+    TFile*              recoFile    = TFile::Open("QGDisc_reco.root", "READ");
+    temp = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
+    recoMVA = temp->getOne();
+    temp = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_1"));
+    recoMVAWithPU = temp->getOne();
+    delete recoFile;
+
+    cout << genMVA <<" "<<recoMVA<<" "<<recoMVAWithPU << endl;
+
+  };
+
+
+  double getGenMVA(const subJet& jet){
+    static const int gen_ak4pfchs_genjet_ptD     = genMVA->findVariable("ak4pfchs_genjet_ptD"    );
+    static const int gen_ak4pfchs_genjet_axis1   = genMVA->findVariable("ak4pfchs_genjet_axis1"  );
+    static const int gen_ak4pfchs_genjet_axis2   = genMVA->findVariable("ak4pfchs_genjet_axis2"  );
+    static const int gen_ak4pfchs_genjet_jetMult = genMVA->findVariable("ak4pfchs_genjet_jetMult");
+    static const int gen_ak4pfchs_genjet_pt      = genMVA->findVariable("ak4pfchs_genjet_pt"     );
+    static const int gen_ak4pfchs_genjet_eta     = genMVA->findVariable("ak4pfchs_genjet_eta"    );
+    genMVA->setVariable(gen_ak4pfchs_genjet_ptD    ,jet.ptD);
+    genMVA->setVariable(gen_ak4pfchs_genjet_axis1  ,jet.axis1);
+    genMVA->setVariable(gen_ak4pfchs_genjet_axis2  ,jet.axis2);
+    genMVA->setVariable(gen_ak4pfchs_genjet_jetMult,jet.mult);
+    genMVA->setVariable(gen_ak4pfchs_genjet_pt     ,jet.jet->pt());
+    genMVA->setVariable(gen_ak4pfchs_genjet_eta    ,TMath::Abs(jet.jet->eta()));
+    return genMVA->evaluateMethod(0);
+  }
+
+  double getRecoMVA(const subJet& jet){
+    static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfchs_jet_ptD"    );
+    static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfchs_jet_axis1"  );
+    static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfchs_jet_axis2"  );
+    static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfchs_jet_jetMult");
+    static const int reco_ak4pfchs_jet_pt      = recoMVA->findVariable("ak4pfchs_jet_pt"     );
+    static const int reco_ak4pfchs_jet_eta     = recoMVA->findVariable("ak4pfchs_jet_eta"    );
+    recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,jet.ptD);
+    recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,jet.axis1);
+    recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
+    recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult);
+    recoMVA->setVariable(reco_ak4pfchs_jet_pt     ,jet.jet->pt());
+    recoMVA->setVariable(reco_ak4pfchs_jet_eta    ,TMath::Abs(jet.jet->eta()));
+    return recoMVA->evaluateMethod(0);
+  }
+
+  double getRecoPUMVA(const subJet& jet){
+    static const int recoPU_ak4pfchs_jet_ptD     = recoMVAWithPU->findVariable("ak4pfchs_jet_ptD"    );
+    static const int recoPU_ak4pfchs_jet_axis1   = recoMVAWithPU->findVariable("ak4pfchs_jet_axis1"  );
+    static const int recoPU_ak4pfchs_jet_axis2   = recoMVAWithPU->findVariable("ak4pfchs_jet_axis2"  );
+    static const int recoPU_ak4pfchs_jet_jetMult = recoMVAWithPU->findVariable("ak4pfchs_jet_jetMult");
+    static const int recoPU_ak4pfchs_jet_pt      = recoMVAWithPU->findVariable("ak4pfchs_jet_pt"     );
+    static const int recoPU_ak4pfchs_jet_eta     = recoMVAWithPU->findVariable("ak4pfchs_jet_eta"    );
+    static const int recoPU_rho                  = recoMVAWithPU->findVariable("rho"    );
+    static const int recoPU_npv                  = recoMVAWithPU->findVariable("npv"    );
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_ptD    ,jet.ptD);
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_axis1  ,jet.axis1);
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_axis2  ,jet.axis2);
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_jetMult,jet.mult);
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_pt     ,jet.jet->pt());
+    recoMVAWithPU->setVariable(recoPU_ak4pfchs_jet_eta    ,TMath::Abs(jet.jet->eta()));
+    recoMVAWithPU->setVariable(recoPU_rho                 ,rho);
+    recoMVAWithPU->setVariable(recoPU_npv                 ,nPV);
+    return recoMVAWithPU->evaluateMethod(0);
+  }
 
   virtual void loadVariables(){
     load(EVTINFO);
@@ -83,6 +156,11 @@ public:
         eventPlots.fill(j.betaStar / (.2 * TMath::Log(float(nPV) - .67)),1,"betaStar_o_cut",";betaStar/ln(nPV - .67)"           ,50, 0,.3);
         eventPlots.fill(j.qgl     ,1,"qgl"     ,";Q/G likili"         ,50,0,1);
         eventPlots.fill(j.csv     ,1,"csv"     ,";D_{b}(csv)"         ,50,0,1);
+        eventPlots.fill(getRecoMVA(j)     ,1,"newQgl"     ,";Q/G likili"         ,50,-1,1);
+        eventPlots.fill(getRecoPUMVA(j)     ,1,"newQglwPU"     ,";Q/G likili"         ,50,-1,1);
+      }
+      else {
+        eventPlots.fill(getGenMVA(j)     ,1,"newQgl"     ,";Q/G likili"         ,50,-1,1);
       }
 
     }
@@ -101,6 +179,11 @@ public:
   void out(TString outputPath){
     plotter->write(outputPath);
   }
+
+
+  const Panvariate*  genMVA;
+  const Panvariate*  recoMVA;
+  const Panvariate*  recoMVAWithPU;
 };
 
 
