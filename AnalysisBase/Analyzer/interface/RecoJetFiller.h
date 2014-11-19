@@ -1,6 +1,7 @@
 #ifndef ANALYSISBASE_ANALYZER_RECOJETFILLER_H
 #define ANALYSISBASE_ANALYZER_RECOJETFILLER_H
 
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 

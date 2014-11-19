@@ -13,15 +13,50 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-TauFiller::TauFiller(const edm::ParameterSet &cfg) :
-  fillRawDiscs_(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators", false)),
-  tauTag_(cfg.getParameter<edm::InputTag>("taus")),
-  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
-  tauptMin_(cfg.getUntrackedParameter<double>("minTauPt", 18.)),
-  printIds_(cfg.getUntrackedParameter<bool>("printTauIDs", false))
+TauFiller::TauFiller(const int options,
+  const string branchName,
+  const EventInfoFiller * evtInfoFiller,
+  const edm::InputTag tauTag,
+  const double tauptMin) :
+  BaseFiller(options, branchName),
+  evtInfoFiller_(evtInfoFiller),
+  tauTag_(tauTag),
+  tauptMin_(tauptMin)
 {
 
   initTauIdNames();
+
+  ipt_                   = data.addMulti<float>(branchName_,"pt",0);
+  ieta_                  = data.addMulti<float>(branchName_,"eta",0);
+  iphi_                  = data.addMulti<float>(branchName_,"phi",0);
+  imass_                 = data.addMulti<float>(branchName_,"mass",0);
+  iq_                    = data.addMulti<int  >(branchName_,"q",0);
+  idxy_                  = data.addMulti<float>(branchName_,"dxy",0);
+  idxyerr_               = data.addMulti<float>(branchName_,"dxyerr",0);
+  idxysig_               = data.addMulti<float>(branchName_,"dxysig",0);
+  ileadcand_pt_          = data.addMulti<float>(branchName_,"leadcand_pt",0);
+  ileadcand_eta_         = data.addMulti<float>(branchName_,"leadcand_eta",0);
+  ileadcand_phi_         = data.addMulti<float>(branchName_,"leadcand_phi",0);
+  ileadcand_mass_        = data.addMulti<float>(branchName_,"leadcand_mass",0);
+  ileadcand_q_           = data.addMulti<int  >(branchName_,"leadcand_q",0);
+  ileadchargedcand_pt_   = data.addMulti<float>(branchName_,"leadchargedcand_pt",0);
+  ileadchargedcand_eta_  = data.addMulti<float>(branchName_,"leadchargedcand_eta",0);
+  ileadchargedcand_phi_  = data.addMulti<float>(branchName_,"leadchargedcand_phi",0);
+  ileadchargedcand_mass_ = data.addMulti<float>(branchName_,"leadchargedcand_mass",0);
+  ileadchargedcand_q_    = data.addMulti<int  >(branchName_,"leadchargedcand_q",0);
+  ileadchargedcand_d0_   = data.addMulti<float>(branchName_,"leadchargedcand_d0",0);
+  ileadchargedcand_dz_   = data.addMulti<float>(branchName_,"leadchargedcand_dz",0);
+  iidflags_              = data.addMulti<unsigned long>(branchName_,"idflags",0);
+
+  if(options_ & FILLRAWDISCS) {
+    iisodb3hitsraw_ = data.addMulti<float>(branchName_,"isodb3hitsraw",0);
+    iisomvanoltraw_ = data.addMulti<float>(branchName_,"isomvanoltraw",0);
+    iisomvaltraw_   = data.addMulti<float>(branchName_,"isomvaltraw",0);
+    iantielemvaraw_ = data.addMulti<float>(branchName_,"antielemvaraw",0);
+    iantielemvacat_ = data.addMulti<int  >(branchName_,"antielemvacat",0);
+    iantimumvaraw_  = data.addMulti<float>(branchName_,"antimumvaraw",0);
+    iantimumvacat_  = data.addMulti<int  >(branchName_,"antimumvacat",0);
+  }
 
 }
 
@@ -70,84 +105,10 @@ void TauFiller::initTauIdNames()
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauFiller::book(TreeWriter& tW)
-{
-  tW.book("tau_pt", tau_pt_);
-  tW.book("tau_eta", tau_eta_);
-  tW.book("tau_phi", tau_phi_);
-  tW.book("tau_mass", tau_mass_);
-  tW.book("tau_q", tau_q_);
-  tW.book("tau_dxy", tau_dxy_);
-  tW.book("tau_dxyerr", tau_dxyerr_);
-  tW.book("tau_dxysig", tau_dxysig_);
-  tW.book("tau_leadcand_pt", tau_leadcand_pt_);
-  tW.book("tau_leadcand_eta", tau_leadcand_eta_);
-  tW.book("tau_leadcand_phi", tau_leadcand_phi_);
-  tW.book("tau_leadcand_mass", tau_leadcand_mass_);
-  tW.book("tau_leadcand_q", tau_leadcand_q_);
-  tW.book("tau_leadchargedcand_pt", tau_leadchargedcand_pt_);
-  tW.book("tau_leadchargedcand_eta", tau_leadchargedcand_eta_);
-  tW.book("tau_leadchargedcand_phi", tau_leadchargedcand_phi_);
-  tW.book("tau_leadchargedcand_mass", tau_leadchargedcand_mass_);
-  tW.book("tau_leadchargedcand_q", tau_leadchargedcand_q_);
-  tW.book("tau_leadchargedcand_d0", tau_leadchargedcand_d0_);
-  tW.book("tau_leadchargedcand_dz", tau_leadchargedcand_dz_);
-  tW.book("tau_idflags", tau_idflags_);
-  if(fillRawDiscs_) {
-    tW.book("tau_isodb3hitsraw", tau_isodb3hitsraw_);
-    tW.book("tau_isomvanoltraw", tau_isomvanoltraw_);
-    tW.book("tau_isomvaltraw", tau_isomvaltraw_);
-    tW.book("tau_antielemvaraw", tau_antielemvaraw_);
-    tW.book("tau_antielemvacat", tau_antielemvacat_);
-    tW.book("tau_antimumvaraw", tau_antimumvaraw_);
-    tW.book("tau_antimumvacat", tau_antimumvacat_);
-  }
-}
-
-//--------------------------------------------------------------------------------------------------
-void TauFiller::reset()
-{
-  isLoaded_ = false;
-  isFilled_ = false;
-  tau_pt_.resize(0);
-  tau_eta_.resize(0);
-  tau_phi_.resize(0);
-  tau_mass_.resize(0);
-  tau_q_.resize(0);
-  tau_dxy_.resize(0);
-  tau_dxyerr_.resize(0);
-  tau_dxysig_.resize(0);
-  tau_leadcand_pt_.resize(0);
-  tau_leadcand_eta_.resize(0);
-  tau_leadcand_phi_.resize(0);
-  tau_leadcand_mass_.resize(0);
-  tau_leadcand_q_.resize(0);
-  tau_leadchargedcand_pt_.resize(0);
-  tau_leadchargedcand_eta_.resize(0);
-  tau_leadchargedcand_phi_.resize(0);
-  tau_leadchargedcand_mass_.resize(0);
-  tau_leadchargedcand_q_.resize(0);
-  tau_leadchargedcand_d0_.resize(0);
-  tau_leadchargedcand_dz_.resize(0);
-  tau_idflags_.resize(0);
-  if(fillRawDiscs_) {
-    tau_isodb3hitsraw_.resize(0);
-    tau_isomvanoltraw_.resize(0);
-    tau_isomvaltraw_.resize(0);
-    tau_antielemvaraw_.resize(0);
-    tau_antielemvacat_.resize(0);
-    tau_antimumvaraw_.resize(0);
-    tau_antimumvacat_.resize(0);
-  }
-}
-
-//--------------------------------------------------------------------------------------------------
 void TauFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);
-  // or just pass PV from EventInfoFiller to this class, that would be easier
-  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
   isLoaded_ = true;
 }
 
@@ -155,44 +116,46 @@ void TauFiller::load(const edm::Event& iEvent)
 void TauFiller::fill()
 {
 
-  const reco::Vertex &PV = vertices_->front();
-
   for (const pat::Tau &tau : *taus_) {
     if (tau.pt() < tauptMin_) continue;
-    tau_pt_.push_back(tau.pt());
-    tau_eta_.push_back(tau.eta());
-    tau_phi_.push_back(tau.phi());
-    tau_mass_.push_back(tau.mass());
-    tau_q_.push_back(tau.charge());
-    tau_dxy_.push_back(tau.dxy());
-    tau_dxyerr_.push_back(tau.dxy_error());
-    tau_dxysig_.push_back(tau.dxy_Sig());
-    tau_leadcand_pt_.push_back(tau.leadCand()->pt());
-    tau_leadcand_eta_.push_back(tau.leadCand()->eta());
-    tau_leadcand_phi_.push_back(tau.leadCand()->phi());
-    tau_leadcand_mass_.push_back(tau.leadCand()->mass());
-    tau_leadcand_q_.push_back(tau.leadCand()->charge());
+
+    data.fillMulti<float>(ipt_, tau.pt());
+    data.fillMulti<float>(ieta_, tau.eta());
+    data.fillMulti<float>(iphi_, tau.phi());
+    data.fillMulti<float>(imass_, tau.mass());
+    data.fillMulti<int  >(iq_, tau.charge());
+    data.fillMulti<float>(idxy_, tau.dxy());
+    data.fillMulti<float>(idxyerr_, tau.dxy_error());
+    data.fillMulti<float>(idxysig_, tau.dxy_Sig());
+    data.fillMulti<float>(ileadcand_pt_, tau.leadCand()->pt());
+    data.fillMulti<float>(ileadcand_eta_, tau.leadCand()->eta());
+    data.fillMulti<float>(ileadcand_phi_, tau.leadCand()->phi());
+    data.fillMulti<float>(ileadcand_mass_, tau.leadCand()->mass());
+    data.fillMulti<int  >(ileadcand_q_, tau.leadCand()->charge());
+
     if(tau.leadChargedHadrCand().isNonnull()) {
-      tau_leadchargedcand_pt_.push_back(tau.leadChargedHadrCand()->pt());
-      tau_leadchargedcand_eta_.push_back(tau.leadChargedHadrCand()->eta());
-      tau_leadchargedcand_phi_.push_back(tau.leadChargedHadrCand()->phi());
-      tau_leadchargedcand_mass_.push_back(tau.leadChargedHadrCand()->mass());
-      tau_leadchargedcand_q_.push_back(tau.leadChargedHadrCand()->charge());
+      data.fillMulti<float>(ileadchargedcand_pt_, tau.leadChargedHadrCand()->pt());
+      data.fillMulti<float>(ileadchargedcand_eta_, tau.leadChargedHadrCand()->eta());
+      data.fillMulti<float>(ileadchargedcand_phi_, tau.leadChargedHadrCand()->phi());
+      data.fillMulti<float>(ileadchargedcand_mass_, tau.leadChargedHadrCand()->mass());
+      data.fillMulti<int  >(ileadchargedcand_q_, tau.leadChargedHadrCand()->charge());
       const reco::Track* leadtrk = 0;
       if(tau.leadTrack().isNonnull()) leadtrk = tau.leadTrack().get();
+      assert(evtInfoFiller_->isLoaded());
       // this is broken, need to figure out how this should be implemented
-      tau_leadchargedcand_d0_.push_back(leadtrk ? -1.*leadtrk->dxy(PV.position()) : 0.0);
-      tau_leadchargedcand_dz_.push_back(leadtrk ? leadtrk->dz(PV.position()) : 0.0);
+      data.fillMulti<float>(ileadchargedcand_d0_, leadtrk ? -1.*leadtrk->dxy(evtInfoFiller_->primaryVertex()) : 0.0);
+      data.fillMulti<float>(ileadchargedcand_dz_, leadtrk ? leadtrk->dz(evtInfoFiller_->primaryVertex()) : 0.0);
     } else {
-      tau_leadchargedcand_pt_.push_back(0.0);
-      tau_leadchargedcand_eta_.push_back(0.0);
-      tau_leadchargedcand_phi_.push_back(0.0);
-      tau_leadchargedcand_mass_.push_back(0.0);
-      tau_leadchargedcand_q_.push_back(0);
-      tau_leadchargedcand_d0_.push_back(0.0);
-      tau_leadchargedcand_dz_.push_back(0.0);
+      data.fillMulti<float>(ileadchargedcand_pt_, 0.0);
+      data.fillMulti<float>(ileadchargedcand_eta_, 0.0);
+      data.fillMulti<float>(ileadchargedcand_phi_, 0.0);
+      data.fillMulti<float>(ileadchargedcand_mass_, 0.0);
+      data.fillMulti<int  >(ileadchargedcand_q_, 0.0);
+      data.fillMulti<float>(ileadchargedcand_d0_, 0.0);
+      data.fillMulti<float>(ileadchargedcand_dz_, 0.0);
     }
-    if(printIds_) {
+
+    if(options_ & PRINTIDS) {
       for (vector<pat::Tau::IdPair>::const_iterator it = tau.tauIDs().begin(), ed = tau.tauIDs().end(); it != ed; ++it) {
       cout << "Tau ID name: " << it->first << "; value: " << it->second << endl;
       }
@@ -208,15 +171,17 @@ void TauFiller::fill()
 	if(tau.tauID(myit->first)) tauIdFlags |=  myit->second;
       }
     }
-    tau_idflags_.push_back(tauIdFlags);
+    data.fillMulti<unsigned long>(iidflags_, tauIdFlags);
 
-    tau_isodb3hitsraw_.push_back(tau.isTauIDAvailable("byCombinedIsolationDeltaBetaCorrRaw3Hits") ? tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") : 0.0);
-    tau_isomvanoltraw_.push_back(tau.isTauIDAvailable("byIsolationMVA3newDMwoLTraw") ? tau.tauID("byIsolationMVA3newDMwoLTraw") : 0.0);
-    tau_isomvaltraw_.push_back(tau.isTauIDAvailable("byIsolationMVA3newDMwLTraw") ? tau.tauID("byIsolationMVA3newDMwLTraw") : 0.0);
-    tau_antielemvaraw_.push_back(tau.isTauIDAvailable("againstElectronMVA5raw") ? tau.tauID("againstElectronMVA5raw") : 0.0);
-    tau_antielemvacat_.push_back(tau.isTauIDAvailable("againstElectronMVA5category") ? tau.tauID("againstElectronMVA5category") : 0.0);
-    tau_antimumvaraw_.push_back(tau.isTauIDAvailable("againstMuonMVAraw") ? tau.tauID("againstMuonMVAraw") : 0.0);
-    tau_antimumvacat_.push_back(tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
+    if(options_ & FILLRAWDISCS) {
+      data.fillMulti<float>(iisodb3hitsraw_, tau.isTauIDAvailable("byCombinedIsolationDeltaBetaCorrRaw3Hits") ? tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") : 0.0);
+      data.fillMulti<float>(iisomvanoltraw_, tau.isTauIDAvailable("byIsolationMVA3newDMwoLTraw") ? tau.tauID("byIsolationMVA3newDMwoLTraw") : 0.0);
+      data.fillMulti<float>(iisomvaltraw_, tau.isTauIDAvailable("byIsolationMVA3newDMwLTraw") ? tau.tauID("byIsolationMVA3newDMwLTraw") : 0.0);
+      data.fillMulti<float>(iantielemvaraw_, tau.isTauIDAvailable("againstElectronMVA5raw") ? tau.tauID("againstElectronMVA5raw") : 0.0);
+      data.fillMulti<int  >(iantielemvacat_, tau.isTauIDAvailable("againstElectronMVA5category") ? tau.tauID("againstElectronMVA5category") : 0.0);
+      data.fillMulti<float>(iantimumvaraw_, tau.isTauIDAvailable("againstMuonMVAraw") ? tau.tauID("againstMuonMVAraw") : 0.0);
+      data.fillMulti<int  >(iantimumvacat_, tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
+    }
 
   }
   isFilled_ = true;

@@ -11,76 +11,78 @@
 #ifndef ANALYSISBASE_ANALYZER_TAUFILLER_H
 #define ANALYSISBASE_ANALYZER_TAUFILLER_H
 
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
+#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 
 namespace ucsbsusy {
 
   class TauFiller : public BaseFiller {
 
     public :
-      TauFiller(const edm::ParameterSet &cfg);
+      TauFiller(const int options,
+                const string branchName,
+                const EventInfoFiller * evtInfoFiller,
+                const edm::InputTag tauTag,
+                const double tauptMin);
       ~TauFiller() {}
 
-      void		initTauIdNames();
-      void		book(TreeWriter& tW);
-      void		reset();
-      void		load(const edm::Event& iEvent);
-      void		fill();
+      enum Options {
+                    NULLOPT      = 0,
+                    FILLRAWDISCS = (1 << 0),  // whether or not to store the raw HPS discriminator outputs 
+                    PRINTIDS     = (1 << 1)   // check which HPS Tau IDs are available
+                   };
+      static const int defaultOptions = NULLOPT;
+
+      void initTauIdNames();
+      void load(const edm::Event& iEvent);
+      void fill();
 
     private :
-      // Whether or not to store the raw HPS discriminator outputs
-      const bool    fillRawDiscs_;
+      const EventInfoFiller * evtInfoFiller_;
       // Input from the config file
-      edm::InputTag	tauTag_;
-      edm::InputTag	vtxTag_;
-      double		tauptMin_;
-      bool		printIds_;
+      edm::InputTag tauTag_;
+      double        tauptMin_;
       // Map of HPS discriminator names to flags
-      TauIdMap		hpsIds_;
+      TauIdMap      hpsIds_;
 
-
-      // Members to hold info to be filled in the tree
-      // List of stored information to be updated according to our needs
-      vector<float>	tau_pt_;
-      vector<float>	tau_eta_;
-      vector<float>	tau_phi_;
-      vector<float>	tau_mass_;
-      vector<int>	tau_q_;
-      vector<float>	tau_dxy_;
-      vector<float>	tau_dxyerr_;
-      vector<float>	tau_dxysig_;
-      vector<float>	tau_leadcand_pt_;
-      vector<float>	tau_leadcand_eta_;
-      vector<float>	tau_leadcand_phi_;
-      vector<float>	tau_leadcand_mass_;
-      vector<int>	tau_leadcand_q_;
-      vector<float>	tau_leadchargedcand_pt_;
-      vector<float>	tau_leadchargedcand_eta_;
-      vector<float>	tau_leadchargedcand_phi_;
-      vector<float>	tau_leadchargedcand_mass_;
-      vector<int>	tau_leadchargedcand_q_;
-      vector<float>	tau_leadchargedcand_d0_;
-      vector<float>	tau_leadchargedcand_dz_;
-      vector<unsigned long>	tau_idflags_;
-      // Raw discriminator values
-      vector<float>	tau_isodb3hitsraw_;
-      vector<float>	tau_isomvanoltraw_;
-      vector<float>	tau_isomvaltraw_;
-      vector<float>	tau_antielemvaraw_;
-      vector<int>	tau_antielemvacat_;
-      vector<float>	tau_antimumvaraw_;
-      vector<int>	tau_antimumvacat_;
+      // Members to hold indices of tree data
+      size ipt_;
+      size ieta_;
+      size iphi_;
+      size imass_;
+      size iq_;
+      size idxy_;
+      size idxyerr_;
+      size idxysig_;
+      size ileadcand_pt_;
+      size ileadcand_eta_;
+      size ileadcand_phi_;
+      size ileadcand_mass_;
+      size ileadcand_q_;
+      size ileadchargedcand_pt_;
+      size ileadchargedcand_eta_;
+      size ileadchargedcand_phi_;
+      size ileadchargedcand_mass_;
+      size ileadchargedcand_q_;
+      size ileadchargedcand_d0_;
+      size ileadchargedcand_dz_;
+      size iidflags_;
+      // For raw discriminator values
+      size iisodb3hitsraw_;
+      size iisomvanoltraw_;
+      size iisomvaltraw_;
+      size iantielemvaraw_;
+      size iantielemvacat_;
+      size iantimumvaraw_;
+      size iantimumvacat_;
 
     public :
       // Data members
-      edm::Handle<pat::TauCollection>		taus_;
-      edm::Handle<reco::VertexCollection>	vertices_;
+      edm::Handle<pat::TauCollection> taus_;
 
   };
 
