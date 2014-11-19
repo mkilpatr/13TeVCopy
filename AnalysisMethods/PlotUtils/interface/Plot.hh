@@ -81,13 +81,25 @@ class Plot {
     void add(T* item, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
     template<class T>
+    void addScaled(T* item, double scaleto, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+
+    template<class T>
     void add(T* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+
+    template<class T>
+    void addScaled(T* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
     template<class T>
     void add(TFile *f, TString itemname, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
     template<class T>
-    void add(TFile *f, TString label, TString itemname, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+    void addScaled(TFile *f, TString itemname, double scaleto, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+
+    template<class T>
+    void add(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+
+    template<class T>
+    void addScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
     // Adding a 1D histogram to a histogram stack
     void addToStack(TH1F *h, int color);
@@ -183,7 +195,9 @@ int Plot::counter = 0;
 TString Plot::outputdir = ".";
 
 template<> void Plot::add<TH1F>(TH1F* item, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
+template<> void Plot::addScaled<TH1F>(TH1F* item, double scaleto, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
 template<> void Plot::add<TH2F>(TH2F* item, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
+template<> void Plot::addScaled<TH2F>(TH2F* item, double scaleto, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
 template<> void Plot::add<TGraph>(TGraph* item, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
 template<> void Plot::add<TProfile>(TProfile* item, TString drawopt, int color, int fillstyle, int linecolor, int linestyle);
 
@@ -193,16 +207,41 @@ template<> void Plot::add<TH1F>(TH1F* item, TString drawopt, int color, int fill
   if(!item)
     return;
 
-  StyleTools::InitHist(item, fXTitle, fYTitle, color, fillstyle);
+  TH1F* hist = (TH1F*)item->Clone();
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
   if(linecolor==0)
-    item->SetLineColor(color);
+    hist->SetLineColor(color);
   else
-    item->SetLineColor(linecolor);
+    hist->SetLineColor(linecolor);
 
-  item->SetLineStyle(linestyle);
+  hist->SetLineStyle(linestyle);
 
-  fHists1D.push_back(new h1D(item, drawopt));
+  fHists1D.push_back(new h1D(hist, drawopt));
+
+}
+
+template<> void Plot::addScaled<TH1F>(TH1F* item, double scaleto, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH1F* hist = (TH1F*)item->Clone();
+
+  hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1));
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  fHists1D.push_back(new h1D(hist, drawopt));
 
 }
 
@@ -212,16 +251,41 @@ template<> void Plot::add<TH2F>(TH2F* item, TString drawopt, int color, int fill
   if(!item)
     return;
 
-  StyleTools::InitHist(item, fXTitle, fYTitle, color, fillstyle);
+  TH2F* hist = (TH2F*)item->Clone();
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
   if(linecolor==0)
-    item->SetLineColor(color);
+    hist->SetLineColor(color);
   else
-    item->SetLineColor(linecolor);
+    hist->SetLineColor(linecolor);
 
-  item->SetLineStyle(linestyle);
+  hist->SetLineStyle(linestyle);
 
-  fHists2D.push_back(new h2D(item, drawopt));
+  fHists2D.push_back(new h2D(hist, drawopt));
+
+}
+
+template<> void Plot::addScaled<TH2F>(TH2F* item, double scaleto, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH2F* hist = (TH2F*)item->Clone();
+
+  hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1, 0, hist->GetNbinsY()+1));
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  fHists2D.push_back(new h2D(hist, drawopt));
 
 }
 
@@ -232,24 +296,26 @@ template<> void Plot::add<TGraph>(TGraph* item, TString drawopt, int color, int 
   if(!item)
     return;
 
-  if(linecolor==0)
-    item->SetLineColor(color);
-  else
-    item->SetLineColor(linecolor);
+  TGraph* gr = (TGraph*)item->Clone();
 
-  item->SetLineStyle(linestyle);
-  item->SetFillColor(color);
-  item->SetFillStyle(fillstyle);
+  if(linecolor==0)
+    gr->SetLineColor(color);
+  else
+    gr->SetLineColor(linecolor);
+
+  gr->SetLineStyle(linestyle);
+  gr->SetFillColor(color);
+  gr->SetFillStyle(fillstyle);
 
   if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
-    item->SetMarkerSize(1.3);
-    item->SetMarkerStyle(20);
-    item->SetLineWidth(3);
+    gr->SetMarkerSize(1.3);
+    gr->SetMarkerStyle(20);
+    gr->SetLineWidth(3);
   } else {
-    item->SetLineWidth(3);
+    gr->SetLineWidth(3);
   }
 
-  fGraphs.push_back(new graph(item, drawopt));
+  fGraphs.push_back(new graph(gr, drawopt));
 
 }
 
@@ -259,24 +325,26 @@ template<> void Plot::add<TProfile>(TProfile* item, TString drawopt, int color, 
   if(!item)
     return;
 
-  if(linecolor==0)
-    item->SetLineColor(color);
-  else
-    item->SetLineColor(linecolor);
+  TProfile* prof = (TProfile*)item->Clone();
 
-  item->SetLineStyle(linestyle);
-  item->SetFillColor(color);
-  item->SetFillStyle(fillstyle);
+  if(linecolor==0)
+    prof->SetLineColor(color);
+  else
+    prof->SetLineColor(linecolor);
+
+  prof->SetLineStyle(linestyle);
+  prof->SetFillColor(color);
+  prof->SetFillStyle(fillstyle);
 
   if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
-    item->SetMarkerSize(1.3);
-    item->SetMarkerStyle(20);
-    item->SetLineWidth(3);
+    prof->SetMarkerSize(1.3);
+    prof->SetMarkerStyle(20);
+    prof->SetLineWidth(3);
   } else {
-    item->SetLineWidth(3);
+    prof->SetLineWidth(3);
   }
 
-  fProfiles.push_back(new profile(item, drawopt));
+  fProfiles.push_back(new profile(prof, drawopt));
 
 }
 
@@ -304,6 +372,29 @@ void Plot::add(T* item, TString label, TString drawopt, int color, int fillstyle
 }
 
 template<class T>
+void Plot::addScaled(T* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+    fLeg->AddEntry(item,label,"PL");
+  } else {
+    if(fillstyle > 0) fLeg->AddEntry(item,label,"F");
+    else              fLeg->AddEntry(item,label,"L");
+  }
+
+  addScaled(item, scaleto, drawopt, color, fillstyle, linecolor, linestyle);
+
+}
+
+template<class T>
 void Plot::add(TFile *f, TString itemname, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
 {
 
@@ -317,6 +408,19 @@ void Plot::add(TFile *f, TString itemname, TString drawopt, int color, int fills
 }
 
 template<class T>
+void Plot::addScaled(TFile *f, TString itemname, double scaleto, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!f)
+    return;
+
+  T* item = (T*)f->FindObjectAny(itemname);
+
+  addScaled(item, scaleto, drawopt, color, fillstyle, linecolor, linestyle);
+
+}
+
+template<class T>
 void Plot::add(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
 {
 
@@ -326,6 +430,19 @@ void Plot::add(TFile *f, TString itemname, TString label, TString drawopt, int c
   T* item = (T*)f->FindObjectAny(itemname);
 
   add(item, label, drawopt, color, fillstyle, linecolor, linestyle);
+
+}
+
+template<class T>
+void Plot::addScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!f)
+    return;
+
+  T* item = (T*)f->FindObjectAny(itemname);
+
+  addScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle);
 
 }
 

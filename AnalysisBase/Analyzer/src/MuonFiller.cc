@@ -13,109 +13,52 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-MuonFiller::MuonFiller(const edm::ParameterSet &cfg, const bool isMC) :
-  fillIDVars_(cfg.getUntrackedParameter<bool>("fillMuonIDVars", false)),
-  fillIsoVars_(cfg.getUntrackedParameter<bool>("fillMuonIsoVars", false)),
-  fillGenInfo_(isMC && cfg.getUntrackedParameter<bool>("fillMuonGenInfo",false)),
-  requireLoose_(cfg.getUntrackedParameter<bool>("requireLooseMuon", true)),
-  muonTag_(cfg.getParameter<edm::InputTag>("muons")),
-  vtxTag_(cfg.getParameter<edm::InputTag>("vertices")),
-  genParticleTag_(fillGenInfo_ ? cfg.getParameter<edm::InputTag>("packedGenParticles") : edm::InputTag()),
-  muptMin_(cfg.getUntrackedParameter<double>("minMuonPt", 5.))
+MuonFiller::MuonFiller(const int options,
+  const string branchName,
+  const EventInfoFiller * evtInfoFiller,
+  const edm::InputTag muonTag,
+  const bool requireLoose,
+  const double muptMin) :
+  BaseFiller(options, branchName),
+  evtInfoFiller_(evtInfoFiller),
+  muonTag_(muonTag),
+  requireLoose_(requireLoose),
+  muptMin_(muptMin)
 {
 
-}
+  ipt_           = data.addMulti<float>(branchName_,"pt",0);
+  ieta_          = data.addMulti<float>(branchName_,"eta",0);
+  iphi_          = data.addMulti<float>(branchName_,"phi",0);
+  imass_         = data.addMulti<float>(branchName_,"mass",0);
+  iq_            = data.addMulti<int  >(branchName_,"q",0);
+  id0_           = data.addMulti<float>(branchName_,"d0",0);
+  idz_           = data.addMulti<float>(branchName_,"dz",0);
+  ipfdbetaiso_   = data.addMulti<float>(branchName_,"pfdbetaiso",0);
+  iisloose_      = data.addMulti<bool >(branchName_,"isLoose",false);
+  iistight_      = data.addMulti<bool >(branchName_,"isTight",false);
+  iispf_         = data.addMulti<bool >(branchName_,"isPF",false);
+  iisglobal_     = data.addMulti<bool >(branchName_,"isGlobal",false);
+  iistracker_    = data.addMulti<bool >(branchName_,"isTracker",false);
+  iisstandalone_ = data.addMulti<bool >(branchName_,"isStandAlone",false);
 
-//--------------------------------------------------------------------------------------------------
-void MuonFiller::book(TreeWriter& tW)
-{
-  tW.book("mu_pt", mu_pt_);
-  tW.book("mu_eta", mu_eta_);
-  tW.book("mu_phi", mu_phi_);
-  tW.book("mu_mass", mu_mass_);
-  tW.book("mu_q", mu_q_);
-  tW.book("mu_d0", mu_d0_);
-  tW.book("mu_dz", mu_dz_);
-  if(fillIDVars_) {
-    tW.book("mu_nChi2", mu_nChi2_);
-    tW.book("mu_nValidHits", mu_nValidHits_);
-    tW.book("mu_nMatch", mu_nMatch_);
-    tW.book("mu_nPixHits", mu_nPixHits_);
-    tW.book("mu_nTrackLayers", mu_nTrackLayers_);
+  if(options_ & FILLIDVARS) {
+    inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
+    inValidHits_   = data.addMulti<int  >(branchName_,"nValidHits",0);
+    inMatch_       = data.addMulti<int  >(branchName_,"nMatch",0);
+    inPixHits_     = data.addMulti<int  >(branchName_,"nPixHits",0);
+    inTrackLayers_ = data.addMulti<int  >(branchName_,"nTrackLayers",0);
   }
-  if(fillIsoVars_) {
-    tW.book("mu_trackiso", mu_trackiso_);
-    tW.book("mu_ecaliso", mu_ecaliso_);
-    tW.book("mu_hcaliso", mu_hcaliso_);
-    tW.book("mu_pfchargediso", mu_pfchargediso_);
-    tW.book("mu_pfneutraliso", mu_pfneutraliso_);
-    tW.book("mu_pfphotoniso", mu_pfphotoniso_);
-    tW.book("mu_pfpuiso", mu_pfpuiso_);
-  }
-  tW.book("mu_pfdbetaiso", mu_pfdbetaiso_);
-  tW.book("mu_isLoose", mu_isloose_);
-  tW.book("mu_isTight", mu_istight_);
-  tW.book("mu_isPF", mu_ispf_);
-  tW.book("mu_isGlobal", mu_isglobal_);
-  tW.book("mu_isTracker", mu_istracker_);
-  tW.book("mu_isStandAlone", mu_isstandalone_);
-  if(fillGenInfo_) {
-    tW.book("mu_genpt", mu_genpt_);
-    tW.book("mu_geneta", mu_geneta_);
-    tW.book("mu_genphi", mu_genphi_);
-    tW.book("mu_genmass", mu_genmass_);
-    tW.book("mu_genpdgid", mu_genpdgid_);
-    tW.book("mu_genstatus", mu_genstatus_);
-    tW.book("mu_genmotherpdgid", mu_genmotherpdgid_);
-    tW.book("mu_genmotherstatus", mu_genmotherstatus_);
-  }
-}
 
-//--------------------------------------------------------------------------------------------------
-void MuonFiller::reset()
-{
-  isLoaded_ = false;
-  isFilled_ = false;
-  mu_pt_.resize(0);
-  mu_eta_.resize(0);
-  mu_phi_.resize(0);
-  mu_mass_.resize(0);
-  mu_q_.resize(0);
-  mu_d0_.resize(0);
-  mu_dz_.resize(0);
-  if(fillIDVars_) {
-    mu_nChi2_.resize(0);
-    mu_nValidHits_.resize(0);
-    mu_nMatch_.resize(0);
-    mu_nPixHits_.resize(0);
-    mu_nTrackLayers_.resize(0);
+  if(options_ & FILLISOVARS) {
+    itrackiso_     = data.addMulti<float>(branchName_,"trackiso",0);
+    iecaliso_      = data.addMulti<float>(branchName_,"ecaliso",0);
+    ihcaliso_      = data.addMulti<float>(branchName_,"hcaliso",0);
+    ipfchargediso_ = data.addMulti<float>(branchName_,"pfchargediso",0);
+    ipfneutraliso_ = data.addMulti<float>(branchName_,"pfneutraliso",0);
+    ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
+    ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
-  if(fillIsoVars_) {
-    mu_trackiso_.resize(0);
-    mu_ecaliso_.resize(0);
-    mu_hcaliso_.resize(0);
-    mu_pfchargediso_.resize(0);
-    mu_pfneutraliso_.resize(0);
-    mu_pfphotoniso_.resize(0);
-    mu_pfpuiso_.resize(0);
-  }
-  mu_pfdbetaiso_.resize(0);
-  mu_isloose_.resize(0);
-  mu_istight_.resize(0);
-  mu_ispf_.resize(0);
-  mu_isglobal_.resize(0);
-  mu_istracker_.resize(0);
-  mu_isstandalone_.resize(0);
-  if(fillGenInfo_) {
-    mu_genpt_.resize(0);
-    mu_geneta_.resize(0);
-    mu_genphi_.resize(0);
-    mu_genmass_.resize(0);
-    mu_genpdgid_.resize(0);
-    mu_genstatus_.resize(0);
-    mu_genmotherpdgid_.resize(0);
-    mu_genmotherstatus_.resize(0);
-  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -123,12 +66,6 @@ void MuonFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
-  // or just pass PV from EventInfoFiller to this class, that would be easier
-  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
-
-  if(fillGenInfo_) {
-    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
-  }
   isLoaded_ = true;
 }
 
@@ -136,85 +73,49 @@ void MuonFiller::load(const edm::Event& iEvent)
 void MuonFiller::fill()
 {
 
-  const reco::Vertex &PV = vertices_->front();
-
   for (const pat::Muon &mu : *muons_) {
     if (mu.pt() < muptMin_) continue;
     if (requireLoose_ && !mu.isLooseMuon()) continue;
-    mu_pt_.push_back(mu.pt());
-    mu_eta_.push_back(mu.eta());
-    mu_phi_.push_back(mu.phi());
-    mu_mass_.push_back(mu.mass());
-    mu_q_.push_back(mu.charge());
-    mu_d0_.push_back(-1.*mu.muonBestTrack()->dxy(PV.position()));
-    mu_dz_.push_back(mu.muonBestTrack()->dz(PV.position()));
-    if(fillIDVars_) {
-      if(mu.globalTrack().isNonnull()) {
-	mu_nChi2_.push_back(mu.normChi2());
-      } else {
-	mu_nChi2_.push_back(0.0);
-      }
-      mu_nValidHits_.push_back(mu.numberOfValidHits());
-      mu_nMatch_.push_back(mu.numberOfMatchedStations());
-      if(mu.innerTrack().isNonnull()) {
-	mu_nPixHits_.push_back(mu.innerTrack()->hitPattern().numberOfValidPixelHits());
-	mu_nTrackLayers_.push_back(mu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
-      } else {
-	mu_nPixHits_.push_back(0);
-	mu_nTrackLayers_.push_back(0);
-      }
-    }
-    if(fillIsoVars_) {
-      mu_trackiso_.push_back(mu.trackIso());
-      mu_ecaliso_.push_back(mu.ecalIso());
-      mu_hcaliso_.push_back(mu.hcalIso());
-      mu_pfchargediso_.push_back(mu.pfIsolationR04().sumChargedHadronPt);
-      mu_pfneutraliso_.push_back(mu.pfIsolationR04().sumNeutralHadronEt);
-      mu_pfphotoniso_.push_back(mu.pfIsolationR04().sumPhotonEt);
-      mu_pfpuiso_.push_back(mu.pfIsolationR04().sumPUPt);
-    }
-    mu_pfdbetaiso_.push_back(mu.pfIsolationR04().sumChargedHadronPt + max(0.0 , mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5 * mu.pfIsolationR04().sumPUPt));
-    mu_isloose_.push_back(mu.isLooseMuon());
-    mu_istight_.push_back(mu.isTightMuon(PV));
-    mu_ispf_.push_back(mu.isPFMuon());
-    mu_isglobal_.push_back(mu.isGlobalMuon());
-    mu_istracker_.push_back(mu.isTrackerMuon());
-    mu_isstandalone_.push_back(mu.isStandAloneMuon());
 
-    if(fillGenInfo_ && mu.genParticle() != nullptr) {
-      mu_genpt_.push_back(mu.genParticle()->pt());
-      mu_geneta_.push_back(mu.genParticle()->eta());
-      mu_genphi_.push_back(mu.genParticle()->phi());
-      mu_genmass_.push_back(mu.genParticle()->mass());
-      mu_genpdgid_.push_back(mu.genParticle()->pdgId());
-      mu_genstatus_.push_back(mu.genParticle()->status());
-      const reco::Candidate* match = mu.genParticle();
-      // check this!!
-      bool foundmom = false;
-      for(size_t j=0; j<genParticles_->size();j++){
-	const reco::Candidate* mother = (*genParticles_)[j].mother(0);
-	if(mother != nullptr && ParticleInfo::isAncestor(mother, match)) {
-	  foundmom = true;
-	  mu_genmotherpdgid_.push_back(mother->pdgId());
-	  mu_genmotherstatus_.push_back(mother->status());
-	  break;
-	}
-      }
-      if(!foundmom) {
-	mu_genmotherpdgid_.push_back(-99);
-	mu_genmotherstatus_.push_back(-99);
-      }
-    } else {
-      mu_genpt_.push_back(-99.0);
-      mu_geneta_.push_back(-99.0);
-      mu_genphi_.push_back(-99.0);
-      mu_genmass_.push_back(-99.0);
-      mu_genpdgid_.push_back(-99);
-      mu_genstatus_.push_back(-99);
-      mu_genmotherpdgid_.push_back(-99);
-      mu_genmotherstatus_.push_back(-99);
+    data.fillMulti<float>(ipt_, mu.pt());
+    data.fillMulti<float>(ieta_, mu.eta());
+    data.fillMulti<float>(iphi_, mu.phi());
+    data.fillMulti<float>(imass_, mu.mass());
+    data.fillMulti<int  >(iq_, mu.charge());
+
+    assert(evtInfoFiller_->isLoaded());
+    data.fillMulti<float>(id0_, -1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()));
+    data.fillMulti<float>(idz_, mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()));
+
+    float dbiso = mu.pfIsolationR04().sumChargedHadronPt + max(0.0 , mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5 * mu.pfIsolationR04().sumPUPt);
+    data.fillMulti<float>(ipfdbetaiso_, dbiso);
+
+    data.fillMulti<bool >(iisloose_, mu.isLooseMuon());
+    data.fillMulti<bool >(iistight_, mu.isTightMuon(reco::Vertex(evtInfoFiller_->primaryVertex(), reco::Vertex::Error())));
+    data.fillMulti<bool >(iispf_, mu.isPFMuon());
+    data.fillMulti<bool >(iisglobal_, mu.isGlobalMuon());
+    data.fillMulti<bool >(iistracker_, mu.isTrackerMuon());
+    data.fillMulti<bool >(iisstandalone_, mu.isStandAloneMuon());
+
+    if(options_ & FILLIDVARS) {
+      data.fillMulti<float>(inChi2_, mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0);
+      data.fillMulti<int  >(inValidHits_, mu.numberOfValidHits());
+      data.fillMulti<int  >(inMatch_, mu.numberOfMatchedStations());
+      data.fillMulti<int  >(inPixHits_, mu.innerTrack().isNonnull() ? mu.innerTrack()->hitPattern().numberOfValidPixelHits() : 0);
+      data.fillMulti<int  >(inTrackLayers_, mu.innerTrack().isNonnull() ? mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() : 0);
+    }
+
+    if(options_ & FILLISOVARS) {
+      data.fillMulti<float>(itrackiso_, mu.trackIso());
+      data.fillMulti<float>(iecaliso_, mu.ecalIso());
+      data.fillMulti<float>(ihcaliso_, mu.hcalIso());
+      data.fillMulti<float>(ipfchargediso_, mu.pfIsolationR04().sumChargedHadronPt);
+      data.fillMulti<float>(ipfneutraliso_, mu.pfIsolationR04().sumNeutralHadronEt);
+      data.fillMulti<float>(ipfphotoniso_, mu.pfIsolationR04().sumPhotonEt);
+      data.fillMulti<float>(ipfpuiso_, mu.pfIsolationR04().sumPUPt);
     }
 
   }
   isFilled_ = true;
+
 }
