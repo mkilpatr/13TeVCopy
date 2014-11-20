@@ -21,6 +21,7 @@
 // Data products
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 #include "AnalysisBase/Analyzer/interface/PatJetFiller.h"
+#include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 #include "AnalysisBase/Analyzer/interface/MuonFiller.h"
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
 #include "AnalysisBase/Analyzer/interface/TauFiller.h"
@@ -49,7 +50,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS, GENPARTICLES};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
       virtual void initialize(const edm::ParameterSet& cfg, VarType type, int options = -1, std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
 
@@ -73,6 +74,7 @@ namespace ucsbsusy {
     public:
       EventInfoFiller * eventInfo;
       PatJetFiller    * ak4Jets;
+      RecoJetFiller   * puppiJets;
       MuonFiller      * muons;
       ElectronFiller  * electrons;
       TauFiller       * taus;

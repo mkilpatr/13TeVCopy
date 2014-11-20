@@ -62,27 +62,36 @@ void PhysicsAnalyzer::fill()
 //--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int options, std::string branchName){
   switch (type) {
+
     case EVTINFO : {
-      eventInfo = new EventInfoFiller(
-          cfg.getParameter<edm::InputTag>("vertices")
-         ,cfg.getParameter<edm::InputTag>("rho")
-         ,cfg.getParameter<edm::InputTag>("mets")
-         );
+      eventInfo = new EventInfoFiller(cfg.getParameter<edm::InputTag>("vertices"),
+                                      cfg.getParameter<edm::InputTag>("rho"),
+                                      cfg.getParameter<edm::InputTag>("mets")
+                                      );
       initializedFillers.push_back(eventInfo);
       break;
     }
+
     case GENPARTICLES : {
-      int defaultOptions = GenParticleFiller::defaultOptions | (cfg.getUntrackedParameter<bool>("saveAllGenParticles") ? GenParticleFiller::SAVEALL : GenParticleFiller::NULLOPT);
-      genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName,
-          cfg.getParameter<edm::InputTag>("prunedGenParticles")
-         );
+      int defaultOptions = GenParticleFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("saveAllGenParticles")) defaultOptions |= GenParticleFiller::SAVEALL;
+
+      genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options,
+                                           branchName == "" ? defaults::BRANCH_GENPARTS : branchName,
+                                           cfg.getParameter<edm::InputTag>("prunedGenParticles")
+                                           );
       initializedFillers.push_back(genparticles);
       break;
     }
+
     case AK4JETS : {
-      int defaultOptions = PatJetFiller::defaultOptions | ((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo")) ? PatJetFiller::LOADGEN : PatJetFiller::NULLOPT);
-      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo")) defaultOptions |= PatJetFiller::LOADJETSHAPE;
-      ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName, eventInfo
+      int defaultOptions = PatJetFiller::defaultOptions; 
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
+
+      ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options
+                             , branchName == "" ? defaults::BRANCH_AK4JETS : branchName
+                             , eventInfo
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
@@ -92,21 +101,71 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int
       initializedFillers.push_back(ak4Jets);
       break;
     }
+
+    case PUPPIJETS : {
+      int defaultOptions = RecoJetFiller::defaultOptions;
+
+      puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                    branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
+                                    eventInfo,
+                                    cfg.getParameter<edm::InputTag>("jetsPuppi"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetsPuppi"),
+                                    cfg.getParameter<edm::InputTag>("stdGenJetsPuppi"),
+                                    cfg.getUntrackedParameter<bool>("fillReGenJetsPuppi"),
+                                    cfg.getUntrackedParameter<double>("minJetPtPuppi")
+                                    );
+      initializedFillers.push_back(puppiJets);
+      break;
+    }
+
     case ELECTRONS : {
-      electrons = new ElectronFiller(cfg, isMC());
+      int defaultOptions = ElectronFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillElectronIDVars"))       defaultOptions |= ElectronFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillElectronIsoVars"))      defaultOptions |= ElectronFiller::FILLISOVARS;
+      if(cfg.getUntrackedParameter<bool>("evaluateElectronPOGIDMVA")) defaultOptions |= ElectronFiller::FILLPOGMVA;
+
+      electrons = new ElectronFiller(options < 0 ? defaultOptions : options,
+                                     branchName == "" ? defaults::BRANCH_ELECTRONS : branchName,
+                                     eventInfo,
+                                     cfg.getParameter<edm::InputTag>("electrons"),
+                                     cfg.getUntrackedParameter<int>("bunchSpacing"),
+                                     cfg.getUntrackedParameter<double>("minElectronPt")
+                                     );
       initializedFillers.push_back(electrons);
       break;
     }
+
     case MUONS : {
-      muons = new MuonFiller(cfg, isMC());
+      int defaultOptions = MuonFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillMuonIDVars"))  defaultOptions |= MuonFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillMuonIsoVars")) defaultOptions |= MuonFiller::FILLISOVARS;
+
+      muons = new MuonFiller(options < 0 ? defaultOptions : options,
+                            branchName == "" ? defaults::BRANCH_MUONS : branchName,
+                            eventInfo,
+                            cfg.getParameter<edm::InputTag>("muons"),
+                            cfg.getUntrackedParameter<bool>("requireLooseMuon"),
+                            cfg.getUntrackedParameter<double>("minMuonPt")
+                            );
       initializedFillers.push_back(muons);
       break;
     }
+
     case TAUS : {
-      taus = new TauFiller(cfg);
+      int defaultOptions = TauFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators")) defaultOptions |= TauFiller::FILLRAWDISCS;
+      if(cfg.getUntrackedParameter<bool>("printTauIDs"))              defaultOptions |= TauFiller::PRINTIDS;
+
+      taus = new TauFiller(options < 0 ? defaultOptions : options,
+                           branchName == "" ? defaults::BRANCH_TAUS : branchName,
+                           eventInfo,
+                           cfg.getParameter<edm::InputTag>("taus"),
+                           cfg.getUntrackedParameter<double>("minTauPt")
+                           );
       initializedFillers.push_back(taus);
       break;
     }
+
     default : {
       cout << endl << "No settings for type: " << type << " found!" << endl;
       break;
