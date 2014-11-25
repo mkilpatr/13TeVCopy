@@ -37,6 +37,11 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
+from ObjectProducers.Puppi.Puppi_cff import *
+process.puppi = puppi
+
+
+
 SplittinessConfig = cms.PSet( mvaVsDirtyDecluster = cms.string("data/decluster_pruning_discriminator_bdt.root:MVAvsDirty_m_dij_z")
                             , mvaVsMixedDecluster = cms.string("data/decluster_splitting_discriminator_bdt.root:MVAvsMixed_m_t1_t2_t3_t4_dij_cE_sE")
                             , mvaVsDirtyNsubjetti = cms.string("data/nsubjettiness_pruning_discriminator_bdt.root:MVAvsDirty_pu2_pt2_hP_lP_c_dr")
@@ -52,13 +57,30 @@ SplittinessConfig = cms.PSet( mvaVsDirtyDecluster = cms.string("data/decluster_p
 
 
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import *
+
+# process.analyzer = cms.EDFilter('JetSubstructureAnalyzer',
+#   SplittinessConfig,
+#   nominal_configuration,
+#   runOnPuppi        = cms.bool(False),
+#   recoJets          = cms.InputTag('redCA1',''),
+#   genParts          = cms.InputTag('packedGenParticles'),
+#   recoParts         = cms.InputTag('packedPFCandidates'),
+# )
+# from ObjectProducers.JetProducers.redefined_jet_producers_cfi import *
+# process.redCA1 = redCA1
+# process.redCA1.jetPtMin       = 30
+# process.p = cms.Path(process.redCA1 *process.analyzer)
+
 process.analyzer = cms.EDFilter('JetSubstructureAnalyzer',
   SplittinessConfig,
-  nominal_configuration
+  nominal_configuration,
+  runOnPuppi        = cms.bool(True),
+  recoJets          = cms.InputTag('redCA1',''),
+  genParts          = cms.InputTag('packedGenParticles'),
+  recoParts         = cms.InputTag('puppi','Puppi'),
 )
-process.analyzer.minJetPt          = 30.0
-
 from ObjectProducers.JetProducers.redefined_jet_producers_cfi import *
-process.redCA1 = redCA1
-process.redCA1.producePU       = True
-process.p = cms.Path(process.redCA1 *  process.analyzer)
+process.redCA1 = redCA1Puppi
+process.redCA1.jetPtMin       = 30
+process.p = cms.Path(process.puppi * process.redCA1 *process.analyzer)
+
