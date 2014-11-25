@@ -57,38 +57,45 @@ T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMC
   }
 };
 
-void T2bWTreeAnalyzer::load(VarType type, int options, string branchName)
-{
-  switch (type) {
-    case EVTINFO : {
-      reader.load(&evtInfoReader, 0, "");
-      break;
-    }
-    case AK4JETS : {
-      int defaultOptions = (JetReader::defaultOptions | JetReader::LOADJETSHAPE) | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
-      reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? "ak4pfchs" : branchName);
-      break;
-    }
-    default : {
-      cout << endl << "No settings for type: " << type << " found!"<<endl;
-      break;
-    }
-  }
-}
+//void T2bWTreeAnalyzer::load(VarType type, int options, string branchName)
+//{
+//  switch (type) {
+//    case EVTINFO : {
+//      reader.load(&evtInfoReader, 0, "");
+//      break;
+//    }
+//    case AK4JETS : {
+//      int defaultOptions = (JetReader::defaultOptions | JetReader::LOADJETSHAPE) | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+//      reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? "ak4pfchs" : branchName);
+//      break;
+//    }
+//    default : {
+//      cout << endl << "No settings for type: " << type << " found!"<<endl;
+//      break;
+//    }
+//  }
+//}
 void T2bWTreeAnalyzer::processVariables(){
   filterJets(jets,minPT,maxETA);
   fillSearchVars();
   if(loadedT2BW)
     computeT2BWDiscriminators();
 }
-void T2bWTreeAnalyzer::filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA){
+void T2bWTreeAnalyzer::filterJets(vector<RecoJetF*>& newJets, const double minPT, const double maxETA){
   newJets.resize(0);
   newJets.reserve(ak4Reader.recoJets.size());
-  for(auto& jet : ak4Reader.recoJets)
+  for(auto& jet : ak4Reader.recoJets){
     if(JetKinematics::passCuts(jet,minPT,maxETA))
       newJets.push_back(&jet);
+  }
 }
 void T2bWTreeAnalyzer::fillSearchVars(){
+
+  nElectrons = 0;
+  nMuons = 0;
+  for(const auto& l : electronReader.electrons)  if(l.pt() >= 5 && TMath::Abs(l.eta()) < 2.4 && l.isgoodpogelectron()) nElectrons++;
+  for(const auto& l : muonReader.muons)  if(l.pt() >= 5 && TMath::Abs(l.eta()) < 2.4 && l.isgoodpogmuon()) nMuons++;
+
   met = &evtInfoReader.met;
   met_pt = met->pt();
 
@@ -107,6 +114,7 @@ void T2bWTreeAnalyzer::fillSearchVars(){
   leadLeadQL = 0;
   secLeadQL  = 0;
   prodQL     = 1;
+
   for(const auto * jet : jets){
     double qgl = ak4Reader.jetqgl_->at(jet->index());
     prodQL *= qgl;

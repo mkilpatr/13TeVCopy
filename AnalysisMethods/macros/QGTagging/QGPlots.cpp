@@ -21,7 +21,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/Ana
 //Plot all
 {
    TFile *f8 = new TFile("8TeV.root","read");
-   TFile *f13 = new TFile("13TeV.root","read");
+   TFile *f13 = new TFile("comp.root","read");
    TString T2bWPreselVars[] = {
        "met"               ,
        "num_j30"           ,
@@ -58,16 +58,21 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/Ana
       TH1 * d8  = (TH1*)f8->Get("mva_vars_" + presel + "__"+vars[iV]+"_data");
       TH1 * tw8 = (TH1*)f8->Get("mva_vars_" + presel + "__"+vars[iV]+"_tw");
       TH1 * nt8 = (TH1*)f8->Get("mva_vars_" + presel + "__"+vars[iV]+"_nont");
-      TH1 * t13 = (TH1*)f13->Get("ttbar_" + presel + "__"+vars[iV]);
-      TH1 * s13 = (TH1*)f13->Get("signal_" + presel + "__"+vars[iV]);
-      cout << "8TeV_mva_vars_" + presel + "__"+vars[iV]+"_data"<<endl;
-      cout << d8 <<" "<<tw8<<" "<<nt8<<" "<<t13<<" "<<s13<<endl;
-      p = new Plot();
-      d8->Add(nt8, -1);
+      TH1 * w13 = (TH1*)f13->Get("wjets_incl__" + presel + "__"+vars[iV]);
+      TH1 * z13 = (TH1*)f13->Get("Znunu_incl__" + presel + "__"+vars[iV]);
+      TH1 * t13 = (TH1*)f13->Get("ttbar_incl__" + presel + "__"+vars[iV]);
+      TH1 * s13 = (TH1*)f13->Get("T2tt_850_100_incl__" + presel + "__"+vars[iV]);
+      // cout << "8TeV_mva_vars_" + presel + "__"+vars[iV]+"_data"<<endl;
+      // cout << d8 <<" "<<tw8<<" "<<nt8<<" "<<t13<<" "<<s13<<endl;
+      tw8->Add(nt8);
       
-      p->add(d8,"8TeV data - non ttbar + W MC");
-      p->add(tw8,"8TeV ttbar + W MC");
-      p->add(t13,"13TeV ttbar MC");
+      p = new Plot();
+      // d8->Add(nt8, -1);
+      t13->Add(w13);
+      t13->Add(z13);
+      p->add(d8,"8TeV data");
+      p->add(tw8,"8TeV MC");
+      p->add(t13,"13TeV MC");
       p->add(s13,"13TeV signal");
       p->toUnderOverflow();
       p->normalize();
@@ -204,11 +209,11 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/Ana
 
 #Classification
 
-p = new Plot("gen__none__.*__nearDR"); p->toUnderOverflow(); p->draw("","/i");
+p = new Plot("gen__none__def_.*__nearDR"); p->toUnderOverflow(); p->draw("","/i");
 
-p = new Plot("reco__none__.*__nearDR"); p->toUnderOverflow();  p->draw("","/i");
+p = new Plot("reco__none__def_.*__nearDR"); p->toUnderOverflow(); p->draw("","/i");
 
-p = new Plot("reco__none__.*__betaStar_o_cut$"); p->toUnderOverflow(); p->normalize(); p->draw("",":i(.2,-1)");
+p = new Plot("reco__none__def_.*__betaStar_o_cut$"); p->toUnderOverflow(); p->normalize(); p->draw("",":i(.2,-1)");
 
 {
    npu = new Plot("reco__npv_.*__nonPU__betaStar_o_cut$");
@@ -235,15 +240,16 @@ p = new Plot("reco__none__def_.*__csv$"); p->toUnderOverflow(); p->normalize(); 
 
 
 {
-   TString vars[] = {"ptD$","axis1$","axis2$","mult$","qgl$",""};
+   // TString vars[] = {"ptD$","axis1$","axis2$","mult$","qgl$",""};
+   TString vars[] = {"qgl$","newQgl$","newQglwPU$",""};
    
    for(unsigned int iV = 0; vars[iV][0]; ++iV){
       o = new TObjArray();
       
 
       
-      pq = new Plot("npv_.*__def_uds_quark__" + vars[iV] );
-      pg = new Plot("npv_.*__def_gluon__" + vars[iV] );
+      pq = new Plot("reco__npv_.*__def_uds_quark__" + vars[iV] );
+      pg = new Plot("reco__npv_.*__def_gluon__" + vars[iV] );
       pq->toUnderOverflow();
       pg->toUnderOverflow();
       pq->normalize();
@@ -258,17 +264,19 @@ p = new Plot("reco__none__def_.*__csv$"); p->toUnderOverflow(); p->normalize(); 
       pg->SetTitle("gluon");
       o->Add(pg);
       
-      p = new Plot("gen__none__def_(uds_quark|gluon)__"+vars[iV]);
-      if(p.getNumberOfHistograms() == 0)   
-       p = new Plot("reco__none__def_(uds_quark|gluon)__"+vars[iV]);
+      p = new Plot("gen__none__def_(uds_quark|gluon|b_quark)__"+vars[iV]);
+      p->SetTitle("gen");
+      // if(p.getNumberOfHistograms() == 0){
+       p = new Plot("reco__none__def_(uds_quark|gluon|b_quark)__"+vars[iV]);
+       p->SetTitle("reco");
+    // }
       p->toUnderOverflow();
       p->normalize();
-      p->SetTitle("gen");
       o->Add(p);
      
 
 
-         Pint::drawAll(o,"");
+         Pint::drawAll(o,vars[iV]);
    }
    
 }

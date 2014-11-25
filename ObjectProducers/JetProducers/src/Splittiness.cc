@@ -127,8 +127,6 @@ Njettiness::AxesMode  Splittiness::getMode(std::string setting){
 
 void Splittiness::setProductIDs(const edm::ProductID& recoParticlesID, const edm::ProductID& genParticlesID)
 {
-  recoID  = recoParticlesID;
-  genID   = genParticlesID ;
 }
 
 
@@ -136,7 +134,7 @@ void Splittiness::setProductIDs(const edm::ProductID& recoParticlesID, const edm
 //    Computations
 //=============================================================================
 
-Splittiness::JetDeposition::JetDeposition( const std::vector<fastjet::PseudoJet*>& subJets, const edm::ProductID& recoID, const edm::ProductID& genID )
+Splittiness::JetDeposition::JetDeposition( const std::vector<fastjet::PseudoJet*>& subJets )
   : lobes         ( 2
                   , 200
                   , 10
@@ -185,8 +183,6 @@ Splittiness::JetDeposition::JetDeposition( const std::vector<fastjet::PseudoJet*
 //_____________________________________________________________________________
 void Splittiness::cacheJetInfo(const fastjet::PseudoJet& superJet, const std::vector<fastjet::PseudoJet*>* subJets, bool forceReset) const
 {
-  if (!recoID.isValid())
-    throw cms::Exception("Splittiness.cacheJetInfo()", "recoID is not valid -- are you sure that you have called setProductIDs() beforehand?");
 
   ////std::cout << "========  CACHE  ========  " << currentJet;
   if (forceReset || currentJet != &superJet) {
@@ -204,7 +200,7 @@ void Splittiness::cacheJetInfo(const fastjet::PseudoJet& superJet, const std::ve
 
   if (subJets && !jetStuff) {
     ////std::cout << " ... !!!! ";
-    jetStuff              = new JetDeposition( *subJets, recoID, genID );
+    jetStuff              = new JetDeposition( *subJets);
   }
   ////std::cout << std::endl;
 }

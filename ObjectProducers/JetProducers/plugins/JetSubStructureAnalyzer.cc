@@ -68,6 +68,7 @@ JetVars(const std::string name, TreeWriterData* data){
 
 class SubJetFiller : public JetFillerBase, public BaseFiller {
 protected:
+  const bool          runOnPuppi_;
   const edm::InputTag jetTag_;
   const edm::InputTag genPrtSrc_;
   const edm::InputTag prtSrc_;
@@ -80,13 +81,15 @@ public:
   edm::Handle<edm::ValueMap<reco::CandidatePtr> >  puJetsPtr_;
   edm::Handle<pat::PackedGenParticleCollection> genParticles;
   edm::Handle<pat::PackedCandidateCollection> pfCandidates;
+  edm::Handle<reco::PFCandidateCollection> pfPuppiCandidates;
   Splittiness * splittiness;
 public:
   JetVars* recoJetVars;
   JetVars* genJetVars;
 
 public:
-  SubJetFiller(const int options, const string branchName, const edm::InputTag jetTag,const edm::InputTag genPrtSrc,const edm::InputTag prtSrc, const double jptMin, Splittiness * splittiness_ ) : BaseFiller(options, branchName)
+  SubJetFiller(const int options, const string branchName, const bool runOnPuppi, const edm::InputTag jetTag,const edm::InputTag genPrtSrc,const edm::InputTag prtSrc, const double jptMin, Splittiness * splittiness_ ) : BaseFiller(options, branchName)
+  , runOnPuppi_      (runOnPuppi)
   , jetTag_          (jetTag)
   , genPrtSrc_       (genPrtSrc)
   , prtSrc_          (prtSrc)
@@ -99,16 +102,19 @@ public:
   {}
   virtual ~SubJetFiller() {delete recoJetVars; delete genJetVars;}
   virtual void load(const edm::Event& iEvent) {
+    reset();
     FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
-    FileUtilities::enforceGet(iEvent,prtSrc_,pfCandidates,true);
+
+    if(runOnPuppi_) FileUtilities::enforceGet(iEvent,prtSrc_,pfPuppiCandidates,true);
+    else FileUtilities::enforceGet(iEvent,prtSrc_,pfCandidates,true);
+
     if(options_ & LOADGEN){
       FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"Gen"),reGenJets_,true);
       FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"GenPtr"),genJetsPtr_,true);
       FileUtilities::enforceGet(iEvent,genPrtSrc_,genParticles,true);
     }
-    FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"PU"),puJets_,true);
-    FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"PUPtr"),puJetsPtr_,true);
-    splittiness->setProductIDs   (this);
+    FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"PU"),puJets_,false);
+    FileUtilities::enforceGet(iEvent,edm::InputTag(jetTag_.label(),"PUPtr"),puJetsPtr_,false);
   }
 
   template<typename Prt,typename Prt2>
@@ -209,6 +215,7 @@ public:
     data.fillMulti<float>(vars->splitDisc            );
     data.fillMulti<int  >(vars->shouldSplit          );
     }
+    PhysicsUtilities::trash(subJets);
 
 
   }
@@ -227,7 +234,8 @@ public:
       const reco::PFJet& jet = (*jets_)[iJ];
       if(jet.pt() < jptMin_){continue;}
       if(jet.nConstituents() < 3) continue;
-      fillJet(recoJetVars, pfCandidates, &jet, pfCandidates,&puJets_->at(iJ) );
+      if(runOnPuppi_) fillJet(recoJetVars, pfPuppiCandidates, &jet, pfPuppiCandidates, puJets_.isValid() ? &puJets_->at(iJ) : 0);
+      else fillJet(recoJetVars, pfCandidates, &jet, pfCandidates,puJets_.isValid() ? &puJets_->at(iJ) : 0 );
     }
   }
 };
@@ -240,7 +248,7 @@ class JetSubstructureAnalyzer : public PhysicsAnalyzer {
     {
       initialize(cfg,EVTINFO);
       if(isMC()) initialize(cfg,GENPARTICLES);
-      SubJetFiller * jetFiller = new SubJetFiller( SubJetFiller::LOADGEN, "CA1", edm::InputTag("redCA1",""), edm::InputTag("packedGenParticles"), edm::InputTag("packedPFCandidates"),30, &splittiness);
+      SubJetFiller * jetFiller = new SubJetFiller( SubJetFiller::LOADGEN, "CA1",cfg.getParameter<bool>("runOnPuppi"), cfg.getParameter<edm::InputTag>("recoJets"), cfg.getParameter<edm::InputTag>("genParts"), cfg.getParameter<edm::InputTag>("recoParts"),30, &splittiness);
       initialize(jetFiller);
       book();
     }

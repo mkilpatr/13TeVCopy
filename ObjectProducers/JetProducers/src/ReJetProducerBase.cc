@@ -3,20 +3,19 @@
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 
-#include "ObjectProducers/JetProducers/plugins/RedefinedJetProducer.h"
-#include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+
+#include "ObjectProducers/JetProducers/interface/ReJetProducerBase.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 
 using namespace ucsbsusy;
 using namespace std;
 //--------------------------------------------------------------------------------------------------
-RedefinedJetProducer::RedefinedJetProducer(const edm::ParameterSet& iConfig) :
+ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
           isRealData      (iConfig.getParameter<int             >("isRealData"                 ))
         , produceGen      (isRealData == 0 && iConfig.getParameter<bool            >("produceGen"                 ))
         , ignoreBosonInv  (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBosonInv"                 ))
         , ignoreBSMInv    (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBSMInv"                 ))
-        , producePU       (iConfig.getParameter<bool            >("producePU"                 ))
         , src             (iConfig.getParameter<edm::InputTag>("src"))
         , genMotherSrc    (iConfig.getParameter<edm::InputTag>("genMotherSrc"))
         , genSrc          (iConfig.getParameter<edm::InputTag>("genSrc"))
@@ -33,10 +32,6 @@ RedefinedJetProducer::RedefinedJetProducer(const edm::ParameterSet& iConfig) :
       produces< reco::GenJetCollection            >("Gen"   );
       produces< edm::ValueMap<reco::CandidatePtr> >("GenPtr");
     }
-    if(producePU){
-      produces<reco::PFJetCollection>("PU");
-      produces< edm::ValueMap<reco::CandidatePtr> >("PUPtr" );
-    }
 
     if (jetAlgorithmName=="CambridgeAachen")
       jetAlgo = fastjet::cambridge_aachen_algorithm;
@@ -50,7 +45,7 @@ RedefinedJetProducer::RedefinedJetProducer(const edm::ParameterSet& iConfig) :
     }
 
 //--------------------------------------------------------------------------------------------------
-void RedefinedJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
+void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
   for(unsigned int iP = 0; iP < genParticles->size(); ++iP){
     const pat::PackedGenParticle& p = genParticles->at(iP);
     if(ignoreBSMInv && ParticleInfo::isLSP(p.pdgId())) {vetoes[iP] = true; continue;}
@@ -71,50 +66,14 @@ void RedefinedJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
 }
 
 //--------------------------------------------------------------------------------------------------
-void RedefinedJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
-  iEvent.getByLabel(src,pfCandidates);
+void ReJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if(produceGen){
     iEvent.getByLabel(genSrc,genParticles);
     if(ignoreBosonInv) iEvent.getByLabel(genMotherSrc,genMotherParticles);
   }
 }
 
-//--------------------------------------------------------------------------------------------------
-void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
-  load(iEvent,iSetup);
-
-  //-- Cluster jets -----------------------------------------------------------
-  FastJetClusterer                                    clusterer(true, true);
-
-  clusterer.addParticles<pat::PackedCandidate>(pfCandidates,FastJetClusterer::RECO, -1, minParticlePT, maxParticleEta, &isNonPUParticle,0 );
-  if(produceGen){
-    vector<bool>* vetoes = 0;
-    if(ignoreBosonInv || ignoreBSMInv){
-      vetoes = new vector<bool>(genParticles->size(), false);
-      vetoGenPart(*vetoes);
-    }
-    clusterer.addParticles<pat::PackedGenParticle>( genParticles,FastJetClusterer::GEN, -1, minParticlePT, maxParticleEta, 0,vetoes, 1e-50 );
-    delete vetoes;
-  }
-  if (producePU)  clusterer.addParticles<pat::PackedCandidate>( pfCandidates ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,&isPUParticle,0, 1e-50);
-
-  clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
-
-  std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
-  clusterer.distillJets(pfCandidates  , *recoJets, iSetup,&isNonPUParticle, true);
-
-  std::auto_ptr<reco::GenJetCollection>               genJets ;
-  if (produceGen){
-    genJets.reset(new reco::GenJetCollection);
-    clusterer.distillJets<pat::PackedGenParticle, reco::GenJet>(genParticles, *genJets , iSetup,0, true);
-  }
-
-  std::auto_ptr<reco::PFJetCollection>                puInJets;
-  if (producePU){
-    puInJets.reset(new reco::PFJetCollection);
-    clusterer.distillJets(pfCandidates  , *puInJets, iSetup,&isPUParticle, true);
-  }
-
+void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets, std::auto_ptr<reco::PFJetCollection> puJets){
   edm::OrphanHandle<reco::PFJetCollection>            jetsHandle;
   edm::OrphanHandle<reco::PFJetCollection>            puJetsHandle;
   edm::OrphanHandle<reco::GenJetCollection>           genJetsHandle;
@@ -122,10 +81,9 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   std::auto_ptr<reco::PFJetCollection>                sortedRecoJets  (new reco::PFJetCollection);
   std::auto_ptr<reco::PFJetCollection>                sortedPuInJets  (new reco::PFJetCollection);
 
-
   //If we produce gen jets we need to make sure to drop jets that fall below the pT threshold
   //of both collections
-  if(produceGen){
+  if(genJets.get() != 0){
     //-- Sort genJet collection -----------------------------------------------
     std::vector<JetSorter>  rankedGenJets; rankedGenJets.reserve(genJets->size());
     for (unsigned int iGen = 0; iGen < genJets->size(); ++iGen) {
@@ -134,10 +92,10 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     } // end loop over genJets
 
     std::vector<int> recoIndices; recoIndices.reserve(rankedGenJets.size());
-    if(producePU) sortedPuInJets->reserve(rankedGenJets.size());
+    if(puJets.get()) sortedPuInJets->reserve(rankedGenJets.size());
     for(const auto& iR : rankedGenJets){
       sortedRecoJets->push_back((*recoJets)[iR.origIndex]);
-      if(producePU) sortedPuInJets->push_back((*puInJets)[iR.origIndex]);
+      if(puJets.get()) sortedPuInJets->push_back((*puJets)[iR.origIndex]);
     }
     std::sort(rankedGenJets.begin(), rankedGenJets.end(), JetSorter());
 
@@ -149,7 +107,7 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
     genJetsHandle = iEvent.put(sortedGen, "Gen");
     jetsHandle = iEvent.put(sortedRecoJets);
-    if(producePU) puJetsHandle  = iEvent.put(sortedPuInJets, "PU");
+    if(puJets.get()) puJetsHandle  = iEvent.put(sortedPuInJets, "PU");
 
     //Make pointers to reco jets
     std::vector<reco::CandidatePtr>                   vGenPtr   (rankedGenJets.size());
@@ -165,10 +123,10 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     iEvent.put(genJetPtr, "GenPtr");
   } else {
     jetsHandle  = iEvent.put(recoJets);
-    if(producePU)puJetsHandle  = iEvent.put(puInJets, "PU");
+    if(puJets.get()) puJetsHandle  = iEvent.put(puJets, "PU");
   }
 
-  if(producePU){
+  if(puJets.get()){
     //-- Associate PU in recoJets -----------------------------------------------
     std::vector<reco::CandidatePtr>                     vPUPtr(puJetsHandle->size());
     for (unsigned int iPU = 0; iPU < vPUPtr.size(); ++iPU)
@@ -180,5 +138,6 @@ void RedefinedJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     fPUPtr.fill();
     iEvent.put(puJetPtr, "PUPtr");
   }
+
 
 }

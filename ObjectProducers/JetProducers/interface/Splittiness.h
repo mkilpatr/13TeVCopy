@@ -34,18 +34,13 @@ public:
     double                pileUpEnergy  ;
     std::vector<double>   subJetPUEnergy;
 
-    JetDeposition ( const std::vector<fastjet::PseudoJet*>& subJets
-                  , const edm::ProductID& recoID
-                  , const edm::ProductID& genID
-                  );
+    JetDeposition ( const std::vector<fastjet::PseudoJet*>& subJets);
   };
   
   enum  PileUpRhoType { RHO_PT, RHO_MASS, numPileUpRhoTypes };
 
 
 protected:
-  edm::ProductID                            recoID;
-  edm::ProductID                            genID ;
   double                                    currentRhoPT  ;
   double                                    currentRhoMass;
 
@@ -86,15 +81,6 @@ public:
 /**********************/
 Njettiness::AxesMode  getMode(std::string setting);
 void  setProductIDs(const edm::ProductID& recoParticlesID, const edm::ProductID& genParticlesID);
-
-template<typename Analyzer>
-void  setProductIDs(const Analyzer* analyzer) {
-  assert(analyzer->pfCandidates.isValid());
-
-  recoID      = analyzer->pfCandidates.id();
-//  if (analyzer->isMC())
-    genID     = analyzer->genParticles.id();
-}
 
 template<typename Particles>
 void  setPileUpInfo( const Particles& particles, double maxParticleEta, double maxPatchEta, double rParameter, double ghostArea, size ignoreNHardest ) {

@@ -30,14 +30,26 @@ namespace ucsbsusy {
     T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
     virtual ~T2bWTreeAnalyzer() {};
 
-    virtual void	load(VarType type, int options = -1, string branchName = "" );
+//    virtual void	load(VarType type, int options = -1, string branchName = "" );
     virtual void  processVariables();
     virtual void runEvent() = 0;
-    void  filterJets(vector<RecoJetF*>& newJets, const bool minPT, const bool maxETA);
+    void  filterJets(vector<RecoJetF*>& newJets, const double minPT, const double maxETA);
     static bool  isMediumBTaggedJet (const RecoJetF& jet) {return jet.csv() > .679;}
     static bool  isTightBTaggedJet(const RecoJetF& jet) {return jet.csv() > .898;}
     void  fillSearchVars();
     void computeT2BWDiscriminators();
+
+    void analyze(int reportFrequency = 10000){
+      loadVariables();
+      isLoaded_ = true;
+      while(reader.nextEvent(reportFrequency)){
+        if(evtInfoReader.met_pt >= 175){
+          processVariables();
+                  runEvent();
+        }
+
+      }
+    }
 
     enum T2BWSearchRegions {T2BW_LX, T2BW_LM, T2BW_MXHM,T2BW_HXHM,T2BW_VHM, NUM_T2BW_SEARCHREGIONS};
     static const double T2BWDiscCuts[NUM_T2BW_SEARCHREGIONS];
@@ -63,6 +75,10 @@ namespace ucsbsusy {
 
     vector<RecoJetF*> jets;
     MomentumF * met;
+
+    //Number of leptons
+    int   nMuons;
+    int   nElectrons;
 
     //common variables for the search region def
     double met_pt;
