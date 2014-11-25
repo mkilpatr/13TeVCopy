@@ -13,6 +13,7 @@
 
 #include <fastjet/JetDefinition.hh>
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
 
 namespace ucsbsusy {
 class ReJetProducer : public edm::EDProducer {
@@ -25,13 +26,12 @@ public:
   /* clusters the jets together....two different ways to add PU particles
    *
    * If puParts != 0, then these are filled into the PU particles
-   * If selectPU != 0, then this si used to fill the PU particles
+   * If selectPU != 0, then this is used to fill the PU particles
    * Where, only the case of selectPU == 0 and puParts == 0 results in no PU jets being prouced
    */
   template<typename RecoPart>
-  FastJetClusterer& ReJetProducer::clusterJets(const std::vector<RecoPart>* recoParts, bool (*selectReco)(const RecoPart&) = 0, const std::vector<RecoPart>* puParts = 0, bool (*selectPU)(const RecoPart&) = 0  ) {
-    FastJetClusterer                                    clusterer(true, true);
-    clusterer.addParticles<RecoPart>(*recoParts,FastJetClusterer::RECO, -1, minParticlePT, maxParticleEta,selectReco);
+  void clusterJets(FastJetClusterer& clusterer, const edm::Handle<std::vector<RecoPart> >& recoParts, const edm::Handle<std::vector<RecoPart> >& puParts, bool (*selectReco)(const RecoPart&) = 0, bool (*selectPU)(const RecoPart&) = 0  ) {
+    clusterer.addParticles<RecoPart>(recoParts,FastJetClusterer::RECO, -1, minParticlePT, maxParticleEta,selectReco);
     if(produceGen){
       std::vector<bool>* vetoes = 0;
       if(ignoreBosonInv || ignoreBSMInv){
@@ -41,11 +41,10 @@ public:
       clusterer.addParticles<pat::PackedGenParticle>( genParticles,FastJetClusterer::GEN, -1, minParticlePT, maxParticleEta, 0,vetoes, 1e-50 );
       delete vetoes;
     }
-    if(puParts || selectPU)
-      clusterer.addParticles<RecoPart>( *(puParts ? puParts : recoParts) ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,selectPU,0, 1e-50);
+    if(puParts.isValid() || selectPU)
+      clusterer.addParticles<RecoPart>( (puParts.isValid() ? puParts : recoParts) ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,selectPU,0, 1e-50);
 
     clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
-    return clusterer;
   }
 
   void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets, std::auto_ptr<reco::PFJetCollection> puJets);

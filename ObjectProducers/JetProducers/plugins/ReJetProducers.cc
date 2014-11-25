@@ -18,7 +18,9 @@ public:
   }
 
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
-    FastJetClusterer& clusterer = clusterJets(&(*recoCandidates));
+    load(iEvent,iSetup);
+    FastJetClusterer                                    clusterer(true, true);
+    clusterJets(clusterer,recoCandidates,edm::Handle<reco::PFCandidateCollection >());
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
     clusterer.distillJets<reco::PFCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup,0, true);
@@ -54,9 +56,10 @@ public:
   }
 
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
-
-    FastJetClusterer& clusterer =  producePU ? clusterJets(&(*recoCandidates), &isNonPUParticle, 0 , &isPUParticle)
-                                             : clusterJets(&(*recoCandidates), &isNonPUParticle);
+    load(iEvent,iSetup);
+    FastJetClusterer                                    clusterer(true, true);
+    producePU ? clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle, &isPUParticle)
+              : clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle);
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
     clusterer.distillJets<pat::PackedCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup,&isNonPUParticle, true);

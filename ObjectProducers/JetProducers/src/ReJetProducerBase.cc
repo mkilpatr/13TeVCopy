@@ -5,7 +5,6 @@
 
 
 #include "ObjectProducers/JetProducers/interface/ReJetProducerBase.h"
-#include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 
