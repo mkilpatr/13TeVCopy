@@ -246,8 +246,8 @@ class JetSubstructureAnalyzer : public PhysicsAnalyzer {
     ANALYZER_MODE
     JetSubstructureAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg) , splittiness      (cfg,false)
     {
-      initialize(cfg,EVTINFO);
-      if(isMC()) initialize(cfg,GENPARTICLES);
+      initialize(cfg,"EventInfo",EVTINFO);
+      if(isMC()) initialize(cfg,"Gen",GENPARTICLES);
       SubJetFiller * jetFiller = new SubJetFiller( SubJetFiller::LOADGEN, "CA1",cfg.getParameter<bool>("runOnPuppi"), cfg.getParameter<edm::InputTag>("recoJets"), cfg.getParameter<edm::InputTag>("genParts"), cfg.getParameter<edm::InputTag>("recoParts"),30, &splittiness);
       initialize(jetFiller);
       book();

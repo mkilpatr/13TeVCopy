@@ -51,7 +51,8 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
     public:
       enum VarType {EVTINFO, AK4JETS, PUPPIJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
-      virtual void initialize(const edm::ParameterSet& cfg, VarType type, int options = -1, std::string branchName = "" );
+      virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
+      virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
 
       //--------------------------------------------------------------------------------------------------

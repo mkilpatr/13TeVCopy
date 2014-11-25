@@ -60,7 +60,16 @@ void PhysicsAnalyzer::fill()
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, VarType type, int options, std::string branchName){
+void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options, const std::string branchName){
+  if(cfg.existsAs<edm::ParameterSet>(pSetName, false)) {
+    edm::ParameterSet fcfg(cfg.getUntrackedParameter<edm::ParameterSet>(pSetName));   // parameter set for this filler
+    bool fill = fcfg.getUntrackedParameter<bool>("isFilled");                         // to fill or not to fill
+    if(fill) initialize(fcfg, type, options, branchName);
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType type, const int options, const std::string branchName){
   switch (type) {
 
     case EVTINFO : {

@@ -20,26 +20,17 @@ class TestAnalyzer : public PhysicsAnalyzer {
     ANALYZER_MODE
     TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
     {
-      addFiller(cfg, "EventInfo", EVTINFO);
-      addFiller(cfg, "Jets", AK4JETS);
-      addFiller(cfg, "PuppiJets", PUPPIJETS);
-      addFiller(cfg, "Electrons", ELECTRONS);
-      addFiller(cfg, "Muons", MUONS);
-      addFiller(cfg, "Taus", TAUS);
-      if(isMC()) addFiller(cfg, "Gen", GENPARTICLES);
+      initialize(cfg, "EventInfo", EVTINFO);
+      initialize(cfg, "Jets", AK4JETS);
+      initialize(cfg, "PuppiJets", PUPPIJETS);
+      initialize(cfg, "Electrons", ELECTRONS);
+      initialize(cfg, "Muons", MUONS);
+      initialize(cfg, "Taus", TAUS);
+      if(isMC()) initialize(cfg, "Gen", GENPARTICLES);
       book();
     }
 
     ~TestAnalyzer() {}
-
-    // check for a named parameter set in cfg and activate corresponding filler
-    void addFiller(const edm::ParameterSet &cfg, const string psetName, VarType type, int options=-1, string branchName="") {
-      if(cfg.existsAs<edm::ParameterSet>(psetName, false)) {
-        edm::ParameterSet fcfg(cfg.getUntrackedParameter<edm::ParameterSet>(psetName));   // parameter set for this filler
-        bool fill = fcfg.getUntrackedParameter<bool>("isFilled");                         // to fill or not to fill
-        if(fill) initialize(fcfg, type, options, branchName);
-      }
-    }
 
     void analyze() {
       fill();
