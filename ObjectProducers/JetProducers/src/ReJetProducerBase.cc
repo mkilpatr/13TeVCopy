@@ -5,7 +5,7 @@
 
 
 #include "ObjectProducers/JetProducers/interface/ReJetProducerBase.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
 
 using namespace ucsbsusy;
@@ -55,7 +55,7 @@ void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
     if(motherInPrunedCollection == nullptr) continue;
     //if its the same as the original lets get the original
     if(motherInPrunedCollection->pdgId() == p.pdgId())
-      motherInPrunedCollection = ParticleInfo::getOriginal(motherInPrunedCollection);
+      motherInPrunedCollection = ParticleUtilities::getOriginal(motherInPrunedCollection);
     const reco::Candidate * orginator = motherInPrunedCollection->mother(0);
     if(orginator == nullptr) orginator = motherInPrunedCollection;
     if(ParticleInfo::isEWKBoson(orginator->pdgId()))

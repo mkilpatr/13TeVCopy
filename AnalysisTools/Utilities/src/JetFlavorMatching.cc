@@ -6,6 +6,7 @@
  */
 
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
+#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
 using namespace ucsbsusy;
 using namespace std;
@@ -34,7 +35,7 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
 
     //.. Require b quarks with no b daughters .................................
     if (particle.status() == ParticleInfo::status_decayed && pdgId == ParticleInfo::p_b) {
-      if (ParticleInfo::isLastInChain(&particle)) {
+      if (ParticleUtilities::isLastInChain(&particle)) {
         bQuarks.push_back(reco::GenParticleRef(particles, iPtcl));
 //        size                              maxIndex      = iPtcl;
         for (size iDau = 0; iDau < particle.numberOfDaughters(); ++iDau) {
@@ -46,7 +47,7 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
           bHadronizations.push_back(reco::GenParticleRef(particles, particle.daughterRef(iDau).key()));
         } // end loop over daughters
         if (bHadronizations.size() != bQuarks.size()) {
-          ParticleInfo::printGenInfo(*particles, -1);
+          ParticleUtilities::printGenInfo(*particles, -1);
           throw cms::Exception("JetFlavorMatching.getBHadronDecays()", TString::Format("Failed to obtain hadronization link for a b-quark (index %d).", iPtcl).Data());
         }
       }
@@ -286,7 +287,7 @@ void JetFlavorMatching::storeBHadronInfo( const vector<pat::Jet>& jets, const ve
         const HadronDecay&                        hadron        = *mainBs[iHadron].first;
         for (size iQuark = 0; iQuark < hadron.quark.size(); ++iQuark) {
           jet.addGenParticleRef(hadron.quark[iQuark]);
-          const reco::GenParticle*                original      = ParticleInfo::getOriginal( hadron.quark[iQuark].get() );
+          const reco::GenParticle*                original      = ParticleUtilities::getOriginal( hadron.quark[iQuark].get() );
           if (original->status() == ParticleInfo::status_doc)   ++numMEPartons;
         } // end loop over quarks
       } // end loop over contributing B hadrons
@@ -385,7 +386,7 @@ reco::GenParticleRef JetFlavorMatching::getMainBQuark(const pat::Jet& jet, const
     reco::GenParticleRef      genParticle     = jet.genParticleRef(iGen);
     assert(genParticle.isNonnull());
     if (TMath::Abs(genParticle->pdgId()) == ParticleInfo::p_b && ++count > which)
-      return ParticleInfo::getOriginal(genParticle, genParticles);
+      return ParticleUtilities::getOriginal(genParticle, genParticles);
   } // end loop over genParticles
 
   static const reco::GenParticleRef   NADA;

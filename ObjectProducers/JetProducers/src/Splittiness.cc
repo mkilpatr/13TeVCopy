@@ -10,6 +10,7 @@
 #include "AnalysisBase/Analyzer/interface/FileUtilities.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 //#include "SUSYReferenceAnalysis2/BackgroundEstimation/interface/ShapeTools.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 
 using namespace std;

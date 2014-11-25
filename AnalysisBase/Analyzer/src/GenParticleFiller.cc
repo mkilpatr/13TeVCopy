@@ -91,14 +91,14 @@ void GenParticleFiller::fill()
   // get daughters of bosons or of taus from boson decay
   for(size_t i = 0; i < bosons.size(); i++) {
     const reco::GenParticle *dau1=0, *dau2=0, *taudecay1=0, *taudecay2=0;
-    ParticleInfo::findBosonDaughters(*genParticles_, bosons[i], dau1, dau2);
+    ParticleUtilities::findBosonDaughters(*genParticles_, bosons[i], dau1, dau2);
     fillDataBlock(*boson, bosons[i]);
 
     if(dau1) {
       fillDataBlock(*boson_daughter, dau1);
       // get tau information if any
       if(ParticleInfo::isA(ParticleInfo::p_tauminus, dau1)) {
-        ParticleInfo::findTauDaughter(*genParticles_, dau1, taudecay1);
+        ParticleUtilities::findTauDaughter(*genParticles_, dau1, taudecay1);
         if(taudecay1)
           fillDataBlock(*tau_daughter, taudecay1);
       }
@@ -108,7 +108,7 @@ void GenParticleFiller::fill()
       fillDataBlock(*boson_daughter, dau2);
       // get tau information if any
       if(ParticleInfo::isA(ParticleInfo::p_tauminus, dau2)) {
-        ParticleInfo::findTauDaughter(*genParticles_, dau2, taudecay2);
+        ParticleUtilities::findTauDaughter(*genParticles_, dau2, taudecay2);
         if(taudecay2)
           fillDataBlock(*tau_daughter, taudecay2);
       }
