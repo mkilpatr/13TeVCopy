@@ -20,8 +20,8 @@ enum  HadronType  { OTHER
                   , BPLUS, B0, BSPLUS, LAMBDAB0, B_MESON, B_BARYON
                   , numDetailedHadronTypes
                   };
-
-enum ParticleStatus { status_unknown, status_final, status_decayed, status_doc };
+enum ParticleStatus { FINAL,INTERMEDIATE, DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING, INCOMING, UNKNOWN};
+//enum ParticleStatus { status_unknown, status_final, status_decayed, status_doc };
 enum ParticleID     { p_unknown, p_d, p_u, p_s, p_c, p_b, p_t, p_bprime, p_tprime,
                       p_eminus = 11, p_nu_e, p_muminus, p_nu_mu, p_tauminus, p_nu_tau,
                       p_tauprimeminus, p_nu_tauprime, p_g = 21, p_gamma, p_Z0,
@@ -48,6 +48,34 @@ enum ParticleID     { p_unknown, p_d, p_u, p_s, p_c, p_b, p_t, p_bprime, p_tprim
                     };
 enum  { p_LSP = 1000022 };
 
+//_____________________________________________________________________________
+// process status information
+//_____________________________________________________________________________
+//// is a final, non-decayed particle
+bool isFinal(const int status) {return status == 1;}
+//// is a non-final decayed particle
+bool isIntermediate(const int status) {return status >= 71;}
+//Doc particle that will be altered before becoming outgoing
+int isDocIntermediate(const int status){return status == 22;}
+//An altered version of a doc particle in prep for becoming outgoing
+int isDocAltered(const int status){return status >= 41 && status < 71;}
+//Doc particle that is outgoing
+int isDocOutgoing(const int status){return status == 23 || status == 24;}
+// Is incoming particle
+bool isIncoming(const int status) {return status <= 21;}
+
+// is a documentaiton particle, a part of the original particles that define the event
+bool isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
+ParticleStatus getStatus(const int status)
+{
+  if(isFinal(status)) return FINAL;
+  else if(isIntermediate(status)) return INTERMEDIATE;
+  else if(isDocAltered(status)) return DOC_ALTERED;
+  else if(isDocIntermediate(status)) return DOC_INTERMEDIATE;
+  else if(isDocOutgoing(status)) return DOC_OUTGOING;
+  else if(isIncoming(status)) return INCOMING;
+  else return UNKNOWN;
+}
 
 //_____________________________________________________________________________
 // Check particle type from PDGID

@@ -29,11 +29,9 @@ bool ParticleUtilities::isAncestor(const ParticleA* ancestor, const ParticleB* p
 template<typename Particle>
 bool ParticleUtilities::isOutgoing(const Particle* particle)
 {
-  if (particle->status() != ParticleInfo::status_doc)   return false;
-  for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau)
-    if (particle->daughter(iDau)->status() == ParticleInfo::status_doc)
-      return false;
-  return true;
+ const int status = particle->status();
+ if(ParticleInfo::isDocOutgoing(status)) return true;
+ return false;
 }
 
 //_____________________________________________________________________________
@@ -143,7 +141,7 @@ int ParticleUtilities::getDecayProducts(const Particle* particle, std::vector<Ou
   bool                hasDocumented = false;
   for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau)
     if ( particle->daughter(iDau)->pdgId () != particle->pdgId() 
-      && particle->daughter(iDau)->status() == ParticleInfo::status_doc
+      && ParticleInfo::isDoc(particle->daughter(iDau)->status())
        ) {
       hasDocumented   = true;
       break;
@@ -152,7 +150,7 @@ int ParticleUtilities::getDecayProducts(const Particle* particle, std::vector<Ou
   int                 totalProducts = 0;
   int                 numDecays     = 0;
   for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau) {
-    if (hasDocumented && (particle->daughter(iDau)->status() != ParticleInfo::status_doc))  continue;
+    if (hasDocumented && !ParticleInfo::isDoc(particle->daughter(iDau)->status()))  continue;
 
     const int         daughterID    = particle->daughter(iDau)->pdgId();
     if (daughterID == particle->pdgId())  continue;
@@ -187,17 +185,21 @@ template<typename Particle>
 std::vector<const Particle*> ParticleUtilities::getProgenitors(const std::vector<Particle>& particles)
 {
   std::vector<const Particle*>      progenitors;
-  for (unsigned iGen = 6; iGen < particles.size(); ++iGen) {
+  for (unsigned iGen = 0; iGen < particles.size(); ++iGen) {
     const Particle&                 particle  = particles[iGen];
-    if (particle.numberOfMothers() != 2)                break;
-    if (particle.status() != ParticleInfo::status_doc)  break;
-    assert(particle.motherRef(0).key() == 4 || particle.motherRef(0).key() == 5);
-    assert(particle.motherRef(1).key() == 4 || particle.motherRef(1).key() == 5);
 
-    const int                       pdgId     = TMath::Abs(particle.pdgId());
-    if (pdgId == ParticleInfo::p_t || pdgId == ParticleInfo::p_Z0 || pdgId == ParticleInfo::p_Wplus || pdgId == ParticleInfo::p_h0)
-      progenitors.push_back(ParticleUtilities::getFinal(&particle, 1));
-  } // end loop over particles
+    //must be an intial set of particles from the hardest sub-process
+    if(!ParticleInfo::isDocIntermediate(particle.status()) && !ParticleInfo::isDocOutgoing(particle.status())) continue;
+
+    //It can't originate from another doc particle
+    int numDocMothers = 0;
+    for(unsigned int iM = 0; iM < particle.numberOfMothers(); ++iM){
+      if( ParticleInfo::isDoc(particle.status())) numDocMothers++;
+    }
+    if(numDocMothers != 0) continue;
+
+    progenitors.push_back(ParticleUtilities::getFinal(&particle, 1));
+  }
 
   static const LesserIDorGreaterPT  COMPARATOR;
   std::sort(progenitors.begin(), progenitors.end(), COMPARATOR);
@@ -306,23 +308,23 @@ int ParticleUtilities::countWithID(const std::vector<Particle>& particles, int p
   return count;
 }
 //______________________________________________________________________________
-template<typename Particle>
-int ParticleUtilities::countProducedID(const std::vector<Particle>& particles, int pdgId, bool checkCharge, bool shortCircuit, unsigned int firstProduced, unsigned int minNumParents)
-{
-  int                       count     = 0;
-  for (unsigned int iPtcl = firstProduced; iPtcl < particles.size(); ++iPtcl) {
-    const Particle&         particle  = particles[iPtcl];
-    if (particle.status()          != ParticleInfo::status_doc   )  break;
-    if (particle.numberOfMothers() <  minNumParents)  break;
-    if ( checkCharge
-       ? (            particle.pdgId()  == pdgId )
-       : ( TMath::Abs(particle.pdgId()) == TMath::Abs(pdgId) )
-       ) {
-      ++count;
-      if (shortCircuit)     break;
-    }
-  } // end loop over particles
-
-  return count;
-}
+//template<typename Particle>
+//int ParticleUtilities::countProducedID(const std::vector<Particle>& particles, int pdgId, bool checkCharge, bool shortCircuit, unsigned int firstProduced, unsigned int minNumParents)
+//{
+//  int                       count     = 0;
+//  for (unsigned int iPtcl = firstProduced; iPtcl < particles.size(); ++iPtcl) {
+//    const Particle&         particle  = particles[iPtcl];
+//    if (particle.status()          != ParticleInfo::status_doc   )  break;
+//    if (particle.numberOfMothers() <  minNumParents)  break;
+//    if ( checkCharge
+//       ? (            particle.pdgId()  == pdgId )
+//       : ( TMath::Abs(particle.pdgId()) == TMath::Abs(pdgId) )
+//       ) {
+//      ++count;
+//      if (shortCircuit)     break;
+//    }
+//  } // end loop over particles
+//
+//  return count;
+//}
 #endif //PARTICLEINFO_ICC

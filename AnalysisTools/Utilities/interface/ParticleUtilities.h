@@ -101,8 +101,8 @@ int countWithStatus(const std::vector<Particle>& particles, int status, bool (*t
 template<typename Particle>
 int countWithID(const std::vector<Particle>& particles, int pdgId, int status = -1, bool checkCharge = false, bool shortCircuit = false);
 
-template<typename Particle>
-int countProducedID(const std::vector<Particle>& particles, int pdgId, bool checkCharge = false, bool shortCircuit = false, unsigned int firstProduced = 6, unsigned int minNumParents = 2);
+//template<typename Particle>
+//int countProducedID(const std::vector<Particle>& particles, int pdgId, bool checkCharge = false, bool shortCircuit = false, unsigned int firstProduced = 6, unsigned int minNumParents = 2);
 
 
 //_____________________________________________________________________________
