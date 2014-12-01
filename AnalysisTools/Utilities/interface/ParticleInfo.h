@@ -52,30 +52,21 @@ enum  { p_LSP = 1000022 };
 // process status information
 //_____________________________________________________________________________
 //// is a final, non-decayed particle
-bool isFinal(const int status) {return status == 1;}
+bool isFinal(const int status);
 //// is a non-final decayed particle
-bool isIntermediate(const int status) {return status >= 71;}
+bool isIntermediate(const int status);
 //Doc particle that will be altered before becoming outgoing
-int isDocIntermediate(const int status){return status == 22;}
+bool isDocIntermediate(const int status);
 //An altered version of a doc particle in prep for becoming outgoing
-int isDocAltered(const int status){return status >= 41 && status < 71;}
+bool isDocAltered(const int status);
 //Doc particle that is outgoing
-int isDocOutgoing(const int status){return status == 23 || status == 24;}
+bool isDocOutgoing(const int status);
 // Is incoming particle
-bool isIncoming(const int status) {return status <= 21;}
+bool isIncoming(const int status);
 
 // is a documentaiton particle, a part of the original particles that define the event
-bool isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
-ParticleStatus getStatus(const int status)
-{
-  if(isFinal(status)) return FINAL;
-  else if(isIntermediate(status)) return INTERMEDIATE;
-  else if(isDocAltered(status)) return DOC_ALTERED;
-  else if(isDocIntermediate(status)) return DOC_INTERMEDIATE;
-  else if(isDocOutgoing(status)) return DOC_OUTGOING;
-  else if(isIncoming(status)) return INCOMING;
-  else return UNKNOWN;
-}
+bool isDoc(const int status);
+ParticleStatus getStatus(const int status);
 
 //_____________________________________________________________________________
 // Check particle type from PDGID

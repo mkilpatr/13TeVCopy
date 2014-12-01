@@ -8,6 +8,27 @@
 
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
+//_____________________________________________________________________________
+inline bool ParticleInfo::isFinal(const int status) {return status == 1;}
+inline bool ParticleInfo::isIntermediate(const int status) {return status >= 71;}
+inline bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
+inline bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
+inline bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
+inline bool ParticleInfo::isIncoming(const int status) {return status <= 21;}
+//_____________________________________________________________________________
+inline bool ParticleInfo::isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
+//_____________________________________________________________________________
+inline ParticleInfo::ParticleStatus ParticleInfo::getStatus(const int status)
+{
+  if(isFinal(status)) return FINAL;
+  else if(isIntermediate(status)) return INTERMEDIATE;
+  else if(isDocAltered(status)) return DOC_ALTERED;
+  else if(isDocIntermediate(status)) return DOC_INTERMEDIATE;
+  else if(isDocOutgoing(status)) return DOC_OUTGOING;
+  else if(isIncoming(status)) return INCOMING;
+  else return UNKNOWN;
+}
+//_____________________________________________________________________________
 bool ParticleInfo::isJetSource(int particleID)
 {
   if (particleID < 0)   return isJetSource(-particleID);
