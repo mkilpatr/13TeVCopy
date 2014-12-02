@@ -57,6 +57,7 @@ public:
       virtual float getPUJetId(const Jet& jet) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
       virtual float getQGDisc(const Jet& jet) const = 0;
+      virtual float getBetaStar(const Jet& jet) const = 0;
 
     protected:
       const EventInfoFiller * evtInfofiller_;
