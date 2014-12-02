@@ -87,7 +87,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
       genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options,
                                            branchName == "" ? defaults::BRANCH_GENPARTS : branchName,
-                                           cfg.getParameter<edm::InputTag>("prunedGenParticles")
+                                           cfg.getParameter<edm::InputTag>("prunedGenParticles"),
+                                           cfg.getParameter<edm::InputTag>("packedGenParticles")
                                            );
       initializedFillers.push_back(genparticles);
       break;
