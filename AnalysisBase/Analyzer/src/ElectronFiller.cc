@@ -17,11 +17,19 @@ ElectronFiller::ElectronFiller(const int options,
   const string branchName,
   const EventInfoFiller * evtInfoFiller,
   const edm::InputTag electronTag,
+  const edm::InputTag vetoIdTag,
+  const edm::InputTag looseIdTag,
+  const edm::InputTag mediumIdTag,
+  const edm::InputTag tightIdTag,
   const int bunchSpacing,
   const double eleptMin) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
   electronTag_(electronTag),
+  vetoIdTag_(vetoIdTag),
+  looseIdTag_(looseIdTag),
+  mediumIdTag_(mediumIdTag),
+  tightIdTag_(tightIdTag),
   bunchSpacing_(bunchSpacing),
   eleptMin_(eleptMin)
 {
@@ -121,6 +129,10 @@ void ElectronFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);
+  FileUtilities::enforceGet(iEvent, vetoIdTag_,veto_id_decisions_,true);
+  FileUtilities::enforceGet(iEvent, looseIdTag_,loose_id_decisions_,true);
+  FileUtilities::enforceGet(iEvent, mediumIdTag_,medium_id_decisions_,true);
+  FileUtilities::enforceGet(iEvent, tightIdTag_,tight_id_decisions_,true);
   isLoaded_ = true;
 }
 
@@ -128,62 +140,62 @@ void ElectronFiller::load(const edm::Event& iEvent)
 void ElectronFiller::fill()
 {
 
-  for (const pat::Electron &el : *electrons_) {
-    if (el.pt() < eleptMin_) continue;
+  for (pat::ElectronCollection::const_iterator el = electrons_->begin(); el != electrons_->end(); el++) {
+    if (el->pt() < eleptMin_) continue;
 
-    data.fillMulti<float>(ipt_, el.pt());
-    data.fillMulti<float>(ieta_, el.eta());
-    data.fillMulti<float>(iSCeta_, el.superCluster()->eta());
-    data.fillMulti<float>(iphi_, el.phi());
-    data.fillMulti<float>(imass_, el.mass());
-    data.fillMulti<int  >(iq_, el.charge());
-    data.fillMulti<float>(ir9_, el.r9());
+    data.fillMulti<float>(ipt_, el->pt());
+    data.fillMulti<float>(ieta_, el->eta());
+    data.fillMulti<float>(iSCeta_, el->superCluster()->eta());
+    data.fillMulti<float>(iphi_, el->phi());
+    data.fillMulti<float>(imass_, el->mass());
+    data.fillMulti<int  >(iq_, el->charge());
+    data.fillMulti<float>(ir9_, el->r9());
 
     assert(evtInfoFiller_->isLoaded());
-    data.fillMulti<float>(id0_, -1.*el.gsfTrack()->dxy(evtInfoFiller_->primaryVertex()));
-    data.fillMulti<float>(idz_, el.gsfTrack()->dz(evtInfoFiller_->primaryVertex()));
+    data.fillMulti<float>(id0_, -1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()));
+    data.fillMulti<float>(idz_, el->gsfTrack()->dz(evtInfoFiller_->primaryVertex()));
 
-    float dbiso = el.pfIsolationVariables().sumChargedHadronPt + max(0.0 , el.pfIsolationVariables().sumNeutralHadronEt + el.pfIsolationVariables().sumPhotonEt - 0.5 * el.pfIsolationVariables().sumPUPt);
+    float dbiso = el->pfIsolationVariables().sumChargedHadronPt + max(0.0 , el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - 0.5 * el->pfIsolationVariables().sumPUPt);
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
 
-    bool passveto = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(evtInfoFiller_->primaryVertex())), el.gsfTrack()->dz(evtInfoFiller_->primaryVertex()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::VETO); 
-    bool passloose = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(evtInfoFiller_->primaryVertex())), el.gsfTrack()->dz(evtInfoFiller_->primaryVertex()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::LOOSE); 
-    bool passmedium = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(evtInfoFiller_->primaryVertex())), el.gsfTrack()->dz(evtInfoFiller_->primaryVertex()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::MEDIUM); 
-    bool passtight = eleIdCuts->passEleIdCSA14CutBased(el.pt(), el.superCluster()->eta(), el.deltaEtaSuperClusterTrackAtVtx(), el.deltaPhiSuperClusterTrackAtVtx(), el.full5x5_sigmaIetaIeta(), el.hadronicOverEm(), (-1.*el.gsfTrack()->dxy(evtInfoFiller_->primaryVertex())), el.gsfTrack()->dz(evtInfoFiller_->primaryVertex()), el.ecalEnergy(), el.eSuperClusterOverP(), dbiso, el.passConversionVeto(), el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits(), LeptonId::TIGHT); 
-
+    const edm::Ptr<pat::Electron> elPtr(electrons_, el - electrons_->begin() );
+    bool passveto = (*veto_id_decisions_)[ elPtr ];
+    bool passloose = (*loose_id_decisions_)[ elPtr ];
+    bool passmedium = (*medium_id_decisions_)[ elPtr ];
+    bool passtight = (*tight_id_decisions_)[ elPtr ];
     data.fillMulti<bool >(ivetoid_, passveto);
     data.fillMulti<bool >(ilooseid_, passloose);
     data.fillMulti<bool >(imediumid_, passmedium);
     data.fillMulti<bool >(itightid_, passtight);
 
     if(options_ & FILLIDVARS) {
-      data.fillMulti<float>(iecalE_, el.ecalEnergy());
-      data.fillMulti<float>(ieOverPIn_, el.eSuperClusterOverP());
-      data.fillMulti<float>(isigietaieta_, el.sigmaIetaIeta());
-      data.fillMulti<float>(isigiphiiphi_, el.sigmaIphiIphi());
-      data.fillMulti<float>(ifull5x5sigietaieta_, el.full5x5_sigmaIetaIeta());
-      data.fillMulti<float>(idEtaIn_, el.deltaEtaSuperClusterTrackAtVtx());
-      data.fillMulti<float>(idPhiIn_, el.deltaPhiSuperClusterTrackAtVtx());
-      data.fillMulti<float>(ihOverE_, el.hadronicOverEm());
-      data.fillMulti<float>(ifBrem_, el.fbrem());
-      data.fillMulti<int  >(inExpHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
-      data.fillMulti<int  >(inLostHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
-      data.fillMulti<bool >(ipassConvVeto_, el.passConversionVeto());
+      data.fillMulti<float>(iecalE_, el->ecalEnergy());
+      data.fillMulti<float>(ieOverPIn_, el->eSuperClusterOverP());
+      data.fillMulti<float>(isigietaieta_, el->sigmaIetaIeta());
+      data.fillMulti<float>(isigiphiiphi_, el->sigmaIphiIphi());
+      data.fillMulti<float>(ifull5x5sigietaieta_, el->full5x5_sigmaIetaIeta());
+      data.fillMulti<float>(idEtaIn_, el->deltaEtaSuperClusterTrackAtVtx());
+      data.fillMulti<float>(idPhiIn_, el->deltaPhiSuperClusterTrackAtVtx());
+      data.fillMulti<float>(ihOverE_, el->hadronicOverEm());
+      data.fillMulti<float>(ifBrem_, el->fbrem());
+      //data.fillMulti<int  >(inExpHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
+      //data.fillMulti<int  >(inLostHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
+      data.fillMulti<bool >(ipassConvVeto_, el->passConversionVeto());
     }
 
     if(options_ & FILLISOVARS) {
-      data.fillMulti<float>(itrackiso_, el.trackIso());
-      data.fillMulti<float>(iecaliso_, el.ecalIso());
-      data.fillMulti<float>(ihcaliso_, el.hcalIso());
-      data.fillMulti<float>(ipfchargediso_, el.pfIsolationVariables().sumChargedHadronPt);
-      data.fillMulti<float>(ipfneutraliso_, el.pfIsolationVariables().sumNeutralHadronEt);
-      data.fillMulti<float>(ipfphotoniso_, el.pfIsolationVariables().sumPhotonEt);
-      data.fillMulti<float>(ipfpuiso_, el.pfIsolationVariables().sumPUPt);
+      data.fillMulti<float>(itrackiso_, el->trackIso());
+      data.fillMulti<float>(iecaliso_, el->ecalIso());
+      data.fillMulti<float>(ihcaliso_, el->hcalIso());
+      data.fillMulti<float>(ipfchargediso_, el->pfIsolationVariables().sumChargedHadronPt);
+      data.fillMulti<float>(ipfneutraliso_, el->pfIsolationVariables().sumNeutralHadronEt);
+      data.fillMulti<float>(ipfphotoniso_, el->pfIsolationVariables().sumPhotonEt);
+      data.fillMulti<float>(ipfpuiso_, el->pfIsolationVariables().sumPUPt);
     }
 
     if(options_ & FILLPOGMVA) {
-      data.fillMulti<float>(imvaidnontrig_, eleMVANonTrig->mvaValue(el, false));
-      data.fillMulti<float>(imvaidtrig_, eleMVATrig->mvaValue(el, false));
+      data.fillMulti<float>(imvaidnontrig_, eleMVANonTrig->mvaValue(*el, false));
+      data.fillMulti<float>(imvaidtrig_, eleMVATrig->mvaValue(*el, false));
     }
 
   }

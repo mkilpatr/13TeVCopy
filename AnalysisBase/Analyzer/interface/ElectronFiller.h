@@ -12,6 +12,7 @@
 #define ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -28,6 +29,10 @@ namespace ucsbsusy {
                      const string branchName,
                      const EventInfoFiller * evtInfoFiller,
                      const edm::InputTag electronTag,
+                     const edm::InputTag vetoIdTag,
+                     const edm::InputTag looseIdTag,
+                     const edm::InputTag mediumIdTag,
+                     const edm::InputTag tightIdTag,
                      const int bunchSpacing,
                      const double eleptMin);
       ~ElectronFiller() {}
@@ -49,6 +54,11 @@ namespace ucsbsusy {
       const EventInfoFiller * evtInfoFiller_;
       // Input from the config file
       const edm::InputTag electronTag_;
+      // For cut-based ID decisions
+      const edm::InputTag vetoIdTag_;
+      const edm::InputTag looseIdTag_;
+      const edm::InputTag mediumIdTag_;
+      const edm::InputTag tightIdTag_;
       const int           bunchSpacing_;
       const double        eleptMin_;
 
@@ -102,6 +112,10 @@ namespace ucsbsusy {
     public :
       // Data members
       edm::Handle<pat::ElectronCollection> electrons_;
+      edm::Handle<edm::ValueMap<bool> > veto_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > loose_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > medium_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > tight_id_decisions_;
 
   };
 

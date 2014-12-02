@@ -137,6 +137,10 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                      branchName == "" ? defaults::BRANCH_ELECTRONS : branchName,
                                      eventInfo,
                                      cfg.getParameter<edm::InputTag>("electrons"),
+                                     cfg.getParameter<edm::InputTag>("vetoId"),
+                                     cfg.getParameter<edm::InputTag>("looseId"),
+                                     cfg.getParameter<edm::InputTag>("mediumId"),
+                                     cfg.getParameter<edm::InputTag>("tightId"),
                                      cfg.getUntrackedParameter<int>("bunchSpacing"),
                                      cfg.getUntrackedParameter<double>("minElectronPt")
                                      );
