@@ -143,7 +143,7 @@ void JetFiller<Jet>::fill()
       assert(evtInfofiller_->isLoaded());
       data.fillMulti<float>(ijetqgl_,getQGDisc(j));
       qgTaggingVar_->compute(&j);
-      data.fillMulti<float>(ijetbetaStar_,qgTaggingVar_->getBetaStar(&j,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_));
+      data.fillMulti<float>(ijetbetaStar_,getBetaStar(j));
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());

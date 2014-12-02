@@ -29,6 +29,7 @@ namespace ucsbsusy {
       float getPUJetId(const reco::PFJet& jet) const {return -10;}
       float getbDisc(const reco::PFJet& jet) const {return -10;}
       float getQGDisc(const reco::PFJet& jet) const{ return -10;}
+      float getBetaStar(const reco::PFJet& jet) const{ return -10;}
 
     private:
       edm::Handle<edm::ValueMap<reco::CandidatePtr> > genJetPtr;
