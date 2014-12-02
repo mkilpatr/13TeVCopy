@@ -7,7 +7,7 @@
 #include <fastjet/GridJetPlugin.hh>
 #include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
 using namespace ucsbsusy;
 //=============================================================================
@@ -111,10 +111,10 @@ void Splittiness::computeMedianPU ( const Particles& particles, double& rhoPT, d
       assert(pfCandidate);
 
       const double                        mass        = pfCandidate->particleId() == reco::PFCandidate::h_HF
-                                                      ? ParticleInfo::poleMass(ParticleInfo::p_piplus)
+                                                      ? ParticleUtilities::poleMass(ParticleInfo::p_piplus)
                                                       : pfCandidate->particleId() == reco::PFCandidate::egamma_HF
                                                       ? 0.
-                                                      : ParticleInfo::poleMass(pfCandidate->pdgId())
+                                                      : ParticleUtilities::poleMass(pfCandidate->pdgId())
                                                       ;
       sumPT                              += particle.pt();
       sumDMass                           += sqrt(mass*mass + particle.pt2()) - particle.pt();

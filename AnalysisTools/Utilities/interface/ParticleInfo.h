@@ -10,18 +10,8 @@
 #include <vector>
 #include <TString.h>
 
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-
-namespace ucsbsusy{
-
-class ParticleInfo
+namespace ParticleInfo
 {
-protected:
-  ParticleInfo()  { }
-
-public:
-
-
 enum JetFlavor      { unmatched_jet, uds_jet, c_jet, b_jet, g_jet, hf_jet, lf_jet, photon_jet, tau_jet, numJetFlavors };
 
 enum  HadronType  { OTHER
@@ -30,8 +20,8 @@ enum  HadronType  { OTHER
                   , BPLUS, B0, BSPLUS, LAMBDAB0, B_MESON, B_BARYON
                   , numDetailedHadronTypes
                   };
-
-enum ParticleStatus { status_unknown, status_final, status_decayed, status_doc };
+enum ParticleStatus { FINAL,INTERMEDIATE, DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING, INCOMING, UNKNOWN};
+//enum ParticleStatus { status_unknown, status_final, status_decayed, status_doc };
 enum ParticleID     { p_unknown, p_d, p_u, p_s, p_c, p_b, p_t, p_bprime, p_tprime,
                       p_eminus = 11, p_nu_e, p_muminus, p_nu_mu, p_tauminus, p_nu_tau,
                       p_tauprimeminus, p_nu_tauprime, p_g = 21, p_gamma, p_Z0,
@@ -58,199 +48,109 @@ enum ParticleID     { p_unknown, p_d, p_u, p_s, p_c, p_b, p_t, p_bprime, p_tprim
                     };
 enum  { p_LSP = 1000022 };
 
+//_____________________________________________________________________________
+// process status information
+//_____________________________________________________________________________
+//// is a final, non-decayed particle
+bool isFinal(const int status);
+//// is a non-final decayed particle
+bool isIntermediate(const int status);
+//Doc particle that will be altered before becoming outgoing
+bool isDocIntermediate(const int status);
+//An altered version of a doc particle in prep for becoming outgoing
+bool isDocAltered(const int status);
+//Doc particle that is outgoing
+bool isDocOutgoing(const int status);
+// Is incoming particle
+bool isIncoming(const int status);
+
+// is a documentaiton particle, a part of the original particles that define the event
+bool isDoc(const int status);
+ParticleStatus getStatus(const int status);
 
 //_____________________________________________________________________________
 // Check particle type from PDGID
 //_____________________________________________________________________________
 
-static bool isJetSource(int particleID);
-static bool isLightQuark(int particleID);
-static bool isHeavyQuark(int particleID);
-static bool isQuark(int pdgId);
-static bool isEWKBoson(int particleID);
-static bool isHadron(int pdgId);
-static bool isQuarkOrGluon(int pdgId);
-static bool isDecayProduct(int pdgId);
-static bool isThirdGeneration(int pdgId);
-static bool isANeutrino(int particleID);
-static bool isInvisible(int particleID);
-static bool isVisible(int particleID);
-static bool isLepton(int particleID);
-static bool isLeptonOrNeutrino(int particleID);
-static bool isPion(int particleID);
-static bool isKaon(int particleID);
-static bool isBSM(int particleID);
-static bool isSquark(int pdgId);
-static bool isSquarkOrGluino(int pdgId);
-static bool isLSP(int pdgId);
-static bool isHadronizationModel(int particleID);
+bool isJetSource(int particleID);
+bool isLightQuark(int particleID);
+bool isHeavyQuark(int particleID);
+bool isQuark(int pdgId);
+bool isEWKBoson(int particleID);
+bool isHadron(int pdgId);
+bool isQuarkOrGluon(int pdgId);
+bool isDecayProduct(int pdgId);
+bool isThirdGeneration(int pdgId);
+bool isANeutrino(int particleID);
+bool isInvisible(int particleID);
+bool isVisible(int particleID);
+bool isLepton(int particleID);
+bool isLeptonOrNeutrino(int particleID);
+bool isPion(int particleID);
+bool isKaon(int particleID);
+bool isBSM(int particleID);
+bool isSquark(int pdgId);
+bool isSquarkOrGluino(int pdgId);
+bool isLSP(int pdgId);
+bool isHadronizationModel(int particleID);
 
 //_____________________________________________________________________________
 // check if particle matches a given pdgId
 template<typename Particle>
-static bool isA(int particleID, const Particle* p, bool checkCharge=false);
-//_____________________________________________________________________________
-// check if second particle is daughter of first
-template<typename ParticleA, typename ParticleB>
-static bool isAncestor(const ParticleA* ancestor, const ParticleB* particle);
-//_____________________________________________________________________________
-//check particle status
-template<typename Particle>
-static bool isOutgoing(const Particle* particle);
-
-//_____________________________________________________________________________
-// Original/Final version of the particle
-//_____________________________________________________________________________
-
-/// Traces particle back up the chain of radiation vertices to the first instance of the same particle.
-template<typename Particle>
-static const Particle* getOriginal(const Particle* particle);
-
-/// Traces particle back up the chain of radiation vertices to the first instance of the same particle.
-template<typename ParticleRef, typename Container>
-static ParticleRef getOriginal(ParticleRef particle, const Container& particles);
-
-/// Traces particle down the chain of radiation vertices to the last instance of the same particle.
-template<typename Particle>
-static const Particle* getFinal(const Particle* particle, int maxNumDaughters = -1);
-
-/// Traces particle down the chain of radiation vertices to the last instance of the same particle.
-template<typename ParticleRef, typename Container>
-static ParticleRef getFinal(ParticleRef particle, const Container& particles, int maxNumDaughters = -1);
-
-template<typename Particle, typename OutParticle>
-static int getOutgoing(const Particle* particle, std::vector<OutParticle>& output, bool (*vetoID)(int) = 0);
-
-template<typename Particle, typename OutParticle>
-static int getDecayProducts(const Particle* particle, std::vector<OutParticle>& output, bool (*vetoID)(int) = 0, std::vector<OutParticle>* vetoed = 0);
-
-template<typename Particle>
-static bool isLastInChain(const Particle* particle);
-
-template<typename Particle>
-static std::vector<const Particle*> getProgenitors(const std::vector<Particle>& particles);
-
-template<typename Particle>
-static std::vector<const Particle*> getDecayProducts(const std::vector<const Particle*>& progenitors);
-
-//_____________________________________________________________________________
-// Find particle decay products
-//_____________________________________________________________________________
-
-static bool findBosonDaughters(const std::vector<reco::GenParticle> &genParticles, const reco::GenParticle* &boson, const reco::GenParticle* &dau1, const reco::GenParticle* &dau2);
-
-static void findTauDaughter(const std::vector<reco::GenParticle> &genParticles, const reco::GenParticle* &tau, const reco::GenParticle* &dau);
+bool isA(int particleID, const Particle* p, bool checkCharge=false);
 
 //_____________________________________________________________________________
 // Return the parton name and information as a string
 //_____________________________________________________________________________
 
-static TString        smPartonName(int particleID, bool separateL = false, bool separateU = false, bool separateD = false, bool separateB = false, bool separateAnti = false);
-static TString        smPartonTitle(int particleID, bool separateL = false, bool separateU = false, bool separateD = false, bool separateB = false, bool separateAnti = false);
-static TString        bsmPartonName(int particleID, bool separateU = false, bool separateB = true, bool separateLR = false);
-static TString        flavorName(int particleID);
-static TString        shortFlavorName(int particleID);
-static JetFlavor      jetFlavor(int particleID);
-static bool           isLightFlavorJet(JetFlavor flavor);
-static bool           isHeavyFlavorJet(JetFlavor flavor);
-static const TString* pfTypeNames();
-static const TString* pfTypeTitles();
-static const TString* jetFlavorNames();
-static const TString& jetFlavorName(JetFlavor flavor);
-static const TString& jetFlavorTag(JetFlavor flavor);
-static const TString* jetFlavorTags();
-static const char*    specialJetFlavor(JetFlavor flavor, JetFlavor special);
-static TString        multiply(int count, const char label[]);
-static TString        formatFlavors(const std::vector<int>& counts);
-static TString        formatFlavors(const std::vector<int>& counts, const std::vector<int>& antiCounts);
-static TString        nameFor(int pdgId, int charge);
-static TString        nameFor(int pdgId);
+TString        smPartonName(int particleID, bool separateL = false, bool separateU = false, bool separateD = false, bool separateB = false, bool separateAnti = false);
+TString        smPartonTitle(int particleID, bool separateL = false, bool separateU = false, bool separateD = false, bool separateB = false, bool separateAnti = false);
+TString        bsmPartonName(int particleID, bool separateU = false, bool separateB = true, bool separateLR = false);
+TString        flavorName(int particleID);
+TString        shortFlavorName(int particleID);
+JetFlavor      jetFlavor(int particleID);
+bool           isLightFlavorJet(JetFlavor flavor);
+bool           isHeavyFlavorJet(JetFlavor flavor);
+const TString* pfTypeNames();
+const TString* pfTypeTitles();
+const TString* jetFlavorNames();
+const TString& jetFlavorName(JetFlavor flavor);
+const TString& jetFlavorTag(JetFlavor flavor);
+const TString* jetFlavorTags();
+const char*    specialJetFlavor(JetFlavor flavor, JetFlavor special);
+TString        multiply(int count, const char label[]);
+TString        formatFlavors(const std::vector<int>& counts);
+TString        formatFlavors(const std::vector<int>& counts, const std::vector<int>& antiCounts);
+TString        nameFor(int pdgId, int charge);
+TString        nameFor(int pdgId);
 
 template<typename Object>
-static TString nameFor(const Object& object);
+TString nameFor(const Object& object);
 
-static TString titleFor(int pdgId, int charge);
-static TString titleFor(int pdgId);
+TString titleFor(int pdgId, int charge);
+TString titleFor(int pdgId);
 
 template<typename Object>
-static TString titleFor(const Object& object);
+TString titleFor(const Object& object);
 
-static TString shortTitleFor(int pdgId, bool ignoreLR = false);
-static TString toMathematica(TString text);
+TString shortTitleFor(int pdgId, bool ignoreLR = false);
+TString toMathematica(TString text);
 
 //_____________________________________________________________________________
 // Hadron type information
 //_____________________________________________________________________________
 
-static JetFlavor jetFlavor(HadronType type);
-static bool isHeavyFlavor(HadronType type);
-static bool isBHadron(HadronType type);
-static HadronType typeOfHadron(int pdgId, int* numBQuarks = 0, int* numCQuarks = 0);
-static HadronType detailedTypeOfHadron(int pdgId);
-static const TString& hadronTypeName(HadronType type);
-static const TString& hadronTypeTitle(HadronType type);
-static TString hadronTypeName(HadronType type, int pdgId);
-static TString hadronTypeTitle(HadronType type, int pdgId);
-
-
-//_____________________________________________________________________________
-// Classify particles
-//_____________________________________________________________________________
-
-struct LesserIDorGreaterPT {
-  template<typename ObjectRef>
-  bool operator()(const ObjectRef& x, const ObjectRef& y) const 
-  {
-    const int         xID   = TMath::Abs(x->pdgId());
-    const int         yID   = TMath::Abs(y->pdgId());
-    if (xID < yID)    return true ;
-    if (xID > yID)    return false;
-    return x->pt() >= y->pt();
-  }
-};
-
-template<typename Particle>
-static TString classifyInitialFlavors(const std::vector<Particle>& genParticles);
-
-template<typename Particle>
-static TString classifyIncomingFlavors(const std::vector<Particle>& genParticles);
-
-template<typename Particle>
-static TString classifyOutgoingFlavors(const std::vector<Particle>& genParticles, const std::vector<int>& mePartonIndex, const unsigned int numMEPartons);
-
-template<typename Particle>
-static TString classifyProduction(const std::vector<Particle>& genParticles, JetFlavor special);
-
-template<typename Particle>
-static int countWithStatus(const std::vector<Particle>& particles, int status, bool (*test)(int) = 0, bool shortCircuit = false);
-
-template<typename Particle>
-static int countWithID(const std::vector<Particle>& particles, int pdgId, int status = -1, bool checkCharge = false, bool shortCircuit = false);
-
-template<typename Particle>
-static int countProducedID(const std::vector<Particle>& particles, int pdgId, bool checkCharge = false, bool shortCircuit = false, unsigned int firstProduced = 6, unsigned int minNumParents = 2);
-
-
-//_____________________________________________________________________________
-//    Particle Information
-//_____________________________________________________________________________
-
-static double poleMass(int pdgId);
-
-
-//_____________________________________________________________________________
-//    Print GenParticle history
-//_____________________________________________________________________________
-
-/// Prints the history (ancestors and their decays) of the indexed genParticle.
-static std::ostream& printGenHistory(const std::vector<reco::GenParticle>& genParticles, const unsigned int particleIndex);
-
-/// Prints the entire particle creation/decay history, for the first genBound number of genParticles.
-static void printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound = 30);
-
+JetFlavor jetFlavor(HadronType type);
+bool isHeavyFlavor(HadronType type);
+bool isBHadron(HadronType type);
+HadronType typeOfHadron(int pdgId, int* numBQuarks = 0, int* numCQuarks = 0);
+HadronType detailedTypeOfHadron(int pdgId);
+const TString& hadronTypeName(HadronType type);
+const TString& hadronTypeTitle(HadronType type);
+TString hadronTypeName(HadronType type, int pdgId);
+TString hadronTypeTitle(HadronType type, int pdgId);
 };  // end class ParticleInfo
 
-}
 
 #include "AnalysisTools/Utilities/src/ParticleInfo.icc"
 
