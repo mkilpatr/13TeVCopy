@@ -12,6 +12,7 @@
 #define ANALYSISBASE_ANALYZER_GENPARTICLEFILLER_H
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
@@ -31,12 +32,13 @@ namespace ucsbsusy {
   class GenParticleFiller : public BaseFiller {
 
     public :
-      GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag);
+      GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag, const edm::InputTag packedGenParticleTag);
       ~GenParticleFiller() {}
 
       enum  Options           {
                                 NULLOPT         = 0
                               , SAVEALL         = (1 <<  0)   // save all gen particles in pruned collection
+                              , LOADPACKED      = (1 <<  1)   //load the packed gen particles
       };
       static const int defaultOptions;
 
@@ -48,6 +50,7 @@ namespace ucsbsusy {
 
     private :
       const edm::InputTag genParticleTag_;
+      const edm::InputTag packedGenParticleTag_;
 
       GenParticleCoords* mcpart;
       GenParticleCoords* q3rdgen;
@@ -57,6 +60,7 @@ namespace ucsbsusy {
 
     public :
       edm::Handle<reco::GenParticleCollection> genParticles_;
+      edm::Handle<pat::PackedGenParticleCollection> packedGenParticles_;
 
   };
 

@@ -15,9 +15,10 @@ using namespace ucsbsusy;
 const int GenParticleFiller::defaultOptions = GenParticleFiller::NULLOPT;
 
 //--------------------------------------------------------------------------------------------------
-GenParticleFiller::GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag) :
+GenParticleFiller::GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag, const edm::InputTag packedGenParticleTag) :
   BaseFiller(options, branchName),
   genParticleTag_(genParticleTag),
+  packedGenParticleTag_(packedGenParticleTag),
   mcpart(new GenParticleCoords("particle")),
   q3rdgen(new GenParticleCoords("q3rdgen")),
   boson(new GenParticleCoords("boson")),
@@ -59,6 +60,7 @@ void GenParticleFiller::load(const edm::Event& iEvent)
   reset();
 
   FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
+  FileUtilities::enforceGet(iEvent,packedGenParticleTag_,packedGenParticles_,options_ & LOADPACKED);
 
   isLoaded_ = true;
 }
