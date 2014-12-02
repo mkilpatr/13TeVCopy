@@ -180,6 +180,15 @@ bool ParticleUtilities::isLastInChain(const Particle* particle)
       return false;
   return true;
 }
+//_____________________________________________________________________________
+template<typename Particle>
+bool ParticleUtilities::isFirstInChain(const Particle* particle)
+{
+  for (unsigned int iMom = 0; iMom < particle->numberOfMothers(); ++iMom)
+    if (particle->mother(iMom)->pdgId() == particle->pdgId())
+      return false;
+  return true;
+}
 //______________________________________________________________________________
 template<typename Particle>
 std::vector<const Particle*> ParticleUtilities::getProgenitors(const std::vector<Particle>& particles)

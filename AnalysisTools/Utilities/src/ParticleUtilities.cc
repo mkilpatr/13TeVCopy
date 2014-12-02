@@ -70,7 +70,7 @@ std::ostream& ParticleUtilities::printGenHistory(const std::vector<reco::GenPart
 }
 
 //_____________________________________________________________________________
-void ParticleUtilities::printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound)
+void ParticleUtilities::printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound, int genStart)
 {
   using namespace std;
 
@@ -79,7 +79,10 @@ void ParticleUtilities::printGenInfo(const std::vector<reco::GenParticle>& genPa
           << left << "  " << setw(10) << "Mothers" << " " << setw(30) << "Daughters" << endl;
   if (genBound < 0)             genBound        =            static_cast<int>(genParticles.size());
   else                          genBound        = TMath::Min(static_cast<int>(genParticles.size()), genBound);
-  for (int iGen = 0; iGen < genBound; ++iGen) {
+
+  if (genStart < 0)             genStart        =            0;
+
+  for (int iGen = genStart; iGen < genBound; ++iGen) {
     const reco::GenParticle&    genParticle     = genParticles[iGen];
 
     cout  << right << setw(3) << genParticle.status();

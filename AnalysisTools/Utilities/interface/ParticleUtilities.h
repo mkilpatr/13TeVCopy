@@ -54,6 +54,9 @@ template<typename Particle>
 bool isLastInChain(const Particle* particle);
 
 template<typename Particle>
+bool isFirstInChain(const Particle* particle);
+
+template<typename Particle>
 std::vector<const Particle*> getProgenitors(const std::vector<Particle>& particles);
 
 template<typename Particle>
@@ -120,7 +123,8 @@ double poleMass(int pdgId);
 std::ostream& printGenHistory(const std::vector<reco::GenParticle>& genParticles, const unsigned int particleIndex);
 
 /// Prints the entire particle creation/decay history, for the first genBound number of genParticles.
-void printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound = 30);
+/// Alternatively, output only after a specific start
+void printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound = 30, int genStart  =  -1);
 
 };  // end class ParticleInfo
 
