@@ -603,7 +603,7 @@ TString ParticleInfo::titleFor(int pdgId, int charge)
     case p_dsplus:        return "D_{s}^{+}";
     case p_bplus:         return "B^{+}";
     case p_b0:            return "B^{0}";
-    case p_bsplus:        return "B_{s}^{+}";
+    case p_bs0:           return "B_{s}^{0}";
     case p_bcplus:        return "B_{c}^{+}";
     case p_neutron:       return "n";
     case p_proton:        return "p";
