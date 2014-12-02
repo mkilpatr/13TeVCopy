@@ -11,148 +11,148 @@
 #include <algorithm>
 
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
-
-using namespace ucsbsusy;
-using namespace std;
-
-template<typename Jet, typename Particle>
-vector<vector<reco::GenParticleRef> > JetFlavorMatching::matchParticlesToJets(const vector<Jet>& jets, const vector<Particle>& particles, double maxDR, int pdgId, int status)
-{
-  //.. Rank jets by pT ........................................................
-  vector<RankedIndex>         rankedJets;
-  rankedJets.reserve(jets.size());
-  for (size iJet = 0; iJet < jets.size(); ++iJet) {
-    if (jets[iJet].pt())      // Only count nonzero jets in first two passes
-      rankedJets.push_back(RankedIndex(jets[iJet].pt(), iJet));
-  } // end loop over jets
-  sort(rankedJets.begin(), rankedJets.end(), PhysicsUtilities::greaterFirst<double,int>());
-
-  //.. Rank partons by pT .....................................................
-  vector<bool>                omitParticle(particles->size(), false);
-  for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
-    const Particle&           particle    = (*particles)[iPtcl];
-    if (particle.status() != status || TMath::Abs(particle.pdgId()) != pdgId)
-      omitParticle[iPtcl]     = true;     // Skip particles of inappropriate type
-  } // end loop over particles
-
-  //.. First pass: match first parton .........................................
-  vector<vector<reco::GenParticleRef> >   matchedBPartons(jets.size());
-  for (size rank = 0; rank < rankedJets.size(); ++rank) {
-    const size                iJet        = rankedJets[rank].second;
-    double                    nearestDR;
-    const int                 iNearest    = findNearestDR(jets[iJet], *particles, nearestDR, maxDR, 0, &omitParticle);
-    if (iNearest >= 0) {
-      omitParticle[iNearest]  = true;     // Don't re-use for future matches
-      matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iNearest));
-    }
-  } // end loop over jets
-
-  //.. Second pass: match remaining partons ...................................
-  for (size rank = 0; rank < rankedJets.size(); ++rank) {
-    const size                iJet        = rankedJets[rank].second;
-    if (matchedBPartons[iJet].empty())    continue;
-    const Jet&                jet         = jets[iJet];
-
-    for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
-      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
-        omitParticle[iPtcl]   = true;
-        matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
-      }
-    } // end loop over particles
-    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
-  } // end loop over jets
-
-  //.. Third pass: match to zero pT jets ......................................
-  for (size iJet = 0; iJet < jets.size(); ++iJet) {
-    const Jet&                jet         = jets[iJet];
-    if (jet.pt())             continue;
-
-    for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
-      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
-        omitParticle[iPtcl]   = true;
-        matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
-      }
-    } // end loop over particles
-    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
-  } // end loop over jets
-
-  return matchedBPartons;
-}
-
-//_____________________________________________________________________________
-template<typename Particle>
-void JetFlavorMatching::getDecayProducts( int index, const edm::Handle<vector<Particle> >& particles, vector<edm::Ref<vector<Particle> > >& decayProducts
-                                    , CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
-                                    )
-{
-  const Particle&     particle  = (*particles)[index];
-  if (particle.status() == ParticleInfo::status_final)
-  {
-    // Check for uniqueness
-    for (size iDecay = 0; iDecay < decayProducts.size(); ++iDecay)
-      if (int(decayProducts[iDecay].key()) == index)  return;
-
-    decayProducts.push_back(edm::Ref<vector<Particle> >(particles, index));
-    if (!ParticleInfo::isANeutrino(particle.pdgId())) {
-      sumVisible     += particle.p4();
-      ++numVisible;
-    }
-    if (particle.charge()) {
-      sumCharged     += particle.p4();
-      ++numCharged;
-    }
-  }
-  else
-  {
-    for (size iDau = 0; iDau < particle.numberOfDaughters(); ++iDau)
-      getDecayProducts(particle.daughterRef(iDau).key(), particles, decayProducts, sumVisible, sumCharged, numVisible, numCharged);
-  }
-}
-
-//_____________________________________________________________________________
-template<typename Object, typename Particle>
-int JetFlavorMatching::matchConstituents( const Object& object, const vector<edm::Ref<vector<Particle> > >& particles
-                                    , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
-                                    )
-{
-  if (object.numberOfDaughters() == 0)  return 0;
-  if (particles.empty())                return 0;
-  if (object.daughterPtr(0).id() != particles[0].id())
-    throw cms::Exception("JetFlavorMatching.matchConstituents()", "Inconsistent product ID for object constituents vs. particles list to match.");
-
-  int                       numFound  = 0;
-  for (size iDau = 0; iDau < object.numberOfDaughters(); ++iDau) {
-    const size              iDaughter = object.daughterPtr(iDau).key();
-    for (size iPtcl = 0; iPtcl < particles.size(); ++iPtcl) {
-      const edm::Ref<vector<Particle> >&  particle  = particles[iPtcl];
-      if (iDaughter == particle.key()) {
-        ++numFound;
-        sumMatched         += particle->p4();
-        if (!ParticleInfo::isANeutrino(particle->pdgId())) {
-          sumVisible       += particle->p4();
-          ++numVisible;
-        }
-        if (particle->charge()) {
-          sumCharged       += particle->p4();
-          ++numCharged;
-        }
-        break;
-      }
-    } // end loop over particles
-  } // end loop over constituents
-  return numFound;
-}
-//_____________________________________________________________________________
-template<typename JetRef>
-TaggableType JetFlavorMatching::getTaggableType( const JetRef& jet, const HadronContainments&  mainBHadronsInJet
-                                                          , const reco::JetFlavourMatchingCollection& jetFlavorMatch, double etaAcceptance
-                                                          )
-{
-  return JetFlavorMatching::getTaggableType ( jet->eta()
-                                        , mainBHadronsInJet.size()
-                                        , jetFlavorMatch[edm::RefToBase<reco::Jet>(jet)].getFlavour()
-                                        , etaAcceptance
-                                        );
-}
+//
+//using namespace ucsbsusy;
+//using namespace std;
+//
+//template<typename Jet, typename Particle>
+//vector<vector<reco::GenParticleRef> > JetFlavorMatching::matchParticlesToJets(const vector<Jet>& jets, const vector<Particle>& particles, double maxDR, int pdgId, int status)
+//{
+//  //.. Rank jets by pT ........................................................
+//  vector<RankedIndex>         rankedJets;
+//  rankedJets.reserve(jets.size());
+//  for (size iJet = 0; iJet < jets.size(); ++iJet) {
+//    if (jets[iJet].pt())      // Only count nonzero jets in first two passes
+//      rankedJets.push_back(RankedIndex(jets[iJet].pt(), iJet));
+//  } // end loop over jets
+//  sort(rankedJets.begin(), rankedJets.end(), PhysicsUtilities::greaterFirst<double,int>());
+//
+//  //.. Rank partons by pT .....................................................
+//  vector<bool>                omitParticle(particles->size(), false);
+//  for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+//    const Particle&           particle    = (*particles)[iPtcl];
+//    if (particle.status() != status || TMath::Abs(particle.pdgId()) != pdgId)
+//      omitParticle[iPtcl]     = true;     // Skip particles of inappropriate type
+//  } // end loop over particles
+//
+//  //.. First pass: match first parton .........................................
+//  vector<vector<reco::GenParticleRef> >   matchedBPartons(jets.size());
+//  for (size rank = 0; rank < rankedJets.size(); ++rank) {
+//    const size                iJet        = rankedJets[rank].second;
+//    double                    nearestDR;
+//    const int                 iNearest    = findNearestDR(jets[iJet], *particles, nearestDR, maxDR, 0, &omitParticle);
+//    if (iNearest >= 0) {
+//      omitParticle[iNearest]  = true;     // Don't re-use for future matches
+//      matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iNearest));
+//    }
+//  } // end loop over jets
+//
+//  //.. Second pass: match remaining partons ...................................
+//  for (size rank = 0; rank < rankedJets.size(); ++rank) {
+//    const size                iJet        = rankedJets[rank].second;
+//    if (matchedBPartons[iJet].empty())    continue;
+//    const Jet&                jet         = jets[iJet];
+//
+//    for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+//      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
+//        omitParticle[iPtcl]   = true;
+//        matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
+//      }
+//    } // end loop over particles
+//    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
+//  } // end loop over jets
+//
+//  //.. Third pass: match to zero pT jets ......................................
+//  for (size iJet = 0; iJet < jets.size(); ++iJet) {
+//    const Jet&                jet         = jets[iJet];
+//    if (jet.pt())             continue;
+//
+//    for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+//      if (!omitParticle[iPtcl] && PhysicsUtilities::deltaR((*particles)[iPtcl],jet) <= maxDR) {
+//        omitParticle[iPtcl]   = true;
+//        matchedBPartons[iJet].push_back(reco::GenParticleRef(particles, iPtcl));
+//      }
+//    } // end loop over particles
+//    sort(matchedBPartons[iJet].begin(), matchedBPartons[iJet].end(), PhysicsUtilities::greaterRefPT<reco::GenParticleRef>());
+//  } // end loop over jets
+//
+//  return matchedBPartons;
+//}
+//
+////_____________________________________________________________________________
+//template<typename Particle>
+//void JetFlavorMatching::getDecayProducts( int index, const edm::Handle<vector<Particle> >& particles, vector<edm::Ref<vector<Particle> > >& decayProducts
+//                                    , CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
+//                                    )
+//{
+//  const Particle&     particle  = (*particles)[index];
+//  if (particle.status() == ParticleInfo::status_final)
+//  {
+//    // Check for uniqueness
+//    for (size iDecay = 0; iDecay < decayProducts.size(); ++iDecay)
+//      if (int(decayProducts[iDecay].key()) == index)  return;
+//
+//    decayProducts.push_back(edm::Ref<vector<Particle> >(particles, index));
+//    if (!ParticleInfo::isANeutrino(particle.pdgId())) {
+//      sumVisible     += particle.p4();
+//      ++numVisible;
+//    }
+//    if (particle.charge()) {
+//      sumCharged     += particle.p4();
+//      ++numCharged;
+//    }
+//  }
+//  else
+//  {
+//    for (size iDau = 0; iDau < particle.numberOfDaughters(); ++iDau)
+//      getDecayProducts(particle.daughterRef(iDau).key(), particles, decayProducts, sumVisible, sumCharged, numVisible, numCharged);
+//  }
+//}
+//
+////_____________________________________________________________________________
+//template<typename Object, typename Particle>
+//int JetFlavorMatching::matchConstituents( const Object& object, const vector<edm::Ref<vector<Particle> > >& particles
+//                                    , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
+//                                    )
+//{
+//  if (object.numberOfDaughters() == 0)  return 0;
+//  if (particles.empty())                return 0;
+//  if (object.daughterPtr(0).id() != particles[0].id())
+//    throw cms::Exception("JetFlavorMatching.matchConstituents()", "Inconsistent product ID for object constituents vs. particles list to match.");
+//
+//  int                       numFound  = 0;
+//  for (size iDau = 0; iDau < object.numberOfDaughters(); ++iDau) {
+//    const size              iDaughter = object.daughterPtr(iDau).key();
+//    for (size iPtcl = 0; iPtcl < particles.size(); ++iPtcl) {
+//      const edm::Ref<vector<Particle> >&  particle  = particles[iPtcl];
+//      if (iDaughter == particle.key()) {
+//        ++numFound;
+//        sumMatched         += particle->p4();
+//        if (!ParticleInfo::isANeutrino(particle->pdgId())) {
+//          sumVisible       += particle->p4();
+//          ++numVisible;
+//        }
+//        if (particle->charge()) {
+//          sumCharged       += particle->p4();
+//          ++numCharged;
+//        }
+//        break;
+//      }
+//    } // end loop over particles
+//  } // end loop over constituents
+//  return numFound;
+//}
+////_____________________________________________________________________________
+//template<typename JetRef>
+//TaggableType JetFlavorMatching::getTaggableType( const JetRef& jet, const HadronContainments&  mainBHadronsInJet
+//                                                          , const reco::JetFlavourMatchingCollection& jetFlavorMatch, double etaAcceptance
+//                                                          )
+//{
+//  return JetFlavorMatching::getTaggableType ( jet->eta()
+//                                        , mainBHadronsInJet.size()
+//                                        , jetFlavorMatch[edm::RefToBase<reco::Jet>(jet)].getFlavour()
+//                                        , etaAcceptance
+//                                        );
+//}
 
 #endif
