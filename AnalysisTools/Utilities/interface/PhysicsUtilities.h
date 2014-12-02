@@ -241,12 +241,12 @@ struct greaterPT : public std::binary_function<const Object&, const Object&, Boo
 template<typename T1, typename T2 = T1>
 struct DeltaR2 {
   double operator()( const T1 & t1, const T2 & t2 ) const {
-    return deltaR2(t1, t2);
+    return PhysicsUtilities::deltaR2(t1, t2);
   }
 };
 template<typename T1, typename T2>
 struct DeltaR2Deref {
-  double operator()( const T1& t1, const T2& t2 ) const { return deltaR2(t1, *t2);
+  double operator()( const T1& t1, const T2& t2 ) const { return PhysicsUtilities::deltaR2(t1, *t2);
   }
 };
 
