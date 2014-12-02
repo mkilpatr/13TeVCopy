@@ -28,26 +28,26 @@ public:
     tTM(0),
     tCM(0)
 {};
-  float     topness;
-  MomentumF top1_l;
-  MomentumF top1_n;
-  MomentumF top1_b;
-  MomentumF top2_w;
-  MomentumF top2_b;
-  float tW ;
-  float tTL;
-  float tTM;
-  float tCM;
+  double     topness;
+  MomentumD top1_l;
+  MomentumD top1_n;
+  MomentumD top1_b;
+  MomentumD top2_w;
+  MomentumD top2_b;
+  double tW ;
+  double tTL;
+  double tTM;
+  double tCM;
 };
 
 
 class Topness {
  public:
-  static const float mW    ;
-  static const float mT    ;
-  static const float aW    ;
-  static const float aT    ;
-  static const float aCM   ;
+  static const double mW    ;
+  static const double mT    ;
+  static const double aW    ;
+  static const double aT    ;
+  static const double aCM   ;
 
   TFitter *minimizer;
 
@@ -56,7 +56,7 @@ class Topness {
 
 
   // operations
-  static float topnessFunction(double pwx_, double pwy_, double pwz_, double pnz_,
+  static double topnessFunction(double pwx_, double pwy_, double pwz_, double pnz_,
 			       double plx_, double ply_, double plz_, double ple_,
 			       double pb1x_, double pb1y_, double pb1z_, double pb1e_,
 			       double pb2x_, double pb2y_, double pb2z_, double pb2e_,
@@ -64,12 +64,12 @@ class Topness {
 			       );
 
   static void minuitFunctionWrapper(int& nDim, double* gout, double& result, double *par, int flg);
-  //  float topnessMinimization(MomentumF lep_, MomentumF bjet1_, MomentumF bjet2_, MomentumF met_);
-  float topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
-  float getMinTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
-  float getMaxTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
+  //  double topnessMinimization(MomentumD lep_, MomentumD bjet1_, MomentumD bjet2_, MomentumD met_);
+  double topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
+  double getMinTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
+  double getMaxTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
   //  bool sortInDecreasingCSV(RecoJetF *jet1, RecoJetF *jet2);
-  float findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
+  double findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
 
 
   
