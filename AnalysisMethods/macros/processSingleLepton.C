@@ -7,6 +7,7 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
+#include "AnalysisTools/KinematicVariables/interface/Topness.h"
 #endif
 
 using namespace ucsbsusy;
@@ -14,28 +15,76 @@ using namespace ucsbsusy;
 class Analyzer : public BaseTreeAnalyzer {
 
   public :
-    Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec) : BaseTreeAnalyzer(fileName, treeName, isMCTree), xsec_(xSec) {
+  Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec, TString sname, TString outputdir) : BaseTreeAnalyzer(fileName, treeName, isMCTree),
+													       xsec_(xSec), sname_(sname), outputdir_(outputdir) {
       // configuration
       cleanJetsAgainstLeptons();
+      tNess = new Topness();
+
       // initialize plots
       loadPlots();
+
+
+      // initiliaze tree
+      gSystem->mkdir(outputdir,true);
+      fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
+      fout->cd();
+      outtree = new TTree("events","analysis tree");
+      outtree->Branch("ScaleFactor",&ScaleFactor,"ScaleFactor/F");
+      outtree->Branch("NPV",&NPV,"NPV/I");
+      outtree->Branch("NAK5PFJets",&NAK5PFJets,"NAK5PFJets/I");
+      outtree->Branch("NAK5PFBJets",&NAK5PFBJets,"NAK5PFBJets/I");
+      outtree->Branch("NRecoLep",&NRecoLep,"NRecoLep/I");
+      outtree->Branch("NHPSTau",&NHPSTau,"NHPSTau/I");
+      outtree->Branch("MET",&MET,"MET/F");
+      outtree->Branch("HT",&HT,"HT/F");
+      outtree->Branch("HTAovA",&HTAovA,"HTAovA/F");
+      outtree->Branch("DphiLepW",&DphiLepW,"DphiLepW/F");
+      outtree->Branch("minTopness",&minTopness,"minTopness/F");
+      outtree->Branch("minTopnessNoLog",&minTopnessNoLog,"minTopnessNoLog/F");
     }
 
-    const double xsec_;
-    const double lumi_         = 1000.0; // in /pb
-    const double metcut_       = 150.0;
-    const int    minNSelJets_  = 4;
-    const int    minNSelBjets_ = 1;
-    const int    maxNSelTaus_  = 0;
-    const int    nSelLeptons_  = 1;
+  virtual ~Analyzer() {
+    fout->cd();
+    outtree->Write();
+    fout->Close();
+  }
+  
 
-    void runEvent();
+  const double xsec_;
+  const double lumi_         = 1000.0; // in /pb
+  const double metcut_       = 150.0;
+  const int    minNSelJets_  = 4;
+  const int    minNSelBjets_ = 1;
+  const int    maxNSelTaus_  = 0;
+  const int    nSelLeptons_  = 1;
+  const TString sname_       = "testLoukas.root";
+  const TString outputdir_   = "./plots/";  
 
-    void loadPlots();
+  Topness *tNess;
+  TFile *fout;
+  TTree *outtree;
 
-    void out(TString outputName, TString outputPath);
+  float ScaleFactor;
+  int NPV;
+  int NAK5PFJets;
+  int NAK5PFBJets;
+  int NRecoLep;
+  int NHPSTau;
+  float MET;
+  float HT;
+  float HTAovA;
+  float DphiLepW;
+  float minTopness;
+  float minTopnessNoLog;
 
-    map<TString,TH1F*> plots;
+  void runEvent();
+  
+  void loadPlots();
+  
+  void out(TString outputName, TString outputPath);
+  
+  map<TString,TH1F*> plots;
 
 };
 
@@ -72,6 +121,30 @@ void Analyzer::runEvent()
 {
 
   double wgt = lumi_*xsec_/getEntries();
+
+  // fill tree variables
+  ScaleFactor = wgt;
+  NPV = nPV;
+  NAK5PFJets = nJets;
+  NAK5PFBJets = nBJets;
+  NRecoLep = nLeptons;
+  NHPSTau = nTaus;
+  MET = met->pt();
+  HT = JetKinematics::ht(jets,40,2.4);
+  HTAovA = JetKinematics::htAlongHtAway(*met,jets,40,2.4);
+
+  if (nLeptons>0) {
+    MomentumF* W = new MomentumF(leptons.at(0)->p4() + met->p4());
+    DphiLepW = PhysicsUtilities::deltaPhi(*leptons.at(0), *W);
+  }
+  else {
+    DphiLepW = -99.;
+  }
+  minTopness = tNess->findMinTopnessConfiguration(leptons,jets,met);
+  minTopnessNoLog = std::exp(minTopness);
+
+  outtree->Fill();
+
 
   if(nLeptons != nSelLeptons_) return;
   if(nTaus > maxNSelTaus_)     return;
@@ -124,10 +197,10 @@ void Analyzer::out(TString outputName, TString outputPath)
 void processSingleLepton(TString sname = "test",               // sample name
                          const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
                          const bool isMC = true,               // data or MC
-                         const TString fname = "evttree.root", // path of file to be processed
+                         const TString fname = "testTree.root", // path of file to be processed
                          const double xsec = 1.0,              // cross section to be used with this file
                          const TString outputdir = "run/plots",    // directory to which files with histograms will be written
-                         const TString fileprefix = "file://$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
+                         const TString fileprefix = "file:///uscms/home/nmccoll/nobackup/2011-04-15-susyra2/Work7/") // prefix for file name, needed e.g. to access files with xrootd
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -142,7 +215,7 @@ void processSingleLepton(TString sname = "test",               // sample name
   TString fullname = fileprefix+fname;
 
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, xsec);
+  Analyzer a(fullname, "TestAnalyzer/Events", isMC, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(100000);
