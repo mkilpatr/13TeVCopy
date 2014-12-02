@@ -17,7 +17,7 @@ enum JetFlavor      { unmatched_jet, uds_jet, c_jet, b_jet, g_jet, hf_jet, lf_je
 enum  HadronType  { OTHER
                   , /*PI0,*/ PIPLUS, ETA0, KAON, DIQUARK, LIGHT_MESON, LIGHT_BARYON
                   , DPLUS, D0, DSPLUS, LAMBDACPLUS, C_MESON, C_BARYON
-                  , BPLUS, B0, BSPLUS, LAMBDAB0, B_MESON, B_BARYON
+                  , BPLUS, B0, BS0, LAMBDAB0, B_MESON, B_BARYON
                   , numDetailedHadronTypes
                   };
 enum ParticleStatus { FINAL,INTERMEDIATE, DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING, INCOMING, UNKNOWN};
