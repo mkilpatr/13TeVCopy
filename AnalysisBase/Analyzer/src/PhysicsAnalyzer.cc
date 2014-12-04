@@ -16,6 +16,8 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 // ---- Configure event information
 , eventInfo           (0)
 , ak4Jets             (0)
+, puppiJets           (0)
+, trimmedJets         (0)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
@@ -114,6 +116,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case PUPPIJETS : {
       int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
 
       puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
@@ -121,10 +125,38 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getParameter<edm::InputTag>("jetsPuppi"),
                                     cfg.getParameter<edm::InputTag>("reGenJetsPuppi"),
                                     cfg.getParameter<edm::InputTag>("stdGenJetsPuppi"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetAssocPuppi"),
                                     cfg.getUntrackedParameter<bool>("fillReGenJetsPuppi"),
                                     cfg.getUntrackedParameter<double>("minJetPtPuppi")
                                     );
       initializedFillers.push_back(puppiJets);
+      break;
+    }
+
+    case TRIMMEDJETS : {
+      int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
+
+      edm::VParameterSet trimmedJetPsets = cfg.getParameter<edm::VParameterSet>("jetsTrimmed");
+
+      for(edm::VParameterSet::const_iterator ipset = trimmedJetPsets.begin(); ipset != trimmedJetPsets.end(); ++ipset) {
+        edm::InputTag jetsrc = ipset->getParameter<edm::InputTag>("src");
+        std::string jetlabel = ipset->getUntrackedParameter<string>("label", defaults::BRANCH_TRIMMEDJETS);
+        edm::InputTag genjetptrsrc = ipset->getParameter<edm::InputTag>("genptrsrc");
+
+        trimmedJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                        branchName == "" ? jetlabel : branchName,
+                                        eventInfo,
+                                        jetsrc,
+                                        cfg.getParameter<edm::InputTag>("reGenJetsTrimmed"),
+                                        cfg.getParameter<edm::InputTag>("stdGenJetsTrimmed"),
+                                        genjetptrsrc,
+                                        cfg.getUntrackedParameter<bool>("fillReGenJetsTrimmed"),
+                                        cfg.getUntrackedParameter<double>("minJetPtTrimmed")
+                                        );
+        initializedFillers.push_back(trimmedJets);
+      }
       break;
     }
 

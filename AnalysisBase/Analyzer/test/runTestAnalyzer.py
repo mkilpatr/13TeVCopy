@@ -65,19 +65,28 @@ process.TestAnalyzer.Electrons.tightId = cms.InputTag("egmGsfElectronIDs:cutBase
 process.TestAnalyzer.Jets.fillReGenJets = True
 process.TestAnalyzer.Jets.minJetPt = 20.0
 
-process.TestAnalyzer.PuppiJets.isFilled = True                        # set to True if puppi jets are desired
+process.TestAnalyzer.TrimmedJets.isFilled = True                        # set to True if trimmed jets are desired
+process.TestAnalyzer.PuppiJets.isFilled = True                          # set to True if puppi jets are desired
 
-from ObjectProducers.JetProducers.redefined_jet_producers_cfi import *
-process.redAK4 = redAK4
+process.load('ObjectProducers.JetProducers.redefined_jet_producers_cfi')
 process.redAK4.ghostArea = -1
 
-from ObjectProducers.JetProducers.redefined_genjet_associator_cfi import *
-process.redGenAssoc = redGenAssoc
+process.load('ObjectProducers.JetProducers.redefined_genjet_associator_cfi')
 
-process.p = cms.Path(process.redAK4 * process.redGenAssoc * process.egmGsfElectronIDSequence * process.TestAnalyzer)
+process.load('ObjectProducers.Puppi.puppiJetProducer_cff')
+process.load('ObjectProducers.JetProducers.trimmedJets_cfi')
+
+process.p = cms.Path(process.redAK4 * process.redGenAssoc * 
+                     process.puppiJetSequence * process.redAK4Puppi * process.redPuppiGenAssoc * 
+                     process.trimmedJetsCHSr0p1ptf0p03 * process.redAK8CHS * process.redAK8TrimmedGenAssoc * 
+                     process.egmGsfElectronIDSequence * 
+                     process.TestAnalyzer)
 
 # If producing puppi jets: 
-if process.TestAnalyzer.PuppiJets.isFilled :
+if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC:
+    process.TestAnalyzer.PuppiJets.jets = cms.InputTag('correctedAK4PFJetsPuppi')
+    process.TestAnalyzer.PuppiJets.fillReGenJetsPuppi = False                             # switch off redefined genjets for now
+ 
     process.load('Configuration.StandardSequences.Services_cff')
     process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
     process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
@@ -89,5 +98,8 @@ if process.TestAnalyzer.PuppiJets.isFilled :
         ),
     )
 
-    process.load('ObjectProducers.Puppi.puppiJetProducer_cff')
-    process.p = cms.Path(process.redAK4 * process.redGenAssoc * process.puppiCorrJetSequence * process.egmGsfElectronIDSequence * process.TestAnalyzer)
+    process.p = cms.Path(process.redAK4 * process.redGenAssoc * 
+                         process.puppiCorrJetSequence * 
+                         process.trimmedJetsCHSr0p1ptf0p03 * process.redAK8CHS * process.redAK8TrimmedGenAssoc * 
+                         process.egmGsfElectronIDSequence * 
+                         process.TestAnalyzer)
