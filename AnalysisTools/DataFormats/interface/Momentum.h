@@ -32,6 +32,7 @@ public :
   Float_t   phi()     const { return fMom.Phi();      }
   Float_t   mass()    const { return fMom.M();        }
   Float_t   E()       const { return fMom.E();        }
+  Float_t   energy()  const { return fMom.E();        }
   Float_t   Et()      const { return fMom.Et();       }
   Float_t   mt()      const { return fMom.Mt();       }
   Float_t   px()      const { return fMom.Px();       }
