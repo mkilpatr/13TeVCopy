@@ -115,17 +115,6 @@ int countWithID(const std::vector<Particle>& particles, int pdgId, int status = 
 double poleMass(int pdgId);
 
 
-//_____________________________________________________________________________
-//    Print GenParticle history
-//_____________________________________________________________________________
-
-/// Prints the history (ancestors and their decays) of the indexed genParticle.
-std::ostream& printGenHistory(const std::vector<reco::GenParticle>& genParticles, const unsigned int particleIndex);
-
-/// Prints the entire particle creation/decay history, for the first genBound number of genParticles.
-/// Alternatively, output only after a specific start
-void printGenInfo(const std::vector<reco::GenParticle>& genParticles, int genBound = 30, int genStart  =  -1);
-
 };  // end class ParticleInfo
 
 

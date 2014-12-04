@@ -121,13 +121,11 @@ const char*    specialJetFlavor(JetFlavor flavor, JetFlavor special);
 TString        multiply(int count, const char label[]);
 TString        formatFlavors(const std::vector<int>& counts);
 TString        formatFlavors(const std::vector<int>& counts, const std::vector<int>& antiCounts);
-TString        nameFor(int pdgId, int charge);
 TString        nameFor(int pdgId);
 
 template<typename Object>
 TString nameFor(const Object& object);
 
-TString titleFor(int pdgId, int charge);
 TString titleFor(int pdgId);
 
 template<typename Object>
@@ -149,6 +147,27 @@ const TString& hadronTypeName(HadronType type);
 const TString& hadronTypeTitle(HadronType type);
 TString hadronTypeName(HadronType type, int pdgId);
 TString hadronTypeTitle(HadronType type, int pdgId);
+
+
+//_____________________________________________________________________________
+//    Print GenParticle history
+//_____________________________________________________________________________
+
+/// Prints the history (ancestors and their decays) of the indexed genParticle.
+template<typename Particle>
+std::ostream& printGenHistory(const std::vector<Particle>& genParticles, const unsigned int particleIndex);
+
+/// Prints the entire particle creation/decay history, for the first genBound number of genParticles.
+/// Alternatively, output only after a specific start
+template<typename Particle>
+void printGenInfo(const std::vector<Particle>& genParticles, int genBound = 30, int genStart  =  -1);
+
+/// Print a specific particle
+template<typename Particle>
+void printGenParticleInfo(const Particle* genParticle, const int idx = 0);
+template<typename Particle>
+void printGenParticleInfo(const Particle& genParticle, const int idx = 0);
+
 };  // end class ParticleInfo
 
 
