@@ -17,45 +17,32 @@ using namespace ucsbsusy;
 const int GenParticleReader::defaultOptions = GenParticleReader::FILLOBJ;
 
 //--------------------------------------------------------------------------------------------------
-GenParticleReader::DataContainer::DataContainer() {
-  pt     = new std::vector<float>;
-  eta    = new std::vector<float>;
-  phi    = new std::vector<float>;
-  mass   = new std::vector<float>;
-  status = new std::vector<int  >;
-  pdgid  = new std::vector<int  >;
-}
-//--------------------------------------------------------------------------------------------------
-GenParticleReader::DataContainer::~DataContainer() {
-  delete pt    ;
-  delete eta   ;
-  delete phi   ;
-  delete mass  ;
-  delete status;
-  delete pdgid ;
-}
-
-//--------------------------------------------------------------------------------------------------
-void GenParticleReader::DataContainer::load(const std::string branchName,const std::string collectionName, TreeReader * treeReader){
-  std::clog << collectionName <<" ";
-  treeReader->setBranchAddress(branchName,collectionName + "_pt"      , &pt    ,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_eta"     , &eta   ,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_phi"     , &phi   ,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_mass"    , &mass  ,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_status"  , &status,true);
-  treeReader->setBranchAddress(branchName,collectionName + "_pdgid"   , &pdgid ,true);
-}
-//--------------------------------------------------------------------------------------------------
-void GenParticleReader::DataContainer::refresh(){
-  particles.clear();
-  particles.reserve(pt->size());
-  for(unsigned int iJ = 0; iJ < pt->size(); ++iJ)
-    particles.emplace_back(CylLorentzVectorF(pt->at(iJ),eta->at(iJ),phi->at(iJ),mass->at(iJ)),iJ,
-        status->at(iJ),pdgid->at(iJ)
-    );
-}
-//--------------------------------------------------------------------------------------------------
 GenParticleReader::GenParticleReader() : BaseReader(){
+  pt_       = new vector<float>(0);
+  eta_      = new vector<float>(0);
+  phi_      = new vector<float>(0);
+  mass_     = new vector<float>(0);
+  status_   = new vector<size8>(0);
+  pdgId_    = new vector<int  >(0);
+  nMoms_    = new vector<stor >(0);
+  firstMom_ = new vector<stor >(0);
+  nDaus_    = new vector<stor >(0);
+  firstDau_ = new vector<stor >(0);
+  assocList_= new vector<stor >(0);
+}
+//--------------------------------------------------------------------------------------------------
+GenParticleReader::~GenParticleReader(){
+  delete pt_       ;
+  delete eta_      ;
+  delete phi_      ;
+  delete mass_     ;
+  delete status_   ;
+  delete pdgId_    ;
+  delete nMoms_    ;
+  delete firstMom_ ;
+  delete nDaus_    ;
+  delete firstDau_ ;
+  delete assocList_;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -67,11 +54,17 @@ void GenParticleReader::load(TreeReader *treeReader, int options, string branchN
 
     clog << "Loading (" << branchName << ") particles with: ";
 
-    genParticles   .load(branchName_,"particle",treeReader);
-    thirdGenQuarks .load(branchName_,"q3rdgen",treeReader);
-    bosons         .load(branchName_,"boson",treeReader);
-    bosonDaughters .load(branchName_,"boson_daughter",treeReader);
-    tauDaughters   .load(branchName_,"tau_daughter",treeReader);
+    treeReader->setBranchAddress(branchName_,"pt"       ,&pt_       ,true);
+    treeReader->setBranchAddress(branchName_,"eta"      ,&eta_      ,true);
+    treeReader->setBranchAddress(branchName_,"phi"      ,&phi_      ,true);
+    treeReader->setBranchAddress(branchName_,"mass"     ,&mass_     ,true);
+    treeReader->setBranchAddress(branchName_,"status"   ,&status_   ,true);
+    treeReader->setBranchAddress(branchName_,"pdgId"    ,&pdgId_    ,true);
+    treeReader->setBranchAddress(branchName_,"nMoms"    ,&nMoms_    ,true);
+    treeReader->setBranchAddress(branchName_,"firstMom" ,&firstMom_ ,true);
+    treeReader->setBranchAddress(branchName_,"nDaus"    ,&nDaus_    ,true);
+    treeReader->setBranchAddress(branchName_,"firstDau" ,&firstDau_ ,true);
+    treeReader->setBranchAddress(branchName_,"assocList",&assocList_,true);
 
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -82,9 +75,11 @@ void GenParticleReader::load(TreeReader *treeReader, int options, string branchN
 void GenParticleReader::refresh(){
   if(!(options_ & FILLOBJ)) return;
 
-  genParticles   .refresh();
-  thirdGenQuarks .refresh();
-  bosons         .refresh();
-  bosonDaughters .refresh();
-  tauDaughters   .refresh();
+  genParticles.clear();
+  genParticles.reserve(pt_->size());
+
+  for(unsigned int iP = 0; iP < pt_->size(); ++iP){
+    genParticles.emplace_back(CylLorentzVectorF(pt_->at(iP),eta_->at(iP),phi_->at(iP),mass_->at(iP)),&genParticles);
+    genParticles.back().setStorage(status_->at(iP),pdgId_->at(iP),nMoms_->at(iP),firstMom_->at(iP),nDaus_->at(iP),firstDau_->at(iP),assocList_);
+  }
 }

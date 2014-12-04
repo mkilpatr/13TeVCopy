@@ -50,7 +50,7 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
      if(ParticleInfo::isBHadron(ParticleInfo::typeOfHadron(bQuarks[iPtcl]->daughter(iD)->pdgId()))) numBHad++;
     }
     if(numBHad != 1){
-      ParticleUtilities::printGenInfo((*particles),-1);
+      ParticleInfo::printGenInfo((*particles),-1);
       throw cms::Exception("JetFlavorMatching.getBHadronDecays()", TString::Format("Failed to obtain proper number of bHadrons (%d) for a b-quark (index %d).",numBHad, bQuarks[iPtcl].key() ).Data());
     }
   }
@@ -69,7 +69,7 @@ vector<HadronDecay> JetFlavorMatching::getBHadronDecays(const edm::Handle<vector
       bDecays[iHad].quark.emplace_back(particles,mom.key());
     }
     if(bDecays[iHad].quark.size() != bDecays[iHad].numQuarksInHad){
-      ParticleUtilities::printGenInfo((*particles),-1);
+      ParticleInfo::printGenInfo((*particles),-1);
       cout << "JetFlavorMatching.getBHadronDecays() :: Associated bQuarks ->  ";
       for(unsigned int iQ = 0; iQ < bDecays[iHad].quark.size(); ++iQ) cout << bDecays[iHad].quark[iQ].key() <<" ";
       cout << endl;

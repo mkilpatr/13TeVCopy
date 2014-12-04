@@ -9,12 +9,12 @@
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 //_____________________________________________________________________________
-inline bool ParticleInfo::isFinal(const int status) {return status == 1;}
-inline bool ParticleInfo::isIntermediate(const int status) {return status >= 71;}
-inline bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
-inline bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
-inline bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
-inline bool ParticleInfo::isIncoming(const int status) {return status <= 21;}
+bool ParticleInfo::isFinal(const int status) {return status == 1;}
+bool ParticleInfo::isIntermediate(const int status) {return status >= 71;}
+bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
+bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
+bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
+bool ParticleInfo::isIncoming(const int status) {return status <= 21;}
 //_____________________________________________________________________________
 inline bool ParticleInfo::isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
 //_____________________________________________________________________________
@@ -418,11 +418,11 @@ TString ParticleInfo::formatFlavors(const std::vector<int>& counts, const std::v
   return    label;
 }
 //_____________________________________________________________________________
-TString ParticleInfo::nameFor(int pdgId, int charge)
+TString ParticleInfo::nameFor(int pdgId)
 {
   if (pdgId < 0) {
-    TString               name  = nameFor(-pdgId, -charge);
-    if (charge == 0 && TMath::Abs(pdgId) > p_t) return name;
+    TString               name  = nameFor(-pdgId);
+//    if (charge == 0 && TMath::Abs(pdgId) > p_t) return name;
 
     if      (name.Contains("Plus"))   name.ReplaceAll("Plus", "Minus");
     else if (name.Contains("Minus"))  name.ReplaceAll("Minus", "Plus");
@@ -438,16 +438,16 @@ TString ParticleInfo::nameFor(int pdgId, int charge)
     case p_c:             return "c";
     case p_b:             return "b";
     case p_t:             return "t";
-    case p_eminus:        return (charge ? "eMinus"   : "e"  );
+    case p_eminus:        return "eMinus";
     case p_nu_e:          return "nuE";
-    case p_muminus:       return (charge ? "muMinus"  : "mu" );
+    case p_muminus:       return "muMinus";
     case p_nu_mu:         return "nuMu";
-    case p_tauminus:      return (charge ? "tauMinus" : "tau");
+    case p_tauminus:      return "tauMinus";
     case p_nu_tau:        return "nuTau";
     case p_g:             return "g";
     case p_gamma:         return "gamma";
     case p_Z0:            return "Z";
-    case p_Wplus:         return (charge ? "WPlus"   : "W"   );
+    case p_Wplus:         return "WPlus";
     case p_h0:            return "h0";
     case p_H0:            return "H0";
     case p_A0:            return "A0";
@@ -539,16 +539,11 @@ TString ParticleInfo::nameFor(int pdgId, int charge)
   }
 }
 //_____________________________________________________________________________
-TString ParticleInfo::nameFor(int pdgId)
-{
-  return nameFor(TMath::Abs(pdgId), 0);
-}
-//_____________________________________________________________________________
-TString ParticleInfo::titleFor(int pdgId, int charge)
+TString ParticleInfo::titleFor(int pdgId)
 {
   if (pdgId < 0) {
-    TString           title  = titleFor(-pdgId, -charge);
-    if (charge == 0 && TMath::Abs(pdgId) > p_t) return title;
+    TString           title  = titleFor(-pdgId);
+//    if (charge == 0 && TMath::Abs(pdgId) > p_t) return title;
 
     if      (title.Contains("+"))   title.ReplaceAll("+", "-");
     else if (title.Contains("-"))   title.ReplaceAll("-", "+");
@@ -665,14 +660,9 @@ TString ParticleInfo::titleFor(int pdgId, int charge)
   }
 }
 //_____________________________________________________________________________
-TString ParticleInfo::titleFor(int pdgId)
-{
-  return titleFor(TMath::Abs(pdgId), 0);
-}
-//_____________________________________________________________________________
 TString ParticleInfo::shortTitleFor(int pdgId, bool ignoreLR)
 {
-  TString         title = nameFor(TMath::Abs(pdgId), 0);
+  TString         title = nameFor(TMath::Abs(pdgId));
   if (ignoreLR)   title.ReplaceAll("_{L}","").ReplaceAll("_{R}","");
   return title;
 }

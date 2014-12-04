@@ -170,10 +170,8 @@ void BaseTreeAnalyzer::processVariables()
 
   if(genParticleReader.isLoaded()){
     genParts.clear();
-    genParts.reserve(3);
-    for(auto& p : genParticleReader.thirdGenQuarks.particles) genParts.push_back(&p);
-    for(auto& p : genParticleReader.bosons.particles) genParts.push_back(&p);
-    for(auto& p : genParticleReader.bosonDaughters.particles) genParts.push_back(&p);
+    genParts.reserve(genParticleReader.genParticles.size());
+    for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
 }
