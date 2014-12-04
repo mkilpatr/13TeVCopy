@@ -4,6 +4,7 @@ RecoJetFiller::RecoJetFiller(const int options, const string branchName, const E
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag reGenJetAssocTag
   , const bool   fillReGenJets
   , const double jptMin
 ) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller
@@ -13,13 +14,13 @@ RecoJetFiller::RecoJetFiller(const int options, const string branchName, const E
     , fillReGenJets
     , jptMin
     )
+  , reGenJetAssocTag_(reGenJetAssocTag)
 {}
 
 
 void RecoJetFiller::load(const edm::Event& iEvent){
   JetFiller<reco::PFJet>::load(iEvent);
-  edm::InputTag ptrTag(reGenJetTag_.label(),"GenPtr");
-  if(fillReGenJets_) FileUtilities::enforceGet(iEvent,ptrTag,genJetPtr,true);
+  if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetAssocTag_,genJetPtr,true);
 }
 
 //--------------------------------------------------------------------------------------------------
