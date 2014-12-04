@@ -18,41 +18,34 @@
 
 namespace ucsbsusy {
 class GenParticleReader : public BaseReader {
+  typedef size16 stor;
 public:
   enum  Options           {
                             NULLOPT         = 0
                           , FILLOBJ         = (1 <<  1)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
-  class DataContainer {
-  public:
-    DataContainer();
-    ~DataContainer();
-    std::vector<float>* pt    ;
-    std::vector<float>* eta   ;
-    std::vector<float>* phi   ;
-    std::vector<float>* mass  ;
-    std::vector<int  >* status;
-    std::vector<int  >* pdgid ;
 
-    GenParticleFCollection particles;
-
-    void load(const std::string branchName,const std::string collectionName, TreeReader * treeReader);
-    void refresh();
-  };
-
-public :
+public:
   GenParticleReader();
-  ~GenParticleReader() {}
+  ~GenParticleReader();
 
   void load(TreeReader *treeReader, int options, std::string branchName);
   void refresh();
 public:
-  DataContainer genParticles  ;
-  DataContainer thirdGenQuarks;
-  DataContainer bosons        ;
-  DataContainer bosonDaughters;
-  DataContainer tauDaughters  ;
+  std::vector<float>*  pt_       ;
+  std::vector<float>*  eta_      ;
+  std::vector<float>*  phi_      ;
+  std::vector<float>*  mass_     ;
+  std::vector<size8>*  status_   ;
+  std::vector<int  >*  pdgId_    ;
+  std::vector<stor >*  nMoms_    ;
+  std::vector<stor >*  firstMom_ ;
+  std::vector<stor >*  nDaus_    ;
+  std::vector<stor >*  firstDau_ ;
+  std::vector<stor >*  assocList_;
+
+  GenParticleFCollection genParticles;
 };
 
 }

@@ -18,19 +18,8 @@
 
 namespace ucsbsusy {
 
-  struct GenParticleCoords {
-    GenParticleCoords(const string inname) : name(inname), ptindex(0), etaindex(0), phiindex(0), massindex(0), statusindex(0), pdgidindex(0) {}
-    const string name;
-    size ptindex;
-    size etaindex;
-    size phiindex;
-    size massindex;
-    size statusindex;
-    size pdgidindex;
-  };
 
   class GenParticleFiller : public BaseFiller {
-
     public :
       GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag, const edm::InputTag packedGenParticleTag);
       ~GenParticleFiller() {}
@@ -45,18 +34,35 @@ namespace ucsbsusy {
       void load(const edm::Event& iEvent);
       void fill();
 
-      void addDataBlock(GenParticleCoords& coords);
-      void fillDataBlock(GenParticleCoords& coords, const reco::GenParticle* p);
+
+      //typefs to setup how the association is stored, and helpers for that storage
+      typedef std::map<size,size> CandMap;
+      typedef size16 stor;
+      typedef std::vector<stor> storVec;
+      void fillMomVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireMoms, storVec& moms) const;
+      void fillDauVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireDaus, storVec& daus) const;
+      void fillAssoc(const std::vector<const reco::GenParticle*>& cands,const CandMap& candMap, const bool requireMoms, const bool requireDaus,
+          storVec& assocList,storVec& nMoms,storVec& firstMom,storVec& nDaus,storVec& firstDau ) const;
+
+      //Add the particles from the main interaction
+      void addHardInteraction(vector<const reco::GenParticle*>& outParticles,CandMap& candMap)const;
 
     private :
       const edm::InputTag genParticleTag_;
       const edm::InputTag packedGenParticleTag_;
 
-      GenParticleCoords* mcpart;
-      GenParticleCoords* q3rdgen;
-      GenParticleCoords* boson;
-      GenParticleCoords* boson_daughter;
-      GenParticleCoords* tau_daughter;
+      // For reco jets
+      size ipt       ;
+      size ieta      ;
+      size iphi      ;
+      size imass     ;
+      size istatus   ;
+      size ipdgid    ;
+      size inmoms    ;
+      size ifirstmom ;
+      size indaus    ;
+      size ifirstdau ;
+      size iassoc    ;
 
     public :
       edm::Handle<reco::GenParticleCollection> genParticles_;
