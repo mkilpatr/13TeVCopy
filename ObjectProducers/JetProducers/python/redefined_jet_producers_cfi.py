@@ -36,6 +36,10 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     ghostArea       = cms.double          (.01)
 )
 
+redAK8CHS = redAK4.clone(
+                         rParameter = cms.double(0.8),
+                         jetPtMin = cms.double(15)
+                        )
 
 redCA1 = redAK4.clone(
                       jetAlgorithm      = cms.string('CambridgeAachen'),

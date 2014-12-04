@@ -12,6 +12,7 @@ namespace ucsbsusy {
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
+          , const edm::InputTag reGenJetAssocTag
           , const bool fillReGenJets
           , const double jptMin
           );
@@ -30,6 +31,9 @@ namespace ucsbsusy {
       float getbDisc(const reco::PFJet& jet) const {return -10;}
       float getQGDisc(const reco::PFJet& jet) const{ return -10;}
       float getBetaStar(const reco::PFJet& jet) const{ return -10;}
+
+    protected:
+      const edm::InputTag reGenJetAssocTag_;
 
     private:
       edm::Handle<edm::ValueMap<reco::CandidatePtr> > genJetPtr;
