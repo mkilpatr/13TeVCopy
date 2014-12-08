@@ -101,7 +101,7 @@ void GenParticleFiller::fill()
     data.fillMulti<float>(iphi     ,storedParticles[iC]->phi());
     data.fillMulti<float>(imass    ,storedParticles[iC]->mass());
     data.fillMulti<size8>(istatus  ,convertTo<size8>(storedParticles[iC]->status(),"GenParticleFiller::fill() -> status"));
-    data.fillMulti<int  >(ipdgid   ,convertTo<int16>(storedParticles[iC]->pdgId() ,"GenParticleFiller::fill() -> pdgid"));
+    data.fillMulti<int  >(ipdgid   ,storedParticles[iC]->pdgId());
     data.fillMulti<stor >(inmoms   ,convertTo<stor >(nMoms[iC]                    ,"GenParticleFiller::fill() -> nMoms"));
     data.fillMulti<stor >(ifirstmom,convertTo<stor >(firstMoms[iC]                ,"GenParticleFiller::fill() -> firstMom"));
     data.fillMulti<stor >(indaus   ,convertTo<stor >(nDaus[iC]                    ,"GenParticleFiller::fill() -> nDaus"));
