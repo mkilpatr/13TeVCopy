@@ -178,8 +178,8 @@ void ElectronFiller::fill()
       data.fillMulti<float>(idPhiIn_, el->deltaPhiSuperClusterTrackAtVtx());
       data.fillMulti<float>(ihOverE_, el->hadronicOverEm());
       data.fillMulti<float>(ifBrem_, el->fbrem());
-      //data.fillMulti<int  >(inExpHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfHits());
-      //data.fillMulti<int  >(inLostHitsInner_, el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits());
+      data.fillMulti<int  >(inExpHitsInner_, el->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS));
+      data.fillMulti<int  >(inLostHitsInner_, el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS));
       data.fillMulti<bool >(ipassConvVeto_, el->passConversionVeto());
     }
 

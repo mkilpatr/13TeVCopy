@@ -27,6 +27,7 @@ public:
                             NULLOPT         = 0
                           , LOADGEN         = (1 <<  0)   ///< load gen jets
                           , LOADJETSHAPE    = (1 <<  1)   ///< load jet shap variables
+                          , LOADBTAG        = (1 <<  2)   ///< load btag info for non-standard jets
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
