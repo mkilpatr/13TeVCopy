@@ -247,7 +247,7 @@ void testJetFlavorAssignment() {
         const auto& genJetRef = ak4Jets->getStdGenJet(ak4Jets->jets_->at(iJ));
         if(genJetRef.isNull()) continue;
         if(genJetRef.key() != iG) continue;
-        patFlv = JetFlavorInfo::jetFlavor(ak4Jets->getPartonFlavor(ak4Jets->jets_->at(iJ)));
+        patFlv = JetFlavorInfo::jetFlavor(ak4Jets->jets_->at(iJ).partonFlavour());
       }
 
 
