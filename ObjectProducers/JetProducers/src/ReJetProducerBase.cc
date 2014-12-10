@@ -25,6 +25,10 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , minParticlePT   (iConfig.getParameter<double>("minParticlePT"   ))
         , maxParticleEta  (iConfig.getParameter<double>("maxParticleEta"  ))
         , ghostArea       (iConfig.getParameter<double>("ghostArea"  ))
+        , useTrimming     (iConfig.getParameter<bool  >("useTrimming"  ))
+        , rFilt           (iConfig.getParameter<double>("rFilt"  ))
+        , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
+
     {
 
   produces< reco::PFJetCollection             >(        );

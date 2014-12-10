@@ -9,8 +9,6 @@
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
-#define TAGGABLE_TYPE_HACK
-
 namespace ucsbsusy{
 
 //--------------------------------------------------------------------------------------------------
@@ -19,13 +17,14 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
 ) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller)
   , jetTag_          (jetTag)
   , reGenJetTag_     (reGenJetTag)
   , stdGenJetTag_    (stdGenJetTag)
-//  genParticleTag_  (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("genParticles") : edm::InputTag()),
+  , flvAssocTag_     (flvAssocTag)
   , jptMin_          (jptMin)
   , fillReGenJets_   (fillReGenJets)
   , qglInterface_    (new QuarkGluonTagInterface)
@@ -43,12 +42,13 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
 
   if(options_ & LOADGEN) {
-    ijetflavor_ = data.addMulti<int  >(branchName_,"jet_flavor",0);
     ijetgenindex_ = data.addMulti<int  >(branchName_,"jet_genIndex",-1);
     igenjetpt_     = data.addMulti<float>(branchName_,"genjet_pt"    ,0);
     igenjeteta_    = data.addMulti<float>(branchName_,"genjet_eta"   ,0);
     igenjetphi_    = data.addMulti<float>(branchName_,"genjet_phi"   ,0);
     igenjetmass_   = data.addMulti<float>(branchName_,"genjet_mass"  ,0);
+    igenjetflavor_ = data.addMulti<size8  >(branchName_,"genjet_flavor",0);
+
   }
 
   if(options_ & LOADJETSHAPE) {
@@ -76,13 +76,7 @@ void JetFiller<Jet>::load(const edm::Event& iEvent)
   if(options_ & LOADGEN) {
     if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
-//    edm::Handle<reco::GenParticleCollection> genParticles_;
-//    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
-
-#ifndef TAGGABLE_TYPE_HACK
-    std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
-    JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
-#endif
+    FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
   }
 
   isLoaded_ = true;
@@ -98,13 +92,15 @@ void JetFiller<Jet>::fill()
   if(options_ & LOADGEN){
     const reco::GenJetCollection& genJets = fillReGenJets_ ? (*reGenJets_.product()) : (*stdGenJets_.product());
     filledIndex.reserve(genJets.size());
-    for (const reco::Jet &j : genJets) {
+    for(unsigned int iJ = 0; iJ < genJets.size(); ++iJ){
+      const auto& j = genJets[iJ];
       if(j.pt() < jptMin_){ filledIndex.push_back(-1); continue;}
       filledIndex.push_back(++curGenIndex);
       data.fillMulti<float>(igenjetpt_    ,j.pt());
       data.fillMulti<float>(igenjeteta_   ,j.eta());
       data.fillMulti<float>(igenjetphi_   ,j.phi());
       data.fillMulti<float>(igenjetmass_  ,j.mass());
+      data.fillMulti<size8>(igenjetflavor_,fillReGenJets_ ? flvAssoc_->at(iJ) : 0);
       if(options_ & LOADJETSHAPE){
         assert(evtInfofiller_->isLoaded());
         qgTaggingVar_->compute(&j);
@@ -120,7 +116,6 @@ void JetFiller<Jet>::fill()
 
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
     const Jet& j = jets_->at(iJ);
-    const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
     if(j.pt() < jptMin_) continue;
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
@@ -131,7 +126,7 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
 
     if(options_ & LOADGEN) {
-      data.fillMulti<int>(ijetflavor_,getPartonFlavor(j));
+      const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {
         data.fillMulti<int>(ijetgenindex_,filledIndex[gJ.key()]);
       } else {

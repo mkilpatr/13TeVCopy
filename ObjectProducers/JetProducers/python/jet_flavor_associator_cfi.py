@@ -7,5 +7,6 @@ redAK4FlvAssoc          = cms.EDProducer('JetFlavorAssociator'
                                     , coneSize         = cms.double(.4)
 )
 
-redPuppiAssoc           = redAK4FlvAssoc.clone(genJetsSrc = cms.InputTag('redAK4Puppi','Gen'))
-redAK8TrimmedAssoc      = redAK4FlvAssoc.clone(genJetsSrc = cms.InputTag('redAK8CHS','Gen'))
+redAK4PuppiFlvAssoc        = redAK4FlvAssoc.clone(genJetsSrc = cms.InputTag('redAK4Puppi','Gen'))
+redAK8TrimmedFlvAssoc      = redAK4FlvAssoc.clone(genJetsSrc = cms.InputTag('redAK8Trimmed','Gen'), coneSize = cms.double(-1))
+redAK8TrimmedPuppiFlvAssoc = redAK4FlvAssoc.clone(genJetsSrc = cms.InputTag('redAK8TrimmedPuppi','Gen'), coneSize = cms.double(-1))
