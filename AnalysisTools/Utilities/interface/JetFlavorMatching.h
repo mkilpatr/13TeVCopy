@@ -11,197 +11,139 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+
 
 #include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
 
 namespace JetFlavorMatching {
+
+//Matching info
+
+
 //_____________________________________________________________________________
 // Class to hold hadron decay info....used for jet flavor matching
 //_____________________________________________________________________________
-class HadronDecay
+class ParticleDecay
 {
 public:
-  reco::GenParticleRef                hadron;       ///< The hadron of interest.
-  std::vector<reco::GenParticleRef>   quark;        ///< All quarks that hadronize into this hadron.
-  std::vector<reco::GenParticleRef>   decay;        ///< All decay products of this hadron.
+  reco::GenParticleRef                particle;     ///< The particle of interest.
+  std::vector<size>                   decayInts;    ///< All decay products of this hadron.
   CartLorentzVector                   sumVisible;   ///< Vector sum momenta of visible (non-neutrino) decay products.
   CartLorentzVector                   sumCharged;   ///< Vector sum momenta of charged decay products.
   int                                 numVisible;   ///< Number of visible (non-neutrino) decay products.
   int                                 numCharged;   ///< Number of charged decay products.
-  unsigned int                        numQuarksInHad;    ///Number of quarks in this hadron, from the type
-  HadronDecay(const edm::Handle<reco::GenParticleCollection>& particles, int index, unsigned int nQ)
-    : hadron    (particles, index)
+  ParticleDecay(const edm::Handle<reco::GenParticleCollection>& particles, int index)
+    : particle    (particles, index)
     , numVisible(0)
     , numCharged(0)
-    , numQuarksInHad(nQ)
   { }
 };
 
-typedef   edm::Ref<std::vector<HadronDecay> >           HadronDecayRef;
-typedef   std::pair<HadronDecayRef, CartLorentzVector>  HadronContainment;
-typedef   std::vector<HadronContainment>                HadronContainments;
+typedef   edm::Ref<std::vector<ParticleDecay> >           ParticleDecayRef;
+typedef   std::pair<ParticleDecayRef, CartLorentzVector>  ParticleContainment;
+typedef   std::vector<ParticleContainment>                ParticleContainments;
 
 
-template<typename Hadron>
-struct GreaterHadronPT : public std::binary_function<const Hadron&, const Hadron&, bool> {
-  bool operator()(const Hadron& h1, const Hadron& h2) const
-  { return h1.hadron->pt() > h2.hadron->pt(); }
+template<typename Particle>
+struct GreaterParticlePT : public std::binary_function<const Particle&, const Particle&, bool> {
+  bool operator()(const Particle& h1, const Particle& h2) const
+  { return h1.particle->pt() > h2.particle->pt(); }
 };
 
-template<typename Hadron>
-struct GreaterHadronE : public std::binary_function<const Hadron&, const Hadron&, bool> {
-  bool operator()(const Hadron& h1, const Hadron& h2) const
-  { return h1.hadron->energy() > h2.hadron->energy(); }
+template<typename Particle>
+struct GreaterParticleE : public std::binary_function<const Particle&, const Particle&, bool> {
+  bool operator()(const Particle& h1, const Particle& h2) const
+  { return h1.particle->energy() > h2.particle->energy(); }
 };
 
   //_____________________________________________________________________________
-  /// Gets the list of B hadrons and their originating quarks
+  /// Gets the list of B+C hadrons
   //_____________________________________________________________________________
-  std::vector<HadronDecay> getBHadronDecays(const edm::Handle<std::vector<reco::GenParticle> >& particles);
+  void getHadronDecays(const edm::Handle<std::vector<reco::GenParticle> >& particles,
+      std::vector<ParticleDecay>& bDecays, std::vector<ParticleDecay>& cDecays );
+  //_____________________________________________________________________________
+  /// Gets the list of partons (with the option to skip heavy partons)
+  //_____________________________________________________________________________
+  template<typename Particle>
+  bool isMatchingParton( const Particle& particle);
+  void getPartons(const edm::Handle<std::vector<reco::GenParticle> >& particles,
+      std::vector<ParticleDecay>& partonDecays, const bool skipHeavyFlavor);
+  //_____________________________________________________________________________
+  /// collect all final decay products
+  //_____________________________________________________________________________
+  void tagDecays(const int tag,reco::GenParticleRef  particle, std::vector<int>& bHadronMatches);
+  template<typename Particle>
+  void addDecayProduct(ParticleDecay& decay, Particle& decayProduct, const int index);
+  //
+  // Gives prefecence to b hadrons then c hadrons, then partons (sorted by pT) when the decay product can be
+  // associated to multiple sources (if a vector is set to 0, skip that set)
+  // the last piece stores a vector of associations between partons and genparticles for faster flavor tagging
+  void associateDecayProducts(const edm::Handle<std::vector<reco::GenParticle> > & particles, const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,
+      std::vector<ParticleDecay>* bDecays,std::vector<ParticleDecay>* cDecays, std::vector<ParticleDecay>* partonDecays
+      , std::vector<int>* partonParticleAssoc);
+  //_____________________________________________________________________________
+  /// Associate hadrons to genJets by tracing constituents.
+  //_____________________________________________________________________________
+  template<typename Object, typename Particle>
+  void associateHadronsToJets        (
+                                        const edm::Handle<std::vector<Particle> >& particles
+                                      , const std::vector<Object>&   jets
+                                      , const std::vector<ParticleDecay>&    hadronDecays
+                                      , std::vector<ParticleContainments>&   mainHadrons        ///< B hadrons whose max contained energy is in this indexed jet.
+                                      , std::vector<ParticleContainments>&   satelliteHadrons   ///< B hadrons who have some sub-leading containment in this indexed jet.
+                                      );
+  //_____________________________________________________________________________
+  /**
+      Finds the constituents of a given object that are present in the given list of particles.
+      Returns the number of such constituents and stores the vector sum (all and visible only)
+      in the provided output objects.
+   */
+  //_____________________________________________________________________________
+  template<typename Object, typename Particle>
+  int matchConstituents(const std::vector<Particle>& particles,const Object& object, const std::vector<size>& particleInts
+      , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
+  );
+
+  //_____________________________________________________________________________
+  /// Match hadrons to jets, based on the mainHadron, and set flavor to setFlavor
+  // output total hadron pT of that type
+  // assumes that the outputs: flavors, matched particles, hadron PTs is correct in size
+  // WILL NOT OVERRIDE A MATCHED JET
+  //_____________________________________________________________________________
+  template<typename Object>
+  void assignJetHadronFlavors( const std::vector<Object>& jets, const JetFlavorInfo::JetFlavor setFlavor,
+      const std::vector<ParticleContainments>&   mainHadrons, std::vector<ParticleContainments>&   satteliteHadrons,
+      std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<float>& hadronPTs,std::vector<std::vector<ParticleDecayRef> > & matchedParticles
+  );
+  //_____________________________________________________________________________
+  /// Match partons to jets, based on the one with the greatest pT in some radius cone.
+  //  if cusRad != 0 then use that radius for each jet (usefull for variable cone jets)
+  //_____________________________________________________________________________
+  template<typename Object>
+  void assignJetPartonFlavors( const std::vector<Object>& jets, std::vector<ParticleDecay>& partonDecays,
+      std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<std::vector<ParticleDecayRef> > & matchedParticles,
+      double maxDR, std::vector<double>* cusRad = 0
+  );
+
+  //_____________________________________________________________________________
+  /// Match partons to jets, based on the one with the largest contribution
+  // assumes that the outputs: flavors, matched particles, is correct in size
+  // WILL NOT OVERRIDE A MATCHED JET
+  //_____________________________________________________________________________
+  //Version that doesnt work because mini aod links only to the first gen mother...
+  //this means that color singlets dont really make sense when tracing
+  template<typename Object>
+  void assignJetPartonFlavors( const std::vector<Object>& jets,
+      std::vector<ParticleDecay>& partonDecays, std::vector<int>& partonParticleAssoc,
+      std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<std::vector<ParticleDecayRef> > & matchedParticles,
+      std::vector<ParticleContainments> & partonContainments
+  );
 }
 
-
-//namespace ucsbsusy {
-////_____________________________________________________________________________
-//// Class to hold hadron decay info....used for jet flavor matching
-////_____________________________________________________________________________
-//class HadronDecay
-//{
-//public:
-//  reco::GenParticleRef                hadron;       ///< The hadron of interest.
-//  std::vector<reco::GenParticleRef>   quark;        ///< All quarks that hadronize into this hadron.
-//  std::vector<reco::GenParticleRef>   decay;        ///< All decay products of this hadron.
-//  CartLorentzVector                   sumVisible;   ///< Vector sum momenta of visible (non-neutrino) decay products.
-//  CartLorentzVector                   sumCharged;   ///< Vector sum momenta of charged decay products.
-//  int                                 numVisible;   ///< Number of visible (non-neutrino) decay products.
-//  int                                 numCharged;   ///< Number of charged decay products.
-//  HadronDecay(const edm::Handle<reco::GenParticleCollection>& particles, int index)
-//    : hadron    (particles, index)
-//    , numVisible(0)
-//    , numCharged(0)
-//  { }
-//};
-//
-//typedef   edm::Ref<std::vector<HadronDecay> >           HadronDecayRef;
-//typedef   std::pair<HadronDecayRef, CartLorentzVector>  HadronContainment;
-//typedef   std::vector<HadronContainment>                HadronContainments;
-//
-//
-//template<typename Hadron>
-//struct GreaterHadronPT : public std::binary_function<const Hadron&, const Hadron&, bool> {
-//  bool operator()(const Hadron& h1, const Hadron& h2) const
-//  { return h1.hadron->pt() > h2.hadron->pt(); }
-//};
-//
-//template<typename Hadron>
-//struct GreaterHadronE : public std::binary_function<const Hadron&, const Hadron&, bool> {
-//  bool operator()(const Hadron& h1, const Hadron& h2) const
-//  { return h1.hadron->energy() > h2.hadron->energy(); }
-//};
-//
-//
-//
-//
-//class JetFlavorMatching {
-//public:
-//  JetFlavorMatching();
-//  virtual ~JetFlavorMatching();
-//
-//  //_____________________________________________________________________________
-//  // How we define flavor for genjets
-//  // Called "taggable" because we say a jet is a b-jet if the gen jet is in pT
-//  // and eta acceptance
-//  //_____________________________________________________________________________
-//  static const TString        TAGGABLE_NAME [numTaggableTypes+1];
-//
-//  //_____________________________________________________________________________
-//  // Strings for storage in PAT user info
-//  //_____________________________________________________________________________
-//  static const std::string    STORED_BHAD_INFO;   ///< userInt label to whether or not bHadron info has been added (or attempted to be added) to the jet
-//  static const std::string    NUM_FROM_ME;        ///< userInt label for number of matrix element sources
-//  static const std::string    MAIN_B_P4;          ///< userCand label for p4 contained in various main-associated B hadrons.
-//  static const std::string    SATELLITE_B_P4;     ///< userCand label for p4 contained in various satellite B hadrons.
-//  static const std::string    MAIN_B_INDEX;       ///< userCand label for indices of various main-associated B hadrons.
-//  static const std::string    SATELLITE_B_INDEX;  ///< userCand label for indices of various satellite B hadrons.
-//
-//  //_____________________________________________________________________________
-//  /**
-//    Match a given list of particles to the list of jets, by dR proximity, and
-//    allowing multiple matches in a second round.
-//  */
-//  //_____________________________________________________________________________
-//  template<typename Jet, typename Particle>
-//  static std::vector<std::vector<reco::GenParticleRef> > matchParticlesToJets ( const std::vector<Jet>& jets, const std::vector<Particle>& particles
-//                                                                    , double maxDR = 0.5, int pdgId = ParticleInfo::p_b, int status = ParticleInfo::status_decayed);
-//
-//  //_____________________________________________________________________________
-//  /**
-//    Finds the constituents of a given object that are present in the given list of particles.
-//    Returns the number of such constituents and stores the vector sum (all and visible only)
-//    in the provided output objects.
-//  */
-//  //_____________________________________________________________________________
-//  template<typename Object, typename Particle>
-//  static int matchConstituents( const Object& object, const std::vector<edm::Ref<std::vector<Particle> > >& particles
-//                              , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
-//                              );
-//
-//  //_____________________________________________________________________________
-//  /// Traces and stores all status final daughters down the decay chain of the given particle.
-//  //_____________________________________________________________________________
-//  template<typename Particle>
-//  static void getDecayProducts( int index, const edm::Handle<std::vector<Particle> >& particles, std::vector<edm::Ref<std::vector<Particle> > >& decayProducts
-//                              , CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
-//                              );
-//
-//  //_____________________________________________________________________________
-//  /// Gets the list of B hadrons, their originating quarks, and their visible/invisible decay products.
-//  //_____________________________________________________________________________
-//  static std::vector<HadronDecay> getBHadronDecays(const edm::Handle<std::vector<reco::GenParticle> >& particles);
-//
-//  //_____________________________________________________________________________
-//  /// Associate B hadrons to genJets by tracing constituents.
-//  //_____________________________________________________________________________
-//  static void associateBHadronsToJets ( const std::vector<reco::GenJet>&   jets
-//                                      , const std::vector<HadronDecay>&    bHadronDecays
-//                                      , std::vector<HadronContainments>&   mainBHadrons        ///< B hadrons whose max contained energy is in this indexed jet.
-//                                      , std::vector<HadronContainments>&   satelliteBHadrons   ///< B hadrons who have some sub-leading containment in this indexed jet.
-//                                      );
-//  //_____________________________________________________________________________
-//  /// Stores B hadron info into pat::Jets according to its corresponding genJet.
-//  //_____________________________________________________________________________
-//  static void storeBHadronInfo( const std::vector<pat::Jet>&             jets
-//                              , const std::vector<HadronContainments>&   mainBHadrons
-//                              , const std::vector<HadronContainments>&   satelliteBHadrons
-//                              , const std::string&                       genJetLabel     = "GenPtr"
-//                              );
-//
-//  //_____________________________________________________________________________
-//  /// Automagically calls associateBHadronsToJets() first.
-//  //_____________________________________________________________________________
-//  static void storeBHadronInfo( const std::vector<pat::Jet>& recoJets, const std::vector<reco::GenJet>& genJets, const std::vector<HadronDecay>& bHadronDecays );
-//
-//
-//  //_____________________________________________________________________________
-//  // Get jet info based on stored decay information
-//  //_____________________________________________________________________________
-//  static TaggableType getTaggableType(double jetEta, int numMainBHadrons, int partonFlavor, double etaAcceptance = 2.4);
-//
-//  static TaggableType getTaggableType(const pat::Jet& jet, int* numMEpartons = 0, double etaAcceptance = 2.4);
-//
-//  static TaggableType getPATTaggableType(const pat::Jet& jet, int* numMEpartons = 0, double etaAcceptance = 2.4);
-//
-//  template<typename JetRef>
-//  static TaggableType getTaggableType(const JetRef& jet, const HadronContainments&  mainBHadronsInJet, const reco::JetFlavourMatchingCollection& jetFlavorMatch, double etaAcceptance = 2.4);
-//
-//  static reco::GenParticleRef getMainBQuark(const pat::Jet& jet, const edm::Handle<reco::GenParticleCollection>& genParticles, size which = 0);
-//
-//};
-//
-//#include "AnalysisTools/Utilities/src/JetFlavorMatching.icc"
-//
-//} /* namespace ucsbsusy */
+#include "AnalysisTools/Utilities/src/JetFlavorMatching.icc"
 
 #endif /* JETFLAVORMATCHING_H_ */
