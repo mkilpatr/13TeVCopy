@@ -46,4 +46,4 @@ redAK8                 = redAK4.clone(rParameter = cms.double(0.8))
 redAK8Trimmed          = redAK8.clone(useTrimming = cms.bool(True))
 
 redAK8Puppi            = redAK4Puppi.clone(rParameter = cms.double(0.8))
-redAK8PuppiTrimmed     = redAK8Puppi.clone(useTrimming = cms.bool(True))
+redAK8TrimmedPuppi     = redAK8Puppi.clone(useTrimming = cms.bool(True))
