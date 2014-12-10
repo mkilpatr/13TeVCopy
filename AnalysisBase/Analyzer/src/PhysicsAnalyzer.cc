@@ -141,27 +141,18 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
 
-      edm::VParameterSet trimmedJetPsets = cfg.getParameter<edm::VParameterSet>("jets");
-
-      for(edm::VParameterSet::const_iterator ipset = trimmedJetPsets.begin(); ipset != trimmedJetPsets.end(); ++ipset) {
-        edm::InputTag jetsrc = ipset->getParameter<edm::InputTag>("src");
-        std::string jetlabel = ipset->getUntrackedParameter<string>("label", defaults::BRANCH_TRIMMEDJETS);
-        edm::InputTag genjetptrsrc = ipset->getParameter<edm::InputTag>("genptrsrc");
-        edm::InputTag btagsrc = ipset->getParameter<edm::InputTag>("btagsrc");
-
-        trimmedJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
-                                        branchName == "" ? jetlabel : branchName,
-                                        eventInfo,
-                                        jetsrc,
-                                        btagsrc,
-                                        cfg.getParameter<edm::InputTag>("reGenJets"),
-                                        cfg.getParameter<edm::InputTag>("stdGenJets"),
-                                        genjetptrsrc,
-                                        cfg.getUntrackedParameter<bool>("fillReGenJets"),
-                                        cfg.getUntrackedParameter<double>("minJetPt")
-                                        );
-        initializedFillers.push_back(trimmedJets);
-      }
+      trimmedJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                    branchName == "" ? defaults::BRANCH_TRIMMEDJETS : branchName,
+                                    eventInfo,
+                                    cfg.getParameter<edm::InputTag>("jets"),
+                                    cfg.getParameter<edm::InputTag>("btags"),
+                                    cfg.getParameter<edm::InputTag>("reGenJets"),
+                                    cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
+                                    cfg.getUntrackedParameter<bool>("fillReGenJets"),
+                                    cfg.getUntrackedParameter<double>("minJetPt")
+                                    );
+      initializedFillers.push_back(trimmedJets);
       break;
     }
 
