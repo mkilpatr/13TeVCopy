@@ -49,6 +49,12 @@ public :
   template< class Coords >
   void setP4(const ROOT::Math::LorentzVector<Coords> & v )    { fMom = v;    }
 
+  //cout the momentum
+  friend ostream& operator<<(ostream& os, const Momentum<CoordSystem>& m){
+    os << "("<<m.pt()<<","<<m.eta()<<","<<m.phi()<<")";
+    return os;
+  }
+
 private:
   ROOT::Math::LorentzVector<CoordSystem>	 fMom;
 

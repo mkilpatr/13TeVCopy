@@ -67,7 +67,7 @@ protected:
   const double ghostArea;
 
   fastjet::JetAlgorithm jetAlgo;
-  edm::Handle<reco::GenParticle>                genMotherParticles;
+  edm::Handle<reco::GenParticleCollection>      genMotherParticles;
   edm::Handle<pat::PackedGenParticleCollection> genParticles;
   };
 
