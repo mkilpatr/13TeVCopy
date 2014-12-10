@@ -27,7 +27,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('PHYS14_25_V1'),           #Global tag
+                                      globalTag        = cms.string ('PHYS14_25_V1::All'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -62,27 +62,35 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
-                                      isFilled          = cms.untracked.bool(True),
-                                      jetsPuppi         = cms.InputTag('ak4PFJetsPuppi'),
-                                      reGenJetsPuppi    = cms.InputTag('redAK4Puppi','Gen'),
-                                      stdGenJetsPuppi   = cms.InputTag('slimmedGenJets'),
-                                      reGenJetAssocPuppi= cms.InputTag('redPuppiGenAssoc:GenPtr'),
-                                      fillReGenJetsPuppi= cms.untracked.bool(True),
-                                      minJetPtPuppi     = cms.untracked.double(20.0),
-                                      fillJetGenInfo    = cms.untracked.bool(True),
-                                      fillJetShapeInfo  = cms.untracked.bool(True),
-                                      applyJEC          = cms.untracked.bool(False)
+                                      isFilled           = cms.untracked.bool(True),
+                                      jets               = cms.InputTag('ak4PFJetsPuppi'),
+                                      btags              = cms.InputTag('ak4PuppiCSVIVF'),
+                                      reGenJets          = cms.InputTag('redAK4Puppi','Gen'),
+                                      stdGenJets         = cms.InputTag('slimmedGenJets'),
+                                      reGenJetAssoc      = cms.InputTag('redPuppiGenAssoc:GenPtr'),
+                                      fillReGenJets      = cms.untracked.bool(True),
+                                      minJetPt           = cms.untracked.double(20.0),
+                                      fillCustomBtagInfo = cms.untracked.bool(True),
+                                      fillJetGenInfo     = cms.untracked.bool(True),
+                                      fillJetShapeInfo   = cms.untracked.bool(True),
+                                      applyJEC           = cms.untracked.bool(False)
                                   ),
 
                                   TrimmedJets = cms.untracked.PSet(
                                       isFilled             = cms.untracked.bool(True),
-                                      jetsTrimmed          = cms.VPSet(
-                                                                 cms.PSet(src = cms.InputTag('ak8PFJetsCHSTrimmedr0p1ptf0p03'), label = cms.untracked.string('ak8pfchstrimmed_r0p1_ptf0p03'), genptrsrc = cms.InputTag('redAK8TrimmedGenAssoc:GenPtr')),
+                                      jets                 = cms.VPSet(
+                                                                 cms.PSet(
+                                                                          src = cms.InputTag('ak8PFJetsCHSTrimmedr0p1ptf0p03'),
+                                                                          label = cms.untracked.string('ak8pfchstrimmed_r0p1_ptf0p03'),
+                                                                          genptrsrc = cms.InputTag('redAK8TrimmedGenAssoc:GenPtr'),
+                                                                          btagsrc = cms.InputTag('trimmedCSVIVF')
+                                                                 ),
                                                              ),
-                                      reGenJetsTrimmed     = cms.InputTag('redAK8CHS','Gen'),
-                                      stdGenJetsTrimmed    = cms.InputTag('slimmedGenJets'),
-                                      fillReGenJetsTrimmed = cms.untracked.bool(True),
-                                      minJetPtTrimmed      = cms.untracked.double(15.0),
+                                      reGenJets            = cms.InputTag('redAK8CHS','Gen'),
+                                      stdGenJets           = cms.InputTag('slimmedGenJets'),
+                                      fillReGenJets        = cms.untracked.bool(True),
+                                      minJetPt             = cms.untracked.double(15.0),
+                                      fillCustomBtagInfo   = cms.untracked.bool(True),
                                       fillJetGenInfo       = cms.untracked.bool(True),
                                       fillJetShapeInfo     = cms.untracked.bool(True),
                                   ),
@@ -120,4 +128,4 @@ nominal_configuration = cms.PSet(
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
                                   )
-                                 )
+                                )
