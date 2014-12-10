@@ -186,7 +186,7 @@ void testJetFlavorAssignment() {
 
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::b_jet, mainBHadrons,satelliteBHadrons,flavors,bHadronPTs,matchedParticles);
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::c_jet, mainCHadrons,satelliteCHadrons,flavors,cHadronPTs,matchedParticles);
-  JetFlavorMatching::assignJetPartonFlavors(*genJets,partons,flavors,matchedParticles,.4);
+  JetFlavorMatching::assignJetPartonFlavors(*genJets,partons,flavors,matchedParticles,.16);
 
   cout <<"-----"<<endl;
 

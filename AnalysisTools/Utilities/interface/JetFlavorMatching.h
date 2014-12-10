@@ -9,8 +9,6 @@
 #define JETFLAVORMATCHING_H_
 
 #include "DataFormats/JetReco/interface/GenJet.h"
-#include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 
@@ -120,13 +118,13 @@ struct GreaterParticleE : public std::binary_function<const Particle&, const Par
       std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<float>& hadronPTs,std::vector<std::vector<ParticleDecayRef> > & matchedParticles
   );
   //_____________________________________________________________________________
-  /// Match partons to jets, based on the one with the greatest pT in some radius cone.
-  //  if cusRad != 0 then use that radius for each jet (usefull for variable cone jets)
+  /// Match partons to jets, based on the one with the greatest pT in some radius cone. (squared)
+  //  if cusRad2 != 0 then use that radius for each jet (usefull for variable cone jets)
   //_____________________________________________________________________________
   template<typename Object>
   void assignJetPartonFlavors( const std::vector<Object>& jets, std::vector<ParticleDecay>& partonDecays,
       std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<std::vector<ParticleDecayRef> > & matchedParticles,
-      double maxDR, std::vector<double>* cusRad = 0
+      double maxDR2, std::vector<double>* cusRad2 = 0
   );
 
   //_____________________________________________________________________________

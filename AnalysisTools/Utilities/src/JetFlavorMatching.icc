@@ -154,11 +154,11 @@ void JetFlavorMatching::assignJetHadronFlavors( const std::vector<Object>& jets,
 template<typename Object>
 void JetFlavorMatching::assignJetPartonFlavors( const std::vector<Object>& jets, std::vector<ParticleDecay>& partonDecays,
     std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<std::vector<ParticleDecayRef> > & matchedParticles,
-    double maxDR, std::vector<double>* cusRad)
+    double maxDR2, std::vector<double>* cusRad2 )
 {
   assert(flavors.size()               == jets.size());
   assert(matchedParticles.size()      == jets.size());
-  if(cusRad) assert(cusRad->size()      == jets.size());
+  if(cusRad2) assert(cusRad2->size()      == jets.size());
 
   std::vector<int> matches(partonDecays.size(),0);
 
@@ -169,14 +169,11 @@ void JetFlavorMatching::assignJetPartonFlavors( const std::vector<Object>& jets,
   }
   std::sort(rankedJets.begin(), rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
 
-  //comparing DR2 is faster than DR
-  double maxDR2 = maxDR*maxDR;
-
   for (size iJ = 0; iJ < rankedJets.size(); ++iJ) {
     int iJet = rankedJets[iJ].second;
     if(flavors[iJet] != JetFlavorInfo::unmatched_jet) continue;
 
-    if(cusRad) maxDR2 = (*cusRad)[iJet]*(*cusRad)[iJet];
+    if(cusRad2) maxDR2 = (*cusRad2)[iJet];
     std::vector<RankedIndex> pts;
 
     for(unsigned int iP = 0; iP < partonDecays.size(); ++iP){
