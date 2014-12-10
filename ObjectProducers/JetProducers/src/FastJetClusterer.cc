@@ -2,6 +2,8 @@
 #include "RecoJets/JetProducers/interface/JetSpecific.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
+#include <fastjet/tools/Filter.hh>
+
 /*************************/
 /*      Interface        */
 /*************************/
@@ -104,6 +106,20 @@ void FastJetClusterer::clusterJets( fastjet::JetDefinition::Plugin* plugin, doub
 {
   clusterJets( fastjet::JetDefinition(plugin), minJetPT, maxGhostEta, ghostArea, meanGhostPT, numAreaRepeats, ghostGridScatter, ghostPTScatter );
 }
+
+void    FastJetClusterer::trimJets         (const double rFilter, double trimPtFracMin){
+  fastjet::Filter trimmer( fastjet::JetDefinition(fastjet::kt_algorithm, rFilter), fastjet::SelectorPtFractionMin(trimPtFracMin));
+
+  std::vector<fastjet::PseudoJet>                           trimmedJets;
+  for ( std::vector<fastjet::PseudoJet>::const_iterator ijet = jets.begin(),
+      ijetEnd = jets.end(); ijet != ijetEnd; ++ijet ) {
+    fastjet::PseudoJet trimmedJet = trimmer(*ijet);
+    if(trimmedJet.has_constituents())
+      trimmedJets.push_back(trimmedJet);
+  }
+  jets = trimmedJets;
+}
+
 
 //_____________________________________________________________________________
 void FastJetClusterer::selectJets(double minJetPT, double maxJetEta)

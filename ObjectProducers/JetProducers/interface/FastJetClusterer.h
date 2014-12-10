@@ -154,6 +154,8 @@ public:
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
 
+  void    trimJets         (const double rFilter, double trimPtFracMin);
+
 
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
