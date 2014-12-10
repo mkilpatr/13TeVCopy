@@ -17,7 +17,7 @@ namespace ucsbsusy {
 namespace defaults {
   const std::string BRANCH_AK4JETS   = "ak4pfchs";
   const std::string BRANCH_PUPPIJETS = "ak4pfpuppi";
-  const std::string BRANCH_TRIMMEDJETS = "ak8pfchstrimmed";
+  const std::string BRANCH_TRIMMEDJETS = "ak8trimmed";
   const std::string BRANCH_STDGENJETS= "ak4";
   const std::string BRANCH_ELECTRONS = "ele";
   const std::string BRANCH_MUONS     = "mu";
