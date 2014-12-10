@@ -14,9 +14,9 @@ redAK4             = cms.EDProducer('PackedReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01)
 )
 
 
@@ -31,9 +31,9 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01)
 )
 
 redAK8CHS = redAK4.clone(
