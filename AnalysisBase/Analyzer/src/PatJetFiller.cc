@@ -4,12 +4,14 @@ PatJetFiller::PatJetFiller(const int options, const string branchName, const Eve
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
 ) : JetFiller<pat::Jet>(options, branchName, evtInfoFiller
     , jetTag
     , reGenJetTag
     , stdGenJetTag
+    , flvAssocTag
     , fillReGenJets
     , jptMin
     )

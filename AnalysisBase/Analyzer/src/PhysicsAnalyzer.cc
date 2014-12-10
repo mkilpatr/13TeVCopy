@@ -107,6 +107,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
+                             , cfg.getParameter<edm::InputTag>("flvAssoc")
                              , cfg.getUntrackedParameter<bool>("fillReGenJets")
                              , cfg.getUntrackedParameter<double>("minJetPt")
       );
@@ -127,6 +128,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getParameter<edm::InputTag>("btags"),
                                     cfg.getParameter<edm::InputTag>("reGenJets"),
                                     cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("flvAssoc"),
                                     cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
                                     cfg.getUntrackedParameter<bool>("fillReGenJets"),
                                     cfg.getUntrackedParameter<double>("minJetPt")
@@ -148,6 +150,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getParameter<edm::InputTag>("btags"),
                                     cfg.getParameter<edm::InputTag>("reGenJets"),
                                     cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("flvAssoc"),
                                     cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
                                     cfg.getUntrackedParameter<bool>("fillReGenJets"),
                                     cfg.getUntrackedParameter<double>("minJetPt")

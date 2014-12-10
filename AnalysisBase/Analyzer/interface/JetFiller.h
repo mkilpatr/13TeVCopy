@@ -41,6 +41,7 @@ public:
           , const edm::InputTag jetTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
+          , const edm::InputTag flvAssocTag
           , const bool fillReGenJets
           , const double jptMin
           );
@@ -53,7 +54,6 @@ public:
       virtual reco::GenJetRef getStdGenJet(const Jet& jet) const = 0;
       virtual reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const = 0;
 
-      virtual int   getPartonFlavor(const Jet& jet) const = 0;
       virtual float getJecUncorrection(const Jet& jet) const = 0;
       virtual float getPUJetId(const Jet& jet) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
@@ -68,7 +68,7 @@ public:
       const edm::InputTag jetTag_;
       const edm::InputTag reGenJetTag_;
       const edm::InputTag stdGenJetTag_;
-//      const edm::InputTag genParticleTag_;
+      const edm::InputTag flvAssocTag_;
       const double        jptMin_;
       const bool          fillReGenJets_;
 
@@ -82,13 +82,13 @@ public:
       size ijetptraw_    ;
       size ijetpuId_     ;
       size ijetcsv_      ;
-      size ijetflavor_   ;
       size ijetgenindex_ ;
       // For genjets matched to reco jets
       size igenjetpt_    ;
       size igenjeteta_   ;
       size igenjetphi_   ;
       size igenjetmass_  ;
+      size igenjetflavor_;
       // For jetShape info
       size ijetbetaStar_;
       size ijetqgl_     ;
@@ -114,6 +114,7 @@ public:
       edm::Handle<std::vector<Jet>>       jets_;
       edm::Handle<reco::GenJetCollection> reGenJets_;
       edm::Handle<reco::GenJetCollection> stdGenJets_;
+      edm::Handle<std::vector<size8   > > flvAssoc_;
 
   };
 
