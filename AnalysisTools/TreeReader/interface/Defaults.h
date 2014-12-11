@@ -13,9 +13,10 @@
 
 #include <string>
 
-namespace ucsbsusy {
 namespace defaults {
   const std::string BRANCH_AK4JETS   = "ak4";
+  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G,SINGLE_T, TTZ, TTW,DIBOSON, NUMPROCESSES };
+  const std::string PROCESS_NAMES[] = {"data","qcd","ttbar","w","z","g","t","ttZ","ttw","diboson",""};
   const std::string BRANCH_PUPPIJETS = "ak4puppi";
   const std::string BRANCH_TRIMMEDJETS ="ak8trimmed";
   const std::string BRANCH_ELECTRONS = "ele";
@@ -29,6 +30,6 @@ namespace defaults {
   const double CSV_OLD_MEDIUM = 0.679;
   const double CSV_OLD_TIGHT  = 0.898;
 }
-}
+
 
 #endif
