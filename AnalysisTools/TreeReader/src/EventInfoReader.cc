@@ -33,18 +33,22 @@ EventInfoReader::EventInfoReader()
 
 void EventInfoReader::load(TreeReader *treeReader, int options, string branchName)
 {
+  clog << "Loading (" << branchName << ") event info with: ";
+
   loaded_ = true;
-  treeReader->setBranchAddress("","run", &run);
-  treeReader->setBranchAddress("","lumi", &lumi);
-  treeReader->setBranchAddress("","event", &event);
-  treeReader->setBranchAddress("","npv", &nPV);
-  treeReader->setBranchAddress("","rho", &rho);
-  treeReader->setBranchAddress("","pv_x", &pvx);
-  treeReader->setBranchAddress("","pv_y", &pvy);
-  treeReader->setBranchAddress("","pv_z", &pvz);
-  treeReader->setBranchAddress("","met_pt", &met_pt);
-  treeReader->setBranchAddress("","met_phi", &met_phi);
-  treeReader->setBranchAddress("","met_sumEt", &metsumEt);
+  treeReader->setBranchAddress(branchName,"run", &run);
+  treeReader->setBranchAddress(branchName,"lumi", &lumi);
+  treeReader->setBranchAddress(branchName,"event", &event);
+  treeReader->setBranchAddress(branchName,"npv", &nPV);
+  treeReader->setBranchAddress(branchName,"rho", &rho);
+  treeReader->setBranchAddress(branchName,"pv_x", &pvx);
+  treeReader->setBranchAddress(branchName,"pv_y", &pvy);
+  treeReader->setBranchAddress(branchName,"pv_z", &pvz);
+  treeReader->setBranchAddress(branchName,"met_pt", &met_pt);
+  treeReader->setBranchAddress(branchName,"met_phi", &met_phi);
+  treeReader->setBranchAddress(branchName,"met_sumEt", &metsumEt);
+
+  clog << endl;
 }
 
 void EventInfoReader::refresh()
