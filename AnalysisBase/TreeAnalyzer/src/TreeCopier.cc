@@ -7,7 +7,7 @@ using namespace ucsbsusy;
 TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree)
 : BaseTreeAnalyzer(fileName,treeName,isMCTree,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {};
-TreeCopier::~TreeCopier(){outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
+TreeCopier::~TreeCopier(){ if(!outFile_) return; outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
 
 //--------------------------------------------------------------------------------------------------
 void TreeCopier::analyze(int reportFrequency)
