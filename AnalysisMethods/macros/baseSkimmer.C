@@ -37,7 +37,7 @@ public:
     assert(bosons.size() == 1);
 
     //Require boson pT to be >= 150 GeV
-    if(bosons.front()->pt() < 150) return false;
+    if(bosons.front()->pt() < 100) return false;
 
     //Require at least two jets, with pT > 170 GeV, that are > .4 away from the boson
     int nJ70 = 0;
