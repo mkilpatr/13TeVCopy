@@ -323,12 +323,12 @@ void testJetFlavorAssignment() {
 
   ~TestParticleAndJetID() {}
     void analyze() {
-//      printGenInfo();
+      printGenInfo();
 //      printMatchingParticles();
 //      testAssociation();
 //      testJetHadronAssociation();
 //      testBHadronMatching();
-      testJetFlavorAssignment();
+//      testJetFlavorAssignment();
 
 //      fill();
       }

@@ -1,142 +1,164 @@
 {
-   TString REG[] = {"sel_CR__","sel_CR_DPHI__",""};
-   TString VARS[] = {"top1_pt","top2_pt","num_j30","num_j70",""};
-   o  = new TObjArray;
-      oo  = new TObjArray;
-         ooo  = new TObjArray;
-   for(unsigned int  iV = 0; VARS[iV][0]; ++iV){
-      TString sel = "ttbarincl__";
-      if(iV != 0) sel = "ttbarsel_.*__";
-      pi = new Plot("sel_CR__"+sel+VARS[iV]);
-      pd = new Plot("sel_CR_DPHI__"+sel+VARS[iV]);
+   TString CUTS[] = {"ht","nBs","nGenJets","nRecoJets",""};
+   o = new TObjArray;
+   oo = new TObjArray;
+   ooo = new TObjArray;
+   for(unsigned int iC = 0; CUTS[iC][0]; ++ iC){
+      pz = new Plot("z_" + CUTS[iC] + "_.*__boson_pt");
+      // pg = new Plot("g_timesSF_" + CUTS[iC] + "_.*__boson_pt");
+      pg = new Plot("g_" + CUTS[iC] + "_.*__boson_pt");
       
-      pi->toUnderOverflow();
-      pd->toUnderOverflow();
+      pz->rebin(5);
+      pg->rebin(5);
       
-      pi->SetTitle("Inclusive #Delta#Phi");
-      pd->SetTitle("#Delta#Phi < 1");
-      o->Add(pi);
-      oo->Add(pd);
-      pd = (Plot*)pd->Clone();    
-      pi = (Plot*)pi->Clone();      
-      
-      p = pd->divide(*pi);
-      p->SetTitle("#Delta#Phi < 1 / Inclusive");
-      ooo->Add(p);
+      pz->SetTitle("Z : " + CUTS[iC]);
+      pg->SetTitle("G : " + CUTS[iC]);
+      pz->toUnderOverflow();
+      pg->toUnderOverflow();
+      o->Add(pz);
+      oo->Add(pg);
+
+      pz = (Plot*)pz->Clone();
+      pz->divide(*pg);
+      pz->SetTitle("Z/G "+CUTS[iC] );
+      pz->setMinMax(0.,.5);
+      ooo->Add(pz);
+
       
    }
-   Pint::drawAll(o,"");
-   Pint::drawAll(oo,"");
-   Pint::drawAll(ooo,"","hist");
-   
+   Pint::drawAll(o,"Z","",":i"    );
+   Pint::drawAll(oo,"G","",":i"   );
+   Pint::drawAll(ooo,"Z/G","","");
 }
 
 
 {
-   TString SR[] = {      
-      "T2bw_lowX"         ,
-      "T2bw_lowMass"      ,
-      "T2bw_medXHighMass" ,
-      "T2bw_highXHighMass",
-      "T2bw_veryHighMass" ,
-      "T2tt_lowMass"      ,
-      "T2tt_medMass"      ,
-      "T2tt_highMass"     ,
-      "T2tt_veryHighMass" ,
-      ""      
-   }
+   double bins[] = {100,120,140,160,180,200,250,300,350,400,500,600,1000};
+   RebinToNewBins b(12,bins);
    
-   
-   TString REG[] = {"sel_incl__","sel_DPHI__",""};
-   o  = new TObjArray;
-   oo  = new TObjArray;
-   ooo  = new TObjArray;
-   for(unsigned int  iV = 0; SR[iV][0]; ++iV){
-      pi = new Plot("proc_.*__sel_incl__"+SR[iV]+"$");
-      pd = new Plot("proc_.*__sel_DPHI__"+SR[iV]+"$");
-      pi->toUnderOverflow();
-      pd->toUnderOverflow();
-      pi->SetTitle("Inclusive #Delta#Phi");
-      pd->SetTitle("#Delta#Phi < 1");
+   TString CUTS[] = {
+      "nGenJets_eq2to3__" ,
+      "nGenJets_eq4to5__" ,
+      "nGenJets_eq6to7__" ,
+      "nGenJets_geq8__"   ,
+      ""
+      };
+   o = new TObjArray;
+   oo = new TObjArray;
+   ooo = new TObjArray;
+   for(unsigned int iC = 0; CUTS[iC][0]; ++ iC){
+      pz = new Plot("z_nCross_" + CUTS[iC] + ".*__boson_pt");
+      pg = new Plot("g_nCross_" + CUTS[iC] + ".*__boson_pt");
       
-      pi = pi->makeRatiogram("incl","b");
-      pd = pd->makeRatiogram("incl","b");
+      pz->rebin(b);
+      pg->rebin(b);
       
+      pz->SetTitle("Z : " + CUTS[iC]);
+      pg->SetTitle("G : " + CUTS[iC]);
+      pz->toUnderOverflow();
+      pg->toUnderOverflow();
+      o->Add(pz);
+      oo->Add(pg);
+
+      pz = (Plot*)pz->Clone();
+      pz->divide(*pg);
+      pz->SetTitle(Plot::translated("Z/G "+CUTS[iC]) );
+
+      pz->setMinMax(0.,.5);
+      ooo->Add(pz);
       
-      o->Add(pi);
-      oo->Add(pd);
-      pd = (Plot*)pd->Clone();    
-      pi = (Plot*)pi->Clone();      
-      
-      p = pd->divide(*pi);
-      p->SetTitle("#Delta#Phi < 1 / Inclusive");      p->setMinMax(0.5,1.5);
-      ooo->Add(p);
       
    }
-   Pint::drawAll(o,"");
-   Pint::drawAll(oo,"");
-   Pint::drawAll(ooo,"","hist");
-   
+   // Pint::drawAll(o,"Z","",":i"    );
+   // Pint::drawAll(oo,"G","",":i"   );
+   Pint::drawAll(ooo,"Z/G","","");
 }
 
 
 
+
 {
-   double bins[] = {180,200,260,320,400,500};
-   int nBins = 5;
-   RebinToNewBins b(nBins,bins);
-   
-   TString SR[] = {      
-      "T2bw_lowX"         ,
-      "T2bw_lowMass"      ,
-      "T2bw_medXHighMass" ,
-      "T2bw_highXHighMass",
-      "T2bw_veryHighMass" ,
-      "T2tt_lowMass"      ,
-      "T2tt_medMass"      ,
-      "T2tt_highMass"     ,
-      "T2tt_veryHighMass" ,
-      ""      
-   }
-   
-   
-   TString REG[] = {"ltM0p5_","eqM0p5to0_","eq0to0p5_","geq0p5_","SR_"};
-   o  = new TObjArray;
-   oo  = new TObjArray;
-   ooo  = new TObjArray;
-   for(unsigned int  iV = 0; SR[iV][0]; ++iV){      
-   
+   TString CUTS[] = {"nBs_eq0__","nBs_eq1__","nBs_geq2__","",""};
+   o = new TObjArray;
+   oo = new TObjArray;
+   ooo = new TObjArray;
+   for(unsigned int iC = 0; CUTS[iC][0]; ++ iC){
+      pz = new Plot("z_nCross_.*" + CUTS[iC] + "boson_pt");
+      pg = new Plot("g_timesSF_nCross_.*" + CUTS[iC] + "boson_pt");
       
-      pi = new Plot("proc_incl__sel_incl__"+SR[iV]+"_.*metNoLep$");
-      pd = new Plot("proc_incl__sel_DPHI__"+SR[iV]+"_.*metNoLep$");
+      pz->rebin(90);
+      pg->rebin(90);
       
-      pi->rebin(b);
-      pd->rebin(b);
-      
-      pi->toUnderOverflow();
-      pd->toUnderOverflow();
-      
-      
-      
-      pi->SetTitle("Inclusive #Delta#Phi");
-      pd->SetTitle("#Delta#Phi < 1");
-      
-      // pi = pi->makeRatiogram("incl","b");
-      // pd = pd->makeRatiogram("incl","b");
-      
-      
-      o->Add(pi);
-      oo->Add(pd);
-      pd = (Plot*)pd->Clone();    
-      pi = (Plot*)pi->Clone();      
-      
-      p = pd->divide(*pi);
-      p->SetTitle("#Delta#Phi < 1 / Inclusive");      p->setMinMax(0.8,1.2);
-      ooo->Add(p);
+      pz->SetTitle("Z : " + CUTS[iC]);
+      pg->SetTitle("G : " + CUTS[iC]);
+      pz->toUnderOverflow();
+      pg->toUnderOverflow();
+      o->Add(pz);
+      oo->Add(pg);
+
+      pz = (Plot*)pz->Clone();
+      pz->divide(*pg);
+      pz->SetTitle("Z/G "+CUTS[iC] );
+      // pz->setMinMax(0.,.5);
+      ooo->Add(pz);
+
       
    }
-   Pint::drawAll(o,"");
-   Pint::drawAll(oo,"");
-   Pint::drawAll(ooo,"","hist");
+   // Pint::drawAll(o,"Z","",":i"    );
+   // Pint::drawAll(oo,"G","",":i"   );
+   Pint::drawAll(ooo,"Z/G","",":i");
+}
+
+
+
+
+
+{
+
+   // TString VARS[] = {
+   //     "met"               ,
+   //     "num_j30"           ,
+   //     "dphi_j3_met"       ,
+   //     "num_medium_btags"  ,
+   //     // "q2_likeli"         ,
+   //     // "q1_likeli"         ,
+   //     // "quark_likeli"      ,
+   //     "ht_along_over_away",
+   //     // "rms_pt"            ,
+   //     // "rms_dphi"          ,
+   //     // "bb_mass"           ,
+   //     "mTb"               ,
+   //     // "deta_b_rms"        ,
+   //     // "leading_jj_mass"   ,
+   //     ""
+   // };
+
+   TString VARS[] = {
+       "T2bw_lowX"               ,
+       "T2bw_lowMass"           ,
+       "T2bw_medXHighMass"       ,
+       "T2bw_highXHighMass"  ,
+       "T2bw_veryHighMass"         ,
+       ""
+   };
+
+
+   o = new TObjArray;
+   oo = new TObjArray;
+
+   for(unsigned int iV = 0; VARS[iV][0]; ++iV){
+      p = new Plot("(z|g_timesSF)_T2bW_preselection__"+VARS[iV]);
+      p->toUnderOverflow();
+      // if(iV == 0)      p->rebin(3);
+   p->rebin(5);
+      // p->at("g")->Scale(p->at("z")->Integral()/p->at("g")->Integral());
+      o->Add(p);      
+      
+      p=p->makeRatiogram("z","");
+      oo->Add(p);
+      
+   }
    
+   Pint::drawAll(o,"" );
+   Pint::drawAll(oo,"" );
 }
