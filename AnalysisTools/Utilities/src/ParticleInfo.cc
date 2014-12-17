@@ -15,7 +15,7 @@ bool ParticleInfo::isHadronization(const int status) {return status >= 71 && sta
 bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
 bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
 bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
-bool ParticleInfo::isIncoming(const int status) {return status <= 21;}
+bool ParticleInfo::isIncoming(const int status) {return status > 3 && status <= 21;}
 //_____________________________________________________________________________
 bool ParticleInfo::isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
 //_____________________________________________________________________________
