@@ -14,6 +14,9 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
 
+using namespace ucsbsusy;
+
+
 class JetFlavorAssociator : public edm::EDProducer {
 public:
   JetFlavorAssociator(const edm::ParameterSet& iConfig);
