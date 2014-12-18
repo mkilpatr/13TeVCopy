@@ -1,13 +1,13 @@
 #include "AnalysisBase/Analyzer/interface/PatJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-PatJetFiller::PatJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+PatJetFiller::PatJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
   , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
-) : JetFiller<pat::Jet>(options, branchName, evtInfoFiller
+) : JetFiller<pat::Jet>(options, branchName, evtInfoFiller, genParticleFiller
     , jetTag
     , reGenJetTag
     , stdGenJetTag

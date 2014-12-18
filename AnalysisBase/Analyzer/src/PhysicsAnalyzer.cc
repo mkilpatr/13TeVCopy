@@ -101,10 +101,12 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = PatJetFiller::defaultOptions; 
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
 
       ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options
                              , branchName == "" ? defaults::BRANCH_AK4JETS : branchName
                              , eventInfo
+                             , genparticles
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
@@ -121,10 +123,12 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
 
       puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
                                     eventInfo,
+                                    genparticles,
                                     cfg.getParameter<edm::InputTag>("jets"),
                                     cfg.getParameter<edm::InputTag>("btags"),
                                     cfg.getParameter<edm::InputTag>("reGenJets"),
@@ -143,10 +147,12 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
 
       trimmedJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_TRIMMEDJETS : branchName,
                                     eventInfo,
+                                    genparticles,
                                     cfg.getParameter<edm::InputTag>("jets"),
                                     cfg.getParameter<edm::InputTag>("btags"),
                                     cfg.getParameter<edm::InputTag>("reGenJets"),
