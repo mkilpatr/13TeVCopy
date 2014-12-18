@@ -8,7 +8,7 @@
 namespace ucsbsusy {
   class RecoJetFiller : public JetFiller<reco::PFJet> {
     public:
-    RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+    RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
           , const edm::InputTag jetTag
           , const edm::InputTag bTagsTag
           , const edm::InputTag reGenJetTag

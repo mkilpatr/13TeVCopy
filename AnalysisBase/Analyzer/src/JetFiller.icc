@@ -3,9 +3,11 @@
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
+#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+#include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
@@ -13,14 +15,14 @@ namespace ucsbsusy{
 
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
-JetFiller<Jet>::JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+JetFiller<Jet>::JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
   , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
-) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller)
+) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller), genParticleFiller_(genParticleFiller)
   , jetTag_          (jetTag)
   , reGenJetTag_     (reGenJetTag)
   , stdGenJetTag_    (stdGenJetTag)
@@ -33,6 +35,11 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   , reGenJets_       (0)
   , stdGenJets_      (0)
 {
+  if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
+    throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
+  }
+
+
   ijetpt_     = data.addMulti<float>(branchName_,"jet_pt"    ,0);
   ijeteta_    = data.addMulti<float>(branchName_,"jet_eta"   ,0);
   ijetphi_    = data.addMulti<float>(branchName_,"jet_phi"   ,0);
@@ -42,7 +49,7 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
 
   if(options_ & LOADGEN) {
-    ijetgenindex_ = data.addMulti<int  >(branchName_,"jet_genIndex",-1);
+    ijetgenindex_ = data.addMulti<int16  >(branchName_,"jet_genIndex",-1);
     igenjetpt_     = data.addMulti<float>(branchName_,"genjet_pt"    ,0);
     igenjeteta_    = data.addMulti<float>(branchName_,"genjet_eta"   ,0);
     igenjetphi_    = data.addMulti<float>(branchName_,"genjet_phi"   ,0);
@@ -57,13 +64,19 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     ijetptD_     =data.addMulti<float>(branchName_,"jet_ptD"     ,0);
     ijetaxis1_   =data.addMulti<float>(branchName_,"jet_axis1"   ,0);
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
-    ijetMult_    =data.addMulti<int  >(branchName_,"jet_jetMult" ,0);
+    ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
       igenjetaxis2_= data.addMulti<float>(branchName_,"genjet_axis2"  ,0);
-      igenjetMult_ = data.addMulti<int  >(branchName_,"genjet_jetMult",0);
+      igenjetMult_ = data.addMulti<size16>(branchName_,"genjet_jetMult",0);
     }
+  }
+
+  if(options_ & SAVETOPASSOC) {
+    iGenAssocPrtIndex_ = data.addMulti<size16>(branchName_,"prtassoc_partonIndex",0);
+    iGenAssocJetIndex_ = data.addMulti<size16>(branchName_,"prtassoc_jetIndex",0);
+    iGenAssocCont_     = data.addMulti<TopJetMatching::conType>(branchName_,"prtassoc_jetCont",0);
   }
 }
 //--------------------------------------------------------------------------------------------------
@@ -107,10 +120,35 @@ void JetFiller<Jet>::fill()
         data.fillMulti<float>(igenjetptD_     ,qgTaggingVar_->getPtD());
         data.fillMulti<float>(igenjetaxis1_   ,qgTaggingVar_->getAxis1());
         data.fillMulti<float>(igenjetaxis2_   ,qgTaggingVar_->getAxis2());
-        data.fillMulti<int  >(igenjetMult_    ,qgTaggingVar_->getTotalMult());
+        data.fillMulti<size16>(igenjetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::genJetMult"));
+      }
+    }
+
+    if(options_ & SAVETOPASSOC) {
+      const TopDecayMatching::Partons& partons = genParticleFiller_->getPartons(genJets);
+      for(const auto p : partons){
+        bool firstJet = true;
+        for(const auto& ja : p.jetAssoc){
+          //check to see if in the stored jet collection
+          if(filledIndex[ja.first] < 0) continue;
+          TopJetMatching::conType con = TopJetMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
+          //if the containment is less than 1% leave it off the list
+          if(con == 0) continue;
+          if(firstJet){
+            //if the first jet of the parton tag it by making th containment negative
+            con *= -1;
+            //add the parton index
+            data.fillMulti<size16>(iGenAssocPrtIndex_,convertTo<size16>(p.storedIndex,"JetFiller::prtassoc_partonIndex"));
+            firstJet = false;
+          }
+          data.fillMulti<size16>(iGenAssocJetIndex_,convertTo<size16>(ja.first,"JetFiller::prtassoc_jetIndex"));
+          data.fillMulti<TopJetMatching::conType>(iGenAssocCont_,con);
+        }
       }
     }
   }
+
+
 
 
 
@@ -128,9 +166,9 @@ void JetFiller<Jet>::fill()
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {
-        data.fillMulti<int>(ijetgenindex_,filledIndex[gJ.key()]);
+        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(filledIndex[gJ.key()],"JetFiller::genJetIndex"));
       } else {
-        data.fillMulti<int>(ijetgenindex_   );
+        data.fillMulti<int16>(ijetgenindex_   );
       }
     }
 
@@ -142,7 +180,7 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
-      data.fillMulti<int  >(ijetMult_    ,qgTaggingVar_->getTotalMult());
+      data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
     }
 
   }

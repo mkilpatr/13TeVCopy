@@ -40,6 +40,7 @@ nominal_configuration = cms.PSet(
                                       packedGenParticles  = cms.InputTag('packedGenParticles'),
                                       prunedGenParticles  = cms.InputTag('prunedGenParticles'),
                                       saveAllGenParticles = cms.untracked.bool(False),
+                                      savePartonHadronization = cms.untracked.bool(True),
                                   ),
 
                                   EventInfo = cms.untracked.PSet(
@@ -60,6 +61,7 @@ nominal_configuration = cms.PSet(
                                       minJetPt          = cms.untracked.double(20.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
                                       fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
@@ -75,6 +77,7 @@ nominal_configuration = cms.PSet(
                                       fillCustomBtagInfo = cms.untracked.bool(True),
                                       fillJetGenInfo     = cms.untracked.bool(True),
                                       fillJetShapeInfo   = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
                                       applyJEC           = cms.untracked.bool(False)
                                   ),
 
@@ -91,6 +94,7 @@ nominal_configuration = cms.PSet(
                                       fillCustomBtagInfo   = cms.untracked.bool(True),
                                       fillJetGenInfo       = cms.untracked.bool(True),
                                       fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
                                       applyJEC             = cms.untracked.bool(False)
                                   ),
 
