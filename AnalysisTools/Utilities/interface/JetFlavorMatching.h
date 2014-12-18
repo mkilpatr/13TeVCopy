@@ -29,9 +29,9 @@ class ParticleDecay
 {
 public:
   reco::GenParticleRef                particle;     ///< The particle of interest.
-  std::vector<size>                   decayInts;    ///< All decay products of this hadron.
-  CartLorentzVector                   sumVisible;   ///< Vector sum momenta of visible (non-neutrino) decay products.
-  CartLorentzVector                   sumCharged;   ///< Vector sum momenta of charged decay products.
+  std::vector<ucsbsusy::size>                   decayInts;    ///< All decay products of this hadron.
+  ucsbsusy::CartLorentzVector                   sumVisible;   ///< Vector sum momenta of visible (non-neutrino) decay products.
+  ucsbsusy::CartLorentzVector                   sumCharged;   ///< Vector sum momenta of charged decay products.
   int                                 numVisible;   ///< Number of visible (non-neutrino) decay products.
   int                                 numCharged;   ///< Number of charged decay products.
   ParticleDecay(const edm::Handle<reco::GenParticleCollection>& particles, int index)
@@ -42,7 +42,7 @@ public:
 };
 
 typedef   edm::Ref<std::vector<ParticleDecay> >           ParticleDecayRef;
-typedef   std::pair<ParticleDecayRef, CartLorentzVector>  ParticleContainment;
+typedef   std::pair<ParticleDecayRef, ucsbsusy::CartLorentzVector>  ParticleContainment;
 typedef   std::vector<ParticleContainment>                ParticleContainments;
 
 
@@ -102,8 +102,8 @@ struct GreaterParticleE : public std::binary_function<const Particle&, const Par
    */
   //_____________________________________________________________________________
   template<typename Object, typename Particle>
-  int matchConstituents(const std::vector<Particle>& particles,const Object& object, const std::vector<size>& particleInts
-      , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
+  int matchConstituents(const std::vector<Particle>& particles,const Object& object, const std::vector<ucsbsusy::size>& particleInts
+      , ucsbsusy::CartLorentzVector& sumMatched, ucsbsusy::CartLorentzVector& sumVisible, ucsbsusy::CartLorentzVector& sumCharged, int& numVisible, int& numCharged
   );
 
   //_____________________________________________________________________________

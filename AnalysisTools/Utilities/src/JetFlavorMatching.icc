@@ -38,18 +38,18 @@ void JetFlavorMatching::associateHadronsToJets ( const edm::Handle<std::vector<P
   satelliteHadrons .resize(jets.size());
 
 
-  for (size iHadron = 0; iHadron < hadronDecays.size(); ++iHadron) {
+  for (ucsbsusy::size iHadron = 0; iHadron < hadronDecays.size(); ++iHadron) {
     //-- Record B hadrons by matching genParticles ----------------------------
-    std::vector<std::pair<size,CartLorentzVector> >         containingJets;
+    std::vector<std::pair<ucsbsusy::size,ucsbsusy::CartLorentzVector> >         containingJets;
     int                                           bestIndex     = -1;
-    for (size iJet = 0; iJet < jets.size(); ++iJet) {
+    for (ucsbsusy::size iJet = 0; iJet < jets.size(); ++iJet) {
       const reco::GenJet&                         genJet        = jets[iJet];
-      CartLorentzVector                           sumVisible, sumCharged;
+      ucsbsusy::CartLorentzVector                           sumVisible, sumCharged;
       int                                         numVisible    = 0;
       int                                         numCharged    = 0;
 
       containingJets.resize(containingJets.size() + 1);
-      std::pair<size,CartLorentzVector>&               containment   = containingJets.back();
+      std::pair<ucsbsusy::size,ucsbsusy::CartLorentzVector>&               containment   = containingJets.back();
       if (matchConstituents(*particles,genJet, hadronDecays[iHadron].decayInts, containment.second, sumVisible, sumCharged, numVisible, numCharged)) {
         containment.first                         = iJet;
         if (bestIndex < 0 || containingJets[bestIndex].second.energy() < containment.second.energy())
@@ -60,7 +60,7 @@ void JetFlavorMatching::associateHadronsToJets ( const edm::Handle<std::vector<P
 
 
     //-- Preferential match to main jets --------------------------------------
-    for (size iCon = 0; iCon < containingJets.size(); ++iCon) {
+    for (ucsbsusy::size iCon = 0; iCon < containingJets.size(); ++iCon) {
       ParticleContainments&                       containment   = int(iCon) == bestIndex
                                                                 ? mainHadrons      [ containingJets[iCon].first ]
                                                                 : satelliteHadrons [ containingJets[iCon].first ]
@@ -73,18 +73,18 @@ void JetFlavorMatching::associateHadronsToJets ( const edm::Handle<std::vector<P
 }
 //_____________________________________________________________________________
 template<typename Object, typename Particle>
-int JetFlavorMatching::matchConstituents( const std::vector<Particle>& particles,const Object& object, const std::vector<size>& particleInts
-                                    , CartLorentzVector& sumMatched, CartLorentzVector& sumVisible, CartLorentzVector& sumCharged, int& numVisible, int& numCharged
+int JetFlavorMatching::matchConstituents( const std::vector<Particle>& particles,const Object& object, const std::vector<ucsbsusy::size>& particleInts
+                                    , ucsbsusy::CartLorentzVector& sumMatched, ucsbsusy::CartLorentzVector& sumVisible, ucsbsusy::CartLorentzVector& sumCharged, int& numVisible, int& numCharged
                                     )
 {
   if (object.numberOfDaughters() == 0)  return 0;
   if (particles.empty())                return 0;
 
   int                       numFound  = 0;
-  for (size iDau = 0; iDau < object.numberOfDaughters(); ++iDau) {
+  for (ucsbsusy::size iDau = 0; iDau < object.numberOfDaughters(); ++iDau) {
     if(object.daughterPtr(iDau).isNull()) continue;
-    const size              iDaughter = object.daughterPtr(iDau).key();
-    for (size iPtcl = 0; iPtcl < particleInts.size(); ++iPtcl) {
+    const ucsbsusy::size              iDaughter = object.daughterPtr(iDau).key();
+    for (ucsbsusy::size iPtcl = 0; iPtcl < particleInts.size(); ++iPtcl) {
       if(particleInts[iPtcl] != iDaughter) continue;
       const Particle& particle = particles[iDaughter];
       ++numFound;
@@ -127,10 +127,10 @@ void JetFlavorMatching::assignJetHadronFlavors( const std::vector<Object>& jets,
   assert(matchedParticles.size() == jets.size());
 
 
-  for (size iJet = 0; iJet < jets.size(); ++iJet) {
+  for (ucsbsusy::size iJet = 0; iJet < jets.size(); ++iJet) {
     //if it is already matched, we only add to the hadronPT info
     bool canSetFlavor = (flavors[iJet] == JetFlavorInfo::unmatched_jet);
-    CartLorentzVector hadronDecayP4;
+    ucsbsusy::CartLorentzVector hadronDecayP4;
 
 
     //-- Main hadrons revise jet flavor assignment --------------------------
@@ -163,18 +163,18 @@ void JetFlavorMatching::assignJetPartonFlavors( const std::vector<Object>& jets,
   std::vector<int> matches(partonDecays.size(),0);
 
   //order jets by pT
-  std::vector<RankedIndex> rankedJets; rankedJets.reserve(jets.size());
+  std::vector<ucsbsusy::RankedIndex> rankedJets; rankedJets.reserve(jets.size());
   for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
     rankedJets.emplace_back(jets[iJ].pt(),iJ);
   }
   std::sort(rankedJets.begin(), rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
 
-  for (size iJ = 0; iJ < rankedJets.size(); ++iJ) {
+  for (ucsbsusy::size iJ = 0; iJ < rankedJets.size(); ++iJ) {
     int iJet = rankedJets[iJ].second;
     if(flavors[iJet] != JetFlavorInfo::unmatched_jet) continue;
 
     if(cusRad2) maxDR2 = (*cusRad2)[iJet];
-    std::vector<RankedIndex> pts;
+    std::vector<ucsbsusy::RankedIndex> pts;
 
     for(unsigned int iP = 0; iP < partonDecays.size(); ++iP){
       //match each parton only once
@@ -207,13 +207,13 @@ void JetFlavorMatching::assignJetPartonFlavors( const std::vector<Object>& jets,
   partonContainments.resize(jets.size());
 
 
-  for (size iJet = 0; iJet < jets.size(); ++iJet) {
-    std::vector<CartLorentzVector > allContainments(partonDecays.size());
+  for (ucsbsusy::size iJet = 0; iJet < jets.size(); ++iJet) {
+    std::vector<ucsbsusy::CartLorentzVector > allContainments(partonDecays.size());
     const auto&                                     jet           = jets[iJet];
 
     for(unsigned int iD = 0; iD <jet.numberOfDaughters(); ++iD ){
       if(jet.daughterPtr(iD).isNull()) continue;
-      const size              iDau = jet.daughterPtr(iD).key();
+      const ucsbsusy::size              iDau = jet.daughterPtr(iD).key();
       if(partonParticleAssoc[iDau] < 0) continue;
       allContainments[partonParticleAssoc[iDau]] += jet.daughterPtr(iD)->p4();
     }

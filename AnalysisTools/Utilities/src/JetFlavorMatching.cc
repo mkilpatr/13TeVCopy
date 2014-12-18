@@ -9,6 +9,7 @@
 #include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
 using namespace std;
+using namespace ucsbsusy;
 using namespace JetFlavorMatching;
 
 //_____________________________________________________________________________
