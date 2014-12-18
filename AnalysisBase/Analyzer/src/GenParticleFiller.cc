@@ -188,6 +188,13 @@ void GenParticleFiller::loadPartonDecays(const reco::GenParticleRefVector& store
     }
   }
 }
+//--------------------------------------------------------------------------------------------------
+const TopDecayMatching::Partons& GenParticleFiller::getPartons(const reco::GenJetCollection& jets) const {
+  if(!(options_ & SAVEPARTONDECAY))  throw cms::Exception( "GenParticleFiller::getPartons()","You can't get the partons unless if you save them!");
+  if(!isLoaded()) throw cms::Exception( "GenParticleFiller::getPartons()","If you want to get the partons you must load genParticleFillerFirst!");
+  TopDecayMatching::associatePartonsToJets(partonDecays,jets,prtPartonAssoc);
+  return partonDecays;
+}
 
 //--------------------------------------------------------------------------------------------------
 void GenParticleFiller::fillMomVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireMoms, storVec& moms) const {

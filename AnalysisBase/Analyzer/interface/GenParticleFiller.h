@@ -58,7 +58,7 @@ namespace ucsbsusy {
     public:
       //Give a jet collection and get partons associated with jets
       // WARNING! if this is called again, the parton collection is changed
-      TopDecayMatching::Partons& getPartons(const reco::GenJetCollection& jets);
+      const TopDecayMatching::Partons& getPartons(const reco::GenJetCollection& jets) const;
 
 
 
