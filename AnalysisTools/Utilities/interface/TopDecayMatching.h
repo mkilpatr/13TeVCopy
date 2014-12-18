@@ -7,6 +7,7 @@
 
 #ifndef TOPDECAYMATCHING_H_
 #define TOPDECAYMATCHING_H_
+#include<unordered_map>
 
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
@@ -26,9 +27,15 @@ public:
   ucsbsusy::CartLorentzVector         sumFinal;     ///< Vector sum momenta of all decay products.
   bool                                hasSinglet;   ///< has at least one singlet
   std::vector<std::pair<double,int>>  tempFinal;     ///< Temporary list of particles up for adding.
+
+  std::unordered_map<int,ucsbsusy::CartLorentzVector>  jetAssoc;    //jet matching [jet idx][shared momentum]
+
+  int storedIndex; //index in stored collection...can be different than in original collection
+
   Parton(const edm::Handle<reco::GenParticleCollection>& particles, int index)
     : parton    (particles, index)
     , hasSinglet(false)
+    , storedIndex(index)
   { }
   void addFinalParticle(pat::PackedGenParticleRef p){
       finalPrts.push_back(p);
@@ -106,6 +113,9 @@ public:
 
 typedef   std::vector<ColorSinglet>         ColorSinglets;
 
+// Defaults for matching
+const float maxHadronMatchingRadius = 1.2;
+const float maxHadronRelEnergy = 1.01;
 
 //_____________________________________________________________________________
 /// Choose the outgoing doc q/g's (not tops)
@@ -162,6 +172,16 @@ void associateRemaining(Partons& partons,Partons& incomingPartons, const ColorSi
     std::vector<pat::PackedGenParticleRef>& nonAssoc
     );
 
+//_____________________________________________________________________________
+/// makes a vector of ints, telling which parton each gen particle is associated to
+//_____________________________________________________________________________
+void labelPartonOwnership(const Partons& partons,const edm::Handle<pat::PackedGenParticleCollection>& finalParticles, std::vector<int>& assocMap);
+//_____________________________________________________________________________
+/// fill - or replace - map of conatinment in each jet in each parton
+//_____________________________________________________________________________
+void associatePartonsToJets(Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc);
+
+
 //Class to organize the decay
 class TopDecay {
 public:
@@ -190,6 +210,4 @@ void fillTopDecays(const edm::Handle<reco::GenParticleCollection>& particles,con
 
 };
 
-//#include "AnalysisTools/Utilities/src/JetFlavorMatching.icc"
-
-#endif /* JETFLAVORMATCHING_H_ */
+#endif

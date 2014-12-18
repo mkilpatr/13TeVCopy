@@ -1,5 +1,3 @@
-#include <unordered_map>
-
 #include "AnalysisTools/Utilities/interface/TopDecayMatching.h"
 #include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
@@ -370,5 +368,32 @@ void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollecti
       }
     }
 
+  }
+}
+//_____________________________________________________________________________
+void TopDecayMatching::labelPartonOwnership(const Partons& partons,const edm::Handle<pat::PackedGenParticleCollection>& finalParticles, std::vector<int>& assocMap){
+  assocMap.resize(finalParticles->size());
+  for(auto& i : assocMap) i = -1;
+  for(size iP = 0; iP < partons.size(); ++iP){
+    for(auto d : partons[iP].finalPrts){
+      assocMap[d.key()] = iP;
+    }
+  }
+}
+//_____________________________________________________________________________
+void TopDecayMatching::associatePartonsToJets(Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc){
+
+  //first clear out the old stuff
+  for(auto& p : partons){
+    p.jetAssoc.clear();
+  }
+  for(size iJ = 0; iJ < jets.size(); ++iJ){
+    const auto& j = jets[iJ];
+    for (size iDau = 0; iDau < j.numberOfDaughters(); ++iDau) {
+      if(j.daughterPtr(iDau).isNull()) continue;
+      int pIdx = prtPartonAssoc[j.daughterPtr(iDau).key()];
+      if(pIdx < 0) continue;
+      partons[pIdx].jetAssoc[iJ]     += j.daughterPtr(iDau)->p4();
+    }
   }
 }
