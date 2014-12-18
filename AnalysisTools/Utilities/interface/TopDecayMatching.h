@@ -28,7 +28,7 @@ public:
   bool                                hasSinglet;   ///< has at least one singlet
   std::vector<std::pair<double,int>>  tempFinal;     ///< Temporary list of particles up for adding.
 
-  std::unordered_map<int,ucsbsusy::CartLorentzVector>  jetAssoc;    //jet matching [jet idx][shared momentum]
+  mutable std::unordered_map<int,ucsbsusy::CartLorentzVector>  jetAssoc;    //jet matching [jet idx][shared momentum]
 
   int storedIndex; //index in stored collection...can be different than in original collection
 
@@ -179,7 +179,7 @@ void labelPartonOwnership(const Partons& partons,const edm::Handle<pat::PackedGe
 //_____________________________________________________________________________
 /// fill - or replace - map of conatinment in each jet in each parton
 //_____________________________________________________________________________
-void associatePartonsToJets(Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc);
+void associatePartonsToJets(const Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc);
 
 
 //Class to organize the decay

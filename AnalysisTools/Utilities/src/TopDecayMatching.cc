@@ -381,7 +381,7 @@ void TopDecayMatching::labelPartonOwnership(const Partons& partons,const edm::Ha
   }
 }
 //_____________________________________________________________________________
-void TopDecayMatching::associatePartonsToJets(Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc){
+void TopDecayMatching::associatePartonsToJets(const Partons& partons,const reco::GenJetCollection& jets,const std::vector<int>& prtPartonAssoc){
 
   //first clear out the old stuff
   for(auto& p : partons){
