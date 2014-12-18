@@ -1,0 +1,23 @@
+#ifndef TOPDECAYMATCHING_ICC_
+#define TOPDECAYMATCHING_ICC_
+
+#include <algorithm>
+
+#include "AnalysisTools/Utilities/interface/TopDecayMatching.h"
+//#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
+
+//_____________________________________________________________________________
+template<typename Particle>
+bool TopDecayMatching::isMatchingParton( const Particle& particle){
+  const int                             pdgId         = TMath::Abs(particle.pdgId());
+  const int                             status        = particle.status();
+
+  //only non-top qurks or gluons
+  if(!ParticleInfo::isQuarkOrGluon(pdgId) || pdgId == ParticleInfo::p_t ) return false;
+  if(!ParticleInfo::isDocOutgoing(status)) return false;
+  return true;
+}
+
+
+
+#endif
