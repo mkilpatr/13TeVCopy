@@ -135,11 +135,11 @@ void associateFinalParticles(const edm::Handle<reco::GenParticleCollection>& par
 void matchDecayProducts(std::vector<Parton*>& matchingPartons, std::vector<pat::PackedGenParticleRef>& finalParticles, const double maxDR);
 ////_____________________________________________________________________________
 // add all temporary particles to the parton
-// if relPT >= 0, add the particles (sorted by DR) if their (sumFinal + newPart).pt() > relPT*partonPT
+// if maxRelE >= 0, add the particles (sorted by DR) if their (sumFinal + newPart).energy() > maxRelE*partonE
 // if you do not add the particle you can then fill it into the some vector
 // does sorting and cleaning for you
 ////_____________________________________________________________________________
-void addParticlesToParton(Parton& parton, double maxRelPT, std::vector<pat::PackedGenParticleRef>& particleDump,
+void addParticlesToParton(Parton& parton, double maxRelE, std::vector<pat::PackedGenParticleRef>& particleDump,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles  );
 
 //_____________________________________________________________________________
@@ -149,15 +149,15 @@ void addParticlesToParton(Parton& parton, double maxRelPT, std::vector<pat::Pack
 void associateToNearestPartons(Partons& partons, const ColorSinglets& colorSinglets, const double maxDR,const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,
     std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets, std::vector<pat::PackedGenParticleRef>& nonAssoc);
 //_____________________________________________________________________________
-/// pass 2: assign final particles to nearest neighbors within maxDR and maxDPT for singlets only
+/// pass 2: assign final particles to nearest neighbors within maxDR and maxRelE for singlets only
 //_____________________________________________________________________________
-void associateSingletsLoosely(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelPT,
+void associateSingletsLoosely(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelE,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets);
 
 //_____________________________________________________________________________
 /// pass 3: associate the rest
 //_____________________________________________________________________________
-void associateRemaining(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelPT,
+void associateRemaining(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelE,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets,
     std::vector<pat::PackedGenParticleRef>& nonAssoc
     );

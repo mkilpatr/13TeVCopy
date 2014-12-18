@@ -222,15 +222,15 @@ void TopDecayMatching::matchDecayProducts(std::vector<Parton*>& matchingPartons,
   }
 }
 //_____________________________________________________________________________
-void TopDecayMatching::addParticlesToParton(Parton& parton, double maxRelPT,
+void TopDecayMatching::addParticlesToParton(Parton& parton, double maxRelE,
     std::vector<pat::PackedGenParticleRef>& particleDump, const edm::Handle<pat::PackedGenParticleCollection>& finalParticles  ){
   auto*  tempFinal = &parton.tempFinal;
   //sort by lesser dr if we are going to throw some away
-  if(maxRelPT > 0) std::sort(tempFinal->begin(), tempFinal->end(),PhysicsUtilities::lesserAbsFirst<double,int>());
+  if(maxRelE > 0) std::sort(tempFinal->begin(), tempFinal->end(),PhysicsUtilities::lesserAbsFirst<double,int>());
 
   for(auto& iF : *tempFinal){
     pat::PackedGenParticleRef p(finalParticles,iF.second);
-    if(maxRelPT > 0 && (parton.sumFinal + p->p4()).energy() > parton.parton->energy()*maxRelPT ){
+    if(maxRelE > 0 && (parton.sumFinal + p->p4()).energy() > parton.parton->energy()*maxRelE ){
       particleDump.push_back(p);
     } else{
       parton.addFinalParticle(p);
@@ -264,7 +264,7 @@ void TopDecayMatching::associateToNearestPartons(Partons& partons, const ColorSi
 
 }
 //_____________________________________________________________________________
-void TopDecayMatching::associateSingletsLoosely(Partons& partons,Partons& incomingPartons,  const ColorSinglets& colorSinglets,const double maxDR,const double maxRelPT,
+void TopDecayMatching::associateSingletsLoosely(Partons& partons,Partons& incomingPartons,  const ColorSinglets& colorSinglets,const double maxDR,const double maxRelE,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets){
   for(size iS = 0; iS < colorSinglets.size(); ++iS){
     vector<Parton*> allSingletParticles;
@@ -273,11 +273,11 @@ void TopDecayMatching::associateSingletsLoosely(Partons& partons,Partons& incomi
     for(const auto& p : colorSinglets[iS].incomingParticles) allSingletParticles.push_back(&incomingPartons[p.key()]);
     matchDecayProducts(allSingletParticles,assocToColorSinglets[iS],maxDR);
     //add particles only if they are within the pT requirement
-    for(auto* p : allSingletParticles) addParticlesToParton(*p,maxRelPT,assocToColorSinglets[iS],finalParticles);
+    for(auto* p : allSingletParticles) addParticlesToParton(*p,maxRelE,assocToColorSinglets[iS],finalParticles);
   }
 }
 //_____________________________________________________________________________
-void TopDecayMatching::associateRemaining(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelPT,
+void TopDecayMatching::associateRemaining(Partons& partons,Partons& incomingPartons, const ColorSinglets& colorSinglets, const double maxDR,const double maxRelE,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets,
     std::vector<pat::PackedGenParticleRef>& nonAssoc
     )
@@ -297,7 +297,7 @@ void TopDecayMatching::associateRemaining(Partons& partons,Partons& incomingPart
   for(auto& p : incomingPartons) allParticles.push_back(&p);
   matchDecayProducts(allParticles,nonAssoc,maxDR);
   //add particles only if they are within the pT requirement
-  for(auto* p : allParticles) addParticlesToParton(*p,maxRelPT,nonAssoc,finalParticles);
+  for(auto* p : allParticles) addParticlesToParton(*p,maxRelE,nonAssoc,finalParticles);
 
 }
 //_____________________________________________________________________________
