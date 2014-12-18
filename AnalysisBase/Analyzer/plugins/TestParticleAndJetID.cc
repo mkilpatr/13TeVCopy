@@ -507,31 +507,31 @@ void testTopAssociation() {
   }
   cout << endl;
 
-  TopDecayMatching::associateToNearestPartons(partons,colorSinglets,0,genparticles->packedGenParticles_,assocToColorSinglets,nonAssoc);
+//  TopDecayMatching::associateToNearestPartons(partons,colorSinglets,0,genparticles->packedGenParticles_,assocToColorSinglets,nonAssoc);
 
   ParticleInfo::printPackedGenInfo(*packedGenParticles,-1);
-  cout << "Pass 1" <<endl;
-  for(unsigned int iP = 0; iP < partons.size(); ++iP){
-    cout <<iP<<"("<< partons[iP].hasSinglet<<"," << partons[iP].parton->pt() <<","<< partons[iP].sumFinal.pt() <<"): ";
-    for(auto f : partons[iP].finalPrts) cout << f.key() <<" ";
-    cout << endl;
-  }
-
-  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
-    cout << iS <<" : ";
-    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
-      cout << assocToColorSinglets[iS][iF].key() <<" ";
-    }
-    cout << endl;
-  }
-  cout <<"non : ";
-  for(size iF = 0; iF < nonAssoc.size(); ++iF){
-    cout << nonAssoc[iF].key() <<" ";
-  }
-  cout << endl;
-
-
-  TopDecayMatching::associateSingletsLoosely(partons,incomingPartons,colorSinglets,1.5,1.1,genparticles->packedGenParticles_,assocToColorSinglets);
+//  cout << "Pass 1" <<endl;
+//  for(unsigned int iP = 0; iP < partons.size(); ++iP){
+//    cout <<iP<<"("<< partons[iP].hasSinglet<<"," << partons[iP].parton->pt() <<","<< partons[iP].sumFinal.pt() <<"): ";
+//    for(auto f : partons[iP].finalPrts) cout << f.key() <<" ";
+//    cout << endl;
+//  }
+//
+//  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
+//    cout << iS <<" : ";
+//    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
+//      cout << assocToColorSinglets[iS][iF].key() <<" ";
+//    }
+//    cout << endl;
+//  }
+//  cout <<"non : ";
+//  for(size iF = 0; iF < nonAssoc.size(); ++iF){
+//    cout << nonAssoc[iF].key() <<" ";
+//  }
+//  cout << endl;
+//
+//
+  TopDecayMatching::associateSingletsLoosely(partons,incomingPartons,colorSinglets,TopDecayMatching::maxHadronMatchingRadius,TopDecayMatching::maxHadronRelEnergy,genparticles->packedGenParticles_,assocToColorSinglets);
 
   cout << "Pass 2" <<endl;
   for(unsigned int iP = 0; iP < partons.size(); ++iP){
@@ -553,7 +553,7 @@ void testTopAssociation() {
   }
   cout << endl;
 
-  TopDecayMatching::associateRemaining(partons,incomingPartons,colorSinglets,1.5,1.10,genparticles->packedGenParticles_,assocToColorSinglets,nonAssoc);
+  TopDecayMatching::associateRemaining(partons,incomingPartons,colorSinglets,TopDecayMatching::maxHadronMatchingRadius,TopDecayMatching::maxHadronRelEnergy,genparticles->packedGenParticles_,assocToColorSinglets,nonAssoc);
 
   cout << "Pass 3" <<endl;
   for(unsigned int iP = 0; iP < partons.size(); ++iP){
@@ -575,7 +575,7 @@ void testTopAssociation() {
   TopDecayMatching::associatePartonsToJets(partons,*genJets,partonPrtAssoc);
 
   for(unsigned int iP = 0; iP < partons.size(); ++iP){
-    cout <<iP<<"("<< partons[iP].parton->pt() <<","<< partons[iP].sumFinal.pt() <<"): ";
+    cout <<iP<<"("<< partons[iP].parton->pt() <<","<< partons[iP].sumFinal.energy() <<"): ";
 
     for(const auto& con : partons[iP].jetAssoc) {
         cout <<"["<<con.second.energy()/ partons[iP].sumFinal.energy()<<","<<genJets->at(con.first).pt()<<","<<genJets->at(con.first).eta()<<","<<genJets->at(con.first).phi()<<"] ";
