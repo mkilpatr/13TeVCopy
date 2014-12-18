@@ -85,7 +85,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case GENPARTICLES : {
       int defaultOptions = GenParticleFiller::defaultOptions;
-      if(cfg.getUntrackedParameter<bool>("saveAllGenParticles")) defaultOptions |= GenParticleFiller::SAVEALL;
+      if(cfg.getUntrackedParameter<bool>("saveAllGenParticles"))     defaultOptions |= GenParticleFiller::SAVEALL;
+      if(cfg.getUntrackedParameter<bool>("savePartonHadronization")) defaultOptions |= GenParticleFiller::SAVEPARTONDECAY;
 
       genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options,
                                            branchName == "" ? defaults::BRANCH_GENPARTS : branchName,

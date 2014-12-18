@@ -568,6 +568,21 @@ void testTopAssociation() {
   }
   cout << endl;
 
+
+  vector<int> partonPrtAssoc;
+
+  TopDecayMatching::labelPartonOwnership(partons,genparticles->packedGenParticles_,partonPrtAssoc);
+  TopDecayMatching::associatePartonsToJets(partons,*genJets,partonPrtAssoc);
+
+  for(unsigned int iP = 0; iP < partons.size(); ++iP){
+    cout <<iP<<"("<< partons[iP].parton->pt() <<","<< partons[iP].sumFinal.pt() <<"): ";
+
+    for(const auto& con : partons[iP].jetAssoc) {
+        cout <<"["<<con.second.energy()/ partons[iP].sumFinal.energy()<<","<<genJets->at(con.first).pt()<<","<<genJets->at(con.first).eta()<<","<<genJets->at(con.first).phi()<<"] ";
+    }
+    cout << endl;
+  }
+
 }
 
 
@@ -694,20 +709,20 @@ void testTopDecayMatching() {
     TestParticleAndJetID(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg), plotter (new PlotterD(3))
     {
       initialize(cfg,"EventInfo",EVTINFO);
-      initialize(cfg,"Gen",GENPARTICLES,GenParticleFiller::LOADPACKED);
+      initialize(cfg,"Gen",GENPARTICLES);
 //      void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options, const std::string branchName){
       initialize(cfg, "Jets", AK4JETS);
 
 
 
-//      book();
+      book();
     }
   bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   {
     PhysicsAnalyzer::load(iEvent,iSetup);
     genParticles = &(*genparticles->genParticles_);
     packedGenParticles = &(*genparticles->packedGenParticles_);
-    genJets = &(*ak4Jets->stdGenJets_);
+    genJets = &(*ak4Jets->reGenJets_);
     return true;
   }
 
@@ -721,9 +736,9 @@ void testTopDecayMatching() {
 
 //      testJetFlavorAssignment();
 
-//      testTopAssociation();
-      testTopDecayMatching();
-//      fill();
+      testTopAssociation();
+//      testTopDecayMatching();
+      fill();
       }
 
     const reco::GenParticleCollection * genParticles;

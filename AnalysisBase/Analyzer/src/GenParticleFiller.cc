@@ -32,6 +32,8 @@ GenParticleFiller::GenParticleFiller(const int options, const string branchName,
   indaus       = data.addMulti<stor  >(branchName_,"nDaus"    ,0);
   ifirstdau    = data.addMulti<stor  >(branchName_,"firstDau" ,0);
   iassoc       = data.addMulti<stor  >(branchName_,"assocList",0);
+  if(options_ & SAVEPARTONDECAY)
+  ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -40,7 +42,24 @@ void GenParticleFiller::load(const edm::Event& iEvent)
   reset();
 
   FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
-  FileUtilities::enforceGet(iEvent,packedGenParticleTag_,packedGenParticles_,options_ & LOADPACKED);
+  if((options_ & LOADPACKED) || (options_ & SAVEPARTONDECAY))
+    FileUtilities::enforceGet(iEvent,packedGenParticleTag_,packedGenParticles_,true);
+
+  //Now fill the stored genparticles
+  if(options_ & SAVEALL){
+    for(unsigned int iP = 0; iP < genParticles_->size(); ++iP){
+      candMap[iP] =  storedGenParticles.size();
+      storedGenParticles.push_back(reco::GenParticleRef(genParticles_,iP));
+    }
+  }else
+    addHardInteraction(storedGenParticles,candMap);
+
+  //fill the association between the stored guys
+  fillAssoc(storedGenParticles,candMap,false,false, assocList,nMoms,firstMoms,nDaus,firstDaus);
+
+  //fill the hadron decay information
+  if(options_ & SAVEPARTONDECAY) loadPartonDecays(storedGenParticles);
+
 
   isLoaded_ = true;
 }
@@ -48,73 +67,41 @@ void GenParticleFiller::load(const edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void GenParticleFiller::fill()
 {
-//  ParticleInfo::printGenInfo(*genParticles_,-1);
-  CandMap candMap;
-  vector<const reco::GenParticle*> storedParticles;
-  if(options_ & SAVEALL)
-    for(unsigned int iP = 0; iP < genParticles_->size(); ++iP){
-      candMap[iP] =  storedParticles.size();
-      storedParticles.push_back(&genParticles_->at(iP));
-    }
-  else
-    addHardInteraction(storedParticles,candMap);
-
-//  cout <<"----"<<endl;
-//  cout << storedParticles.size();
-//  cout <<"----"<<endl;
-//  for(unsigned int iP = 0; iP < genParticles_->size();++iP){
-//    CandMap::const_iterator pIt = candMap.find(iP);
-//    if(pIt == candMap.end()) continue;
-//    cout <<storedParticles[pIt->second]->status() <<" "<< iP <<" "<<storedParticles[pIt->second]->pdgId() <<" "<<storedParticles[pIt->second]->pt() <<endl;
-//  }
-
-  storVec assocList;
-  storVec nMoms;
-  storVec firstMoms;
-  storVec nDaus;
-  storVec firstDaus;
-  fillAssoc(storedParticles,candMap,false,false, assocList,nMoms,firstMoms,nDaus,firstDaus);
-//  cout <<"----"<<endl;
-
-//  for(unsigned int iP = 0; iP < assocList.size(); ++iP)
-//    cout << assocList[iP]<<endl;
-//  cout <<"----"<<endl;
-
-//  for(unsigned int iP = 0; iP < storedParticles.size(); ++iP){
-//    cout <<storedParticles[iP]->status() << " "<<ParticleInfo::titleFor(storedParticles[iP]->pdgId()) <<" "<<storedParticles[iP]->pt()<<" ";
-//
-//    for(unsigned int iM = 0; iM < nMoms[iP]; ++iM){
-//      cout << assocList[firstMoms[iP] + iM ] <<",";
-//    }
-//    cout <<"...";
-//    for(unsigned int iM = 0; iM < nDaus[iP]; ++iM){
-//      cout << assocList[firstDaus[iP] + iM ] <<",";
-//    }
-//    cout << endl;
-//
-//  }
-
-
-  for(unsigned int iC = 0; iC < storedParticles.size(); ++iC){
-    data.fillMulti<float>(ipt      ,storedParticles[iC]->pt());
-    data.fillMulti<float>(ieta     ,storedParticles[iC]->eta());
-    data.fillMulti<float>(iphi     ,storedParticles[iC]->phi());
-    data.fillMulti<float>(imass    ,storedParticles[iC]->mass());
-    data.fillMulti<size8>(istatus  ,convertTo<size8>(storedParticles[iC]->status(),"GenParticleFiller::fill() -> status"));
-    data.fillMulti<int  >(ipdgid   ,storedParticles[iC]->pdgId());
-    data.fillMulti<stor >(inmoms   ,convertTo<stor >(nMoms[iC]                    ,"GenParticleFiller::fill() -> nMoms"));
-    data.fillMulti<stor >(ifirstmom,convertTo<stor >(firstMoms[iC]                ,"GenParticleFiller::fill() -> firstMom"));
-    data.fillMulti<stor >(indaus   ,convertTo<stor >(nDaus[iC]                    ,"GenParticleFiller::fill() -> nDaus"));
-    data.fillMulti<stor >(ifirstdau,convertTo<stor >(firstDaus[iC]                ,"GenParticleFiller::fill() -> firstDau"));
+  for(unsigned int iC = 0; iC < storedGenParticles.size(); ++iC){
+    data.fillMulti<float>(ipt      ,storedGenParticles[iC]->pt());
+    data.fillMulti<float>(ieta     ,storedGenParticles[iC]->eta());
+    data.fillMulti<float>(iphi     ,storedGenParticles[iC]->phi());
+    data.fillMulti<float>(imass    ,storedGenParticles[iC]->mass());
+    data.fillMulti<size8>(istatus  ,convertTo<size8>(storedGenParticles[iC]->status(),"GenParticleFiller::fill() -> status"));
+    data.fillMulti<int  >(ipdgid   ,storedGenParticles[iC]->pdgId());
+    data.fillMulti<stor >(inmoms   ,convertTo<stor >(nMoms[iC]                       ,"GenParticleFiller::fill() -> nMoms"));
+    data.fillMulti<stor >(ifirstmom,convertTo<stor >(firstMoms[iC]                   ,"GenParticleFiller::fill() -> firstMom"));
+    data.fillMulti<stor >(indaus   ,convertTo<stor >(nDaus[iC]                       ,"GenParticleFiller::fill() -> nDaus"));
+    data.fillMulti<stor >(ifirstdau,convertTo<stor >(firstDaus[iC]                   ,"GenParticleFiller::fill() -> firstDau"));
+    if(options_ & SAVEPARTONDECAY) data.fillMulti<float>(ihade    ,hadronizationE[iC]);
   }
 
   for(const auto& a : assocList) data.fillMulti<stor >(iassoc,convertTo<stor >(a,"GenParticleFiller::fill() -> assocList"));
-
   isFilled_ = true;
-
 }
 //--------------------------------------------------------------------------------------------------
-void GenParticleFiller::addHardInteraction(vector<const reco::GenParticle*>& outParticles,CandMap& candMap) const {
+void GenParticleFiller::reset()
+{
+  BaseFiller::reset();
+  storedGenParticles.clear();
+  candMap.clear();
+  assocList.clear();
+  nMoms.clear();
+  firstMoms.clear();
+  nDaus.clear();
+  firstDaus.clear();
+  partonDecays.clear();
+  prtPartonAssoc.clear();
+  hadronizationE.clear();
+}
+
+//--------------------------------------------------------------------------------------------------
+void GenParticleFiller::addHardInteraction(reco::GenParticleRefVector& outParticles,CandMap& candMap) const {
   for(unsigned int iP = 0; iP < genParticles_->size(); ++iP){
 
 
@@ -136,7 +123,7 @@ void GenParticleFiller::addHardInteraction(vector<const reco::GenParticle*>& out
 
     //Add the particle
     candMap[genRef.key()] =  outParticles.size();
-    outParticles.push_back(&(*genRef));
+    outParticles.push_back(genRef);
 
     //if the added particle was a tau add all daughters
     if(TMath::Abs(pdgId) == ParticleInfo::p_tauminus){
@@ -152,11 +139,56 @@ void GenParticleFiller::addHardInteraction(vector<const reco::GenParticle*>& out
         if(pIt2 != candMap.end()) continue;
 
         candMap[genRef2.key()] =  outParticles.size();
-        outParticles.push_back(&(*genRef2));
+        outParticles.push_back(genRef2);
       }
     }
   }
 }
+//--------------------------------------------------------------------------------------------------
+void GenParticleFiller::loadPartonDecays(const reco::GenParticleRefVector& storedParticles){
+  TopDecayMatching::Partons incomingPartons;
+  TopDecayMatching::ColorSinglets colorSinglets;
+  TopDecayMatching::getMatchingPartons(genParticles_,partonDecays);
+  TopDecayMatching::getColorSinglets(genParticles_,partonDecays,colorSinglets,incomingPartons);
+
+  std::vector<std::vector<pat::PackedGenParticleRef>> assocToColorSinglets;
+  std::vector<pat::PackedGenParticleRef> nonAssoc;
+
+  TopDecayMatching::associateFinalParticles(genParticles_,packedGenParticles_,
+      colorSinglets,assocToColorSinglets,nonAssoc);
+
+  TopDecayMatching::associateSingletsLoosely(partonDecays,incomingPartons,colorSinglets,
+      TopDecayMatching::maxHadronMatchingRadius,TopDecayMatching::maxHadronRelEnergy,
+      packedGenParticles_,assocToColorSinglets);
+  TopDecayMatching::associateRemaining(partonDecays,incomingPartons,colorSinglets,
+      TopDecayMatching::maxHadronMatchingRadius,TopDecayMatching::maxHadronRelEnergy,
+      packedGenParticles_,assocToColorSinglets,nonAssoc);
+
+  TopDecayMatching::labelPartonOwnership(partonDecays,packedGenParticles_,prtPartonAssoc);
+
+  //Add hadronization energy to stored particles
+  //Associate stored particles to parton decays
+  hadronizationE.resize(storedParticles.size());
+  for(auto& h : hadronizationE ) h = 0;
+  for(auto& pD : partonDecays){
+    bool found = false;
+    for(unsigned int iS = 0; iS < storedParticles.size(); ++iS ){
+      if(pD.parton.key() != storedParticles[iS].key()) continue;
+      hadronizationE[iS] = pD.sumFinal.energy();
+      pD.storedIndex = iS;
+      found = true;
+      break;
+    }
+    if(!found){
+      ParticleInfo::printGenInfo((*genParticles_),-1);
+      ParticleInfo::printGenParticleInfo(*pD.parton,pD.parton.key());
+      for(auto s : storedParticles) cout << s.key() <<" ";
+      cout << endl;
+      throw cms::Exception( "GenParticleFiller::loadPartonDecays()","Could not find particle in stored particle collection!");
+    }
+  }
+}
+
 //--------------------------------------------------------------------------------------------------
 void GenParticleFiller::fillMomVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireMoms, storVec& moms) const {
   for(unsigned int iM = 0; iM < c->numberOfMothers(); ++iM){
@@ -192,21 +224,21 @@ void GenParticleFiller::fillDauVec(const reco::GenParticle * c, const CandMap& c
   }
 }
 //--------------------------------------------------------------------------------------------------
-void GenParticleFiller::fillAssoc(const std::vector<const reco::GenParticle*>& cands,const CandMap& candMap, const bool requireMoms, const bool requireDaus,
+void GenParticleFiller::fillAssoc(const reco::GenParticleRefVector& cands,const CandMap& candMap, const bool requireMoms, const bool requireDaus,
                                   storVec& assocList, storVec& nMoms,storVec& firstMom,storVec& nDaus,storVec& firstDau ) const {
 
   //check to see if the storage element can hold the number of gen particles
   convertTo<stor>(cands.size(),"Stored candidates size");
 
-  for(const auto* c : cands ){
+  for(const auto c : cands ){
     storVec moms;
-    fillMomVec(c,candMap,requireMoms,moms);
+    fillMomVec(&*c,candMap,requireMoms,moms);
     nMoms.push_back(convertTo<stor>(moms.size(),"fill nMoms"));
     firstMom.push_back(convertTo<stor>(moms.size() == 0 ? 0 : assocList.size(),"Fill fistMom"));
     assocList.insert(assocList.end(),moms.begin(),moms.end());
 
     storVec daus;
-    fillDauVec(c,candMap,requireDaus,daus);
+    fillDauVec(&*c,candMap,requireDaus,daus);
     nDaus.push_back(convertTo<stor>(daus.size(),"fill nDaus"));
     firstDau.push_back(convertTo<stor>(daus.size() == 0 ? 0 : assocList.size(),"fill fistDau"));
     assocList.insert(assocList.end(),daus.begin(),daus.end());

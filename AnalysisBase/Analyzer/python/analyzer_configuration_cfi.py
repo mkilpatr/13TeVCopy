@@ -40,6 +40,7 @@ nominal_configuration = cms.PSet(
                                       packedGenParticles  = cms.InputTag('packedGenParticles'),
                                       prunedGenParticles  = cms.InputTag('prunedGenParticles'),
                                       saveAllGenParticles = cms.untracked.bool(False),
+                                      savePartonHadronization = cms.untracked.bool(True),
                                   ),
 
                                   EventInfo = cms.untracked.PSet(
