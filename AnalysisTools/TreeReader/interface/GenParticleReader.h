@@ -22,6 +22,7 @@ class GenParticleReader : public BaseReader {
 public:
   enum  Options           {
                             NULLOPT         = 0
+                          , LOADPARTONDECAY = (1 <<  0)   ///< Load parton decay info
                           , FILLOBJ         = (1 <<  1)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
@@ -44,6 +45,7 @@ public:
   std::vector<stor >*  nDaus_    ;
   std::vector<stor >*  firstDau_ ;
   std::vector<stor >*  assocList_;
+  std::vector<float>*  hade_     ;
 
   GenParticleFCollection genParticles;
 };
