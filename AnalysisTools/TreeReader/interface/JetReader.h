@@ -25,7 +25,8 @@ public :
                           , LOADRECO        = (1 <<  0)    ///< Load standard reco jets
                           , LOADGEN         = (1 <<  1)   ///< load gen jets
                           , LOADJETSHAPE    = (1 <<  2)   ///< load jet shap variables
-                          , FILLOBJ         = (1 <<  3)   ///< Fill objects (as opposed to just pointers
+                          , LOADTOPASSOC    = (1 <<  3)   ///< load top - jet assoc
+                          , FILLOBJ         = (1 <<  4)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
 
@@ -45,24 +46,28 @@ public:
   std::vector<float>* jetptraw_;
   std::vector<float>* jetpuId_;
   std::vector<float>* jetcsv_;
-  std::vector<int>  * jetflavor_;
-  std::vector<int>  * jetgenindex_;
+  std::vector<int16>* jetgenindex_;
   // For genjets matched to reco jets
   std::vector<float>* genjetpt_;
   std::vector<float>* genjeteta_;
   std::vector<float>* genjetphi_;
   std::vector<float>* genjetmass_;
+  std::vector<size8>* genjetflavor_;
   // jet shape holders
-  std::vector<float>* jetbetaStar_ ;
-  std::vector<float>* jetqgl_      ;
-  std::vector<float>* jetptD_      ;
-  std::vector<float>* jetaxis1_    ;
-  std::vector<float>* jetaxis2_    ;
-  std::vector<int  >* jetMult_     ;
-  std::vector<float>* genjetptD_   ;
-  std::vector<float>* genjetaxis1_ ;
-  std::vector<float>* genjetaxis2_ ;
-  std::vector<int  >* genjetMult_  ;
+  std::vector<float>*  jetbetaStar_ ;
+  std::vector<float>*  jetqgl_      ;
+  std::vector<float>*  jetptD_      ;
+  std::vector<float>*  jetaxis1_    ;
+  std::vector<float>*  jetaxis2_    ;
+  std::vector<size16>* jetMult_     ;
+  std::vector<float>*  genjetptD_   ;
+  std::vector<float>*  genjetaxis1_ ;
+  std::vector<float>*  genjetaxis2_ ;
+  std::vector<size16>* genjetMult_  ;
+  //for top assoc
+  std::vector<size16>* genAssocPrtIndex_;
+  std::vector<size16>* genAssocJetIndex_;
+  std::vector<int8>*   genAssocCont_;
 
 
   //the actual jet collection

@@ -29,6 +29,7 @@ GenParticleReader::GenParticleReader() : BaseReader(){
   nDaus_    = new vector<stor >(0);
   firstDau_ = new vector<stor >(0);
   assocList_= new vector<stor >(0);
+  hade_     = new vector<float>(0);
 }
 //--------------------------------------------------------------------------------------------------
 GenParticleReader::~GenParticleReader(){
@@ -43,6 +44,7 @@ GenParticleReader::~GenParticleReader(){
   delete nDaus_    ;
   delete firstDau_ ;
   delete assocList_;
+  delete hade_     ;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -65,6 +67,10 @@ void GenParticleReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName_,"nDaus"    ,&nDaus_    ,true);
     treeReader->setBranchAddress(branchName_,"firstDau" ,&firstDau_ ,true);
     treeReader->setBranchAddress(branchName_,"assocList",&assocList_,true);
+    if(options_ & LOADPARTONDECAY){
+      clog << "prtDecay ";
+      treeReader->setBranchAddress(branchName_,"hadronizedE",&hade_   ,false);
+    }
 
   if(options_ & FILLOBJ)
     clog << "+Objects";
