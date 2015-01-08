@@ -308,7 +308,7 @@ void testDecayProximity() {
       &bHadrons,&cHadrons,&partons,&partonParticleAssoc);
 
 
-  vector<const GenParticle*> docPartons;
+  vector<const reco::GenParticle*> docPartons;
   vector<int> matchesToBHadrons;
 
   for(unsigned int iP = 0; iP < genParticles->size(); ++iP){
