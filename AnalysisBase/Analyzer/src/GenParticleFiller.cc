@@ -110,7 +110,17 @@ void GenParticleFiller::addHardInteraction(reco::GenParticleRefVector& outPartic
     const int pdgId  = part->pdgId();
 
     //Add all status 23 particles or final version of all status 22 particles
-    if(!ParticleInfo::isDocOutgoing(status)  && !ParticleInfo::isDocIntermediate(status) ) continue;
+    bool addable = false;
+    if(ParticleInfo::isDocOutgoing(status)) addable = true;
+    else if(ParticleInfo::isDocIntermediate(status)) addable = true;
+    //also add all direct decay products of EWK bosons
+    else if(!ParticleInfo::isEWKBoson(pdgId)) {
+      for(unsigned int iM = 0; iM < part->numberOfMothers(); ++iM)
+            if(ParticleInfo::isEWKBoson(part->motherRef(iM)->pdgId()))
+              addable = true;
+    }
+    if(!addable) continue;
+
     reco::GenParticleRef genRef = reco::GenParticleRef(genParticles_, iP);
 
     //If this is an intermediate or lepton...we want to get the final version

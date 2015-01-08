@@ -86,15 +86,20 @@ typedef std::vector<GenParticleF>     GenParticleFCollection;
 template <class Type>
 class CandidateRef {
 public:
-  CandidateRef(const Type * inptr, const int inidx) : ptr(inptr), idx(inidx) {}
-  const Type& operator->() const {return *ptr;}
+  CandidateRef() : ptr(0), idx(0) {};
+  CandidateRef(const Type * inptr, const unsigned int inidx) : ptr(inptr), idx(inidx) {}
+
+  void set(const Type * inptr, const unsigned int inidx) {ptr = inptr; idx = inidx;}
+  const Type* operator->() const {return  ptr;}
   const Type& operator* () const {return *ptr;}
-  int key() const {return idx;}
+  unsigned int key() const {return idx;}
 
 private:
   const Type * ptr;
-  const int idx;
+  unsigned int idx;
 };
+
+typedef  CandidateRef<GenParticleF> GenParticleFRef;
 
 }
 
