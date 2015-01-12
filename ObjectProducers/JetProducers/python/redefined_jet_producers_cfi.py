@@ -43,6 +43,8 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
 )
 
 redAK8                 = redAK4.clone(rParameter = cms.double(0.8))
+redCA8                 = redAK8.clone(jetAlgorithm = cms.string('CambridgeAachen'))
+
 redAK8Trimmed          = redAK8.clone(useTrimming = cms.bool(True))
 
 redAK8Puppi            = redAK4Puppi.clone(rParameter = cms.double(0.8))

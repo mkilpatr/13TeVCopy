@@ -32,6 +32,7 @@ public:
   MomentumD top1_l;
   MomentumD top1_n;
   MomentumD top1_b;
+  MomentumD top1_w;
   MomentumD top2_w;
   MomentumD top2_b;
   double tW ;

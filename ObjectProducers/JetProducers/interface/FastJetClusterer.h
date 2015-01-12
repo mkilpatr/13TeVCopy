@@ -156,7 +156,6 @@ public:
 
   void    trimJets         (const double rFilter, double trimPtFracMin);
 
-
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
                             );

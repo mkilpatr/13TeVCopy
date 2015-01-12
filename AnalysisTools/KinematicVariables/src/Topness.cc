@@ -37,16 +37,17 @@ double Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pn
   // construct the lorentz vectors
   MomentumD vW;  vW.p4().SetPxPyPzE(pwx_,pwy_,pwz_,(sqrt((mW*mW)+(pwx_*pwx_)+(pwy_*pwy_)+(pwz_*pwz_)))) ;
 
-  MomentumD vL;  vL.p4().SetPxPyPzE(plx_,ply_,plz_,ple_);
+  MomentumD vL;   vL.p4().SetPxPyPzE(plx_,ply_,plz_,ple_);
 
-  MomentumD vB1; vB1.p4().SetPxPyPzE(pb1x_,pb1y_,pb1z_,pb1e_);
+  MomentumD vB1;  vB1.p4().SetPxPyPzE(pb1x_,pb1y_,pb1z_,pb1e_);
 
-  MomentumD vB2; vB2.p4().SetPxPyPzE(pb2x_,pb2y_,pb2z_,pb2e_);
+  MomentumD vB2;  vB2.p4().SetPxPyPzE(pb2x_,pb2y_,pb2z_,pb2e_);
 
   MomentumD vMET; vMET.p4().SetPxPyPzE(pmx_,pmy_,pmz_,pme_);
 
-  MomentumD vN; vN.p4().SetPxPyPzE((pmx_-pwx_),(pmy_-pwy_),pnz_,(sqrt(pow((pmx_-pwx_),2)+pow((pmy_-pwy_),2)+pow(pnz_,2))));
+  MomentumD vN;   vN.p4().SetPxPyPzE((pmx_-pwx_),(pmy_-pwy_),pnz_,(sqrt(pow((pmx_-pwx_),2)+pow((pmy_-pwy_),2)+pow(pnz_,2))));
 
+  MomentumD vW1;  vW1.p4() = vL.p4() + vN.p4();
 
   // construct the w-term
   double tW = ( pow( ((mW*mW) - (vW.p4().M2())),2) ) / (pow(aW,4));
@@ -69,6 +70,7 @@ double Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pn
     info->top1_l= vL;
     info->top1_n= vN;
     info->top1_b= vB1;
+    info->top1_w= vW1;
     info->top2_w= vW;
     info->top2_b= vB2;
     info->tW  = tW ;

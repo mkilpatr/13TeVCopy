@@ -32,8 +32,8 @@
 
 #include <string>
 #include <climits>
-#include "../interface/Njettiness.hh"
-
+//#include "../interface/Njettiness.hh"
+#include "ObjectProducers/PickyJetUtilities/interface/Njettiness.hh"
 #ifndef G__DICTIONARY
 typedef double Double32_t; // ROOT will store as 32-bit, but in code is double
 #endif
