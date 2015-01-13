@@ -52,6 +52,8 @@ namespace ucsbsusy {
       std::vector<bool>  *		ismedium;
       std::vector<bool>  *		istight;
 
+      //      std::vector<bool>  *              passCutBaseMediumID;
+
       ElectronFCollection electrons;
 
     private :

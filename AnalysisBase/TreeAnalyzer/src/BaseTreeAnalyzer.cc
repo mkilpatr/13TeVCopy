@@ -28,8 +28,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     isMC_             (isMCTree),
     cleanJetsvLeptons_(false),
     cleanJetsvTaus_   (false),
-    minElePt          (20.0),
-    minMuPt           (20.0),
+    minElePt          (10.0),
+    minMuPt           (10.0),
     minTauPt          (20.0),
     minJetPt          (30.0),
     minBJetPt         (30.0),
@@ -196,11 +196,14 @@ inline bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
 }
 //--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
-  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
+  //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
+  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
+  //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
 }
 //--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
   return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta && muon.isgoodpogmuon());
+  //return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta);
 }
 //--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {

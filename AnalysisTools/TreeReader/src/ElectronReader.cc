@@ -34,6 +34,7 @@ ElectronReader::ElectronReader() : BaseReader(){
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
+  //  passCutBaseMediumID = new vector<bool> ;
   eleId        = new LeptonId();
 }
 
@@ -64,6 +65,7 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
+    //    treeReader->setBranchAddress(branchName , "passCutBaseMediumId", &passCutBaseMediumId, true);
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -92,6 +94,15 @@ void ElectronReader::refresh(){
       electrons.back().setIsMedium(ismedium->at(iL));
       electrons.back().setIsTight(istight->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back())));
+      /*
+      // pass pog cut base medium id
+      bool tmpPassCutBaseMID = false;
+      if (fabs(scEta->at(iL))<1.479) {
+	if (
+)
+
+      } // end EB
+      */
     }
   }
 }
