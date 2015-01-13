@@ -66,7 +66,7 @@ public:
       const EventInfoFiller   * evtInfofiller_;
       const GenParticleFiller * genParticleFiller_;
 
-    protected:
+    public:
       // Input from the config file
       const edm::InputTag jetTag_;
       const edm::InputTag reGenJetTag_;
@@ -75,6 +75,7 @@ public:
       const double        jptMin_;
       const bool          fillReGenJets_;
 
+    protected:
       // Members to hold index of most recently filled tree data
       // For standard genjets
       // For reco jets
