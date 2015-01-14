@@ -10,18 +10,20 @@
 
 //_____________________________________________________________________________
 bool ParticleInfo::isFinal(const int status) {return status == 1;}
-bool ParticleInfo::isIntermediate(const int status) {return status >= 71;}
+bool ParticleInfo::isIntermediate(const int status) {return status == 2;}
+bool ParticleInfo::isHadronization(const int status) {return status >= 71 && status <= 79; }
 bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
 bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
 bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
-bool ParticleInfo::isIncoming(const int status) {return status <= 21;}
+bool ParticleInfo::isIncoming(const int status) {return status > 3 && status <= 21;}
 //_____________________________________________________________________________
-inline bool ParticleInfo::isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
+bool ParticleInfo::isDoc(const int status) {return isDocAltered(status) || isDocOutgoing(status) || isDocIntermediate(status); }
 //_____________________________________________________________________________
-inline ParticleInfo::ParticleStatus ParticleInfo::getStatus(const int status)
+ParticleInfo::ParticleStatus ParticleInfo::getStatus(const int status)
 {
   if(isFinal(status)) return FINAL;
   else if(isIntermediate(status)) return INTERMEDIATE;
+  else if(isHadronization(status)) return HADRONIZATION;
   else if(isDocAltered(status)) return DOC_ALTERED;
   else if(isDocIntermediate(status)) return DOC_INTERMEDIATE;
   else if(isDocOutgoing(status)) return DOC_OUTGOING;
@@ -68,7 +70,7 @@ bool ParticleInfo::isHadron(int pdgId)
 bool ParticleInfo::isQuarkOrGluon(int pdgId)
 {
   if (pdgId < 0)  return isQuarkOrGluon(-pdgId);
-  return (pdgId == p_g || (p_unknown < pdgId && pdgId < p_b));
+  return (pdgId == p_g || isQuark(pdgId));
 }
 //_____________________________________________________________________________
 bool ParticleInfo::isDecayProduct(int pdgId)
@@ -314,31 +316,6 @@ TString ParticleInfo::shortFlavorName(int particleID)
   }
 }
 //_____________________________________________________________________________
-ParticleInfo::JetFlavor ParticleInfo::jetFlavor(int particleID)
-{
-  if (particleID < 0)   return jetFlavor(-particleID);
-  switch (particleID) {
-    case 0:             return unmatched_jet;
-    case p_d:
-    case p_u:
-    case p_s:           return uds_jet;
-    case p_c:           return c_jet;
-    case p_b:           return b_jet;
-    case p_g:           return g_jet;
-    case p_gamma:       return photon_jet;
-    case p_tauminus:    return tau_jet;
-    default:            return uds_jet /*numJetFlavors*/;   // seems like there can be diquark jets...
-  }
-}
-//_____________________________________________________________________________
-bool ParticleInfo::isLightFlavorJet(JetFlavor flavor) {
-  return ( flavor == g_jet || flavor == uds_jet || flavor == lf_jet );
-}
-//_____________________________________________________________________________
-bool ParticleInfo::isHeavyFlavorJet(JetFlavor flavor) {
-  return ( flavor == b_jet || flavor == c_jet   || flavor == hf_jet );
-}
-//_____________________________________________________________________________
 const TString* ParticleInfo::pfTypeNames()
 {
   static const TString  NAMES[] = { "x", "h", "e", "mu", "gamma", "h0", "HFhad", "HFEM" };
@@ -351,71 +328,12 @@ const TString* ParticleInfo::pfTypeTitles()
   return TITLES;
 }
 //_____________________________________________________________________________
-const TString* ParticleInfo::jetFlavorNames()
-{
-  static const TString  NAMES[numJetFlavors+1]  = { "x", "uds", "c", "b", "g", "hf", "lf", "photon", "tau", "other" };
-  return NAMES;
-}
-//_____________________________________________________________________________
-const TString& ParticleInfo::jetFlavorName(JetFlavor flavor)
-{
-  return jetFlavorNames()[flavor];
-}
-//_____________________________________________________________________________
-const TString& ParticleInfo::jetFlavorTag(JetFlavor flavor)
-{
-  return jetFlavorTags()[flavor];
-}
-//_____________________________________________________________________________
-const TString* ParticleInfo::jetFlavorTags()
-{
-  static const TString  NAMES[numJetFlavors+1]  = { "x", "q", "c", "b", "g", "hf", "lf", "y", "T", "" };
-  return NAMES;
-}
-//_____________________________________________________________________________
-const char* ParticleInfo::specialJetFlavor(JetFlavor flavor, JetFlavor special)
-{
-  switch (flavor) {
-    case uds_jet:       return "q";
-    case c_jet:         return (flavor == special ? "c" : "q");
-    case b_jet:         return (flavor == special ? "b" : "q");
-    case g_jet:         return "g";
-    default:            return "x";
-  }
-}
-//_____________________________________________________________________________
 TString ParticleInfo::multiply(int count, const char label[])
 {
   if (count > 2)      return TString::Format("%d%s", count, label);
   TString             multiplied;
   for (int i = 0; i < count; ++i)   multiplied  += label;
   return multiplied;
-}
-//_____________________________________________________________________________
-TString ParticleInfo::formatFlavors(const std::vector<int>& counts)
-{
-  TString   label;
-  label    += multiply(counts[unmatched_jet]        , "x");
-  label    += multiply(counts[uds_jet]+counts[c_jet], "q");
-  label    += multiply(counts[b_jet  ]              , "b");
-  label    += multiply(counts[g_jet  ]              , "g");
-  label    += multiply(counts[hf_jet ]              , "hf");
-  label    += multiply(counts[lf_jet ]              , "lf");
-  return    label;
-}
-//_____________________________________________________________________________
-TString ParticleInfo::formatFlavors(const std::vector<int>& counts, const std::vector<int>& antiCounts)
-{
-  TString   label;
-  label    += multiply(     counts[unmatched_jet]             , "x"    );
-  label    += multiply(     counts[uds_jet]+counts[c_jet]     , "q"    );
-  label    += multiply( antiCounts[uds_jet]+antiCounts[c_jet] , "qbar" );
-  label    += multiply(     counts[b_jet        ]             , "b"    );
-  label    += multiply( antiCounts[b_jet        ]             , "bbar" );
-  label    += multiply(     counts[g_jet        ]             , "g"    );
-  label    += multiply(     counts[hf_jet       ]             , "hf"   );
-  label    += multiply(     counts[lf_jet       ]             , "lf"   );
-  return    label;
 }
 //_____________________________________________________________________________
 TString ParticleInfo::nameFor(int pdgId)
@@ -696,15 +614,6 @@ TString ParticleInfo::toMathematica(TString text)
   return text;
 }
 //_____________________________________________________________________________
-ParticleInfo::JetFlavor ParticleInfo::jetFlavor(HadronType type)
-{
-  if (type == OTHER       )   return unmatched_jet;
-  if (type <= LIGHT_BARYON)   return uds_jet;
-  if (type <= C_BARYON    )   return c_jet;
-  if (type <= B_BARYON    )   return b_jet;
-  return numJetFlavors;
-}
-//_____________________________________________________________________________
 bool ParticleInfo::isHeavyFlavor(HadronType type)
 {
   return type > LIGHT_BARYON;
@@ -713,6 +622,11 @@ bool ParticleInfo::isHeavyFlavor(HadronType type)
 bool ParticleInfo::isBHadron(HadronType type)
 {
   return type >= BPLUS;
+}
+//_____________________________________________________________________________
+bool ParticleInfo::isCHadron(HadronType type)
+{
+  return isHeavyFlavor(type) && !isBHadron(type);
 }
 //_____________________________________________________________________________
 ParticleInfo::HadronType ParticleInfo::typeOfHadron(int pdgId, int* numBQuarks, int* numCQuarks)

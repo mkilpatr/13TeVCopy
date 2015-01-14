@@ -12,16 +12,21 @@
 
 namespace ParticleInfo
 {
-enum JetFlavor      { unmatched_jet, uds_jet, c_jet, b_jet, g_jet, hf_jet, lf_jet, photon_jet, tau_jet, numJetFlavors };
-
 enum  HadronType  { OTHER
                   , /*PI0,*/ PIPLUS, ETA0, KAON, DIQUARK, LIGHT_MESON, LIGHT_BARYON
                   , DPLUS, D0, DSPLUS, LAMBDACPLUS, C_MESON, C_BARYON
                   , BPLUS, B0, BS0, LAMBDAB0, B_MESON, B_BARYON
                   , numDetailedHadronTypes
                   };
-enum ParticleStatus { FINAL,INTERMEDIATE, DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING, INCOMING, UNKNOWN};
-//enum ParticleStatus { status_unknown, status_final, status_decayed, status_doc };
+// New particle enums....how do they relate to old versions...
+// DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING are effectively old status three partilces
+// however, they were compresses such that you only get one type of each particle
+// HADRONIZATION used to be string particles....just the math when doing the hadronization
+// INCOMING...as before
+// FINAL status 1
+// INTERMEDIATE status 2
+enum ParticleStatus { FINAL,INTERMEDIATE, HADRONIZATION, DOC_INTERMEDIATE, DOC_ALTERED, DOC_OUTGOING, INCOMING, UNKNOWN, NULLSTATUS};
+
 enum ParticleID     { p_unknown, p_d, p_u, p_s, p_c, p_b, p_t, p_bprime, p_tprime,
                       p_eminus = 11, p_nu_e, p_muminus, p_nu_mu, p_tauminus, p_nu_tau,
                       p_tauprimeminus, p_nu_tauprime, p_g = 21, p_gamma, p_Z0,
@@ -55,6 +60,8 @@ enum  { p_LSP = 1000022 };
 bool isFinal(const int status);
 //// is a non-final decayed particle
 bool isIntermediate(const int status);
+//// is a particle used in the hadronization process
+bool isHadronization(const int status);
 //Doc particle that will be altered before becoming outgoing
 bool isDocIntermediate(const int status);
 //An altered version of a doc particle in prep for becoming outgoing
@@ -108,19 +115,9 @@ TString        smPartonTitle(int particleID, bool separateL = false, bool separa
 TString        bsmPartonName(int particleID, bool separateU = false, bool separateB = true, bool separateLR = false);
 TString        flavorName(int particleID);
 TString        shortFlavorName(int particleID);
-JetFlavor      jetFlavor(int particleID);
-bool           isLightFlavorJet(JetFlavor flavor);
-bool           isHeavyFlavorJet(JetFlavor flavor);
 const TString* pfTypeNames();
 const TString* pfTypeTitles();
-const TString* jetFlavorNames();
-const TString& jetFlavorName(JetFlavor flavor);
-const TString& jetFlavorTag(JetFlavor flavor);
-const TString* jetFlavorTags();
-const char*    specialJetFlavor(JetFlavor flavor, JetFlavor special);
 TString        multiply(int count, const char label[]);
-TString        formatFlavors(const std::vector<int>& counts);
-TString        formatFlavors(const std::vector<int>& counts, const std::vector<int>& antiCounts);
 TString        nameFor(int pdgId);
 
 template<typename Object>
@@ -138,9 +135,9 @@ TString toMathematica(TString text);
 // Hadron type information
 //_____________________________________________________________________________
 
-JetFlavor jetFlavor(HadronType type);
 bool isHeavyFlavor(HadronType type);
 bool isBHadron(HadronType type);
+bool isCHadron(HadronType type);
 HadronType typeOfHadron(int pdgId, int* numBQuarks = 0, int* numCQuarks = 0);
 HadronType detailedTypeOfHadron(int pdgId);
 const TString& hadronTypeName(HadronType type);
@@ -167,6 +164,13 @@ template<typename Particle>
 void printGenParticleInfo(const Particle* genParticle, const int idx = 0);
 template<typename Particle>
 void printGenParticleInfo(const Particle& genParticle, const int idx = 0);
+
+template<typename Particle>
+void printPackedGenInfo(const std::vector<Particle>& genParticles, int genBound = 30, int genStart  =  -1);
+template<typename Particle>
+void printPackedGenParticleInfo(const Particle* genParticle, const int idx = 0);
+template<typename Particle>
+void printPackedGenParticleInfo(const Particle& genParticle, const int idx = 0);
 
 };  // end class ParticleInfo
 

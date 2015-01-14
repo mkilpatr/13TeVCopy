@@ -14,9 +14,12 @@ redAK4             = cms.EDProducer('PackedReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01),
+                                    useTrimming     = cms.bool(False),
+                                    rFilt           = cms.double(.1),
+                                    trimPtFracMin   = cms.double(.03),
 )
 
 
@@ -31,26 +34,18 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01),
+                                    useTrimming     = cms.bool(False),
+                                    rFilt           = cms.double(.1),
+                                    trimPtFracMin   = cms.double(.03),
 )
 
-redAK8CHS = redAK4.clone(
-                         rParameter = cms.double(0.8),
-                         jetPtMin = cms.double(15)
-                        )
+redAK8                 = redAK4.clone(rParameter = cms.double(0.8))
+redCA8                 = redAK8.clone(jetAlgorithm = cms.string('CambridgeAachen'))
 
-redCA1 = redAK4.clone(
-                      jetAlgorithm      = cms.string('CambridgeAachen'),
-                      rParameter      = cms.double(1),
-                      jetPtMin          = cms.double(20),
-                      maxParticleEta    = cms.double          (3),
-                      )
+redAK8Trimmed          = redAK8.clone(useTrimming = cms.bool(True))
 
-redCA1Puppi = redAK4Puppi.clone(
-                      jetAlgorithm      = cms.string('CambridgeAachen'),
-                      rParameter      = cms.double(1),
-                      jetPtMin          = cms.double(20),
-                      maxParticleEta    = cms.double          (3),
-                      )
+redAK8Puppi            = redAK4Puppi.clone(rParameter = cms.double(0.8))
+redAK8TrimmedPuppi     = redAK8Puppi.clone(useTrimming = cms.bool(True))

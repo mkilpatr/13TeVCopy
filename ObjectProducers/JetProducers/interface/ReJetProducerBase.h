@@ -45,6 +45,7 @@ public:
       clusterer.addParticles<RecoPart>( (puParts.isValid() ? puParts : recoParts) ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,selectPU,0, 1e-50);
 
     clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
+    if(useTrimming) clusterer.trimJets(rFilt,trimPtFracMin);
   }
 
   void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets, std::auto_ptr<reco::PFJetCollection> puJets);
@@ -66,8 +67,12 @@ protected:
   const double maxParticleEta;
   const double ghostArea;
 
+  const bool   useTrimming;
+  const double rFilt;
+  const double trimPtFracMin;
+
   fastjet::JetAlgorithm jetAlgo;
-  edm::Handle<reco::GenParticle>                genMotherParticles;
+  edm::Handle<reco::GenParticleCollection>      genMotherParticles;
   edm::Handle<pat::PackedGenParticleCollection> genParticles;
   };
 

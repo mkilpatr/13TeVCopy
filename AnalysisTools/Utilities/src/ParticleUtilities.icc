@@ -173,20 +173,25 @@ int ParticleUtilities::getDecayProducts(const Particle* particle, std::vector<Ou
 }
 //_____________________________________________________________________________
 template<typename Particle>
-bool ParticleUtilities::isLastInChain(const Particle* particle)
+bool ParticleUtilities::isLastInChain(const Particle* particle, bool (*selectID)(int))
 {
-  for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau)
+  for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau){
+    if(selectID && !selectID(particle->daughter(iDau)->status())) continue;
     if (particle->daughter(iDau)->pdgId() == particle->pdgId())
       return false;
+  }
   return true;
 }
 //_____________________________________________________________________________
 template<typename Particle>
-bool ParticleUtilities::isFirstInChain(const Particle* particle)
+bool ParticleUtilities::isFirstInChain(const Particle* particle,  const ParticleInfo::ParticleStatus vetoStatus)
 {
-  for (unsigned int iMom = 0; iMom < particle->numberOfMothers(); ++iMom)
+  for (unsigned int iMom = 0; iMom < particle->numberOfMothers(); ++iMom){
+    if(vetoStatus != ParticleInfo::NULLSTATUS &&
+        ParticleInfo::getStatus(particle->mother(iMom)->status()) == vetoStatus) continue;
     if (particle->mother(iMom)->pdgId() == particle->pdgId())
       return false;
+  }
   return true;
 }
 //______________________________________________________________________________
@@ -229,59 +234,59 @@ std::vector<const Particle*> ParticleUtilities::getDecayProducts(const std::vect
   return decayProducts;
 }
 //______________________________________________________________________________
-template<typename Particle>
-TString ParticleUtilities::classifyInitialFlavors(const std::vector<Particle>& genParticles)
-{
-  std::vector<int>              numInitFlavors(ParticleInfo::numJetFlavors+1, 0);
-  ++( numInitFlavors[jetFlavor(genParticles[2].pdgId())] );
-  ++( numInitFlavors[jetFlavor(genParticles[3].pdgId())] );
-  return ParticleInfo::formatFlavors(numInitFlavors);
-}
-//______________________________________________________________________________
-template<typename Particle>
-TString ParticleUtilities::classifyIncomingFlavors(const std::vector<Particle>& genParticles)
-{
-  std::vector<int>              numInFlavors  (ParticleInfo::numJetFlavors+1, 0);
-  ++( numInFlavors  [jetFlavor(genParticles[4].pdgId())] );
-  ++( numInFlavors  [jetFlavor(genParticles[5].pdgId())] );
-  return ParticleInfo::formatFlavors(numInFlavors);
-}
-//______________________________________________________________________________
-template<typename Particle>
-TString ParticleUtilities::classifyOutgoingFlavors(const std::vector<Particle>& genParticles, const std::vector<int>& mePartonIndex, const unsigned int numMEPartons)
-{
-  std::vector<int>              numOutFlavors (ParticleInfo::numJetFlavors+1, 0);
-  for (unsigned int iME = 0; iME < numMEPartons; ++iME) {
-    const Particle&             parton        = genParticles[mePartonIndex[iME]];
-    ++( numOutFlavors[jetFlavor(parton.pdgId())] );
-  } // end loop over ME partons
-  return ParticleInfo::formatFlavors(numOutFlavors);
-}
-//______________________________________________________________________________
-template<typename Particle>
-TString ParticleUtilities::classifyProduction(const std::vector<Particle>& genParticles, ParticleInfo::JetFlavor special)
-{
-  ParticleInfo::JetFlavor                     init1         = jetFlavor(genParticles[2].pdgId());
-  ParticleInfo::JetFlavor                     init2         = jetFlavor(genParticles[3].pdgId());
-  ParticleInfo::JetFlavor                     incoming1     = jetFlavor(genParticles[4].pdgId());
-  ParticleInfo::JetFlavor                     incoming2     = jetFlavor(genParticles[5].pdgId());
-  //if ((init1!=incoming1 && (init1!=g_jet)==(incoming1!=g_jet)) || (init2!=incoming2 && (init2!=g_jet)==(incoming2!=g_jet)))
-  //  return "";
-  if (init2 < init1) {
-    std::swap(init1    , init2    );
-    std::swap(incoming1, incoming2);
-  }
-  TString                       sInit1        = specialJetFlavor(init1    ,special);
-  TString                       sInit2        = specialJetFlavor(init2    ,special);
-  TString                       sIncoming1    = specialJetFlavor(incoming1,special);
-  TString                       sIncoming2    = specialJetFlavor(incoming2,special);
-  TString                       production    = sInit1 + sInit2;
-  if ((sInit1 != sIncoming1 || sInit2 != sIncoming2) && (init1==special || init2==special || incoming1==special || incoming2==special))
-    production                 += "_to_" + sIncoming1 + sIncoming2;
-  else  production             += "_to_dotdotdot";
-  production                   += "_to_X_";
-  return production;
-}
+//template<typename Particle>
+//TString ParticleUtilities::classifyInitialFlavors(const std::vector<Particle>& genParticles)
+//{
+//  std::vector<int>              numInitFlavors(ParticleInfo::numJetFlavors+1, 0);
+//  ++( numInitFlavors[jetFlavor(genParticles[2].pdgId())] );
+//  ++( numInitFlavors[jetFlavor(genParticles[3].pdgId())] );
+//  return ParticleInfo::formatFlavors(numInitFlavors);
+//}
+////______________________________________________________________________________
+//template<typename Particle>
+//TString ParticleUtilities::classifyIncomingFlavors(const std::vector<Particle>& genParticles)
+//{
+//  std::vector<int>              numInFlavors  (ParticleInfo::numJetFlavors+1, 0);
+//  ++( numInFlavors  [jetFlavor(genParticles[4].pdgId())] );
+//  ++( numInFlavors  [jetFlavor(genParticles[5].pdgId())] );
+//  return ParticleInfo::formatFlavors(numInFlavors);
+//}
+////______________________________________________________________________________
+//template<typename Particle>
+//TString ParticleUtilities::classifyOutgoingFlavors(const std::vector<Particle>& genParticles, const std::vector<int>& mePartonIndex, const unsigned int numMEPartons)
+//{
+//  std::vector<int>              numOutFlavors (ParticleInfo::numJetFlavors+1, 0);
+//  for (unsigned int iME = 0; iME < numMEPartons; ++iME) {
+//    const Particle&             parton        = genParticles[mePartonIndex[iME]];
+//    ++( numOutFlavors[jetFlavor(parton.pdgId())] );
+//  } // end loop over ME partons
+//  return ParticleInfo::formatFlavors(numOutFlavors);
+//}
+////______________________________________________________________________________
+//template<typename Particle>
+//TString ParticleUtilities::classifyProduction(const std::vector<Particle>& genParticles, ParticleInfo::JetFlavor special)
+//{
+//  ParticleInfo::JetFlavor                     init1         = jetFlavor(genParticles[2].pdgId());
+//  ParticleInfo::JetFlavor                     init2         = jetFlavor(genParticles[3].pdgId());
+//  ParticleInfo::JetFlavor                     incoming1     = jetFlavor(genParticles[4].pdgId());
+//  ParticleInfo::JetFlavor                     incoming2     = jetFlavor(genParticles[5].pdgId());
+//  //if ((init1!=incoming1 && (init1!=g_jet)==(incoming1!=g_jet)) || (init2!=incoming2 && (init2!=g_jet)==(incoming2!=g_jet)))
+//  //  return "";
+//  if (init2 < init1) {
+//    std::swap(init1    , init2    );
+//    std::swap(incoming1, incoming2);
+//  }
+//  TString                       sInit1        = specialJetFlavor(init1    ,special);
+//  TString                       sInit2        = specialJetFlavor(init2    ,special);
+//  TString                       sIncoming1    = specialJetFlavor(incoming1,special);
+//  TString                       sIncoming2    = specialJetFlavor(incoming2,special);
+//  TString                       production    = sInit1 + sInit2;
+//  if ((sInit1 != sIncoming1 || sInit2 != sIncoming2) && (init1==special || init2==special || incoming1==special || incoming2==special))
+//    production                 += "_to_" + sIncoming1 + sIncoming2;
+//  else  production             += "_to_dotdotdot";
+//  production                   += "_to_X_";
+//  return production;
+//}
 //______________________________________________________________________________
 template<typename Particle>
 int ParticleUtilities::countWithStatus(const std::vector<Particle>& particles, int status, bool (*test)(int), bool shortCircuit)

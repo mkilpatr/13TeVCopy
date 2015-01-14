@@ -10,8 +10,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
-
+#options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
+options.inputFiles = '/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
 options.maxEvents = -1
 
 options.parseArguments()
@@ -26,11 +26,17 @@ process.source = cms.Source('PoolSource',
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
+
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configuration
 
 process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
 
 # Electron ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2:
@@ -61,42 +67,31 @@ process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBas
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
 process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
-# Custom settings: jets
-process.TestAnalyzer.Jets.fillReGenJets = True
-process.TestAnalyzer.Jets.minJetPt      = 20.0
 
-process.TestAnalyzer.TrimmedJets.isFilled = True                        # set to True if trimmed jets are desired
-process.TestAnalyzer.PuppiJets.isFilled   = True                        # set to True if puppi jets are desired
+process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
+process.load('ObjectProducers.Puppi.Puppi_cff')
 
-process.load('ObjectProducers.JetProducers.redefined_jet_producers_cfi')
-process.redAK4.ghostArea = -1
+process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
-process.load('ObjectProducers.JetProducers.redefined_genjet_associator_cfi')
-
-process.load('ObjectProducers.Puppi.puppiJetProducer_cff')
-process.load('ObjectProducers.JetProducers.trimmedJets_cfi')
-
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-
-process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
-
-process.p = cms.Path(process.redAK4 * process.redGenAssoc * 
-                     process.puppiJetFullSequence * process.redAK4Puppi * process.redPuppiGenAssoc * 
-                     process.trimmedJetFullSequence * process.redAK8CHS * process.redAK8TrimmedGenAssoc * 
+process.p = cms.Path(process.puppi *
+                     process.ak4PatAssocSeq * 
+                     process.ak4PuppiJetSeq * 
+                     process.trimmedJetSeq  *
+                     process.ca8AssocSeq    *
+                     process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
                      process.TestAnalyzer)
 
-# If producing puppi jets with JECs: 
-if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC :
-    process.TestAnalyzer.PuppiJets.jets          = cms.InputTag('correctedAK4PFJetsPuppi')
-    process.ak4PuppiImpactParameterTagInfos.jets = cms.InputTag('correctedAK4PFJetsPuppi')
+#process.lsfSubJets     *
 
-    process.TestAnalyzer.PuppiJets.fillReGenJets = False                             # switch off redefined genjets for now
- 
-    process.p = cms.Path(process.redAK4 * process.redGenAssoc * 
-                         process.puppiCorrJetFullSequence * 
-                         process.trimmedJetFullSequence * process.redAK8CHS * process.redAK8TrimmedGenAssoc * 
-                         process.egmGsfElectronIDSequence * 
-                         process.TestAnalyzer)
+# dont use for now
+# # If producing puppi jets with JECs:
+# if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC :
+#     process.TestAnalyzer.PuppiJets.fillReGenJets = False                             # switch off redefined genjets for now
+#  
+#     process.p = cms.Path(process.ak4PatAssocSeq *
+#                          process.ak4PuppiJetSeq * 
+#                          process.trimmedJetSeq  *
+#                          process.egmGsfElectronIDSequence * 
+#                          process.TestAnalyzer)
 

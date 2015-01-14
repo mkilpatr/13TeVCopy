@@ -8,11 +8,12 @@
 namespace ucsbsusy {
   class RecoJetFiller : public JetFiller<reco::PFJet> {
     public:
-    RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+    RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
           , const edm::InputTag jetTag
           , const edm::InputTag bTagsTag
           , const edm::InputTag reGenJetTag
           , const edm::InputTag stdGenJetTag
+          , const edm::InputTag flvAssocTag
           , const edm::InputTag reGenJetAssocTag
           , const bool fillReGenJets
           , const double jptMin
@@ -26,7 +27,6 @@ namespace ucsbsusy {
       reco::CandidatePtr getRecoJet(const size iGen, bool redefined) const;
 
       //Not currently implemented:
-      int   getPartonFlavor(const reco::PFJet& jet) const {return -1;}
       float getJecUncorrection(const reco::PFJet& jet) const { return 1;}
       float getPUJetId(const reco::PFJet& jet) const {return -10;}
       float getbDisc(const reco::PFJet& jet) const;

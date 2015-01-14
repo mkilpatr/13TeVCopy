@@ -1,17 +1,19 @@
 #include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-RecoJetFiller::RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+RecoJetFiller::RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
   , const edm::InputTag jetTag
   , const edm::InputTag bTagsTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag flvAssocTag
   , const edm::InputTag reGenJetAssocTag
   , const bool   fillReGenJets
   , const double jptMin
-) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller
+) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller, genParticleFiller
     , jetTag
     , reGenJetTag
     , stdGenJetTag
+    , flvAssocTag
     , fillReGenJets
     , jptMin
     )

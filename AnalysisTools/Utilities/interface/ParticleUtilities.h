@@ -50,11 +50,15 @@ int getOutgoing(const Particle* particle, std::vector<OutParticle>& output, bool
 template<typename Particle, typename OutParticle>
 int getDecayProducts(const Particle* particle, std::vector<OutParticle>& output, bool (*vetoID)(int) = 0, std::vector<OutParticle>* vetoed = 0);
 
+//check if the the last particle in the chain
+//Make sure the particle is of a certain status
 template<typename Particle>
-bool isLastInChain(const Particle* particle);
+bool isLastInChain(const Particle* particle, bool (*selectID)(int) = 0);
 
+//Check if the first particle in the chain
+//if veto status is set, will stop if the subsequent mother has that status
 template<typename Particle>
-bool isFirstInChain(const Particle* particle);
+bool isFirstInChain(const Particle* particle, const ParticleInfo::ParticleStatus vetoStatus = ParticleInfo::NULLSTATUS);
 
 template<typename Particle>
 std::vector<const Particle*> getProgenitors(const std::vector<Particle>& particles);
@@ -86,18 +90,18 @@ struct LesserIDorGreaterPT {
   }
 };
 
-template<typename Particle>
-TString classifyInitialFlavors(const std::vector<Particle>& genParticles);
-
-template<typename Particle>
-TString classifyIncomingFlavors(const std::vector<Particle>& genParticles);
-
-template<typename Particle>
-TString classifyOutgoingFlavors(const std::vector<Particle>& genParticles, const std::vector<int>& mePartonIndex, const unsigned int numMEPartons);
-
-template<typename Particle>
-TString classifyProduction(const std::vector<Particle>& genParticles, ParticleInfo::JetFlavor special);
-
+//template<typename Particle>
+//TString classifyInitialFlavors(const std::vector<Particle>& genParticles);
+//
+//template<typename Particle>
+//TString classifyIncomingFlavors(const std::vector<Particle>& genParticles);
+//
+//template<typename Particle>
+//TString classifyOutgoingFlavors(const std::vector<Particle>& genParticles, const std::vector<int>& mePartonIndex, const unsigned int numMEPartons);
+//
+//template<typename Particle>
+//TString classifyProduction(const std::vector<Particle>& genParticles, ParticleInfo::JetFlavor special);
+//
 template<typename Particle>
 int countWithStatus(const std::vector<Particle>& particles, int status, bool (*test)(int) = 0, bool shortCircuit = false);
 

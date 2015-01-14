@@ -16,6 +16,8 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 
+#include "AnalysisTools/Utilities/interface/TopDecayMatching.h"
+
 namespace ucsbsusy {
 
 
@@ -27,25 +29,40 @@ namespace ucsbsusy {
       enum  Options           {
                                 NULLOPT         = 0
                               , SAVEALL         = (1 <<  0)   // save all gen particles in pruned collection
-                              , LOADPACKED      = (1 <<  1)   //load the packed gen particles
+                              , SAVEPARTONDECAY = (1 <<  1)   // save the parton hadronization energy info
+                              , LOADPACKED      = (1 <<  2)   //load the packed gen particles
       };
       static const int defaultOptions;
 
       void load(const edm::Event& iEvent);
       void fill();
+      void reset() override;
 
-
+    private:
       //typefs to setup how the association is stored, and helpers for that storage
       typedef std::map<size,size> CandMap;
       typedef size16 stor;
       typedef std::vector<stor> storVec;
       void fillMomVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireMoms, storVec& moms) const;
       void fillDauVec(const reco::GenParticle * c, const CandMap& candMap,const bool requireDaus, storVec& daus) const;
-      void fillAssoc(const std::vector<const reco::GenParticle*>& cands,const CandMap& candMap, const bool requireMoms, const bool requireDaus,
+      void fillAssoc(const reco::GenParticleRefVector& cands,const CandMap& candMap, const bool requireMoms, const bool requireDaus,
           storVec& assocList,storVec& nMoms,storVec& firstMom,storVec& nDaus,storVec& firstDau ) const;
 
       //Add the particles from the main interaction
-      void addHardInteraction(vector<const reco::GenParticle*>& outParticles,CandMap& candMap)const;
+      void addHardInteraction(reco::GenParticleRefVector& outParticles,CandMap& candMap)const;
+
+      //functions related to getting hadron decays
+    private:
+      //fill all information and do calculations
+      void loadPartonDecays(const reco::GenParticleRefVector& genParticles);
+    public:
+      //Give a jet collection and get partons associated with jets
+      // WARNING! if this is called again, the parton collection is changed
+      const TopDecayMatching::Partons& getPartons(const reco::GenJetCollection& jets) const;
+      const std::vector<int>& getPartonPrtAssoc() const {return prtPartonAssoc;}
+
+
+
 
     private :
       const edm::InputTag genParticleTag_;
@@ -63,11 +80,26 @@ namespace ucsbsusy {
       size indaus    ;
       size ifirstdau ;
       size iassoc    ;
+      //hadron decay assoc
+      size ihade     ;
+
+      //storage quantities
+      reco::GenParticleRefVector storedGenParticles;
+      CandMap candMap;
+      storVec assocList;
+      storVec nMoms;
+      storVec firstMoms;
+      storVec nDaus;
+      storVec firstDaus;
+
+      //information related to hadron decay
+      TopDecayMatching::Partons partonDecays;
+      std::vector<int>   prtPartonAssoc;
+      std::vector<float> hadronizationE;
 
     public :
       edm::Handle<reco::GenParticleCollection> genParticles_;
       edm::Handle<pat::PackedGenParticleCollection> packedGenParticles_;
-
   };
 
 

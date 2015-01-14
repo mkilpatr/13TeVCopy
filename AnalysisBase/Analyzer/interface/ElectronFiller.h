@@ -20,6 +20,17 @@
 #include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
+#include "DataFormats/Math/interface/deltaR.h"
+
+#include "DataFormats/Math/interface/LorentzVector.h"
+
+//typedef math::XYZTLorentzVector LorentzVector;
+typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
+typedef std::vector<LorentzVector> LorentzVectorCollection;
+
 namespace ucsbsusy {
 
   class ElectronFiller : public BaseFiller {
@@ -49,6 +60,7 @@ namespace ucsbsusy {
       void initMVA();
       void load(const edm::Event& iEvent);
       void fill();
+      void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
 
     private :
       const EventInfoFiller * evtInfoFiller_;
@@ -109,6 +121,19 @@ namespace ucsbsusy {
       size ipfphotoniso_;
       size ipfpuiso_;
 
+      // different isolations
+      size iLSF2Iso_;
+      size iLSF3Iso_;
+      size iLSF4Iso_;
+      size iLSF2IsoDR_;
+      size iLSF3IsoDR_;
+      size iLSF4IsoDR_;
+
+      // cut-based id - put by hand
+      //      size iPassTriggerLID_;
+      size iPassCutBaseNonIsoMID_;
+      //      size iPassCutBaseTID_;
+
     public :
       // Data members
       edm::Handle<pat::ElectronCollection> electrons_;
@@ -116,6 +141,10 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> > loose_id_decisions_;
       edm::Handle<edm::ValueMap<bool> > medium_id_decisions_;
       edm::Handle<edm::ValueMap<bool> > tight_id_decisions_;
+      edm::Handle<reco::PFJetCollection> ca8Jets;
+      edm::Handle<LorentzVectorCollection> lsfSubJets2;
+      edm::Handle<LorentzVectorCollection> lsfSubJets3;
+      edm::Handle<LorentzVectorCollection> lsfSubJets4;
 
   };
 
