@@ -1,0 +1,222 @@
+#include <vector>
+#include <assert.h>
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+#include "TH1F.h"
+#include "TCanvas.h"
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
+
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+
+#include "AnalysisTools/Parang/interface/Plotter.h"
+#include "AnalysisTools/Parang/interface/Polybook.h"
+#include "AnalysisTools/Parang/interface/Panvariate.h"
+
+using namespace std;
+using namespace ucsbsusy;
+
+class Analyze : public BaseTreeAnalyzer{
+public:
+  PlotterD*                       plotter;
+  Polybook                        eventPlots;
+  TString                         prefix;
+
+  const ParamatrixMVA*  genMVA;
+  const ParamatrixMVA*  recoMVA;
+
+  //tree inputs
+  size8 nVert                ;
+  size8 jetType              ;
+  size8 splitResult          ;
+  bool  isGen                ;
+  size8 numSplits            ;
+  float superJet_pt          ;
+  float superJet_eta         ;
+  float superJet_phi         ;
+  float superJet_mass        ;
+  float tau1                 ;
+  float tau2                 ;
+  float subJet_1_pt          ;
+  float subJet_1_eta         ;
+  float subJet_1_phi         ;
+  float subJet_1_mass        ;
+  float subJet_2_pt          ;
+  float subJet_2_eta         ;
+  float subJet_2_phi         ;
+  float subJet_2_mass        ;
+  float highest_peak         ;
+  float lowest_peak          ;
+  float minimum_value        ;
+  float center_value         ;
+  float lowest_peak_location ;
+  float highest_peak_location;
+  float minimum_location     ;
+  float oldDisc              ;
+  bool  oldDisc_shouldSplit  ;
+
+  float subjet_dr;
+
+
+  Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter)
+  {
+    TFile*              genFile    = TFile::Open("gen/pickymva_puppi_gen.root", "READ");
+    genMVA = dynamic_cast<ParamatrixMVA*>(genFile->Get("picky_puppi_gen_0"));
+    delete genFile;
+
+    TFile*              recoFile    = TFile::Open("reco/pickymva_puppi_reco.root", "READ");
+    recoMVA = dynamic_cast<ParamatrixMVA*>(recoFile->Get("picky_puppi_reco_0"));
+    delete recoFile;
+
+    assert(genMVA);
+    assert(recoMVA);
+  };
+
+  void loadVariables() override{
+    reader.setBranchAddress("","nVert"                ,&nVert                );
+    reader.setBranchAddress("","jetType"              ,&jetType              );
+    reader.setBranchAddress("","splitResult"          ,&splitResult          );
+    reader.setBranchAddress("","isGen"                ,&isGen                );
+    reader.setBranchAddress("","numSplits"            ,&numSplits            );
+    reader.setBranchAddress("","superJet_pt"          ,&superJet_pt          );
+    reader.setBranchAddress("","superJet_eta"         ,&superJet_eta         );
+    reader.setBranchAddress("","superJet_phi"         ,&superJet_phi         );
+    reader.setBranchAddress("","superJet_mass"        ,&superJet_mass        );
+    reader.setBranchAddress("","tau1"                 ,&tau1                 );
+    reader.setBranchAddress("","tau2"                 ,&tau2                 );
+    reader.setBranchAddress("","subJet_1_pt"          ,&subJet_1_pt          );
+    reader.setBranchAddress("","subJet_1_eta"         ,&subJet_1_eta         );
+    reader.setBranchAddress("","subJet_1_phi"         ,&subJet_1_phi         );
+    reader.setBranchAddress("","subJet_1_mass"        ,&subJet_1_mass        );
+    reader.setBranchAddress("","subJet_2_pt"          ,&subJet_2_pt          );
+    reader.setBranchAddress("","subJet_2_eta"         ,&subJet_2_eta         );
+    reader.setBranchAddress("","subJet_2_phi"         ,&subJet_2_phi         );
+    reader.setBranchAddress("","subJet_2_mass"        ,&subJet_2_mass        );
+    reader.setBranchAddress("","highest_peak"         ,&highest_peak         );
+    reader.setBranchAddress("","lowest_peak"          ,&lowest_peak          );
+    reader.setBranchAddress("","minimum_value"        ,&minimum_value        );
+    reader.setBranchAddress("","center_value"         ,&center_value         );
+    reader.setBranchAddress("","lowest_peak_location" ,&lowest_peak_location );
+    reader.setBranchAddress("","highest_peak_location",&highest_peak_location);
+    reader.setBranchAddress("","minimum_location"     ,&minimum_location     );
+    reader.setBranchAddress("","oldDisc"              ,&oldDisc              );
+    reader.setBranchAddress("","oldDisc_shouldSplit"  ,&oldDisc_shouldSplit  );
+  }
+  void processVariables() override{  subjet_dr = PhysicsUtilities::deltaR(subJet_1_eta,subJet_1_phi,subJet_2_eta,subJet_2_phi);}
+
+  double evaluateMVA(const ParamatrixMVA* mvas){
+    float filtered_pt = superJet_pt;
+    float filtered_eta = superJet_eta;
+    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 1.9 ){
+      filtered_pt = 305;
+      filtered_eta = 2.0;
+    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 2.9 ){
+      filtered_eta = 2.0;
+    }
+    filtered_eta = TMath::Abs(filtered_eta);
+
+    static const int parIndex_superJet_pt = mvas->findAxis("superJet_pt");
+    static const int parIndex_superJet_superJet_eta = mvas->findAxis("superJet_eta");
+    static vector<double> mva_parameters(2,0);
+    mva_parameters[parIndex_superJet_pt] = filtered_pt;
+    mva_parameters[parIndex_superJet_superJet_eta] = filtered_eta;
+
+    const Panvariate * mva = mvas->get(mva_parameters);
+    assert(mva);
+
+    static const int index_superJet_mass         = mva->findVariable("superJet_mass"        );
+    static const int index_tau1                  = mva->findVariable("tau1"                 );
+    static const int index_tau2                  = mva->findVariable("tau2"                 );
+    static const int index_highest_peak          = mva->findVariable("highest_peak"         );
+    static const int index_lowest_peak           = mva->findVariable("lowest_peak"          );
+    static const int index_minimum_value         = mva->findVariable("minimum_value"        );
+    static const int index_lowest_peak_location  = mva->findVariable("lowest_peak_location" );
+    static const int index_highest_peak_location = mva->findVariable("highest_peak_location");
+    static const int index_minimum_location      = mva->findVariable("minimum_location"     );
+    static const int index_subjet_dr             = mva->findVariable("subjet_dr"            );
+
+    mva->setVariable(index_superJet_mass        ,superJet_mass        );
+    mva->setVariable(index_tau1                 ,tau1                 );
+    mva->setVariable(index_tau2                 ,tau2                 );
+    mva->setVariable(index_highest_peak         ,highest_peak         );
+    mva->setVariable(index_lowest_peak          ,lowest_peak          );
+    mva->setVariable(index_minimum_value        ,minimum_value        );
+    mva->setVariable(index_lowest_peak_location ,lowest_peak_location );
+    mva->setVariable(index_highest_peak_location,highest_peak_location);
+    mva->setVariable(index_minimum_location     ,minimum_location     );
+    mva->setVariable(index_subjet_dr            ,subjet_dr            );
+
+    return mva->evaluateMethod(0);
+  }
+
+  void makePlots(){
+    double super_jet_abs_eta = TMath::Abs(superJet_eta);
+    eventPlots.rewind();
+    eventPlots("gen__",isGen > 0);
+    eventPlots("reco__",isGen == 0);
+
+    ++eventPlots;
+    eventPlots("goodSplit__", splitResult == 0 );
+    eventPlots("badSplit__",  splitResult >0 );
+    eventPlots("splitParton__", splitResult == 1);
+    eventPlots("dirtySplit__", splitResult == 2);
+
+    ++eventPlots;
+    eventPlots("inclusive__",true );
+    eventPlots("ee_eta_lt1p9__", super_jet_abs_eta < 1.9);
+    eventPlots("ee_eta_eq1p9to2p9__", super_jet_abs_eta >= 1.9 && super_jet_abs_eta < 2.9);
+    eventPlots("ee_eta_geq2p9__", super_jet_abs_eta >= 2.9 );
+
+    ++eventPlots;
+    eventPlots("inclusive__",true);
+    eventPlots("ep_pt_eq20to50__"  ,superJet_pt >= 20 && superJet_pt < 50);
+    eventPlots("ep_pt_eq50to100__" ,superJet_pt >= 50 && superJet_pt < 100);
+    eventPlots("ep_pt_eq100to200__",superJet_pt >= 100 && superJet_pt < 200);
+    eventPlots("ep_pt_eq200to400__",superJet_pt >= 200 && superJet_pt < 400);
+    eventPlots("ep_pt_geq400__"    ,superJet_pt >= 400);
+
+    eventPlots.fill(superJet_mass        ,1, "jet_mass"             , ";M(Super jet)}"                  , 30, 0, 200 );
+    eventPlots.fill(tau1                 ,1, "1_subjettiness"       , ";#tau_{1}"                       , 30, 0, 1   );
+    eventPlots.fill(tau2                 ,1, "2_subjettiness"       , ";#tau_{2}"                       , 30, 0, 1   );
+    eventPlots.fill(highest_peak         ,1, "highest_peak"         , ";Highest peak"                   , 60, 0, 2000);
+    eventPlots.fill(lowest_peak          ,1, "lowest_peak"          , ";Lowest peak"                    , 30, 0, 500 );
+    eventPlots.fill(minimum_value        ,1, "minimum_value"        , ";Minimum value"                  , 30, 0, 200 );
+    eventPlots.fill(lowest_peak_location ,1, "lowest_peak_location" , ";Lowest peak location"           , 30, -1, 1  );
+    eventPlots.fill(highest_peak_location,1, "highest_peak_location", ";Highest peak location"          , 30, -1, 1  );
+    eventPlots.fill(minimum_location     ,1, "minimum_location"     , ";Minimum location"               , 30, -1, 1  );
+    eventPlots.fill(subjet_dr            ,1, "sub12_dr"             , ";DR(subjet 1, subjet 2)"         , 30, 0, 1.2 );
+
+    eventPlots.fill(oldDisc              ,1, "oldDisc"      , ";D_{splitting}"              , 20, -1, 1  );
+    eventPlots.fill(evaluateMVA(isGen ? genMVA : recoMVA)              ,1, "newDisc"      , ";D_{splitting}"              , 20, -1, 1  );
+  }
+
+  void runEvent(){
+    if(nVert < 1) return;
+    makePlots();
+
+  }
+
+  void out(TString outputPath){
+    plotter->write(outputPath);
+  }
+
+
+
+};
+
+
+#endif
+
+
+
+void testPickyMVA(string fname = "evttree.root", string treeName = "TestAnalyzer/Events", bool isMCTree = true) {
+
+  Analyze a(fname, treeName, isMCTree);
+  TString name = fname;
+  name = ((TObjString*)name.Tokenize(".")->At(0))->GetString();
+  a.prefix = name;
+  a.prefix += "_";
+  a.analyze(100000,5000000);
+  a.out(TString::Format("%s_plots.root",name.Data()));
+}
