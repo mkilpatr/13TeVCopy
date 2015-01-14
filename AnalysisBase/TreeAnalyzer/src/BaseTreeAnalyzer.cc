@@ -176,12 +176,14 @@ void BaseTreeAnalyzer::processVariables()
 
 }
 //--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::analyze(int reportFrequency)
+void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 {
+  clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
   loadVariables();
   isLoaded_ = true;
 
   while(reader.nextEvent(reportFrequency)){
+    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
     processVariables();
     runEvent();
   }

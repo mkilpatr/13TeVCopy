@@ -52,7 +52,7 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
 
     // Base function that runs the standard process
-    virtual void analyze(int reportFrequency = 10000);
+    virtual void analyze(int reportFrequency = 10000, int numEvents = -1);
 
     // Sub processes that can be overloaded
     virtual void loadVariables();       //load variables
