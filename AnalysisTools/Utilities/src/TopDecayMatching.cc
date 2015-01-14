@@ -13,6 +13,8 @@ void ColorSinglet::getSingletMotherCompositon( const edm::Handle<reco::GenPartic
     const reco::GenParticleRef& m = particles->at(idx).motherRef(iM);
     if(ParticleInfo::isIncoming(m->status()) || ParticleInfo::isDocIntermediate(m->status()) || ParticleInfo::isDocAltered(m->status()) ){
       incommingIDxs.push_back(m.key());
+    } else if (ParticleInfo::isDocOutgoing(m->status()) && (!ParticleInfo::isQuarkOrGluon(m->pdgId())) ){ //for photons that have radiation handled by pythia
+      incommingIDxs.push_back(m.key());
     } else if(ParticleInfo::isDocOutgoing(m->status())){
       partonIDXs.push_back(m.key());
     } else if(ParticleInfo::isHadronization(m->status())){
