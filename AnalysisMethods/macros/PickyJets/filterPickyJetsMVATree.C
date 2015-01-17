@@ -18,14 +18,15 @@ public:
     reader.getTree()->SetBranchStatus("*",1);
     //remove some branches
     reader.getTree()->SetBranchStatus("nVert",0);
-    reader.getTree()->SetBranchStatus("jetType",0);
     reader.getTree()->SetBranchStatus("numSplits",0);
     reader.getTree()->SetBranchStatus("superJet_phi",0);
+    reader.getTree()->SetBranchStatus("superJet_purity",0);
     reader.getTree()->SetBranchStatus("subJet_1_pt",0);
+    reader.getTree()->SetBranchStatus("subJet_1_mass",0);
     reader.getTree()->SetBranchStatus("subJet_1_mass",0);
     reader.getTree()->SetBranchStatus("subJet_2_pt",0);
     reader.getTree()->SetBranchStatus("subJet_2_mass",0);
-    reader.getTree()->SetBranchStatus("center_value",0);
+    reader.getTree()->SetBranchStatus("subJet_2_purity",0);
     reader.getTree()->SetBranchStatus("oldDisc",0);
     reader.getTree()->SetBranchStatus("oldDisc_shouldSplit",0);
 
@@ -51,16 +52,16 @@ public:
   bool fillEvent() {
     //seperate reco and gen trees
     if(reco == isGen) return false;
+    if(splitResult != 1 && splitResult != 2 ) return false;
     //filtering
-    if(superJet_pt < 160 && TMath::Abs(superJet_eta) < 1.9 && gRandom->Uniform() < .9){
-      return false;
-    }
+//    if(superJet_pt < 160 && TMath::Abs(superJet_eta) < 1.9 && rand->Uniform() < .9){
+//      return false;
+//    }
 
-    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 1.9 ){
+    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 ){
       superJet_pt = 305;
-      superJet_eta = 2.0;
-    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 2.9 ){
-      superJet_eta = 2.0;
+    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 3.0 ){
+      superJet_pt = 105;
     }
     superJet_eta = TMath::Abs(superJet_eta);
     data.fill<float>(subjet_dr         ,PhysicsUtilities::deltaR(subJet_1_eta,subJet_1_phi,subJet_2_eta,subJet_2_phi)  );

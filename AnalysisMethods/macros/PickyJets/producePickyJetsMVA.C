@@ -26,12 +26,12 @@ public:
   }
 
   void configure(){
-    addInputTree(inputTree,"GoodSplits","splitResult == 0");
-    addInputTree(inputTree,"BadSplits","splitResult > 0");
+    addInputTree(inputTree,"GoodSplits","splitResult == 2");
+    addInputTree(inputTree,"BadSplits","splitResult == 1");
 
     addFactory(TMVA::Types::kBDT,"BDTG");
     addAxis(new BinnedSpace("superJet_pt", "superJet_pt", "20, 40, 60, 80, 100, 120, 160, 200, 250, 300, 400, 550, 1000"));
-    addAxis(new BinnedSpace("superJet_eta", "superJet_eta", "0, 1.9, 2.9, 6"));
+    addAxis(new BinnedSpace("superJet_eta", "superJet_eta", "0, 2, 3, 6"));
 
     setConfiguration(mvaName,"PickyJetDisc","pickyXML");
   }
