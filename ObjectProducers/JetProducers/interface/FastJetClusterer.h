@@ -164,6 +164,11 @@ public:
                             , double                    maxJetEta
                             , std::vector<Jet>&         satellites
                             );
+
+  template<typename Splitter>
+  void    pickySubjets      ( const Splitter*          splitter
+                            , int                       maxSplits   = 4
+                            );
 /*************************/
 /*   Helper Functions    */
 /*************************/

@@ -44,11 +44,11 @@ Splittiness::Splittiness(const edm::ParameterSet& iConfig, bool loadPartonSpread
   , currentJet      (0)
   , jetStuff        (0)
 
-  , declusterVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsDirtyDecluster").data(), "mvaVsDirtyDecluster") )
-  , declusterVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsMixedDecluster").data(), "mvaVsMixedDecluster") )
-  , nsubjettiVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsDirtyNsubjetti").data(), "mvaVsDirtyNsubjetti") )
-  , nsubjettiVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsMixedNsubjetti").data(), "mvaVsMixedNsubjetti") )
-  , goodVsJunkSubjet( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsJunkSubjets"   ).data(), "mvaVsJunkSubjets"   ) )
+  , declusterVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsDirtyDecluster") ? iConfig.getParameter<string>("mvaVsDirtyDecluster").data() : "", "mvaVsDirtyDecluster") )
+  , declusterVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsMixedDecluster") ? iConfig.getParameter<string>("mvaVsMixedDecluster").data() : "", "mvaVsMixedDecluster") )
+  , nsubjettiVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsDirtyNsubjetti") ? iConfig.getParameter<string>("mvaVsDirtyNsubjetti").data() : "", "mvaVsDirtyNsubjetti") )
+  , nsubjettiVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsMixedNsubjetti") ? iConfig.getParameter<string>("mvaVsMixedNsubjetti").data() : "", "mvaVsMixedNsubjetti") )
+  , goodVsJunkSubjet( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsJunkSubjets"   ) ? iConfig.getParameter<string>("mvaVsJunkSubjets"   ).data() : "", "mvaVsJunkSubjets"   ) )
 
 //  , partonSpread    ( 0 )
   , meanRhoVsEta    ( 0 )

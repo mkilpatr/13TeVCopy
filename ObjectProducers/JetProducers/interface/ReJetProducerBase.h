@@ -14,12 +14,13 @@
 #include <fastjet/JetDefinition.hh>
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+#include "ObjectProducers/JetProducers/interface/PickyJetSplitting.h"
 
 namespace ucsbsusy {
 class ReJetProducer : public edm::EDProducer {
 public:
   ReJetProducer(const edm::ParameterSet& iConfig);
-  virtual ~ReJetProducer(){};
+  virtual ~ReJetProducer(){delete splitter;};
   virtual void produce(edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
   virtual void load(edm::Event& iEvent, const edm::EventSetup& iSetup);
 
@@ -46,6 +47,7 @@ public:
 
     clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
     if(useTrimming) clusterer.trimJets(rFilt,trimPtFracMin);
+    if(doPickyJets)clusterer.pickySubjets(splitter,pickyMaxSplits);
   }
 
   void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets, std::auto_ptr<reco::PFJetCollection> puJets);
@@ -70,6 +72,10 @@ protected:
   const bool   useTrimming;
   const double rFilt;
   const double trimPtFracMin;
+
+  const bool doPickyJets;
+  const int  pickyMaxSplits;
+  PickyJetSplitting * splitter;
 
   fastjet::JetAlgorithm jetAlgo;
   edm::Handle<reco::GenParticleCollection>      genMotherParticles;
