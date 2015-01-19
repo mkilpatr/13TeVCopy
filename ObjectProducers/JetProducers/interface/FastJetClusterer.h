@@ -154,7 +154,7 @@ public:
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
 
-  void    trimJets         (const double rFilter, double trimPtFracMin);
+  void    trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets);
 
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
@@ -163,6 +163,11 @@ public:
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
                             , std::vector<Jet>&         satellites
+                            );
+
+  template<typename Splitter>
+  void    pickySubjets      ( const Splitter*          splitter
+                            , int                       maxSplits   = 4
                             );
 /*************************/
 /*   Helper Functions    */

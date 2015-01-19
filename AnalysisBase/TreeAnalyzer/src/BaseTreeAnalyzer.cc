@@ -14,7 +14,7 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption) : isLoaded_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
     run               (0),
     lumi              (0),
     event             (0),
@@ -56,6 +56,16 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName);
       break;
     }
+    case PUPPIJETS : {
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      reader.load(&puppiJetsReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName);
+      break;
+    }
+    case PICKYJETS : {
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      reader.load(&pickyJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PICKYJETS : branchName);
+      break;
+    }
     case ELECTRONS : {
       int defaultOptions = ElectronReader::defaultOptions;
       reader.load(&electronReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_ELECTRONS : branchName );
@@ -87,6 +97,8 @@ void BaseTreeAnalyzer::loadVariables()
 {
   load(EVTINFO);
   load(AK4JETS);
+  load(PICKYJETS);
+  load(PUPPIJETS);
   load(ELECTRONS);
   load(MUONS);
   load(TAUS);
@@ -95,16 +107,7 @@ void BaseTreeAnalyzer::loadVariables()
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
 {
-  leptons.clear();
-  leptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
-  taus.clear();
-  taus.reserve(tauReader.taus.size());
-  jets.clear();
-  jets.reserve(ak4Reader.recoJets.size());
-  bJets.clear();
-  nonBJets.clear();
-  nonBJets.reserve(ak4Reader.recoJets.size());
-
+  isProcessed_ = true;
 
   if(evtInfoReader.isLoaded()) {
     run   = evtInfoReader.run;
@@ -114,6 +117,17 @@ void BaseTreeAnalyzer::processVariables()
     rho   = evtInfoReader.rho;
     met   = &evtInfoReader.met;
   }
+
+  if(genParticleReader.isLoaded()){
+    genParts.clear();
+    genParts.reserve(genParticleReader.genParticles.size());
+    for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
+  }
+
+  leptons.clear();
+  leptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
+  taus.clear();
+  taus.reserve(tauReader.taus.size());
 
   if(electronReader.isLoaded())
     for(auto& electron : electronReader.electrons)
@@ -132,48 +146,12 @@ void BaseTreeAnalyzer::processVariables()
       if(isGoodTau(tau))
         taus.push_back(&tau);
 
-  if(ak4Reader.isLoaded())
-    for(auto& jet : ak4Reader.recoJets) {
-      if(!isGoodJet(jet)) continue;
-
-      bool cleanjet = true;
-      if(cleanJetsvLeptons_) {
-        for(const auto* glep : leptons) {
-          if(PhysicsUtilities::deltaR(*glep, jet) < minJetLepDR) {
-            cleanjet = false;
-            break;
-          }
-        }
-      }
-      if(cleanJetsvTaus_) {
-        for(const auto* gtau : taus) {
-          if(PhysicsUtilities::deltaR(*gtau, jet) < minJetLepDR) {
-            cleanjet = false;
-            break;
-          }
-        }
-      }
-      if(!cleanjet) continue;
-
-      jets.push_back(&jet);
-      if(isMediumBJet(jet))
-        bJets.push_back(&jet);
-      else
-        nonBJets.push_back(&jet);
-    }
-
   nLeptons = leptons.size();
   nTaus    = taus.size();
+
+  cleanJets(&ak4Reader,jets,&bJets,&nonBJets);
   nJets    = jets.size();
   nBJets   = bJets.size();
-
-
-  if(genParticleReader.isLoaded()){
-    genParts.clear();
-    genParts.reserve(genParticleReader.genParticles.size());
-    for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
-  }
-
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
@@ -183,6 +161,7 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
   isLoaded_ = true;
 
   while(reader.nextEvent(reportFrequency)){
+	isProcessed_ = false;
     if(numEvents >= 0 && getEventNumber() >= numEvents) return;
     processVariables();
     runEvent();
@@ -210,4 +189,46 @@ inline bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
 //--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
   return (tau.pt() > minTauPt && fabs(tau.eta()) < maxTauEta && tau.isgoodpogtau());
+}
+//--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {
+	if((cleanJetsvLeptons_ || cleanJetsvTaus_) && !isProcessed_)
+		throw std::invalid_argument("BaseTreeAnalyzer::cleanJets(): You want to do jet cleaning but have not yet processed variables!");
+	jets.clear(); jets.reserve(reader->recoJets.size());
+	if(bJets){bJets->clear();}
+	if(nonBJets){nonBJets->clear(); nonBJets->reserve(jets.size() -2);}
+
+	for(auto& jet : reader->recoJets) {
+		if(!isGoodJet(jet)) continue;
+
+		bool cleanjet = true;
+		if(cleanJetsvLeptons_) {
+			for(const auto* glep : leptons) {
+				if(PhysicsUtilities::deltaR(*glep, jet) < minJetLepDR) {
+					cleanjet = false;
+					break;
+				}
+			}
+		}
+		if(cleanJetsvTaus_) {
+			for(const auto* gtau : taus) {
+				if(PhysicsUtilities::deltaR(*gtau, jet) < minJetLepDR) {
+					cleanjet = false;
+					break;
+				}
+			}
+		}
+		if(!cleanjet) continue;
+
+		jets.push_back(&jet);
+
+		if(bJets || nonBJets){
+			if(isMediumBJet(jet)){
+				if(bJets)bJets->push_back(&jet);
+			}
+			else{
+				if(nonBJets)nonBJets->push_back(&jet);
+			}
+		}
+	}
 }

@@ -76,10 +76,10 @@ process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 process.p = cms.Path(process.puppi *
                      process.ak4PatAssocSeq * 
                      process.ak4PuppiJetSeq * 
-                     process.trimmedJetSeq  *
                      process.ca8AssocSeq    *
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
+                     process.pickyJetSeq    *
                      process.TestAnalyzer)
 
 #process.lsfSubJets     *

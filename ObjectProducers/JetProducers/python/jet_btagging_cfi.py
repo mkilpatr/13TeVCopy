@@ -26,23 +26,24 @@ customCSVIVF = cms.EDProducer("JetTagProducer",
 )
 
 
-trimmedIPTagInfos = customIPTagInfos.clone(jets = cms.InputTag('redAK8Trimmed',''))
-trimmedISVFinderTagInfos = customISVFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('trimmedIPTagInfos'))
-trimmedCSVIVF = customCSVIVF.clone(tagInfos = cms.VInputTag(
-                                    cms.InputTag('trimmedIPTagInfos'),
-                                    cms.InputTag('trimmedISVFinderTagInfos'))
+trimmedJetIPTagInfos = customIPTagInfos.clone(jets = cms.InputTag('trimmedJets',''))
+trimmedJetISVFinderTagInfos = customISVFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('trimmedJetIPTagInfos'))
+trimmedJetCSVIVF = customCSVIVF.clone(tagInfos = cms.VInputTag(
+                                    cms.InputTag('trimmedJetIPTagInfos'),
+                                    cms.InputTag('trimmedJetISVFinderTagInfos'))
                                    )
 
-trimmedPuppiIPTagInfos = customIPTagInfos.clone(jets = cms.InputTag('redAK8TrimmedPuppi',''))
-trimmedPuppiISVFinderTagInfos = customISVFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('trimmedPuppiIPTagInfos'))
-trimmedPuppiCSVIVF = customCSVIVF.clone(tagInfos = cms.VInputTag(
-                                    cms.InputTag('trimmedPuppiIPTagInfos'),
-                                    cms.InputTag('trimmedPuppiISVFinderTagInfos'))
-                                   )
 
 ak4PuppiIPTagInfos = customIPTagInfos.clone(jets = cms.InputTag('redAK4Puppi',''))
 ak4PuppiISVFinderTagInfos = customISVFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('ak4PuppiIPTagInfos'))
 ak4PuppiCSVIVF = customCSVIVF.clone(tagInfos = cms.VInputTag(
                                     cms.InputTag('ak4PuppiIPTagInfos'),
                                     cms.InputTag('ak4PuppiISVFinderTagInfos'))
+                                   )
+
+pickyJetIPTagInfos = customIPTagInfos.clone(jets = cms.InputTag('pickyJets',''))
+pickyJetISVFinderTagInfos = customISVFinderTagInfos.clone(trackIPTagInfos = cms.InputTag('pickyJetIPTagInfos'))
+pickyJetCSVIVF = customCSVIVF.clone(tagInfos = cms.VInputTag(
+                                    cms.InputTag('pickyJetIPTagInfos'),
+                                    cms.InputTag('pickyJetISVFinderTagInfos'))
                                    )
