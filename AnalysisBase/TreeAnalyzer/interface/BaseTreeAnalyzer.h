@@ -84,11 +84,14 @@ namespace ucsbsusy {
     bool isGoodMuon    (const MuonF& muon        ) const;
     bool isGoodTau     (const TauF& tau          ) const;
 
+    void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
+
     //--------------------------------------------------------------------------------------------------
     // TTree readers
     //--------------------------------------------------------------------------------------------------
   protected:
     bool             isLoaded_;
+    bool             isProcessed_;
     TreeReader       reader;        // default reader
   public:
     EventInfoReader   evtInfoReader         ;
