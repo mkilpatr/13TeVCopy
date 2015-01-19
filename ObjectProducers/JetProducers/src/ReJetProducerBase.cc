@@ -26,6 +26,7 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , maxParticleEta  (iConfig.getParameter<double>("maxParticleEta"  ))
         , ghostArea       (iConfig.getParameter<double>("ghostArea"  ))
         , useTrimming     (iConfig.getParameter<bool  >("useTrimming"  ))
+		, useTrimmedSubjets(iConfig.getParameter<bool  >("useTrimmedSubjets"  ))
         , rFilt           (iConfig.getParameter<double>("rFilt"  ))
         , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
         , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))

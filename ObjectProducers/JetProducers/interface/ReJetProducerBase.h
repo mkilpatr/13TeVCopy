@@ -46,7 +46,7 @@ public:
       clusterer.addParticles<RecoPart>( (puParts.isValid() ? puParts : recoParts) ,FastJetClusterer::PU, -1 , minParticlePT, maxParticleEta,selectPU,0, 1e-50);
 
     clusterer.clusterJets   ( jetAlgo, rParameter, produceGen ? 0 : jetPtMin , maxParticleEta, ghostArea );
-    if(useTrimming) clusterer.trimJets(rFilt,trimPtFracMin);
+	if(useTrimming)clusterer.trimJets(rFilt,trimPtFracMin,useTrimmedSubjets);
     if(doPickyJets)clusterer.pickySubjets(splitter,pickyMaxSplits);
   }
 
@@ -70,6 +70,7 @@ protected:
   const double ghostArea;
 
   const bool   useTrimming;
+  const bool   useTrimmedSubjets;
   const double rFilt;
   const double trimPtFracMin;
 
