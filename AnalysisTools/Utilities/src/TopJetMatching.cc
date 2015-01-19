@@ -14,24 +14,37 @@ conType TopJetMatching::toContainmentType(const float inCon ){ return ucsbsusy::
 float TopJetMatching::fromContainmentType(const conType inCon){return float(inCon)/100; }
 
 //--------------------------------------------------------------------------------------------------
-PartonDiagnosis Parton::getDiagnosis(const Parton& parton,const std::vector<Jet*> jets) {
+PartonDiagnosis Parton::getDiagnosis(const Parton& parton,const std::vector<Jet*>& jets) {
   if( parton.parton->pt() < minPartonPT)             return SOFT_PARTON;
   if(parton.hadE < minHadronRelE* parton.parton->energy() ) return DISPERSED_PARTON;
 
   int numSigJets = 0;
-  for(const auto& c : parton.containment) {if(c.first > minPartontRelE)numSigJets++;  }
+  bool numMainJets = 0;
+  for(const auto& c : parton.filteredContaiment) {if(c.first > minPartontRelE)numMainJets++;  if(c.first > extraJetsPartonRelE)numSigJets++;   }
 
-  if(!numSigJets)                                   return NO_JET;
+  if(!numMainJets)                                   return NO_JET;
   if(numSigJets > 1)                                return SPLIT_JETS;
 
- if(parton.containment[0].first*parton.hadE < minJetRelE*jets[parton.containment[0].second ]->energy())
+ if(parton.filteredContaiment[0].first*parton.hadE < minJetRelE*jets[parton.filteredContaiment[0].second ]->energy())
    return DIRTY_JET;
+
+
 
  return RESOLVED_PARTON;
 }
 //--------------------------------------------------------------------------------------------------
-void Parton::finalize(const std::vector<Jet*> jets) {
+void Parton::finalize(const std::vector<Jet*>& jets) {
   sort(containment.begin(),containment.end(),PhysicsUtilities::greaterFirst<float,int>());
+  filteredContaiment.clear();
+  for(const auto& c : containment){
+	  for(unsigned int iJ =0; iJ < jets.size(); ++iJ)
+		  if(jets[iJ]->index() == c.second){
+			  filteredContaiment.emplace_back(c.first,iJ);
+		  }
+
+  }
+  if(filteredContaiment.size()) matchedJet = jets[filteredContaiment[0].second ];
+
   diag = getDiagnosis(*this,jets);
 }
 //--------------------------------------------------------------------------------------------------
@@ -127,7 +140,7 @@ TopDiagnosis TopDecay::getDiagnosis(const TopDecay& parton){
 }
 //--------------------------------------------------------------------------------------------------
 TopDecayEvent::TopDecayEvent(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
-    const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*> inJets) : jets(inJets) {
+    const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets) : jets(inJets) {
 
   //first add all partons
   //map to link particle index to parton index
