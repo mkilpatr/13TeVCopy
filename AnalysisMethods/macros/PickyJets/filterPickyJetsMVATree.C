@@ -54,9 +54,19 @@ public:
     if(reco == isGen) return false;
     if(splitResult != 1 && splitResult != 2 ) return false;
     //filtering
-//    if(superJet_pt < 160 && TMath::Abs(superJet_eta) < 1.9 && rand->Uniform() < .9){
-//      return false;
-//    }
+    if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .9){
+      return false;
+    }
+
+    if(superJet_pt >= 60 && superJet_pt < 100 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .8){
+      return false;
+    }
+    if(superJet_pt >= 100 && superJet_pt < 160 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .5){
+      return false;
+    }
+    if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 && rand->Uniform() < .5){
+      return false;
+    }
 
     if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 ){
       superJet_pt = 305;

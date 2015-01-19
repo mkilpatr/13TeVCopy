@@ -117,13 +117,12 @@ public:
   void processVariables() override{  subjet_dr = PhysicsUtilities::deltaR(subJet_1_eta,subJet_1_phi,subJet_2_eta,subJet_2_phi);}
 
   double evaluateMVA(const ParamatrixMVA* mvas){
-    float filtered_pt = superJet_pt;
+	float filtered_pt = superJet_pt;
     float filtered_eta = superJet_eta;
-    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 1.9 ){
+    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >=2 && TMath::Abs(superJet_eta) < 3 ){
       filtered_pt = 305;
-      filtered_eta = 2.0;
-    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 2.9 ){
-      filtered_eta = 2.0;
+    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 3){
+    	filtered_pt = 105;
     }
     filtered_eta = TMath::Abs(filtered_eta);
 
@@ -134,7 +133,13 @@ public:
     mva_parameters[parIndex_superJet_superJet_eta] = filtered_eta;
 
     const Panvariate * mva = mvas->get(mva_parameters);
-    assert(mva);
+    if(mva == 0){
+    	cout << mvas->getAxis("superJet_pt")->findBin(filtered_pt)<<" "<<mvas->getAxis("superJet_eta")->findBin(filtered_eta)<<endl;
+    	cout << superJet_pt <<" "<<superJet_eta <<endl;
+    	cout << filtered_pt <<" "<<filtered_eta <<endl;
+    	assert(mva);
+    }
+
 
     static const int index_superJet_mass         = mva->findVariable("superJet_mass"        );
     static const int index_tau1                  = mva->findVariable("tau1"                 );
@@ -164,8 +169,19 @@ public:
   void makePlots(){
     double super_jet_abs_eta = TMath::Abs(superJet_eta);
     //filtering
-//    if(superJet_pt < 160 && super_jet_abs_eta < 1.9 && rand->Uniform() < .9)
-//      return;
+	  if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) < 1.9 && rand->Uniform() < .9){
+		  return;
+	  }
+
+	  if(superJet_pt >= 60 && superJet_pt < 100 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .8){
+		  return ;
+	  }
+	  if(superJet_pt >= 100 && superJet_pt < 160 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .5){
+		  return ;
+	  }
+	  if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 && rand->Uniform() < .5){
+		  return ;
+	  }
 
     double newMVA = evaluateMVA(isGen ? genMVA : recoMVA);
     eventPlots.rewind();
@@ -297,6 +313,6 @@ void testPickyMVA(string fname = "evttree.root", string treeName = "TestAnalyzer
   name = ((TObjString*)name.Tokenize(".")->At(0))->GetString();
   a.prefix = name;
   a.prefix += "_";
-  a.analyze(100000,4000000);
+  a.analyze(100000,-1);
   a.out(TString::Format("%s_plots.root",name.Data()));
 }
