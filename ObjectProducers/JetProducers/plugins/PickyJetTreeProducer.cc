@@ -22,7 +22,7 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
     {
       initialize(cfg,"EventInfo",EVTINFO);
       initialize(cfg,"Gen",GENPARTICLES);
-      initialize(cfg,"TrimmedJets",TRIMMEDJETS);
+      initialize(cfg,"PickyJets",PICKYJETS);
 
       nVert                 = data.add<size8>("","nVert"                ,"b",0);
       isGoodSplit           = data.add<size8>("","splitResult"          ,"b",0);
@@ -331,7 +331,7 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
     ~PickyJetTreeProducer() {}
     void analyze() {
       //using trimmed jets to be general
-      RecoJetFiller * filler = trimmedJets;
+      RecoJetFiller * filler = pickyJets;
       const auto& genJets  = *filler->reGenJets_;
       const auto& recoJets = *filler->jets_;
 
