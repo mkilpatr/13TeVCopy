@@ -28,7 +28,7 @@ namespace ucsbsusy {
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS, GENPARTICLES};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -93,6 +93,8 @@ namespace ucsbsusy {
   public:
     EventInfoReader   evtInfoReader         ;
     JetReader         ak4Reader             ;
+    JetReader         puppiJetsReader       ;
+    JetReader         pickyJetReader        ;
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
@@ -119,6 +121,7 @@ namespace ucsbsusy {
     std::vector<LeptonF*>      leptons ;
     std::vector<TauF*>         taus    ;
     std::vector<RecoJetF*>     jets    ;
+    std::vector<RecoJetF*>     pickyJets;
     std::vector<RecoJetF*>     bJets   ;
     std::vector<RecoJetF*>     nonBJets;
     std::vector<GenParticleF*> genParts;

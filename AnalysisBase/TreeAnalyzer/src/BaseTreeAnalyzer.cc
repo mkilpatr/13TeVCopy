@@ -56,6 +56,16 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName);
       break;
     }
+    case PUPPIJETS : {
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      reader.load(&puppiJetsReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName);
+      break;
+    }
+    case PICKYJETS : {
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      reader.load(&pickyJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PICKYJETS : branchName);
+      break;
+    }
     case ELECTRONS : {
       int defaultOptions = ElectronReader::defaultOptions;
       reader.load(&electronReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_ELECTRONS : branchName );
@@ -87,6 +97,7 @@ void BaseTreeAnalyzer::loadVariables()
 {
   load(EVTINFO);
   load(AK4JETS);
+  load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
   load(TAUS);
