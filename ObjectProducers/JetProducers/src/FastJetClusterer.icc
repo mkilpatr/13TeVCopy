@@ -146,6 +146,7 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
 
   jets.reserve( 2 * jets.size() );
   for (size iJet = 0, numJets = jets.size(); iJet < numJets; ++iJet) {
+	if (jets[iJet].pt2() < 1e-10) continue;
     static std::vector<fastjet::PseudoJet*> subClusters;
     static std::vector<int>                 numSplits;
     subClusters .clear();                   subClusters .push_back(new fastjet::PseudoJet(jets[iJet]));
@@ -166,12 +167,13 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
       }
 
       //-- Special treatment to discard trivial jets --------------------------
-      for (int iSub = subJets.size(); --iSub >= 0;)
+      for (int iSub = subJets.size(); --iSub >= 0;){
         if (subJets[iSub]->pt2() < 1e-10) {
           delete subJets[iSub];
           subJets[iSub]                     = subJets.back();
           subJets.pop_back();
         }
+      }
 
       assert(subJets.size());
       if (subJets.size() < 2) {

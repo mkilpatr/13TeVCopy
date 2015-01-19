@@ -33,7 +33,7 @@ private:
   const ParamatrixMVA*  mvaPar;
 
   Splittiness splittiness;
-  const PopulationD * etaBins;
+  const Space*         axisETA;
   std::vector<const PopulationD*> discriCuts;
 
   const int numParameters              ;
