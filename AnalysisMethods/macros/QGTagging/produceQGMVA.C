@@ -18,9 +18,9 @@ public:
 		  addVariable("ptD"      ,"ak4pfpuppi_jet_ptD"     ,'F');
 		  addVariable("axis1"    ,"ak4pfpuppi_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4pfpuppi_jet_axis2"   ,'F');
-		  addVariable("blf0"     ,"ak4pfpuppi_jet_blf0"    ,'F');
-		  addVariable("blf1"     ,"ak4pfpuppi_jet_blf1"    ,'F');
-		  addVariable("blf2"     ,"ak4pfpuppi_jet_blf2"    ,'F');
+		  //addVariable("blf0"     ,"ak4pfpuppi_jet_blf0"    ,'F');
+		  //addVariable("blf1"     ,"ak4pfpuppi_jet_blf1"    ,'F');
+		  //addVariable("blf2"     ,"ak4pfpuppi_jet_blf2"    ,'F');
 		  addVariable("jetMult"  ,"ak4pfpuppi_jet_jetMult" ,'I');
 		  addVariable("pt"       ,"ak4pfpuppi_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfpuppi_jet_eta"     ,'F');
@@ -30,9 +30,9 @@ public:
 		  addVariable("ptD"      ,"ak4pfchs_jet_ptD"     ,'F');
 		  addVariable("axis1"    ,"ak4pfchs_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4pfchs_jet_axis2"   ,'F');
-		  addVariable("blf0"     ,"ak4pfchs_jet_blf0"    ,'F');
-		  addVariable("blf1"     ,"ak4pfchs_jet_blf1"    ,'F');
-		  addVariable("blf2"     ,"ak4pfchs_jet_blf2"    ,'F');
+		  //addVariable("blf0"     ,"ak4pfchs_jet_blf0"    ,'F');
+		  //addVariable("blf1"     ,"ak4pfchs_jet_blf1"    ,'F');
+		  //addVariable("blf2"     ,"ak4pfchs_jet_blf2"    ,'F');
 		  addVariable("jetMult"  ,"ak4pfchs_jet_jetMult" ,'I');
 		  addVariable("pt"       ,"ak4pfchs_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfchs_jet_eta"     ,'F');
@@ -42,9 +42,9 @@ public:
       addVariable("ptD"      ,"ak4pfchs_genjet_ptD"    ,'F');
       addVariable("axis1"    ,"ak4pfchs_genjet_axis1"  ,'F');
       addVariable("axis2"    ,"ak4pfchs_genjet_axis2"  ,'F');
-      addVariable("blf0"     ,"ak4pfchs_genjet_blf0"   ,'F');
-      addVariable("blf1"     ,"ak4pfchs_genjet_blf1"   ,'F');
-      addVariable("blf2"     ,"ak4pfchs_genjet_blf2"   ,'F');
+      //addVariable("blf0"     ,"ak4pfchs_genjet_blf0"   ,'F');
+      //addVariable("blf1"     ,"ak4pfchs_genjet_blf1"   ,'F');
+      //addVariable("blf2"     ,"ak4pfchs_genjet_blf2"   ,'F');
       addVariable("jetMult"  ,"ak4pfchs_genjet_jetMult",'I');
       addVariable("pt"       ,"ak4pfchs_genjet_pt"     ,'F');
       addVariable("eta"      ,"ak4pfchs_genjet_eta"    ,'F');
