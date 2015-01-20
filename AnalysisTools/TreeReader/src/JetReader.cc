@@ -36,10 +36,16 @@ JetReader::JetReader() : BaseReader(){
   jetptD_     = new vector<float>;
   jetaxis1_   = new vector<float>;
   jetaxis2_   = new vector<float>;
+  //jetblf0_    = new vector<float>;
+  //jetblf1_    = new vector<float>;
+  //jetblf2_    = new vector<float>;
   jetMult_    = new vector<int  >;
   genjetptD_  = new vector<float>;
   genjetaxis1_= new vector<float>;
   genjetaxis2_= new vector<float>;
+  //genjetblf0_ = new vector<float>;
+  //genjetblf1_ = new vector<float>;
+  //genjetblf2_ = new vector<float>;
   genjetMult_ = new vector<int  >;
 }
 
@@ -78,11 +84,17 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"jet_ptD"     , &jetptD_      );
     treeReader->setBranchAddress(branchName_,"jet_axis1"   , &jetaxis1_    );
     treeReader->setBranchAddress(branchName_,"jet_axis2"   , &jetaxis2_    );
+    //treeReader->setBranchAddress(branchName_,"jet_blf0"    , &jetblf0_     );
+    //treeReader->setBranchAddress(branchName_,"jet_blf1"    , &jetblf1_     );
+    //treeReader->setBranchAddress(branchName_,"jet_blf2"    , &jetblf2_     );
     treeReader->setBranchAddress(branchName_,"jet_jetMult" , &jetMult_     );
     if(options_ & LOADGEN){
       treeReader->setBranchAddress(branchName_,"genjet_ptD"     , &genjetptD_   );
       treeReader->setBranchAddress(branchName_,"genjet_axis1"   , &genjetaxis1_ );
       treeReader->setBranchAddress(branchName_,"genjet_axis2"   , &genjetaxis2_ );
+      //treeReader->setBranchAddress(branchName_,"genjet_blf0"    , &genjetblf0_  );
+      //treeReader->setBranchAddress(branchName_,"genjet_blf1"    , &genjetblf1_  );
+      //treeReader->setBranchAddress(branchName_,"genjet_blf2"    , &genjetblf2_  );
       treeReader->setBranchAddress(branchName_,"genjet_jetMult" , &genjetMult_  );
     }
   }

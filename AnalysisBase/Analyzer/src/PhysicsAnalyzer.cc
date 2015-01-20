@@ -114,6 +114,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case PUPPIJETS : {
       int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
 
       puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
