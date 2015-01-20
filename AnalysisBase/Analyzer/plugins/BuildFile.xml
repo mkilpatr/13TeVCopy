@@ -1,3 +1,4 @@
 <use name="AnalysisBase/Analyzer"/>
+<use name="AnalysisTools/Parang"/>
 <library   name="AnalysisBaseAnalyzerPlugins" file="*.cc">
 </library>

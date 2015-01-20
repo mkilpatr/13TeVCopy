@@ -3,29 +3,30 @@
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
+#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+#include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
-
-#define TAGGABLE_TYPE_HACK
 
 namespace ucsbsusy{
 
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
-JetFiller<Jet>::JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+JetFiller<Jet>::JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
   , const edm::InputTag jetTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
-) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller)
+) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller), genParticleFiller_(genParticleFiller)
   , jetTag_          (jetTag)
   , reGenJetTag_     (reGenJetTag)
   , stdGenJetTag_    (stdGenJetTag)
-//  genParticleTag_  (fillGenInfo_      ? cfg.getParameter<edm::InputTag>("genParticles") : edm::InputTag()),
+  , flvAssocTag_     (flvAssocTag)
   , jptMin_          (jptMin)
   , fillReGenJets_   (fillReGenJets)
   , qglInterface_    (new QuarkGluonTagInterface)
@@ -34,6 +35,11 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   , reGenJets_       (0)
   , stdGenJets_      (0)
 {
+  if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
+    throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
+  }
+
+
   ijetpt_     = data.addMulti<float>(branchName_,"jet_pt"    ,0);
   ijeteta_    = data.addMulti<float>(branchName_,"jet_eta"   ,0);
   ijetphi_    = data.addMulti<float>(branchName_,"jet_phi"   ,0);
@@ -43,12 +49,13 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
 
   if(options_ & LOADGEN) {
-    ijetflavor_ = data.addMulti<int  >(branchName_,"jet_flavor",0);
-    ijetgenindex_ = data.addMulti<int  >(branchName_,"jet_genIndex",-1);
+    ijetgenindex_ = data.addMulti<int16  >(branchName_,"jet_genIndex",-1);
     igenjetpt_     = data.addMulti<float>(branchName_,"genjet_pt"    ,0);
     igenjeteta_    = data.addMulti<float>(branchName_,"genjet_eta"   ,0);
     igenjetphi_    = data.addMulti<float>(branchName_,"genjet_phi"   ,0);
     igenjetmass_   = data.addMulti<float>(branchName_,"genjet_mass"  ,0);
+    igenjetflavor_ = data.addMulti<size8  >(branchName_,"genjet_flavor",0);
+
   }
 
   if(options_ & LOADJETSHAPE) {
@@ -60,7 +67,7 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     //ijetblf0_    =data.addMulti<float>(branchName_,"jet_blf0"    ,0);
     //ijetblf1_    =data.addMulti<float>(branchName_,"jet_blf1"    ,0);
     //ijetblf2_    =data.addMulti<float>(branchName_,"jet_blf2"    ,0);
-    ijetMult_    =data.addMulti<int  >(branchName_,"jet_jetMult" ,0);
+    ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
@@ -68,8 +75,14 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
       //igenjetblf0_ = data.addMulti<float>(branchName_,"genjet_blf0"   ,0);
       //igenjetblf1_ = data.addMulti<float>(branchName_,"genjet_blf1"   ,0);
       //igenjetblf2_ = data.addMulti<float>(branchName_,"genjet_blf2"   ,0);
-      igenjetMult_ = data.addMulti<int  >(branchName_,"genjet_jetMult",0);
+      igenjetMult_ = data.addMulti<size16>(branchName_,"genjet_jetMult",0);
     }
+  }
+
+  if(options_ & SAVETOPASSOC) {
+    iGenAssocPrtIndex_ = data.addMulti<size16>(branchName_,"prtassoc_partonIndex",0);
+    iGenAssocJetIndex_ = data.addMulti<size16>(branchName_,"prtassoc_jetIndex",0);
+    iGenAssocCont_     = data.addMulti<TopJetMatching::conType>(branchName_,"prtassoc_jetCont",0);
   }
 }
 //--------------------------------------------------------------------------------------------------
@@ -82,13 +95,7 @@ void JetFiller<Jet>::load(const edm::Event& iEvent)
   if(options_ & LOADGEN) {
     if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
-//    edm::Handle<reco::GenParticleCollection> genParticles_;
-//    FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
-
-#ifndef TAGGABLE_TYPE_HACK
-    std::vector<HadronDecay> bHadrons = JetFlavorMatching::getBHadronDecays(genParticles_);
-    JetFlavorMatching::storeBHadronInfo(*jets_,*reGenJets_,bHadrons);
-#endif
+    FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
   }
 
   isLoaded_ = true;
@@ -104,13 +111,15 @@ void JetFiller<Jet>::fill()
   if(options_ & LOADGEN){
     const reco::GenJetCollection& genJets = fillReGenJets_ ? (*reGenJets_.product()) : (*stdGenJets_.product());
     filledIndex.reserve(genJets.size());
-    for (const reco::Jet &j : genJets) {
+    for(unsigned int iJ = 0; iJ < genJets.size(); ++iJ){
+      const auto& j = genJets[iJ];
       if(j.pt() < jptMin_){ filledIndex.push_back(-1); continue;}
       filledIndex.push_back(++curGenIndex);
       data.fillMulti<float>(igenjetpt_    ,j.pt());
       data.fillMulti<float>(igenjeteta_   ,j.eta());
       data.fillMulti<float>(igenjetphi_   ,j.phi());
       data.fillMulti<float>(igenjetmass_  ,j.mass());
+      data.fillMulti<size8>(igenjetflavor_,fillReGenJets_ ? flvAssoc_->at(iJ) : 0);
       if(options_ & LOADJETSHAPE){
         assert(evtInfofiller_->isLoaded());
         qgTaggingVar_->compute(&j);
@@ -120,16 +129,40 @@ void JetFiller<Jet>::fill()
         //data.fillMulti<float>(igenjetblf0_    ,qgTaggingVar_->getBlf0());
         //data.fillMulti<float>(igenjetblf1_    ,qgTaggingVar_->getBlf1());
         //data.fillMulti<float>(igenjetblf2_    ,qgTaggingVar_->getBlf2());
-        data.fillMulti<int  >(igenjetMult_    ,qgTaggingVar_->getTotalMult());
+        data.fillMulti<size16>(igenjetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::genJetMult"));
+      }
+    }
+
+    if(options_ & SAVETOPASSOC) {
+      const TopDecayMatching::Partons& partons = genParticleFiller_->getPartons(genJets);
+      for(const auto p : partons){
+        bool firstJet = true;
+        for(const auto& ja : p.jetAssoc){
+          //check to see if in the stored jet collection
+          if(filledIndex[ja.first] < 0) continue;
+          TopJetMatching::conType con = TopJetMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
+          //if the containment is less than 1% leave it off the list
+          if(con == 0) continue;
+          if(firstJet){
+            //if the first jet of the parton tag it by making th containment negative
+            con *= -1;
+            //add the parton index
+            data.fillMulti<size16>(iGenAssocPrtIndex_,convertTo<size16>(p.storedIndex,"JetFiller::prtassoc_partonIndex"));
+            firstJet = false;
+          }
+          data.fillMulti<size16>(iGenAssocJetIndex_,convertTo<size16>(ja.first,"JetFiller::prtassoc_jetIndex"));
+          data.fillMulti<TopJetMatching::conType>(iGenAssocCont_,con);
+        }
       }
     }
   }
 
 
 
+
+
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
     const Jet& j = jets_->at(iJ);
-    const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
     if(j.pt() < jptMin_) continue;
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
@@ -140,11 +173,11 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
 
     if(options_ & LOADGEN) {
-      data.fillMulti<int>(ijetflavor_,getPartonFlavor(j));
+      const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {
-        data.fillMulti<int>(ijetgenindex_,filledIndex[gJ.key()]);
+        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(filledIndex[gJ.key()],"JetFiller::genJetIndex"));
       } else {
-        data.fillMulti<int>(ijetgenindex_   );
+        data.fillMulti<int16>(ijetgenindex_   );
       }
     }
 
@@ -159,7 +192,7 @@ void JetFiller<Jet>::fill()
       //data.fillMulti<float>(ijetblf0_    ,qgTaggingVar_->getBlf0());
       //data.fillMulti<float>(ijetblf1_    ,qgTaggingVar_->getBlf1());
       //data.fillMulti<float>(ijetblf2_    ,qgTaggingVar_->getBlf2());
-      data.fillMulti<int  >(ijetMult_    ,qgTaggingVar_->getTotalMult());
+      data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
     }
 
   }

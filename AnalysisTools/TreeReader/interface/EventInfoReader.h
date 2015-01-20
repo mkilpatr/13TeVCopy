@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 namespace ucsbsusy {
 
@@ -28,7 +29,7 @@ namespace ucsbsusy {
       unsigned int  run;
       unsigned int  lumi;
       unsigned int  event;
-      unsigned int           nPV;
+      unsigned int  nPV;
       float         rho;
       float         pvx;
       float         pvy;
@@ -36,6 +37,10 @@ namespace ucsbsusy {
       float         met_pt;
       float         met_phi;
       float         metsumEt;
+
+      size8             proc;
+      defaults::Process process;
+      float             weight;
 
       MomentumF    met;
 

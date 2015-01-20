@@ -64,11 +64,17 @@ process.source = cms.Source('PoolSource',
     fileNames = cms.untracked.vstring (options.inputFiles)
 )
 
+
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configuration
 
 process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
 
 # Electron ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2:
@@ -94,8 +100,8 @@ for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
 # Set ID tags
-process.TestAnalyzer.Electrons.vetoId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto")
-process.TestAnalyzer.Electrons.looseId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose")
+process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto")
+process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose")
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
 process.TestAnalyzer.Electrons.tightId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
@@ -139,3 +145,33 @@ if process.TestAnalyzer.PuppiJets.isFilled :
     process.TestAnalyzer.PuppiJets.fillReGenJetsPuppi= cms.untracked.bool(True)
     process.p = cms.Path(process.redAK4 * process.redGenAssoc * process.tempPuppiSeq * process.egmGsfElectronIDSequence * process.TestAnalyzer)
     
+process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
+
+
+process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
+process.load('ObjectProducers.Puppi.Puppi_cff')
+
+process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
+
+process.p = cms.Path(process.puppi *
+                     process.ak4PatAssocSeq * 
+                     process.ak4PuppiJetSeq * 
+                     process.ca8AssocSeq    *
+                     process.lsfSubJets     *
+                     process.egmGsfElectronIDSequence * 
+                     process.pickyJetSeq    *
+                     process.TestAnalyzer)
+
+#process.lsfSubJets     *
+
+# dont use for now
+# # If producing puppi jets with JECs:
+# if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC :
+#     process.TestAnalyzer.PuppiJets.fillReGenJets = False                             # switch off redefined genjets for now
+#  
+#     process.p = cms.Path(process.ak4PatAssocSeq *
+#                          process.ak4PuppiJetSeq * 
+#                          process.trimmedJetSeq  *
+#                          process.egmGsfElectronIDSequence * 
+#                          process.TestAnalyzer)
+

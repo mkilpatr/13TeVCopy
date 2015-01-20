@@ -1,8 +1,17 @@
 import FWCore.ParameterSet.Config as cms
 
-
+pickyjet_configuration = cms.PSet(
+                                    pickyMVAFileName    = cms.string("support/pickymva_puppi_reco.root")
+                                  , pickyMVAName        = cms.string("picky_puppi_reco_0")                            
+                                  , beta                = cms.double(1)                                                                                             
+                                  , rCutoff             = cms.double(10000)                                                                                         
+                                  , nSubAxes            = cms.string("1passKT")
+                                  , pickyMaxSplits      = cms.int32(4)
+                                  , doPickyJets         = cms.bool(False)
+                                    )
 
 redAK4             = cms.EDProducer('PackedReJetProducer',
+                                    pickyjet_configuration,
                                     isRealData = cms.int32(0),
                                     produceGen      = cms.bool(True),
                                     ignoreBosonInv  = cms.bool(True),
@@ -14,13 +23,18 @@ redAK4             = cms.EDProducer('PackedReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01),
+                                    useTrimming     = cms.bool(False),
+                                    useTrimmedSubjets = cms.bool(False),
+                                    rFilt           = cms.double(.1),
+                                    trimPtFracMin   = cms.double(.03),                                    
 )
 
 
 redAK4Puppi        = cms.EDProducer('PFReJetProducer',
+                                    pickyjet_configuration,
                                     isRealData = cms.int32(0),
                                     produceGen      = cms.bool(True),
                                     ignoreBosonInv  = cms.bool(True),
@@ -31,22 +45,15 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     jetAlgorithm    = cms.string('AntiKt'),
                                     rParameter      = cms.double(.4),
                                     jetPtMin        = cms.double(3),
-                                    minParticlePT   = cms.double          (0),
-                                    maxParticleEta  = cms.double          (5.0),
-                                    ghostArea       = cms.double          (.01)
+                                    minParticlePT   = cms.double(0),
+                                    maxParticleEta  = cms.double(5.0),
+                                    ghostArea       = cms.double(.01),
+                                    useTrimming     = cms.bool(False),
+                                    useTrimmedSubjets = cms.bool(False),
+                                    rFilt           = cms.double(.1),
+                                    trimPtFracMin   = cms.double(.03),
 )
+redCA8                 = redAK4.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter      = cms.double(.8) )
 
-
-redCA1 = redAK4.clone(
-                      jetAlgorithm      = cms.string('CambridgeAachen'),
-                      rParameter      = cms.double(1),
-                      jetPtMin          = cms.double(20),
-                      maxParticleEta    = cms.double          (3),
-                      )
-
-redCA1Puppi = redAK4Puppi.clone(
-                      jetAlgorithm      = cms.string('CambridgeAachen'),
-                      rParameter      = cms.double(1),
-                      jetPtMin          = cms.double(20),
-                      maxParticleEta    = cms.double          (3),
-                      )
+trimmedJets            = redAK4Puppi.clone(rParameter      = cms.double(1), useTrimming = cms.bool(True),useTrimmedSubjets = cms.bool(True),rFilt=cms.double(.2))
+pickyJets              = redAK4Puppi.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True))

@@ -25,6 +25,13 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , minParticlePT   (iConfig.getParameter<double>("minParticlePT"   ))
         , maxParticleEta  (iConfig.getParameter<double>("maxParticleEta"  ))
         , ghostArea       (iConfig.getParameter<double>("ghostArea"  ))
+        , useTrimming     (iConfig.getParameter<bool  >("useTrimming"  ))
+		, useTrimmedSubjets(iConfig.getParameter<bool  >("useTrimmedSubjets"  ))
+        , rFilt           (iConfig.getParameter<double>("rFilt"  ))
+        , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
+        , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))
+        , pickyMaxSplits  (iConfig.getParameter<int>("pickyMaxSplits"  ))
+        , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::PUPPI_RECO,iConfig) : 0)
     {
 
   produces< reco::PFJetCollection             >(        );
@@ -51,17 +58,22 @@ void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
     if(ignoreBSMInv && ParticleInfo::isLSP(p.pdgId())) {vetoes[iP] = true; continue;}
     if(!ignoreBosonInv || ParticleInfo::isVisible(p.pdgId())) continue;
 
-    const reco::Candidate * motherInPrunedCollection = p.mother(0);
-    if(motherInPrunedCollection == nullptr) continue;
-    //if its the same as the original lets get the original
-    if(motherInPrunedCollection->pdgId() == p.pdgId())
-      motherInPrunedCollection = ParticleUtilities::getOriginal(motherInPrunedCollection);
-    const reco::Candidate * orginator = motherInPrunedCollection->mother(0);
-    if(orginator == nullptr) orginator = motherInPrunedCollection;
-    if(ParticleInfo::isEWKBoson(orginator->pdgId()))
+    const reco::Candidate * pruneMom = p.mother(0);
+    if(pruneMom == nullptr) continue;
+
+    //if it is the same particle, let's get the original and see if it's mother is a boson
+    if(pruneMom->pdgId() == p.pdgId()){
+      pruneMom = ParticleUtilities::getOriginal(pruneMom);
+      for(unsigned int iM = 0; iM < pruneMom->numberOfMothers(); ++iM){
+        const reco::Candidate * mom = pruneMom->mother(iM);
+        if(ParticleInfo::isDoc(mom->status()) && ParticleInfo::isEWKBoson(mom->pdgId()))
+          vetoes[iP] = true;
+      }
+    }
+    //otherwise it's direct mother must be a boson
+    else if(ParticleInfo::isDoc(pruneMom->status()) && ParticleInfo::isEWKBoson(pruneMom->pdgId()) ){
       vetoes[iP] = true;
-    if(TMath::Abs(orginator->pdgId()) == ParticleInfo::p_tauminus)
-      vetoes[iP] = true;
+    }
   }
 }
 

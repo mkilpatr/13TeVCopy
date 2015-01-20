@@ -1,25 +1,43 @@
 #include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-RecoJetFiller::RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller
+RecoJetFiller::RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
   , const edm::InputTag jetTag
+  , const edm::InputTag bTagsTag
   , const edm::InputTag reGenJetTag
   , const edm::InputTag stdGenJetTag
+  , const edm::InputTag flvAssocTag
+  , const edm::InputTag reGenJetAssocTag
   , const bool   fillReGenJets
   , const double jptMin
-) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller
+) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller, genParticleFiller
     , jetTag
     , reGenJetTag
     , stdGenJetTag
+    , flvAssocTag
     , fillReGenJets
     , jptMin
     )
+  , bTagsTag_(bTagsTag)
+  , reGenJetAssocTag_(reGenJetAssocTag)
 {}
 
 
+//--------------------------------------------------------------------------------------------------
 void RecoJetFiller::load(const edm::Event& iEvent){
   JetFiller<reco::PFJet>::load(iEvent);
-  edm::InputTag ptrTag(reGenJetTag_.label(),"GenPtr");
-  if(fillReGenJets_) FileUtilities::enforceGet(iEvent,ptrTag,genJetPtr,true);
+  if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetAssocTag_,genJetPtr_,true);
+  if(options_ & LOADBTAG) FileUtilities::enforceGet(iEvent,bTagsTag_,btags_,true);
+}
+
+//--------------------------------------------------------------------------------------------------
+float RecoJetFiller::getbDisc(const reco::PFJet& jet) const
+{
+
+  if(!btags_.isValid())
+    return -10;
+
+  return reco::JetFloatAssociation::getValue(*btags_, jet);
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -28,7 +46,7 @@ reco::GenJetRef RecoJetFiller::getReGenJet(const reco::PFJet& jet,const int inde
   if (!reGenJets_.isValid())
     throw cms::Exception("JetFiller.getReGenJet()", "genJets have not been loaded.");
 
-  const reco::CandidatePtr&   genPtr  = (*genJetPtr)[reco::CandidatePtr(jets_, index)];
+  const reco::CandidatePtr&   genPtr  = (*genJetPtr_)[reco::CandidatePtr(jets_, index)];
 
   if(genPtr.isNull()){
     if(enforce)
