@@ -61,6 +61,8 @@ namespace ucsbsusy {
       size imetpt_    ;
       size imetphi_   ;
       size imetsumEt_ ;
+      size igenmetpt_ ;
+      size igenmetphi_;
 
     public:
       // Data members
