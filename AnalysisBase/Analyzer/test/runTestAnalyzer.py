@@ -10,8 +10,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
-
+#options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
+options.inputFiles = '/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
 options.maxEvents = -1
 
 options.parseArguments()
@@ -68,16 +68,21 @@ process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBas
 process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
 
-
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.Puppi.Puppi_cff')
+
+process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
 process.p = cms.Path(process.puppi *
                      process.ak4PatAssocSeq * 
                      process.ak4PuppiJetSeq * 
-                     process.trimmedJetSeq  *
+                     process.ca8AssocSeq    *
+                     process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
+                     process.pickyJetSeq    *
                      process.TestAnalyzer)
+
+#process.lsfSubJets     *
 
 # dont use for now
 # # If producing puppi jets with JECs:

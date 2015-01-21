@@ -12,13 +12,12 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('?'),                    
+                                      globalTag        = cms.string ('PHYS14_25_V1::All'),                    
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
                                       totalEvents      = cms.int32  (-99),                      #Total number of ecents in the sample
                                       crossSectionScaling     = cms.double (1),                 #Luminosity to scale to (given the cross section and total events)
-                                      genEventInfoSource      = cms.InputTag (''),                                                                                                                                  
                                       )
 
 nominal_configuration = cms.PSet(
@@ -81,14 +80,14 @@ nominal_configuration = cms.PSet(
                                       applyJEC           = cms.untracked.bool(False)
                                   ),
 
-                                  TrimmedJets = cms.untracked.PSet(
+                                  PickyJets = cms.untracked.PSet(
                                       isFilled             = cms.untracked.bool(True),
-                                      jets                 = cms.InputTag('redAK8Trimmed',''),
-                                      btags                = cms.InputTag('trimmedCSVIVF'),
-                                      reGenJets            = cms.InputTag('redAK8Trimmed','Gen'),
+                                      jets                 = cms.InputTag('pickyJets',''),
+                                      btags                = cms.InputTag('pickyJetCSVIVF'),
+                                      reGenJets            = cms.InputTag('pickyJets','Gen'),
                                       stdGenJets           = cms.InputTag(''),
-                                      flvAssoc             = cms.InputTag('redAK4FlvAssoc','flavors'),
-                                      reGenJetAssoc        = cms.InputTag('redAK8Trimmed:GenPtr'),
+                                      flvAssoc             = cms.InputTag('pickyJetFlvAssoc','flavors'),
+                                      reGenJetAssoc        = cms.InputTag('pickyJets:GenPtr'),
                                       fillReGenJets        = cms.untracked.bool(True),
                                       minJetPt             = cms.untracked.double(20.0),
                                       fillCustomBtagInfo   = cms.untracked.bool(True),

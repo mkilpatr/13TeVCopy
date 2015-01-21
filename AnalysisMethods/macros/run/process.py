@@ -8,7 +8,7 @@ parser.add_argument("-c", "--conf", dest="conf", default="run1lep.conf", help="I
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
 parser.add_argument("-p", "--pathtomacro", dest="path", default="..", help="Path to directory with run macro and configuration file. [Default: \"../\"]")
 parser.add_argument("-m", "--runmacro", dest="macro", default="processSingleLepton.C", help="ROOT macro to run. [Default: processSingleLepton.C]")
-parser.add_argument("-x", "--prefix", dest="prefix", default="root://cmseos:1094//eos/uscms/", help="Prefix needed to access files over xrootd, [Default: \"root://cmseos:1094//eos/uscms/\"]")
+parser.add_argument("-x", "--prefix", dest="prefix", default="root://eoscms//eos/cms/", help="Prefix needed to access files over xrootd, [Default: \"root://cmseos:1094//eos/uscms/\"]")
 parser.add_argument("-o", "--outdir", dest="outdir", default="${PWD}/plots", help="Output directory for plots, [Default: \"${PWD}/plots\"]")
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")

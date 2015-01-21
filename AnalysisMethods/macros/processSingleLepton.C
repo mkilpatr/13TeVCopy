@@ -8,6 +8,8 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/KinematicVariables/interface/Topness.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonIsolation.h"
+#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #endif
 
 using namespace ucsbsusy;
@@ -15,14 +17,29 @@ using namespace ucsbsusy;
 class Analyzer : public BaseTreeAnalyzer {
 
   public :
-  Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec, TString sname, TString outputdir) : BaseTreeAnalyzer(fileName, treeName, isMCTree),
-													       xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+
+  Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec, TString sname, TString outputdir) : 
+    BaseTreeAnalyzer(fileName, treeName, isMCTree),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
       // configuration
       cleanJetsAgainstLeptons();
-      tNess = new Topness();
+      tNess     = new Topness();
+      tNessInfo = new TopnessInformation();
 
       // initialize plots
       loadPlots();
+
+  /*
+  void loadVariables() {
+    
+    load(EVTINFO);
+    load(AK4JETS,-1,"ak8pfchstrimmed");
+    load(ELECTRONS);
+    load(MUONS);
+    load(TAUS);
+    if(isMC()) load(GENPARTICLES);
+    
+  }
+  */   
 
 
       // initiliaze tree
@@ -40,8 +57,13 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("HT",&HT,"HT/F");
       outtree->Branch("HTAovA",&HTAovA,"HTAovA/F");
       outtree->Branch("DphiLepW",&DphiLepW,"DphiLepW/F");
+      outtree->Branch("DphiLepWRecoSeen",&DphiLepWRecoSeen,"DphiLepWRecoSeen/F");
+      outtree->Branch("DphiLepWRecoMiss",&DphiLepWRecoMiss,"DphiLepWRecoMiss/F");
       outtree->Branch("minTopness",&minTopness,"minTopness/F");
       outtree->Branch("minTopnessNoLog",&minTopnessNoLog,"minTopnessNoLog/F");
+      outtree->Branch("stdIso",&stdIso,"stdIso/F");
+      outtree->Branch("LepPdgId",&LepPdgId,"LepPdgId/I");
+      outtree->Branch("LepPt",&LepPt,"LepPt/F");
     }
 
   virtual ~Analyzer() {
@@ -62,6 +84,7 @@ class Analyzer : public BaseTreeAnalyzer {
   const TString outputdir_   = "./plots/";  
 
   Topness *tNess;
+  TopnessInformation *tNessInfo;
   TFile *fout;
   TTree *outtree;
 
@@ -75,8 +98,13 @@ class Analyzer : public BaseTreeAnalyzer {
   float HT;
   float HTAovA;
   float DphiLepW;
+  float DphiLepWRecoSeen;
+  float DphiLepWRecoMiss;
   float minTopness;
   float minTopnessNoLog;
+  float stdIso;
+  int LepPdgId;
+  float LepPt;
 
   void runEvent();
   
@@ -122,6 +150,8 @@ void Analyzer::runEvent()
 
   double wgt = lumi_*xsec_/getEntries();
 
+  if(nLeptons != nSelLeptons_) return;
+
   // fill tree variables
   ScaleFactor = wgt;
   NPV = nPV;
@@ -133,20 +163,26 @@ void Analyzer::runEvent()
   HT = JetKinematics::ht(jets,40,2.4);
   HTAovA = JetKinematics::htAlongHtAway(*met,jets,40,2.4);
 
-  if (nLeptons>0) {
-    MomentumF* W = new MomentumF(leptons.at(0)->p4() + met->p4());
-    DphiLepW = PhysicsUtilities::deltaPhi(*leptons.at(0), *W);
-  }
-  else {
-    DphiLepW = -99.;
-  }
-  minTopness = tNess->findMinTopnessConfiguration(leptons,jets,met);
+
+  MomentumF* W = new MomentumF(leptons.at(0)->p4() + met->p4());
+  DphiLepW = PhysicsUtilities::deltaPhi(*leptons.at(0), *W);
+
+  stdIso = (leptons.at(0)->pfdbetaiso())/(leptons.at(0)->p4().pt());
+
+  minTopness = tNess->findMinTopnessConfiguration(leptons,jets,met,tNessInfo);
   minTopnessNoLog = std::exp(minTopness);
+
+  DphiLepWRecoSeen = PhysicsUtilities::deltaPhi(tNessInfo->top1_l,tNessInfo->top1_w);
+  DphiLepWRecoMiss = PhysicsUtilities::deltaPhi(tNessInfo->top1_l,tNessInfo->top2_w);
+
+
+  LepPdgId = leptons.at(0)->pdgid();
+  LepPt    = leptons.at(0)->p4().pt();
 
   outtree->Fill();
 
 
-  if(nLeptons != nSelLeptons_) return;
+  //  if(nLeptons != nSelLeptons_) return;
   if(nTaus > maxNSelTaus_)     return;
 
   bool passmet = met->pt() > metcut_;
@@ -163,7 +199,6 @@ void Analyzer::runEvent()
   if(!passpreselection) return;
 
   // plots after preselection
-  MomentumF* W = new MomentumF(leptons.at(0)->p4() + met->p4());
   plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
   plots["leppt_passpresel"]     ->Fill(leptons.at(0)->pt(), wgt);
   plots["jet1pt_passpresel"]    ->Fill(jets.at(0)->pt(), wgt);
@@ -197,10 +232,10 @@ void Analyzer::out(TString outputName, TString outputPath)
 void processSingleLepton(TString sname = "test",               // sample name
                          const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
                          const bool isMC = true,               // data or MC
-                         const TString fname = "testTree.root", // path of file to be processed
+                         const TString fname = "evttree_numEvent10000.root", // path of file to be processed
                          const double xsec = 1.0,              // cross section to be used with this file
                          const TString outputdir = "run/plots",    // directory to which files with histograms will be written
-                         const TString fileprefix = "file:///uscms/home/nmccoll/nobackup/2011-04-15-susyra2/Work7/") // prefix for file name, needed e.g. to access files with xrootd
+                         const TString fileprefix = "file:/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_2_0/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());

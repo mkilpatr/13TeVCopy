@@ -83,6 +83,17 @@ ElectronFiller::ElectronFiller(const int options,
     eleIdCuts = new LeptonId();
   }
 
+  iLSF2Iso_   = data.addMulti<float>(branchName_,"lsf2Iso",0);
+  iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
+  iLSF4Iso_   = data.addMulti<float>(branchName_,"lsf4Iso",0);
+  iLSF2IsoDR_ = data.addMulti<float>(branchName_,"lsf2IsoDR",0);
+  iLSF3IsoDR_ = data.addMulti<float>(branchName_,"lsf3IsoDR",0);
+  iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
+
+  //  iPassTriggerLID_ = data.addMulti<bool>(branchName_,"passTriggerLID",0);
+  iPassCutBaseNonIsoMID_ = data.addMulti<bool>(branchName_,"passCutBaseNonIsoMID",0);
+  //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -133,6 +144,12 @@ void ElectronFiller::load(const edm::Event& iEvent)
   FileUtilities::enforceGet(iEvent, looseIdTag_,loose_id_decisions_,true);
   FileUtilities::enforceGet(iEvent, mediumIdTag_,medium_id_decisions_,true);
   FileUtilities::enforceGet(iEvent, tightIdTag_,tight_id_decisions_,true);
+  //  FileUtilities::enforceGet(iEvent, "ak8PFJetsCHSTrimmedr0p1ptf0p03",trimmedJets,true);
+  FileUtilities::enforceGet(iEvent, "redCA8",ca8Jets,true);
+  iEvent.getByLabel("lsfSubJets","LSFJets2",lsfSubJets2);
+  iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
+  iEvent.getByLabel("lsfSubJets","LSFJets4",lsfSubJets4);
+
   isLoaded_ = true;
 }
 
@@ -140,6 +157,8 @@ void ElectronFiller::load(const edm::Event& iEvent)
 void ElectronFiller::fill()
 {
 
+  //  cout << "\n NEW EVENT ; Mel = " << electrons_->size() << "\n";
+  //  std::vector<reco::CandidatePtr> footprint_el;
   for (pat::ElectronCollection::const_iterator el = electrons_->begin(); el != electrons_->end(); el++) {
     if (el->pt() < eleptMin_) continue;
 
@@ -198,7 +217,109 @@ void ElectronFiller::fill()
       data.fillMulti<float>(imvaidtrig_, eleMVATrig->mvaValue(*el, false));
     }
 
+    
+    // calculate cut-based electrons ids
+    bool tmp_iPassCutBaseNonIsoMID_ = false; //cout << "eta: " << el->superCluster()->eta() << "\n";
+    if (fabs(el->superCluster()->eta()) <= 1.479) {
+      //      cout << "EB\n";      
+      if (
+	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.0106 &&
+	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.0323 &&
+	  el->full5x5_sigmaIetaIeta()                                                         <  0.0107 &&
+	  el->hadronicOverEm()                                                                <  0.067  &&
+	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.0131 &&
+	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.2231 &&	
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.1043 &&
+	  el->passConversionVeto()                                                                      &&
+	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
+	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
+      
+      else { tmp_iPassCutBaseNonIsoMID_ = false; }
+
+    } 
+    
+    else if ((fabs(el->superCluster()->eta()) > 1.479) && fabs(el->superCluster()->eta())<2.5 ) {
+
+      if (
+	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.0108 &&
+	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.0455 &&
+	  el->full5x5_sigmaIetaIeta()                                                         <  0.0318 &&
+	  el->hadronicOverEm()                                                                <  0.097  &&
+	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.0845 &&
+	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.7523 &&	
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.1201 &&
+	  el->passConversionVeto()                                                                      &&
+	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
+	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
+
+      else { tmp_iPassCutBaseNonIsoMID_ = false; }
+
+    }
+    
+    data.fillMulti<bool>(iPassCutBaseNonIsoMID_,tmp_iPassCutBaseNonIsoMID_);
+    
+
+    float lsf2Iso = 9.; float lsf2IsoDR = 9.;
+    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
+    float lsf4Iso = 9.; float lsf4IsoDR = 9.;
+
+    LorentzVector el_;
+    el_ = el->p4();
+
+    LorentzVectorCollection lsfSubJets2_;
+    for (LorentzVectorCollection::const_iterator jt = lsfSubJets2->begin(); jt != lsfSubJets2->end(); jt++) {
+      LorentzVector tmpVec;
+      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
+      lsfSubJets2_.push_back(tmpVec);
+    }
+
+    LorentzVectorCollection lsfSubJets3_;
+    for (LorentzVectorCollection::const_iterator jt = lsfSubJets3->begin(); jt != lsfSubJets3->end(); jt++) {
+      LorentzVector tmpVec;
+      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
+      lsfSubJets3_.push_back(tmpVec);
+    }
+
+    LorentzVectorCollection lsfSubJets4_;
+    for (LorentzVectorCollection::const_iterator jt = lsfSubJets4->begin(); jt != lsfSubJets4->end(); jt++) {
+      LorentzVector tmpVec;
+      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
+      lsfSubJets4_.push_back(tmpVec);
+    }
+
+    calculateLSFIso(el_,lsfSubJets2_,&lsf2Iso,&lsf2IsoDR);
+    calculateLSFIso(el_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    calculateLSFIso(el_,lsfSubJets4_,&lsf4Iso,&lsf4IsoDR);
+    
+    data.fillMulti<float>(iLSF2Iso_  ,lsf2Iso);
+    data.fillMulti<float>(iLSF2IsoDR_,lsf2IsoDR);
+    data.fillMulti<float>(iLSF3Iso_  ,lsf3Iso);
+    data.fillMulti<float>(iLSF3IsoDR_,lsf3IsoDR);
+    data.fillMulti<float>(iLSF4Iso_  ,lsf4Iso);
+    data.fillMulti<float>(iLSF4IsoDR_,lsf4IsoDR);
+
   }
   isFilled_ = true;
+
+
+}
+
+
+void ElectronFiller::calculateLSFIso(LorentzVector el_,LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_) {
+
+  float LSFDR_  = 999.;
+  float LSF_ = -9.;
+  for (LorentzVectorCollection::const_iterator jt = lsfSubJets_.begin(); jt != lsfSubJets_.end(); jt++) {
+      LorentzVector jt_;
+      jt_.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->e());
+      float dRtmp_  = deltaR(el_,jt_);
+      if (dRtmp_<LSFDR_) {
+	LSFDR_  = dRtmp_;
+	LSF_ = el_.pt()/jt->pt();
+      }
+    } // end of looping over the subjets jets
+
+  *lsfIso_   = LSF_;
+  *lsfIsoDR_ = LSFDR_;
 
 }
