@@ -25,6 +25,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nJets             (0),
     nBJets            (0),
     met               (0),
+    genmet            (0),
     isMC_             (isMCTree),
     defaultJets       (0),
     cleanJetsvLeptons_(false),
@@ -118,6 +119,7 @@ void BaseTreeAnalyzer::processVariables()
     nPV   = evtInfoReader.nPV;
     rho   = evtInfoReader.rho;
     met   = &evtInfoReader.met;
+    genmet= &evtInfoReader.genmet;
   }
 
   if(genParticleReader.isLoaded()){

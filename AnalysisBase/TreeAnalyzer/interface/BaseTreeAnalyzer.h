@@ -124,6 +124,7 @@ namespace ucsbsusy {
     // Stored collections
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
+    MomentumF*                 genmet  ;
     std::vector<LeptonF*>      leptons ;
     std::vector<TauF*>         taus    ;
     std::vector<RecoJetF*>     jets    ;
