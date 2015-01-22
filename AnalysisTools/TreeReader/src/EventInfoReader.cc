@@ -28,6 +28,8 @@ EventInfoReader::EventInfoReader()
   met_pt = 0;
   met_phi = 0;
   metsumEt = 0;
+  genmet_pt = 0;
+  genmet_phi = 0;
 
   proc = 0;
   weight = 1;
@@ -51,6 +53,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"met_pt", &met_pt);
   treeReader->setBranchAddress(branchName,"met_phi", &met_phi);
   treeReader->setBranchAddress(branchName,"met_sumEt", &metsumEt);
+  treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
+  treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
 
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"weight" , &weight);
@@ -60,5 +64,6 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
 void EventInfoReader::refresh()
 {
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+  genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
 }
