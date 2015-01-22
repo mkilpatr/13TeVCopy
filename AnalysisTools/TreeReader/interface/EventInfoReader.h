@@ -37,12 +37,15 @@ namespace ucsbsusy {
       float         met_pt;
       float         met_phi;
       float         metsumEt;
+      float         genmet_pt;
+      float         genmet_phi;
 
       size8             proc;
       defaults::Process process;
       float             weight;
 
       MomentumF    met;
+      MomentumF    genmet;
 
   };
 
