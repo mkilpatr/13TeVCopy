@@ -83,6 +83,7 @@ namespace ucsbsusy {
     bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
+    bool isLooseBJet  (const RecoJetF& jet) const;
     bool isGoodElectron(const ElectronF& electron) const;
     bool isGoodMuon    (const MuonF& muon        ) const;
     bool isGoodTau     (const TauF& tau          ) const;
