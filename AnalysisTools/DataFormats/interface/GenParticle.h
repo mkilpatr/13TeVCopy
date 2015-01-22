@@ -27,10 +27,10 @@ public :
   ~GenParticle(){}
 
   void setGenPrtPtr(std::vector<GenParticle<CoordSystem>> * genParticles) {genParticles_ = genParticles;}
-  void setStorage(const size8 status, const int pdgId,
+  void setStorage(const size8 instatus, const int inpdgId,
       const stor nMoms, const stor firstMom, const stor nDaus, const stor firstDau, const std::vector<stor> * assocList){
-    status_       = status      ;
-    pdgId_        = pdgId       ;
+    status_       = instatus    ;
+    pdgId_        = inpdgId     ;
     nMoms_        = nMoms       ;
     firstMom_     = firstMom    ;
     nDaus_        = nDaus       ;

@@ -36,6 +36,8 @@ EventInfoFiller::EventInfoFiller(
   imetpt_    = data.add<float>       (branchName_,"met_pt"   ,"F",0);
   imetphi_   = data.add<float>       (branchName_,"met_phi"  ,"F",0);
   imetsumEt_ = data.add<float>       (branchName_,"met_sumEt","F",0);
+  igenmetpt_ = data.add<float>       (branchName_,"genmet_pt" ,"F",0);
+  igenmetphi_= data.add<float>       (branchName_,"genmet_phi","F",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -71,6 +73,8 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_     ,met_->pt());
   data.fill<float>       (imetphi_    ,met_->phi());
   data.fill<float>       (imetsumEt_  ,met_->sumEt());
+  data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
+  data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
 
   isFilled_ = true;
 }

@@ -72,6 +72,9 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
     void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
+    void setDefaultJets(VarType type);
+    void setDefaultJets(JetReader * injets)        {defaultJets = injets;}
+    JetReader * getDefaultJets()                   {return defaultJets;}
 
     //--------------------------------------------------------------------------------------------------
     // Default processing of physics objects
@@ -80,6 +83,7 @@ namespace ucsbsusy {
     bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
+    bool isLooseBJet  (const RecoJetF& jet) const;
     bool isGoodElectron(const ElectronF& electron) const;
     bool isGoodMuon    (const MuonF& muon        ) const;
     bool isGoodTau     (const TauF& tau          ) const;
@@ -121,6 +125,7 @@ namespace ucsbsusy {
     // Stored collections
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
+    MomentumF*                 genmet  ;
     std::vector<LeptonF*>      leptons ;
     std::vector<TauF*>         taus    ;
     std::vector<RecoJetF*>     jets    ;
@@ -134,6 +139,7 @@ namespace ucsbsusy {
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
+    JetReader  * defaultJets;
     bool         cleanJetsvLeptons_;
     bool         cleanJetsvTaus_;
 
