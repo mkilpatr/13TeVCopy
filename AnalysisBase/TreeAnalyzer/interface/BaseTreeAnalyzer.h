@@ -22,10 +22,42 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
+struct ConfigPars {
+public:
+  float        minElePt;
+  float        minMuPt;
+  float        minTauPt;
+  float        minJetPt;
+  float        minBJetPt;
+  float        maxEleEta;
+  float        maxMuEta;
+  float        maxTauEta;
+  float        maxJetEta;
+  float        maxBJetEta;
+  float        minJetLepDR;
+  bool         cleanJetsvLeptons_;
+  bool         cleanJetsvTaus_;
+
+  ConfigPars() :
+     minElePt          (10.0),
+     minMuPt           (10.0),
+     minTauPt          (20.0),
+     minJetPt          (30.0),
+     minBJetPt         (30.0),
+     maxEleEta         (2.5 ),
+     maxMuEta          (2.4 ),
+     maxTauEta         (2.3 ),
+     maxJetEta         (2.4 ),
+     maxBJetEta        (2.4 ),
+     minJetLepDR       (0.4 ),
+     cleanJetsvLeptons_(false),
+     cleanJetsvTaus_   (false)
+  {}
+};
 
   class BaseTreeAnalyzer {
   public:
-    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
+    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
     enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
@@ -70,8 +102,6 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
-    void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
-    void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
     void setDefaultJets(VarType type);
     void setDefaultJets(JetReader * injets)        {defaultJets = injets;}
     JetReader * getDefaultJets()                   {return defaultJets;}
@@ -80,7 +110,7 @@ namespace ucsbsusy {
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
     template <typename Jet>
-    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
+    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
     bool isLooseBJet  (const RecoJetF& jet) const;
@@ -140,24 +170,7 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
     JetReader  * defaultJets;
-    bool         cleanJetsvLeptons_;
-    bool         cleanJetsvTaus_;
-
-    //--------------------------------------------------------------------------------------------------
-    // Kinematic settings
-    //--------------------------------------------------------------------------------------------------
-    const float  minElePt;
-    const float  minMuPt;
-    const float  minTauPt;
-    const float  minJetPt;
-    const float  minBJetPt;
-    const float  maxEleEta;
-    const float  maxMuEta;
-    const float  maxTauEta;
-    const float  maxJetEta;
-    const float  maxBJetEta;
-    const float  minJetLepDR;
-
+    const ConfigPars config;
   };
 
 }

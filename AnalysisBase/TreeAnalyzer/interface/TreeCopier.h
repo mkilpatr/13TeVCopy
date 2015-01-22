@@ -23,7 +23,7 @@ namespace ucsbsusy {
   class TreeCopier : public BaseTreeAnalyzer {
   public:
 
-    TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false);
+    TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0);
     virtual ~TreeCopier();
 
     virtual void setupTree() = 0; //Used by the child classes
@@ -43,8 +43,8 @@ namespace ucsbsusy {
 
   class TreeCopierAllBranches : public TreeCopier {
   public:
-    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree) {}
+    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false,ConfigPars * pars = 0) :
+      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
 
     virtual void setupTree() {
       reader.getTree()->SetBranchStatus("*",1);
@@ -56,8 +56,8 @@ namespace ucsbsusy {
 
   class TreeCopierLoadedBranches : public TreeCopier {
   public:
-    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree) {}
+    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0) :
+      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
 
     virtual void setupTree() {
       outFile_ = new TFile(outFileName_,"RECREATE");
@@ -67,8 +67,8 @@ namespace ucsbsusy {
   };
 
   class TreeCopierManualBranches : public TreeCopier {
-    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree) {}
+    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0) :
+      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
   public:
     virtual void setupTree() {
       outFile_ = new TFile(outFileName_,"RECREATE");
@@ -168,7 +168,7 @@ namespace ucsbsusy {
 
   class TreeFlattenCopier : public BaseTreeAnalyzer {
   public:
-    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false);
+    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0);
     virtual ~TreeFlattenCopier();
 
     template<typename Type>
