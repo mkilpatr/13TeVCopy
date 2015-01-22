@@ -26,6 +26,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nBJets            (0),
     met               (0),
     isMC_             (isMCTree),
+    defaultJets       (0),
     cleanJetsvLeptons_(false),
     cleanJetsvTaus_   (false),
     minElePt          (10.0),
@@ -103,6 +104,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(MUONS);
   load(TAUS);
   if(isMC()) load(GENPARTICLES);
+  setDefaultJets(AK4JETS);
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
@@ -149,9 +151,14 @@ void BaseTreeAnalyzer::processVariables()
   nLeptons = leptons.size();
   nTaus    = taus.size();
 
-  cleanJets(&ak4Reader,jets,&bJets,&nonBJets);
+  jets.clear(); bJets.clear(); nonBJets.clear();
+  if(defaultJets && defaultJets->isLoaded()){
+    cleanJets(defaultJets,jets,&bJets,&nonBJets);
+  }
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
@@ -168,26 +175,47 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
   }
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
+void BaseTreeAnalyzer::setDefaultJets(VarType type) {
+  switch (type) {
+     case AK4JETS : {
+       setDefaultJets(&ak4Reader);
+       break;
+     }
+     case PUPPIJETS : {
+       setDefaultJets(&puppiJetsReader);
+       break;
+     }
+     case PICKYJETS : {
+       setDefaultJets(&pickyJetReader);
+       break;
+     }
+     default : {
+       cout << endl << "No valid jet for type: " << type << " found!" << endl;
+       break;
+     }
+   }
+}
+//--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
   return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
+bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
   return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_TIGHT );
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
+bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
   return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
+bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
   return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta && muon.isgoodpogmuon());
   //return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta);
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
+bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
   return (tau.pt() > minTauPt && fabs(tau.eta()) < maxTauEta && tau.isgoodpogtau());
 }
 //--------------------------------------------------------------------------------------------------
@@ -196,7 +224,7 @@ void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jet
 		throw std::invalid_argument("BaseTreeAnalyzer::cleanJets(): You want to do jet cleaning but have not yet processed variables!");
 	jets.clear(); jets.reserve(reader->recoJets.size());
 	if(bJets){bJets->clear();}
-	if(nonBJets){nonBJets->clear(); nonBJets->reserve(jets.size() -2);}
+	if(nonBJets){nonBJets->clear(); nonBJets->reserve( std::max(2,int(jets.size())) -2);}
 
 	for(auto& jet : reader->recoJets) {
 		if(!isGoodJet(jet)) continue;

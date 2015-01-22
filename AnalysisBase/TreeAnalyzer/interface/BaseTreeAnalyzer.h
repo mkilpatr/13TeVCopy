@@ -72,6 +72,9 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
     void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
+    void setDefaultJets(VarType type);
+    void setDefaultJets(JetReader * injets)        {defaultJets = injets;}
+    JetReader * getDefaultJets()                   {return defaultJets;}
 
     //--------------------------------------------------------------------------------------------------
     // Default processing of physics objects
@@ -134,6 +137,7 @@ namespace ucsbsusy {
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
+    JetReader  * defaultJets;
     bool         cleanJetsvLeptons_;
     bool         cleanJetsvTaus_;
 
