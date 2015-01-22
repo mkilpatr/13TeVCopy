@@ -28,7 +28,7 @@ namespace ucsbsusy {
 
     virtual void setupTree() = 0; //Used by the child classes
     virtual void book() {}; //if you want to book your own variables
-    virtual void analyze(int reportFrequency = 10000); //actual analyzer
+    virtual void analyze(int reportFrequency = 10000, int numEvents = -1); //actual analyzer
     virtual bool fillEvent() {return true;} //whether or not to fill the event, also fill your custom vars
 
   private:
@@ -191,7 +191,7 @@ namespace ucsbsusy {
     }
 
     virtual void book() {}; //if you want to book your own variables
-    virtual void analyze(int reportFrequency = 10000); //actual analyzer
+    virtual void analyze(int reportFrequency = 10000, int numEvents = -1); //actual analyzer
     virtual bool fillEvent() {return true;} //whether or not to fill the event, also fill your custom vars
 
   private:
