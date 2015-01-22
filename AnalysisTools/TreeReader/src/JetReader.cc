@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -111,6 +112,7 @@ void JetReader::refresh(){
     genJets.reserve(genjetpt_->size());
     for(unsigned int iJ = 0; iJ < genjetpt_->size(); ++iJ)
       genJets.emplace_back(CylLorentzVectorF(genjetpt_->at(iJ),genjeteta_->at(iJ),genjetphi_->at(iJ),genjetmass_->at(iJ)),iJ,genjetflavor_->at(iJ));
+    std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
   }
 
   if(options_ & LOADRECO){
@@ -121,6 +123,7 @@ void JetReader::refresh(){
       recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
           (*jetcsv_)[iJ], matchedGen);
     }
+    std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
 }
 
