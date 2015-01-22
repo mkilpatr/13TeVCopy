@@ -88,7 +88,7 @@ void FastJetClusterer::clusterJets( const fastjet::JetDefinition& definition, do
   } else {
     clusterSequence .reset(new fastjet::ClusterSequence    ( particles, *jetDefinition ));
   }
-  jets            = fastjet::sorted_by_pt(clusterSequence->inclusive_jets(minJetPT));
+  jets            = fastjet::sorted_by_pt(clusterSequence->inclusive_jets(std::max(minJetPT,1e-5)));
 }
 
 //_____________________________________________________________________________
@@ -107,15 +107,18 @@ void FastJetClusterer::clusterJets( fastjet::JetDefinition::Plugin* plugin, doub
   clusterJets( fastjet::JetDefinition(plugin), minJetPT, maxGhostEta, ghostArea, meanGhostPT, numAreaRepeats, ghostGridScatter, ghostPTScatter );
 }
 
-void    FastJetClusterer::trimJets         (const double rFilter, double trimPtFracMin){
+void    FastJetClusterer::trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets){
   fastjet::Filter trimmer( fastjet::JetDefinition(fastjet::kt_algorithm, rFilter), fastjet::SelectorPtFractionMin(trimPtFracMin));
 
   std::vector<fastjet::PseudoJet>                           trimmedJets;
   for ( std::vector<fastjet::PseudoJet>::const_iterator ijet = jets.begin(),
       ijetEnd = jets.end(); ijet != ijetEnd; ++ijet ) {
     fastjet::PseudoJet trimmedJet = trimmer(*ijet);
-    if(trimmedJet.has_constituents())
-      trimmedJets.push_back(trimmedJet);
+    if(!trimmedJet.has_constituents()) continue;
+    if(useTrimmedSubjets){
+    	std::vector<fastjet::PseudoJet>  lSubJets = trimmedJet.pieces();
+    	trimmedJets.insert(trimmedJets.end(), lSubJets.begin(), lSubJets.end());
+    } else trimmedJets.push_back(trimmedJet);
   }
   jets = trimmedJets;
 }

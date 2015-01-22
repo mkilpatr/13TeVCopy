@@ -15,10 +15,10 @@
 
 namespace defaults {
   const std::string BRANCH_AK4JETS   = "ak4";
-  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G,SINGLE_T, TTZ, TTW,DIBOSON, NUMPROCESSES };
-  const std::string PROCESS_NAMES[] = {"data","qcd","ttbar","w","z","g","t","ttZ","ttw","diboson",""};
+  const std::string BRANCH_PICKYJETS = "picky";
+  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G,SINGLE_T, TTZ, TTW,DIBOSON,SIGNAL, NUMPROCESSES };
+  const std::string PROCESS_NAMES[] = {"data","qcd","ttbar","w","z","g","t","ttZ","ttw","diboson","signal",""};
   const std::string BRANCH_PUPPIJETS = "ak4puppi";
-  const std::string BRANCH_TRIMMEDJETS ="ak8trimmed";
   const std::string BRANCH_CA8JETS ="ca8";
   const std::string BRANCH_ELECTRONS = "ele";
   const std::string BRANCH_MUONS     = "mu";

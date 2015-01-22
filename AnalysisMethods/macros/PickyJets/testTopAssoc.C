@@ -24,7 +24,7 @@ public:
   PlotterD*                       plotter;
   Polybook                        eventPlots;
   TString                         prefix;
-
+  JetReader                       trimmedJetReader;
   Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter)
   {
   };
@@ -33,6 +33,9 @@ public:
     load(EVTINFO);
     load(GENPARTICLES, GenParticleReader::FILLOBJ | GenParticleReader::LOADPARTONDECAY);
     load(AK4JETS,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC );
+    load(PICKYJETS,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC );
+    load(PUPPIJETS,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC );
+    load(&trimmedJetReader,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC ,"trimmed");
 
   }
   virtual void processVariables(){
@@ -51,31 +54,101 @@ public:
 //      met   = &evtInfoReader.met;
 //    }
 
-    genJets.clear();
+  }
 
-    for(auto& j : ak4Reader.recoJets){
-      if(j.genJet() == 0)  continue;
-      if(j.pt() < 30) continue;
-      genJets.push_back(j.genJet());
-    }
+  void plotJets(JetReader * jetReader, TString prefix){
+	  vector<GenJetF*> genJets;
+	    for(auto& j : jetReader->recoJets){
+	      if(j.genJet() == 0)  continue;
+	      if(TMath::Abs(j.eta()) >= 2.4) continue;
+	      if(j.pt() < 20) continue;
+	      genJets.push_back(j.genJet());
+	    }
+
+	    //Get pointers to necessary variables
+	    const vector<size16 >* genAssocPrtIndex = jetReader->genAssocPrtIndex_;
+	    const vector<size16 >* genAssocJetIndex = jetReader->genAssocJetIndex_;
+	    const vector<int8>* genAssocCon      = jetReader->genAssocCont_;
+
+	    const vector<GenParticleF>* genParticles = &genParticleReader.genParticles;
+	    const vector<float   >* hadronE      = genParticleReader.hade_;
+
+	    TopJetMatching::TopDecayEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
+
+	    for(const auto& t : topDecayEvent.topDecays){
+	      eventPlots.rewind();
+	      if(t.isLeptonic) continue;
+	      double eta = TMath::Abs(t.top->eta());
+
+	      eventPlots("eta_lt2p4__", eta < 2.4);
+	      eventPlots("eta_eq2p4to4p6__",eta >= 2.4 && eta < 4.6  );
+
+	      ++eventPlots;
+	      eventPlots("all__",true);
+	      eventPlots("good_partons__",t.diag  > TopJetMatching::BAD_PARTON);
+	      eventPlots("assoc_jets__"  ,t.diag  > TopJetMatching::LOST_JET);
+	      eventPlots("no_splits__"   ,t.diag  > TopJetMatching::SPLIT_PARTONS);
+	      eventPlots("good_top__"    ,t.diag  > TopJetMatching::CONTAMINATION);
 
 
+	      eventPlots.fill(t.top->pt(),1,"top_pt",";top p_{T}",50,0,1000,prefix);
+	    }
 
-    for(unsigned int iJ = 0; iJ < ak4Reader.genJets.size(); ++iJ)
-      genJets.push_back(&ak4Reader.genJets[iJ]);
+	    int nB = 0;
+	    int nL = 0;
+	    int nS = 0;
+	    int nC = 0;
+	    vector<MomentumF> tops;
+	    for(const auto& t : topDecayEvent.topDecays){
+	    	if(t.isLeptonic) continue;
+	    	if(TMath::Abs(t.top->eta()) >= 2.4 ) continue;
+	    	if(t.diag  == TopJetMatching::BAD_PARTON)nB++;
+	    	if(t.diag  == TopJetMatching::LOST_JET) nL++;
+	    	if(t.diag  == TopJetMatching::SPLIT_PARTONS) nS++;
+	    	if(t.diag  == TopJetMatching::CONTAMINATION) nC++;
+	    	tops.push_back(t.top->p4());
+	    }
+	    if(tops.size() == 2){
+	        eventPlots.rewind();
+	        eventPlots("eta_lt2p4__", true);
+	        eventPlots("eta_eq2p4to4p6__",false  );
+	        ++eventPlots;
+	        eventPlots("all__",true);
+	        eventPlots("good_partons__",nB == 0);
+	        eventPlots("assoc_jets__"  ,nB == 0 && nL == 0);
+	        eventPlots("no_splits__"   ,nB == 0 && nL == 0 && nS == 0);
+	        eventPlots("good_top__"    ,nB == 0 && nL == 0 &&nS == 0 &&nC == 0);
+
+	        int lT = tops[0].pt() > tops[1].pt() ? 0 : 1;
+	        int sT = tops[0].pt() > tops[1].pt() ? 1 : 0;
+
+	        eventPlots.fill(tops[lT].pt() ,1,"lead_top_pt",";lead top 1 p_{T}",50,0,1000,prefix);
+	        eventPlots.fill(tops[sT].pt() ,1,"subLead_top_pt",";sublead top p_{T}",50,0,1000,prefix);
+	        eventPlots.fill((tops[sT].pt() + tops[lT].pt()) / 2  ,1,"avg_top_pt",";avg top p_{T}",50,0,1000,prefix);
+	    }
+
   }
 
   void testAssoc(){
-    if(!genParticleReader.hasOption(GenParticleReader::LOADPARTONDECAY) || !genParticleReader.hasOption(GenParticleReader::FILLOBJ) )
-      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both objects and parton decay must be loaded in GenParticleReader!");
+//    if(!genParticleReader.hasOption(GenParticleReader::LOADPARTONDECAY) || !genParticleReader.hasOption(GenParticleReader::FILLOBJ) )
+//      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both objects and parton decay must be loaded in GenParticleReader!");
+//
+//    if(!ak4Reader.hasOption(JetReader::LOADTOPASSOC) || !ak4Reader.hasOption(JetReader::FILLOBJ) )
+//      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both objects and top assoc. must be loaded in JetReader!");
+//
+//    if(!ak4Reader.isLoaded() || !genParticleReader.isLoaded())
+//      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both JetReader and GenParticleReader must be loaded before doing this!");
 
-    if(!ak4Reader.hasOption(JetReader::LOADTOPASSOC) || !ak4Reader.hasOption(JetReader::FILLOBJ) )
-      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both objects and top assoc. must be loaded in JetReader!");
+	  vector<GenJetF*> genJets;
+	    for(auto& j : ak4Reader.recoJets){
+	      if(j.genJet() == 0)  continue;
+	      if(TMath::Abs(j.eta()) < 2.4) continue;
+	      if(j.pt() < 20) continue;
+	      genJets.push_back(j.genJet());
+	    }
 
-    if(!ak4Reader.isLoaded() || !genParticleReader.isLoaded())
-      throw std::invalid_argument("TopDecayEvent::TopDecayEvent():  both JetReader and GenParticleReader must be loaded before doing this!");
 
-    //Get pointers to necessary variables
+//    Get pointers to necessary variables
     const vector<size16 >* genAssocPrtIndex = ak4Reader.genAssocPrtIndex_;
     const vector<size16 >* genAssocJetIndex = ak4Reader.genAssocJetIndex_;
     const vector<int8>* genAssocCon      = ak4Reader.genAssocCont_;
@@ -106,6 +179,7 @@ public:
 //      cout << t.W_dau1->genIdx <<" "<< *t.W_dau1->parton <<" --> "<< t.W_dau1->diag <<endl;
 //      cout << t.W_dau2->genIdx <<" "<< *t.W_dau2->parton <<" --> "<< t.W_dau2->diag <<endl;
 //    }
+//
 
     for(const auto& t : topDecayEvent.topDecays){
       eventPlots.rewind();
@@ -114,6 +188,7 @@ public:
 
       eventPlots("eta_lt2p4__", eta < 2.4);
       eventPlots("eta_eq2p4to4p6__",eta >= 2.4 && eta < 4.6  );
+      eventPlots("",false  );
 
       ++eventPlots;
       eventPlots("all__",true);
@@ -125,8 +200,6 @@ public:
 
       eventPlots.fill(t.top->pt(),1,"top_pt","top p_{T}",50,0,800);
     }
-
-
   }
 
 
@@ -153,7 +226,11 @@ public:
 //    }
 
 
-    testAssoc();
+//    testAssoc();
+	  plotJets(&ak4Reader,"ak4_");
+	  plotJets(&pickyJetReader,"picky_");
+	  plotJets(&puppiJetsReader,"puppi_");
+	  plotJets(&trimmedJetReader,"trimmed_");
 
 
   }
@@ -166,7 +243,7 @@ public:
 //  vector<GenParticleF*> vetoParts;
 //  vector<GenParticleF*> lepParts;
 
-    vector<GenJetF*> genJets;
+//    vector<GenJetF*> genJets;
 
 };
 

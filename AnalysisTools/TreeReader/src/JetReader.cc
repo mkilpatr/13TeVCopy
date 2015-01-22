@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -111,38 +112,18 @@ void JetReader::refresh(){
     genJets.reserve(genjetpt_->size());
     for(unsigned int iJ = 0; iJ < genjetpt_->size(); ++iJ)
       genJets.emplace_back(CylLorentzVectorF(genjetpt_->at(iJ),genjeteta_->at(iJ),genjetphi_->at(iJ),genjetmass_->at(iJ)),iJ,genjetflavor_->at(iJ));
+    std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
   }
 
   if(options_ & LOADRECO){
     recoJets.clear();
     recoJets.reserve(jetpt_->size());
-
-
-    // ------
-    // quick and dirty - should be fixed later
-    int thisSys = 0; // 0 is no sys; 1 is scale 1 jet; 2 is smear all jets of the event
-    float thisVal = 1.20; // smearing magnitude
-    TRandom3 rdm(0);
-    double dice = rdm.Uniform(0.,jetpt_->size());
-    UInt_t thisJet = floor(dice); // get the jet to scale
-    // ------
-
-     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
-       GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
-       
-       //   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
-       //			     (*jetcsv_)[iJ], matchedGen);
-
-       if ((thisSys==1) && (iJ==thisJet)) { recoJets.emplace_back(CylLorentzVectorF(thisVal*jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)), 
-								  iJ,(*jetcsv_)[iJ], matchedGen); }
-       else if (thisSys==2)               { 
-	 double sigma = thisVal - 1.;
-	 TRandom3 rdmPt(0); double newPt = rdmPt.Gaus(jetpt_->at(iJ),sigma*jetpt_->at(iJ));
-	 recoJets.emplace_back(CylLorentzVectorF(newPt,jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),
-			       iJ,(*jetcsv_)[iJ], matchedGen); }
-       else                               { recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),
-								  iJ,(*jetcsv_)[iJ], matchedGen); }
-     }
+    for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
+     GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
+      recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
+          (*jetcsv_)[iJ], matchedGen);
+    }
+    std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
 }
 

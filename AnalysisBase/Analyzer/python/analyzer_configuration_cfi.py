@@ -80,14 +80,14 @@ nominal_configuration = cms.PSet(
                                       applyJEC           = cms.untracked.bool(False)
                                   ),
 
-                                  TrimmedJets = cms.untracked.PSet(
+                                  PickyJets = cms.untracked.PSet(
                                       isFilled             = cms.untracked.bool(True),
-                                      jets                 = cms.InputTag('redAK8Trimmed',''),
-                                      btags                = cms.InputTag('trimmedCSVIVF'),
-                                      reGenJets            = cms.InputTag('redAK8Trimmed','Gen'),
+                                      jets                 = cms.InputTag('pickyJets',''),
+                                      btags                = cms.InputTag('pickyJetCSVIVF'),
+                                      reGenJets            = cms.InputTag('pickyJets','Gen'),
                                       stdGenJets           = cms.InputTag(''),
-                                      flvAssoc             = cms.InputTag('redAK4FlvAssoc','flavors'),
-                                      reGenJetAssoc        = cms.InputTag('redAK8Trimmed:GenPtr'),
+                                      flvAssoc             = cms.InputTag('pickyJetFlvAssoc','flavors'),
+                                      reGenJetAssoc        = cms.InputTag('pickyJets:GenPtr'),
                                       fillReGenJets        = cms.untracked.bool(True),
                                       minJetPt             = cms.untracked.double(20.0),
                                       fillCustomBtagInfo   = cms.untracked.bool(True),
