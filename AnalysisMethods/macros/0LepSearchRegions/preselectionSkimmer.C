@@ -25,7 +25,7 @@ public:
     load(PUPPIJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
     load(ELECTRONS);
     load(MUONS);
-    load(ELECTRONS);
+    load(TAUS);
     setDefaultJets(PUPPIJETS);
   }
 
