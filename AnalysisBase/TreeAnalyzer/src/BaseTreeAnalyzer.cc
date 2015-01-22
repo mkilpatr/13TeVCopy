@@ -175,7 +175,6 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
   }
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
 void BaseTreeAnalyzer::setDefaultJets(VarType type) {
   switch (type) {
      case AK4JETS : {
@@ -196,25 +195,27 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
      }
    }
 }
+//--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
   return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
+bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
   return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_TIGHT );
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
+bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
   return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
+bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
   return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta && muon.isgoodpogmuon());
   //return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta);
 }
 //--------------------------------------------------------------------------------------------------
-inline bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
+bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
   return (tau.pt() > minTauPt && fabs(tau.eta()) < maxTauEta && tau.isgoodpogtau());
 }
 //--------------------------------------------------------------------------------------------------
