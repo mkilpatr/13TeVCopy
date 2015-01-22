@@ -26,8 +26,8 @@ public:
   Polybook       eventPlots;
   TString        prefix;
   bool           usePuppi;
-  ParamatrixMVA* paramGen; //puppiVSnopuppi
-  ParamatrixMVA* paramRec; //puppiVSnopuppi
+  ParamatrixMVA* paramGen;
+  ParamatrixMVA* paramRec;
 
   Analyze(TString fname, string treeName, bool isMCTree, bool usePuppi) : BaseTreeAnalyzer(fname, treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter), usePuppi(usePuppi)
   {
@@ -53,16 +53,10 @@ public:
     static const int gen_ak4pfchs_genjet_ptD     = genMVA->findVariable("ak4pfchs_genjet_ptD"    );
     static const int gen_ak4pfchs_genjet_axis1   = genMVA->findVariable("ak4pfchs_genjet_axis1"  );
     static const int gen_ak4pfchs_genjet_axis2   = genMVA->findVariable("ak4pfchs_genjet_axis2"  );
-    //static const int gen_ak4pfchs_genjet_blf0    = genMVA->findVariable("ak4pfchs_genjet_blf0"   );
-    //static const int gen_ak4pfchs_genjet_blf1    = genMVA->findVariable("ak4pfchs_genjet_blf1"   );
-    //static const int gen_ak4pfchs_genjet_blf2    = genMVA->findVariable("ak4pfchs_genjet_blf2"   );
     static const int gen_ak4pfchs_genjet_jetMult = genMVA->findVariable("ak4pfchs_genjet_jetMult");
     genMVA->setVariable(gen_ak4pfchs_genjet_ptD    ,jet.ptD);
     genMVA->setVariable(gen_ak4pfchs_genjet_axis1  ,jet.axis1);
     genMVA->setVariable(gen_ak4pfchs_genjet_axis2  ,jet.axis2);
-    //genMVA->setVariable(gen_ak4pfchs_genjet_blf0   ,jet.blf0);
-    //genMVA->setVariable(gen_ak4pfchs_genjet_blf1   ,jet.blf1);
-    //genMVA->setVariable(gen_ak4pfchs_genjet_blf2   ,jet.blf2);
     genMVA->setVariable(gen_ak4pfchs_genjet_jetMult,jet.mult);
     return genMVA->evaluateMethod(0);
   } //getGenMVA()
@@ -73,32 +67,20 @@ public:
 		static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
 		static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
 		static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
-		//static const int reco_ak4pfchs_jet_blf0    = recoMVA->findVariable("ak4pfpuppi_jet_blf0"   );
-		//static const int reco_ak4pfchs_jet_blf1    = recoMVA->findVariable("ak4pfpuppi_jet_blf1"   );
-		//static const int reco_ak4pfchs_jet_blf2    = recoMVA->findVariable("ak4pfpuppi_jet_blf2"   );
 		static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
 		recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,jet.ptD  );
 		recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,jet.axis1);
 		recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf0   ,jet.blf0 );
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf1   ,jet.blf1 );
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf2   ,jet.blf2 );
 		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
 	} // usePuppi
 	else {
 		static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfchs_jet_ptD"    );
 		static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfchs_jet_axis1"  );
 		static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfchs_jet_axis2"  );
-		//static const int reco_ak4pfchs_jet_blf0    = recoMVA->findVariable("ak4pfchs_jet_blf0"   );
-		//static const int reco_ak4pfchs_jet_blf1    = recoMVA->findVariable("ak4pfchs_jet_blf1"   );
-		//static const int reco_ak4pfchs_jet_blf2    = recoMVA->findVariable("ak4pfchs_jet_blf2"   );
 		static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfchs_jet_jetMult");
 		recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,jet.ptD  );
 		recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,jet.axis1);
 		recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf0   ,jet.blf0 );
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf1   ,jet.blf1 );
-		//recoMVA->setVariable(reco_ak4pfchs_jet_blf2   ,jet.blf2 );
 		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
 	} // !usePuppi
     return recoMVA->evaluateMethod(0);
@@ -122,10 +104,6 @@ public:
     categorize(jets,genParts,isReco);
     eventPlots.rewind();
     eventPlots("",true);
-
-    //eventPlots.checkPoint(0);
-    //eventPlots.fill( nPV, 1, "nPV", ";# of prim. vert.", 40, -0.5, 39.5 );
-    //eventPlots.revert(0);
 
     ++eventPlots;
     eventPlots( "gen___", !isReco );
@@ -167,27 +145,10 @@ public:
       eventPlots.fill( j.ptD       , 1, "ptD"   , ";p_{t}(D)"           ,  50,   0,     1   );
       eventPlots.fill( j.axis1     , 1, "axis1" , ";axis_{1}"           ,  50,   0,     0.4 );
       eventPlots.fill( j.axis2     , 1, "axis2" , ";axis_{2}"           ,  50,   0,     0.4 );
-      //eventPlots.fill( j.blf0      , 1, "blf0"  , ";blf_{0}"            , 200, -10,    10   );
-      //eventPlots.fill( j.blf1      , 1, "blf1"  , ";blf_{1}"            , 200, -10,    10   );
-      //eventPlots.fill( j.blf2      , 1, "blf2"  , ";blf_{2}"            , 200, -10,    10   );
       eventPlots.fill( j.mult      , 1, "mult"  , ";# of part."         , 100, -0.5,   99.5 );
-      //eventPlots.fill( j.nearDR   , 1, "nearDR", ";#DeltaR(jet,parton)",  50,  0  ,    0.4);
 
       if(isReco) eventPlots.fill( getRecoMVA(j), 1, "_disc", ";Q/G disc", 50, -1, 1  );
       else       eventPlots.fill( getGenMVA(j),  1, "_disc", ";Q/G disc", 50, -1, 1  );
-
-      /* if(isReco){
-        eventPlots.fill( j.betaStar     , 1, "betaStar",       ";betaStar" ,              50,  0, 0.3);
-        eventPlots.fill( j.betaStar / (.2 * TMath::Log(float(nPV) - .67)),
-        		                         1, "betaStar_o_cut", ";betaStar/ln(nPV - .67)",  50,  0, 0.3);
-        eventPlots.fill( j.qgl          , 1, "qgl"      ,      ";Q/G likili",             50,  0, 1  );
-        eventPlots.fill( j.csv          , 1, "csv"      ,      ";D_{b}(csv)",             50,  0, 1  );
-        eventPlots.fill( getRecoMVA(j)  , 1, "newQgl"   ,      ";Q/G likili",             50, -1, 1  );
-        eventPlots.fill( getRecoPUMVA(j), 1, "newQglwPU",      ";Q/G likili",             50, -1, 1  );
-      } // isReco
-      else {
-        eventPlots.fill( getGenMVA(j), 1, "newQgl", ";Q/G likili", 50, -1, 1  );
-      } // not isReco */
 
     } // jets
 
@@ -207,7 +168,6 @@ public:
 
   const Panvariate* genMVA;
   const Panvariate* recoMVA;
-  //const Panvariate*  recoMVAWithPU;
 
 }; // BaseTreeAnalyzer
 
@@ -216,14 +176,12 @@ public:
 
 
 
-void processQGInvestigations(string fname = "evttree_lowStat_QCD_test.root", string treeName = "TestAnalyzer/Events", bool isMCTree = true, bool usePuppi = true) {
-  //fname = "evttree_lowStats.root"; // tempory for testing
+void processQGInvestigations(string fname = "evttree_lowStat_QCD_test.root", string fnameOut = "out", string treeName = "TestAnalyzer/Events", bool isMCTree = true, bool usePuppi = true) {
   Analyze a(fname, treeName, isMCTree, usePuppi);
-  TString name = fname;
-  name = ((TObjString*)name.Tokenize(".")->At(0))->GetString();
-  a.prefix  = name;
+  a.prefix  = fnameOut;
   a.prefix += "_";
   a.analyze();
-  if (a.usePuppi) a.out( TString::Format("%s_plots_puppi_test.root", name.Data()) );
-  else            a.out( TString::Format(  "%s_plots_ak4_test.root", name.Data()) );
+  if (usePuppi) fnameOut += "_puppi.root";
+  else          fnameOut += "_ak4.root";
+  a.out(fnameOut);
 } // processQGInvestigations()

@@ -99,16 +99,10 @@ public:
       size ijetptD_     ;
       size ijetaxis1_   ;
       size ijetaxis2_   ;
-      //size ijetblf0_    ;
-      //size ijetblf1_    ;
-      //size ijetblf2_    ;
       size ijetMult_    ;
       size igenjetptD_   ;
       size igenjetaxis1_ ;
       size igenjetaxis2_ ;
-      //size igenjetblf0_  ;
-      //size igenjetblf1_  ;
-      //size igenjetblf2_  ;
       size igenjetMult_  ;
       //for top assoc
       size iGenAssocPrtIndex_;

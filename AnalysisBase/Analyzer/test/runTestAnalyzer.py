@@ -42,12 +42,6 @@ options.inputFiles = (
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/E8DF5154-916F-E411-937A-00266CFFBF88.root',
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/10000/284DE32F-956F-E411-B06D-C4346BC8E730.root',
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/10000/2C7E1B90-956F-E411-82F1-1CC1DE056008.root'
-                       # pattuples
-                       #'/eos/uscms/store/user/vdutta/13TeV/120914/merged/qcd_mg_ht1000toinf_ext_ntuple.root',
-                       #'/eos/uscms/store/user/vdutta/13TeV/120914/merged/qcd_mg_ht1000toinf_ntuple.root',
-                       #'/eos/uscms/store/user/vdutta/13TeV/120914/merged/qcd_mg_ht250to500_ntuple.root',
-                       #'/eos/uscms/store/user/vdutta/13TeV/120914/merged/qcd_mg_ht500to1000_ntuple.root'
-                       
                        )
 
 options.maxEvents = -1
@@ -103,7 +97,7 @@ for idmod in my_id_modules:
 process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto")
 process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose")
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
-process.TestAnalyzer.Electrons.tightId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
+process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
 # Custom settings: jets
 process.TestAnalyzer.Jets.fillReGenJets = True
