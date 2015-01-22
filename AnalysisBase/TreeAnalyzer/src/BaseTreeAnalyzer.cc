@@ -198,8 +198,8 @@ inline bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
 }
 //--------------------------------------------------------------------------------------------------
 inline bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
-  //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
-  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
+  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
+  //  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
 }
 //--------------------------------------------------------------------------------------------------
