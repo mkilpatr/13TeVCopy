@@ -53,7 +53,7 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
     for(unsigned int iJ = 0; iJ <  analyzer->ak4Reader.recoJets.size(); ++iJ){
       RecoJetF& jet = analyzer->ak4Reader.recoJets.at(iJ);
       //if(!analyzer->isGoodJet(jet)) continue;
-      if(jet.pt()<30) continue; // to get high eta jets
+      if(jet.pt()<20) continue; // to get high eta jets
       recoJets.emplace_back(&jet);
       recoJets.back().origInd  = iJ;
       recoJets.back().csv      = jet.csv();
@@ -68,7 +68,7 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
     for(unsigned int iJ = 0; iJ <  analyzer->ak4Reader.genJets.size(); ++iJ){
       GenJetF& jet = analyzer->ak4Reader.genJets.at(iJ);
       //if(!analyzer->isGoodJet(jet)) continue;
-      if(jet.pt()<30) continue; // to get high eta jets
+      if(jet.pt()<20) continue; // to get high eta jets
       genJets.emplace_back(&jet);
       genJets.back().origInd = iJ;
       genJets.back().ptD    = analyzer->ak4Reader.genjetptD_  ->at(iJ);
