@@ -14,7 +14,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
-
+#include <TRandom3.h>
 
 namespace ucsbsusy {
 
