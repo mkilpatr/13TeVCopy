@@ -12,13 +12,12 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('?'),                    
+                                      globalTag        = cms.string ('PHYS14_25_V1::All'),                    
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
                                       totalEvents      = cms.int32  (-99),                      #Total number of ecents in the sample
                                       crossSectionScaling     = cms.double (1),                 #Luminosity to scale to (given the cross section and total events)
-                                      genEventInfoSource      = cms.InputTag (''),                                                                                                                                  
                                       )
 
 nominal_configuration = cms.PSet(
@@ -27,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('PHYS14_25_V1'),      #Global tag
+                                      globalTag        = cms.string ('PHYS14_25_V1::All'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -40,6 +39,7 @@ nominal_configuration = cms.PSet(
                                       packedGenParticles  = cms.InputTag('packedGenParticles'),
                                       prunedGenParticles  = cms.InputTag('prunedGenParticles'),
                                       saveAllGenParticles = cms.untracked.bool(False),
+                                      savePartonHadronization = cms.untracked.bool(True),
                                   ),
 
                                   EventInfo = cms.untracked.PSet(
@@ -54,21 +54,47 @@ nominal_configuration = cms.PSet(
                                       jets              = cms.InputTag('slimmedJets'),
                                       reGenJets         = cms.InputTag('redAK4','Gen'),
                                       stdGenJets        = cms.InputTag('slimmedGenJets'),
-                                      fillReGenJets     = cms.untracked.bool(False),
+                                      flvAssoc          = cms.InputTag('redAK4FlvAssoc','flavors'),
+                                      fillReGenJets     = cms.untracked.bool(True),
                                       genParticles      = cms.InputTag('prunedGenParticles'),
-                                      minJetPt          = cms.untracked.double(15.0),
+                                      minJetPt          = cms.untracked.double(20.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
                                       fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
-                                      isFilled          = cms.untracked.bool(True),
-                                      jetsPuppi         = cms.InputTag('correctedAK4PFJetsPuppi'),
-                                      #jetsPuppi         = cms.InputTag('ak4PFJetsPuppi'),
-                                      reGenJetsPuppi    = cms.InputTag(''),
-                                      stdGenJetsPuppi   = cms.InputTag('slimmedGenJets'),
-                                      fillReGenJetsPuppi= cms.untracked.bool(False),
-                                      minJetPtPuppi     = cms.untracked.double(20.0),
+                                      isFilled           = cms.untracked.bool(True),
+                                      jets               = cms.InputTag('redAK4Puppi',''),
+                                      btags              = cms.InputTag('ak4PuppiCSVIVF'),
+                                      reGenJets          = cms.InputTag('redAK4Puppi','Gen'),
+                                      stdGenJets         = cms.InputTag(''),
+                                      flvAssoc          = cms.InputTag('redAK4FlvAssoc','flavors'),
+                                      reGenJetAssoc      = cms.InputTag('redAK4Puppi:GenPtr'),
+                                      fillReGenJets      = cms.untracked.bool(True),
+                                      minJetPt           = cms.untracked.double(20.0),
+                                      fillCustomBtagInfo = cms.untracked.bool(True),
+                                      fillJetGenInfo     = cms.untracked.bool(True),
+                                      fillJetShapeInfo   = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
+                                      applyJEC           = cms.untracked.bool(False)
+                                  ),
+
+                                  PickyJets = cms.untracked.PSet(
+                                      isFilled             = cms.untracked.bool(True),
+                                      jets                 = cms.InputTag('pickyJets',''),
+                                      btags                = cms.InputTag('pickyJetCSVIVF'),
+                                      reGenJets            = cms.InputTag('pickyJets','Gen'),
+                                      stdGenJets           = cms.InputTag(''),
+                                      flvAssoc             = cms.InputTag('pickyJetFlvAssoc','flavors'),
+                                      reGenJetAssoc        = cms.InputTag('pickyJets:GenPtr'),
+                                      fillReGenJets        = cms.untracked.bool(True),
+                                      minJetPt             = cms.untracked.double(20.0),
+                                      fillCustomBtagInfo   = cms.untracked.bool(True),
+                                      fillJetGenInfo       = cms.untracked.bool(True),
+                                      fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillTopJetAssoc   = cms.untracked.bool(True),
+                                      applyJEC             = cms.untracked.bool(False)
                                   ),
 
                                   Muons = cms.untracked.PSet(
@@ -104,4 +130,4 @@ nominal_configuration = cms.PSet(
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
                                   )
-                                 )
+                                )

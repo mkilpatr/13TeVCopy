@@ -52,6 +52,8 @@ protected:
   bool                                                      computeArea         ;
   bool                                                      explicitGhosts      ;
 
+  std::vector<int>                                          randomSeeds         ;
+
   std::shared_ptr<fastjet::JetDefinition>                   jetDefinition       ;
   std::shared_ptr<fastjet::ClusterSequence>                 clusterSequence     ;
   std::shared_ptr<fastjet::JetDefinition>                   subJetDefinition    ;
@@ -67,9 +69,10 @@ protected:
 /*       Interface       */
 /*************************/
 public:
-  FastJetClusterer(bool computeArea = false, bool explicitGhosts = false)
+  FastJetClusterer(bool computeArea = false, bool explicitGhosts = false, const std::vector<int> * inRandomSeeds = 0)
     : computeArea     (computeArea   )
     , explicitGhosts  (explicitGhosts)
+    , randomSeeds     (inRandomSeeds ? *inRandomSeeds : std::vector<int>())
   { }
   FastJetClusterer(const FastJetClusterer& other);
   FastJetClusterer& operator=(const FastJetClusterer& other);
@@ -115,7 +118,7 @@ public:
   }
   
   static double   getCurrentGhostArea()   { return currentGhostArea;  }
-
+  void setDeterministicSeed(const unsigned int runNumber, const unsigned int eventNumber);
 
 /*************************/
 /*      Computations     */
@@ -127,7 +130,7 @@ public:
                             , double                    maxGhostEta       = 5
                             , double                    ghostArea         = fastjet::gas::def_ghost_area
                             , double                    meanGhostPT       = fastjet::gas::def_mean_ghost_pt
-                            , int                       numAreaRepeats    = fastjet::gas::def_repeat
+                            , int                       numAreaRepeats    = 1 //fastjet::gas::def_repeat
                             , double                    ghostGridScatter  = fastjet::gas::def_grid_scatter
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
@@ -137,7 +140,7 @@ public:
                             , double                    maxGhostEta       = 5
                             , double                    ghostArea         = fastjet::gas::def_ghost_area
                             , double                    meanGhostPT       = fastjet::gas::def_mean_ghost_pt
-                            , int                       numAreaRepeats    = fastjet::gas::def_repeat
+                            , int                       numAreaRepeats    = 1//fastjet::gas::def_repeat
                             , double                    ghostGridScatter  = fastjet::gas::def_grid_scatter
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
@@ -146,11 +149,12 @@ public:
                             , double                    maxGhostEta       = 5
                             , double                    ghostArea         = fastjet::gas::def_ghost_area
                             , double                    meanGhostPT       = fastjet::gas::def_mean_ghost_pt
-                            , int                       numAreaRepeats    = fastjet::gas::def_repeat
+                            , int                       numAreaRepeats    = 1//fastjet::gas::def_repeat
                             , double                    ghostGridScatter  = fastjet::gas::def_grid_scatter
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
 
+  void    trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets);
 
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
@@ -159,6 +163,11 @@ public:
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
                             , std::vector<Jet>&         satellites
+                            );
+
+  template<typename Splitter>
+  void    pickySubjets      ( const Splitter*          splitter
+                            , int                       maxSplits   = 4
                             );
 /*************************/
 /*   Helper Functions    */

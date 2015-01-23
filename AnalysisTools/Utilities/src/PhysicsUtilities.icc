@@ -4,8 +4,6 @@
 #include<TString.h>
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
-using namespace ucsbsusy;
-
 /********************/
 /*   Computations   */
 /********************/
@@ -14,11 +12,11 @@ using namespace ucsbsusy;
 // Count Objects
 //_____________________________________________________________________________
 template<typename Object, typename ObjectPtr>
-size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta, bool (*test)(const Object&))
+ucsbsusy::size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta, bool (*test)(const Object&))
 {
-  const size          numObjects    = objects.size();
-  size                count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size          numObjects    = objects.size();
+  ucsbsusy::size                count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     if (test && !(*test)(*objects[iObject]))            continue;
     if (objects[iObject]->pt()              < minPT)    continue;
     if (TMath::Abs(objects[iObject]->eta()) > maxEta)   continue;
@@ -29,11 +27,11 @@ size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, 
 
 //_____________________________________________________________________________
 template<typename ObjectPtr>
-size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta)
+ucsbsusy::size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta)
 {
-  const size          numObjects    = objects.size();
-  size                count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size          numObjects    = objects.size();
+  ucsbsusy::size                count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     if (objects[iObject]->pt()              < minPT)    continue;
     if (TMath::Abs(objects[iObject]->eta()) > maxEta)   continue;
     ++count;
@@ -43,11 +41,11 @@ size PhysicsUtilities::countObjectsDeref(const std::vector<ObjectPtr>& objects, 
 
 //_____________________________________________________________________________
 template<typename Object>
-size PhysicsUtilities::countObjects(const std::vector<Object>& objects, double minPT, double maxEta, bool (*test)(const Object&))
+ucsbsusy::size PhysicsUtilities::countObjects(const std::vector<Object>& objects, double minPT, double maxEta, bool (*test)(const Object&))
 {
-  const size          numObjects    = objects.size();
-  size                count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size          numObjects    = objects.size();
+  ucsbsusy::size                count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&     object        = objects[iObject];
     if (object.pt()    < minPT ) continue;
     if (absEta(object) > maxEta) continue;
@@ -58,11 +56,11 @@ size PhysicsUtilities::countObjects(const std::vector<Object>& objects, double m
 }
 //_____________________________________________________________________________
 template<typename Object, typename Analyzer>
-size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const)
+ucsbsusy::size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const)
 {
-  const size            numObjects    = objects.size();
-  size                  count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size            numObjects    = objects.size();
+  ucsbsusy::size                  count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&       object        = objects[iObject];
     if (analyzer && test && !(analyzer->*test)(object))   continue;
     ++count;
@@ -72,11 +70,11 @@ size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const An
 }
 //_____________________________________________________________________________
 template<typename Object, typename Analyzer>
-size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta)
+ucsbsusy::size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta)
 {
-  const size            numObjects    = objects.size();
-  size                  count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size            numObjects    = objects.size();
+  ucsbsusy::size                  count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&       object        = objects[iObject];
     if (get(object).pt()    < minPT )                     continue;
     if (absEta(get(object)) > maxEta)                     continue;
@@ -88,11 +86,11 @@ size PhysicsUtilities::countObjects(const std::vector<Object>& objects, const An
 }
 //_____________________________________________________________________________
 template<typename Property, typename Object>
-size PhysicsUtilities::countObjectProperties(const std::vector<Object>& objects, const Property& (Object::*getProperty)() const, double minPT, double maxEta, bool (*test)(const Property&))
+ucsbsusy::size PhysicsUtilities::countObjectProperties(const std::vector<Object>& objects, const Property& (Object::*getProperty)() const, double minPT, double maxEta, bool (*test)(const Property&))
 {
-  const size          numObjects    = objects.size();
-  size                count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size          numObjects    = objects.size();
+  ucsbsusy::size                count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Property&   object        = (objects[iObject].*getProperty)();
     if (get(object).pt()    < minPT ) continue;
     if (absEta(get(object)) > maxEta) continue;
@@ -103,17 +101,17 @@ size PhysicsUtilities::countObjectProperties(const std::vector<Object>& objects,
 }
 //_____________________________________________________________________________
 template<typename Object, typename Other>
-size PhysicsUtilities::countDistinctObjects(const std::vector<Object>& objects, const std::vector<Other>& vetoNearby, double minDRnearby, double minPT, double maxEta)
+ucsbsusy::size PhysicsUtilities::countDistinctObjects(const std::vector<Object>& objects, const std::vector<Other>& vetoNearby, double minDRnearby, double minPT, double maxEta)
 {
-  const size            numObjects    = objects.size();
-  size                  count         = 0;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  const ucsbsusy::size            numObjects    = objects.size();
+  ucsbsusy::size                  count         = 0;
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&       object        = objects[iObject];
     if (get(object).pt()    < minPT ) continue;
     if (absEta(get(object)) > maxEta) continue;
 
     double              nearestDR     = 1e308;
-    for (size iVeto = 0; iVeto < vetoNearby.size(); ++iVeto)
+    for (ucsbsusy::size iVeto = 0; iVeto < vetoNearby.size(); ++iVeto)
       nearestDR         = TMath::Min(nearestDR, deltaR(get(object), get(vetoNearby[iVeto])));
     if (nearestDR > minDRnearby)
       ++count;
@@ -161,8 +159,8 @@ Target PhysicsUtilities::convertTo(Source source, const char name[], bool lenien
 template<typename Object>
 void PhysicsUtilities::trash(std::vector<Object*>& objects)
 {
-  const size    numObjects  = objects.size();
-  for (size iObj = 0; iObj < numObjects; ++iObj)
+  const ucsbsusy::size    numObjects  = objects.size();
+  for (ucsbsusy::size iObj = 0; iObj < numObjects; ++iObj)
     if (objects[iObj])      delete objects[iObj];
   objects.clear();
 }
@@ -179,11 +177,11 @@ void PhysicsUtilities::trash(std::map<Key,Object*>& objects)
 // Finding objects in a group
 //_____________________________________________________________________________
 template<typename Object1, typename Object2>
-int PhysicsUtilities::findIndex(const Object1* target, const std::vector<Object2>& items, size first, size last)
+int PhysicsUtilities::findIndex(const Object1* target, const std::vector<Object2>& items, ucsbsusy::size first, ucsbsusy::size last)
 {
   if (items.empty())  return -1;
   if (last <= first)  last  = items.size() - 1u;
-  for (size item = first; item <= last; ++item)
+  for (ucsbsusy::size item = first; item <= last; ++item)
     if (&(items[item]) == target)
       return item;
   return -1;
@@ -291,9 +289,9 @@ int PhysicsUtilities::findFurthestDPhi(const Thing1& reference, const std::vecto
 template<typename Thing1, typename Thing2>
 double PhysicsUtilities::getNearestDR(const Thing1& reference, const std::vector<Thing2>& objects, int thisIndex, const double minPT)
 {
-  const size        numObjects    = objects.size();
+  const ucsbsusy::size        numObjects    = objects.size();
   double            nearestDR     = -1;
-  for (size index = 0; index < numObjects; ++index) {
+  for (ucsbsusy::size index = 0; index < numObjects; ++index) {
     if (static_cast<int>(index) == thisIndex) continue;
     if (get(objects[index]).pt() < minPT)     continue;
     const double    dR            = deltaR(reference, objects[index]);

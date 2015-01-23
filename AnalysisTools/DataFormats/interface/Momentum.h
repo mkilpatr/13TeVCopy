@@ -32,6 +32,7 @@ public :
   Float_t   phi()     const { return fMom.Phi();      }
   Float_t   mass()    const { return fMom.M();        }
   Float_t   E()       const { return fMom.E();        }
+  Float_t   energy()  const { return fMom.E();        }
   Float_t   Et()      const { return fMom.Et();       }
   Float_t   mt()      const { return fMom.Mt();       }
   Float_t   px()      const { return fMom.Px();       }
@@ -47,6 +48,12 @@ public :
 
   template< class Coords >
   void setP4(const ROOT::Math::LorentzVector<Coords> & v )    { fMom = v;    }
+
+  //cout the momentum
+  friend ostream& operator<<(ostream& os, const Momentum<CoordSystem>& m){
+    os << "("<<m.pt()<<","<<m.eta()<<","<<m.phi()<<")";
+    return os;
+  }
 
 private:
   ROOT::Math::LorentzVector<CoordSystem>	 fMom;

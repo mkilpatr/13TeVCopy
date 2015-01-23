@@ -2,6 +2,8 @@
 #include "RecoJets/JetProducers/interface/JetSpecific.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
+#include <fastjet/tools/Filter.hh>
+
 /*************************/
 /*      Interface        */
 /*************************/
@@ -40,7 +42,12 @@ FastJetClusterer& FastJetClusterer::operator=(const FastJetClusterer& other)
 FastJetClusterer::~FastJetClusterer()
 {
 }
-
+void FastJetClusterer::setDeterministicSeed(const unsigned int runNumber, const unsigned int eventNumber){
+  unsigned int minSeed_ =14327;
+  randomSeeds.resize(2);
+  randomSeeds[0] = std::max(runNumber,minSeed_ + 3) + 3 * eventNumber;
+  randomSeeds[1] = std::max(runNumber,minSeed_ + 5) + 5 * eventNumber;
+}
 //_____________________________________________________________________________
 void FastJetClusterer::clusterJets( const fastjet::JetDefinition& definition, double minJetPT, double maxGhostEta, double ghostArea
                                   , double meanGhostPT, int numAreaRepeats, double ghostGridScatter, double ghostPTScatter
@@ -49,30 +56,39 @@ void FastJetClusterer::clusterJets( const fastjet::JetDefinition& definition, do
   if (jetDefinition)
     throw cms::Exception("FastJetClusterer.clusterJets()", "Jets have already been clustered.");
 
+  //reset the random seeds
+  if(randomSeeds.size()){
+    fastjet::GhostedAreaSpec gas;
+    gas.set_random_status(randomSeeds);
+  }
+
   if (subJetDefinition) {
     subJetDefinition    .reset();
     subClusterSequences .clear();
     subClusterOrigins   .clear();
   }
 
-  if (computeArea)  currentGhostArea  = ghostArea;
-
   jetDefinition   .reset( new fastjet::JetDefinition(definition) );
   if (jetDefinition->plugin())
     jetDefinition->delete_plugin_when_unused();
 
-  clusterSequence .reset( computeArea
-                        ? new fastjet::ClusterSequenceArea( particles
-                                                          , *jetDefinition
-                                                          , ghostArea > 0
-                                                          ? fastjet::AreaDefinition ( explicitGhosts ? fastjet::active_area_explicit_ghosts : fastjet::active_area
-                                                                                    , fastjet::GhostedAreaSpec(maxGhostEta, numAreaRepeats, ghostArea, ghostGridScatter, ghostPTScatter, meanGhostPT)
-                                                                                    )
-                                                          : fastjet::AreaDefinition ( fastjet::VoronoiAreaSpec(-ghostArea) )
-                                                          )
-                        : new fastjet::ClusterSequence    ( particles, *jetDefinition )
-                        );
-  jets            = fastjet::sorted_by_pt(clusterSequence->inclusive_jets(minJetPT));
+  if(computeArea){
+    currentGhostArea  = ghostArea;
+    fastjet::AreaDefinition  * areaDef;
+
+    if(ghostArea <= 0)
+      areaDef = new fastjet::AreaDefinition ( fastjet::VoronoiAreaSpec(-ghostArea) );
+    else{
+      fastjet::GhostedAreaSpec spec(maxGhostEta, numAreaRepeats, ghostArea, ghostGridScatter, ghostPTScatter, meanGhostPT);
+      spec.set_fj2_placement(true);
+      areaDef = new fastjet::AreaDefinition (explicitGhosts ? fastjet::active_area_explicit_ghosts : fastjet::active_area, spec);
+    }
+    clusterSequence .reset(new fastjet::ClusterSequenceArea( particles, *jetDefinition,*areaDef));
+    delete areaDef;
+  } else {
+    clusterSequence .reset(new fastjet::ClusterSequence    ( particles, *jetDefinition ));
+  }
+  jets            = fastjet::sorted_by_pt(clusterSequence->inclusive_jets(std::max(minJetPT,1e-5)));
 }
 
 //_____________________________________________________________________________
@@ -90,6 +106,23 @@ void FastJetClusterer::clusterJets( fastjet::JetDefinition::Plugin* plugin, doub
 {
   clusterJets( fastjet::JetDefinition(plugin), minJetPT, maxGhostEta, ghostArea, meanGhostPT, numAreaRepeats, ghostGridScatter, ghostPTScatter );
 }
+
+void    FastJetClusterer::trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets){
+  fastjet::Filter trimmer( fastjet::JetDefinition(fastjet::kt_algorithm, rFilter), fastjet::SelectorPtFractionMin(trimPtFracMin));
+
+  std::vector<fastjet::PseudoJet>                           trimmedJets;
+  for ( std::vector<fastjet::PseudoJet>::const_iterator ijet = jets.begin(),
+      ijetEnd = jets.end(); ijet != ijetEnd; ++ijet ) {
+    fastjet::PseudoJet trimmedJet = trimmer(*ijet);
+    if(!trimmedJet.has_constituents()) continue;
+    if(useTrimmedSubjets){
+    	std::vector<fastjet::PseudoJet>  lSubJets = trimmedJet.pieces();
+    	trimmedJets.insert(trimmedJets.end(), lSubJets.begin(), lSubJets.end());
+    } else trimmedJets.push_back(trimmedJet);
+  }
+  jets = trimmedJets;
+}
+
 
 //_____________________________________________________________________________
 void FastJetClusterer::selectJets(double minJetPT, double maxJetEta)

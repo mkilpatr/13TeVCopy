@@ -21,12 +21,13 @@ class TestAnalyzer : public PhysicsAnalyzer {
     TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
     {
       initialize(cfg, "EventInfo", EVTINFO);
+      if(isMC()) initialize(cfg, "Gen", GENPARTICLES);
       initialize(cfg, "Jets", AK4JETS);
       initialize(cfg, "PuppiJets", PUPPIJETS);
+      initialize(cfg, "PickyJets", PICKYJETS);
       initialize(cfg, "Electrons", ELECTRONS);
       initialize(cfg, "Muons", MUONS);
       initialize(cfg, "Taus", TAUS);
-      if(isMC()) initialize(cfg, "Gen", GENPARTICLES);
       book();
     }
 

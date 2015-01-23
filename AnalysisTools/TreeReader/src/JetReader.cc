@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -25,28 +26,26 @@ JetReader::JetReader() : BaseReader(){
   jetptraw_    = new vector<float>;
   jetpuId_     = new vector<float>;
   jetcsv_      = new vector<float>;
-  jetflavor_   = new vector<int  >;
-  jetgenindex_ = new vector<int  >;
+  jetgenindex_ = new vector<int16  >;
   genjetpt_    = new vector<float>;
   genjeteta_   = new vector<float>;
   genjetphi_   = new vector<float>;
   genjetmass_  = new vector<float>;
+  genjetflavor_   = new vector<size8>;
   jetbetaStar_= new vector<float>;
   jetqgl_     = new vector<float>;
   jetptD_     = new vector<float>;
   jetaxis1_   = new vector<float>;
   jetaxis2_   = new vector<float>;
-  //jetblf0_    = new vector<float>;
-  //jetblf1_    = new vector<float>;
-  //jetblf2_    = new vector<float>;
-  jetMult_    = new vector<int  >;
+  jetMult_    = new vector<size16  >;
   genjetptD_  = new vector<float>;
   genjetaxis1_= new vector<float>;
   genjetaxis2_= new vector<float>;
-  //genjetblf0_ = new vector<float>;
-  //genjetblf1_ = new vector<float>;
-  //genjetblf2_ = new vector<float>;
-  genjetMult_ = new vector<int  >;
+  genjetMult_ = new vector<size16  >;
+  genAssocPrtIndex_ = new std::vector<size16>;
+  genAssocJetIndex_ = new std::vector<size16>;
+  genAssocCont_     = new std::vector<int8>  ;
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -70,12 +69,13 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
   }
   if(options_ & LOADGEN){
     clog << "gen ";
-    treeReader->setBranchAddress(branchName_, "jet_flavor"  , &jetflavor_   ,true);
     treeReader->setBranchAddress(branchName_, "jet_genIndex", &jetgenindex_ ,true);
     treeReader->setBranchAddress(branchName_,"genjet_pt"    , &genjetpt_    ,true);
     treeReader->setBranchAddress(branchName_,"genjet_eta"   , &genjeteta_   ,true);
     treeReader->setBranchAddress(branchName_,"genjet_phi"   , &genjetphi_   ,true);
     treeReader->setBranchAddress(branchName_,"genjet_mass"  , &genjetmass_  ,true);
+    treeReader->setBranchAddress(branchName_,"genjet_flavor", &genjetflavor_,true);
+
   }
   if(options_ & LOADJETSHAPE){
     clog << "jetshape ";
@@ -84,19 +84,19 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"jet_ptD"     , &jetptD_      );
     treeReader->setBranchAddress(branchName_,"jet_axis1"   , &jetaxis1_    );
     treeReader->setBranchAddress(branchName_,"jet_axis2"   , &jetaxis2_    );
-    //treeReader->setBranchAddress(branchName_,"jet_blf0"    , &jetblf0_     );
-    //treeReader->setBranchAddress(branchName_,"jet_blf1"    , &jetblf1_     );
-    //treeReader->setBranchAddress(branchName_,"jet_blf2"    , &jetblf2_     );
     treeReader->setBranchAddress(branchName_,"jet_jetMult" , &jetMult_     );
     if(options_ & LOADGEN){
       treeReader->setBranchAddress(branchName_,"genjet_ptD"     , &genjetptD_   );
       treeReader->setBranchAddress(branchName_,"genjet_axis1"   , &genjetaxis1_ );
       treeReader->setBranchAddress(branchName_,"genjet_axis2"   , &genjetaxis2_ );
-      //treeReader->setBranchAddress(branchName_,"genjet_blf0"    , &genjetblf0_  );
-      //treeReader->setBranchAddress(branchName_,"genjet_blf1"    , &genjetblf1_  );
-      //treeReader->setBranchAddress(branchName_,"genjet_blf2"    , &genjetblf2_  );
       treeReader->setBranchAddress(branchName_,"genjet_jetMult" , &genjetMult_  );
     }
+  }
+  if(options_ & LOADTOPASSOC){
+    clog <<"topassoc ";
+    treeReader->setBranchAddress(branchName_,"prtassoc_partonIndex" , &genAssocPrtIndex_);
+    treeReader->setBranchAddress(branchName_,"prtassoc_jetIndex"    , &genAssocJetIndex_);
+    treeReader->setBranchAddress(branchName_,"prtassoc_jetCont"     , &genAssocCont_    );
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -111,7 +111,8 @@ void JetReader::refresh(){
     genJets.clear();
     genJets.reserve(genjetpt_->size());
     for(unsigned int iJ = 0; iJ < genjetpt_->size(); ++iJ)
-      genJets.emplace_back(CylLorentzVectorF(genjetpt_->at(iJ),genjeteta_->at(iJ),genjetphi_->at(iJ),genjetmass_->at(iJ)),iJ);
+      genJets.emplace_back(CylLorentzVectorF(genjetpt_->at(iJ),genjeteta_->at(iJ),genjetphi_->at(iJ),genjetmass_->at(iJ)),iJ,genjetflavor_->at(iJ));
+    std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
   }
 
   if(options_ & LOADRECO){
@@ -120,8 +121,9 @@ void JetReader::refresh(){
     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
      GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
       recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
-          (*jetcsv_)[iJ], (options_ & LOADGEN) ? jetflavor_->at(iJ) : -1, matchedGen);
+          (*jetcsv_)[iJ], matchedGen);
     }
+    std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
 }
 

@@ -1,5 +1,6 @@
 #include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
 #include "RecoJets/JetProducers/interface/JetSpecific.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 
 
@@ -112,7 +113,6 @@ void FastJetClusterer::selectJets(double minJetPT, double maxJetEta, std::vector
   } // end loop over jets
 }
 }
-
 //_____________________________________________________________________________
 namespace {
 
@@ -132,5 +132,84 @@ template<typename Field, typename Type, typename Pair = std::pair<Field,Type> >
 struct GreaterFirst : public std::binary_function<Pair, Pair, Bool_t> {
   Bool_t operator()(const Pair& t1, const Pair& t2) const { return t1.first > t2.first; }
 };
+}
+namespace ucsbsusy{
+//_____________________________________________________________________________
+template<typename Spliter>
+void FastJetClusterer::pickySubjets ( const Spliter* splitter
+                                    , int maxSplits
+                                    )
+{
+  if (!jetDefinition)
+    throw cms::Exception("FastJetClusterer.pickySubjets()", "clusterJets() must first be run to obtain an initial jet list.");
+
+
+  jets.reserve( 2 * jets.size() );
+  for (size iJet = 0, numJets = jets.size(); iJet < numJets; ++iJet) {
+	if (jets[iJet].pt2() < 1e-10) continue;
+    static std::vector<fastjet::PseudoJet*> subClusters;
+    static std::vector<int>                 numSplits;
+    subClusters .clear();                   subClusters .push_back(new fastjet::PseudoJet(jets[iJet]));
+    numSplits   .clear();                   numSplits   .push_back(0);
+
+    int                                     nSubJets    = -1;
+    for (int iDe = 0; iDe < int(subClusters.size()); ++iDe) {
+      const fastjet::PseudoJet&             superJet    = *subClusters[iDe];
+
+      //-- Try to split up this jet -------------------------------------------
+      std::vector<fastjet::PseudoJet*>      subJets;
+      const double                          splitMetric = splitter->getSubjets(superJet, subJets);
+      if (subJets.size() < 2) {
+        if (++nSubJets)                     jets.push_back(superJet);
+        else                                jets[iJet]  = superJet;
+        PhysicsUtilities::trash(subJets);
+        continue;
+      }
+
+      //-- Special treatment to discard trivial jets --------------------------
+      for (int iSub = subJets.size(); --iSub >= 0;){
+        if (subJets[iSub]->pt2() < 1e-10) {
+          delete subJets[iSub];
+          subJets[iSub]                     = subJets.back();
+          subJets.pop_back();
+        }
+      }
+
+      assert(subJets.size());
+      if (subJets.size() < 2) {
+        delete subClusters[iDe];
+        subClusters[iDe]                    = subJets[0];
+        --iDe;                              continue;
+      }
+
+      //-- Sorted subjets ---------------------------------------------------------
+        static GreaterPT2                   COMPARATOR;
+        std::sort(subJets.begin(), subJets.end(), COMPARATOR);
+
+      //-- Split up jets that look deserving ----------------------------------
+      if (numSplits[iDe] < maxSplits && splitter->shouldSplit(superJet, subJets, &splitMetric,0)) {
+        subClusters .insert( subClusters.end (), subJets.begin(), subJets.end() );
+        numSplits   .resize( subClusters.size(), numSplits   [iDe] + 1 );
+      }
+      //-- Otherwise retain the current piece as a jet ------------------------
+      else {
+        PhysicsUtilities::trash(subJets);
+        if (++nSubJets)                     jets.push_back(superJet);
+        else                                jets[iJet]  = superJet;
+      }
+    } // end loop over jet decompositions
+
+    assert(nSubJets >= 0);
+    PhysicsUtilities::trash (subClusters);
+  } // end loop over jets
+
+  jets  = fastjet::sorted_by_pt(jets);
+}
+
+
 
 }
+
+
+
+

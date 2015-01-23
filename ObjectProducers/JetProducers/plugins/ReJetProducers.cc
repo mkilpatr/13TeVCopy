@@ -20,6 +20,8 @@ public:
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
     load(iEvent,iSetup);
     FastJetClusterer                                    clusterer(true, true);
+    clusterer.setDeterministicSeed(iEvent.id().run(),iEvent.id().event());
+
     clusterJets(clusterer,recoCandidates,edm::Handle<reco::PFCandidateCollection >());
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
@@ -58,6 +60,8 @@ public:
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
     load(iEvent,iSetup);
     FastJetClusterer                                    clusterer(true, true);
+    clusterer.setDeterministicSeed(iEvent.id().run(),iEvent.id().event());
+
     producePU ? clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle, &isPUParticle)
               : clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle);
 
