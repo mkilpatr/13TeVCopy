@@ -24,9 +24,6 @@ struct subJet  {
 	  ptD      (-1),
 	  axis1    (-1),
 	  axis2    (-1),
-	  //blf0     (-1),
-	  //blf1     (-1),
-	  //blf2     (-1),
 	  mult     (-1),
 	  matchGen  (0),
 	  type      (U),
@@ -41,9 +38,6 @@ struct subJet  {
   float ptD     ;
   float axis1   ;
   float axis2   ;
-  //float blf0    ;
-  //float blf1    ;
-  //float blf2    ;
   int   mult    ;
   const GenJetF*   matchGen;
   TYPE type     ;
@@ -59,7 +53,7 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
     for(unsigned int iJ = 0; iJ <  analyzer->ak4Reader.recoJets.size(); ++iJ){
       RecoJetF& jet = analyzer->ak4Reader.recoJets.at(iJ);
       //if(!analyzer->isGoodJet(jet)) continue;
-      if(jet.pt()<30) continue; // to get high eta jets
+      if(jet.pt()<20) continue; // to get high eta jets
       recoJets.emplace_back(&jet);
       recoJets.back().origInd  = iJ;
       recoJets.back().csv      = jet.csv();
@@ -68,24 +62,18 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
       recoJets.back().ptD      = analyzer->ak4Reader.jetptD_     ->at(iJ);
       recoJets.back().axis1    = analyzer->ak4Reader.jetaxis1_   ->at(iJ);
       recoJets.back().axis2    = analyzer->ak4Reader.jetaxis2_   ->at(iJ);
-      //recoJets.back().blf0     = analyzer->ak4Reader.jetblf0_    ->at(iJ);
-      //recoJets.back().blf1     = analyzer->ak4Reader.jetblf1_    ->at(iJ);
-      //recoJets.back().blf2     = analyzer->ak4Reader.jetblf2_    ->at(iJ);
       recoJets.back().mult     = analyzer->ak4Reader.jetMult_    ->at(iJ);
       recoJets.back().matchGen = jet.genJet();
     } // iJ < recoJets.size()
     for(unsigned int iJ = 0; iJ <  analyzer->ak4Reader.genJets.size(); ++iJ){
       GenJetF& jet = analyzer->ak4Reader.genJets.at(iJ);
       //if(!analyzer->isGoodJet(jet)) continue;
-      if(jet.pt()<30) continue; // to get high eta jets
+      if(jet.pt()<20) continue; // to get high eta jets
       genJets.emplace_back(&jet);
       genJets.back().origInd = iJ;
       genJets.back().ptD    = analyzer->ak4Reader.genjetptD_  ->at(iJ);
       genJets.back().axis1  = analyzer->ak4Reader.genjetaxis1_->at(iJ);
       genJets.back().axis2  = analyzer->ak4Reader.genjetaxis2_->at(iJ);
-      //genJets.back().blf0   = analyzer->ak4Reader.genjetblf0_ ->at(iJ);
-      //genJets.back().blf1   = analyzer->ak4Reader.genjetblf1_ ->at(iJ);
-      //genJets.back().blf2   = analyzer->ak4Reader.genjetblf2_ ->at(iJ);
       genJets.back().mult   = analyzer->ak4Reader.genjetMult_ ->at(iJ);
     } // iJ < genJets.size()
   } // ak4Reader.isLoaded()
