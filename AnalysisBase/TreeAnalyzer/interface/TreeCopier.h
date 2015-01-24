@@ -67,6 +67,7 @@ namespace ucsbsusy {
   };
 
   class TreeCopierManualBranches : public TreeCopier {
+  public:
     TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0) :
       TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
   public:
