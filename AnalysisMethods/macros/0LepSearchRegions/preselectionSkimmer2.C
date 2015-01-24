@@ -19,21 +19,21 @@ using namespace ucsbsusy;
 class Copier : public TreeCopierLoadedBranches {
 public:
   ParamatrixMVA* paramRec;
-  bool jetNoLep;
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars * pars, bool jetNoLep_) : TreeCopierLoadedBranches(fileName,treeName,outFileName,isMCTree,pars) {
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars* pars) : TreeCopierLoadedBranches(fileName,treeName,outFileName,isMCTree,pars) {
     TFile* recoFile = TFile::Open("/uscms/home/mullin/nobackup/stuff2015/quarkGluonTagger/QGDisc_reco_puppi.root", "READ");
     paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
     delete recoFile;
-    jetNoLep = jetNoLep_;
+
   };
   virtual ~Copier() {};
 
   virtual void loadVariables(){
     load(EVTINFO);
-    load(AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADTOPASSOC | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
     load(ELECTRONS);
     load(MUONS);
     load(TAUS);
+    load(GENPARTICLES);
     setDefaultJets(AK4JETS);
   }
 
@@ -52,49 +52,30 @@ public:
   } //
 
   virtual bool fillEvent() {
+    if(nLeptons == 0) return false;
+    if(nLeptons > 2) return false;
+    if(nJets < 4) return false;
 
-
-    if(nLeptons != 1) return false;
-    if(leptons[0]->pt() < 30) return false;
-
-    if(jetNoLep){
-      for(const auto * l : leptons){
-        met->setP4( met->p4() + l->p4());
-      }
+    if(nLeptons == 2){
+      met->setP4( met->p4() + leptons[1]->p4());
       evtInfoReader.met_phi = met->phi();
       evtInfoReader.met_pt = met->pt();
     }
+    if(met->pt() < 150) return false;
 
-    //lepton veto
-//    if(nLeptons + nTaus > 0) return false;
-
-
+    if(PhysicsUtilities::absDeltaPhi(*leptons[0], *met) <= 1) return false;
 
 
-    //Trigger requirements
-    if(PhysicsUtilities::countObjectsDeref(jets,90,2.4) < 2) return false;
-    if(met->pt() < 200) return false;
 
-    //Tight b-tag requirement
-    int nTB = 0;
-    for(auto* j : bJets) if(isTightBJet(*j)) nTB++;
-    if(!nTB) return false;
 
-    //5 jet requirement
-    if(nJets < 5) return false;
-
-    //QCD killing cuts
-    JetReader * dJets = getDefaultJets();
-//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[0],*met)) < .5) return false;
-//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[1],*met)) < .5) return false;
-//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[2],*met)) < .3) return false;
-
-    //replace old qgl with new one
-    for(unsigned int iJ = 0; iJ < dJets->recoJets.size(); ++iJ){
-      const auto& j =  dJets->recoJets[iJ];
-      dJets->jetqgl_->at(j.index()) = getRecoMVA(j,dJets);
-    }
-
+//    //lepton veto
+//    if(nLeptons != 1) return false;
+//
+//    //Trigger requirements
+//    if(met->pt() < 150) return false;
+//
+//    //5 jet requirement
+//    if(nJets < 3) return false;
     return true;
   }
 
@@ -121,12 +102,12 @@ public:
  *
  */
 
-void preselectionSkimmer(string fileName, string processName, double crossSection, double lumi = 5, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", bool jetNoLep = false) {
+void preselectionSkimmer2(string fileName, string processName, double crossSection, double lumi = 5, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmedPuppi") {
+
   ConfigPars pars;
-  if(jetNoLep){
-    pars.cleanJetsvLeptons_ = true;
-    pars.cleanJetsvTaus_ = true;
-  }
+  pars.cleanJetsvLeptons_ = true;
+  pars.cleanJetsvTaus_ = true;
+
 
   //get the output name
   TString prefix(fileName);
@@ -139,9 +120,9 @@ void preselectionSkimmer(string fileName, string processName, double crossSectio
   for(unsigned int iP = 0; defaults::PROCESS_NAMES[iP][0]; ++iP) if(defaults::PROCESS_NAMES[iP] == processName) process = static_cast<defaults::Process>(iP);
   if(process == defaults::NUMPROCESSES) throw std::invalid_argument("Did not provide a valid process name (see defaults::PROCESS_NAMES)");
 
-  Copier a(fileName,treeName,outName.Data(),process != defaults::DATA, &pars, jetNoLep);
+  Copier a(fileName,treeName,outName.Data(),process != defaults::DATA, &pars);
   //set weight and process
-  a.weight = lumi * crossSection *1000 / ( nEvents > 0 ? nEvents : float(a.getEntries())  );
+  a.weight = lumi * 1000*crossSection / ( nEvents > 0 ? nEvents : float(a.getEntries())  );
   a.process = process;
 
   clog << "Skimming "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and weight "<< a.weight <<" into file "<< outName << endl;
