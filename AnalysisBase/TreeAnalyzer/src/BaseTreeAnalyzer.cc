@@ -18,6 +18,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     run               (0),
     lumi              (0),
     event             (0),
+    weight            (1),
+    process           (defaults::NUMPROCESSES),
     nPV               (0),
     rho               (0),
     nLeptons          (0),
@@ -108,6 +110,8 @@ void BaseTreeAnalyzer::processVariables()
     rho   = evtInfoReader.rho;
     met   = &evtInfoReader.met;
     genmet= &evtInfoReader.genmet;
+    weight=  evtInfoReader.weight;
+    process =  evtInfoReader.process;
   }
 
   if(genParticleReader.isLoaded()){

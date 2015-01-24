@@ -144,6 +144,9 @@ public:
     unsigned int  run;
     unsigned int  lumi;
     unsigned int  event;
+    float         weight;
+    defaults::Process process;
+
     int   nPV;
     float rho;
     int   nLeptons;
