@@ -122,6 +122,8 @@ void BaseTMVAProducer::runVarSet(size iSet){
     cout << "  " << iterator.getBinTitle()                                                                            << endl;
     cout << "_____________________________________________________________________________________________________\n" << endl;
 
+    if(config.weightExpr != "") factory->SetWeightExpression(config.weightExpr);
+
     factory->PrepareTrainingAndTestTree("", config.splittingOptions);
     for(unsigned int iF = 0; iF < config.factories.size(); ++iF)
       mva    ->bookMethod         ( config.factories[iF].type, config.factories[iF].title, config.factories[iF].options  );

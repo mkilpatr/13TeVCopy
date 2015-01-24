@@ -42,11 +42,19 @@ namespace ucsbsusy {
     TString xmlDir;
     TString factoryOptions;
     TString splittingOptions;
+    TString weightExpr;
     std::vector<Space*>  axes;
     std::vector<TMVAFactoryConfiguration> factories;
 
     static const TString defaultFactoryOptions;
     static const TString defaultSplittingOptions;
+
+    TMVAConfiguration() :
+      factoryOptions (defaultFactoryOptions),
+      splittingOptions (defaultSplittingOptions),
+      weightExpr ("")
+      {}
+
     };
 
 
@@ -83,6 +91,7 @@ namespace ucsbsusy {
     void addAxis(Space * space);
     void setConfiguration(const TString name, const TString title, const TString xmlDir,
         const TString factoryOptions = TMVAConfiguration::defaultFactoryOptions, const TString splittingOptions = TMVAConfiguration::defaultSplittingOptions);
+    void setWeightExpr(const TString expr) {config.weightExpr = expr;}
 
   protected:
     //_____________________________________________________________________________
