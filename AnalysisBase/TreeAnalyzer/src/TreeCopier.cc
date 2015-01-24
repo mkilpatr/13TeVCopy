@@ -4,8 +4,8 @@
 using namespace ucsbsusy;
 
 
-TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
+TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree,ConfigPars * pars)
+: BaseTreeAnalyzer(fileName,treeName,isMCTree,pars,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {};
 TreeCopier::~TreeCopier(){ if(!outFile_) return; outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
 
@@ -33,8 +33,8 @@ void TreeCopier::analyze(int reportFrequency, int numEvents)
 // TreeFlattenCopier
 //--------------------------------------------------------------------------------------------------
 
-TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
+TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree,ConfigPars * pars)
+: BaseTreeAnalyzer(fileName,treeName,isMCTree,pars,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {
   outFile_ = new TFile(outFileName_,"RECREATE");
   outFile_->cd();

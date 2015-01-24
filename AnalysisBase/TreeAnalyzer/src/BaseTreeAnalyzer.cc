@@ -14,10 +14,12 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,ConfigPars * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
     run               (0),
     lumi              (0),
     event             (0),
+    weight            (1),
+    process           (defaults::NUMPROCESSES),
     nPV               (0),
     rho               (0),
     nLeptons          (0),
@@ -28,19 +30,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     genmet            (0),
     isMC_             (isMCTree),
     defaultJets       (0),
-    cleanJetsvLeptons_(false),
-    cleanJetsvTaus_   (false),
-    minElePt          (10.0),
-    minMuPt           (10.0),
-    minTauPt          (20.0),
-    minJetPt          (30.0),
-    minBJetPt         (30.0),
-    maxEleEta         (2.5 ),
-    maxMuEta          (2.4 ),
-    maxTauEta         (2.3 ),
-    maxJetEta         (2.4 ),
-    maxBJetEta        (2.4 ),
-    minJetLepDR       (0.4 )
+    config            (pars ? *pars : ConfigPars())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 }
@@ -120,6 +110,8 @@ void BaseTreeAnalyzer::processVariables()
     rho   = evtInfoReader.rho;
     met   = &evtInfoReader.met;
     genmet= &evtInfoReader.genmet;
+    weight=  evtInfoReader.weight;
+    process =  evtInfoReader.process;
   }
 
   if(genParticleReader.isLoaded()){
@@ -199,34 +191,34 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
-  return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
+  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
-  return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_TIGHT );
+  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_TIGHT );
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isLooseBJet(const RecoJetF& jet) const {
-  return (jet.pt() > minJetPt && fabs(jet.eta()) < maxBJetEta  && jet.csv() > defaults::CSV_LOOSE );
+  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_LOOSE );
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
-  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && electron.isgoodpogelectron());
+  return (electron.pt() > config.minElePt && fabs(electron.scEta()) < config.maxEleEta && electron.isgoodpogelectron());
 //  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
   //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
-  return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta && muon.isgoodpogmuon());
+  return (muon.pt() > config.minMuPt && fabs(muon.eta()) < config.maxMuEta && muon.isgoodpogmuon());
   //return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta);
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
-  return (tau.pt() > minTauPt && fabs(tau.eta()) < maxTauEta && tau.isgoodpogtau());
+  return (tau.pt() > config.minTauPt && fabs(tau.eta()) < config.maxTauEta && tau.isgoodpogtau());
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {
-	if((cleanJetsvLeptons_ || cleanJetsvTaus_) && !isProcessed_)
+	if((config.cleanJetsvLeptons_ || config.cleanJetsvTaus_) && !isProcessed_)
 		throw std::invalid_argument("BaseTreeAnalyzer::cleanJets(): You want to do jet cleaning but have not yet processed variables!");
 	jets.clear(); jets.reserve(reader->recoJets.size());
 	if(bJets){bJets->clear();}
@@ -236,17 +228,17 @@ void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jet
 		if(!isGoodJet(jet)) continue;
 
 		bool cleanjet = true;
-		if(cleanJetsvLeptons_) {
+		if(config.cleanJetsvLeptons_) {
 			for(const auto* glep : leptons) {
-				if(PhysicsUtilities::deltaR(*glep, jet) < minJetLepDR) {
+				if(PhysicsUtilities::deltaR(*glep, jet) < config.minJetLepDR) {
 					cleanjet = false;
 					break;
 				}
 			}
 		}
-		if(cleanJetsvTaus_) {
+		if(config.cleanJetsvTaus_) {
 			for(const auto* gtau : taus) {
-				if(PhysicsUtilities::deltaR(*gtau, jet) < minJetLepDR) {
+				if(PhysicsUtilities::deltaR(*gtau, jet) < config.minJetLepDR) {
 					cleanjet = false;
 					break;
 				}

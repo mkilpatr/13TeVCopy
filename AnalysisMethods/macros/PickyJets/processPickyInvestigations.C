@@ -182,3 +182,92 @@ void processPickyInvestigations(string fname = "evttree.root", string treeName =
   a.analyze(1000);
   a.out(TString::Format("%s_plots.root",name.Data()));
 }
+
+
+/*
+ *
+ *
+ * root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_0_9_patch1/src/AnalysisMethods/macros/PickyJets/processPickyInvestigations.C+("SignalPickyTree.root")'
+
+
+
+p = new Plot(".*__none__.*__inclusive__superJetPT"); p->toUnderOverflow(); p->draw("",":i");
+
+{
+   TString vars[] = {"superJetPT","1_subjettiness","2_subjettiness","2o1_subjettiness",""};
+   TString pts[] = {"pt_pt_lt50","pt_pt_eq50to100","pt_pt_eq100to200","pt_pt_geq200",""};
+
+
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+         o = new TObjArray;
+         for(unsigned int iP = 0; pts[iP][0]; ++iP){
+      p = new Plot(".*__none__type_.*__"+ pts[iP]+"__inclusive__" + vars[iV]);
+      p->SetTitle(pts[iP]);
+      p->toUnderOverflow();
+      p->normalize();
+      o->Add(p);
+   }
+   Pint::drawAll(o,"","",":i");
+
+   }
+}
+
+
+{
+   TString vars[] = {"2o1_subjettiness",""};
+   TString pts[] = {"pt_pt_lt50","pt_pt_eq50to100","pt_pt_eq100to200","pt_pt_geq200",""};
+   TString npvs[] = {"nPV_incl","nPV_lt15","nPV_eq15to22","nPV_eq15to22"};
+
+
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+         o = new TObjArray;
+         for(unsigned int iP = 0; pts[iP][0]; ++iP){
+                     for(unsigned int iN = 0; npvs[iN][0]; ++iN){
+      p = new Plot(".*__npv_"+ npvs[iN]+ "__type_.*__"+ pts[iP]+"__inclusive__" + vars[iV]);
+
+      p->SetTitle(pts[iP]+"; "+ npvs[iN]);
+      p->toUnderOverflow();
+      p->normalize();
+      o->Add(p);
+   }
+}
+         Pint::drawAll(o,"","",":i");
+
+   }
+}
+
+
+
+{
+   TString vars[] = {"superJetPT","1_subjettiness","2_subjettiness","shouldSplitDisc","shouldSplitDescision",""};
+   TString pts[] = {"pt_pt_lt50","pt_pt_eq50to100","pt_pt_eq100to200","pt_pt_geq200",""};
+
+
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+         o = new TObjArray;
+         for(unsigned int iP = 0; pts[iP][0]; ++iP){
+      p = new Plot(".*none__"+ pts[iP]+"__split__" + vars[iV]);
+      p->SetTitle(pts[iP]);
+      p->toUnderOverflow();
+      p->normalize();
+      o->Add(p);
+   }
+   Pint::drawAll(o,"","",":i");
+
+   }
+}
+
+
+{
+   TString vars[] = {"superJetPT","1_subjettiness","2_subjettiness","shouldSplitDisc","shouldSplitDescision",""};
+
+   o = new TObjArray;
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+      p = new Plot(".*__none__.*__none__split__" + vars[iV]);
+      p->toUnderOverflow();
+      // p->normalize();
+      o->Add(p);
+   }
+   Pint::drawAll(o,"","",":i");
+}
+ */
