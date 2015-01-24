@@ -13,8 +13,8 @@ public:
 
   void loadVariables(){
     load(EVTINFO);
-    if (usePuppi) load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ, defaults::BRANCH_PUPPIJETS );
-    else          load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ, defaults::BRANCH_AK4JETS );
+    if (usePuppi) load( PUPPIJETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    else          load( AK4JETS,   JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     load(GENPARTICLES);
   }
 
