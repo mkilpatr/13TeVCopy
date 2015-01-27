@@ -44,11 +44,11 @@ Splittiness::Splittiness(const edm::ParameterSet& iConfig, bool loadPartonSpread
   , currentJet      (0)
   , jetStuff        (0)
 
-  , declusterVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsDirtyDecluster").data(), "mvaVsDirtyDecluster") )
-  , declusterVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsMixedDecluster").data(), "mvaVsMixedDecluster") )
-  , nsubjettiVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsDirtyNsubjetti").data(), "mvaVsDirtyNsubjetti") )
-  , nsubjettiVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsMixedNsubjetti").data(), "mvaVsMixedNsubjetti") )
-  , goodVsJunkSubjet( FileUtilities::loadObject<ParamatrixMVA>(iConfig.getParameter<string>("mvaVsJunkSubjets"   ).data(), "mvaVsJunkSubjets"   ) )
+  , declusterVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsDirtyDecluster") ? iConfig.getParameter<string>("mvaVsDirtyDecluster").data() : "", "mvaVsDirtyDecluster") )
+  , declusterVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsMixedDecluster") ? iConfig.getParameter<string>("mvaVsMixedDecluster").data() : "", "mvaVsMixedDecluster") )
+  , nsubjettiVsDirty( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsDirtyNsubjetti") ? iConfig.getParameter<string>("mvaVsDirtyNsubjetti").data() : "", "mvaVsDirtyNsubjetti") )
+  , nsubjettiVsMixed( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsMixedNsubjetti") ? iConfig.getParameter<string>("mvaVsMixedNsubjetti").data() : "", "mvaVsMixedNsubjetti") )
+  , goodVsJunkSubjet( FileUtilities::loadObject<ParamatrixMVA>(iConfig.exists("mvaVsJunkSubjets"   ) ? iConfig.getParameter<string>("mvaVsJunkSubjets"   ).data() : "", "mvaVsJunkSubjets"   ) )
 
 //  , partonSpread    ( 0 )
   , meanRhoVsEta    ( 0 )
@@ -73,10 +73,10 @@ Splittiness::Splittiness(const edm::ParameterSet& iConfig, bool loadPartonSpread
 //clog << " ++  (N-sub) nSubAxes    = " << nSubjettiness        << endl;
 
   //-- Parton spread ----------------------------------------------------------
-  const std::string   spreadPath    = iConfig.getParameter<string>("partonSpreadFile");
-  clog << " ++  partonSpreadFile    = ";
-
-  if (loadPartonSpread) {
+//  const std::string   spreadPath    = iConfig.getParameter<string>("partonSpreadFile");
+//  clog << " ++  partonSpreadFile    = ";
+//
+//  if (loadPartonSpread) {
 //    TFile*            spreadFile    = FileUtilities::open(spreadPath.data(), "READ");
 //    clog << spreadFile->GetName() << endl;
 //    clog << " ++                      \\-->  -sqrt(r) :";
@@ -87,26 +87,26 @@ Splittiness::Splittiness(const edm::ParameterSet& iConfig, bool loadPartonSpread
 //                                              );
 //    clog << "  ...  " << (partonSpread->normalizedDistance ? "[M]" : "[dR]") << endl;
 //    spreadFile->Close();
-  }
-  else  clog << "(off)" << endl;
+//  }
+//  else  clog << "(off)" << endl;
 
   
   //-- rho detector dependence ------------------------------------------------
-  ParamatrixStats*    rhoDependence = FileUtilities::loadObject<ParamatrixStats>(iConfig.getParameter<string>("puRhoDependence").data(), "puRhoDependence");
-  const int           indexEta      = rhoDependence->findAxis("eta");       assert(indexEta      >= 0);
-  const int           indexQuantity = rhoDependence->findAxis("quantity");  assert(indexQuantity >= 0);
-  const Space*        axisEta       = rhoDependence->getAxis(indexEta);
-  meanRhoVsEta        = new PopulationD( new GridSpace(axisEta->GetName(), axisEta->GetTitle(), axisEta->getNumBins()-2, axisEta->getBinLowEdge(2), axisEta->getMaximum()), numPileUpRhoTypes );
-
-  ParamatrixStats::Iterator         rhoIter = rhoDependence->iterator();
-  rhoIter.fix( rhoDependence->findAxis("rho"), 0 );
-  while (rhoIter.next()) {
-    if (rhoIter.getBin(indexEta) < 2)       continue;
-
-    ParamatrixStats::Iterator       refIter = rhoIter;
-    refIter.setBin( indexEta, 0 );
-    meanRhoVsEta->setBinContent( rhoIter.getBin(indexEta)-2, rhoIter.get()->getMean()/refIter.get()->getMean(), rhoIter.getBin(indexQuantity) );
-  } // end loop over bins
+//  ParamatrixStats*    rhoDependence = FileUtilities::loadObject<ParamatrixStats>(iConfig.getParameter<string>("puRhoDependence").data(), "puRhoDependence");
+//  const int           indexEta      = rhoDependence->findAxis("eta");       assert(indexEta      >= 0);
+//  const int           indexQuantity = rhoDependence->findAxis("quantity");  assert(indexQuantity >= 0);
+//  const Space*        axisEta       = rhoDependence->getAxis(indexEta);
+//  meanRhoVsEta        = new PopulationD( new GridSpace(axisEta->GetName(), axisEta->GetTitle(), axisEta->getNumBins()-2, axisEta->getBinLowEdge(2), axisEta->getMaximum()), numPileUpRhoTypes );
+//
+//  ParamatrixStats::Iterator         rhoIter = rhoDependence->iterator();
+//  rhoIter.fix( rhoDependence->findAxis("rho"), 0 );
+//  while (rhoIter.next()) {
+//    if (rhoIter.getBin(indexEta) < 2)       continue;
+//
+//    ParamatrixStats::Iterator       refIter = rhoIter;
+//    refIter.setBin( indexEta, 0 );
+//    meanRhoVsEta->setBinContent( rhoIter.getBin(indexEta)-2, rhoIter.get()->getMean()/refIter.get()->getMean(), rhoIter.getBin(indexQuantity) );
+//  } // end loop over bins
   
   ////meanRhoVsEta->sitrep();
 

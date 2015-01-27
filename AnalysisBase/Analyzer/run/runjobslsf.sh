@@ -5,7 +5,8 @@ filename=$2
 outputdir=$3
 outputname=$4
 maxevents=$5
-scramdir=$6
+skipevents=$6
+scramdir=$7
 
 workdir=`pwd`
 
@@ -22,7 +23,7 @@ cd $workdir
 cp ${scramdir}/${cfgfile} .
 cp ${scramdir}/${filename} .
 
-cmsRun $cfgfile print inputFiles_clear inputFiles_load=${filename} outputFile=${outputname} maxEvents=${maxevents}
+cmsRun $cfgfile print inputFiles_clear inputFiles_load=${filename} outputFile=${outputname} maxEvents=${maxevents} skipEvents=${skipevents}
 
 status=`echo $?`
 echo "Status = $status"

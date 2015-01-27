@@ -30,9 +30,10 @@ enum  PartonDiagnosis {
                       , numPartonDiagnoses
                       };
 //diagnosis constants
-const float minPartonPT    = 10;
-const float minHadronRelE  = .30;
-const float minPartontRelE = .15;
+const float minPartonPT    = 20;
+const float minHadronRelE  = .50;
+const float minPartontRelE = .50;
+const float extraJetsPartonRelE = .15;
 const float minJetRelE     = .50;
 
 
@@ -44,14 +45,17 @@ public:
 
   PartonDiagnosis diag;
   std::vector<std::pair<float,int> > containment; //[containment] [jet]
+  std::vector<std::pair<float,int> > filteredContaiment; //[containment] [jet] ... from whatever we get in the genjet colleciton
+
+  const Jet * matchedJet;
 
   Parton(const Particle * p, const unsigned int idx, const float inHadE ) :
-    parton(p),genIdx(idx),hadE(inHadE), diag(numPartonDiagnoses) {}
+    parton(p),genIdx(idx),hadE(inHadE), diag(numPartonDiagnoses), matchedJet(0) {}
 
   void addContainment(const unsigned int jetIDx, const float con) {containment.emplace_back(con,jetIDx);}
-  void finalize(const std::vector<Jet*>   jets);
+  void finalize(const std::vector<Jet*>&   jets);
 
-  static PartonDiagnosis getDiagnosis(const Parton& parton,const std::vector<Jet*> jets);
+  static PartonDiagnosis getDiagnosis(const Parton& parton,const std::vector<Jet*>& jets);
 };
 
 
@@ -100,7 +104,7 @@ public:
 
   TopDecayEvent(
       const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
-      const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*> inJets);
+      const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets);
 };
 
 };

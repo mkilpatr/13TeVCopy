@@ -17,7 +17,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , eventInfo           (0)
 , ak4Jets             (0)
 , puppiJets           (0)
-, trimmedJets         (0)
+, pickyJets           (0)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
@@ -142,15 +142,15 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-    case TRIMMEDJETS : {
+    case PICKYJETS : {
       int defaultOptions = RecoJetFiller::defaultOptions;
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
 
-      trimmedJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
-                                    branchName == "" ? defaults::BRANCH_TRIMMEDJETS : branchName,
+      pickyJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                    branchName == "" ? defaults::BRANCH_PICKYJETS : branchName,
                                     eventInfo,
                                     genparticles,
                                     cfg.getParameter<edm::InputTag>("jets"),
@@ -162,7 +162,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getUntrackedParameter<bool>("fillReGenJets"),
                                     cfg.getUntrackedParameter<double>("minJetPt")
                                     );
-      initializedFillers.push_back(trimmedJets);
+      initializedFillers.push_back(pickyJets);
       break;
     }
 
