@@ -129,5 +129,17 @@ nominal_configuration = cms.PSet(
                                       minTauPt                  = cms.untracked.double(18.0),
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
+                                  ),
+
+                                  PFCandidates = cms.untracked.PSet(
+                                      isFilled                  = cms.untracked.bool(True),
+                                      pfcands                   = cms.InputTag('packedPFCandidates'),
+                                      jets                      = cms.InputTag('slimmedJets'),
+                                      taus                      = cms.InputTag('slimmedTaus'),
+                                      minCandPt                 = cms.untracked.double(5.0),
+                                      maxCandEta                = cms.untracked.double(3.0),
+                                      tauMVAFileName            = cms.untracked.string('AnalysisTools/ObjectSelection/data/Taus/tauDisc_10GeV.root'),
+                                      tauMVAName                = cms.untracked.string('mva_0'),
+                                      saveAllCandidates         = cms.untracked.bool(False),
                                   )
                                 )
