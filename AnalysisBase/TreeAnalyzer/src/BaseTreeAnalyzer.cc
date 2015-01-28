@@ -24,6 +24,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     rho               (0),
     nLeptons          (0),
     nTaus             (0),
+    nMVATauCands      (0),
     nJets             (0),
     nBJets            (0),
     met               (0),
@@ -73,6 +74,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&tauReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TAUS : branchName );
       break;
     }
+    case PFCANDS : {
+      int defaultOptions = PFCandidateReader::defaultOptions;
+      reader.load(&pfcandReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PFCANDS : branchName );
+      break;
+    }
     case GENPARTICLES : {
       int defaultOptions = GenParticleReader::defaultOptions;
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
@@ -94,6 +100,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(ELECTRONS);
   load(MUONS);
   load(TAUS);
+  load(PFCANDS);
   if(isMC()) load(GENPARTICLES);
   setDefaultJets(AK4JETS);
 }
@@ -124,6 +131,10 @@ void BaseTreeAnalyzer::processVariables()
   leptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
   taus.clear();
   taus.reserve(tauReader.taus.size());
+  pfcands.clear();
+  pfcands.reserve(pfcandReader.pfcands.size());
+  mvataucands.clear();
+  mvataucands.reserve(pfcandReader.pfcands.size());
 
   if(electronReader.isLoaded())
     for(auto& electron : electronReader.electrons)
@@ -142,8 +153,17 @@ void BaseTreeAnalyzer::processVariables()
       if(isGoodTau(tau))
         taus.push_back(&tau);
 
+  if(pfcandReader.isLoaded()) {
+    for(auto& pfc : pfcandReader.pfcands) {
+      pfcands.push_back(&pfc);
+      if(isMVATauCand(pfc))
+        mvataucands.push_back(&pfc);
+    }
+  }
+
   nLeptons = leptons.size();
   nTaus    = taus.size();
+  nMVATauCands = mvataucands.size();
 
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded()){
@@ -215,6 +235,10 @@ bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
   return (tau.pt() > config.minTauPt && fabs(tau.eta()) < config.maxTauEta && tau.isgoodpogtau());
+}
+//--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::isMVATauCand(const PFCandidateF& cand) const {
+  return (cand.pt() > config.minCandPt && fabs(cand.eta()) < config.maxCandEta && cand.mt() < config.tauMtCut && cand.taudisc() > config.tauVetoLoose);
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {

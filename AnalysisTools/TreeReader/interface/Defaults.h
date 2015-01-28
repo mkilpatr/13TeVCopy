@@ -23,6 +23,7 @@ namespace defaults {
   const std::string BRANCH_ELECTRONS = "ele";
   const std::string BRANCH_MUONS     = "mu";
   const std::string BRANCH_TAUS      = "tau";
+  const std::string BRANCH_PFCANDS   = "pfcand";
   const std::string BRANCH_GENPARTS  = "gen";
   const double CSV_LOOSE      = 0.423;
   const double CSV_MEDIUM     = 0.814;
