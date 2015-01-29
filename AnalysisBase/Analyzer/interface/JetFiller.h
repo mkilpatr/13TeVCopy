@@ -86,6 +86,7 @@ public:
       size ijetptraw_    ;
       size ijetpuId_     ;
       size ijetcsv_      ;
+      size ijetarea_     ;
       size ijetgenindex_ ;
       // For genjets matched to reco jets
       size igenjetpt_    ;

@@ -59,7 +59,6 @@ PickyJetSplitting::PickyJetSplitting(TString mvaFileName, TString mvaName,PickyJ
 
   const Space*         axisJetPT     = mvaPar->getAxis (parIndex_superJet_pt);
   axisETA       = mvaPar->getAxis (parIndex_superJet_eta);
-  enum PickyJetCuts {PUPPI_RECO, PUPPI_GEN, PUPPI_RECO_HIGHEFF, PUPPI_GEN_HIGHEFF, NOPUPPI_RECO, NOPUPPI_GEN};
 
   switch(cuts){
   case PUPPI_RECO:
@@ -72,9 +71,22 @@ PickyJetSplitting::PickyJetSplitting(TString mvaFileName, TString mvaName,PickyJ
 	discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.46,0.38,0.34,0.24,0.15,0.01,-0.23,-0.28,-0.18,0.20,-1.00,-1.00"));
 	discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.43,0.44,0.36,0.27,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00"));
 	break;
-  case PUPPI_RECO_HIGHEFF:
-  case PUPPI_GEN_HIGHEFF:
+
   case NOPUPPI_RECO:
+  case   NOPUPPI_GEN:
+    //Increase tail FR + decrease low pt FR
+    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.55,0.52,0.50,0.48,0.44,0.06,-0.30,-0.49,-0.52,-0.46,-0.26,-.68,"));
+    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.47,0.56,0.58,0.57,0.55,0.32,0.10,0.00,0.06,0.30,99,99"));
+    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.40,0.54,0.53,0.53,0.43,99,99,99,99,99,99,99"));
+
+    //Increase tail FR
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.46,0.36,0.32,0.29,0.24,0.06,-0.30,-0.49,-0.52,-0.46,-0.26,-.68,"));
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.43,0.49,0.49,0.46,0.42,0.32,0.10,0.00,0.06,0.30,-1.00,-1.00"));
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.35,0.46,0.45,0.44,0.28,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00"));
+    //Nominal
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.46,0.36,0.32,0.29,0.24,0.06,-0.30,-0.49,-0.52,-0.46,-0.26,0.09,"));
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.43,0.49,0.49,0.46,0.42,0.32,0.10,0.00,0.06,0.30,-1.00,-1.00"));
+//    discriCuts.push_back(new PopulationD(const_cast<Space*>(axisJetPT),"0.35,0.46,0.45,0.44,0.28,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00,-1.00"));
     break;
   default:
     throw cms::Exception("PickyJetSplitting::PickyJetSplitting()", TString::Format("Not a valid cut: %i",cuts));
@@ -133,6 +145,8 @@ bool  PickyJetSplitting::shouldSplit(const fastjet::PseudoJet& superJet, const s
   }
 
   const double disc = getDisc(superJet,subJets,tau2,&sjPT,&sjAbsEta);
+
+//  cout << superJet.pt() <<" "<<  TMath::Abs(superJet.eta()) << " "<< sjPT<< " "<< sjAbsEta <<" "<< disc<<" "<<discriCuts[axisETA->findBin(sjAbsEta)]->at(sjPT)<<endl;
 
   return disc > discriCuts[axisETA->findBin(sjAbsEta)]->at(sjPT);
 }

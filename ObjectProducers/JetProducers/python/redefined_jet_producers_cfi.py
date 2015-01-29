@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
 pickyjet_configuration = cms.PSet(
-                                    pickyMVAFileName    = cms.string("support/pickymva_puppi_reco.root")
-                                  , pickyMVAName        = cms.string("picky_puppi_reco_0")                            
+                                    pickyMVAFileName    = cms.string("support/pickymva_nopuppi_reco.root")
+                                  , pickyMVAName        = cms.string("picky_nopuppi_reco_0")                            
                                   , beta                = cms.double(1)                                                                                             
                                   , rCutoff             = cms.double(10000)                                                                                         
                                   , nSubAxes            = cms.string("1passKT")
@@ -55,5 +55,6 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
 )
 redCA8                 = redAK4.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter      = cms.double(.8) )
 
-trimmedJets            = redAK4Puppi.clone(rParameter      = cms.double(1), useTrimming = cms.bool(True),useTrimmedSubjets = cms.bool(True),rFilt=cms.double(.2))
-pickyJets              = redAK4Puppi.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True))
+
+trimmedJets            = redAK4.clone(rParameter      = cms.double(1), useTrimming = cms.bool(True),useTrimmedSubjets = cms.bool(True),rFilt=cms.double(.2))
+pickyJets              = redAK4.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True))

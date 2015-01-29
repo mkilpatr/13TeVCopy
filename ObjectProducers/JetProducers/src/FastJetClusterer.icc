@@ -143,14 +143,19 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
   if (!jetDefinition)
     throw cms::Exception("FastJetClusterer.pickySubjets()", "clusterJets() must first be run to obtain an initial jet list.");
 
+//#define DEBUG
 
   jets.reserve( 2 * jets.size() );
   for (size iJet = 0, numJets = jets.size(); iJet < numJets; ++iJet) {
-	if (jets[iJet].pt2() < 1e-10) continue;
+    if (jets[iJet].pt2() < 1e-10) continue;
     static std::vector<fastjet::PseudoJet*> subClusters;
     static std::vector<int>                 numSplits;
     subClusters .clear();                   subClusters .push_back(new fastjet::PseudoJet(jets[iJet]));
     numSplits   .clear();                   numSplits   .push_back(0);
+
+  #ifdef DEBUG
+    std::cout << "origJet "<< iJet << " " << jets[iJet].pt()<< std::endl;
+  #endif
 
     int                                     nSubJets    = -1;
     for (int iDe = 0; iDe < int(subClusters.size()); ++iDe) {
@@ -159,12 +164,24 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
       //-- Try to split up this jet -------------------------------------------
       std::vector<fastjet::PseudoJet*>      subJets;
       const double                          splitMetric = splitter->getSubjets(superJet, subJets);
+
+#ifdef DEBUG
+      std::cout <<"sc " <<  iDe << " " << superJet.pt() << " "<< splitMetric << " "<<subJets.size()<<std::endl ;
+#endif
+
       if (subJets.size() < 2) {
         if (++nSubJets)                     jets.push_back(superJet);
         else                                jets[iJet]  = superJet;
         PhysicsUtilities::trash(subJets);
         continue;
       }
+
+#ifdef DEBUG
+      for (int iSub = subJets.size(); --iSub >= 0;){
+      std::cout <<"sub " << subJets[iSub]->pt() << " ";
+      }
+      std::cout << std::endl ;
+#endif
 
       //-- Special treatment to discard trivial jets --------------------------
       for (int iSub = subJets.size(); --iSub >= 0;){
@@ -181,6 +198,10 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
         subClusters[iDe]                    = subJets[0];
         --iDe;                              continue;
       }
+
+#ifdef DEBUG
+      std::cout <<"split " << numSplits[iDe] << " "<< splitter->shouldSplit(superJet, subJets, &splitMetric,0) <<std::endl;
+#endif
 
       //-- Sorted subjets ---------------------------------------------------------
         static GreaterPT2                   COMPARATOR;
@@ -203,7 +224,19 @@ void FastJetClusterer::pickySubjets ( const Spliter* splitter
     PhysicsUtilities::trash (subClusters);
   } // end loop over jets
 
+#ifdef DEBUG
+  std::cout << "endlist: " << std::endl;
+  for (size iJet = 0, numJets = jets.size(); iJet < numJets; ++iJet) {
+    std::cout << iJet << " " << jets[iJet].pt()<< std::endl;
+  }
+  std::cout << "end of endlist" << std::endl;
+#endif
+
   jets  = fastjet::sorted_by_pt(jets);
+
+
+
+
 }
 
 
