@@ -31,7 +31,7 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
         , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))
         , pickyMaxSplits  (iConfig.getParameter<int>("pickyMaxSplits"  ))
-        , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::PUPPI_RECO,iConfig) : 0)
+        , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::NOPUPPI_RECO,iConfig) : 0)
     {
 
   produces< reco::PFJetCollection             >(        );
