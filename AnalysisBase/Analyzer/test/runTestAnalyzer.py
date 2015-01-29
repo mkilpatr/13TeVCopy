@@ -12,6 +12,7 @@ options = VarParsing('analysis')
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
 options.inputFiles = '/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
+
 options.maxEvents = -1
 
 options.register('skipEvents',
@@ -74,14 +75,28 @@ process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBas
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
 process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
-
+# PUPPI
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.Puppi.Puppi_cff')
+process.load("ObjectProducers.JetProducers.convertPackedCandToRecoCand_cff")
+
+from ObjectProducers.JetProducers.pfPUPPISequence_cff import *
+
+load_pfPUPPI_sequence(process, 'pfPUPPISequence', algo = 'PUPPI',
+  src_puppi = 'pfAllHadronsAndPhotonsForPUPPI',
+  cone_puppi_central = 0.5
+)
+
+# Change the input collections
+process.pfAllHadronsAndPhotonsForPUPPI.src = 'convertedPackedPFCandidates'
+process.particleFlowPUPPI.candName = 'packedPFCandidates'
+process.particleFlowPUPPI.vertexName = 'offlineSlimmedPrimaryVertices'
 
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
-process.p = cms.Path(process.puppi *
-                     process.ak4PatAssocSeq * 
+process.p = cms.Path(process.ak4PatAssocSeq * 
+                     process.convertedPackedPFCandidates * 
+                     process.pfPUPPISequence *
                      process.ak4PuppiJetSeq * 
                      process.ca8AssocSeq    *
                      process.lsfSubJets     *
