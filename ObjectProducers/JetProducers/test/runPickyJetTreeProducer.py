@@ -21,6 +21,12 @@ options.inputFiles = (
 
 options.maxEvents = -1
 
+options.register('skipEvents',
+                 0,
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.int,
+                 "Number of events to skip in processing")
+
 options.parseArguments()
 
 process.TFileService = cms.Service('TFileService',
@@ -30,7 +36,8 @@ process.TFileService = cms.Service('TFileService',
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 
 process.source = cms.Source('PoolSource',
-    fileNames = cms.untracked.vstring (options.inputFiles)
+    fileNames = cms.untracked.vstring (options.inputFiles),
+    skipEvents = cms.untracked.uint32(options.skipEvents)
 )
 
 
@@ -64,30 +71,30 @@ process.load('AnalysisBase.Analyzer.hadronicttbareventfilter_cfi')
 from ObjectProducers.JetProducers.jet_flavor_associator_cfi import *
 process.CA1FlvAssoc         = redAK4FlvAssoc.clone(genJetsSrc       = cms.InputTag('CA1','Gen') , coneSize         = cms.double(1) )
 
-process.TestAnalyzer.TrimmedJets.jets = "CA1"
-process.TestAnalyzer.TrimmedJets.fillCustomBtagInfo = False
-process.TestAnalyzer.TrimmedJets.reGenJets            = cms.InputTag('CA1','Gen')
-process.TestAnalyzer.TrimmedJets.reGenJetAssoc        = cms.InputTag('CA1:GenPtr')
-process.TestAnalyzer.TrimmedJets.flvAssoc             = cms.InputTag('CA1FlvAssoc','flavors')
+process.TestAnalyzer.PickyJets.jets = "CA1"
+process.TestAnalyzer.PickyJets.fillCustomBtagInfo = False
+process.TestAnalyzer.PickyJets.reGenJets            = cms.InputTag('CA1','Gen')
+process.TestAnalyzer.PickyJets.reGenJetAssoc        = cms.InputTag('CA1:GenPtr')
+process.TestAnalyzer.PickyJets.flvAssoc             = cms.InputTag('CA1FlvAssoc','flavors')
 
 
 from ObjectProducers.JetProducers.redefined_jet_producers_cfi import *
 #no puppi
-# process.CA1                 = redAK4.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen')  )
-# process.p = cms.Path( 
-#                      process.hadronicTTBarEventFilter *
-#                       process.CA1   *
-#                       process.CA1FlvAssoc *
-#                       process.TestAnalyzer
-#                      )
-# puppi
-process.load('ObjectProducers.Puppi.Puppi_cff')
-process.CA1                 = redAK4Puppi.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen')  )
-process.TestAnalyzer.runOnPUPPI = True
-process.p = cms.Path(                      
+process.CA1                 = redAK4.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen')  )
+process.p = cms.Path( 
                      process.hadronicTTBarEventFilter *
-                     process.puppi *
                       process.CA1   *
                       process.CA1FlvAssoc *
                       process.TestAnalyzer
                      )
+# puppi
+# process.load('ObjectProducers.Puppi.Puppi_cff')
+# process.CA1                 = redAK4Puppi.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen')  )
+# process.TestAnalyzer.runOnPUPPI = True
+# process.p = cms.Path(                      
+#                      process.hadronicTTBarEventFilter *
+#                      process.puppi *
+#                       process.CA1   *
+#                       process.CA1FlvAssoc *
+#                       process.TestAnalyzer
+#                      )

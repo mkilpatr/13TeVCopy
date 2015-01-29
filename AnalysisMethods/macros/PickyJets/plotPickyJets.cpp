@@ -47,23 +47,26 @@
 }
 //Grandcomp
 {
-   TString vars[] = {"top_pt","lead_top_pt","subLead_top_pt","avg_top_pt",""};
+   TString vars[] = {"avg_top_pt","","top_pt","","lead_top_pt","subLead_top_pt","avg_top_pt",""};
    TString den[] = {"good_partons",""};
-   TString jets[] = {"puppi","picky","trimmed",""};
+   // TString jets[] = {"ak4","picky","trimmed",""};
+   TString jets[] = {"picky",""};
    o = new TObjArray;
     oo = new TObjArray;
    for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
    for(unsigned int iV = 0; vars[iV][0]; ++iV){
      TString eta = "eta_lt2p4__";
-      p = new Plot(jets[iJ] + "_" + eta +".*__" + vars[iV]);
-    p->sitrep();
-    cout << jets[iJ] + "_" + eta +".*__" + vars[iV] <<endl;
+      p = new Plot(jets[iJ] + "_" + eta +"(all|good_partons|assoc_jets|no_splits|good_top)__" + vars[iV] + "$");
+    // p->sitrep();
+    // cout << jets[iJ] + "_" + eta +".*__" + vars[iV] <<endl;
       p->toUnderOverflow();
     p->rebin(4);
+    p->sort("i");
     p->SetTitle(jets[iJ]);
       o->Add(p);
          for(unsigned int iD = 0; den[iD][0]; ++iD){
             r = p->makeRatiogram(den[iD]);
+            r->drop("all");
             r->setMinMax(0.,1.);
       r->SetTitle(jets[iJ]);
             oo->Add(r);
@@ -78,7 +81,7 @@ Pint::drawAll(oo,"");
 {
    TString vars[] = {"top_pt","subLead_top_pt",""};
    TString den[] = {"good_partons",""};
-   TString jets[] = {"puppi","picky","trimmed",""};
+   TString jets[] = {"ak4","picky","trimmed",""};
   // TString samps[] = {"ttbar","t2tt_lowMass","t2tt_highMass","",""};
     TString samps[] = {"ttbar","t2tt_highMass","t2tt_highMass_p5FR","t2tt_highMass_p15FR",""};
    Plot::cache("*_evttree_plots.root");
@@ -107,7 +110,92 @@ Pint::drawAll(o,vars[iV]);
 Pint::drawAll(oo,vars[iV]);
 }
 
+//compare finals
+{
+   TString vars[] = {"avg_top_pt","","top_pt","lead_top_pt","subLead_top_pt","avg_top_pt",""};
+   TString den[] = {"good_partons",""};
+   // TString jets[] = {"ak4","picky","trimmed",""};
+   TString jets[] = {"trimmed",""};
+   o = new TObjArray;
+    oo = new TObjArray;
+   // for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+     TString eta = "eta_lt2p4__";
+     pP = new Plot("(trimmed_|picky_|ak4_)" + eta +"good_partons__" + vars[iV] + "$");
+     pT = new Plot("(trimmed_|picky_|ak4_)" + eta +"good_top__" + vars[iV] + "$");
+     
+     pP->toUnderOverflow();
+     pP->rebin(4);
+     
+     pT->toUnderOverflow();
+     pT->rebin(4);
+     
+     oo->Add(pP);
+     pP = (Plot*)pP->Clone();
+     
+     pT = pT->divide(*pP,1,false,"b");
+     pT->setMinMax(0.,1.);
+     o->Add(pT);
+         // p->sitrep();
+    // cout << jets[iJ] + "_" + eta +".*__" + vars[iV] <<endl;
+      // p->toUnderOverflow();
+    // p->rebin(4);
+    // p->sort("i");
+    // p->SetTitle(jets[iJ]);
+      // o->Add(p);
+         // for(unsigned int iD = 0; den[iD][0]; ++iD){
+            // r = p->makeRatiogram(den[iD]);
+            // r->drop("all");
+            // r->setMinMax(0.,1.);
+      // r->SetTitle(jets[iJ]);
+            // oo->Add(r);
+         // }
+   }
+// }
+Pint::drawAll(o,"");
+Pint::drawAll(oo,"");
 }
+
+
+
+///Test parton causes for failure
+{
+   TString vars[] = {"top_pt","lead_top_pt","subLead_top_pt","avg_top_pt",""};
+   TString pts[] = {"all","top_pt_lt250"     ,"top_pt_eq250to550","top_pt_geq550"    ,""};
+   TString types[] = {"noJet","splitJet","dirtyJet","resolvedParton" ,""};
+   TString jets[] = {"ak4","picky","trimmed",""};
+   o = new TObjArray;
+    oo = new TObjArray;
+   for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+   for(unsigned int iP = 0; pts[iP][0]; ++iP){
+
+     TString eta = "eta_lt2p4__";
+      p = new Plot(jets[iJ] + "_" + eta +"all__"+ pts[iP]+ "__.*__parton_pt" );
+    // p->sitrep();
+    // cout << jets[iJ] + "_" + eta +"all__"+ pts[iP]+ "__.*__parton_pt" <<endl;
+      p->toUnderOverflow();
+    // p->rebin(4);
+    p->SetTitle(jets[iJ]+ pts[iP]);
+      o->Add(p);
+      p = (Plot*)p->Clone();
+      p->normalize();
+      oo->Add(p);
+      //    for(unsigned int iD = 0; den[iD][0]; ++iD){
+      //       r = p->makeRatiogram(den[iD]);
+      //       r->setMinMax(0.,1.);
+      // r->SetTitle(jets[iJ]);
+      //       oo->Add(r);
+      //    }
+   }
+}
+Pint::drawAll(o,"");
+// Pint::drawAll(oo,"");
+}
+
+
+
+
+
 {
    TestAnalyzer->cd();
    double ptLow[] ={20, 40, 60, 80, 100, 120, 160, 200, 250, 300, 400, 550,-1};
@@ -297,15 +385,16 @@ Pint::drawAll(oo,vars[iV]);
 
 //check input variables
 {
-   TString pts[] = {"pt_eq20to50",  "pt_eq50to100", "pt_eq100to200","pt_eq200to400","pt_geq400",""}  ;
-   TString etas[] = {"eta_lt1p9","","eta_eq1p9to2p9","eta_geq2p9",""};
+   // TString pts[] = {"pt_eq20to50",  "pt_eq50to100", "pt_eq100to200","pt_eq200to400","pt_geq400",""}  ;
+   TString pts[] = {"pt_eq100to200",""}  ;
+   TString etas[] = {"eta_lt2p0","","eta_eq2p0to2p9","eta_geq3p0",""};
    TString vars[] = {"jet_mass","1_subjettiness","2_subjettiness","highest_peak","lowest_peak","minimum_value","lowest_peak_location","highest_peak_location","minimum_location","sub12_dr",""};
    for(unsigned int iV = 0;vars[iV][0]; ++iV){
    o = new TObjArray;
    for(unsigned int iE = 0;etas[iE][0]; ++iE){
       for(unsigned int iP = 0;pts[iP][0]; ++iP){
          TString title = Plot::translated(etas[iE] +" " +pts[iP]);
-         pb =new Plot("gen__(dirtySplit|splitParton|goodSplit)__ee_"+etas[iE]+"__ep_"+pts[iP]+"__" + vars[iV] + "$");
+         pb =new Plot("(reco__|gen__)(goodSplit|badSplit)__ee_"+etas[iE]+"__ep_"+pts[iP]+"__" + vars[iV] + "$");
          pb->toUnderOverflow();
          pb->normalize();
 
@@ -322,7 +411,7 @@ Pint::drawAll(oo,vars[iV]);
 {
    // TString pts[] = {"pt_eq20to50",  "pt_eq50to100", "pt_eq100to200","pt_eq200to400","pt_geq400",""}  ;
 TString pts[] = {   "emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_120","emp_120_160","emp_160_200","emp_200_250","emp_250_300","emp_300_400","emp_400_550","emp_550_1000",""};
-   TString etas[] = {"eta_lt1p9","eta_eq1p9to2p9","","eta_geq2p9",""};
+TString etas[] = {"eta_lt2p0","eta_eq2p0to3p0","eta_geq3p0",""};
    
    o = new TObjArray;
    oo = new TObjArray;
@@ -362,7 +451,7 @@ TString pts[] = {   "emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_12
 {
    TString type[] = {"gen","reco",""};
    TString pts[] = {"emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_120","emp_120_160","emp_160_200","emp_200_250","emp_250_300","emp_300_400","emp_400_550","emp_550_1000",""};
-   TString etas[] = {"eta_lt1p9","eta_eq1p9to2p9","eta_geq2p9",""};
+   TString etas[] = {"eta_lt2p0","eta_eq2p0to3p0","eta_geq3p0",""};
    for(unsigned int iT = 0; type[iT][0]; ++iT){
       cout <<"-------- "<< type[iT] <<" --------" << endl;
    o = new TObjArray;
@@ -391,7 +480,7 @@ TString pts[] = {   "emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_12
 
          TH1 * h = pb->at(0);
          for(unsigned int iB = h->GetNbinsX(); iB >= 1; --iB){
-            if(h->GetBinContent(iB) < .15 ) continue;
+            if(h->GetBinContent(iB) < .1 ) continue;
             cuts[iP] = h->GetBinLowEdge(iB) +h->GetBinWidth(iB);
             signaleff[iP] = pg->at(0)->GetBinContent(iB+1);
             backgroundeff[iP] = h->GetBinContent(iB+1);
@@ -411,10 +500,57 @@ TString pts[] = {   "emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_12
       }
       cout << endl;
    }
-   Pint::drawAll(o,type[iT],"");
+   // Pint::drawAll(o,type[iT],"");
    
  }
 }
+////Prety comp
+{
+   // TString pts[] = {"pt_eq20to50",  "pt_eq50to100", "pt_eq100to200","pt_eq200to400","pt_geq400",""}  ;
+// TString pts[] = {   "emp_20_40","emp_40_60","emp_60_80","emp_80_100","emp_100_120","emp_120_160","emp_160_200","emp_200_250","emp_250_300","emp_300_400","emp_400_550","emp_550_1000",""};
+// TString etas[] = {"eta_lt2p0","eta_eq2p0to3p0","eta_geq3p0",""};
+    
+    TString pts[] = {   "20_40","100_120","550_1000",""};
+    TString etas[] = {"eta_lt2p0","eta_geq3p0",""};
+   
+   o = new TObjArray;
+   oo = new TObjArray;
+   ooo = new TObjArray;
+   for(unsigned int iE = 0;etas[iE][0]; ++iE){
+      for(unsigned int iP = 0;pts[iP][0]; ++iP){
+         TString title = Plot::translated(etas[iE] +", p_{T} = " +pts[iP]);
+         pb =new Plot("_badSplit__ee_"+etas[iE]+"__emp_"+pts[iP]+"__newDisc");
+         pg =new Plot("_goodSplit__ee_"+etas[iE]+"__emp_"+pts[iP]+"__newDisc");
+         pb->toUnderOverflow();
+         pg->toUnderOverflow();
+         pb->normalize();
+         pg->normalize();
+         pb->SetTitle(title);
+         pg->SetTitle(title);
+         if(pb->getNumberOfHistograms() < 2 || pg->getNumberOfHistograms() < 2) continue;
+
+         TCanvas * c = pb->makeCutEfficiencies(*pg,"goodSplits","badSplits");
+         ooo->Add(c);
+
+         pb->rebin(40);
+         pg->rebin(40);
+         
+         pc =new Plot("(goodSplit|badSplit)__ee_"+etas[iE]+"__emp_"+pts[iP]+"__newDisc");
+         pc->SetTitle(title);
+         o->Add(pc);
+         // oo->Add(pb);
+
+
+
+   }
+}
+   Pint::drawAll(o,"goodSplits","","");
+   // Pint::drawAll(oo,"badSplits","",":i(-.21,-1)");
+   Pint::drawAll(ooo,"ROC","");
+
+   
+}
+
 ./makejobs.py  -n 2 -p ../../../ObjectProducers/JetProducers/test/ -c runPickyJetTreeProducer.py -o  /uscms_data/d3/nmccoll/2011-04-15-susyra2/Work7/jobs_noPuppi -t condor
 
 
@@ -524,3 +660,99 @@ p = new Plot("__partonPTFrac"); new TCanvas(); p->draw(); new TCanvas(); p = p->
 
 }
 
+
+>>>>>>>>>>>>>>>>  Validation plots
+    
+//Start with inclusivw plots
+{
+    // TString pts[] = {"minTopPT_lt100__","minTopPT_eq100to200__","minTopPT_geq200__",""};
+    TString vars[] = {"num_cen_j20","num_j20","ht",""};
+    
+    TString pts[] = {"incl__",""};
+        // TString vars[] = {"j1_pt","j2_pt","j3_pt","j1_ptRes","j2_ptRes","j3_ptRes","j1_csv","j2_csv","j3_csv",""};
+    
+    o = new TObjArray;
+    oo = new TObjArray;
+    for(unsigned int iP = 0; pts[iP][0]; ++iP)
+            for(unsigned int iV = 0; vars[iV][0]; ++iV){
+                p = new Plot("(ak4|ak4Gen|pickyGen|pickyL1)_"+pts[iP] + vars[iV] + "$");
+                p->SetTitle(pts[iP] + vars[iV]);
+                p->toUnderOverflow();
+                o->Add(p);
+                p = p->makeRatiogram(0u,"");
+                oo->Add(p);
+            }
+            
+           Pint::drawAll(o,"");
+                      Pint::drawAll(oo,"");
+}
+
+
+
+{
+    // TString pts[] = {"minTopPT_lt100__","minTopPT_eq100to200__","minTopPT_geq200__",""};
+    TString vars[] = {"j1_ptRes","j2_ptRes","j3_ptRes","j4_ptRes","j5_ptRes","jgeq6_ptRes",""};
+    
+    TString pts[] = {"incl__",""};
+        // TString vars[] = {"j1_pt","j2_pt","j3_pt","j1_ptRes","j2_ptRes","j3_ptRes","j1_csv","j2_csv","j3_csv",""};
+    
+    o = new TObjArray;
+    oo = new TObjArray;
+    for(unsigned int iP = 0; pts[iP][0]; ++iP)
+            for(unsigned int iV = 0; vars[iV][0]; ++iV){
+                p = new Plot(pts[iP] + vars[iV] + "$");
+                p->SetTitle(pts[iP] + vars[iV]);
+                p->toUnderOverflow();
+                o->Add(p);
+                // p = p->makeRatiogram(0u,"");
+                // oo->Add(p);
+            }
+            
+           Pint::drawAll(o,"","",":mr");
+                      // Pint::drawAll(oo,"");
+}
+
+
+{
+   TString vars[] = {"num_cen_j20","ht","j1_pt","j1_ptoht","j2_ptopt1","",""};
+   // TString jets[] = {"ak4","picky","trimmed",""};
+   o = new TObjArray;
+    oo = new TObjArray;
+   // for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+     p = new Plot("(trimmed_|picky_|ak4_)incl__" + vars[iV] + "$");
+     p->toUnderOverflow();
+     o->Add(p);
+   }
+// }
+Pint::drawAll(o,"");
+
+}
+
+
+{
+   TString vars[] = {"nDirtyPartons",
+"nNoJetPartons",
+"nResolovedPartons",
+"nSplitPartons",""};
+   // TString jets[] = {"ak4","picky","trimmed",""};
+   o = new TObjArray;
+    oo = new TObjArray;
+   // for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+   for(unsigned int iV = 0; vars[iV][0]; ++iV){
+     p = new Plot("(trimmed_|picky_|ak4_)eta_lt2p4__" + vars[iV] + "$");
+     p2 = new Plot("(trimmed_|picky_|ak4_)eta_lt2p4__nGoodPartons$");
+     p2 = (Plot*)p2->Clone();
+     // p->add(p2->at(0),"goodPartons");
+     p->toUnderOverflow();
+     p->SetTitle(vars[iV]);
+     o->Add(p);
+     p = p->makeRatiogram("ak4");
+     oo->Add(p);     
+     
+   }
+// }
+Pint::drawAll(o,"");
+Pint::drawAll(oo,"");
+
+}

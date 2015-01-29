@@ -61,24 +61,24 @@ public:
 
   Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree), plotter (new PlotterD(3)), eventPlots(plotter), rand(new TRandom3(1234))
   {
-    TFile*              genFile    = TFile::Open("gen/pickymva_puppi_gen.root", "READ");
-    genMVA = dynamic_cast<ParamatrixMVA*>(genFile->Get("picky_puppi_gen_0"));
-    delete genFile;
-
-    TFile*              recoFile    = TFile::Open("reco/pickymva_puppi_reco.root", "READ");
-    recoMVA = dynamic_cast<ParamatrixMVA*>(recoFile->Get("picky_puppi_reco_0"));
-    delete recoFile;
-
-    assert(genMVA);
-    assert(recoMVA);
-
-//    TFile*              genFile    = TFile::Open("gen/pickymva_nopuppi_gen.root", "READ");
-//    genMVA = dynamic_cast<ParamatrixMVA*>(genFile->Get("picky_nopuppi_gen_0"));
+//    TFile*              genFile    = TFile::Open("gen/pickymva_puppi_gen.root", "READ");
+//    genMVA = dynamic_cast<ParamatrixMVA*>(genFile->Get("picky_puppi_gen_0"));
 //    delete genFile;
 //
-//    TFile*              recoFile    = TFile::Open("reco/pickymva_nopuppi_reco.root", "READ");
-//    recoMVA = dynamic_cast<ParamatrixMVA*>(recoFile->Get("picky_nopuppi_reco_0"));
+//    TFile*              recoFile    = TFile::Open("reco/pickymva_puppi_reco.root", "READ");
+//    recoMVA = dynamic_cast<ParamatrixMVA*>(recoFile->Get("picky_puppi_reco_0"));
 //    delete recoFile;
+//
+//    assert(genMVA);
+//    assert(recoMVA);
+
+    TFile*              genFile    = TFile::Open("gen/pickymva_nopuppi_gen.root", "READ");
+    genMVA = dynamic_cast<ParamatrixMVA*>(genFile->Get("picky_nopuppi_gen_0"));
+    delete genFile;
+//
+    TFile*              recoFile    = TFile::Open("reco/pickymva_nopuppi_reco.root", "READ");
+    recoMVA = dynamic_cast<ParamatrixMVA*>(recoFile->Get("picky_nopuppi_reco_0"));
+    delete recoFile;
 
     assert(genMVA);
     assert(recoMVA);
@@ -169,19 +169,21 @@ public:
   void makePlots(){
     double super_jet_abs_eta = TMath::Abs(superJet_eta);
     //filtering
-	  if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) < 1.9 && rand->Uniform() < .9){
-		  return;
-	  }
+    if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .9){
+      return;
+    }
 
-	  if(superJet_pt >= 60 && superJet_pt < 100 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .8){
-		  return ;
-	  }
-	  if(superJet_pt >= 100 && superJet_pt < 160 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .5){
-		  return ;
-	  }
-	  if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 && rand->Uniform() < .5){
-		  return ;
-	  }
+    if(superJet_pt >= 60 && superJet_pt < 100 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .8){
+      return;
+    }
+    if(superJet_pt >= 100 && superJet_pt < 160 && splitResult == 1  && TMath::Abs(superJet_eta) < 2 && rand->Uniform() < .5){
+      return;
+    }
+    if(superJet_pt < 60 && splitResult == 1  && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 && rand->Uniform() < .5){
+      return;
+    }
+
+
 
     double newMVA = evaluateMVA(isGen ? genMVA : recoMVA);
     eventPlots.rewind();
@@ -203,9 +205,9 @@ public:
 
     ++eventPlots;
     eventPlots("inclusive__",true );
-    eventPlots("ee_eta_lt1p9__", super_jet_abs_eta < 1.9);
-    eventPlots("ee_eta_eq1p9to2p9__", super_jet_abs_eta >= 1.9 && super_jet_abs_eta < 2.9);
-    eventPlots("ee_eta_geq2p9__", super_jet_abs_eta >= 2.9 );
+    eventPlots("ee_eta_lt2p0__", super_jet_abs_eta < 2);
+    eventPlots("ee_eta_eq2p0to3p0__", super_jet_abs_eta >= 2 && super_jet_abs_eta < 3);
+    eventPlots("ee_eta_geq3p0__", super_jet_abs_eta >= 3 );
 
 
     ++eventPlots;
@@ -245,21 +247,27 @@ public:
 
     eventPlots.revert();
 
+    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 ){
+      superJet_pt = 305;
+    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 3.0 ){
+      superJet_pt = 105;
+    }
+    superJet_eta = TMath::Abs(superJet_eta);
+
     float pt = superJet_pt;
     float eta = superJet_eta;
-    if(pt >= 300 && TMath::Abs(superJet_eta) >= 1.9 ){
+    if(superJet_pt >= 300 && TMath::Abs(superJet_eta) >= 2 && TMath::Abs(superJet_eta) < 3 ){
       pt = 305;
-      eta = 2.0;
-    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 2.9 ){
-      eta = 2.0;
+    } else if (superJet_pt >= 100 && TMath::Abs(superJet_eta) >= 3.0 ){
+      pt = 105;
     }
     eta = TMath::Abs(eta);
 
     ++eventPlots;
     eventPlots("inclusive__",true );
-    eventPlots("ee_eta_lt1p9__", eta < 1.9);
-    eventPlots("ee_eta_eq1p9to2p9__", eta >= 1.9 && eta < 2.9);
-    eventPlots("ee_eta_geq2p9__", eta >= 2.9 );
+    eventPlots("ee_eta_lt2p0__", eta < 2);
+    eventPlots("ee_eta_eq2p0to3p0__", eta >= 2 && eta < 3);
+    eventPlots("ee_eta_geq3p0__", eta >= 3 );
 
     ++eventPlots;
     eventPlots("inclusive__"       ,false);
@@ -313,6 +321,6 @@ void testPickyMVA(string fname = "evttree.root", string treeName = "TestAnalyzer
   name = ((TObjString*)name.Tokenize(".")->At(0))->GetString();
   a.prefix = name;
   a.prefix += "_";
-  a.analyze(100000,-1);
+  a.analyze(1000000,-1);
   a.out(TString::Format("%s_plots.root",name.Data()));
 }
