@@ -39,7 +39,7 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     produceGen      = cms.bool(True),
                                     ignoreBosonInv  = cms.bool(True),
                                     ignoreBSMInv    = cms.bool(True),
-                                    src             = cms.InputTag('puppi','Puppi'),                                
+                                    src             = cms.InputTag('particleFlowPUPPI'),                                
                                     genMotherSrc    = cms.InputTag('prunedGenParticles'),
                                     genSrc          = cms.InputTag('packedGenParticles'),                                    
                                     jetAlgorithm    = cms.string('AntiKt'),
@@ -54,6 +54,7 @@ redAK4Puppi        = cms.EDProducer('PFReJetProducer',
                                     trimPtFracMin   = cms.double(.03),
 )
 redCA8                 = redAK4.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter      = cms.double(.8) )
+
 
 trimmedJets            = redAK4.clone(rParameter      = cms.double(1), useTrimming = cms.bool(True),useTrimmedSubjets = cms.bool(True),rFilt=cms.double(.2))
 pickyJets              = redAK4.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True))

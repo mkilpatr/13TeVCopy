@@ -21,6 +21,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
+, pfcands             (0)
 , genparticles        (0)
 {
 
@@ -215,6 +216,25 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                            cfg.getUntrackedParameter<double>("minTauPt")
                            );
       initializedFillers.push_back(taus);
+      break;
+    }
+
+    case PFCANDS : {
+      int defaultOptions = PFCandidateFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("saveAllCandidates")) defaultOptions |= PFCandidateFiller::SAVEALLCANDS;
+
+      pfcands = new PFCandidateFiller(options < 0 ? defaultOptions : options,
+                                      branchName == "" ? defaults::BRANCH_PFCANDS : branchName,
+                                      eventInfo,
+                                      cfg.getParameter<edm::InputTag>("pfcands"),
+                                      cfg.getParameter<edm::InputTag>("jets"),
+                                      cfg.getParameter<edm::InputTag>("taus"),
+                                      cfg.getUntrackedParameter<double>("minCandPt"),
+                                      cfg.getUntrackedParameter<double>("maxCandEta"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName"),
+                                      cfg.getUntrackedParameter<string>("tauMVAName")
+                                      );
+      initializedFillers.push_back(pfcands);
       break;
     }
 

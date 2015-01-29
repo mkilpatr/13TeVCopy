@@ -19,6 +19,7 @@
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
@@ -35,6 +36,10 @@ public:
   float        maxJetEta;
   float        maxBJetEta;
   float        minJetLepDR;
+  float        minCandPt;
+  float        maxCandEta;
+  float        tauVetoLoose;
+  float        tauMtCut;
   bool         cleanJetsvLeptons_;
   bool         cleanJetsvTaus_;
 
@@ -50,6 +55,10 @@ public:
      maxJetEta         (2.4 ),
      maxBJetEta        (2.4 ),
      minJetLepDR       (0.4 ),
+     minCandPt         (10.0),
+     maxCandEta        (2.4 ),
+     tauVetoLoose      (0.28),
+     tauMtCut          (100.),
      cleanJetsvLeptons_(false),
      cleanJetsvTaus_   (false)
   {}
@@ -60,7 +69,7 @@ public:
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -113,10 +122,11 @@ public:
     bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
-    bool isLooseBJet  (const RecoJetF& jet) const;
+    bool isLooseBJet   (const RecoJetF& jet) const;
     bool isGoodElectron(const ElectronF& electron) const;
     bool isGoodMuon    (const MuonF& muon        ) const;
     bool isGoodTau     (const TauF& tau          ) const;
+    bool isMVATauCand  (const PFCandidateF& cand ) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
 
@@ -135,6 +145,7 @@ public:
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
+    PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
 
   public:
@@ -151,6 +162,7 @@ public:
     float rho;
     int   nLeptons;
     int   nTaus;
+    int   nMVATauCands;
     int   nJets;
     int   nBJets;
 
@@ -161,6 +173,8 @@ public:
     MomentumF*                 genmet  ;
     std::vector<LeptonF*>      leptons ;
     std::vector<TauF*>         taus    ;
+    std::vector<PFCandidateF*> pfcands ;
+    std::vector<PFCandidateF*> mvataucands;
     std::vector<RecoJetF*>     jets    ;
     std::vector<RecoJetF*>     pickyJets;
     std::vector<RecoJetF*>     bJets   ;
