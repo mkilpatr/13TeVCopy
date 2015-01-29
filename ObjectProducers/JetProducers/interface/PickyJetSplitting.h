@@ -15,7 +15,7 @@ namespace ucsbsusy {
 class PickyJetSplitting {
 public:
 
-  enum PickyJetCuts {PUPPI_RECO, PUPPI_GEN, PUPPI_RECO_HIGHEFF, PUPPI_GEN_HIGHEFF, NOPUPPI_RECO, NOPUPPI_GEN};
+  enum PickyJetCuts {PUPPI_RECO, PUPPI_GEN, NOPUPPI_RECO, NOPUPPI_GEN};
 
   PickyJetSplitting(TString mvaFileName, TString mvaName,PickyJetCuts cuts, const edm::ParameterSet &cfg);
   virtual ~PickyJetSplitting();
