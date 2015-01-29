@@ -38,6 +38,7 @@ public:
 	TFile* genFile = TFile::Open("QGDisc_gen_ak4_fullEta.root",   "READ");
     paramGen = dynamic_cast<ParamatrixMVA*>(genFile->Get("QG_0"));
     delete genFile;
+    //cout << "done getting genFile" << endl;
 
 	string recoFileName = "";
 	//if (usePuppi) recoFileName = "QGDisc_reco_puppi.root";
@@ -47,12 +48,13 @@ public:
     TFile* recoFile = TFile::Open(recoFileName.c_str(), "READ");
     paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
     delete recoFile;
+    //cout << "done getting recoFile" << endl;
 
   }; // Analyze()
 
 
   double getGenMVA(const subJet& jet){
-	genMVA = paramGen->get(jet.jet->pt(),TMath::Abs(jet.jet->eta()));
+	genMVA = paramGen->get(jet.jet->pt(),TMath::Abs(jet.jet->eta())); // ak4pfchs ak4
     static const int gen_ak4pfchs_genjet_ptD     = genMVA->findVariable("ak4pfchs_genjet_ptD"    );
     static const int gen_ak4pfchs_genjet_axis1   = genMVA->findVariable("ak4pfchs_genjet_axis1"  );
     static const int gen_ak4pfchs_genjet_axis2   = genMVA->findVariable("ak4pfchs_genjet_axis2"  );
@@ -62,6 +64,7 @@ public:
     genMVA->setVariable(gen_ak4pfchs_genjet_axis2  ,jet.axis2);
     genMVA->setVariable(gen_ak4pfchs_genjet_jetMult,jet.mult);
     return genMVA->evaluateMethod(0);
+    //cout << "done getting genMVA" << endl;
   } //getGenMVA()
 
   double getRecoMVA(const subJet& jet){
@@ -76,7 +79,7 @@ public:
 		recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
 		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
 	} // usePuppi
-	else {
+	else {                                                               // ak4pfchs ak4
 		static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfchs_jet_ptD"    );
 		static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfchs_jet_axis1"  );
 		static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfchs_jet_axis2"  );
@@ -87,31 +90,39 @@ public:
 		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
 	} // !usePuppi
     return recoMVA->evaluateMethod(0);
+    //cout << "done getting recoMVA" << endl;
   } // getRecoMVA()
 
   virtual void loadVariables(){
+	cout << "loading variables..." << endl;
     load(EVTINFO);
     if (usePuppi) load(PUPPIJETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     else          load(AK4JETS,  JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     load(GENPARTICLES);
+	//cout << "...done loading variables" << endl;
   } // loadVariables()
 
   std::vector<subJet> genJets ;
   std::vector<subJet> recoJets ;
 
   virtual void processVariables(){
+	cout << "processing Variables..." << endl;
     procesSubjets(recoJets,genJets,this);
+	cout << "...done processing Variables" << endl;
   } // processVariables()
 
   void makePlots(std::vector<subJet>& jets, bool isReco){
+	//cout << "making Plots..." << endl;
     categorize(jets,genParts,isReco);
     eventPlots.rewind();
     eventPlots("",true);
 
+	//cout << "...Plots: reco/gen" << endl;
     ++eventPlots;
     eventPlots( "gen___", !isReco );
     eventPlots( "reco__",  isReco );
 
+    //cout << "...Plots: npv" << endl;
     ++eventPlots;
     eventPlots( "npv_all__",  true                );
     eventPlots( "npv_low___", isReco && nPV <= 15 );
@@ -119,21 +130,30 @@ public:
 
     eventPlots.checkPoint(1);
 
+    //cout << "jets.size()= "<< jets.size() << endl;
+    //int i=1;
     for(const auto& j : jets){
+      //cout << "pt = " << j.jet->pt() << "\teta = " << j.jet->eta() << endl;
+      if ( TMath::Abs(j.jet->eta()) >= 2.4 ) continue;
+      if ( j.jet->pt() <=30 ) continue;
       eventPlots.revert(1);
 
+      //cout << "...Plots for jet " << i << endl;
+      //cout << "...Plots: jetpt" << endl;
       ++eventPlots;
       eventPlots( "pt_all__", true );
       eventPlots( "pt_low__", j.jet->pt() >  30 and j.jet->pt() <  50 );
       eventPlots( "pt_mid__", j.jet->pt() >  50 and j.jet->pt() < 100 );
       eventPlots( "pt_hgh__", j.jet->pt() > 100                       );
 
+      //cout << "...Plots: jeteta" << endl;
       ++eventPlots;
       eventPlots( "eta_all__", true );
       eventPlots( "eta_trk__",                        j.jet->eta() <  2.4 );
       eventPlots( "eta_trn__", j.jet->eta() > 2.4 and j.jet->eta() <  3.0 );
       eventPlots( "eta_out__", j.jet->eta() > 3.0 and j.jet->eta() <  4.7 );
 
+      //cout << "...Plots: jettype" << endl;
       ++eventPlots;
       //eventPlots( "nonPU__",         j.type != PU );
       eventPlots( "q__", j.type == Q  );
@@ -143,6 +163,7 @@ public:
       eventPlots( "U__", j.type == U  );
       //eventPlots( "c_k__", j.type == C  );
 
+      //cout << "...Plots: filling vars, pt = " << j.jet->pt() << "\teta = " << j.jet->eta() << endl;
       eventPlots.fill( j.jet->pt() , 1, "_pt"   , ";p_{t}"              , 100,   0,  1000   );
       eventPlots.fill( j.jet->eta(), 1, "_eta"  , ";eta"                , 200,  -5,     5   );
       eventPlots.fill( j.ptD       , 1, "ptD"   , ";p_{t}(D)"           ,  50,   0,     1   );
@@ -150,10 +171,15 @@ public:
       eventPlots.fill( j.axis2     , 1, "axis2" , ";axis_{2}"           ,  50,   0,     0.4 );
       eventPlots.fill( j.mult      , 1, "mult"  , ";# of part."         , 100, -0.5,   99.5 );
 
+      //if (i==jets.size()) { cout << "skipping last jet" << endl; continue; }
+      //cout << "...Plots: filling MVAs" << endl;
       if(isReco) eventPlots.fill( getRecoMVA(j), 1, "_disc", ";Q/G disc", 50, -1, 1  );
       else       eventPlots.fill( getGenMVA(j),  1, "_disc", ";Q/G disc", 50, -1, 1  );
+      //cout << "...Plots: done filling MVAs" << endl;
+      //++i;
 
     } // jets
+	//cout << "...done making Plots" << endl;
 
   } // makePlots()
 
