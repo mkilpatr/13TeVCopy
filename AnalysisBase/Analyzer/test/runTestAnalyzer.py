@@ -75,45 +75,21 @@ process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBas
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
 process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
-# PUPPI
+
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
-process.load('ObjectProducers.Puppi.Puppi_cff')
-process.load("ObjectProducers.JetProducers.convertPackedCandToRecoCand_cff")
-
-from ObjectProducers.JetProducers.pfPUPPISequence_cff import *
-
-load_pfPUPPI_sequence(process, 'pfPUPPISequence', algo = 'PUPPI',
-  src_puppi = 'pfAllHadronsAndPhotonsForPUPPI',
-  cone_puppi_central = 0.5
-)
-
-# Change the input collections
-process.pfAllHadronsAndPhotonsForPUPPI.src = 'convertedPackedPFCandidates'
-process.particleFlowPUPPI.candName = 'packedPFCandidates'
-process.particleFlowPUPPI.vertexName = 'offlineSlimmedPrimaryVertices'
-
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
-process.p = cms.Path(process.ak4PatAssocSeq * 
-                     process.convertedPackedPFCandidates * 
-                     process.pfPUPPISequence *
+
+
+process.load('Dummy.Puppi.Puppi_cff')
+process.puppi.PuppiName      = cms.untracked.string("")
+
+
+process.p = cms.Path(process.puppi*
+                     process.ak4PatAssocSeq * 
                      process.ak4PuppiJetSeq * 
-                     process.ca8AssocSeq    *
+                     process.ca8JetsSeq     *
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
                      process.pickyJetSeq    *
                      process.TestAnalyzer)
-
-#process.lsfSubJets     *
-
-# dont use for now
-# # If producing puppi jets with JECs:
-# if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC :
-#     process.TestAnalyzer.PuppiJets.fillReGenJets = False                             # switch off redefined genjets for now
-#  
-#     process.p = cms.Path(process.ak4PatAssocSeq *
-#                          process.ak4PuppiJetSeq * 
-#                          process.trimmedJetSeq  *
-#                          process.egmGsfElectronIDSequence * 
-#                          process.TestAnalyzer)
-
