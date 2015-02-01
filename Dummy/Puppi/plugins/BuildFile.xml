@@ -4,7 +4,7 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/EgammaCandidates"/>
 
-<library   name="ObjectProducersPuppiplugins" file="*.cc">
-  <use   name="ObjectProducers/Puppi" />
+<library   name="DummyPuppiplugins" file="*.cc">
+  <use   name="Dummy/Puppi" />
   <flags   EDM_PLUGIN="1"/>
 </library>

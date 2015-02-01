@@ -1,4 +1,4 @@
-#include "ObjectProducers/Puppi/interface/PuppiContainer.h"
+#include "Dummy/Puppi/interface/PuppiContainer.h"
 #include "fastjet/internal/base.hh"
 #include "fastjet/FunctionOfPseudoJet.hh"
 #include "Math/ProbFunc.h"

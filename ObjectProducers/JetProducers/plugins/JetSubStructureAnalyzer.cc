@@ -120,7 +120,7 @@ public:
   template<typename Prt,typename Prt2>
   fastjet::PseudoJet addParticles(const edm::Handle<vector<Prt>>& prtCol, const reco::Jet* jet,const edm::Handle<vector<Prt2>>& puPrtCol, const reco::Jet* puJet){
     vector<fastjet::PseudoJet> jetlist;
-    for(int iD = 0; iD < jet->numberOfDaughters(); ++iD){
+    for(unsigned int iD = 0; iD < jet->numberOfDaughters(); ++iD){
       const reco::CandidatePtr  daughter = jet->daughterPtr(iD);
       jetlist.emplace_back(daughter->px(),daughter->py(),daughter->pz(),daughter->energy());
       jetlist.back().set_user_info(new FastJetClusterer::UserInfo(prtCol,daughter.key(), FastJetClusterer::RECO));
@@ -128,7 +128,7 @@ public:
 
     const double puScale = 1e-50;
     if(puJet)
-    for(int iD = 0; iD < puJet->numberOfDaughters(); ++iD){
+    for(unsigned int iD = 0; iD < puJet->numberOfDaughters(); ++iD){
       const reco::CandidatePtr  daughter = puJet->daughterPtr(iD);
       jetlist.emplace_back(puScale*daughter->px(),puScale*daughter->py(),puScale*daughter->pz(),puScale*daughter->energy());
       jetlist.back().set_user_info(new FastJetClusterer::UserInfo(puPrtCol,daughter.key(), FastJetClusterer::PU));

@@ -1,5 +1,5 @@
-#ifndef ObjectProducers_Puppi_PuppiProducer_h_
-#define ObjectProducers_Puppi_PuppiProducer_h_
+#ifndef CommonTools_Puppi_PuppiProducer_h_
+#define CommonTools_Puppi_PuppiProducer_h_
 // system include files
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Math/interface/PtEtaPhiMass.h"
-#include "ObjectProducers/Puppi/interface/PuppiContainer.h"
+#include "Dummy/Puppi/interface/PuppiContainer.h"
 
 // ------------------------------------------------------------------------------------------
 class PuppiProducer : public edm::EDProducer {

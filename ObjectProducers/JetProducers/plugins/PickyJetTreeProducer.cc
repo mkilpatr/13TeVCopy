@@ -262,7 +262,7 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
     template<typename Prt,typename FillJet>
     fastjet::PseudoJet addParticles(const edm::Handle<vector<Prt>>& prtCol, const FillJet* jet, const edm::Handle<pat::PackedGenParticleCollection>& genParticles, const reco::GenJet* genJet  ){
       vector<fastjet::PseudoJet> jetlist;
-      for(int iD = 0; iD < jet->numberOfDaughters(); ++iD){
+      for(unsigned int iD = 0; iD < jet->numberOfDaughters(); ++iD){
         const reco::CandidatePtr  daughter = jet->daughterPtr(iD);
         jetlist.emplace_back(daughter->px(),daughter->py(),daughter->pz(),daughter->energy());
         jetlist.back().set_user_info(new FastJetClusterer::UserInfo(prtCol,daughter.key(), FastJetClusterer::RECO));
@@ -270,7 +270,7 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
 
       const double genScale = 1e-50;
       if(genJet)
-      for(int iD = 0; iD < genJet->numberOfDaughters(); ++iD){
+      for(unsigned int iD = 0; iD < genJet->numberOfDaughters(); ++iD){
         const reco::CandidatePtr  daughter = genJet->daughterPtr(iD);
         jetlist.emplace_back(genScale*daughter->px(),genScale*daughter->py(),genScale*daughter->pz(),genScale*daughter->energy());
         jetlist.back().set_user_info(new FastJetClusterer::UserInfo(genParticles,daughter.key(), FastJetClusterer::GEN));
