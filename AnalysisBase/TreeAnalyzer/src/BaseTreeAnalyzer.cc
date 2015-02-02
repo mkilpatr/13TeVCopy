@@ -208,6 +208,8 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
        break;
      }
    }
+  clog << "With default jet type: " << defaultJets->branchName()  <<endl;
+
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
