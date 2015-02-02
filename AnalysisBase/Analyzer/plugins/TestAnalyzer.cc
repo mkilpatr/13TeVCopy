@@ -28,6 +28,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Electrons", ELECTRONS);
       initialize(cfg, "Muons", MUONS);
       initialize(cfg, "Taus", TAUS);
+      initialize(cfg, "PFCandidates", PFCANDS);
       book();
     }
 

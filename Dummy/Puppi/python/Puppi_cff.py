@@ -6,7 +6,7 @@ puppiCentral = cms.VPSet(
                   useCharged       = cms.untracked.bool(True),
                   applyLowPUCorr   = cms.untracked.bool(True),
                   combOpt          = cms.untracked.int32(0),
-                  cone             = cms.untracked.double(0.3),
+                  cone             = cms.untracked.double(0.5),
                   rmsPtMin         = cms.untracked.double(0.1),
                   rmsScaleFactor   = cms.untracked.double(1.0)
                  )
@@ -24,11 +24,13 @@ puppiForward = cms.VPSet(
                  )
                 )
 
-puppi =  cms.EDProducer("PuppiProducer",
+puppi =  puppi = cms.EDProducer("PuppiProducer",#cms.PSet(#"PuppiProducer",
                        PuppiName      = cms.untracked.string("Puppi"),
                        UseDeltaZCut   = cms.untracked.bool  (True),
                        DeltaZCut      = cms.untracked.double(0.2),
-                       candName       = cms.untracked.string('packedPFCandidates'),
+                       #candName       = cms.untracked.string('particleFlow'),
+                       #vertexName     = cms.untracked.string('offlinePrimaryVertices'),
+                       candName      = cms.untracked.string('packedPFCandidates'),
                        vertexName     = cms.untracked.string('offlineSlimmedPrimaryVertices'),
                        applyCHS       = cms.untracked.bool  (True),
                        useExp         = cms.untracked.bool  (False),

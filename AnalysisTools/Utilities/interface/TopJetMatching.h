@@ -22,6 +22,7 @@ typedef ucsbsusy::GenJetF Jet;
 
 enum  PartonDiagnosis {
                         SOFT_PARTON        //low pT...no use matching
+                      , HIGH_ETA_PARTON    //high eta parton...no use matching
                       , DISPERSED_PARTON   //Hadronized energy is much less than parton energy
                       , NO_JET             //Not associated to any jet
                       , SPLIT_JETS         //Parton deposits sign. energy in more than one jet
@@ -31,6 +32,7 @@ enum  PartonDiagnosis {
                       };
 //diagnosis constants
 const float minPartonPT    = 20;
+const float maxPartonETA   = 2.4;
 const float minHadronRelE  = .50;
 const float minPartontRelE = .50;
 const float extraJetsPartonRelE = .15;

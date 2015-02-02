@@ -19,16 +19,59 @@
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
+struct ConfigPars {
+public:
+  float        minElePt;
+  float        minMuPt;
+  float        minTauPt;
+  float        minJetPt;
+  float        minBJetPt;
+  float        maxEleEta;
+  float        maxMuEta;
+  float        maxTauEta;
+  float        maxJetEta;
+  float        maxBJetEta;
+  float        minJetLepDR;
+  float        minCandPt;
+  float        maxCandEta;
+  float        tauVetoLoose;
+  float        tauMtCut;
+  bool         cleanJetsvLeptons_;
+  bool         cleanJetsvTaus_;
+  bool         correctPickyPT;
+
+  ConfigPars() :
+     minElePt          (10.0),
+     minMuPt           (10.0),
+     minTauPt          (20.0),
+     minJetPt          (30.0),
+     minBJetPt         (30.0),
+     maxEleEta         (2.5 ),
+     maxMuEta          (2.4 ),
+     maxTauEta         (2.3 ),
+     maxJetEta         (2.4 ),
+     maxBJetEta        (2.4 ),
+     minJetLepDR       (0.4 ),
+     minCandPt         (10.0),
+     maxCandEta        (2.4 ),
+     tauVetoLoose      (0.28),
+     tauMtCut          (100.),
+     cleanJetsvLeptons_(false),
+     cleanJetsvTaus_   (false),
+     correctPickyPT    (true)
+  {}
+};
 
   class BaseTreeAnalyzer {
   public:
-    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
+    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -70,8 +113,6 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
-    void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
-    void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
     void setDefaultJets(VarType type);
     void setDefaultJets(JetReader * injets)        {defaultJets = injets;}
     JetReader * getDefaultJets()                   {return defaultJets;}
@@ -80,15 +121,17 @@ namespace ucsbsusy {
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
     template <typename Jet>
-    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
+    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
-    bool isLooseBJet  (const RecoJetF& jet) const;
+    bool isLooseBJet   (const RecoJetF& jet) const;
     bool isGoodElectron(const ElectronF& electron) const;
     bool isGoodMuon    (const MuonF& muon        ) const;
     bool isGoodTau     (const TauF& tau          ) const;
+    bool isMVATauCand  (const PFCandidateF& cand ) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
+    double correctedPickyPT(double pt,double eta,double area, double rho) const;
 
     //--------------------------------------------------------------------------------------------------
     // TTree readers
@@ -105,6 +148,7 @@ namespace ucsbsusy {
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
+    PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
 
   public:
@@ -114,10 +158,14 @@ namespace ucsbsusy {
     unsigned int  run;
     unsigned int  lumi;
     unsigned int  event;
+    float         weight;
+    defaults::Process process;
+
     int   nPV;
     float rho;
     int   nLeptons;
     int   nTaus;
+    int   nMVATauCands;
     int   nJets;
     int   nBJets;
 
@@ -128,6 +176,8 @@ namespace ucsbsusy {
     MomentumF*                 genmet  ;
     std::vector<LeptonF*>      leptons ;
     std::vector<TauF*>         taus    ;
+    std::vector<PFCandidateF*> pfcands ;
+    std::vector<PFCandidateF*> mvataucands;
     std::vector<RecoJetF*>     jets    ;
     std::vector<RecoJetF*>     pickyJets;
     std::vector<RecoJetF*>     bJets   ;
@@ -140,24 +190,7 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
     JetReader  * defaultJets;
-    bool         cleanJetsvLeptons_;
-    bool         cleanJetsvTaus_;
-
-    //--------------------------------------------------------------------------------------------------
-    // Kinematic settings
-    //--------------------------------------------------------------------------------------------------
-    const float  minElePt;
-    const float  minMuPt;
-    const float  minTauPt;
-    const float  minJetPt;
-    const float  minBJetPt;
-    const float  maxEleEta;
-    const float  maxMuEta;
-    const float  maxTauEta;
-    const float  maxJetEta;
-    const float  maxBJetEta;
-    const float  minJetLepDR;
-
+    const ConfigPars config;
   };
 
 }

@@ -1,8 +1,8 @@
-#ifndef OBJECTPRODUCERS_PUPPI_PUPPICONTAINER_H_
-#define OBJECTPRODUCERS_PUPPI_PUPPICONTAINER_H_
+#ifndef DUMMY_PUPPI_PUPPICONTAINER_H_
+#define DUMMY_PUPPI_PUPPICONTAINER_H_
 
-#include "ObjectProducers/Puppi/interface/PuppiAlgo.h"
-#include "ObjectProducers/Puppi/interface/RecoObj.hh"
+#include "Dummy/Puppi/interface/PuppiAlgo.h"
+#include "Dummy/Puppi/interface/RecoObj.hh"
 #include "fastjet/internal/base.hh"
 #include "fastjet/PseudoJet.hh"
 

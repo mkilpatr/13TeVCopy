@@ -16,6 +16,7 @@ float TopJetMatching::fromContainmentType(const conType inCon){return float(inCo
 //--------------------------------------------------------------------------------------------------
 PartonDiagnosis Parton::getDiagnosis(const Parton& parton,const std::vector<Jet*>& jets) {
   if( parton.parton->pt() < minPartonPT)             return SOFT_PARTON;
+  if( TMath::Abs(parton.parton->eta()) > maxPartonETA)return HIGH_ETA_PARTON;
   if(parton.hadE < minHadronRelE* parton.parton->energy() ) return DISPERSED_PARTON;
 
   int numSigJets = 0;

@@ -12,7 +12,14 @@ options = VarParsing('analysis')
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
 options.inputFiles = '/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
+
 options.maxEvents = -1
+
+options.register('skipEvents',
+                 0,
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.int,
+                 "Number of events to skip in processing")
 
 options.parseArguments()
 
@@ -23,7 +30,8 @@ process.TFileService = cms.Service('TFileService',
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 
 process.source = cms.Source('PoolSource',
-    fileNames = cms.untracked.vstring (options.inputFiles)
+    fileNames = cms.untracked.vstring (options.inputFiles),
+    skipEvents = cms.untracked.uint32(options.skipEvents)
 )
 
 
@@ -69,29 +77,19 @@ process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBas
 
 
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
-process.load('ObjectProducers.Puppi.Puppi_cff')
-
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
-process.p = cms.Path(process.puppi *
+
+
+process.load('Dummy.Puppi.Puppi_cff')
+process.puppi.PuppiName      = cms.untracked.string("")
+
+
+process.p = cms.Path(process.puppi*
                      process.ak4PatAssocSeq * 
                      process.ak4PuppiJetSeq * 
-                     process.ca8AssocSeq    *
+                     process.ca8JetsSeq     *
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
                      process.pickyJetSeq    *
                      process.TestAnalyzer)
-
-#process.lsfSubJets     *
-
-# dont use for now
-# # If producing puppi jets with JECs:
-# if process.TestAnalyzer.PuppiJets.isFilled and process.TestAnalyzer.PuppiJets.applyJEC :
-#     process.TestAnalyzer.PuppiJets.fillReGenJets = False                             # switch off redefined genjets for now
-#  
-#     process.p = cms.Path(process.ak4PatAssocSeq *
-#                          process.ak4PuppiJetSeq * 
-#                          process.trimmedJetSeq  *
-#                          process.egmGsfElectronIDSequence * 
-#                          process.TestAnalyzer)
-

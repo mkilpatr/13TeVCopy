@@ -47,6 +47,7 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   ijetptraw_  = data.addMulti<float>(branchName_,"jet_ptraw" ,0);
   ijetpuId_   = data.addMulti<float>(branchName_,"jet_puId"  ,0);
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
+  ijetarea_   = data.addMulti<float>(branchName_,"jet_area"  ,0);
 
   if(options_ & LOADGEN) {
     ijetgenindex_ = data.addMulti<int16  >(branchName_,"jet_genIndex",-1);
@@ -162,6 +163,7 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
+    data.fillMulti<float>(ijetarea_ ,j.jetArea());
 
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);

@@ -20,7 +20,7 @@
  #include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
  //Main File
  #include "fastjet/PseudoJet.hh"
- #include "ObjectProducers/Puppi/plugins/PuppiProducer.h"
+ #include "Dummy/Puppi/plugins/PuppiProducer.h"
 
 typedef edm::View<reco::Candidate> CandidateView;
 

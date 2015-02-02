@@ -11,28 +11,65 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/Parang/interface/Panvariate.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 class Copier : public TreeCopierLoadedBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree) : TreeCopierLoadedBranches(fileName,treeName,outFileName,isMCTree) {};
+  ParamatrixMVA* paramRec;
+  bool jetNoLep;
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars * pars, bool jetNoLep_) : TreeCopierLoadedBranches(fileName,treeName,outFileName,isMCTree,pars) {
+    TFile* recoFile = TFile::Open("/uscms/home/mullin/nobackup/stuff2015/quarkGluonTagger/QGDisc_reco_puppi.root", "READ");
+    paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
+    delete recoFile;
+    jetNoLep = jetNoLep_;
+  };
   virtual ~Copier() {};
 
   virtual void loadVariables(){
     load(EVTINFO);
-    load(PUPPIJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
     load(ELECTRONS);
     load(MUONS);
     load(TAUS);
-    setDefaultJets(PUPPIJETS);
+    setDefaultJets(AK4JETS);
   }
+
+  double getRecoMVA(const RecoJetF& jet, const JetReader * reader){
+    const Panvariate* recoMVA = paramRec->get(jet.pt(),TMath::Abs(jet.eta()));
+    if(!recoMVA) return -1;
+    static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
+    static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
+    static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
+    static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
+    recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,reader->jetptD_->at(jet.index())  );
+    recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,reader->jetaxis1_->at(jet.index()));
+    recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,reader->jetaxis2_->at(jet.index()));
+    recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,reader->jetMult_->at(jet.index()));
+    return recoMVA->evaluateMethod(0);
+  } //
 
   virtual bool fillEvent() {
 
+
+    if(nLeptons != 1) return false;
+    if(leptons[0]->pt() < 30) return false;
+
+    if(jetNoLep){
+      for(const auto * l : leptons){
+        met->setP4( met->p4() + l->p4());
+      }
+      evtInfoReader.met_phi = met->phi();
+      evtInfoReader.met_pt = met->pt();
+    }
+
     //lepton veto
-    if(nLeptons + nTaus > 0) return false;
+//    if(nLeptons + nTaus > 0) return false;
+
+
+
 
     //Trigger requirements
     if(PhysicsUtilities::countObjectsDeref(jets,90,2.4) < 2) return false;
@@ -48,9 +85,15 @@ public:
 
     //QCD killing cuts
     JetReader * dJets = getDefaultJets();
-    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[0],*met)) < .5) return false;
-    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[1],*met)) < .5) return false;
-    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[2],*met)) < .3) return false;
+//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[0],*met)) < .5) return false;
+//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[1],*met)) < .5) return false;
+//    if(TMath::Abs(PhysicsUtilities::deltaPhi(dJets->recoJets[2],*met)) < .3) return false;
+
+    //replace old qgl with new one
+    for(unsigned int iJ = 0; iJ < dJets->recoJets.size(); ++iJ){
+      const auto& j =  dJets->recoJets[iJ];
+      dJets->jetqgl_->at(j.index()) = getRecoMVA(j,dJets);
+    }
 
     return true;
   }
@@ -58,7 +101,6 @@ public:
   void book() {
     iWeight      = data.add<float>       ("","weight"      ,"F",weight);
     iProcess     = data.add<size8>       ("","process"     ,"b",process);
-
   }
   size iWeight;
   size iProcess;
@@ -79,7 +121,12 @@ public:
  *
  */
 
-void preselectionSkimmer(string fileName, string processName, double crossSection, double lumi = 5, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
+void preselectionSkimmer(string fileName, string processName, double crossSection, double lumi = 5, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", bool jetNoLep = false) {
+  ConfigPars pars;
+  if(jetNoLep){
+    pars.cleanJetsvLeptons_ = true;
+    pars.cleanJetsvTaus_ = true;
+  }
 
   //get the output name
   TString prefix(fileName);
@@ -92,9 +139,9 @@ void preselectionSkimmer(string fileName, string processName, double crossSectio
   for(unsigned int iP = 0; defaults::PROCESS_NAMES[iP][0]; ++iP) if(defaults::PROCESS_NAMES[iP] == processName) process = static_cast<defaults::Process>(iP);
   if(process == defaults::NUMPROCESSES) throw std::invalid_argument("Did not provide a valid process name (see defaults::PROCESS_NAMES)");
 
-  Copier a(fileName,treeName,outName.Data(),process != defaults::DATA);
+  Copier a(fileName,treeName,outName.Data(),process != defaults::DATA, &pars, jetNoLep);
   //set weight and process
-  a.weight = lumi * crossSection / ( nEvents > 0 ? nEvents : float(a.getEntries())  );
+  a.weight = lumi * crossSection *1000 / ( nEvents > 0 ? nEvents : float(a.getEntries())  );
   a.process = process;
 
   clog << "Skimming "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and weight "<< a.weight <<" into file "<< outName << endl;
