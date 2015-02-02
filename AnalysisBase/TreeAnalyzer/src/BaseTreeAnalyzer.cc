@@ -30,7 +30,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     met               (0),
     genmet            (0),
     isMC_             (isMCTree),
-    defaultJets       (0),
+    defaultJets       (&ak4Reader),
     config            (pars ? *pars : ConfigPars())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
@@ -102,7 +102,6 @@ void BaseTreeAnalyzer::loadVariables()
   load(TAUS);
   load(PFCANDS);
   if(isMC()) load(GENPARTICLES);
-  setDefaultJets(AK4JETS);
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
