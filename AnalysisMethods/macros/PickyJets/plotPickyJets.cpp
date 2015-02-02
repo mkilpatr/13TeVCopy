@@ -675,7 +675,7 @@ p = new Plot("__partonPTFrac"); new TCanvas(); p->draw(); new TCanvas(); p = p->
     oo = new TObjArray;
     for(unsigned int iP = 0; pts[iP][0]; ++iP)
             for(unsigned int iV = 0; vars[iV][0]; ++iV){
-                p = new Plot("(ak4|ak4Gen|pickyGen|pickyL1)_"+pts[iP] + vars[iV] + "$");
+                p = new Plot("(ak4|ak4Gen|puppi)_"+pts[iP] + vars[iV] + "$");
                 p->SetTitle(pts[iP] + vars[iV]);
                 p->toUnderOverflow();
                 o->Add(p);
@@ -691,7 +691,8 @@ p = new Plot("__partonPTFrac"); new TCanvas(); p->draw(); new TCanvas(); p = p->
 
 {
     // TString pts[] = {"minTopPT_lt100__","minTopPT_eq100to200__","minTopPT_geq200__",""};
-    TString vars[] = {"j1_ptRes","j2_ptRes","j3_ptRes","j4_ptRes","j5_ptRes","jgeq6_ptRes",""};
+    // TString vars[] = {"j1_ptRes","j2_ptRes","j3_ptRes","j4_ptRes","j5_ptRes","jgeq6_ptRes",""};
+    TString vars[] = {"ptRes","num_cen_j20","num_j20","eta",""};
     
     TString pts[] = {"incl__",""};
         // TString vars[] = {"j1_pt","j2_pt","j3_pt","j1_ptRes","j2_ptRes","j3_ptRes","j1_csv","j2_csv","j3_csv",""};
@@ -700,15 +701,16 @@ p = new Plot("__partonPTFrac"); new TCanvas(); p->draw(); new TCanvas(); p = p->
     oo = new TObjArray;
     for(unsigned int iP = 0; pts[iP][0]; ++iP)
             for(unsigned int iV = 0; vars[iV][0]; ++iV){
-                p = new Plot(pts[iP] + vars[iV] + "$");
-                p->SetTitle(pts[iP] + vars[iV]);
+                p = new Plot("(ak4Raw|puppi)_"+pts[iP] + vars[iV] + "$");
+                p->SetTitle("_"+pts[iP] + vars[iV]);
                 p->toUnderOverflow();
+                p->normalize();
                 o->Add(p);
                 // p = p->makeRatiogram(0u,"");
                 // oo->Add(p);
             }
             
-           Pint::drawAll(o,"","",":mr");
+           Pint::drawAll(o,"","",":m");
                       // Pint::drawAll(oo,"");
 }
 
@@ -755,4 +757,80 @@ Pint::drawAll(o,"");
 Pint::drawAll(o,"");
 Pint::drawAll(oo,"");
 
+}
+
+
+
+>>>>>>>>>>> Picky jet PU correections
+    
+{
+    TString pu[] = {"nV_lt15__","nV_eq15to22__","nV_geq22__",""};
+    TString vars[] = {"num_20","num_30","num_50","num_100",""};
+    // TString vars[] = {"pt",""};
+    o = new TObjArray();
+    for(unsigned int iP = 0; pu[iP][0]; ++iP){
+        for(unsigned int iV = 0; vars[iV][0]; ++iV){
+            p = new Plot("incl__"+pu[iP]+"reco_"+vars[iV]);
+            pg = new Plot("corr_0p00__incl__"+pu[iP]+"gen_"+vars[iV]);
+            if(pg->getNumberOfHistograms() == 0)continue;
+            p->add(pg->at(0),"gen");
+            p->SetTitle(Plot::translated(pu[iP]+vars[iV]));
+            p->toUnderOverflow();
+            p = p->makeRatiogram("gen","");
+            p->setMinMax(0.,2.);
+            o->Add(p);
+
+        
+    }
+}
+
+Pint::drawAll(o,"");
+}
+
+
+{
+    TString pu[] = {"nV_lt15__","nV_eq15to22__","nV_geq22__",""};
+    TString pt[] = {"pt_eq20to50__","pt_eq50to100__","pt_eq100to300__","pt_geq300__",""};
+    // TString vars[] = {"pt",""};
+    o = new TObjArray();
+    for(unsigned int iP = 0; pu[iP][0]; ++iP){
+        for(unsigned int iPT = 0; pt[iPT][0]; ++iPT){
+            p = new Plot("incl__"+pu[iP]+pt[iPT] +"reco_eta");
+            pg = new Plot("corr_0p00__incl__"+pu[iP]+pt[iPT] +"gen_eta");
+            if(pg->getNumberOfHistograms() == 0)continue;
+            p->add(pg->at(0),"gen");
+            p->SetTitle(Plot::translated(pu[iP]+pt[iPT]));
+            p->toUnderOverflow();
+            p = p->makeRatiogram("gen","",4);
+            p->setMinMax(0.,2.);
+            o->Add(p);
+
+        
+    }
+}
+
+Pint::drawAll(o,"");
+}
+
+
+
+{
+    TString pu[] = {"nV_lt15__","nV_eq15to22__","nV_geq22__",""};
+        TString pt[] = {"pt_eq20to50__","pt_eq50to100__","pt_eq100to300__","pt_geq300__",""};
+    o = new TObjArray();
+    for(unsigned int iP = 0; pu[iP][0]; ++iP){
+        for(unsigned int iPT = 0; pt[iPT][0]; ++iPT){
+            p = new Plot("incl__"+pu[iP]+pt[iPT] + "ptRes");
+            p->toUnderOverflow();
+
+            p->SetTitle(Plot::translated(pu[iP]+pt[iPT]));
+            // p = p->makeRatiogram("gen","");
+            // p->setMinMax(0.,2.);
+            o->Add(p);
+
+        
+    }
+}
+
+Pint::drawAll(o,"","",":mr");
 }
