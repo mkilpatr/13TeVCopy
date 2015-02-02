@@ -42,6 +42,7 @@ public:
   float        tauMtCut;
   bool         cleanJetsvLeptons_;
   bool         cleanJetsvTaus_;
+  bool         correctPickyPT;
 
   ConfigPars() :
      minElePt          (10.0),
@@ -60,7 +61,8 @@ public:
      tauVetoLoose      (0.28),
      tauMtCut          (100.),
      cleanJetsvLeptons_(false),
-     cleanJetsvTaus_   (false)
+     cleanJetsvTaus_   (false),
+     correctPickyPT    (true)
   {}
 };
 
@@ -129,6 +131,7 @@ public:
     bool isMVATauCand  (const PFCandidateF& cand ) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
+    double correctedPickyPT(double pt,double eta,double area, double rho) const;
 
     //--------------------------------------------------------------------------------------------------
     // TTree readers

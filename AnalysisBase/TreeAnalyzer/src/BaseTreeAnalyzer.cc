@@ -165,6 +165,16 @@ void BaseTreeAnalyzer::processVariables()
   nTaus    = taus.size();
   nMVATauCands = mvataucands.size();
 
+  //Picky jet corrections
+  if(pickyJetReader.isLoaded() && config.correctPickyPT){
+    if(!evtInfoReader.isLoaded())
+      throw std::invalid_argument("BaseTreeAnalyzer::processVariables(): EventInfo must be loaded if you want to correct picky jets pt!");
+    for(auto& j : pickyJetReader.recoJets)
+      j.setP4(CylLorentzVectorF(correctedPickyPT(j.pt(),j.eta(),pickyJetReader.jetarea_->at(j.index()),rho),
+          j.eta(),j.phi(),j.mass()) );
+    std::sort(pickyJetReader.recoJets.begin(), pickyJetReader.recoJets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
+  }
+
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded()){
     cleanJets(defaultJets,jets,&bJets,&nonBJets);
@@ -208,6 +218,8 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
        break;
      }
    }
+  clog << "With default jet type: " << defaultJets->branchName()  <<endl;
+
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
@@ -281,4 +293,18 @@ void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jet
 			}
 		}
 	}
+}
+//--------------------------------------------------------------------------------------------------
+double BaseTreeAnalyzer::correctedPickyPT(double pt,double eta,double area, double rho) const {
+  double constant = 1.08;
+  double correction = .35;
+  if(pt < 30){
+    if(TMath::Abs(eta) < 1.5){
+      constant = 1.05;
+      correction = .50;
+    } else {
+      constant = 1.10;
+    }
+  }
+  return max(0.,constant*(pt - rho*area*correction) );
 }

@@ -56,7 +56,7 @@ public:
     if(getX){
       return area*((p1*rho)*(1+p2*log(pt)));
     } else
-    return origPT * max(0.0001,1.0-.3*area*(p0+(p1*rho)*(1+p2*log(pt)))/pt);
+    return origPT * max(0.0001,1.0-.35*area*(p0+(p1*rho)*(1+p2*log(pt)))/pt);
 
 //    cout << pt  << " " <<eta<<" "<<area<<" "<<rho <<" "<<p0 <<" "<<p1 <<" "<<p2<<" "<<1.0-area*(p0+(p1*rho)*(1+p2*log(pt)))/pt <<endl;
 //    return origPT * max(0.0001,1.0-area*(p0+(p1*rho))/pt);
@@ -72,8 +72,8 @@ public:
     load(EVTINFO);
     load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
     load(PICKYJETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
-//    load(PUPPIJETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
-    load(&trimmedJetReader,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC ,"trimmed");
+    load(PUPPIJETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
+//    load(&trimmedJetReader,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC ,"trimmed");
 
     load(GENPARTICLES);
   }
@@ -139,11 +139,12 @@ public:
       if( pt < 20   ) continue;
       nJ++;
 
-      if(TMath::Abs(j.eta())  > 2.4) continue;
+      if(TMath::Abs(j.eta())  > 2.4 ) continue;
       nJC++;
       ht+= pt;
       rankedJets.emplace_back(pt  ,iJ);
     }
+
 
     eventPlots.fill(nJC               , 1, "num_cen_j20"            , ";N. p_{T} #geq 20 jets (#eta < 2.4)"                    , 11,  1.5, 12.5, prefix);
     eventPlots.fill(nJ              , 1, "num_j20"            , ";N. p_{T} #geq 20 jets"                    , 11,  1.5, 12.5, prefix);
@@ -161,7 +162,9 @@ public:
       eventPlots.fill(rankedJets[iJ].first  , 1, name +TString("_pt")           , TString(";p_{T} ") + name                    , 100,  0, 500, prefix);
       eventPlots.fill(j.csv()               , 1, name +TString("_csv")         , TString(";csv ") + name                    , 100,  0, 1, prefix);
       const auto* genJet = j.genJet();
+      eventPlots.fill(j.eta()  , 1, TString("eta")           , TString(";#eta ") , 104,  -5.2, 5.2, prefix);
       if(genJet)eventPlots.fill(genJet->pt() ? rankedJets[iJ].first / genJet->pt() : 999  , 1, name +TString("_ptRes")           , TString(";p_{T} Res ") + name                    , 100,  0, 2, prefix);
+      if(genJet)eventPlots.fill(genJet->pt() ? rankedJets[iJ].first / genJet->pt() : 999  , 1, "ptRes"           , TString(";p_{T} Res ")                     , 80,  0, 2, prefix);
     }
 
 
@@ -231,7 +234,7 @@ public:
       if(ptRaw) pt = ptRaw->at(j.index());
       if(jetA) pt = getCorrectedPT(pt,j.eta(),rho,jetA->at(j.index()));
 
-      if( pt < 30   ) continue;
+      if( pt < 20   ) continue;
       nJ++;
 
       if(TMath::Abs(j.eta())  > 2.4) continue;
@@ -349,6 +352,138 @@ public:
 
     }
 
+
+  double corrPT(double pt,  double eta, double area, double rho, double correction){
+    if(correction == 0) return pt;
+
+    if(pt > 30)
+      return max(0.,1.08*(pt - rho*area*correction) );
+
+    if(TMath::Abs(eta) < 1.5)
+    return max(0.,1.05*(pt - rho*area*correction*1.43) );
+
+
+    return max(0.,1.10*(pt - rho*area*correction) );
+
+
+  }
+
+  void getJetCorrections(JetReader& reader, const double correction, bool fillGen = false){
+    TString prefix = TString::Format("corr_%.2f__",correction);
+    prefix.ReplaceAll(".","p");
+
+    eventPlots.revert();
+    ++eventPlots;
+    eventPlots("incl__",true);
+    eventPlots("nV_lt15__",nPV < 15);
+    eventPlots("nV_eq15to22__",nPV >= 15 && nPV < 22);
+    eventPlots("nV_geq22__",nPV >= 22);
+
+    eventPlots.checkPoint(1);
+
+    int nGJ20  = 0;
+    int nGJ30  = 0;
+    int nGJ50  = 0;
+    int nGJ100 = 0;
+
+    for(const auto& j : reader.genJets){
+      if(TMath::Abs(j.eta()) > 2.4 ) continue;
+      if(j.pt() < 20 ) continue;
+      nGJ20++;
+      if(j.pt() < 30 ) continue;
+      nGJ30++;
+      if(j.pt() < 50 ) continue;
+      nGJ50++;
+      if(j.pt() < 100 ) continue;
+      nGJ100++;
+    }
+
+    int nRJ20 = 0;
+    int nRJ30 = 0;
+    int nRJ50 = 0;
+    int nRJ100 = 0;
+
+    for(const auto& j : reader.recoJets){
+      if(TMath::Abs(j.eta()) > 2.4 ) continue;
+
+      double pt = corrPT(j.pt(),j.eta(), reader.jetarea_->at(j.index()),rho,correction);
+
+      if(pt < 20 ) continue;
+      nRJ20++;
+      if(pt < 30 ) continue;
+      nRJ30++;
+      if(pt < 50 ) continue;
+      nRJ50++;
+      if(pt < 100 ) continue;
+      nRJ100++;
+    }
+
+    if(fillGen){
+      eventPlots.fill(nGJ20 , 1, "gen_num_20"            , ";N. p_{T} #geq 20 jets"                    , 11,  1.5, 12.5, prefix);
+      eventPlots.fill(nGJ30 , 1, "gen_num_30"            , ";N. p_{T} #geq 30 jets"                    , 11,  1.5, 12.5, prefix);
+      eventPlots.fill(nGJ50 , 1, "gen_num_50"            , ";N. p_{T} #geq 50 jets"                    , 11,  1.5, 12.5, prefix);
+      eventPlots.fill(nGJ100, 1, "gen_num_100"           , ";N. p_{T} #geq 100 jets"                    , 11,  1.5, 12.5, prefix);
+
+      for(const auto& j : reader.genJets){
+        double pt = j.pt();
+        if(TMath::Abs(j.eta()) > 2.4 ) continue;
+        eventPlots.revert(1);
+        eventPlots.fill(pt  , 1, TString("gen_pt")           , TString(";p_{T} ")                     , 80,  0, 800, prefix);
+
+
+        ++eventPlots;
+        eventPlots("pt_eq20to50__",pt >= 20 && pt < 50);
+        eventPlots("pt_eq50to100__",pt >= 50 && pt < 100);
+        eventPlots("pt_eq100to300__",pt >= 100 && pt < 300);
+        eventPlots("pt_geq300__",pt >= 300 && pt < 300);
+
+        eventPlots.fill(j.eta()  , 1, TString("gen_eta")           , TString(";#eta")                     , 48, -2.4, 2.4, prefix);
+
+      }
+    }
+
+    eventPlots.revert(1);
+    eventPlots.fill(nRJ20 , 1, "reco_num_20"            , ";N. p_{T} #geq 20 jets"                    , 11,  1.5, 12.5, prefix);
+    eventPlots.fill(nRJ30 , 1, "reco_num_30"            , ";N. p_{T} #geq 30 jets"                    , 11,  1.5, 12.5, prefix);
+    eventPlots.fill(nRJ50 , 1, "reco_num_50"            , ";N. p_{T} #geq 50 jets"                    , 11,  1.5, 12.5, prefix);
+    eventPlots.fill(nRJ100, 1, "reco_num_100"           , ";N. p_{T} #geq 100 jets"                    , 11,  1.5, 12.5, prefix);
+
+    for(const auto& j : reader.recoJets){
+      double pt = corrPT(j.pt(),j.eta(), reader.jetarea_->at(j.index()),rho,correction);
+      if(TMath::Abs(j.eta()) > 2.4 ) continue;
+      eventPlots.revert(1);
+
+      eventPlots.fill(pt  , 1, TString("reco_pt")           , TString(";p_{T} ")                     , 80,  0, 800, prefix);
+
+
+      ++eventPlots;
+      eventPlots("pt_eq20to50__",pt >= 20 && pt < 50);
+      eventPlots("pt_eq50to100__",pt >= 50 && pt < 100);
+      eventPlots("pt_eq100to300__",pt >= 100 && pt < 300);
+      eventPlots("pt_geq300__",pt >= 300);
+
+
+      eventPlots.fill(j.eta()  , 1, TString("reco_eta")           , TString(";#eta")                     , 48, -2.4, 2.4, prefix);
+      const auto* genJet = j.genJet();
+      if(genJet == 0 || genJet->pt() == 0) continue;
+      eventPlots.revert(1);
+      ++eventPlots;
+      eventPlots("pt_eq20to50__",genJet->pt() >= 20 && genJet->pt() < 50);
+      eventPlots("pt_eq50to100__",genJet->pt() >= 50 && genJet->pt() < 100);
+      eventPlots("pt_eq100to300__",genJet->pt() >= 100 && genJet->pt() < 300);
+      eventPlots("pt_geq300__",genJet->pt() >= 300);
+
+
+
+      eventPlots.fill(pt/ genJet->pt(), 1, "ptRes"           , ";p_{T} Res" , 100,  0, 2, prefix);
+    }
+
+
+
+
+
+  }
+
   void runEvent(){
     TString prefix ="";
 //    bool leptonic = false;
@@ -376,24 +511,39 @@ public:
 //    eventPlots("minTopPT_geq200__",minTopPT >= 200);
 
     eventPlots.checkPoint();
-//    makePlots(ak4Reader.recoJets,"ak4_");
+//    makePlots2(ak4Reader.recoJets,"ak4_");
 ////    makePlots(ak4Reader.recoJets,"ak4Raw_",ak4Reader.jetptraw_);
 ////    makePlots(ak4Reader.recoJets,"ak4L1_",ak4Reader.jetptraw_,ak4Reader.jetarea_);
-//    makePlots(ak4Reader.genJets,"ak4Gen_");
-//////    makePlots(puppiJetsReader.recoJets,"puppi_");
-//    makePlots(pickyJetReader.recoJets,"picky_");
+//    makePlots2(pickyJetReader.recoJets,"ak4Raw_");
+//    makePlots2(puppiJetsReader.recoJets,"puppi_");
+//    makePlots2(pickyJetReader.recoJets,"picky_");
 //    makePlots(pickyJetReader.genJets,"pickyGen_");
-//    makePlots(pickyJetReader.recoJets,"pickyL1_",0,pickyJetReader.jetarea_);
+//    makePlots(ak4Reader.recoJets,"ak4_");
+//    makePlots(ak4Reader.genJets,"ak4Gen_");
+//    makePlots(pickyJetReader.recoJets,"ak4Raw_");
+//    makePlots(puppiJetsReader.recoJets,"puppi_");
+//    makePlots(puppiJetsReader.genJets,"puppiGen_");
 
 
-    inclusiveEffects(ak4Reader.genJets,"ak4_");
-    inclusiveEffects(pickyJetReader.genJets,"picky_");
-    inclusiveEffects(trimmedJetReader.genJets,"trimmed_");
+//    inclusiveEffects(ak4Reader.genJets,"ak4_");
+//    inclusiveEffects(ak4Reader.genJets,"ak4_");
+//    inclusiveEffects(pickyJetReader.genJets,"picky_");
+//    inclusiveEffects(trimmedJetReader.genJets,"trimmed_");
 
 
 //    testRes(pickyJetReader.recoJets,"picky_",0,pickyJetReader.jetarea_);
 
+    getJetCorrections(pickyJetReader, 0, true);
+//    getJetCorrections(pickyJetReader, .10);
+//    getJetCorrections(pickyJetReader, .15);
+//    getJetCorrections(pickyJetReader, .20);
+//    getJetCorrections(pickyJetReader, .25);
+//    getJetCorrections(pickyJetReader, .3);
+    getJetCorrections(pickyJetReader, .35);
+//    getJetCorrections(pickyJetReader, .40);
+
   }
+
 
   void out(TString outputPath){
     plotter->write(outputPath);
