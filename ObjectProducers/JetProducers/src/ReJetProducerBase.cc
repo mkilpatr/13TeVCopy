@@ -25,6 +25,7 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , minParticlePT   (iConfig.getParameter<double>("minParticlePT"   ))
         , maxParticleEta  (iConfig.getParameter<double>("maxParticleEta"  ))
         , ghostArea       (iConfig.getParameter<double>("ghostArea"  ))
+        , outputSuperJets (iConfig.getParameter<bool>("outputSuperJets"  ))
         , useTrimming     (iConfig.getParameter<bool  >("useTrimming"  ))
 		, useTrimmedSubjets(iConfig.getParameter<bool  >("useTrimmedSubjets"  ))
         , rFilt           (iConfig.getParameter<double>("rFilt"  ))
@@ -38,6 +39,9 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
     if(produceGen){
       produces< reco::GenJetCollection            >("Gen"   );
       produces< edm::ValueMap<reco::CandidatePtr> >("GenPtr");
+    }
+    if(outputSuperJets){
+      produces< reco::PFJetCollection           >("Super"   );
     }
 
     if (jetAlgorithmName=="CambridgeAachen")
