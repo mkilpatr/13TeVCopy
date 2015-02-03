@@ -29,7 +29,8 @@ jet_configuration      = cms.PSet(
                                     jetPtMin        = cms.double(3),
                                     minParticlePT   = cms.double(0),
                                     maxParticleEta  = cms.double(5.0),
-                                    ghostArea       = cms.double(.01)
+                                    ghostArea       = cms.double(.01),
+                                    outputSuperJets = cms.bool(False)
                                   ) 
 
 
