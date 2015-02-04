@@ -21,7 +21,7 @@ ak4PuppiJetSeq = cms.Sequence(ak4PuppiJets * ak4PuppiFlvAssoc * ak4PuppiIPTagInf
 pickyJets            = ak4Jets.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True),outputSuperJets = cms.bool(True))
 pickyFlvAssoc        = noRadFlvAssoc.clone(genJetsSrc = cms.InputTag('pickyJets','Gen'))
 pickyIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("pickyJets"))
-pickyISVTagInfos     = subjetISVTagInfos.clone(trackIPTagInfos = cms.InputTag("pickyIPTagInfos"))
+pickyISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("pickyIPTagInfos"))
 pickyCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("pickyIPTagInfos"), cms.InputTag("pickyISVTagInfos")))
 pickyJetSeq          = cms.Sequence(pickyJets * pickyFlvAssoc * pickyIPTagInfos *pickyISVTagInfos*pickyCSVIV2 )
 
