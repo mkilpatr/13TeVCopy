@@ -64,7 +64,7 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
-                                      isFilled           = cms.untracked.bool(True),
+                                      isFilled           = cms.untracked.bool(False),
                                       jets               = cms.InputTag('ak4PuppiJets',''),
                                       btags              = cms.InputTag('ak4PuppiCSVIV2'),
                                       reGenJets          = cms.InputTag('ak4PuppiJets','Gen'),
@@ -136,8 +136,9 @@ nominal_configuration = cms.PSet(
                                       pfcands                   = cms.InputTag('packedPFCandidates'),
                                       jets                      = cms.InputTag('slimmedJets'),
                                       taus                      = cms.InputTag('slimmedTaus'),
-                                      minCandPt                 = cms.untracked.double(5.0),
+                                      minCandPt                 = cms.untracked.double(8.0),
                                       maxCandEta                = cms.untracked.double(3.0),
+                                      minTauDisc                = cms.untracked.double(0.0),
                                       tauMVAFileName            = cms.untracked.string('AnalysisTools/ObjectSelection/data/Taus/tauDisc_10GeV.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
                                       saveAllCandidates         = cms.untracked.bool(False),
