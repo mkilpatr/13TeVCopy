@@ -30,10 +30,11 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     met               (0),
     genmet            (0),
     isMC_             (isMCTree),
-    defaultJets       (&ak4Reader),
+    defaultJets       (0),
     config            (pars ? *pars : ConfigPars())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
+  setDefaultJets(config.defaultJetCollection);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -199,17 +200,21 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::setDefaultJets(VarType type) {
+  clog << "With default jet type: "  ;
   switch (type) {
      case AK4JETS : {
        setDefaultJets(&ak4Reader);
+       clog << "ak4"  <<endl;
        break;
      }
      case PUPPIJETS : {
        setDefaultJets(&puppiJetsReader);
+       clog << "puppi"  <<endl;
        break;
      }
      case PICKYJETS : {
        setDefaultJets(&pickyJetReader);
+       clog << "picky"  <<endl;
        break;
      }
      default : {
@@ -217,7 +222,7 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
        break;
      }
    }
-  clog << "With default jet type: " << defaultJets->branchName()  <<endl;
+
 
 }
 //--------------------------------------------------------------------------------------------------

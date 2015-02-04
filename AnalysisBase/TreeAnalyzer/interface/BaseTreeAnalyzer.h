@@ -23,55 +23,59 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
-struct ConfigPars {
+class BaseTreeAnalyzer {
 public:
-  float        minElePt;
-  float        minMuPt;
-  float        minTauPt;
-  float        minJetPt;
-  float        minBJetPt;
-  float        maxEleEta;
-  float        maxMuEta;
-  float        maxTauEta;
-  float        maxJetEta;
-  float        maxBJetEta;
-  float        minJetLepDR;
-  float        minCandPt;
-  float        maxCandEta;
-  float        tauVetoLoose;
-  float        tauMtCut;
-  bool         cleanJetsvLeptons_;
-  bool         cleanJetsvTaus_;
-  bool         correctPickyPT;
+  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
 
-  ConfigPars() :
-     minElePt          (10.0),
-     minMuPt           (10.0),
-     minTauPt          (20.0),
-     minJetPt          (30.0),
-     minBJetPt         (30.0),
-     maxEleEta         (2.5 ),
-     maxMuEta          (2.4 ),
-     maxTauEta         (2.3 ),
-     maxJetEta         (2.4 ),
-     maxBJetEta        (2.4 ),
-     minJetLepDR       (0.4 ),
-     minCandPt         (10.0),
-     maxCandEta        (2.4 ),
-     tauVetoLoose      (0.5 ),
-     tauMtCut          (100.),
-     cleanJetsvLeptons_(false),
-     cleanJetsvTaus_   (false),
-     correctPickyPT    (true)
-  {}
-};
+  struct ConfigPars {
+  public:
+    float        minElePt;
+    float        minMuPt;
+    float        minTauPt;
+    float        minJetPt;
+    float        minBJetPt;
+    float        maxEleEta;
+    float        maxMuEta;
+    float        maxTauEta;
+    float        maxJetEta;
+    float        maxBJetEta;
+    float        minJetLepDR;
+    float        minCandPt;
+    float        maxCandEta;
+    float        tauVetoLoose;
+    float        tauMtCut;
+    bool         cleanJetsvLeptons_;
+    bool         cleanJetsvTaus_;
+    bool         correctPickyPT;
+    VarType      defaultJetCollection;
 
-  class BaseTreeAnalyzer {
+    ConfigPars() :
+      minElePt          (10.0),
+      minMuPt           (10.0),
+      minTauPt          (20.0),
+      minJetPt          (30.0),
+      minBJetPt         (30.0),
+      maxEleEta         (2.5 ),
+      maxMuEta          (2.4 ),
+      maxTauEta         (2.3 ),
+      maxJetEta         (2.4 ),
+      maxBJetEta        (2.4 ),
+      minJetLepDR       (0.4 ),
+      minCandPt         (10.0),
+      maxCandEta        (2.4 ),
+      tauVetoLoose      (0.28),
+      tauMtCut          (100.),
+      cleanJetsvLeptons_(false),
+      cleanJetsvTaus_   (false),
+      correctPickyPT    (true),
+      defaultJetCollection (AK4JETS)
+    {}
+  };
+    
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -193,6 +197,8 @@ public:
     const ConfigPars config;
   };
 
+
 }
+
 
 #endif
