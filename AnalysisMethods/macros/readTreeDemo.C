@@ -58,9 +58,9 @@ public:
 // This part is just a wrapper, you just need to construct your class and
 // call the analyze() function
 void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
-  ConfigPars pars;
+  BaseTreeAnalyzer::ConfigPars pars;
   pars.minJetPt = 30;
+  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
   Analyze a(fname, treeName, isMCTree,&pars);
-  a.setDefaultJets(BaseTreeAnalyzer::AK4JETS);
   a.analyze();
 }
