@@ -14,11 +14,11 @@ using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
 MuonFiller::MuonFiller(const int options,
-  const string branchName,
-  const EventInfoFiller * evtInfoFiller,
-  const edm::InputTag muonTag,
-  const bool requireLoose,
-  const double muptMin) :
+		       const string branchName,
+		       const EventInfoFiller * evtInfoFiller,
+		       const edm::InputTag muonTag,
+		       const bool requireLoose,
+		       const double muptMin) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
   muonTag_(muonTag),
@@ -40,6 +40,8 @@ MuonFiller::MuonFiller(const int options,
   iisglobal_     = data.addMulti<bool >(branchName_,"isGlobal",false);
   iistracker_    = data.addMulti<bool >(branchName_,"isTracker",false);
   iisstandalone_ = data.addMulti<bool >(branchName_,"isStandAlone",false);
+  iMVAiso_       = data.addMulti<float>(branchName_,"MVAiso",0);
+  iismedium_     = data.addMulti<bool >(branchName_,"isMedium",false);
 
   if(options_ & FILLIDVARS) {
     inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
@@ -58,6 +60,10 @@ MuonFiller::MuonFiller(const int options,
     ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
+  string base = getenv("CMSSW_BASE");
+  string muonisomva=base+"/src/AnalysisTools/ObjectSelection/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  muMVAiso = new LeptonMVA();
+  muMVAiso->initialize(muonisomva);
 
 }
 
@@ -66,6 +72,8 @@ void MuonFiller::load(const edm::Event& iEvent)
 {
   reset();
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
+  iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
+  FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
   isLoaded_ = true;
 }
 
@@ -115,7 +123,65 @@ void MuonFiller::fill()
       data.fillMulti<float>(ipfpuiso_, mu.pfIsolationR04().sumPUPt);
     }
 
+    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
+    LorentzVector mu_;
+    mu_ = mu.p4();
+    LorentzVectorCollection lsfSubJets3_;
+    for (LorentzVectorCollection::const_iterator jt = lsfSubJets3->begin(); jt != lsfSubJets3->end(); jt++) {
+      LorentzVector tmpVec;
+      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
+      lsfSubJets3_.push_back(tmpVec);
+    }
+    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    double rhoiso=calculateRhoIso(mu.eta(),mu.pfIsolationR04().sumChargedHadronPt,mu.pfIsolationR04().sumNeutralHadronEt,mu.pfIsolationR04().sumPhotonEt,*rho_);
+    double sip3d=fabs(mu.dB(mu.PV3D) / mu.edB(mu.PV3D));
+    data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), lsf3Iso, sip3d, rhoiso));
+    data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,-1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()) ,mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()),mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
+
   }
   isFilled_ = true;
 
+}
+
+void MuonFiller::calculateLSFIso(LorentzVector mu_,LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_) {
+
+  float LSFDR_  = 999.;
+  float LSF_ = -9.;
+  for (LorentzVectorCollection::const_iterator jt = lsfSubJets_.begin(); jt != lsfSubJets_.end(); jt++) {
+    LorentzVector jt_;
+    jt_.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->e());
+    float dRtmp_  = deltaR(mu_,jt_);
+    if (dRtmp_<LSFDR_) {
+      LSFDR_  = dRtmp_;
+      LSF_ = mu_.pt()/jt->pt();
+    }
+  } // end of looping over the subjets jets
+
+  *lsfIso_   = LSF_;
+  *lsfIsoDR_ = LSFDR_;
+
+}
+
+float MuonFiller::calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho) {
+
+  double EA=0.1177;
+  if(fabs(eta)<0.8) EA=0.0913;
+  else if(fabs(eta)<1.3) EA=0.0765;
+  else if(fabs(eta)<2.0) EA=0.0546;
+  else if(fabs(eta)<2.3) EA=0.0728;
+  return pfchargediso+TMath::Max(pfneutraliso+pfphotoniso-rho*EA,0.0);
+
+}
+bool MuonFiller::mediumID(bool isLoose, double pt , double pfdbetaiso, double d0, double dz, bool isGlobal, double nChi2, double trkKink, double chi2Local, double validFrac, double segComp) {
+
+  if(isLoose==kFALSE) return kFALSE;
+  if(pfdbetaiso/pt>0.4) return kFALSE;
+  if(fabs(d0)>0.05)  return kFALSE;
+  if(fabs(dz)>0.2)  return kFALSE;
+  bool goodglobal=kFALSE;
+  if(isGlobal && nChi2<3 && trkKink<20 && chi2Local<12) goodglobal=kTRUE;
+  double segmentcut=0.451;
+  if(goodglobal) segmentcut=0.303;
+  if(!(validFrac>=0.8 && segComp>=segmentcut))  return kFALSE;
+  return kTRUE;
 }

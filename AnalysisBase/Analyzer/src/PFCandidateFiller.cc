@@ -20,6 +20,7 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   const edm::InputTag tauTag,
   const double candptMin,
   const double candetaMax,
+  const double taudiscMin,
   const string tauMVAFileName,
   const string tauMVAName) :
   BaseFiller(options, branchName),
@@ -28,7 +29,8 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   jetTag_(jetTag),
   tauTag_(tauTag),
   candptMin_(candptMin),
-  candetaMax_(candetaMax)
+  candetaMax_(candetaMax),
+  taudiscMin_(taudiscMin)
 {
 
   string base = getenv("CMSSW_BASE") + string("/src/");
@@ -214,6 +216,28 @@ void PFCandidateFiller::fill()
 
     if(!(options_ & SAVEALLCANDS) && !ParticleInfo::isA(ParticleInfo::p_piplus, pfc)) continue; // only save charged hadrons unless otherwise specified
 
+    float chiso0p1 = computePFIsolation(pfc, 0.0, 0.1, 0);
+    float chiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 0);
+    float chiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 0);
+    float chiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 0);
+    float totiso0p1 = computePFIsolation(pfc, 0.0, 0.1, 1);
+    float totiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 1);
+    float totiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 1);
+    float totiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 1);
+
+    float nearesttrkdr = getDRNearestTrack(pfc);
+
+    int jetIndex = getContainingJetIndex(pfc);
+    const pat::Jet* jet = jetIndex > -1 ? &jets_->at(jetIndex) : 0;
+    bool jetmatch = jetIndex > -1 && jet->pt() > 30.0 && fabs(jet->eta()) < 2.4;
+
+    float contjetdr = jetmatch ? PhysicsUtilities::deltaR(*pfc, *jet) : -1.0;
+    float contjetcsv = jetmatch ? jet->bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
+
+    float taumva = tauMVA_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
+
+    if(taumva < taudiscMin_) continue;
+
     data.fillMulti<float>(ipt_, pfc->pt());
     data.fillMulti<float>(ieta_, pfc->eta());
     data.fillMulti<float>(iphi_, pfc->phi());
@@ -224,15 +248,6 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(idz_, pfc->dz());
     data.fillMulti<int  >(ifromPV_, pfc->fromPV());
     data.fillMulti<float>(imt_, computeMT(pfc));
-
-    float chiso0p1 = computePFIsolation(pfc, 0.0, 0.1, 0);
-    float chiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 0);
-    float chiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 0);
-    float chiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 0);
-    float totiso0p1 = computePFIsolation(pfc, 0.0, 0.1, 1);
-    float totiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 1);
-    float totiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 1);
-    float totiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 1);
     data.fillMulti<float>(ichiso0p1_, chiso0p1);
     data.fillMulti<float>(ichiso0p2_, chiso0p2);
     data.fillMulti<float>(ichiso0p3_, chiso0p3);
@@ -241,23 +256,12 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(itotiso0p2_, totiso0p2);
     data.fillMulti<float>(itotiso0p3_, totiso0p3);
     data.fillMulti<float>(itotiso0p4_, totiso0p4);
-
-    float nearesttrkdr = getDRNearestTrack(pfc);
     data.fillMulti<float>(inearestTrkDR_, nearesttrkdr);
-
-    int jetIndex = getContainingJetIndex(pfc);
-    const pat::Jet* jet = jetIndex > -1 ? &jets_->at(jetIndex) : 0;
     data.fillMulti<int  >(icontJetIndex_, jetIndex);
-
-    bool jetmatch = jetIndex > -1 && jet->pt() > 30.0 && fabs(jet->eta()) < 2.4;
-    float contjetdr = jetmatch ? PhysicsUtilities::deltaR(*pfc, *jet) : -1.0;
-    float contjetcsv = jetmatch ? jet->bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
     data.fillMulti<float>(icontJetDR_, contjetdr);
     data.fillMulti<float>(icontJetCSV_, contjetcsv);
-
     data.fillMulti<int  >(icontTauIndex_, getHPSTauIndex(ic));
-
-    data.fillMulti<float>(itaudisc_, tauMVA_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv));
+    data.fillMulti<float>(itaudisc_, taumva);
   }
 
   isFilled_ = true;

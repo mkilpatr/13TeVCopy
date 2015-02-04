@@ -71,7 +71,7 @@ public:
       defaultJetCollection (AK4JETS)
     {}
   };
-
+    
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
