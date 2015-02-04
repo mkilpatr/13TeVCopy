@@ -36,6 +36,7 @@ namespace ucsbsusy {
                         const edm::InputTag tauTag,
                         const double candptMin,
                         const double candetaMax,
+                        const double taudiscMin,
                         const string tauMVAFileName,
                         const string tauMVAName);
       ~PFCandidateFiller() {}
@@ -62,6 +63,7 @@ namespace ucsbsusy {
       const edm::InputTag tauTag_;
       const double        candptMin_;
       const double        candetaMax_;
+      const double        taudiscMin_;
       TauMVA*             tauMVA_;
 
       size ipt_;

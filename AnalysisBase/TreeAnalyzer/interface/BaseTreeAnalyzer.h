@@ -58,7 +58,7 @@ public:
      minJetLepDR       (0.4 ),
      minCandPt         (10.0),
      maxCandEta        (2.4 ),
-     tauVetoLoose      (0.28),
+     tauVetoLoose      (0.5 ),
      tauMtCut          (100.),
      cleanJetsvLeptons_(false),
      cleanJetsvTaus_   (false),
