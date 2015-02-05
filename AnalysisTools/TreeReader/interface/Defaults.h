@@ -32,6 +32,7 @@ namespace defaults {
   const double CSV_OLD_MEDIUM = 0.679;
   const double CSV_OLD_TIGHT  = 0.898;
   const double TAU_MVA_VETO   = 0.5;
+  const double TAU_MTCUT_VETO = 100.;
 }
 
 
