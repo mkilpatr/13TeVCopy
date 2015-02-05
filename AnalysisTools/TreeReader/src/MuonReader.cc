@@ -26,7 +26,9 @@ MuonReader::MuonReader() : BaseReader(){
   d0           = new vector<float>;
   dz           = new vector<float>;
   pfdbetaiso   = new vector<float>;
+  mvaiso       = new vector<float>;
   isloose      = new vector<bool>;
+  ismedium     = new vector<bool>;
   istight      = new vector<bool>;
   ispf         = new vector<bool>;
   isglobal     = new vector<bool>;
@@ -54,7 +56,9 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"d0", &d0                    , true);
     treeReader->setBranchAddress(branchName ,"dz", &dz                    , true);
     treeReader->setBranchAddress(branchName ,"pfdbetaiso", &pfdbetaiso    , true);
+    treeReader->setBranchAddress(branchName ,"MVAiso", &mvaiso            , true);
     treeReader->setBranchAddress(branchName ,"isLoose", &isloose          , true);
+    treeReader->setBranchAddress(branchName ,"isMedium", &ismedium        , true);
     treeReader->setBranchAddress(branchName ,"isTight", &istight          , true);
     treeReader->setBranchAddress(branchName ,"isPF", &ispf                , true);
     treeReader->setBranchAddress(branchName ,"isGlobal", &isglobal        , true);
@@ -75,17 +79,21 @@ void MuonReader::refresh(){
     muons.reserve(pt->size());
     for(unsigned int iL = 0; iL < pt->size(); ++iL){
       muons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
+      muons.back().setIsMuon(true);
       muons.back().setCharge(q->at(iL));
       muons.back().setD0(d0->at(iL));
       muons.back().setDz(dz->at(iL));
       muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
+      muons.back().setMVAIso(mvaiso->at(iL));
       muons.back().setIsLoose(isloose->at(iL));
+      muons.back().setIsMedium(ismedium->at(iL));
       muons.back().setIsTight(istight->at(iL));
       muons.back().setIsPF(ispf->at(iL));
       muons.back().setIsGlobal(isglobal->at(iL));
       muons.back().setIsTracker(istracker->at(iL));
       muons.back().setIsStandalone(isstandalone->at(iL));
-      muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back())));
+      muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
+      muons.back().setIsMVAVetoMuon(muonId->passMuonId((&muons.back()), muonId->MVAVeto));
     }
   }
 }

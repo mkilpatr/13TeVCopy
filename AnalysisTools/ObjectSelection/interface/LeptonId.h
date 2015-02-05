@@ -31,14 +31,14 @@ namespace ucsbsusy {
 
       ~LeptonId();
 
-      enum WorkingPoint{VETO, LOOSE, MEDIUM, TIGHT};
+      enum WorkingPoint{VETO, LOOSE, MEDIUM, TIGHT, MVA, MVAVeto};
 
       void setBunchSpacing(int val)		{ bunchSpacing_ = val;	}
       bool initElectronCuts(int bunchSpacing);
 
       // Standard POG selections
       bool passElectronId(ElectronF *ele, unsigned int WP = TIGHT);
-      bool passMuonId(MuonF *mu, unsigned int WP = LOOSE); // WP is for isolation cut
+      bool passMuonId(MuonF *mu, unsigned int WP = MEDIUM); // WP is for isolation cut
       bool passTauId(TauF *tau, unsigned int isoWP = LOOSE, unsigned int antimuWP = MEDIUM, unsigned int antieleWP = MEDIUM); // choose some defaults for now, to be studied
 
       bool passEleIdCSA14CutBased(ExtendedElectron *ele, unsigned int WP);
@@ -53,7 +53,7 @@ namespace ucsbsusy {
       bool passEleIsoCSA14(ElectronF *ele, unsigned int WP);
       bool passEleIsoCSA14(float elePt, float eleSCeta, float elePFdbetaiso, unsigned int WP);
       bool passMuonIdOnly(MuonF *mu);
-      bool passMuonIso(MuonF *mu, unsigned int WP = LOOSE);
+      bool passMuonIso(MuonF *mu, unsigned int WP = MEDIUM);
 
     private :
       int	bunchSpacing_;

@@ -23,49 +23,57 @@ namespace ucsbsusy {
   {
 
     public :
-      Muon() : isloose_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false) {}
+      Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), ismvavetomuon_(false) {}
 
       template <class InputCoordSystem>
       Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inPdgid = 13, int inCharge = 0,
 		float inD0 = 0, float inDz = 0,
-		float inPfdbetaiso = 0, bool inIsloose = false,
+		float inPfdbetaiso = 0, float inMvaiso = 0, 
+                bool inIsloose = false, bool inIsMedium = false,
 		bool inIsTight = false, bool inIspf = false,
-		bool inIsglobal = false, bool inIstracker = false,
+		bool inIsglobal = false, bool inIstracker = false,	
 		bool inIsstandalone = false) :
 		Lepton<InputCoordSystem>(inMomentum, inIndex,
 		inPdgid, inCharge, inD0, inDz,
-		inPfdbetaiso), isloose_(inIsloose),
+		inPfdbetaiso, inMvaiso), isloose_(inIsloose), ismedium_(inIsMedium),
 		istight_(inIsTight), ispf_(inIspf),
 		isglobal_(inIsglobal), istracker_(inIstracker),
-		isstandalone_(inIsstandalone), isgoodpogmuon_(false) {}
+		isstandalone_(inIsstandalone), isgoodpogmuon_(false),
+                ismvavetomuon_(false) {}
 
       ~Muon() {}
 
       bool	isloosemuon() 	const { return isloose_;		}
+      bool	ismediummuon() 	const { return ismedium_;		}
       bool	istightmuon() 	const { return istight_;		}
       bool	ispfmuon() 			const { return ispf_;			}
       bool	isglobal() 			const { return isglobal_;		}
       bool	istracker() 		const { return istracker_;		}
       bool	isstandalone() 	const { return isstandalone_;		}
       bool	isgoodpogmuon() const { return isgoodpogmuon_;	}
+      bool	ismvavetomuon() const { return ismvavetomuon_;	}
 
       void	setIsLoose(bool newType)		{ isloose_ = newType;		}
+      void	setIsMedium(bool newType)		{ ismedium_ = newType;		}
       void	setIsTight(bool newType)		{ istight_ = newType;		}
       void	setIsPF(bool newType)			{ ispf_ = newType;		}
       void	setIsGlobal(bool newType)		{ isglobal_ = newType;		}
       void	setIsTracker(bool newType)		{ istracker_ = newType;		}
       void	setIsStandalone(bool newType)		{ isstandalone_ = newType;	}
       void	setIsGoodPOGMuon(bool flag)		{ isgoodpogmuon_ = flag;	}
+      void	setIsMVAVetoMuon(bool flag)		{ ismvavetomuon_ = flag;	}
 
     protected :
       bool	isloose_;
+      bool	ismedium_;
       bool	istight_;
       bool	ispf_;
       bool	isglobal_;
       bool	istracker_;
       bool	isstandalone_;
       bool	isgoodpogmuon_;
+      bool	ismvavetomuon_;
 
   };
 
