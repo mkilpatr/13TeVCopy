@@ -44,7 +44,9 @@ namespace ucsbsusy {
       std::vector<float> *	d0    ;
       std::vector<float> *	dz    ;
       std::vector<float> *	pfdbetaiso;
+      std::vector<float> *	mvaiso;
       std::vector<bool>  *	isloose;
+      std::vector<bool>  *	ismedium;
       std::vector<bool>  *	istight;
       std::vector<bool>  *	ispf;
       std::vector<bool>  *	isglobal;

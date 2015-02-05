@@ -23,23 +23,23 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isgoodpogelectron_(false) {}
+      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inPdgid = 11, int inCharge = 0,
-		float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, 
+		float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, float inMvaiso = 0, 
 		float inSCEta = 0, float inR9 = 0, 
 		float inMvaidnontrig = 0, float inMvaidtrig = 0,
 		bool inIsveto = false, bool inIsloose = false,
 		bool inIsmedium = false, bool inIstight = false) : 
 		Lepton<InputCoordSystem>(inMomentum, inIndex, inPdgid,
-		inCharge, inD0, inDz, inPfdbetaiso),
+		inCharge, inD0, inDz, inPfdbetaiso, inMvaiso),
 		scEta_(inSCEta), r9_(inR9),
 		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
 		isveto_(inIsveto), isloose_(inIsloose),
 		ismedium_(inIsmedium), istight_(inIstight),
-		isgoodpogelectron_(false) {}
+		isgoodpogelectron_(false), ismvavetoelectron_(false) {}
 
       ~Electron() {}
 
@@ -52,6 +52,7 @@ namespace ucsbsusy {
       bool	ismediumelectron() 		const { return ismedium_;	}
       bool	istightelectron() 		const { return istight_;	}
       bool	isgoodpogelectron() 	const { return isgoodpogelectron_;	}
+      bool	ismvavetoelectron() 	const { return ismvavetoelectron_;	}
 
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       void	setR9(float newR9)		{ r9_ = newR9;		}
@@ -62,6 +63,7 @@ namespace ucsbsusy {
       void	setIsMedium(bool newType)	{ ismedium_ = newType;	}
       void	setIsTight(bool newType)	{ istight_ = newType;	}
       void	setIsGoodPOGElectron(bool flag)	{ isgoodpogelectron_ = flag;	}
+      void	setIsMVAVetoElectron(bool flag)	{ ismvavetoelectron_ = flag;	}
 
     protected :
       float	scEta_;
@@ -73,6 +75,7 @@ namespace ucsbsusy {
       bool	ismedium_;
       bool	istight_;
       bool	isgoodpogelectron_;
+      bool	ismvavetoelectron_;
 
   };
 
