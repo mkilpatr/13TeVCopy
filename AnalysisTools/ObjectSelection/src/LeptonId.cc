@@ -242,8 +242,8 @@ bool LeptonId::passMuonIdOnly(MuonF *mu)
 bool LeptonId::passMuonId(MuonF *mu, unsigned int WP)
 {
 
-  if(WP == TIGHT) (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
-  else if(WP == MEDIUM) (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
+  if(WP == TIGHT) return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
+  else if(WP == MEDIUM) return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
   else if (WP == MVAVeto) {
     if(fabs(mu->eta())<1.2 && mu->pt()>10) return (mu->ismediummuon() && mu->mvaiso()>-0.2);
     else if(fabs(mu->eta())<1.2 && mu->pt()<10) return (mu->ismediummuon() && mu->mvaiso()>-0.8);
