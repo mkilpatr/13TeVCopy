@@ -11,7 +11,7 @@ public:
 
   void  loadVars() {
      addVariable("met"               ,"met"               ,'F');
-     addVariable("num_j30"           ,"num_j30"           ,'I');
+     addVariable("num_j20"           ,"num_j20"           ,'I');
      addVariable("dphi_j3_met"       ,"dphi_j3_met"       ,'F');
      addVariable("num_medium_btags"  ,"num_medium_btags"  ,'I');
      addVariable("q2_likeli"         ,"q2_likeli"         ,'F');
@@ -24,9 +24,13 @@ public:
      addVariable("mTb"               ,"mTb"               ,'F');
      addVariable("deta_b_rms"        ,"deta_b_rms"        ,'F');
      addVariable("leading_jj_mass"   ,"leading_jj_mass"   ,'F');
+//     addVariable("leadBPT"           ,"leadBPT"   ,'F');
+//     addVariable("secLeadBPT"        ,"secLeadBPT"   ,'F');
+     addVariable("ht"           ,"ht"   ,'F');
 
 
-    addVariableSet("met","num_j30","dphi_j3_met","num_medium_btags","q2_likeli","q1_likeli","quark_likeli","ht_along_over_away","rms_pt","rms_dphi","bb_mass","mTb","deta_b_rms","leading_jj_mass","");
+    addVariableSet("met","num_j20","dphi_j3_met","num_medium_btags","q2_likeli","q1_likeli","quark_likeli","ht_along_over_away","rms_pt","rms_dphi","bb_mass","mTb","deta_b_rms","leading_jj_mass","");
+    addVariableSet("met","num_j20","dphi_j3_met","num_medium_btags","q2_likeli","q1_likeli","quark_likeli","ht_along_over_away","rms_pt","rms_dphi","bb_mass","mTb","deta_b_rms","leading_jj_mass","ht","");
 
   }
 
@@ -37,7 +41,7 @@ public:
     addFactory(TMVA::Types::kBDT,"BDTG");
     addAxis(new BinnedSpace("met", "superJet_pt", "0, 999999"));
 
-    setConfiguration(mvaName,"SR","srXML");
+    setConfiguration(mvaName,"SR",mvaName + "_srXML");
     setWeightExpr("weight");
   }
 

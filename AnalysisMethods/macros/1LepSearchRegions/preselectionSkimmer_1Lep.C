@@ -82,5 +82,5 @@ void preselectionSkimmer_1Lep(string fileName, string processName, double crossS
   a.process = process;
 
   clog << "Skimming "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and weight "<< a.weight <<" into file "<< outName << endl;
-  a.analyze(10000,nEvents);
+  a.analyze(100000,nEvents);
 }
