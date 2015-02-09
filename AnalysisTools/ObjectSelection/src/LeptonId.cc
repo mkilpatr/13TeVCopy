@@ -210,9 +210,9 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
     return ele->istightelectron();
   }
   else if(WP == MVA) {
-    if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.8 && ele->pfdbetaiso()<0.15);
-    else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.85 && ele->pfdbetaiso()<0.15);
-    else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.25 && ele->pfdbetaiso()<0.15);
+    if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.8 && ele->pfdbetaiso()/ele->pt()<0.15);
+    else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.85 && ele->pfdbetaiso()/ele->pt()<0.15);
+    else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.25 && ele->pfdbetaiso()/ele->pt()<0.15);
     else return false;
   }
   else if(WP == MVAVeto){
