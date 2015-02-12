@@ -231,6 +231,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                       cfg.getParameter<edm::InputTag>("taus"),
                                       cfg.getUntrackedParameter<double>("minCandPt"),
                                       cfg.getUntrackedParameter<double>("maxCandEta"),
+                                      cfg.getUntrackedParameter<double>("minTauDisc"),
                                       cfg.getUntrackedParameter<string>("tauMVAFileName"),
                                       cfg.getUntrackedParameter<string>("tauMVAName")
                                       );

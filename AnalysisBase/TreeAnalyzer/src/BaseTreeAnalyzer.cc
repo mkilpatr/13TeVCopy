@@ -22,18 +22,19 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     process           (defaults::NUMPROCESSES),
     nPV               (0),
     rho               (0),
-    nLeptons          (0),
-    nTaus             (0),
-    nMVATauCands      (0),
+    nSelLeptons       (0),
+    nVetoedLeptons    (0),
+    nVetoedTaus       (0),
     nJets             (0),
     nBJets            (0),
     met               (0),
     genmet            (0),
     isMC_             (isMCTree),
-    defaultJets       (&ak4Reader),
+    defaultJets       (0),
     config            (pars ? *pars : ConfigPars())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
+  setDefaultJets(config.defaultJetCollection);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -96,10 +97,8 @@ void BaseTreeAnalyzer::loadVariables()
   load(EVTINFO);
   load(AK4JETS);
   load(PICKYJETS);
-  load(PUPPIJETS);
   load(ELECTRONS);
   load(MUONS);
-  load(TAUS);
   load(PFCANDS);
   if(isMC()) load(GENPARTICLES);
 }
@@ -126,43 +125,8 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
-  leptons.clear();
-  leptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
-  taus.clear();
-  taus.reserve(tauReader.taus.size());
-  pfcands.clear();
-  pfcands.reserve(pfcandReader.pfcands.size());
-  mvataucands.clear();
-  mvataucands.reserve(pfcandReader.pfcands.size());
 
-  if(electronReader.isLoaded())
-    for(auto& electron : electronReader.electrons)
-      if(isGoodElectron(electron))
-        leptons.push_back(&electron);
-
-  if(muonReader.isLoaded())
-    for(auto& muon : muonReader.muons)
-      if(isGoodMuon(muon))
-        leptons.push_back(&muon);
-
-  std::sort(leptons.begin(), leptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
-
-  if(tauReader.isLoaded())
-    for(auto& tau : tauReader.taus)
-      if(isGoodTau(tau))
-        taus.push_back(&tau);
-
-  if(pfcandReader.isLoaded()) {
-    for(auto& pfc : pfcandReader.pfcands) {
-      pfcands.push_back(&pfc);
-      if(isMVATauCand(pfc))
-        mvataucands.push_back(&pfc);
-    }
-  }
-
-  nLeptons = leptons.size();
-  nTaus    = taus.size();
-  nMVATauCands = mvataucands.size();
+  selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
 
   //Picky jet corrections
   if(pickyJetReader.isLoaded() && config.correctPickyPT){
@@ -180,8 +144,6 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
-
-
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
@@ -199,17 +161,21 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::setDefaultJets(VarType type) {
+  clog << "With default jet type: "  ;
   switch (type) {
      case AK4JETS : {
        setDefaultJets(&ak4Reader);
+       clog << "ak4"  <<endl;
        break;
      }
      case PUPPIJETS : {
        setDefaultJets(&puppiJetsReader);
+       clog << "puppi"  <<endl;
        break;
      }
      case PICKYJETS : {
        setDefaultJets(&pickyJetReader);
+       clog << "picky"  <<endl;
        break;
      }
      default : {
@@ -217,7 +183,7 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
        break;
      }
    }
-  clog << "With default jet type: " << defaultJets->branchName()  <<endl;
+
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -233,64 +199,106 @@ bool BaseTreeAnalyzer::isLooseBJet(const RecoJetF& jet) const {
   return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_LOOSE );
 }
 //--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isGoodElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minElePt && fabs(electron.scEta()) < config.maxEleEta && electron.isgoodpogelectron());
-//  return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta && (electron.mvaidtrig()>0.95));
-  //return (electron.pt() > minElePt && fabs(electron.scEta()) < maxEleEta);
+bool BaseTreeAnalyzer::isSelElectron(const ElectronF& electron) const {
+  return (electron.pt() > config.minSelEPt && fabs(electron.scEta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isGoodMuon(const MuonF& muon) const {
-  return (muon.pt() > config.minMuPt && fabs(muon.eta()) < config.maxMuEta && muon.isgoodpogmuon());
-  //return (muon.pt() > minMuPt && fabs(muon.eta()) < maxMuEta);
+bool BaseTreeAnalyzer::isVetoElectron(const ElectronF& electron) const {
+  return (electron.pt() > config.minVetoEPt && fabs(electron.scEta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isGoodTau(const TauF& tau) const {
-  return (tau.pt() > config.minTauPt && fabs(tau.eta()) < config.maxTauEta && tau.isgoodpogtau());
+bool BaseTreeAnalyzer::isSelMuon(const MuonF& muon) const {
+  return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && (muon.*config.selectedMuon)());
 }
 //--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isMVATauCand(const PFCandidateF& cand) const {
-  return (cand.pt() > config.minCandPt && fabs(cand.eta()) < config.maxCandEta && cand.mt() < config.tauMtCut && cand.taudisc() > config.tauVetoLoose);
+bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
+  return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && (muon.*config.vetoedMuon)());
+}
+//--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
+  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && (tau.*config.vetoedTau)());
+}
+//--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::selectLeptons(
+                   std::vector<LeptonF*>& allLeptons,
+                   std::vector<LeptonF*>& selectedLeptons,
+                   std::vector<LeptonF*>& vetoedLeptons,
+                   std::vector<PFCandidateF*>& vetoedTaus,
+                   int& nSelLeptons,
+                   int& nVetoedLeptons,
+                   int& nVetoedTaus
+                   ){
+  allLeptons.clear();
+  allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
+  for(auto& electron : electronReader.electrons)
+    allLeptons.push_back(&electron);
+  for(auto& muon : muonReader.muons)
+    allLeptons.push_back(&muon);
+  std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
+
+  selectedLeptons.clear();
+  vetoedLeptons.clear();
+  for(auto* lepton : allLeptons){
+    bool shouldSelect = false;
+    if(config.leptonSelection != SEL_0_LEP && (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton))){
+      if(config.leptonSelection == SEL_ALL_LEP) shouldSelect = true;
+      else if( selectedLeptons.size() == 0){
+        if(config.leptonSelection == SEL_1_LEP) shouldSelect = true;
+        else if(config.leptonSelection == SEL_1_MU && lepton->ismuon())shouldSelect = true;
+        else if(config.leptonSelection == SEL_1_E  && !lepton->ismuon())shouldSelect = true;
+      }
+    }
+    if(shouldSelect){
+      selectedLeptons.push_back(lepton);
+      continue;
+    }
+    if(lepton->ismuon() ? isVetoMuon(*(MuonF*)lepton) : isVetoElectron(*(ElectronF*)lepton) ){
+      vetoedLeptons.push_back(lepton);
+    }
+  }
+
+  nSelLeptons = selectedLeptons.size();
+  nVetoedLeptons = vetoedLeptons.size();
+
+  vetoedTaus.clear();
+  for(auto& pfc : pfcandReader.pfcands) {
+    if(isVetoTau(pfc))
+      vetoedTaus.push_back(&pfc);
+  }
+  nVetoedTaus = vetoedTaus.size();
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {
-	if((config.cleanJetsvLeptons_ || config.cleanJetsvTaus_) && !isProcessed_)
+	if((config.cleanJetsvSelectedLeptons_) && !isProcessed_)
 		throw std::invalid_argument("BaseTreeAnalyzer::cleanJets(): You want to do jet cleaning but have not yet processed variables!");
 	jets.clear(); jets.reserve(reader->recoJets.size());
 	if(bJets){bJets->clear();}
 	if(nonBJets){nonBJets->clear(); nonBJets->reserve( std::max(2,int(jets.size())) -2);}
 
-	for(auto& jet : reader->recoJets) {
-		if(!isGoodJet(jet)) continue;
+	vector<bool> vetoJet(reader->recoJets.size(),false);
+	if(config.cleanJetsvSelectedLeptons_) {
+	  for(const auto* glep : selectedLeptons) {
+	    double nearDR = 0;
+	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR);
+	    if(near >= 0) vetoJet[near] = true;
+	  }
+	}
 
-		bool cleanjet = true;
-		if(config.cleanJetsvLeptons_) {
-			for(const auto* glep : leptons) {
-				if(PhysicsUtilities::deltaR(*glep, jet) < config.minJetLepDR) {
-					cleanjet = false;
-					break;
-				}
-			}
-		}
-		if(config.cleanJetsvTaus_) {
-			for(const auto* gtau : taus) {
-				if(PhysicsUtilities::deltaR(*gtau, jet) < config.minJetLepDR) {
-					cleanjet = false;
-					break;
-				}
-			}
-		}
-		if(!cleanjet) continue;
+	for(unsigned int iJ = 0; iJ < reader->recoJets.size(); ++iJ){
+	  auto& jet = reader->recoJets[iJ];
+	  if(vetoJet[iJ]) continue;
+	  if(!isGoodJet(jet)) continue;
 
-		jets.push_back(&jet);
+	  jets.push_back(&jet);
 
-		if(bJets || nonBJets){
-			if(isMediumBJet(jet)){
-				if(bJets)bJets->push_back(&jet);
-			}
-			else{
-				if(nonBJets)nonBJets->push_back(&jet);
-			}
-		}
+    if(bJets || nonBJets){
+      if(isMediumBJet(jet)){
+        if(bJets)bJets->push_back(&jet);
+      }
+      else{
+        if(nonBJets)nonBJets->push_back(&jet);
+      }
+    }
 	}
 }
 //--------------------------------------------------------------------------------------------------

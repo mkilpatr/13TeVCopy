@@ -62,6 +62,7 @@ protected:
 
   std::vector<fastjet::PseudoJet>                           particles           ;
   std::vector<fastjet::PseudoJet>                           jets                ;
+  std::vector<fastjet::PseudoJet>                           superJets           ;
 
 
 
@@ -116,6 +117,18 @@ public:
   {
     FastJetClusterer::distillJets( inputParticles,jets, outputJets, eventSetup,select, keepEmptyJets, recomputeP4, vertex );
   }
+  template<typename Particle, typename Jet>
+  void            distillSuperJets ( const edm::Handle<std::vector<Particle> >&  inputParticles
+                              , std::vector<Jet>&                           outputJets
+                              , const edm::EventSetup&                      eventSetup
+                              , bool                          (*select)(const Particle&) = 0
+                              , bool                                        keepEmptyJets = false
+                              , bool                                        recomputeP4   = true
+                              , const reco::Jet::Point&                     vertex        = DEFAULT_VERTEX
+                              ) const
+  {
+    FastJetClusterer::distillJets( inputParticles,superJets, outputJets, eventSetup,select, keepEmptyJets, recomputeP4, vertex );
+  }
   
   static double   getCurrentGhostArea()   { return currentGhostArea;  }
   void setDeterministicSeed(const unsigned int runNumber, const unsigned int eventNumber);
@@ -153,7 +166,7 @@ public:
                             , double                    ghostGridScatter  = fastjet::gas::def_grid_scatter
                             , double                    ghostPTScatter    = fastjet::gas::def_pt_scatter
                             );
-
+  void    storeSuperJets   () {superJets = jets;}
   void    trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets);
 
   void    selectJets        ( double                    minJetPT 

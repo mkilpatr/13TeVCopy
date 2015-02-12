@@ -19,6 +19,7 @@
 
 #include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonMVA.h"
 
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
@@ -61,6 +62,7 @@ namespace ucsbsusy {
       void load(const edm::Event& iEvent);
       void fill();
       void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
+      float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
 
     private :
       const EventInfoFiller * evtInfoFiller_;
@@ -77,7 +79,9 @@ namespace ucsbsusy {
       // Evaluate POG MVA ID
       EGammaMvaEleEstimatorCSA14* eleMVANonTrig;
       EGammaMvaEleEstimatorCSA14* eleMVATrig;
+      EGammaMvaEleEstimatorCSA14* eleMVANonTrigPhys14;
       LeptonId*                   eleIdCuts;
+      LeptonMVA*                  eleMVAiso;
 
       // Members to hold indices of tree data
       size ipt_;
@@ -120,7 +124,7 @@ namespace ucsbsusy {
       size ipfneutraliso_;
       size ipfphotoniso_;
       size ipfpuiso_;
-
+      size iMVAiso_;
       // different isolations
       size iLSF2Iso_;
       size iLSF3Iso_;
@@ -145,6 +149,7 @@ namespace ucsbsusy {
       edm::Handle<LorentzVectorCollection> lsfSubJets2;
       edm::Handle<LorentzVectorCollection> lsfSubJets3;
       edm::Handle<LorentzVectorCollection> lsfSubJets4;
+      edm::Handle<double>                 rho_;
 
   };
 

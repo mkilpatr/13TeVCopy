@@ -48,6 +48,7 @@ ElectronFiller::ElectronFiller(const int options,
   imediumid_   = data.addMulti<bool >(branchName_,"mediumid",false);
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
+  iMVAiso_     = data.addMulti<float>(branchName_,"MVAiso",0);
 
   if(options_ & FILLIDVARS) {
     iecalE_              = data.addMulti<float>(branchName_,"ecalE",0);
@@ -77,7 +78,7 @@ ElectronFiller::ElectronFiller(const int options,
   if(options_ & FILLPOGMVA) {
     initMVA();
     eleIdCuts = new LeptonId(true, bunchSpacing_);
-    imvaidnontrig_ = data.addMulti<float>(branchName,"mvaidnontrig",0);
+    imvaidnontrig_    = data.addMulti<float>(branchName,"mvaidnontrig",0);
     imvaidtrig_    = data.addMulti<float>(branchName,"mvaidtrig",0);
   } else {
     eleIdCuts = new LeptonId();
@@ -90,6 +91,11 @@ ElectronFiller::ElectronFiller(const int options,
   iLSF3IsoDR_ = data.addMulti<float>(branchName_,"lsf3IsoDR",0);
   iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
 
+  string base = getenv("CMSSW_BASE");
+  string electronisomva=base+"/src/AnalysisTools/ObjectSelection/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  eleMVAiso = new LeptonMVA();
+  eleMVAiso->initialize(electronisomva);
+
   //  iPassTriggerLID_ = data.addMulti<bool>(branchName_,"passTriggerLID",0);
   iPassCutBaseNonIsoMID_ = data.addMulti<bool>(branchName_,"passCutBaseNonIsoMID",0);
   //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
@@ -100,10 +106,10 @@ ElectronFiller::ElectronFiller(const int options,
 void ElectronFiller::initMVA()
 {
 
+  string base = getenv("CMSSW_BASE");
   vector<string> eleNonTrigIDMVAWeights;
   vector<string> eleTrigIDMVAWeights;
-
-  string base = getenv("CMSSW_BASE");
+  vector<string> eleNonTrigIDMVAPhys14Weights;
 
   if(bunchSpacing_ == 50) {
     eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
@@ -119,7 +125,14 @@ void ElectronFiller::initMVA()
     eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
     eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
     eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_10_oldscenario2phys14_BDT.weights.xml");
   }
+
     
   eleMVANonTrig = new EGammaMvaEleEstimatorCSA14();
   eleMVANonTrig->initialize("BDT",
@@ -132,6 +145,14 @@ void ElectronFiller::initMVA()
                           EGammaMvaEleEstimatorCSA14::kTrig,
                           true,
                           eleTrigIDMVAWeights);
+
+  eleMVANonTrigPhys14 = new EGammaMvaEleEstimatorCSA14();
+  eleMVANonTrigPhys14->initialize("BDTSimpleCat",
+				  EGammaMvaEleEstimatorCSA14::kNonTrigPhys14,
+				  true,
+				  eleNonTrigIDMVAPhys14Weights);
+
+
 
 }
 
@@ -149,7 +170,7 @@ void ElectronFiller::load(const edm::Event& iEvent)
   iEvent.getByLabel("lsfSubJets","LSFJets2",lsfSubJets2);
   iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
   iEvent.getByLabel("lsfSubJets","LSFJets4",lsfSubJets4);
-
+  FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
   isLoaded_ = true;
 }
 
@@ -176,7 +197,7 @@ void ElectronFiller::fill()
 
     float dbiso = el->pfIsolationVariables().sumChargedHadronPt + max(0.0 , el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - 0.5 * el->pfIsolationVariables().sumPUPt);
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
-
+    
     const edm::Ptr<pat::Electron> elPtr(electrons_, el - electrons_->begin() );
     bool passveto = (*veto_id_decisions_)[ elPtr ];
     bool passloose = (*loose_id_decisions_)[ elPtr ];
@@ -213,7 +234,7 @@ void ElectronFiller::fill()
     }
 
     if(options_ & FILLPOGMVA) {
-      data.fillMulti<float>(imvaidnontrig_, eleMVANonTrig->mvaValue(*el, false));
+      data.fillMulti<float>(imvaidnontrig_, eleMVANonTrigPhys14->mvaValue(*el, false));
       data.fillMulti<float>(imvaidtrig_, eleMVATrig->mvaValue(*el, false));
     }
 
@@ -298,6 +319,10 @@ void ElectronFiller::fill()
     data.fillMulti<float>(iLSF4Iso_  ,lsf4Iso);
     data.fillMulti<float>(iLSF4IsoDR_,lsf4IsoDR);
 
+
+    double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
+    double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
+    data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), lsf3Iso, sip3d, rhoiso));
   }
   isFilled_ = true;
 
@@ -321,5 +346,15 @@ void ElectronFiller::calculateLSFIso(LorentzVector el_,LorentzVectorCollection l
 
   *lsfIso_   = LSF_;
   *lsfIsoDR_ = LSFDR_;
+
+}
+float ElectronFiller::calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho) {
+
+     double EA=0.1530;
+     if(fabs(eta)<0.8) EA=0.1013;
+     else if(fabs(eta)<1.3) EA=0.0988;
+     else if(fabs(eta)<2.0) EA=0.0572;
+     else if(fabs(eta)<2.3) EA=0.0842;
+     return pfchargediso+TMath::Max(pfneutraliso+pfphotoniso-rho*EA,0.0);
 
 }

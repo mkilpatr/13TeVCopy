@@ -13,6 +13,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 namespace ucsbsusy {
 

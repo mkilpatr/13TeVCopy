@@ -23,55 +23,80 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
-struct ConfigPars {
+class BaseTreeAnalyzer {
 public:
-  float        minElePt;
-  float        minMuPt;
-  float        minTauPt;
-  float        minJetPt;
-  float        minBJetPt;
-  float        maxEleEta;
-  float        maxMuEta;
-  float        maxTauEta;
-  float        maxJetEta;
-  float        maxBJetEta;
-  float        minJetLepDR;
-  float        minCandPt;
-  float        maxCandEta;
-  float        tauVetoLoose;
-  float        tauMtCut;
-  bool         cleanJetsvLeptons_;
-  bool         cleanJetsvTaus_;
-  bool         correctPickyPT;
+  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
+  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
-  ConfigPars() :
-     minElePt          (10.0),
-     minMuPt           (10.0),
-     minTauPt          (20.0),
-     minJetPt          (30.0),
-     minBJetPt         (30.0),
-     maxEleEta         (2.5 ),
-     maxMuEta          (2.4 ),
-     maxTauEta         (2.3 ),
-     maxJetEta         (2.4 ),
-     maxBJetEta        (2.4 ),
-     minJetLepDR       (0.4 ),
-     minCandPt         (10.0),
-     maxCandEta        (2.4 ),
-     tauVetoLoose      (0.28),
-     tauMtCut          (100.),
-     cleanJetsvLeptons_(false),
-     cleanJetsvTaus_   (false),
-     correctPickyPT    (true)
-  {}
-};
+  struct ConfigPars {
+  public:
+    float minSelEPt;
+    float maxSelEETA;
+    bool (ElectronF::*selectedElectron)() const;
 
-  class BaseTreeAnalyzer {
+    float minVetoEPt;
+    float maxVetoEETA;
+    bool (ElectronF::*vetoedElectron)() const;
+
+    float minSelMuPt;
+    float maxSelMuETA;
+    bool (MuonF::*selectedMuon)() const;
+
+    float minVetoMuPt;
+    float maxVetoMuETA;
+    bool (MuonF::*vetoedMuon)() const;
+
+    float minVetoTauPt;
+    float maxVetoTauETA;
+    bool (PFCandidateF::*vetoedTau)() const;
+
+    LeptonSelection leptonSelection;
+
+    float        minJetPt;
+    float        minBJetPt;
+    float        maxJetEta;
+    float        maxBJetEta;
+    bool         cleanJetsvSelectedLeptons_;
+    bool         correctPickyPT;
+    VarType      defaultJetCollection;
+
+    ConfigPars() :
+      minSelEPt (32),
+      maxSelEETA(2.1),
+      selectedElectron(&ElectronF::isgoodpogelectron),
+
+      minVetoEPt (5),
+      maxVetoEETA(2.4),
+      vetoedElectron(&ElectronF::ismvavetoelectron),
+
+      minSelMuPt (27),
+      maxSelMuETA(2.1),
+      selectedMuon(&MuonF::isgoodpogmuon),
+
+      minVetoMuPt (5),
+      maxVetoMuETA(2.4),
+      vetoedMuon(&MuonF::ismvavetomuon),
+
+      minVetoTauPt (10),
+      maxVetoTauETA(2.4),
+      vetoedTau(&PFCandidateF::ismvavetotau),
+
+      leptonSelection(SEL_0_LEP),
+
+      minJetPt          (20.0),
+      minBJetPt         (20.0),
+      maxJetEta         (2.4 ),
+      maxBJetEta        (2.4 ),
+      cleanJetsvSelectedLeptons_(false),
+      correctPickyPT    (true),
+      defaultJetCollection (AK4JETS)
+    {}
+  };
+    
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -125,13 +150,23 @@ public:
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
     bool isLooseBJet   (const RecoJetF& jet) const;
-    bool isGoodElectron(const ElectronF& electron) const;
-    bool isGoodMuon    (const MuonF& muon        ) const;
-    bool isGoodTau     (const TauF& tau          ) const;
-    bool isMVATauCand  (const PFCandidateF& cand ) const;
+    bool isSelElectron (const ElectronF& electron) const;
+    bool isVetoElectron(const ElectronF& electron) const;
+    bool isSelMuon     (const MuonF& muon) const;
+    bool isVetoMuon    (const MuonF& muon) const;
+    bool isVetoTau     (const PFCandidateF& tau) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
     double correctedPickyPT(double pt,double eta,double area, double rho) const;
+
+    void selectLeptons(std::vector<LeptonF*>& allLeptons,
+                       std::vector<LeptonF*>& selectedLeptons,
+                       std::vector<LeptonF*>& vetoedLeptons,
+                       std::vector<PFCandidateF*>& vetoedTaus,
+                       int& nSelLeptons,
+                       int& nVetoedLeptons,
+                       int& nVetoedTaus
+                       );
 
     //--------------------------------------------------------------------------------------------------
     // TTree readers
@@ -163,9 +198,9 @@ public:
 
     int   nPV;
     float rho;
-    int   nLeptons;
-    int   nTaus;
-    int   nMVATauCands;
+    int   nSelLeptons;
+    int   nVetoedLeptons;
+    int   nVetoedTaus;
     int   nJets;
     int   nBJets;
 
@@ -174,11 +209,11 @@ public:
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
     MomentumF*                 genmet  ;
-    std::vector<LeptonF*>      leptons ;
-    std::vector<TauF*>         taus    ;
-    std::vector<PFCandidateF*> pfcands ;
-    std::vector<PFCandidateF*> mvataucands;
-    std::vector<RecoJetF*>     jets    ;
+    std::vector<LeptonF*>      allLeptons        ;
+    std::vector<LeptonF*>      selectedLeptons   ;
+    std::vector<LeptonF*>      vetoedLeptons     ;
+    std::vector<PFCandidateF*> vetoedTaus        ;
+    std::vector<RecoJetF*>     jets            ;
     std::vector<RecoJetF*>     pickyJets;
     std::vector<RecoJetF*>     bJets   ;
     std::vector<RecoJetF*>     nonBJets;
@@ -193,6 +228,8 @@ public:
     const ConfigPars config;
   };
 
+
 }
+
 
 #endif

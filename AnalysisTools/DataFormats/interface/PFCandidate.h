@@ -20,7 +20,7 @@ namespace ucsbsusy {
   {
 
     public :
-      PFCandidate() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), fromPV_(0), mt_(0), taudisc_(0), jetIndex_(-1), tauIndex_(-1) {}
+      PFCandidate() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), fromPV_(0), mt_(0), taudisc_(0), jetIndex_(-1), tauIndex_(-1), ismvavetotau_(false) {}
 
       template <class InputCoordSystem>
       PFCandidate(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -32,7 +32,8 @@ namespace ucsbsusy {
                 index_(inIndex), pdgid_(inPdgid), q_(inCharge),
                 d0_(inD0), dz_(inDz), fromPV_(inFromPV),
                 mt_(inMt), taudisc_(inTauDisc),
-                jetIndex_(inJetIndex), tauIndex_(inTauIndex) {}
+                jetIndex_(inJetIndex), tauIndex_(inTauIndex),
+                ismvavetotau_(false) {}
 
       ~PFCandidate() {}
 
@@ -53,6 +54,7 @@ namespace ucsbsusy {
       bool  isphoton()        const { return (fabs(pdgid_) == pfphoton);   }
       bool  isneutralhadron() const { return (fabs(pdgid_) == pfh0);       }
       bool  ischargedhadron() const { return (fabs(pdgid_) == pfhplus);    }
+      bool  ismvavetotau()    const { return ismvavetotau_;                }
 
       void   setIndex(int newIndex)       { index_ = newIndex;       }
       void   setPdgId(int newPdgId)       { pdgid_ = newPdgId;       }
@@ -64,6 +66,7 @@ namespace ucsbsusy {
       void   setTauDisc(float newDisc)    { taudisc_ = newDisc;      }
       void   setJetIndex(int newJetIndex) { jetIndex_ = newJetIndex; }
       void   setTauIndex(int newTauIndex) { tauIndex_ = newTauIndex; }
+      void   setIsMVAVetoTau(bool flag)   { ismvavetotau_ = flag;    }
 
     protected :
       int   index_;  //Index in candidate vector
@@ -76,6 +79,7 @@ namespace ucsbsusy {
       float taudisc_;
       int   jetIndex_;
       int   tauIndex_;
+      bool  ismvavetotau_;
 
   };
 

@@ -81,6 +81,7 @@ void PFCandidateReader::refresh(){
       pfcands.back().setFromPV(fromPV->at(iL));
       pfcands.back().setJetIndex(jetIndex->at(iL));
       pfcands.back().setTauIndex(tauIndex->at(iL));
+      pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO && mt->at(iL) < defaults::TAU_MTCUT_VETO);
     }
   }
 }

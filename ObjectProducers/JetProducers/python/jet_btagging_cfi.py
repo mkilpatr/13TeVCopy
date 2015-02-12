@@ -26,10 +26,10 @@ ISVTagInfos.trackIPTagInfos = cms.InputTag('IPTagInfos')
 subjetISVTagInfos = ISVTagInfos.clone()
 subjetISVTagInfos.trackIPTagInfos = cms.InputTag('subjetIPTagInfos')
 subjetISVTagInfos.useSVClustering = cms.bool(True)
-subjetISVTagInfos.jetAlgorithm = cms.string('AntiKt')
-subjetISVTagInfos.rParam = cms.double(0.8)
-subjetISVTagInfos.fatJets = cms.InputTag("ak8PFJetsCHS")
-subjetISVTagInfos.groomedFatJets = cms.InputTag("ak8PFJetsCHSPruned")
+subjetISVTagInfos.jetAlgorithm = cms.string('CambridgeAachen')
+subjetISVTagInfos.rParam = cms.double(1)
+subjetISVTagInfos.fatJets = cms.InputTag("pickyJets","")
+subjetISVTagInfos.groomedFatJets = cms.InputTag("pickyJets","Super")
 
 
 

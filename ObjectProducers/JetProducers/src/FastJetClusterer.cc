@@ -34,6 +34,7 @@ FastJetClusterer& FastJetClusterer::operator=(const FastJetClusterer& other)
 
   particles           = other.particles           ;
   jets                = other.jets                ;
+  superJets           = other.superJets           ;
 
   return *this;
 }
