@@ -35,7 +35,7 @@ public:
 	else          cout << "NOT using PUPPI" << endl;
 
     //TFile* genFile = TFile::Open("QGDisc_gen_ak4.root",   "READ");
-	TFile* genFile = TFile::Open("QGDisc_gen_ak4_fullEta.root",   "READ");
+	TFile* genFile = TFile::Open("QGDisc_gen_ak4_731.root",   "READ");
     paramGen = dynamic_cast<ParamatrixMVA*>(genFile->Get("QG_0"));
     delete genFile;
     //cout << "done getting genFile" << endl;
@@ -43,8 +43,8 @@ public:
 	string recoFileName = "";
 	//if (usePuppi) recoFileName = "QGDisc_reco_puppi.root";
 	//else          recoFileName = "QGDisc_reco_ak4.root";
-	if (usePuppi) recoFileName = "QGDisc_reco_puppi_fullEta.root";
-	else          recoFileName = "QGDisc_reco_ak4_fullEta.root";
+	if (usePuppi) recoFileName = "QGDisc_reco_puppi_731.root";
+	else          recoFileName = "QGDisc_reco_ak4_731.root";
     TFile* recoFile = TFile::Open(recoFileName.c_str(), "READ");
     paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
     delete recoFile;
@@ -55,20 +55,20 @@ public:
 
   double getGenMVA(const subJet& jet){
 	genMVA = paramGen->get(jet.jet->pt(),TMath::Abs(jet.jet->eta())); // ak4pfchs ak4
-    static const int gen_ak4pfchs_genjet_ptD     = genMVA->findVariable("ak4pfchs_genjet_ptD"    );
-    static const int gen_ak4pfchs_genjet_axis1   = genMVA->findVariable("ak4pfchs_genjet_axis1"  );
-    static const int gen_ak4pfchs_genjet_axis2   = genMVA->findVariable("ak4pfchs_genjet_axis2"  );
-    static const int gen_ak4pfchs_genjet_jetMult = genMVA->findVariable("ak4pfchs_genjet_jetMult");
-    static const int gen_ak4pfchs_genjet_blf0    = genMVA->findVariable("ak4pfchs_genjet_blf0"   );
-    static const int gen_ak4pfchs_genjet_blf1    = genMVA->findVariable("ak4pfchs_genjet_blf1"   );
-    static const int gen_ak4pfchs_genjet_blf2    = genMVA->findVariable("ak4pfchs_genjet_blf2"   );
-    genMVA->setVariable(gen_ak4pfchs_genjet_ptD    ,jet.ptD);
-    genMVA->setVariable(gen_ak4pfchs_genjet_axis1  ,jet.axis1);
-    genMVA->setVariable(gen_ak4pfchs_genjet_axis2  ,jet.axis2);
-    genMVA->setVariable(gen_ak4pfchs_genjet_jetMult,jet.mult);
-    genMVA->setVariable(gen_ak4pfchs_genjet_blf0   ,jet.blf0);
-    genMVA->setVariable(gen_ak4pfchs_genjet_blf1   ,jet.blf1);
-    genMVA->setVariable(gen_ak4pfchs_genjet_blf2   ,jet.blf2);
+    static const int gen_ak4_genjet_ptD     = genMVA->findVariable("ak4_genjet_ptD"    );
+    static const int gen_ak4_genjet_axis1   = genMVA->findVariable("ak4_genjet_axis1"  );
+    static const int gen_ak4_genjet_axis2   = genMVA->findVariable("ak4_genjet_axis2"  );
+    static const int gen_ak4_genjet_jetMult = genMVA->findVariable("ak4_genjet_jetMult");
+    //static const int gen_ak4_genjet_blf0    = genMVA->findVariable("ak4_genjet_blf0"   );
+    //static const int gen_ak4_genjet_blf1    = genMVA->findVariable("ak4_genjet_blf1"   );
+    //static const int gen_ak4_genjet_blf2    = genMVA->findVariable("ak4_genjet_blf2"   );
+    genMVA->setVariable(gen_ak4_genjet_ptD    ,jet.ptD);
+    genMVA->setVariable(gen_ak4_genjet_axis1  ,jet.axis1);
+    genMVA->setVariable(gen_ak4_genjet_axis2  ,jet.axis2);
+    genMVA->setVariable(gen_ak4_genjet_jetMult,jet.mult);
+    //genMVA->setVariable(gen_ak4_genjet_blf0   ,jet.blf0);
+    //genMVA->setVariable(gen_ak4_genjet_blf1   ,jet.blf1);
+    //genMVA->setVariable(gen_ak4_genjet_blf2   ,jet.blf2);
     return genMVA->evaluateMethod(0);
     //cout << "done getting genMVA" << endl;
   } //getGenMVA()
@@ -76,36 +76,36 @@ public:
   double getRecoMVA(const subJet& jet){
 	recoMVA = paramRec->get(jet.jet->pt(),TMath::Abs(jet.jet->eta()));
 	if (usePuppi) {
-		static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
-		static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
-		static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
-		static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
-		static const int reco_ak4pfchs_jet_blf0    = recoMVA->findVariable("ak4pfpuppi_jet_blf0"   );
-		static const int reco_ak4pfchs_jet_blf1    = recoMVA->findVariable("ak4pfpuppi_jet_blf1"   );
-		static const int reco_ak4pfchs_jet_blf2    = recoMVA->findVariable("ak4pfpuppi_jet_blf2"   );
-		recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,jet.ptD  );
-		recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,jet.axis1);
-		recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
-		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf0   ,jet.blf0 );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf1   ,jet.blf1 );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf2   ,jet.blf2 );
+		static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
+		static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
+		static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
+		static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
+		static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4pfpuppi_jet_blf0"   );
+		static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4pfpuppi_jet_blf1"   );
+		static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4pfpuppi_jet_blf2"   );
+		recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
+		recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
+		recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
+		recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
+		recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
+		recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
+		recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
 	} // usePuppi
 	else {                                                               // ak4pfchs ak4
-		static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfchs_jet_ptD"    );
-		static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfchs_jet_axis1"  );
-		static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfchs_jet_axis2"  );
-		static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfchs_jet_jetMult");
-		static const int reco_ak4pfchs_jet_blf0    = recoMVA->findVariable("ak4pfchs_jet_blf0"   );
-		static const int reco_ak4pfchs_jet_blf1    = recoMVA->findVariable("ak4pfchs_jet_blf1"   );
-		static const int reco_ak4pfchs_jet_blf2    = recoMVA->findVariable("ak4pfchs_jet_blf2"   );
-		recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,jet.ptD  );
-		recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,jet.axis1);
-		recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,jet.axis2);
-		recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,jet.mult );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf0   ,jet.blf0 );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf1   ,jet.blf1 );
-		recoMVA->setVariable(reco_ak4pfchs_jet_blf2   ,jet.blf2 );
+		static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4_jet_ptD"    );
+		static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4_jet_axis1"  );
+		static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4_jet_axis2"  );
+		static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4_jet_jetMult");
+		//static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4_jet_blf0"   );
+		//static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4_jet_blf1"   );
+		//static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4_jet_blf2"   );
+		recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
+		recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
+		recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
+		recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
+		//recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
+		//recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
+		//recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
 	} // !usePuppi
     return recoMVA->evaluateMethod(0);
     //cout << "done getting recoMVA" << endl;
@@ -124,9 +124,9 @@ public:
   std::vector<subJet> recoJets ;
 
   virtual void processVariables(){
-	cout << "processing Variables..." << endl;
+	//cout << "processing Variables..." << endl;
     procesSubjets(recoJets,genJets,this);
-	cout << "...done processing Variables" << endl;
+	//cout << "...done processing Variables" << endl;
   } // processVariables()
 
   void makePlots(std::vector<subJet>& jets, bool isReco){
@@ -229,6 +229,6 @@ void processQGInvestigations(string fname = "evttree_lowStat_QCD_test.root", str
   a.prefix  = name;
   a.prefix += "_";
   a.analyze();
-  if (a.usePuppi) a.out( TString::Format("%s_puppi_BLFmva.root", fout.c_str()) );
-  else            a.out( TString::Format(  "%s_ak4_BLFmva.root", fout.c_str()) );
+  if (a.usePuppi) a.out( TString::Format("%s_puppi.root", fout.c_str()) );
+  else            a.out( TString::Format(  "%s_ak4.root", fout.c_str()) );
 } // processQGInvestigations()

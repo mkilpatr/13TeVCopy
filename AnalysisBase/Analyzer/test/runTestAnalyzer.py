@@ -9,7 +9,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
-options.outputFile = 'testForBLFfits.root'
+options.outputFile = 'testFor731.root'
 
 options.inputFiles = (
                        # Znunu 
