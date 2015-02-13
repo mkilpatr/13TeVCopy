@@ -62,7 +62,7 @@ public:
 
     ConfigPars() :
     minSelEPt (10), //was 32
-      maxSelEETA(2.5), //was2.1
+      maxSelEETA(2.4), //was2.1
       selectedElectron(&ElectronF::isgoodpogelectron),
 
       minVetoEPt (5),
@@ -70,7 +70,7 @@ public:
       vetoedElectron(&ElectronF::ismvavetoelectron),
 
       minSelMuPt (10), // was 27
-      maxSelMuETA(2.5), // was 2.1
+      maxSelMuETA(2.4), // was 2.1
       selectedMuon(&MuonF::isgoodpogmuon),
 
       minVetoMuPt (5),
