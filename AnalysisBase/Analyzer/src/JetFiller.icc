@@ -66,11 +66,17 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     ijetaxis1_   =data.addMulti<float>(branchName_,"jet_axis1"   ,0);
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
+    ijetblf0_    =data.addMulti<float>(branchName_,"jet_blf0"    ,0);
+    ijetblf1_    =data.addMulti<float>(branchName_,"jet_blf1"    ,0);
+    ijetblf2_    =data.addMulti<float>(branchName_,"jet_blf2"    ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
       igenjetaxis2_= data.addMulti<float>(branchName_,"genjet_axis2"  ,0);
       igenjetMult_ = data.addMulti<size16>(branchName_,"genjet_jetMult",0);
+      igenjetblf0_ = data.addMulti<float>(branchName_,"genjet_blf0"   ,0);
+      igenjetblf1_ = data.addMulti<float>(branchName_,"genjet_blf1"   ,0);
+      igenjetblf2_ = data.addMulti<float>(branchName_,"genjet_blf2"   ,0);
     }
   }
 
@@ -122,6 +128,9 @@ void JetFiller<Jet>::fill()
         data.fillMulti<float>(igenjetaxis1_   ,qgTaggingVar_->getAxis1());
         data.fillMulti<float>(igenjetaxis2_   ,qgTaggingVar_->getAxis2());
         data.fillMulti<size16>(igenjetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::genJetMult"));
+        data.fillMulti<float>(igenjetblf0_    ,qgTaggingVar_->getBlf0());
+        data.fillMulti<float>(igenjetblf1_    ,qgTaggingVar_->getBlf1());
+        data.fillMulti<float>(igenjetblf2_    ,qgTaggingVar_->getBlf2());
       }
     }
 
@@ -183,6 +192,9 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
       data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
+      data.fillMulti<float>(ijetblf0_    ,qgTaggingVar_->getBlf0());
+      data.fillMulti<float>(ijetblf1_    ,qgTaggingVar_->getBlf1());
+      data.fillMulti<float>(ijetblf2_    ,qgTaggingVar_->getBlf2());
     }
 
   }

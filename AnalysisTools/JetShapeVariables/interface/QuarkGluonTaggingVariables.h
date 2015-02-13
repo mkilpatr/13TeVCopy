@@ -20,7 +20,10 @@ class QuarkGluonTaggingVariables {
     axis1_    (0),
     axis2_    (0),
     ptD_      (0),
-    totalMult_(0)
+    totalMult_(0),
+    blf0_     (0),
+    blf1_     (0),
+    blf2_     (0)
   {};
    ~QuarkGluonTaggingVariables();
 
@@ -32,6 +35,9 @@ class QuarkGluonTaggingVariables {
      axis1_ = 0;
      axis2_ = 0;
      if(totalMult_ == 0) return;
+     blf0_  = 0;
+     blf1_  = 0;
+     blf2_  = 0;
 
      double sumPT2 = 0;
      double sumPT  = 0;
@@ -61,12 +67,76 @@ class QuarkGluonTaggingVariables {
      axis2_ = TMath::Sqrt((l2 < 0 ? 0 : l2) / sumPT2);
      ptD_   = TMath::Sqrt(sumPT2)/sumPT;
 
+     //*
+     // get BLF grid counts
+     //vector<int> N(15,0); // to store the counts for each grid size 2,3,4,...,16
+     TH1I *Nhist = new TH1I("Nhist", "Nhist", 15, 2, 17);
+     for (int d=2; d<=16; ++d) {
+    	 // create the grid
+		 vector<vector<bool>> grid( d, vector<bool>(d,false) );
+		 double di = 0.8/(1.0*d); // grid spacing = 2*jetRadius/gridDimens
+
+		 // loop over each particle in the jet
+		 double maxDist = 0.0;
+		 double deltaR  = 0.0;
+	     for(int iD = 0; iD < totalMult_; ++iD){
+	       const reco::Candidate * daughter = jet->daughter(iD);
+	       if (daughter->pt() < 0.1) continue;
+	       // get eta,phi for particle make sure they're within the jet radius
+	       double Eta = PhysicsUtilities::deltaEta(*daughter,*jet);
+	       double Phi = PhysicsUtilities::deltaPhi(*daughter,*jet);
+	       if (            jet->maxDistance() > maxDist ) maxDist = jet->maxDistance();
+	       if ( TMath::Sqrt(Eta*Eta +Phi*Phi) > deltaR  ) deltaR  = TMath::Sqrt(Eta*Eta +Phi*Phi);
+	       if ( TMath::Sqrt(Eta*Eta +Phi*Phi) >= 0.4 ) continue;
+	       // set coord system to a corner of the "jet square"
+	       Eta += 0.4;
+	       Phi += 0.4;
+	       // find et,phi coords on grid
+	       int nEta = Eta/di;
+	       int nPhi = Phi/di;
+	       grid[nEta][nPhi] = true;
+	     } // iD
+	     //if (d==2) std::cout << "===== jet->maxDistance() = " << maxDist << "\t" << deltaR << " \t" << maxDist-deltaR << std::endl;
+
+	     // count how many cells have hits
+	     for(int i=0; i<d; ++i) for(int j=0; j<d; ++j) if(grid[i][j]) Nhist->Fill(d);
+
+     } // d
+
+     Nhist->Sumw2();
+     TGraph *logHist = new TGraph(Nhist->GetNbinsX());
+
+     //std::cout << "mult=" << totalMult_ << " ";
+     for (int i=0; i<Nhist->GetNbinsX(); ++i) {
+    	 logHist->SetPoint( i, log10((1.0*(i+2))/0.8), log10(1.0*Nhist->GetBinContent(i+1)) );
+    	 //std::cout << Nhist->GetBinContent(i+1) << " ";
+     } // NBinsX
+     //std::cout << std::endl;
+
+     TF1 *logFit = new TF1( "logFit", "[0] + [1]*x + [2]*log10(x)", 0.1, 1.5 );
+     logFit->SetParameters(0.8, 0.1, 0.2);
+     logFit->SetParName(0,"p0");
+     logFit->SetParName(1,"p1");
+     logFit->SetParName(2,"p2");
+     logHist->Fit(logFit,"Q"); // ,"Q");
+     // */
+     blf0_ = logFit->GetParameter(0);
+     blf1_ = logFit->GetParameter(1);
+     blf2_ = logFit->GetParameter(2);
+
+     delete Nhist;
+     delete logHist;
+     delete logFit;
+
    } // compute()
 
    double getAxis1() const {return axis1_;}
    double getAxis2() const {return axis2_;}
    double getPtD()   const {return ptD_;}
    int    getTotalMult() const {return totalMult_;}
+   double getBlf0()  const {return blf0_;}
+   double getBlf1()  const {return blf1_;}
+   double getBlf2()  const {return blf2_;}
 
 
    template<typename Jet>
@@ -107,6 +177,9 @@ class QuarkGluonTaggingVariables {
   double axis2_    ;
   double ptD_      ;
   int    totalMult_;
+  double blf0_     ;
+  double blf1_     ;
+  double blf2_     ;
 
 
 }; // QuarkGluonTaggingVariables

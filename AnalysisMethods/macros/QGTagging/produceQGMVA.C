@@ -19,6 +19,9 @@ public:
 		  addVariable("axis1"    ,"ak4pfpuppi_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4pfpuppi_jet_axis2"   ,'F');
 		  addVariable("jetMult"  ,"ak4pfpuppi_jet_jetMult" ,'I');
+		  addVariable("blf0"     ,"ak4pfpuppi_jet_blf0"    ,'F');
+		  addVariable("blf1"     ,"ak4pfpuppi_jet_blf1"    ,'F');
+		  addVariable("blf2"     ,"ak4pfpuppi_jet_blf2"    ,'F');
 		  addVariable("pt"       ,"ak4pfpuppi_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfpuppi_jet_eta"     ,'F');
       } // usePuppi
@@ -28,6 +31,9 @@ public:
 		  addVariable("axis1"    ,"ak4pfchs_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4pfchs_jet_axis2"   ,'F');
 		  addVariable("jetMult"  ,"ak4pfchs_jet_jetMult" ,'I');
+		  addVariable("blf0"     ,"ak4pfchs_jet_blf0"    ,'F');
+		  addVariable("blf1"     ,"ak4pfchs_jet_blf1"    ,'F');
+		  addVariable("blf2"     ,"ak4pfchs_jet_blf2"    ,'F');
 		  addVariable("pt"       ,"ak4pfchs_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfchs_jet_eta"     ,'F');
       } // !usePuppi
@@ -37,12 +43,18 @@ public:
       addVariable("axis1"    ,"ak4pfchs_genjet_axis1"  ,'F');
       addVariable("axis2"    ,"ak4pfchs_genjet_axis2"  ,'F');
       addVariable("jetMult"  ,"ak4pfchs_genjet_jetMult",'I');
+      addVariable("blf0"     ,"ak4pfchs_genjet_blf0"   ,'F');
+      addVariable("blf1"     ,"ak4pfchs_genjet_blf1"   ,'F');
+      addVariable("blf2"     ,"ak4pfchs_genjet_blf2"   ,'F');
       addVariable("pt"       ,"ak4pfchs_genjet_pt"     ,'F');
       addVariable("eta"      ,"ak4pfchs_genjet_eta"    ,'F');
     } // gen
     addVariable("flavor","flavor",'I');
 
     addVariableSet("ptD", "axis1", "axis2", "jetMult", "");
+    //addVariableSet("ptD", "axis1", "axis2", "blf0", "blf1", "blf2", "");
+    //addVariableSet( "blf0", "blf1", "blf2", "");
+    //addVariableSet("ptD", "axis1", "axis2", "jetMult", "blf0", "blf1", "blf2", "");
   }
 
   void configure(){

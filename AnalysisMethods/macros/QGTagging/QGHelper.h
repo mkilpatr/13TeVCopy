@@ -25,6 +25,9 @@ struct subJet  {
 	  axis1    (-1),
 	  axis2    (-1),
 	  mult     (-1),
+	  blf0     (-1),
+	  blf1     (-1),
+	  blf2     (-1),
 	  matchGen  (0),
 	  type      (U),
 	  nearDR   (99),
@@ -39,6 +42,9 @@ struct subJet  {
   float axis1   ;
   float axis2   ;
   int   mult    ;
+  float blf0    ;
+  float blf1    ;
+  float blf2    ;
   const GenJetF*   matchGen;
   TYPE type     ;
   float nearDR  ;
@@ -63,6 +69,9 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
       recoJets.back().axis1    = analyzer->ak4Reader.jetaxis1_   ->at(iJ);
       recoJets.back().axis2    = analyzer->ak4Reader.jetaxis2_   ->at(iJ);
       recoJets.back().mult     = analyzer->ak4Reader.jetMult_    ->at(iJ);
+      recoJets.back().blf0     = analyzer->ak4Reader.jetblf0_    ->at(iJ);
+      recoJets.back().blf1     = analyzer->ak4Reader.jetblf1_    ->at(iJ);
+      recoJets.back().blf2     = analyzer->ak4Reader.jetblf2_    ->at(iJ);
       recoJets.back().matchGen = jet.genJet();
     } // iJ < recoJets.size()
     for(unsigned int iJ = 0; iJ <  analyzer->ak4Reader.genJets.size(); ++iJ){
@@ -75,6 +84,9 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
       genJets.back().axis1  = analyzer->ak4Reader.genjetaxis1_->at(iJ);
       genJets.back().axis2  = analyzer->ak4Reader.genjetaxis2_->at(iJ);
       genJets.back().mult   = analyzer->ak4Reader.genjetMult_ ->at(iJ);
+      genJets.back().blf0   = analyzer->ak4Reader.genjetblf0_ ->at(iJ);
+      genJets.back().blf1   = analyzer->ak4Reader.genjetblf1_ ->at(iJ);
+      genJets.back().blf2   = analyzer->ak4Reader.genjetblf2_ ->at(iJ);
     } // iJ < genJets.size()
   } // ak4Reader.isLoaded()
 
