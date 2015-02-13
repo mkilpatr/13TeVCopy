@@ -239,6 +239,7 @@ void BaseTreeAnalyzer::selectLeptons(
   selectedLeptons.clear();
   vetoedLeptons.clear();
   for(auto* lepton : allLeptons){
+    /*
     bool shouldSelect = false;
     if(config.leptonSelection != SEL_0_LEP && (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton))){
       if(config.leptonSelection == SEL_ALL_LEP) shouldSelect = true;
@@ -252,9 +253,16 @@ void BaseTreeAnalyzer::selectLeptons(
       selectedLeptons.push_back(lepton);
       continue;
     }
+    */
+
+    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton)) { 
+      selectedLeptons.push_back(lepton); 
+    }
+
     if(lepton->ismuon() ? isVetoMuon(*(MuonF*)lepton) : isVetoElectron(*(ElectronF*)lepton) ){
       vetoedLeptons.push_back(lepton);
     }
+
   }
 
   nSelLeptons = selectedLeptons.size();
