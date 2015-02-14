@@ -834,3 +834,113 @@ Pint::drawAll(o,"");
 
 Pint::drawAll(o,"","",":mr");
 }
+
+
+>>> PIKCY JET VALIDATION
+    
+
+{
+    Plot::cache("*_plots.root");
+    TString vars[]= {"num_20","num_bjets","topness",""};
+    // TString sels[]= {"0Lep__nBJets_inc__met_geq100__","0Lep__nBJets_inc__met_geq150__","0Lep__nBJets_inc__met_geq200__",""};
+    // TString sels[]= {"1Lep_dPhi__nBJets_inc__met_geq100__","1Lep_dPhi__nBJets_inc__met_geq150__","1Lep_dPhi__nBJets_inc__met_geq200__",""};
+        TString sels[]= {"0Lep__nBJets_inc__met_geq100__",""};
+    TString jets[] ={"picky_","ak4_",""};
+    for(unsigned int iV = 0; vars[iV][0]; ++iV){
+        o = new TObjArray;
+        oo = new TObjArray;
+        for(unsigned int iS = 0; sels[iS][0]; ++iS){
+            for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+                p = new Plot(jets[iJ] + sels[iS] + vars[iV]);
+                p->SetTitle(Plot::translated(jets[iJ] + sels[iS]));
+                p->toUnderOverflow();
+                p->normalize();
+                o->Add(p);
+                
+                // TCanvas * c = p->makeCutEfficiencies(3);
+                // oo->Add(c);
+                
+            }
+        }    
+        Pint::drawAll(o,"");
+        // Pint::drawAll(oo,"");
+    }
+}
+
+
+{
+    double bins[] = {-20,1,7,20};
+    RebinToNewBins b(3,bins);
+    Plot::cache("*_plots.root");
+    TString vars[]= {"num_20","num_bjets","topness",""};
+    // TString sels[]= {"0Lep__nBJets_inc__met_geq100__","0Lep__nBJets_inc__met_geq150__","0Lep__nBJets_inc__met_geq200__",""};
+    // TString sels[]= {"1Lep_dPhi__nBJets_geq1__met_geq100__","1Lep_dPhi__nBJets_geq1__met_geq150__","1Lep_dPhi__nBJets_geq1__met_geq200__",""};
+        TString sels[]= {"0Lep__nBJets_inc__met_geq100__","0Lep__nBJets_geq1__met_geq200__",""};
+    TString jets[] ={"picky_","ak4_",""};
+    for(unsigned int iV = 0; vars[iV][0]; ++iV){
+        o = new TObjArray;
+        oo = new TObjArray;
+        for(unsigned int iS = 0; sels[iS][0]; ++iS){
+            
+            pa= new Plot("ak4_"+sels[iS] + vars[iV]);
+            pp = new Plot("picky_"+sels[iS] + vars[iV]);
+            pa->toUnderOverflow();
+            pp->toUnderOverflow();
+            pa->normalize();
+            pp->normalize();
+            
+            if(iV == 2){
+                pp->rebin(b);
+                pa->rebin(b);
+            }
+            
+            pp->divide(*pa);
+            pp->SetTitle(Plot::translated(sels[iS]));
+            o->Add(pp);            
+        }    
+        Pint::drawAll(o,"");
+        // Pint::drawAll(oo,"");
+    }
+}
+
+
+{
+    Plot::cache("*_plots.root");
+    TString vars[]= {"num_20",""};
+    TString presel = "0Lep__nBJets_inc__";
+    // TString presel = "1Lep_dPhi__nBJets_inc__";
+    TString bkg = "ttbar";
+    // TString sigs[] = {"t2tt_lowDM","t2tt_largeDM","t1tttt_largeDM",""};
+        TString sigs[] = {"t1tttt_largeDM",""};
+    TString sels[]= {"met_geq100__","met_geq200__",""};        
+    TString jets[] ={"picky_","ak4_",""};
+    for(unsigned int iV = 0; vars[iV][0]; ++iV){
+        o = new TObjArray;
+        oo = new TObjArray;
+        
+        for(unsigned int isig = 0; sigs[isig][0]; ++isig){
+            pb = new Plot();
+            ps = new Plot();
+            for(unsigned int iS = 0; sels[iS][0]; ++iS){
+                for(unsigned int iJ = 0; jets[iJ][0]; ++iJ){
+                    TH1* b = Plot::getCache()->findOne(bkg + "_" +jets[iJ]+presel + sels[iS] + vars[iV] );
+                    TH1* s = Plot::getCache()->findOne(sigs[isig] + "_" +jets[iJ]+presel + sels[iS] + vars[iV] );
+                    if(b == 0) continue;
+                    if(s == 0) continue;
+                    pb->add(b,Plot::translated(jets[iJ] + sels[iS]));
+                    ps->add(s,Plot::translated(jets[iJ] + sels[iS]));                    
+                }
+            }
+            if(ps->getNumberOfHistograms() == 0 ||pb->getNumberOfHistograms() == 0) continue;
+            ps->toUnderOverflow();
+            ps->normalize();
+            pb->toUnderOverflow();
+            pb->normalize();
+            ps->SetTitle(Plot::translated(presel + sigs[isig]));
+            TCanvas *c1 = ps->makeCutEfficiencies(*pb,"ttbar",sigs[isig]);
+            o->Add(c1);
+            
+        }
+        Pint::drawAll(o,"");
+    }
+}

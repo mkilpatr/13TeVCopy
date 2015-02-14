@@ -607,13 +607,13 @@ public:
 
 void pickyJetValidationPlots(string fname = "evttree.root", string treeName = "TestAnalyzer/Events", string outName = "", bool doPicky = false, bool isMCTree = true) {
 
-  ConfigPars pars;
+  BaseTreeAnalyzer::ConfigPars pars;
   pars.minJetPt = 20;
   pars.minBJetPt = 20;
   pars.cleanJetsvLeptons_ =true;
 //  pars.correctPickyPT =false;
+  pars.defaultJetCollection =  doPicky ? BaseTreeAnalyzer::PICKYJETS : BaseTreeAnalyzer::AK4JETS;
   Analyze a(fname, treeName, isMCTree, &pars);
-  a.setDefaultJets( doPicky ? BaseTreeAnalyzer::PICKYJETS : BaseTreeAnalyzer::AK4JETS  );
   a.analyze(100000,500000);
   a.out(outName);
 }

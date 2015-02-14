@@ -26,7 +26,7 @@ const BaseTreeAnalyzer * a::analyzer = 0;
     VariableCalculator() :
         met_pt          (0)
       , nJ90            (0)
-      , nJ30            (0)
+      , nJ20            (0)
       , nTightBTags     (0)
       , dPhiMET12       (10.7)
       , dPhiMET3        (10.7)
@@ -42,18 +42,21 @@ const BaseTreeAnalyzer * a::analyzer = 0;
       , bTransverseMass (0)
       , rmsBEta         (0)
       , wInvMass        (0)
+      , leadBPT         (0)
+      , secLeadBPT      (0)
+      , ht              (0)
     {}
 
 
 
     //assumes that jets are inclusive in eta and pt!!!
     //also assumes that the jets are pt sorted!
-    void processVariables(const BaseTreeAnalyzer * analyzer, const JetReader* inJetReader,  vector<RecoJetF*>& inJets, const MomentumF* inMet){
+    void processVariables(const BaseTreeAnalyzer * analyzer, const JetReader*ak4JetReader, const vector<RecoJetF*>&inAK4Jets, const vector<RecoJetF*>& inJets, const MomentumF* inMet){
       a::analyzer = analyzer;
 
       met_pt          = 0;
       nJ90            = 0;
-      nJ30            = 0;
+      nJ20            = 0;
       nTightBTags     = 0;
       dPhiMET12       = 10.7;
       dPhiMET3        = 10.7;
@@ -69,27 +72,19 @@ const BaseTreeAnalyzer * a::analyzer = 0;
       bTransverseMass = 0;
       rmsBEta         = 0;
       wInvMass        = 0;
-
-      static const double minJetPT  = 30;
-      static const double maxJetETA = 2.4;
+      leadBPT         = 0;
+      secLeadBPT      = 0;
+      ht              = 0;
 
       met_pt = inMet->pt();
-      vector<RecoJetF*> jets;
 
-      for(unsigned int iJ = 0; iJ < inJets.size(); ++iJ){
-        auto& j = *inJets[iJ];
-        if(TMath::Abs(j.eta()) >= maxJetETA ) continue;
-        if(j.pt() < minJetPT ) break;
-
-        jets.push_back(&j);
-        nJ30++;
+      //AK4 jets are always used for met/jet correlations, trigger requirements, and QGTagging
+      for(unsigned int iJ = 0; iJ < inAK4Jets.size(); ++iJ){
+        const auto& j = *inAK4Jets[iJ];
         if(j.pt() >= 90 ) nJ90++;
-        if(analyzer->isTightBJet(j)) nTightBTags++;
-        if(analyzer->isMediumBJet(j)) nMedBTags++;
-
         //qgl
         if(analyzer->isLooseBJet(j)) continue;
-        double qgl = std::max( .01, double((1 + inJetReader->jetqgl_->at(j.index()))/2)); //trasnform from
+        double qgl = std::max( .01, double((1 + ak4JetReader->jetqgl_->at(j.index()))/2)); //trasnform from
         prodQL *= qgl;
         if(qgl > leadLeadQL){
           secLeadQL = leadLeadQL;
@@ -97,26 +92,39 @@ const BaseTreeAnalyzer * a::analyzer = 0;
         } else if(qgl > secLeadQL)
           secLeadQL = qgl;
       }
-
       prodQL = TMath::Log(prodQL);
-      dPhiMET12 = JetKinematics::absDPhiMETJ12(*inMet,jets);
-      dPhiMET3 = JetKinematics::absDPhiMETJ3(*inMet,jets);
-      passPreselction = met_pt >= 200 && nJ90 >= 2 && nJ30 >= 5 && nTightBTags >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
+      dPhiMET12 = JetKinematics::absDPhiMETJ12(*inMet,inAK4Jets);
+      dPhiMET3  = JetKinematics::absDPhiMETJ3(*inMet,inAK4Jets);
 
-      htAlongAway = JetKinematics::htAlongHtAway(*inMet,jets);
-      rmsJetPT = JetKinematics::ptRMS(jets);
-      rmsJetDphiMET = JetKinematics::deltaPhiMETRMS(*inMet,jets);
+      for(unsigned int iJ = 0; iJ < inJets.size(); ++iJ){
+        auto& j = *inJets[iJ];
+        nJ20++;
+        if(analyzer->isTightBJet(j)) nTightBTags++;
+        if(analyzer->isMediumBJet(j)){
+          if(leadBPT == 0) leadBPT = j.pt();
+          else if(secLeadBPT == 0) secLeadBPT = j.pt();
+          nMedBTags++;
+        }
+      }
 
 
-      bInvMass = JetKinematics::bJetInvMass(jets,&a::isMediumBJet);
-      bTransverseMass = JetKinematics::bJetTranverseMass(*inMet,jets,&a::isMediumBJet);
-      rmsBEta = JetKinematics::deltaEtaBJetRMS(jets,&a::isMediumBJet);
-      wInvMass = JetKinematics::highestPTJetPair(jets);
+      passPreselction = met_pt >= 200 && nJ90 >= 2 && nJ20 >= 6 && nTightBTags >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
+
+      htAlongAway = JetKinematics::htAlongHtAway(*inMet,inJets);
+      rmsJetPT = JetKinematics::ptRMS(inJets);
+      rmsJetDphiMET = JetKinematics::deltaPhiMETRMS(*inMet,inJets);
+
+
+      bInvMass = JetKinematics::bJetInvMass(inJets,&a::isMediumBJet);
+      bTransverseMass = JetKinematics::bJetTranverseMass(*inMet,inJets,&a::isMediumBJet);
+      rmsBEta = JetKinematics::deltaEtaBJetRMS(inJets,&a::isMediumBJet);
+      wInvMass = JetKinematics::highestPTJetPair(inJets);
+      ht = JetKinematics::ht(inJets);
     }
 
     double met_pt;
     int    nJ90;
-    int    nJ30;
+    int    nJ20;
     int    nTightBTags;
     double dPhiMET12;
     double dPhiMET3;
@@ -132,6 +140,9 @@ const BaseTreeAnalyzer * a::analyzer = 0;
     double bTransverseMass;
     double rmsBEta;
     double wInvMass;
+    double leadBPT;
+    double secLeadBPT;
+    double ht;
   };
 }
 

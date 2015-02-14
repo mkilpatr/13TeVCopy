@@ -15,19 +15,21 @@ public:
   void loadVariables(){
     load(EVTINFO);
     load(AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
     load(ELECTRONS);
     load(MUONS);
-    load(TAUS);
-    setDefaultJets(AK4JETS);
+    load(PFCANDS);
   }
 
   bool fillEvent() {
-    vars.processVariables(this,defaultJets,jets,met);
+    vector<RecoJetF*> ak4Jets;
+    cleanJets(&ak4Reader,ak4Jets,0,0);
+    vars.processVariables(this,&ak4Reader,ak4Jets,jets,met);
     if(!vars.passPreselction) return false;
-    if(nLeptons + nTaus > 0) return false;
+    if(nVetoedLeptons + nVetoedTaus > 0) return false;
 
     data.fill<float>(met_pt          ,float(vars.met_pt         ));
-    data.fill<int  >(nJ30            ,int  (vars.nJ30           ));
+    data.fill<int  >(nJ20            ,int  (vars.nJ20           ));
     data.fill<float>(dPhiMET3        ,float(vars.dPhiMET3       ));
     data.fill<int  >(nMedBTags       ,int  (vars.nMedBTags      ));
     data.fill<float>(secLeadQL       ,float(vars.secLeadQL      ));
@@ -40,6 +42,8 @@ public:
     data.fill<float>(bTransverseMass ,float(vars.bTransverseMass));
     data.fill<float>(rmsBEta         ,float(vars.rmsBEta        ));
     data.fill<float>(wInvMass        ,float(vars.wInvMass       ));
+    data.fill<float>(ht         ,float(vars.ht       ));
+
 
     data.fill<float>(i_weight        ,float(weight       ));
     data.fill<int  >(i_process       ,int(process      ));
@@ -52,7 +56,7 @@ public:
 
   void book() {
     met_pt           = data.add<float>("","met"               ,"F",0);
-    nJ30             = data.add<int  >("","num_j30"           ,"I",0);
+    nJ20             = data.add<int  >("","num_j20"           ,"I",0);
     dPhiMET3         = data.add<float>("","dphi_j3_met"       ,"F",0);
     nMedBTags        = data.add<int  >("","num_medium_btags"  ,"I",0);
     secLeadQL        = data.add<float>("","q2_likeli"         ,"F",0);
@@ -65,6 +69,7 @@ public:
     bTransverseMass  = data.add<float>("","mTb"               ,"F",0);
     rmsBEta          = data.add<float>("","deta_b_rms"        ,"F",0);
     wInvMass         = data.add<float>("","leading_jj_mass"   ,"F",0);
+    ht               = data.add<float>("","ht"   ,"F",0);
 
     i_weight         = data.add<float>("","weight"   ,"F",0);
     i_process         = data.add<int >("","process"   ,"I",0);
@@ -73,7 +78,7 @@ public:
 
 
   size met_pt         ;
-  size nJ30           ;
+  size nJ20           ;
   size dPhiMET3       ;
   size nMedBTags      ;
   size secLeadQL      ;
@@ -86,6 +91,10 @@ public:
   size bTransverseMass;
   size rmsBEta        ;
   size wInvMass       ;
+//  size leadBPT;
+//  size secLeadBPT;
+  size ht;
+
 
   size i_weight       ;
   size i_process      ;
@@ -99,9 +108,10 @@ public:
 
 void flattenSRTree(string fileName = "evttree.root", string treeName = "TestAnalyzer/Events", string outFileName ="newTree.root") {
 
-  ConfigPars pars;
-  pars.minJetPt = 0;
-  pars.maxJetEta = 9999;
+  BaseTreeAnalyzer::ConfigPars pars;
+  pars.cleanJetsvSelectedLeptons_ = false;
+  pars.leptonSelection = BaseTreeAnalyzer::SEL_0_LEP;
+  pars.defaultJetCollection = BaseTreeAnalyzer::PICKYJETS;
   Copier a(fileName,treeName,outFileName,&pars);
   a.analyze();
 }
