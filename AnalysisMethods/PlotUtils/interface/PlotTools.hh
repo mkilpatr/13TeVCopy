@@ -7,12 +7,14 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <assert.h>
 #include <TString.h>
 #include "AnalysisMethods/PlotUtils/interface/Sample.hh"
 
+using namespace std;
+
 namespace PlotTools {
 
-  //void initSamples(TString conf, vector<TString> &snamev, vector<Sample*> &samplev)
   void initSamples(TString conf, vector<Sample*> &samplev)
   {
     ifstream ifs;
@@ -32,12 +34,10 @@ namespace PlotTools {
 	samplev.push_back(new Sample());
 	stringstream ss(line);
 	string chr;
-	//string sname;
 	string name;
 	Int_t color;
 	ss >> chr >> name >> color;
 	string label = line.substr(line.find('@')+1);
-	//snamev.push_back(sname);
 	samplev.back()->name  = name;
 	samplev.back()->label = label;
 	samplev.back()->color = color;
