@@ -214,7 +214,6 @@ public:
     std::vector<LeptonF*>      vetoedLeptons     ;
     std::vector<PFCandidateF*> vetoedTaus        ;
     std::vector<RecoJetF*>     jets            ;
-    std::vector<RecoJetF*>     pickyJets;
     std::vector<RecoJetF*>     bJets   ;
     std::vector<RecoJetF*>     nonBJets;
     std::vector<GenParticleF*> genParts;
