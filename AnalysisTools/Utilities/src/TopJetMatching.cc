@@ -140,8 +140,8 @@ TopDiagnosis TopDecay::getDiagnosis(const TopDecay& parton){
   return RESOLVED_TOP;
 }
 //--------------------------------------------------------------------------------------------------
-TopDecayEvent::TopDecayEvent(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
-    const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets) : jets(inJets) {
+void TopDecayEvent::initialize(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
+    const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE) {
 
   //first add all partons
   //map to link particle index to parton index
@@ -184,4 +184,44 @@ TopDecayEvent::TopDecayEvent(const std::vector<ucsbsusy::size16 >* genAssocPrtIn
 
   sort(topDecays.begin(),topDecays.end(),GreaterTopDecayPT<TopDecay>());
 
+}
+//--------------------------------------------------------------------------------------------------
+void TopDecayEvent::getDecayMatches(const vector<ucsbsusy::RecoJetF*> recoJets, vector<TopDecayEvent::DecayID>& decayIDs)  const {
+  decayIDs.clear();
+  decayIDs.resize(recoJets.size());
+
+  for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
+    const auto * gj = recoJets[iJ]->genJet();
+    if(gj == 0) continue;
+
+    for(unsigned int iP = 0; iP < partons.size(); ++iP){
+      for(unsigned int iC = 0; iC < partons[iP].containment.size(); ++iC){
+        if(gj->index() !=  partons[iP].containment[iC].second) continue;
+        decayIDs[iJ].conPartons.emplace_back( partons[iP].containment[iC].first* partons[iP].hadE,&partons[iP]);
+      }
+    }
+    std::sort( decayIDs[iJ].conPartons.begin(),  decayIDs[iJ].conPartons.end(), PhysicsUtilities::greaterFirst<float,const Parton*>());
+
+    if(decayIDs[iJ].conPartons.size()){
+      const Parton * leadPtr = decayIDs[iJ].conPartons.front().second;
+      for(unsigned int iT = 0; iT < topDecays.size(); ++iT){
+        if(leadPtr == topDecays[iT].b){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_B;
+          break;
+        }
+        if(leadPtr == topDecays[iT].W_dau1){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_W;
+          break;
+        }
+        if(leadPtr == topDecays[iT].W_dau2){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_W;
+          break;
+        }
+      }
+      if(decayIDs[iJ].type == DecayID::NONE) decayIDs[iJ].type = DecayID::RADIATED;
+    }
+  }
 }
