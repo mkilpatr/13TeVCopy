@@ -86,6 +86,48 @@ namespace ucsbsusy {
   typedef PFCandidate<CylLorentzCoordF> PFCandidateF;
   typedef std::vector<PFCandidateF>     PFCandidateFCollection;
 
+  class ExtendedPFCandidate : public PFCandidateF
+  {
+    public :
+      ExtendedPFCandidate() : chiso0p1_(0), chiso0p2_(0), chiso0p3_(0), chiso0p4_(0), totiso0p1_(0), totiso0p2_(0), totiso0p3_(0), totiso0p4_(0), neartrkdr_(0) {}
+
+      ~ExtendedPFCandidate() {}
+
+      float chiso0p1()      const { return chiso0p1_;  }
+      float chiso0p2()      const { return chiso0p2_;  }
+      float chiso0p3()      const { return chiso0p3_;  }
+      float chiso0p4()      const { return chiso0p4_;  }
+      float totiso0p1()     const { return totiso0p1_; }
+      float totiso0p2()     const { return totiso0p2_; }
+      float totiso0p3()     const { return totiso0p3_; }
+      float totiso0p4()     const { return totiso0p4_; }
+      float neartrkdr()     const { return neartrkdr_; }
+
+      void  setChIso0p1(float newIso)    { chiso0p1_ = newIso;  }
+      void  setChIso0p2(float newIso)    { chiso0p2_ = newIso;  }
+      void  setChIso0p3(float newIso)    { chiso0p3_ = newIso;  }
+      void  setChIso0p4(float newIso)    { chiso0p4_ = newIso;  }
+      void  setTotIso0p1(float newIso)   { totiso0p1_ = newIso; }
+      void  setTotIso0p2(float newIso)   { totiso0p2_ = newIso; }
+      void  setTotIso0p3(float newIso)   { totiso0p3_ = newIso; }
+      void  setTotIso0p4(float newIso)   { totiso0p4_ = newIso; }
+      void  setNearTrkDR(float newDR)    { neartrkdr_ = newDR;  }
+
+    protected :
+      float chiso0p1_;
+      float chiso0p2_;
+      float chiso0p3_;
+      float chiso0p4_;
+      float totiso0p1_;
+      float totiso0p2_;
+      float totiso0p3_;
+      float totiso0p4_;
+      float neartrkdr_;
+
+  };
+
+  typedef std::vector<ExtendedPFCandidate> ExtendedPFCandidateCollection;
+
 }
 
 #endif
