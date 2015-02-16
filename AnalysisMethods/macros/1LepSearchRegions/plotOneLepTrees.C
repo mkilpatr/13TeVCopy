@@ -3,9 +3,9 @@
 #endif
 
 
-void plotOneLepTrees(const TString conffile="run1lep.conf",
-                     const TString inputdir="run/trees",
-                     const TString outputdir="run/plots")
+void plotOneLepTrees(const TString conffile="../run1leptrees.conf",
+                     const TString inputdir="../run/trees",
+                     const TString outputdir="../run/plots")
 {
 
   PlotStuff* myPlots1 = new PlotStuff(conffile, inputdir, outputdir);
