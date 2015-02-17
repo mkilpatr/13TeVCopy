@@ -106,7 +106,42 @@ public:
 
   TopDecayEvent(
       const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
-      const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets);
+      const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets) : jets(inJets) {
+    initialize(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+  }
+
+  template<typename GenPrtRead,typename JetRead>
+  TopDecayEvent(const GenPrtRead& genParticleReader, JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
+    //Get pointers to necessary variables
+    const std::vector<ucsbsusy::size16 >* genAssocPrtIndex = jetReader.genAssocPrtIndex_;
+    const std::vector<ucsbsusy::size16 >* genAssocJetIndex = jetReader.genAssocJetIndex_;
+    const std::vector<ucsbsusy::int8>*    genAssocCon      = jetReader.genAssocCont_;
+    const std::vector<Particle>*          genParticles     = &genParticleReader.genParticles;
+    const std::vector<float   >*          hadronE          = genParticleReader.hade_;
+
+    initialize(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+  }
+
+  class DecayID {
+  public:
+    enum Type {NONE,RADIATED,TOP_B,TOP_W};
+    DecayID() : type(NONE), topInd(-1) {};
+
+    const Parton* mainParton() const {return conPartons.size() == 0 ? 0 : conPartons.front().second;}
+
+    Type type;
+    int topInd;
+    std::vector<std::pair<float,const Parton*> > conPartons; //[Contained jet E][parton ptr]
+
+  };
+
+  void getDecayMatches(const std::vector<ucsbsusy::RecoJetF*> recoJets, std::vector<TopDecayEvent::DecayID>& decayIDs) const;
+
+
+private:
+  void initialize(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
+      const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE);
+
 };
 
 };

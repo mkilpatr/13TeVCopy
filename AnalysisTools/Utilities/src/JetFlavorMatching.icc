@@ -151,6 +151,42 @@ void JetFlavorMatching::assignJetHadronFlavors( const std::vector<Object>& jets,
     hadronPTs[iJet] = hadronDecayP4.pt();
   }
 }
+
+template<typename flvSource, typename Object>
+void JetFlavorMatching::assignJetPartonFlavors(const std::vector<const flvSource*>& partonJets, const std::vector<Object>& jets,
+    std::vector<JetFlavorInfo::JetFlavor>& flavors, bool ignoreHeavyFlavors){
+
+  assert(flavors.size()               == jets.size());
+  assert(partonJets.size()            == jets.size());
+
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+    if(flavors[iJ] != JetFlavorInfo::unmatched_jet) continue;
+    const auto * partonJet = partonJets[iJ];
+    assert(partonJet);
+
+    std::vector<ucsbsusy::RankedIndex> mePts;
+    std::vector<ucsbsusy::RankedIndex> psPts;
+
+    for(unsigned int iC = 0; iC <partonJet->numberOfDaughters(); ++iC){
+      const auto* dau = partonJet->daughter(iC);
+      const int                             pdgId         = TMath::Abs(dau->pdgId());
+      const int                             status        = dau->status();
+      if(!ParticleInfo::isQuarkOrGluon(pdgId) || pdgId == ParticleInfo::p_t ) continue;
+      if(ignoreHeavyFlavors && (pdgId == ParticleInfo::p_b || pdgId == ParticleInfo::p_c) ) continue;
+      if(ParticleInfo::isDocOutgoing(status)) mePts.emplace_back(dau->pt(),iC);
+      if(status==71 || status==72 ) psPts.emplace_back(dau->pt(),iC);
+    }
+
+    if(mePts.size()){
+      std::sort(mePts.begin(), mePts.end(),PhysicsUtilities::greaterFirst<double,int>());
+      flavors[iJ] = JetFlavorInfo::jetFlavor(partonJet->daughter(mePts[0].second)->pdgId());
+    } else if(psPts.size()){
+      std::sort(psPts.begin(), psPts.end(),PhysicsUtilities::greaterFirst<double,int>());
+      flavors[iJ] = JetFlavorInfo::jetFlavor(partonJet->daughter(psPts[0].second)->pdgId(),true);
+    }
+  }
+}
+
 template<typename Object>
 void JetFlavorMatching::assignJetPartonFlavors( const std::vector<Object>& jets, std::vector<ParticleDecay>& partonDecays,
     std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<std::vector<ParticleDecayRef> > & matchedParticles,

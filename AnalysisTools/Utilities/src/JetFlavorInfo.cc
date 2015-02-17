@@ -2,17 +2,17 @@
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 //_____________________________________________________________________________
-JetFlavorInfo::JetFlavor JetFlavorInfo::jetFlavor(int particleID)
+JetFlavorInfo::JetFlavor JetFlavorInfo::jetFlavor(int particleID, bool isPartonShower)
 {
   if (particleID < 0)   return jetFlavor(-particleID);
   switch (particleID) {
     case 0:                           return unmatched_jet;
     case ParticleInfo::p_d:
     case ParticleInfo::p_u:
-    case ParticleInfo::p_s:           return uds_jet;
-    case ParticleInfo::p_c:           return c_jet;
-    case ParticleInfo::p_b:           return b_jet;
-    case ParticleInfo::p_g:           return g_jet;
+    case ParticleInfo::p_s:           return isPartonShower ? ps_uds_jet : uds_jet ;
+    case ParticleInfo::p_c:           return isPartonShower ? ps_c_jet   : c_jet   ;
+    case ParticleInfo::p_b:           return isPartonShower ? ps_b_jet   : b_jet   ;
+    case ParticleInfo::p_g:           return isPartonShower ? ps_g_jet   : g_jet   ;
     default:                          return numJetFlavors;
   }
 }

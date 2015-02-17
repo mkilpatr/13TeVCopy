@@ -13,7 +13,7 @@
 
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
-
+#include "DataFormats/JetReco/interface/PFJet.h"
 using namespace ucsbsusy;
 
 
@@ -28,7 +28,12 @@ protected:
   const edm::InputTag genJetSrc       ;
   const edm::InputTag genMotherSrc    ;
   const edm::InputTag genSrc          ;
-  const double        coneSize        ;
+
+  const edm::InputTag recoJetSrc       ;
+  const edm::InputTag partonJetSrc     ;
+  const edm::InputTag recoToGenTag     ;
+  const edm::InputTag recoToPartonTag  ;
+
  };
 
 //--------------------------------------------------------------------------------------------------
@@ -36,7 +41,10 @@ JetFlavorAssociator::JetFlavorAssociator(const edm::ParameterSet& iConfig)
         : genJetSrc       (iConfig.getParameter<edm::InputTag>("genJetsSrc"))
         , genMotherSrc    (iConfig.getParameter<edm::InputTag>("genMotherSrc"))
         , genSrc          (iConfig.getParameter<edm::InputTag>("genSrc"))
-        , coneSize        (iConfig.getParameter<double       >("coneSize"))
+        , recoJetSrc      (iConfig.getParameter<edm::InputTag>("recoJetSrc"))
+        , partonJetSrc    (iConfig.getParameter<edm::InputTag>("partonJetSrc"))
+        , recoToGenTag    (iConfig.getParameter<edm::InputTag>("recoToGenTag"))
+        , recoToPartonTag (iConfig.getParameter<edm::InputTag>("recoToPartonTag"))
     {
 
       produces< std::vector<size8> >("flavors");
@@ -50,22 +58,28 @@ void JetFlavorAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   edm::Handle<reco::GenParticleCollection>      genMotherParticles;
   edm::Handle<pat::PackedGenParticleCollection> packedGenParticles;
 
+  edm::Handle<reco::PFJetCollection>              recoJets           ;
+  edm::Handle<reco::GenJetCollection>             partonJets         ;
+  edm::Handle<edm::ValueMap<reco::CandidatePtr> > recoToGenJetPtr    ;
+  edm::Handle<edm::ValueMap<reco::CandidatePtr> > recoTopartonJetPtr ;
 
   iEvent.getByLabel(genJetSrc   ,genJets           );
   iEvent.getByLabel(genMotherSrc,genMotherParticles);
   iEvent.getByLabel(genSrc      ,packedGenParticles);
 
+  iEvent.getByLabel(recoJetSrc       ,recoJets);
+  iEvent.getByLabel(partonJetSrc     ,partonJets);
+  iEvent.getByLabel(recoToGenTag     ,recoToGenJetPtr);
+  iEvent.getByLabel(recoToPartonTag  ,recoTopartonJetPtr);
+
+  //start with heavy flavors
   std::vector<JetFlavorMatching::ParticleDecay> bHadrons;
   std::vector<JetFlavorMatching::ParticleDecay> cHadrons;
-  std::vector<JetFlavorMatching::ParticleDecay> partons;
-  std::vector<int> partonParticleAssoc(packedGenParticles->size(),-1);
-
 
   JetFlavorMatching::getHadronDecays(genMotherParticles,bHadrons,cHadrons);
-  JetFlavorMatching::getPartons(genMotherParticles,partons, true);
 
   JetFlavorMatching::associateDecayProducts(genMotherParticles,packedGenParticles,
-      &bHadrons,&cHadrons,&partons,&partonParticleAssoc);
+      &bHadrons,&cHadrons,0,0);
 
   std::vector<JetFlavorMatching::ParticleContainments> mainBHadrons;
   std::vector<JetFlavorMatching::ParticleContainments> satelliteBHadrons;
@@ -84,16 +98,25 @@ void JetFlavorAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::b_jet, mainBHadrons,satelliteBHadrons,flavors,*bHadronPTs,matchedParticles);
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::c_jet, mainCHadrons,satelliteCHadrons,flavors,*cHadronPTs,matchedParticles);
 
-  //if cone size is  negative calculate the radius of each jet based on the area of the jet
-  if(coneSize < 0){
-    std::vector<double> cusRad2(genJets->size(),0);
-    for(unsigned int iJ  = 0; iJ < genJets->size(); ++iJ)
-      cusRad2[iJ] = genJets->at(iJ).jetArea()/TMath::Pi();
 
-    JetFlavorMatching::assignJetPartonFlavors(*genJets,partons,flavors,matchedParticles,0,&cusRad2);
-  } else {
-    JetFlavorMatching::assignJetPartonFlavors(*genJets,partons,flavors,matchedParticles,coneSize*coneSize);
+  //Now do light flavors, start by filling the vector of pointers
+  std::vector<const reco::GenJet *> partonJetPtrs(genJets->size(),0);
+  assert(recoJets->size() == genJets->size());
+  assert(recoJets->size() == partonJets->size());
+
+  for(unsigned int iJ = 0; iJ < recoJets->size(); ++iJ){
+    const reco::CandidatePtr&   genPtr  = (*recoToGenJetPtr)[reco::CandidatePtr(recoJets, iJ)];
+    if(genPtr.isNull()) throw cms::Exception("JetFlavorAssociator.prodce()", "Could not find genJet!");
+    if (genPtr.id() != genJets.id()) throw cms::Exception("JetFlavorAssociator.prodce()", "Inconsistent genJet and recoJet collection!");
+
+    const reco::CandidatePtr&   partonPtr  = (*recoTopartonJetPtr)[reco::CandidatePtr(recoJets, iJ)];
+    if(partonPtr.isNull()) throw cms::Exception("JetFlavorAssociator.prodce()", "Could not find partonJet!");
+    if (partonPtr.id() != partonJets.id()) throw cms::Exception("JetFlavorAssociator.prodce()", "Inconsistent partonJet and recoJet collection!");
+
+    partonJetPtrs[genPtr.key()] = &(*partonJets)[partonPtr.key()];
   }
+
+  JetFlavorMatching::assignJetPartonFlavors(partonJetPtrs,*genJets,flavors,true);
 
 
   std::auto_ptr<std::vector<size8> >   outFlavors(new std::vector<size8>(flavors.size()) );
