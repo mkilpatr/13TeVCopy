@@ -4,8 +4,8 @@ ak4FlvAssoc                        = cms.EDProducer('JetFlavorAssociator'
                                     , genJetsSrc       = cms.InputTag('ak4Jets','Gen')
                                     , genMotherSrc     = cms.InputTag('prunedGenParticles')
                                     , genSrc           = cms.InputTag('packedGenParticles')   
-                                    , coneSize         = cms.double(.4)
+                                    , recoJetSrc       = cms.InputTag('ak4Jets')
+                                    , partonJetSrc     = cms.InputTag('ak4Jets','parton')
+                                    , recoToGenTag     = cms.InputTag('ak4Jets','GenPtr')
+                                    , recoToPartonTag  = cms.InputTag('ak4Jets','partonPtr')
 )
-
-
-noRadFlvAssoc = ak4FlvAssoc.clone(coneSize         = cms.double(-1))
