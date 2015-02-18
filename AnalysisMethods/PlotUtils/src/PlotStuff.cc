@@ -563,6 +563,7 @@ void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> y
 
   yieldfile_ << "\\multicolumn{" << samples_.size()+2 << "}{c}{" << label << "} \\\\" << endl;
   yieldfile_ << "\\hline" << endl;
+  yieldfile_ << "Events ";
 
   int isam = -1;
   unsigned int nbkg = 0;
@@ -577,6 +578,25 @@ void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> y
     }
     if(nbkg == config_.backgroundnames.size()) {
       if(!lastbkg) yieldfile_ << " & " << fixed << setprecision(2) << bkgtot << " $\\pm$ " << setprecision(2) << sqrt(bkgerrtotsq);
+      lastbkg = true;
+    }
+  }
+
+  yieldfile_ << "\t \\\\" << endl;
+  yieldfile_ << "\\hline" << endl;
+  yieldfile_ << "Efficiency ";
+
+  isam = -1;
+  nbkg = 0;
+  lastbkg = false;
+  for(auto* sample : samples_) {
+    isam++;
+    yieldfile_ << " & " << fixed << setprecision(6) << yields[isam]/(sample->xsecs.at(0)*config_.tablelumi);
+    if(isBackground(sample->name)) {
+      nbkg++;
+    }
+    if(nbkg == config_.backgroundnames.size()) {
+      if(!lastbkg) yieldfile_ << " & ";
       lastbkg = true;
     }
   }

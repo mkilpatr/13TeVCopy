@@ -150,7 +150,7 @@ class PlotStuff {
           minlogscale(0.2),
           maxlogscale(2000.),
           logy(false),
-          tablelumi(4.),
+          tablelumi(4000.),
           colormap(DefaultColors())
         {}
 
