@@ -93,6 +93,7 @@ class PlotStuff {
         bool                   scalecompto1;
         bool                   writehists;
         TString                outfilename;
+        TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
 	TString                treefilesuffix;
@@ -113,10 +114,12 @@ class PlotStuff {
         double                 minlogscale;
         double                 maxlogscale;
         bool                   logy;
+        double                 tablelumi;
         SelMap                 selmap;
         ColorMap               colormap;
         vector<PlotTreeVar>    treevars;
         vector<PlotComp>       compplots;
+        vector<TString>        tablesels;
 
         PlotConfig() :
           type(DATAMC),
@@ -126,6 +129,7 @@ class PlotStuff {
           scalecompto1(false),
           writehists(false),
           outfilename("output_plots.root"),
+          yieldfilename("yields.tex"),
           treename("events"),
           wgtvar("weight"),
           treefilesuffix("_tree.root"),
@@ -146,6 +150,7 @@ class PlotStuff {
           minlogscale(0.2),
           maxlogscale(2000.),
           logy(false),
+          tablelumi(4.),
           colormap(DefaultColors())
         {}
 
@@ -192,11 +197,15 @@ class PlotStuff {
     void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbins, double xmin, double xmax);
     // Add a set of names of histograms to be compared on a single plot: use with HISTSSINGLEFILE
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels);
+    // Add a selection for which to compute event yields and add to yields table. Use with TREES
+    void     addSelection(TString label, TString selection);
     // Get name of outputfile to which histograms are saved if writehists option is chosen in config
     TString  outfileName() { assert(outfile_); return TString(outputdir_+"/"+config_.outfilename); }
 
     // Plot everything according to the provided configurations
     void     plot();
+    // Make yields table
+    void     tabulate();
 
     // Set plot configuration parameters
     // Conf file to be processed with list of samples
@@ -253,8 +262,12 @@ class PlotStuff {
     void     addSignal(TString signame) { config_.signalnames.push_back(signame); }
     // Fill the list of histograms to be plotted
     void     loadPlots();
+    // Fill yields and uncertainties
+    void     loadTables();
     // Plot the given histograms on a canvas
     void     makePlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists);
+    // Make yields table
+    void     makeTable(TString label, vector<double> yields, vector<double> yielderrs);
     // Check if a given name corresponds to a data sample
     bool     isData(TString sname) { return config_.dataname == sname; }
     // Check if a given name corresponds to a background sample
@@ -263,16 +276,20 @@ class PlotStuff {
     bool     isSignal(TString sname);
 
   protected :
-    PlotConfig             config_;
-    vector<vector<TH1F*> > hists_;
-    vector<TString>        plotnames_;
-    vector<Sample*>        samples_;
-    TFile*                 infile_;
-    TString                inputdir_;
-    TString                outputdir_;
-    TCanvas*               canvas_;
-    TFile*                 outfile_;
-    bool                   verbose_;
+    PlotConfig              config_;
+    vector<vector<TH1F*> >  hists_;
+    vector<vector<double> > yields_;
+    vector<vector<double> > yielderrs_;
+    vector<TString>         plotnames_;
+    vector<TString>         tablelabels_;
+    vector<Sample*>         samples_;
+    TFile*                  infile_;
+    TString                 inputdir_;
+    TString                 outputdir_;
+    TCanvas*                canvas_;
+    TFile*                  outfile_;
+    ofstream                yieldfile_;
+    bool                    verbose_;
 
 };
 

@@ -81,6 +81,14 @@ void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<T
 
 }
 
+void PlotStuff::addSelection(TString label, TString selection)
+{
+
+  config_.tablesels.push_back(selection);
+  tablelabels_.push_back(label);
+
+}
+
 void PlotStuff::loadPlots()
 {
 
@@ -202,6 +210,83 @@ void PlotStuff::loadPlots()
         }
 
         hists_.push_back(tmphistsv);
+      }
+
+      break;
+
+    }
+
+    default : {
+
+      printf("Plot source not known! Specify either TREES or HISTS\n");
+
+    }
+
+  }
+
+}
+
+void PlotStuff::loadTables()
+{
+
+  switch (config_.source) {
+
+    case TREES : {
+
+      vector<double> tmpyieldsv;
+      vector<double> tmpyielderrsv;
+
+      TFile *infile = 0;
+      TTree *intree = 0;
+
+      bool first = true;
+
+      for(auto* sample : samples_) {
+         tmpyieldsv.clear();
+         tmpyielderrsv.clear();
+
+         TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
+         infile = TFile::Open(filename);
+         assert(infile);
+
+         intree = (TTree*)infile->Get(config_.treename);
+         assert(intree);
+
+         for(auto sel : config_.tablesels) {
+          TString drawstr = config_.wgtvar + ">>htmp";
+          TString cutstr = config_.wgtvar + "*(" + sel + ")";
+          intree->Draw(drawstr.Data(), cutstr.Data());
+          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp"); 
+          double tmperr = 0.0;
+          tmpyieldsv.push_back(htmp->IntegralAndError(0, htmp->GetNbinsX()+1, tmperr));
+          tmpyielderrsv.push_back(tmperr);
+        }
+
+        unsigned int nsel = 0;
+        for(vector<double>::iterator iy = tmpyieldsv.begin(); iy != tmpyieldsv.end(); ++iy) {
+          if(first) {
+            vector<double> tmpvec(iy, iy+1);
+            yields_.push_back(tmpvec);
+          } else {
+            assert(yields_.size() > nsel);
+            yields_[nsel].push_back(*iy);
+          }
+          nsel++;
+        }
+
+        nsel = 0;
+        for(vector<double>::iterator ie = tmpyielderrsv.begin(); ie != tmpyielderrsv.end(); ++ie) {
+          if(first) {
+            vector<double> tmpvec(ie, ie+1);
+            yielderrs_.push_back(tmpvec);
+          } else {
+            assert(yielderrs_.size() > nsel);
+            yielderrs_[nsel].push_back(*ie);
+          }
+          nsel++;
+        }
+
+        if(first) first = false;
       }
 
       break;
@@ -466,5 +551,86 @@ void PlotStuff::plot()
   }
 
   delete canvas_;
+
+}
+
+void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> yielderrs)
+{
+
+
+  double bkgtot = 0.0;
+  double bkgerrtotsq = 0.0;
+
+  yieldfile_ << "\\multicolumn{" << samples_.size()+2 << "}{c}{" << label << "} \\\\" << endl;
+  yieldfile_ << "\\hline" << endl;
+
+  int isam = -1;
+  unsigned int nbkg = 0;
+  bool lastbkg = false;
+  for(auto* sample : samples_) {
+    isam++;
+    yieldfile_ << " & " << fixed << setprecision(2) << yields[isam] << " $\\pm$ " << setprecision(2) << yielderrs[isam];
+    if(isBackground(sample->name)) {
+      nbkg++;
+      bkgtot+=yields[isam];
+      bkgerrtotsq+=yielderrs[isam]*yielderrs[isam];
+    }
+    if(nbkg == config_.backgroundnames.size()) {
+      if(!lastbkg) yieldfile_ << " & " << fixed << setprecision(2) << bkgtot << " $\\pm$ " << setprecision(2) << sqrt(bkgerrtotsq);
+      lastbkg = true;
+    }
+  }
+
+  yieldfile_ << "\t \\\\" << endl;
+  yieldfile_ << "\\hline" << endl;
+
+}
+
+void PlotStuff::tabulate()
+{
+
+  if(verbose_)
+    config_.print();
+
+  yieldfile_.open(config_.yieldfilename);
+
+  yields_.clear();
+  yielderrs_.clear();
+  loadTables();
+
+  assert(tablelabels_.size() == yields_.size());
+  assert(tablelabels_.size() == yielderrs_.size());
+
+  yieldfile_ << "\\begin{tabular}{";
+  for(unsigned int isam = 0; isam < samples_.size()+2; isam++) {
+    yieldfile_ << "|c";
+  }
+  yieldfile_ << "|}" << endl;
+
+  yieldfile_ << "\\hline" << endl;
+  yieldfile_ << "Process";
+  unsigned int nbkg = 0;
+  bool lastbkg = false;
+  for(auto* sample : samples_) {
+    yieldfile_ << "\t & " << sample->name;
+    if(isBackground(sample->name)) nbkg++;
+    if(nbkg == config_.backgroundnames.size()) {
+      if(!lastbkg) yieldfile_ << "\t & Total Bkg";
+      lastbkg = true;
+    }
+  }
+
+  yieldfile_ << "\t \\\\" << endl;
+  yieldfile_ << "\\hline" << endl;
+
+  for(auto& yieldvec : yields_) {
+    auto isel = &yieldvec - &yields_[0];
+
+    assert(yieldvec.size() == samples_.size());
+
+    makeTable(tablelabels_[isel], yieldvec, yielderrs_[isel]);
+
+  }
+  yieldfile_ << "\\end{tabular}" << endl;
 
 }
