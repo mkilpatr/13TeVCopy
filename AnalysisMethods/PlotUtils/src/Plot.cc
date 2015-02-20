@@ -1,5 +1,8 @@
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
 
+int Plot::counter = 0;
+TString Plot::outputdir = ".";
+
 Plot::Plot()
 {
   TString name = "plot"; 
@@ -29,7 +32,11 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fLegY2(0.9),
   fShowStats(0),
   fStatsX(0.68),
-  fStatsY(0.90)
+  fStatsY(0.90),
+  fLumiText("#sqrt{s} = 13 TeV, L = 4 fb^{-1}"),
+  fChanText(""),
+  fHeaderX(0.54),
+  fHeaderY(0.92)
 {
   counter++;
 }
@@ -56,6 +63,227 @@ void Plot::clear()
   delete fLeg;
 }
 
+int Plot::getStackMaxBin()
+{
+
+  TH1F* hist0 = (TH1F*)(fStack->GetHists()->First());
+  vector<double> bincontents(hist0->GetNbinsX(), 0.0);
+
+  TIter nexthist(fStack->GetHists());
+  while(TH1F *hist = (TH1F*)nexthist()) {
+    for(int ibin = 0; ibin < hist->GetNbinsX(); ibin++) {
+      bincontents.at(ibin) += hist->GetBinContent(ibin);
+    }
+  }
+
+  double max = 0.0;
+  int maxbin = 0;
+  for(unsigned int ibin = 0; ibin < bincontents.size(); ibin++) {
+    if(bincontents.at(ibin) > max) {
+      max = bincontents.at(ibin);
+      maxbin = ibin;
+    }
+  }
+
+  return maxbin;
+
+}
+
+void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH1F* hist = (TH1F*)item->Clone();
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+    fLeg->AddEntry(hist,label,"PL");
+  } else {
+    if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+    else              fLeg->AddEntry(hist,label,"L");
+  }
+
+  fHists1D.push_back(new h1D(hist, drawopt));
+
+}
+
+void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!f)
+    return;
+
+  TH1F* item = (TH1F*)f->FindObjectAny(itemname);
+
+  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle);
+
+}
+
+void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH1F* hist = (TH1F*)item->Clone();
+
+  hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1));
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+    fLeg->AddEntry(hist,label,"PL");
+  } else {
+    if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+    else              fLeg->AddEntry(hist,label,"L");
+  }
+
+  fHists1D.push_back(new h1D(hist, drawopt));
+
+}
+
+void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!f)
+    return;
+
+  TH1F* item = (TH1F*)f->FindObjectAny(itemname);
+
+  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle);
+
+}
+
+void Plot::addHist2D(TH2F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH2F* hist = (TH2F*)item->Clone();
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+  else              fLeg->AddEntry(hist,label,"L");
+
+  fHists2D.push_back(new h2D(hist, drawopt));
+
+}
+
+void Plot::addGraph(TGraph* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TGraph* gr = (TGraph*)item->Clone();
+
+  if(linecolor==0)
+    gr->SetLineColor(color);
+  else
+    gr->SetLineColor(linecolor);
+
+  gr->SetLineStyle(linestyle);
+  gr->SetFillColor(color);
+  gr->SetFillStyle(fillstyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0) {
+    gr->SetMarkerSize(1.3);
+    gr->SetMarkerStyle(20);
+    gr->SetLineWidth(3);
+    fLeg->AddEntry(gr,label,"PL");
+  } else {
+    gr->SetLineWidth(3);
+    if(fillstyle > 0) fLeg->AddEntry(gr,label,"F");
+    else              fLeg->AddEntry(gr,label,"L");
+  }
+
+  fGraphs.push_back(new graph(gr, drawopt));
+
+}
+
+void Plot::addProfile(TProfile* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TProfile* prof = (TProfile*)item->Clone();
+
+  if(linecolor==0)
+    prof->SetLineColor(color);
+  else
+    prof->SetLineColor(linecolor);
+
+  prof->SetLineStyle(linestyle);
+  prof->SetFillColor(color);
+  prof->SetFillStyle(fillstyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+    prof->SetMarkerSize(1.3);
+    prof->SetMarkerStyle(20);
+    prof->SetLineWidth(3);
+    fLeg->AddEntry(prof,label,"PL");
+  } else {
+    prof->SetLineWidth(3);
+    if(fillstyle > 0) fLeg->AddEntry(prof,label,"F");
+    else              fLeg->AddEntry(prof,label,"L");
+  }
+
+  fProfiles.push_back(new profile(prof, drawopt));
+
+}
+
 void Plot::addToStack(TH1F *h, int color)
 {
 
@@ -66,7 +294,7 @@ void Plot::addToStack(TH1F *h, int color)
     fStack = new THStack(fName+TString("_stack"),"");
   
   fStack->Add(h);
-  add(h,"",color,1001);
+  addHist(h,"",color,1001);
 
 }
 
@@ -76,6 +304,21 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
   if(!h)
     return;
   
+  TH1F* hist = (TH1F*)h->Clone();
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
+  hist->SetLabelSize(0.05);
+
+  fHists1D.push_back(new h1D(hist, "hist"));
+
   if(!fStack)
     fStack = new THStack(fName+TString("_stack"),"");
   
@@ -86,26 +329,18 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
     
   // make legend entries appear in reverse of the order the histograms are added
   if(label.Length()>0) {
-    fStackEntries.push_back(fLeg->AddEntry(h,label,"F"));
-    for(Int_t ientry=(fStackEntries.size()-2); ientry>=0; ientry--) {
+    fStackEntries.push_back(fLeg->AddEntry(hist,label,"F"));
+    /*for(Int_t ientry=(fStackEntries.size()-2); ientry>=0; ientry--) {
       TObject* hh = fStackEntries[ientry]->GetObject();
       TString ll  = fStackEntries[ientry]->GetLabel();
       fStackEntries[ientry+1]->SetObject(hh);
       fStackEntries[ientry+1]->SetLabel(ll);
     }
-    fStackEntries[0]->SetObject(h);
-    fStackEntries[0]->SetLabel(label);
+    fStackEntries[0]->SetObject(hist);
+    fStackEntries[0]->SetLabel(label);*/
   }
      
-  fStack->Add(h);  
-
-  h->SetLineColor(linecolor);
-  h->SetLineStyle(linestyle);
-  h->SetLineWidth(linewidth);
-  h->SetFillStyle(fillstyle);
-  h->SetLabelSize(0.05);
-
-  add(h,"",color,fillstyle,linecolor,linestyle);
+  fStack->Add(hist);  
 
 }
 
@@ -293,9 +528,9 @@ void Plot::drawRatio(TCanvas *c, TH1F *h1, TH1F *h2, bool doSave, TString format
   h1->SetTitleSize  (0.12,"X");
   h1->SetLabelSize  (0.10,"X");
   h1->SetLabelSize  (0.08,"Y");
-  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleFont(62);
   h1->GetYaxis()->CenterTitle(kTRUE);
-  h1->GetXaxis()->SetTitleFont(42);
+  h1->GetXaxis()->SetTitleFont(62);
   h1->GetYaxis()->SetNdivisions(305);
   h1->GetXaxis()->SetTitle(fXTitle);
   h1->GetYaxis()->SetTitle("Ratio");
@@ -388,9 +623,9 @@ void Plot::drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave, TStri
   h3->SetTitleSize  (0.12,"X");
   h3->SetLabelSize  (0.10,"X");
   h3->SetLabelSize  (0.08,"Y");
-  h3->GetYaxis()->SetTitleFont(42);
+  h3->GetYaxis()->SetTitleFont(62);
   h3->GetYaxis()->CenterTitle(kTRUE);
-  h3->GetXaxis()->SetTitleFont(42);
+  h3->GetXaxis()->SetTitleFont(62);
   h3->GetYaxis()->SetRangeUser(-0.5,0.5);
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
@@ -606,7 +841,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
     for(uint i=0; i<vGraphs.size(); i++) {
       TGraph *gr = vGraphs[i];
       char opt[100];
-      (i==0 && fHists1D.size()==0) ? sprintf(opt,"AP%s",vGraphOpts[i].Data()) : sprintf(opt,"P%s",vGraphOpts[i].Data());
+      (i==0 && fHists1D.size()==0) ? sprintf(opt,"A%s",vGraphOpts[i].Data()) : sprintf(opt,"%s",vGraphOpts[i].Data());
       gr->Draw(opt);
     }
   }
@@ -736,7 +971,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
   c->SetGridy(fGridy);
 
   // Add header and lumi text
-  header("", "", 0.18, 0.92);
+  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   // Save plot if necessary
   if(doSave) {
@@ -760,9 +995,9 @@ void Plot::header(const char* lumitext, const char* channel, double lowX, double
   lumi->SetBorderSize(   0 );
   lumi->SetFillStyle(    0 );
   lumi->SetTextAlign(   11 );
-  lumi->SetTextSize ( 0.035);
+  lumi->SetTextSize ( 0.045);
   lumi->SetTextColor(    1 );
-  lumi->SetTextFont (   42 );
+  lumi->SetTextFont (   62 );
   lumi->AddText(lumitext);
   lumi->Draw();
 
@@ -770,9 +1005,9 @@ void Plot::header(const char* lumitext, const char* channel, double lowX, double
   chan->SetBorderSize(   0 );
   chan->SetFillStyle(    0 );
   chan->SetTextAlign(   11 );
-  chan->SetTextSize ( 0.035);
+  chan->SetTextSize ( 0.045);
   chan->SetTextColor(    1 );
-  chan->SetTextFont (   42 );
+  chan->SetTextFont (   62 );
   chan->AddText(channel);
   chan->Draw();
 }

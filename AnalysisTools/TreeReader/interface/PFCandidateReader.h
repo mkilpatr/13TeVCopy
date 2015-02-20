@@ -48,8 +48,18 @@ namespace ucsbsusy {
       std::vector<int>   * fromPV;
       std::vector<int>   * jetIndex;
       std::vector<int>   * tauIndex;
+      std::vector<float> * chiso0p1;
+      std::vector<float> * chiso0p2;
+      std::vector<float> * chiso0p3;
+      std::vector<float> * chiso0p4;
+      std::vector<float> * totiso0p1;
+      std::vector<float> * totiso0p2;
+      std::vector<float> * totiso0p3;
+      std::vector<float> * totiso0p4;
+      std::vector<float> * neartrkdr;
 
       PFCandidateFCollection pfcands;
+      ExtendedPFCandidateCollection extpfcands;
 
   };
 
