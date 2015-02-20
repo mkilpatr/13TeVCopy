@@ -49,6 +49,10 @@ JetReader::JetReader() : BaseReader(){
   genjetblf0_ = new vector<float>;
   genjetblf1_ = new vector<float>;
   genjetblf2_ = new vector<float>;
+  jetjmQGL_   = new vector<float>;
+  jetjmMult_  = new vector<size16  >;
+  jetjmPtD_   = new vector<float>;
+  jetjmAxis2_ = new vector<float>;
   genAssocPrtIndex_ = new std::vector<size16>;
   genAssocJetIndex_ = new std::vector<size16>;
   genAssocCont_     = new std::vector<int8>  ;
@@ -96,6 +100,10 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"jet_blf0"    , &jetblf0_     );
     treeReader->setBranchAddress(branchName_,"jet_blf1"    , &jetblf1_     );
     treeReader->setBranchAddress(branchName_,"jet_blf2"    , &jetblf2_     );
+    treeReader->setBranchAddress(branchName_,"jet_jmQGL"   , &jetjmQGL_    );
+    treeReader->setBranchAddress(branchName_,"jet_jmMult"  , &jetjmMult_   );
+    treeReader->setBranchAddress(branchName_,"jet_jmPtD"   , &jetjmPtD_    );
+    treeReader->setBranchAddress(branchName_,"jet_jmAxis2" , &jetjmAxis2_  );
     if(options_ & LOADGEN){
       treeReader->setBranchAddress(branchName_,"genjet_ptD"     , &genjetptD_   );
       treeReader->setBranchAddress(branchName_,"genjet_axis1"   , &genjetaxis1_ );

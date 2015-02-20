@@ -71,6 +71,11 @@ public:
   std::vector<float>*  genjetblf0_  ;
   std::vector<float>*  genjetblf1_  ;
   std::vector<float>*  genjetblf2_  ;
+  // for JetMET qgTagger
+  std::vector<float>*  jetjmQGL_   ;
+  std::vector<size16>* jetjmMult_  ;
+  std::vector<float>*  jetjmPtD_   ;
+  std::vector<float>*  jetjmAxis2_ ;
   //for top assoc
   std::vector<size16>* genAssocPrtIndex_;
   std::vector<size16>* genAssocJetIndex_;

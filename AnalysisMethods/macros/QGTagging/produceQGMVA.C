@@ -14,26 +14,26 @@ public:
     addVariable("npv","npv",'F');
     if(reco){
       if(usePuppi) {
-		  addVariable("betaStar" ,"ak4pfpuppi_jet_betaStar",'F');
+		  //addVariable("betaStar" ,"ak4pfpuppi_jet_betaStar",'F');
 		  addVariable("ptD"      ,"ak4pfpuppi_jet_ptD"     ,'F');
 		  addVariable("axis1"    ,"ak4pfpuppi_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4pfpuppi_jet_axis2"   ,'F');
 		  addVariable("jetMult"  ,"ak4pfpuppi_jet_jetMult" ,'s');
-		  addVariable("blf0"     ,"ak4pfpuppi_jet_blf0"    ,'F');
-		  addVariable("blf1"     ,"ak4pfpuppi_jet_blf1"    ,'F');
-		  addVariable("blf2"     ,"ak4pfpuppi_jet_blf2"    ,'F');
+		  //addVariable("blf0"     ,"ak4pfpuppi_jet_blf0"    ,'F');
+		  //addVariable("blf1"     ,"ak4pfpuppi_jet_blf1"    ,'F');
+		  //addVariable("blf2"     ,"ak4pfpuppi_jet_blf2"    ,'F');
 		  addVariable("pt"       ,"ak4pfpuppi_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfpuppi_jet_eta"     ,'F');
       } // usePuppi
       else {
-		  addVariable("betaStar" ,"ak4_jet_betaStar",'F');
+		  //addVariable("betaStar" ,"ak4_jet_betaStar",'F');
 		  addVariable("ptD"      ,"ak4_jet_ptD"     ,'F');
 		  addVariable("axis1"    ,"ak4_jet_axis1"   ,'F');
 		  addVariable("axis2"    ,"ak4_jet_axis2"   ,'F');
 		  addVariable("jetMult"  ,"ak4_jet_jetMult" ,'s');
-		  addVariable("blf0"     ,"ak4_jet_blf0"    ,'F');
-		  addVariable("blf1"     ,"ak4_jet_blf1"    ,'F');
-		  addVariable("blf2"     ,"ak4_jet_blf2"    ,'F');
+		  //addVariable("blf0"     ,"ak4_jet_blf0"    ,'F');
+		  //addVariable("blf1"     ,"ak4_jet_blf1"    ,'F');
+		  //addVariable("blf2"     ,"ak4_jet_blf2"    ,'F');
 		  addVariable("pt"       ,"ak4_jet_pt"      ,'F');
 		  addVariable("eta"      ,"ak4pfchs_jet_eta"     ,'F');
       } // !usePuppi
@@ -43,9 +43,9 @@ public:
       addVariable("axis1"    ,"ak4_genjet_axis1"  ,'F');
       addVariable("axis2"    ,"ak4_genjet_axis2"  ,'F');
       addVariable("jetMult"  ,"ak4_genjet_jetMult",'s');
-      addVariable("blf0"     ,"ak4_genjet_blf0"   ,'F');
-      addVariable("blf1"     ,"ak4_genjet_blf1"   ,'F');
-      addVariable("blf2"     ,"ak4_genjet_blf2"   ,'F');
+      //addVariable("blf0"     ,"ak4_genjet_blf0"   ,'F');
+      //addVariable("blf1"     ,"ak4_genjet_blf1"   ,'F');
+      //addVariable("blf2"     ,"ak4_genjet_blf2"   ,'F');
       addVariable("pt"       ,"ak4_genjet_pt"     ,'F');
       addVariable("eta"      ,"ak4pfchs_genjet_eta"    ,'F');
     } // gen
@@ -64,21 +64,21 @@ public:
     addFactory(TMVA::Types::kBDT,"BDTG");
     if (reco) {
     	// loosely binned test
-		if (usePuppi) addAxis( new BinnedSpace("ak4pfpuppi_jet_pt",  "ak4pfpuppi_jet_pt",  "20,100,3000") );
-		else          addAxis( new BinnedSpace("ak4_jet_pt",         "ak4_jet_pt",         "20,100,3000") );
-		addAxis(               new BinnedSpace("ak4pfchs_jet_eta",   "ak4pfchs_jet_eta",   "0,2.4,4.7")     );
+		//if (usePuppi) addAxis( new BinnedSpace("ak4pfpuppi_jet_pt",  "ak4pfpuppi_jet_pt",  "20,100,3000") );
+		//else          addAxis( new BinnedSpace("ak4_jet_pt",         "ak4_jet_pt",         "20,100,3000") );
+		//addAxis(               new BinnedSpace("ak4pfchs_jet_eta",   "ak4pfchs_jet_eta",   "0,2.4,4.7")     );
     	// JetMET bins
-		//if (usePuppi) addAxis( new BinnedSpace("ak4pfpuppi_jet_pt",  "ak4pfpuppi_jet_pt",  "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
-		//else          addAxis( new BinnedSpace("ak4pfchs_jet_pt",    "ak4pfchs_jet_pt",    "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
-		//addAxis(               new BinnedSpace("ak4pfchs_jet_eta",   "ak4pfchs_jet_eta",   "0,2.4,5")     );
+		if (usePuppi) addAxis( new BinnedSpace("ak4pfpuppi_jet_pt",  "ak4pfpuppi_jet_pt",  "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
+		else          addAxis( new BinnedSpace("ak4_jet_pt",       "ak4_jet_pt",       "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
+		addAxis(               new BinnedSpace("ak4pfchs_jet_eta", "ak4pfchs_jet_eta", "0,2.4,5")     );
     } // reco
     else {
     	// loosely binned test
-		addAxis( new BinnedSpace("ak4_genjet_pt",       "ak4_genjet_pt",       "20,100,300") );
-		addAxis( new BinnedSpace("ak4pfchs_genjet_eta", "ak4pfchs_genjet_eta", "0,2.4,4.7")     );
+		//addAxis( new BinnedSpace("ak4_genjet_pt",       "ak4_genjet_pt",       "20,100,300") );
+		//addAxis( new BinnedSpace("ak4pfchs_genjet_eta", "ak4pfchs_genjet_eta", "0,2.4,4.7")     );
     	// JetMET bins
-    	//addAxis( new BinnedSpace("ak4pfchs_genjet_pt",  "ak4pfchs_genjet_pt",  "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
-		//addAxis( new BinnedSpace("ak4pfchs_genjet_eta", "ak4pfchs_genjet_eta", "0,2.4,5")     );
+    	addAxis( new BinnedSpace("ak4_genjet_pt",       "ak4_genjet_pt",       "0,20,26,32,40,51,64,80,101,127,159,201,252,317,400,503,633,797,1003,1262,1589,2000,4000") );
+		addAxis( new BinnedSpace("ak4pfchs_genjet_eta", "ak4pfchs_genjet_eta", "0,2.4,5")     );
     } // !reco
     setConfiguration("QG","QurakGluonDisc", reco ? "qgXML_reco" : "qgXML_gen");
   }

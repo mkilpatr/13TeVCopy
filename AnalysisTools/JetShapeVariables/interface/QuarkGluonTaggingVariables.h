@@ -34,10 +34,10 @@ class QuarkGluonTaggingVariables {
      ptD_   = 0;
      axis1_ = 0;
      axis2_ = 0;
-     if(totalMult_ == 0) return;
      blf0_  = 0;
      blf1_  = 0;
      blf2_  = 0;
+     if(totalMult_ == 0) return;
 
      double sumPT2 = 0;
      double sumPT  = 0;
@@ -106,7 +106,7 @@ class QuarkGluonTaggingVariables {
      Nhist->Sumw2();
      TGraph *logHist = new TGraph(Nhist->GetNbinsX());
 
-     //std::cout << "mult=" << totalMult_ << " ";
+     //std::cout << " mult=" << totalMult_ << " ";
      for (int i=0; i<Nhist->GetNbinsX(); ++i) {
     	 logHist->SetPoint( i, log10((1.0*(i+2))/0.8), log10(1.0*Nhist->GetBinContent(i+1)) );
     	 //std::cout << Nhist->GetBinContent(i+1) << " ";

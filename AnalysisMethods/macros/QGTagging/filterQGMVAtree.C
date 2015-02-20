@@ -31,13 +31,13 @@ public:
 	    reader.setBranchAddress( "", "ak4pfchs_jet_eta",  &eta );
 	  } // puppi
 	  else {
-	    reader.setBranchAddress( "", "ak4pfchs_jet_pt",  &pt  );
-	    reader.setBranchAddress( "", "ak4pfchs_jet_eta", &eta );
+	    reader.setBranchAddress( "", "ak4_jet_pt",  &pt  );
+	    reader.setBranchAddress( "", "ak4_jet_eta", &eta );
 	  } // no puppi
 	} // reco
 	else {
-		reader.setBranchAddress( "", "ak4pfchs_genjet_pt",  &pt  );
-		reader.setBranchAddress( "", "ak4pfchs_genjet_eta", &eta );
+		reader.setBranchAddress( "", "ak4_genjet_pt",  &pt  );
+		reader.setBranchAddress( "", "ak4_genjet_eta", &eta );
 	} // gen
   } // loadVariables()
 
@@ -48,7 +48,7 @@ public:
     //if(reco == isGen) return false;
     //if(splitResult != 1 && splitResult != 2 ) return false;
     //filtering
-	if (TMath::Abs(eta)>2.4) return false;
+	if (TMath::Abs(eta)>2.4) return true;
     if      ( pt < 100 && rand->Uniform() < .5 ) return false;
     else if ( pt < 200 && rand->Uniform() < .3 ) return false;
     else if ( pt < 300 && rand->Uniform() < .2 ) return false;
@@ -77,5 +77,5 @@ public:
 
 void filterQGMVAtree(string fileName = "evttree.root", string treeName = "Events", string outFileName ="newTree.root", bool doReco = true, bool usePuppi = true, bool isMCTree = true) {
   Copier a(fileName,treeName,outFileName,doReco,usePuppi,isMCTree);
-  a.analyze(1000000);
+  a.analyze(10000);
 }
