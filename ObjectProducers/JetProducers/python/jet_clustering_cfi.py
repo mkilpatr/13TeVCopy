@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 pickyjet_configuration = cms.PSet(
-                                    pickyMVAFileName    = cms.string("$CMSSW_BASE/src/ObjectProducers/JetProducers/data/pickymva_nopuppi_reco.root")
+                                    pickyMVAFileName    = cms.string("$CMSSW_BASE/src/data/pickyJets/pickymva_nopuppi_reco.root")
                                   , pickyMVAName        = cms.string("picky_nopuppi_reco_0")                            
                                   , beta                = cms.double(1)                                                                                             
                                   , rCutoff             = cms.double(10000)                                                                                         
