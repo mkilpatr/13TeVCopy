@@ -1,3 +1,78 @@
+// actual counts
+{
+    Plot::cache("*_ntuple_metSkim_plots.root");
+    
+    // TString signal = "T2tt_850_100";
+    TString signal = "T1tttt_1500_100" ;
+    
+    TString presels[] = {
+        "nMuETau",
+        ""
+    };
+    
+    double bins[] = {-1,1};
+    RebinToNewBins b(1,bins);
+    int bin = 1;
+    
+    // double bins[] = {-1,0,1};
+    // RebinToNewBins b(2,bins);
+    // int bin = 2;
+    
+    // double bins[] = {-1,.9,1};
+    // RebinToNewBins b(2,bins);
+    // int bin = 2;
+    
+    // double bins[] = {-1,.96,1};
+    // RebinToNewBins b(2,bins);
+    // int bin = 2;
+    
+    o = new TObjArray();
+    for(unsigned int iS = 0;presels[iS][0]; ++iS ){
+        p = new Plot("bkg_.*" + presels[iS] + "__nJ20_geq6__mva3$");
+        // TH1 * s = Plot::getCache()->findOne(signal +"_" + presels[iS] + "__nJ20_geq6__nEvts$");
+        // p = new Plot("bkg_.*" + presels[iS] + "__minTopness$");
+        TH1 * s = Plot::getCache()->findOne(signal +"_" + presels[iS] + "__nJ20_geq6__mva3$");
+        p->add(s,signal);
+        // p->drop("MC");
+        p->SetTitle(Plot::translated(presels[iS]));
+        // p->setMinMax(0.,2);
+        p->toUnderOverflow();
+        p->sort("i");
+        o->Add(p);
+        
+        p->rebin(b);
+        for(unsigned int iH = 0; iH < p->getNumberOfHistograms(); ++iH){
+            cout << p->getAlias(iH) <<"\t";
+        }
+        cout <<endl;
+        for(unsigned int iH = 0; iH < p->getNumberOfHistograms(); ++iH){
+            cout << TString::Format("%.2f \\pm %.2f\t",p->at(iH)->GetBinContent(bin),p->at(iH)->GetBinError(bin) );
+        }
+        cout << endl;
+        
+//
+//
+//         if(iS == 0){
+//             cout << endl<<"\t";
+//             for(unsigned int iH = 0; iH < p->getNumberOfHistograms(); ++iH){
+//                 cout << p->getAlias(iH) <<"\t";
+//             }
+//             cout<<endl;
+//         }
+//
+//
+//         cout << presels[iS]  <<"\t";
+//         for(unsigned int iH = 0; iH < p->getNumberOfHistograms(); ++iH){
+//             cout << TString::Format("%.2f\t",p->at(iH)->GetBinContent(1));
+//         }
+//
+//         cout << endl;
+        
+    }
+    Pint::drawAll(o,"","stack-{MC|T*tt}",":ii(.5,-1)i(.97,-1)");
+}
+
+
 ///Lep veto counts
 {
     
@@ -80,6 +155,10 @@
 }
 
 {
+    gStyle->SetPadGridX       (0);
+    gStyle->SetPadGridY       (0);
+    StyleTools::SetStyle();
+    gStyle->SetMarkerSize(0);
 	Plot::cache("*_ntuple_metSkim_plots.root");
    TString T2bWPreselVars[] = {
        "met"               ,
@@ -111,7 +190,7 @@
    };
    
    TString SRS[] = {
-       "mva"    , 
+       "mva"    ,
        // "mva2"   ,
        "mva3"   ,
        // "mva4"   ,
@@ -132,40 +211,55 @@
        p->sitrep();
 	  double norm = p->at("MC")->Integral(0,-1);
       // p->scale(1/norm);
-	  
-	  p->arrange("MC > t#bar{t} + W  > Z#rightarrow#nu#nu >  t#bar{t}Z > other");
+      p->sort("i");
+      // p->arrange("MC > t#bar{t} + W  > Z#rightarrow#nu#nu >  t#bar{t}Z > other");
       // p->drop("MC");
 	  TH1 * s = Plot::getCache()->findOne(signal + "_" + presel + "__"+vars[iV] + "$");
 	  double sNorm = s->Integral(0,-1);
       // s->Scale(1/sNorm);
 	  p->add(s,signal);
       p->toUnderOverflow();
-      // p->rebin(4);
+      p->rebin(4);
       // p->setMinMax(0.,.17);
 	  p->setYTitle("Normalized # of events");
       o->Add(p);
+      if(p->getNumberOfHistograms() == 0) continue;
       
-      // TH1 * sb = (TH1*)p->at(0)->Clone();
-      // for(unsigned int iB = 1; iB <= sb->GetNbinsX(); ++iB){
-      //     double bn = p->at("MC")->GetBinContent(iB);
-      //     double sn = p->at(signal)->GetBinContent(iB);
-      //     double sig = sn/(TMath::Sqrt(bn + .3*.3*bn*bn + 5/2) );
-      //     sb->SetBinContent(iB,sig);
-      // }
-      // new TCanvas();
-      // sb->Draw();
-      //
-      // p = (Plot*)p->Clone();
-      // p = p->makeIntegral(true);
-      // oo->Add(p);
-      // p = (Plot*)p->Clone();
-      // p = p->makeRatiogram("MC","");
-      // ooo->Add(p);
+      InitHist(p->at(1),866);
+      InitHist(p->at(2),kRed);
+      InitHist(p->at(3),391);
+      InitHist(p->at(4),797);
+      InitHist(p->at(5),606);
+      
+
+      p->at(6)->SetLineWidth(3);
+      p->at(6)->SetMarkerSize(0);
+      p->at(6)->SetLineColor(602);
+      p->at(6)->SetMarkerColor(602);
+      
+      
+      
+      TH1 * sb = (TH1*)p->at(0)->Clone();
+      for(unsigned int iB = 1; iB <= sb->GetNbinsX(); ++iB){
+          double bn = p->at("MC")->GetBinContent(iB);
+          double sn = p->at(signal)->GetBinContent(iB);
+          double sig = sn/(TMath::Sqrt(bn + .3*.3*bn*bn + 3/2) );
+          sb->SetBinContent(iB,sig);
+      }
+      new TCanvas();
+      sb->Draw();
+
+      p = (Plot*)p->Clone();
+      p = p->makeIntegral(true);
+      oo->Add(p);
+      p = (Plot*)p->Clone();
+      p = p->makeRatiogram("MC","");
+      ooo->Add(p);
 
       
       
    }
-   Pint::drawAll(o,"","stack-{(T*tt|MC)}",":i(.96,-1)");
+   Pint::drawAll(o,"","?histstack-{(T*tt|MC)}","f");
    Pint::drawAll(oo,"");
    Pint::drawAll(ooo,"");
    
