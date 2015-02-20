@@ -209,6 +209,21 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
   else if(WP == TIGHT) {
     return ele->istightelectron();
   }
+  else if(WP == MVA) {
+    if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.8 && ele->pfdbetaiso()/ele->pt()<0.15);
+    else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.85 && ele->pfdbetaiso()/ele->pt()<0.15);
+    else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.25 && ele->pfdbetaiso()/ele->pt()<0.15);
+    else return false;
+  }
+  else if(WP == MVAVeto){
+    if(fabs(ele->eta())<0.8 && ele->pt()>10) return (ele->mvaidnontrig()>0.7 && ele->mvaiso()>0);
+    else if(fabs(ele->eta())<0.8 && ele->pt()<10) return (ele->mvaidnontrig()>-0.4 && ele->mvaiso()>-0.95);
+    else if(fabs(ele->eta())<1.479 && ele->pt()>10) return (ele->mvaidnontrig()>0.45 && ele->mvaiso()>0);
+    else if(fabs(ele->eta())<1.479 && ele->pt()<10) return (ele->mvaidnontrig()>-0.45 && ele->mvaiso()>-0.95);
+    else if(fabs(ele->eta())<2.5 && ele->pt()>10) return (ele->mvaidnontrig()>0.0 && ele->mvaiso()>0);
+    else if(fabs(ele->eta())<2.5 && ele->pt()<10) return (ele->mvaidnontrig()>-0.1 && ele->mvaiso()>-0.9);
+    else return false;
+  }
   else {
     printf("Electron ID working point not defined!\n");
   }
@@ -220,14 +235,23 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
 bool LeptonId::passMuonIdOnly(MuonF *mu)
 {
 
-  return (fabs(mu->eta()) < 2.4 && mu->istightmuon());
+  return (fabs(mu->eta()) < 2.4 && mu->ismediummuon());
 
 }
 
 bool LeptonId::passMuonId(MuonF *mu, unsigned int WP)
 {
 
-  return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
+  if(WP == TIGHT) return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
+  else if(WP == MEDIUM) return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
+  else if (WP == MVAVeto) {
+    if(fabs(mu->eta())<1.2 && mu->pt()>10) return (mu->ismediummuon() && mu->mvaiso()>-0.2);
+    else if(fabs(mu->eta())<1.2 && mu->pt()<10) return (mu->ismediummuon() && mu->mvaiso()>-0.8);
+    else if(fabs(mu->eta())<2.4 && mu->pt()>10) return (mu->ismediummuon() && mu->mvaiso()>-0.5);
+    else if(fabs(mu->eta())<2.4 && mu->pt()<10) return (mu->ismediummuon() && mu->mvaiso()>-0.8);
+    return false;
+  }
+  return false;
 
 }
 

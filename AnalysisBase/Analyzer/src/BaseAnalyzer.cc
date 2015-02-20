@@ -92,7 +92,7 @@ bool BaseAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 //--------------------------------------------------------------------------------------------------
 void BaseAnalyzer::printEventCoordinates(std::ostream& out) const
 {
-  out << TString::Format( "*****  %d:%d:%d = Run %7d, luminosity block %4d, event %10d"
+  out << TString::Format( "*****  %d:%d:%llu = Run %7d, luminosity block %4d, event %10llu"
                         , runNumber(), lumiBlock(), eventNumber()
                         , runNumber(), lumiBlock(), eventNumber()
                         )

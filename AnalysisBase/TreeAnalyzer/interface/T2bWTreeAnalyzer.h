@@ -39,17 +39,6 @@ namespace ucsbsusy {
     void  fillSearchVars();
     void computeT2BWDiscriminators();
 
-    void analyze(int reportFrequency = 10000){
-      loadVariables();
-      isLoaded_ = true;
-      while(reader.nextEvent(reportFrequency)){
-        if(evtInfoReader.met_pt >= 175){
-          processVariables();
-                  runEvent();
-        }
-
-      }
-    }
 
     enum T2BWSearchRegions {T2BW_LX, T2BW_LM, T2BW_MXHM,T2BW_HXHM,T2BW_VHM, NUM_T2BW_SEARCHREGIONS};
     static const double T2BWDiscCuts[NUM_T2BW_SEARCHREGIONS];

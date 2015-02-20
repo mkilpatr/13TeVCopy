@@ -14,6 +14,7 @@ using namespace std;
 ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
           isRealData      (iConfig.getParameter<int             >("isRealData"                 ))
         , produceGen      (isRealData == 0 && iConfig.getParameter<bool            >("produceGen"                 ))
+        , producePartonJets(isRealData == 0 && iConfig.getParameter<bool           >("producePartonJets"                 ))
         , ignoreBosonInv  (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBosonInv"                 ))
         , ignoreBSMInv    (isRealData == 0 && iConfig.getParameter<bool            >("ignoreBSMInv"                 ))
         , src             (iConfig.getParameter<edm::InputTag>("src"))
@@ -25,12 +26,27 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , minParticlePT   (iConfig.getParameter<double>("minParticlePT"   ))
         , maxParticleEta  (iConfig.getParameter<double>("maxParticleEta"  ))
         , ghostArea       (iConfig.getParameter<double>("ghostArea"  ))
+        , outputSuperJets (iConfig.getParameter<bool>("outputSuperJets"  ))
+        , useTrimming     (iConfig.getParameter<bool  >("useTrimming"  ))
+		    , useTrimmedSubjets(iConfig.getParameter<bool  >("useTrimmedSubjets"  ))
+        , rFilt           (iConfig.getParameter<double>("rFilt"  ))
+        , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
+        , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))
+        , pickyMaxSplits  (iConfig.getParameter<int>("pickyMaxSplits"  ))
+        , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::NOPUPPI_RECO,iConfig) : 0)
     {
 
   produces< reco::PFJetCollection             >(        );
     if(produceGen){
       produces< reco::GenJetCollection            >("Gen"   );
       produces< edm::ValueMap<reco::CandidatePtr> >("GenPtr");
+    }
+    if(producePartonJets){
+      produces< reco::GenJetCollection            >("parton"   );
+      produces< edm::ValueMap<reco::CandidatePtr> >("partonPtr");
+    }
+    if(outputSuperJets){
+      produces< reco::PFJetCollection           >("Super"   );
     }
 
     if (jetAlgorithmName=="CambridgeAachen")
@@ -51,17 +67,22 @@ void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
     if(ignoreBSMInv && ParticleInfo::isLSP(p.pdgId())) {vetoes[iP] = true; continue;}
     if(!ignoreBosonInv || ParticleInfo::isVisible(p.pdgId())) continue;
 
-    const reco::Candidate * motherInPrunedCollection = p.mother(0);
-    if(motherInPrunedCollection == nullptr) continue;
-    //if its the same as the original lets get the original
-    if(motherInPrunedCollection->pdgId() == p.pdgId())
-      motherInPrunedCollection = ParticleUtilities::getOriginal(motherInPrunedCollection);
-    const reco::Candidate * orginator = motherInPrunedCollection->mother(0);
-    if(orginator == nullptr) orginator = motherInPrunedCollection;
-    if(ParticleInfo::isEWKBoson(orginator->pdgId()))
+    const reco::Candidate * pruneMom = p.mother(0);
+    if(pruneMom == nullptr) continue;
+
+    //if it is the same particle, let's get the original and see if it's mother is a boson
+    if(pruneMom->pdgId() == p.pdgId()){
+      pruneMom = ParticleUtilities::getOriginal(pruneMom);
+      for(unsigned int iM = 0; iM < pruneMom->numberOfMothers(); ++iM){
+        const reco::Candidate * mom = pruneMom->mother(iM);
+        if(ParticleInfo::isDoc(mom->status()) && ParticleInfo::isEWKBoson(mom->pdgId()))
+          vetoes[iP] = true;
+      }
+    }
+    //otherwise it's direct mother must be a boson
+    else if(ParticleInfo::isDoc(pruneMom->status()) && ParticleInfo::isEWKBoson(pruneMom->pdgId()) ){
       vetoes[iP] = true;
-    if(TMath::Abs(orginator->pdgId()) == ParticleInfo::p_tauminus)
-      vetoes[iP] = true;
+    }
   }
 }
 
@@ -69,17 +90,19 @@ void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
 void ReJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if(produceGen){
     iEvent.getByLabel(genSrc,genParticles);
-    if(ignoreBosonInv) iEvent.getByLabel(genMotherSrc,genMotherParticles);
   }
+  if(producePartonJets || (produceGen && ignoreBosonInv) ) iEvent.getByLabel(genMotherSrc,genMotherParticles);
 }
 
-void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets, std::auto_ptr<reco::PFJetCollection> puJets){
+void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets){
   edm::OrphanHandle<reco::PFJetCollection>            jetsHandle;
   edm::OrphanHandle<reco::PFJetCollection>            puJetsHandle;
   edm::OrphanHandle<reco::GenJetCollection>           genJetsHandle;
+  edm::OrphanHandle<reco::GenJetCollection>           partonJetsHandle;
 
   std::auto_ptr<reco::PFJetCollection>                sortedRecoJets  (new reco::PFJetCollection);
   std::auto_ptr<reco::PFJetCollection>                sortedPuInJets  (new reco::PFJetCollection);
+  std::auto_ptr<reco::GenJetCollection>               sortedPartonInJets  (new reco::GenJetCollection);
 
   //If we produce gen jets we need to make sure to drop jets that fall below the pT threshold
   //of both collections
@@ -93,9 +116,11 @@ void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollect
 
     std::vector<int> recoIndices; recoIndices.reserve(rankedGenJets.size());
     if(puJets.get()) sortedPuInJets->reserve(rankedGenJets.size());
+    if(partonJets.get()) sortedPartonInJets->reserve(rankedGenJets.size());
     for(const auto& iR : rankedGenJets){
       sortedRecoJets->push_back((*recoJets)[iR.origIndex]);
       if(puJets.get()) sortedPuInJets->push_back((*puJets)[iR.origIndex]);
+      if(partonJets.get()) sortedPartonInJets->push_back((*partonJets)[iR.origIndex]);
     }
     std::sort(rankedGenJets.begin(), rankedGenJets.end(), JetSorter());
 
@@ -108,36 +133,21 @@ void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollect
     genJetsHandle = iEvent.put(sortedGen, "Gen");
     jetsHandle = iEvent.put(sortedRecoJets);
     if(puJets.get()) puJetsHandle  = iEvent.put(sortedPuInJets, "PU");
+    if(partonJets.get()) partonJetsHandle  = iEvent.put(sortedPartonInJets, "parton");
 
     //Make pointers to reco jets
-    std::vector<reco::CandidatePtr>                   vGenPtr   (rankedGenJets.size());
-    for (unsigned int iGen = 0; iGen < rankedGenJets.size(); ++iGen)
-      vGenPtr[rankedGenJets[iGen].recoIndex] = reco::CandidatePtr(genJetsHandle, iGen);
-
-    std::auto_ptr<edm::ValueMap<reco::CandidatePtr> > genJetPtr (new edm::ValueMap<reco::CandidatePtr>);
-    edm::ValueMap<reco::CandidatePtr>::Filler         fGenPtr   (*genJetPtr);
-
-
-    fGenPtr.insert(jetsHandle, vGenPtr.begin(), vGenPtr.end());
-    fGenPtr.fill();
-    iEvent.put(genJetPtr, "GenPtr");
+    putPointer(iEvent,jetsHandle,genJetsHandle,"GenPtr",&rankedGenJets);
   } else {
     jetsHandle  = iEvent.put(recoJets);
     if(puJets.get()) puJetsHandle  = iEvent.put(puJets, "PU");
+    if(partonJets.get()) partonJetsHandle  = iEvent.put(partonJets, "parton");
   }
 
   if(puJets.get()){
-    //-- Associate PU in recoJets -----------------------------------------------
-    std::vector<reco::CandidatePtr>                     vPUPtr(puJetsHandle->size());
-    for (unsigned int iPU = 0; iPU < vPUPtr.size(); ++iPU)
-      vPUPtr[iPU]                                       = reco::CandidatePtr(puJetsHandle, iPU);
-
-    std::auto_ptr<edm::ValueMap<reco::CandidatePtr> >   puJetPtr(new edm::ValueMap<reco::CandidatePtr>);
-    edm::ValueMap<reco::CandidatePtr>::Filler           fPUPtr  (*puJetPtr);
-    fPUPtr.insert(jetsHandle, vPUPtr.begin(), vPUPtr.end());
-    fPUPtr.fill();
-    iEvent.put(puJetPtr, "PUPtr");
+    putPointer(iEvent,jetsHandle,puJetsHandle,"PUPtr");
   }
-
+  if(partonJets.get()){
+    putPointer(iEvent,jetsHandle,partonJetsHandle,"partonPtr");
+  }
 
 }

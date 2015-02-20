@@ -28,12 +28,14 @@ ElectronReader::ElectronReader() : BaseReader(){
   d0           = new vector<float> ;
   dz           = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
+  mvaiso       = new vector<float> ;
   mvaidnontrig = new vector<float> ;
   mvaidtrig    = new vector<float> ;
   isveto       = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
+  //  passCutBaseMediumID = new vector<bool> ;
   eleId        = new LeptonId();
 }
 
@@ -58,12 +60,14 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "d0"          , &d0          , true);
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
     treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
+    treeReader->setBranchAddress(branchName , "MVAiso"      , &mvaiso      , true);
     treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
     treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
     treeReader->setBranchAddress(branchName , "vetoid"      , &isveto      , true);
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
+    //    treeReader->setBranchAddress(branchName , "passCutBaseMediumId", &passCutBaseMediumId, true);
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -79,19 +83,31 @@ void ElectronReader::refresh(){
     electrons.reserve(pt->size());
     for(unsigned int iL = 0; iL < pt->size(); ++iL){
       electrons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
+      electrons.back().setIsElectron(true);
       electrons.back().setCharge(q->at(iL));
       electrons.back().setSCEta(scEta->at(iL));
       electrons.back().setR9(r9->at(iL));
       electrons.back().setD0(d0->at(iL));
       electrons.back().setDz(dz->at(iL));
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
+      electrons.back().setMVAIso(mvaiso->at(iL));
       electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
       electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
       electrons.back().setIsVeto(isveto->at(iL));
       electrons.back().setIsLoose(isloose->at(iL));
       electrons.back().setIsMedium(ismedium->at(iL));
       electrons.back().setIsTight(istight->at(iL));
-      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back())));
+      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MVA));
+      electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
+      /*
+      // pass pog cut base medium id
+      bool tmpPassCutBaseMID = false;
+      if (fabs(scEta->at(iL))<1.479) {
+	if (
+)
+
+      } // end EB
+      */
     }
   }
 }

@@ -26,6 +26,7 @@
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
 #include "AnalysisBase/Analyzer/interface/TauFiller.h"
 #include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
+#include "AnalysisBase/Analyzer/interface/PFCandidateFiller.h"
 
 namespace ucsbsusy {
 
@@ -50,7 +51,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, ELECTRONS, MUONS, TAUS, GENPARTICLES};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -76,9 +77,12 @@ namespace ucsbsusy {
       EventInfoFiller * eventInfo;
       PatJetFiller    * ak4Jets;
       RecoJetFiller   * puppiJets;
+      RecoJetFiller   * pickyJets;
+      RecoJetFiller   * ca8Jets;
       MuonFiller      * muons;
       ElectronFiller  * electrons;
       TauFiller       * taus;
+      PFCandidateFiller * pfcands;
       GenParticleFiller * genparticles;
     protected:
       //vector of initialized fillers for automatic processing

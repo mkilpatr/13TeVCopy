@@ -87,7 +87,7 @@ void  setPileUpInfo( const Particles& particles, double maxParticleEta, double m
   Splittiness::computeMedianPU( particles, currentRhoPT, currentRhoMass, maxParticleEta, maxPatchEta, rParameter, ghostArea, ignoreNHardest );
 }
 
-const JetDeposition* getJetStuff() {return jetStuff;}
+const JetDeposition* getJetStuff() const {return jetStuff;}
   
 /**********************/
 /*    Computations    */

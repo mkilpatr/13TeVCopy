@@ -12,12 +12,25 @@
 #define ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 
 #include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
+#include "AnalysisTools/ObjectSelection/interface/LeptonMVA.h"
+
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
+#include "DataFormats/Math/interface/deltaR.h"
+
+#include "DataFormats/Math/interface/LorentzVector.h"
+
+//typedef math::XYZTLorentzVector LorentzVector;
+typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
+typedef std::vector<LorentzVector> LorentzVectorCollection;
 
 namespace ucsbsusy {
 
@@ -28,6 +41,10 @@ namespace ucsbsusy {
                      const string branchName,
                      const EventInfoFiller * evtInfoFiller,
                      const edm::InputTag electronTag,
+                     const edm::InputTag vetoIdTag,
+                     const edm::InputTag looseIdTag,
+                     const edm::InputTag mediumIdTag,
+                     const edm::InputTag tightIdTag,
                      const int bunchSpacing,
                      const double eleptMin);
       ~ElectronFiller() {}
@@ -44,18 +61,27 @@ namespace ucsbsusy {
       void initMVA();
       void load(const edm::Event& iEvent);
       void fill();
+      void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
+      float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
 
     private :
       const EventInfoFiller * evtInfoFiller_;
       // Input from the config file
       const edm::InputTag electronTag_;
+      // For cut-based ID decisions
+      const edm::InputTag vetoIdTag_;
+      const edm::InputTag looseIdTag_;
+      const edm::InputTag mediumIdTag_;
+      const edm::InputTag tightIdTag_;
       const int           bunchSpacing_;
       const double        eleptMin_;
 
       // Evaluate POG MVA ID
       EGammaMvaEleEstimatorCSA14* eleMVANonTrig;
       EGammaMvaEleEstimatorCSA14* eleMVATrig;
+      EGammaMvaEleEstimatorCSA14* eleMVANonTrigPhys14;
       LeptonId*                   eleIdCuts;
+      LeptonMVA*                  eleMVAiso;
 
       // Members to hold indices of tree data
       size ipt_;
@@ -98,10 +124,32 @@ namespace ucsbsusy {
       size ipfneutraliso_;
       size ipfphotoniso_;
       size ipfpuiso_;
+      size iMVAiso_;
+      // different isolations
+      size iLSF2Iso_;
+      size iLSF3Iso_;
+      size iLSF4Iso_;
+      size iLSF2IsoDR_;
+      size iLSF3IsoDR_;
+      size iLSF4IsoDR_;
+
+      // cut-based id - put by hand
+      //      size iPassTriggerLID_;
+      size iPassCutBaseNonIsoMID_;
+      //      size iPassCutBaseTID_;
 
     public :
       // Data members
       edm::Handle<pat::ElectronCollection> electrons_;
+      edm::Handle<edm::ValueMap<bool> > veto_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > loose_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > medium_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> > tight_id_decisions_;
+      edm::Handle<reco::PFJetCollection> ca8Jets;
+      edm::Handle<LorentzVectorCollection> lsfSubJets2;
+      edm::Handle<LorentzVectorCollection> lsfSubJets3;
+      edm::Handle<LorentzVectorCollection> lsfSubJets4;
+      edm::Handle<double>                 rho_;
 
   };
 

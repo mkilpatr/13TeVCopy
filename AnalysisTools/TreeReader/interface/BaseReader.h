@@ -26,6 +26,8 @@ namespace ucsbsusy {
       virtual void refresh() = 0;
 
       bool isLoaded() const {return loaded_;}
+      std::string branchName(){return branchName_;}
+      bool hasOption(const int opt) const {return opt & options_;}
 
     protected:
       const std::string branchName_;  //branch prefix

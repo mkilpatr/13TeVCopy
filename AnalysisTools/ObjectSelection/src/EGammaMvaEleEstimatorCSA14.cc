@@ -47,7 +47,6 @@ void EGammaMvaEleEstimatorCSA14::initialize( std::string methodName,
     if (fTMVAReader[i]) delete fTMVAReader[i];
   }
   fTMVAReader.clear();
-
   //initialize
   fisInitialized = kTRUE;
   fMVAType = type;
@@ -61,6 +60,9 @@ void EGammaMvaEleEstimatorCSA14::initialize( std::string methodName,
   }
    else if (type == kNonTrig) {
     ExpectedNBins = 4;
+  }
+   else if (type ==kNonTrigPhys14) {
+    ExpectedNBins = 6;
   }
 
   fNMVABins = ExpectedNBins;
@@ -114,7 +116,7 @@ void EGammaMvaEleEstimatorCSA14::initialize( std::string methodName,
     }
   
   
-    if (type == kNonTrig) {
+    if ((type == kNonTrig)||(type == kNonTrigPhys14)) {
         
         tmpTMVAReader->AddVariable("ele_kfhits",          &fMVAVar_kfhits);
         // Pure ECAL -> shower shapes
@@ -125,7 +127,8 @@ void EGammaMvaEleEstimatorCSA14::initialize( std::string methodName,
         tmpTMVAReader->AddVariable("ele_scletawidth",        &fMVAVar_etawidth);
         tmpTMVAReader->AddVariable("ele_sclphiwidth",        &fMVAVar_phiwidth);
         tmpTMVAReader->AddVariable("ele_he",             &fMVAVar_HoE);
-        if(i == 1 || i == 3) tmpTMVAReader->AddVariable("ele_psEoverEraw",&fMVAVar_PreShowerOverRaw);
+        if ((type == kNonTrig)&&(i == 1 || i == 3)) tmpTMVAReader->AddVariable("ele_psEoverEraw",&fMVAVar_PreShowerOverRaw);
+        if ((type == kNonTrigPhys14)&&(i == 2 || i == 5)) tmpTMVAReader->AddVariable("ele_psEoverEraw",&fMVAVar_PreShowerOverRaw);
         
         
         //Pure tracking variables
@@ -147,6 +150,7 @@ void EGammaMvaEleEstimatorCSA14::initialize( std::string methodName,
         tmpTMVAReader->AddSpectator("ele_pT",             &fMVAVar_pt);
         tmpTMVAReader->AddSpectator("ele_isbarrel",             &fMVAVar_isBarrel);
         tmpTMVAReader->AddSpectator("ele_isendcap",             &fMVAVar_isEndcap);
+        if (type == kNonTrigPhys14) tmpTMVAReader->AddSpectator("scl_eta",                  &fMVAVar_SCeta);
 
     }
 
@@ -189,7 +193,15 @@ UInt_t EGammaMvaEleEstimatorCSA14::GetMVABin( double eta, double pt) const {
       if (pt >= 20 && fabs(eta) >= 1.479) bin = 1;
     }
 
- 
+    if (fMVAType == EGammaMvaEleEstimatorCSA14::kNonTrigPhys14 ){
+       bin = 0;
+       if (pt < 10 && fabs(eta) < 0.6) bin = 0;
+       if (pt < 10 && fabs(eta) >= 0.6 && fabs(eta) < 1.479) bin = 1;
+       if (pt < 10 && fabs(eta) >= 1.479) bin = 2;
+       if (pt >= 10 && fabs(eta) < 0.6) bin = 3;
+       if (pt >= 10 && fabs(eta) >= 0.6 && fabs(eta) < 1.479) bin = 4;
+       if (pt >= 10 && fabs(eta) >= 1.479) bin = 5;
+    }
 
     return bin;
 }
@@ -200,104 +212,110 @@ UInt_t EGammaMvaEleEstimatorCSA14::GetMVABin( double eta, double pt) const {
 
 //--------------------------------------------------------------------------------------------------
 
+// for kTrig and kNonTrig algorithm
+
+  
 Double_t EGammaMvaEleEstimatorCSA14::mvaValue(const pat::Electron& ele,
                                               bool printDebug) {
-    
-    if (!fisInitialized) {
-        std::cout << "Error: EGammaMvaEleEstimatorCSA14 not properly initialized.\n";
-        return -9999;
-    }
-    
-    if ( (fMVAType != EGammaMvaEleEstimatorCSA14::kTrig) && (fMVAType != EGammaMvaEleEstimatorCSA14::kNonTrig )) {
-        std::cout << "Error: This method should be called for kTrig or kNonTrig MVA only" << endl;
-        return -9999;
-    }
-    
-    bool validKF= false;
-    reco::TrackRef myTrackRef = ele.closestCtfTrackRef();
-    validKF = (myTrackRef.isAvailable());
-    validKF = (myTrackRef.isNonnull());
-    
-    // Pure tracking variables
-    fMVAVar_fbrem           =  ele.fbrem();
-    fMVAVar_kfchi2          =  (validKF) ? myTrackRef->normalizedChi2() : 0 ;
-    fMVAVar_kfhits          =  (validKF) ? myTrackRef->hitPattern().trackerLayersWithMeasurement() : -1. ;
-    fMVAVar_kfhitsall          =  (validKF) ? myTrackRef->numberOfValidHits() : -1. ;   //  save also this in your ntuple as possible alternative
-    fMVAVar_gsfchi2         =  ele.gsfTrack()->normalizedChi2();
-    
-    
-    // Geometrical matchings
-    fMVAVar_deta            =  ele.deltaEtaSuperClusterTrackAtVtx();
-    fMVAVar_dphi            =  ele.deltaPhiSuperClusterTrackAtVtx();
-    fMVAVar_detacalo        =  ele.deltaEtaSeedClusterTrackAtCalo();
-    
-    
-    // Pure ECAL -> shower shapes
-    fMVAVar_see = ele.full5x5_sigmaIetaIeta(); //EleSigmaIEtaIEta
-    fMVAVar_spp = ele.full5x5_sigmaIphiIphi();   //EleSigmaIPhiIPhi
-    
-    fMVAVar_etawidth        =  ele.superCluster()->etaWidth();
-    fMVAVar_phiwidth        =  ele.superCluster()->phiWidth();
-    fMVAVar_OneMinusE1x5E5x5        =  (ele.full5x5_e5x5()) !=0. ? 1.-(ele.full5x5_e1x5()/ele.full5x5_e5x5()) : -1. ;
-    fMVAVar_R9              =  ele.full5x5_r9();
-    
-    // Energy matching
-    fMVAVar_HoE             =  ele.hadronicOverEm();
-    fMVAVar_EoP             =  ele.eSuperClusterOverP();
-    fMVAVar_IoEmIoP         =  (1.0/ele.ecalEnergy()) - (1.0 / ele.p());  // in the future to be changed with ele.gsfTrack()->p()
-    fMVAVar_eleEoPout       =  ele.eEleClusterOverPout();
-    fMVAVar_PreShowerOverRaw=  ele.superCluster()->preshowerEnergy() / ele.superCluster()->rawEnergy();
-    
-    
-    // Spectators
-    fMVAVar_eta             =  ele.superCluster()->eta();
-    fMVAVar_abseta          =  fabs(ele.superCluster()->eta());
-    fMVAVar_pt              =  ele.pt();
-    fMVAVar_isBarrel        =  (ele.superCluster()->eta()<1.479);
-    fMVAVar_isEndcap        =  (ele.superCluster()->eta()>1.479);
-    
-    
 
-    
-    // evaluate
-    bindVariables();
-    Double_t mva = -9999;
-    if (fUseBinnedVersion) {
-        mva = fTMVAReader[GetMVABin(fMVAVar_eta,fMVAVar_pt)]->EvaluateMVA(fMethodname);
-    } else {
-        mva = fTMVAReader[0]->EvaluateMVA(fMethodname);
-    }
-    
-    
-    
-    if(printDebug) {
-        cout << " *** Inside the class fMethodname " << fMethodname << " fMVAType " << fMVAType << endl;
-        cout << " fbrem " <<  fMVAVar_fbrem
-        << " kfchi2 " << fMVAVar_kfchi2
-        << " mykfhits " << fMVAVar_kfhits
-        << " gsfchi2 " << fMVAVar_gsfchi2
-        << " deta " <<  fMVAVar_deta
-        << " dphi " << fMVAVar_dphi
-        << " detacalo " << fMVAVar_detacalo
-        << " see " << fMVAVar_see
-        << " spp " << fMVAVar_spp
-        << " etawidth " << fMVAVar_etawidth  
-        << " phiwidth " << fMVAVar_phiwidth  
-        << " OneMinusE1x5E5x5 " << fMVAVar_OneMinusE1x5E5x5  
-        << " R9 " << fMVAVar_R9  
-        << " HoE " << fMVAVar_HoE  
-        << " EoP " << fMVAVar_EoP  
-        << " IoEmIoP " << fMVAVar_IoEmIoP  
-        << " eleEoPout " << fMVAVar_eleEoPout  
-        << " eta " << fMVAVar_eta
-        << " pt " << fMVAVar_pt << endl;
-        cout << " ### MVA " << mva << endl;
-    }
-    
-    
-    
-    return mva;
+
+  if (!fisInitialized) { 
+    std::cout << "Error: EGammaMvaEleEstimatorCSA14 not properly initialized.\n"; 
+    return -9999;
+  }
+
+  if ( (fMVAType != EGammaMvaEleEstimatorCSA14::kTrig) && (fMVAType != EGammaMvaEleEstimatorCSA14::kNonTrig )&& (fMVAType != EGammaMvaEleEstimatorCSA14::kNonTrigPhys14 )) {
+    std::cout << "Error: This method should be called for kTrig or kNonTrig MVA only" << endl;
+    return -9999;
+  }
+ 
+  bool validKF= false; 
+  reco::TrackRef myTrackRef = ele.closestCtfTrackRef();
+  validKF = (myTrackRef.isAvailable());
+  validKF = (myTrackRef.isNonnull());  
+
+  // Pure tracking variables
+  fMVAVar_fbrem           =  ele.fbrem();
+  fMVAVar_kfchi2          =  (validKF) ? myTrackRef->normalizedChi2() : 0 ;
+  fMVAVar_kfhits          =  (validKF) ? myTrackRef->hitPattern().trackerLayersWithMeasurement() : -1. ; 
+  fMVAVar_kfhitsall          =  (validKF) ? myTrackRef->numberOfValidHits() : -1. ;   //  save also this in your ntuple as possible alternative
+  fMVAVar_gsfchi2         =  ele.gsfTrack()->normalizedChi2();  
+
+  
+  // Geometrical matchings
+  fMVAVar_deta            =  ele.deltaEtaSuperClusterTrackAtVtx();
+  fMVAVar_dphi            =  ele.deltaPhiSuperClusterTrackAtVtx();
+  fMVAVar_detacalo        =  ele.deltaEtaSeedClusterTrackAtCalo();
+
+
+  // Pure ECAL -> shower shapes
+  
+  fMVAVar_see = ele.full5x5_sigmaIetaIeta(); //EleSigmaIEtaIEta
+  fMVAVar_spp = ele.full5x5_sigmaIphiIphi();   //EleSigmaIPhiIPhi
+
+  fMVAVar_etawidth        =  ele.superCluster()->etaWidth();
+  fMVAVar_phiwidth        =  ele.superCluster()->phiWidth();
+  fMVAVar_OneMinusE1x5E5x5        =  (ele.full5x5_e5x5()) !=0. ? 1.-(ele.full5x5_e1x5()/ele.full5x5_e5x5()) : -1. ;
+  fMVAVar_R9              =  ele.full5x5_r9();
+
+  // Energy matching
+  fMVAVar_HoE             =  ele.hadronicOverEm();
+  fMVAVar_EoP             =  ele.eSuperClusterOverP();
+  fMVAVar_IoEmIoP         =  (1.0/ele.ecalEnergy()) - (1.0 / ele.p());  // in the future to be changed with ele.gsfTrack()->p()
+  fMVAVar_eleEoPout       =  ele.eEleClusterOverPout();
+  fMVAVar_PreShowerOverRaw=  ele.superCluster()->preshowerEnergy() / ele.superCluster()->rawEnergy();
+
+
+  // Spectators
+  fMVAVar_eta             =  ele.superCluster()->eta();
+  fMVAVar_abseta          =  fabs(ele.superCluster()->eta());
+  fMVAVar_pt              =  ele.pt();                          
+  fMVAVar_isBarrel        =  (ele.superCluster()->eta()<1.479);
+  fMVAVar_isEndcap        =  (ele.superCluster()->eta()>1.479);
+  fMVAVar_SCeta           =  ele.superCluster()->eta();
+ 
+
+  // for triggering electrons get the impact parameteres
+
+  bindVariables();
+  Double_t mva = -9999;  
+  if (fUseBinnedVersion) {
+    mva = fTMVAReader[GetMVABin(fMVAVar_eta,fMVAVar_pt)]->EvaluateMVA(fMethodname);
+  } else {
+    mva = fTMVAReader[0]->EvaluateMVA(fMethodname);
+  }
+
+
+
+  if(printDebug) {
+    cout << " *** Inside the class fMethodname " << fMethodname << " fMVAType " << fMVAType << endl;
+    cout << " fbrem " <<  fMVAVar_fbrem  
+      	 << " kfchi2 " << fMVAVar_kfchi2  
+	 << " mykfhits " << fMVAVar_kfhits  
+	 << " gsfchi2 " << fMVAVar_gsfchi2  
+	 << " deta " <<  fMVAVar_deta  
+	 << " dphi " << fMVAVar_dphi  
+      	 << " detacalo " << fMVAVar_detacalo  
+	 << " see " << fMVAVar_see  
+	 << " spp " << fMVAVar_spp  
+	 << " etawidth " << fMVAVar_etawidth  
+	 << " phiwidth " << fMVAVar_phiwidth  
+	 << " OneMinusE1x5E5x5 " << fMVAVar_OneMinusE1x5E5x5  
+	 << " R9 " << fMVAVar_R9  
+	 << " HoE " << fMVAVar_HoE  
+	 << " EoP " << fMVAVar_EoP  
+	 << " IoEmIoP " << fMVAVar_IoEmIoP  
+	 << " eleEoPout " << fMVAVar_eleEoPout  
+	 << " eta " << fMVAVar_eta  
+	 << " pt " << fMVAVar_pt << endl;
+    cout << " ### MVA " << mva << endl;
+  }
+
+
+
+  return mva;
 }
+
 
 
 

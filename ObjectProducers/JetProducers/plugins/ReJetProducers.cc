@@ -20,6 +20,8 @@ public:
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
     load(iEvent,iSetup);
     FastJetClusterer                                    clusterer(true, true);
+    clusterer.setDeterministicSeed(iEvent.id().run(),iEvent.id().event());
+
     clusterJets(clusterer,recoCandidates,edm::Handle<reco::PFCandidateCollection >());
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
@@ -30,8 +32,20 @@ public:
       genJets.reset(new reco::GenJetCollection);
       clusterer.distillJets<pat::PackedGenParticle, reco::GenJet>(genParticles, *genJets , iSetup,0, true);
     }
+    std::auto_ptr<reco::GenJetCollection>               partonJets ;
+    if(producePartonJets){
+      partonJets.reset(new reco::GenJetCollection);
+      clusterer.distillJets<reco::GenParticle, reco::GenJet>(genMotherParticles, *partonJets , iSetup,0, true);
+      std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
+    }
 
-    putJets(iEvent,recoJets,genJets, std::auto_ptr<reco::PFJetCollection>(0));
+    if(outputSuperJets){
+      std::auto_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
+      clusterer.distillSuperJets<reco::PFCandidate, reco::PFJet>(recoCandidates  , *superJets, iSetup,0, true);
+      iEvent.put(superJets, "Super");
+    }
+
+    putJets(iEvent,recoJets,genJets,partonJets, std::auto_ptr<reco::PFJetCollection>(0));
   }
 
 protected:
@@ -58,6 +72,8 @@ public:
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
     load(iEvent,iSetup);
     FastJetClusterer                                    clusterer(true, true);
+    clusterer.setDeterministicSeed(iEvent.id().run(),iEvent.id().event());
+
     producePU ? clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle, &isPUParticle)
               : clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle);
 
@@ -69,6 +85,12 @@ public:
       genJets.reset(new reco::GenJetCollection);
       clusterer.distillJets<pat::PackedGenParticle, reco::GenJet>(genParticles, *genJets , iSetup,0, true);
     }
+    std::auto_ptr<reco::GenJetCollection>               partonJets ;
+    if(producePartonJets){
+      partonJets.reset(new reco::GenJetCollection);
+      clusterer.distillJets<reco::GenParticle, reco::GenJet>(genMotherParticles, *partonJets , iSetup,0, true);
+      std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
+    }
 
       std::auto_ptr<reco::PFJetCollection>                puInJets;
       if (producePU){
@@ -76,7 +98,13 @@ public:
         clusterer.distillJets(recoCandidates  , *puInJets, iSetup,&isPUParticle, true);
       }
 
-    putJets(iEvent,recoJets,genJets,puInJets);
+     if(outputSuperJets){
+       std::auto_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
+       clusterer.distillSuperJets<pat::PackedCandidate, reco::PFJet>(recoCandidates  , *superJets, iSetup,&isNonPUParticle, true);
+       iEvent.put(superJets, "Super");
+     }
+
+    putJets(iEvent,recoJets,genJets,partonJets,puInJets);
   }
 
   static bool isPUParticle(const pat::PackedCandidate& p) {return p.fromPV() == 0; }

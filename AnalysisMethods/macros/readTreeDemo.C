@@ -16,7 +16,7 @@ using namespace ucsbsusy;
 // no matter what, you have to define a runEvent function....to do what you want to do
 class Analyze : public BaseTreeAnalyzer{
 public:
-  Analyze(TString fname, string treeName, bool isMCTree) : BaseTreeAnalyzer(fname,treeName, isMCTree)
+  Analyze(TString fname, string treeName, bool isMCTree, ConfigPars * pars) : BaseTreeAnalyzer(fname,treeName, isMCTree, pars)
   {}
 
 //  Override this function to change the way the analyzer loads default variable types
@@ -58,6 +58,9 @@ public:
 // This part is just a wrapper, you just need to construct your class and
 // call the analyze() function
 void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
-  Analyze a(fname, treeName, isMCTree);
+  BaseTreeAnalyzer::ConfigPars pars;
+  pars.minJetPt = 30;
+  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
+  Analyze a(fname, treeName, isMCTree,&pars);
   a.analyze();
 }

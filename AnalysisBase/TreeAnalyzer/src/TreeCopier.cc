@@ -4,13 +4,13 @@
 using namespace ucsbsusy;
 
 
-TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
+TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree,ConfigPars * pars)
+: BaseTreeAnalyzer(fileName,treeName,isMCTree,pars,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {};
-TreeCopier::~TreeCopier(){outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
+TreeCopier::~TreeCopier(){ if(!outFile_) return; outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
 
 //--------------------------------------------------------------------------------------------------
-void TreeCopier::analyze(int reportFrequency)
+void TreeCopier::analyze(int reportFrequency, int numEvents)
 {
   loadVariables();
   isLoaded_ = true;
@@ -18,6 +18,8 @@ void TreeCopier::analyze(int reportFrequency)
   book();
   data.book(treeWriter_);
   while(reader.nextEvent(reportFrequency)){
+    isProcessed_ = false;
+    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
     processVariables();
     data.reset();
     if(!fillEvent()) continue;
@@ -31,8 +33,8 @@ void TreeCopier::analyze(int reportFrequency)
 // TreeFlattenCopier
 //--------------------------------------------------------------------------------------------------
 
-TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
+TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree,ConfigPars * pars)
+: BaseTreeAnalyzer(fileName,treeName,isMCTree,pars,"READ"), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {
   outFile_ = new TFile(outFileName_,"RECREATE");
   outFile_->cd();
@@ -41,13 +43,15 @@ TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString
 TreeFlattenCopier::~TreeFlattenCopier(){outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
 
 //--------------------------------------------------------------------------------------------------
-void TreeFlattenCopier::analyze(int reportFrequency)
+void TreeFlattenCopier::analyze(int reportFrequency, int numEvents)
 {
   loadVariables();
   isLoaded_ = true;
   book();
   data.book(treeWriter_);
   while(reader.nextEvent(reportFrequency)){
+    isProcessed_ = false;
+    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
     processVariables();
     data.reset();
     if(!fillEvent()) continue;

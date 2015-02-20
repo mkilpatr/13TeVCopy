@@ -15,8 +15,6 @@
 
 #include "AnalysisTools/Utilities/interface/Types.h"
 
-namespace ucsbsusy {
-
 namespace PhysicsUtilities{
 //_____________________________________________________________________________
 // Basic getters
@@ -72,31 +70,31 @@ inline double deltaR(const T1 & t1, const T2 & t2) {
 //_____________________________________________________________________________
 /// Count the number of objects, optionally passing a given test.
 template<typename Object, typename ObjectPtr>
-size countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta, bool (*test)(const Object&));
+ucsbsusy::size countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta, bool (*test)(const Object&));
 
 /// Count the number of objects passing the given momentum thresholds.
 template<typename ObjectPtr>
-size countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta);
+ucsbsusy::size countObjectsDeref(const std::vector<ObjectPtr>& objects, double minPT, double maxEta);
 
 /// Count the number of objects, optionally passing a given test.
 template<typename Object>
-size countObjects(const std::vector<Object>& objects, double minPT = 0, double maxEta = 9999, bool (*test)(const Object&) = 0);
+ucsbsusy::size countObjects(const std::vector<Object>& objects, double minPT = 0, double maxEta = 9999, bool (*test)(const Object&) = 0);
 
 /// Count the number of objects passing the given test.
 template<typename Object, typename Analyzer>
-size countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const);
+ucsbsusy::size countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const);
 
 /// Count the number of objects passing the given test and momentum thresholds.
 template<typename Object, typename Analyzer>
-size countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta);
+ucsbsusy::size countObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta);
 
 /// Count the number of objects, optionally passing a given test.
 template<typename Property, typename Object>
-size countObjectProperties(const std::vector<Object>& objects, const Property& (Object::*getProperty)() const, double minPT = 0, double maxEta = 9999, bool (*test)(const Property&) = 0);
+ucsbsusy::size countObjectProperties(const std::vector<Object>& objects, const Property& (Object::*getProperty)() const, double minPT = 0, double maxEta = 9999, bool (*test)(const Property&) = 0);
 
 /// Count the number of objects that are not near a veto set.
 template<typename Object, typename Other>
-size countDistinctObjects(const std::vector<Object>& objects, const std::vector<Other>& vetoNearby, double minDRnearby, double minPT = 0, double maxEta = 9999);
+ucsbsusy::size countDistinctObjects(const std::vector<Object>& objects, const std::vector<Other>& vetoNearby, double minDRnearby, double minPT = 0, double maxEta = 9999);
 
 
 //_____________________________________________________________________________
@@ -142,7 +140,7 @@ template<typename CoordSystem>
 ROOT::Math::LorentzVector<CoordSystem> sumMomenta(const std::vector<ROOT::Math::LorentzVector<CoordSystem> >& p4, double scale = 1)
 {
   ROOT::Math::LorentzVector<CoordSystem>   sumP4;
-  for (size index = 0; index < p4.size(); ++index)
+  for (ucsbsusy::size index = 0; index < p4.size(); ++index)
     addTo(sumP4, p4[index], scale);
   return sumP4;
 }
@@ -152,9 +150,9 @@ ROOT::Math::LorentzVector<CoordSystem> sumMomenta(const std::vector<ROOT::Math::
 template<typename CoordSystem, typename Object, typename Analyzer>
 ROOT::Math::LorentzVector<CoordSystem> sumObjects(const std::vector<Object>& objects, const Analyzer* analyzer, bool (Analyzer::*test)(const Object&) const, double minPT, double maxEta, double scale = 1)
 {
-  const size            numObjects    = objects.size();
+  const ucsbsusy::size            numObjects    = objects.size();
   ROOT::Math::LorentzVector<CoordSystem>     sumP4;
-  for (size iObject = 0; iObject < numObjects; ++iObject) {
+  for (ucsbsusy::size iObject = 0; iObject < numObjects; ++iObject) {
     const Object&       object        = objects[iObject];
     if (get(object).pt()    < minPT )                   continue;
     if (absEta(get(object)) > maxEta)                   continue;
@@ -171,11 +169,11 @@ ROOT::Math::LorentzVector<CoordSystem> sumObjects(const std::vector<Object>& obj
 //_____________________________________________________________________________
 //Count number of adjacent jets
 template<typename Jet>
-double countProximities(const std::vector<Jet>& jets, const size numJets, size index1, size index2, int& numNearer, int* numFurther = 0);
+double countProximities(const std::vector<Jet>& jets, const ucsbsusy::size numJets, ucsbsusy::size index1, ucsbsusy::size index2, int& numNearer, int* numFurther = 0);
 
 //Count number of adjacent jets
 template<typename Jet>
-int countNumNearer(const std::vector<Jet>& jets, const size numJets, size index1, size index2);
+int countNumNearer(const std::vector<Jet>& jets, const ucsbsusy::size numJets, ucsbsusy::size index1, ucsbsusy::size index2);
 
 //_____________________________________________________________________________
 // Basic sorting
@@ -241,12 +239,12 @@ struct greaterPT : public std::binary_function<const Object&, const Object&, Boo
 template<typename T1, typename T2 = T1>
 struct DeltaR2 {
   double operator()( const T1 & t1, const T2 & t2 ) const {
-    return deltaR2(t1, t2);
+    return PhysicsUtilities::deltaR2(t1, t2);
   }
 };
 template<typename T1, typename T2>
 struct DeltaR2Deref {
-  double operator()( const T1& t1, const T2& t2 ) const { return deltaR2(t1, *t2);
+  double operator()( const T1& t1, const T2& t2 ) const { return PhysicsUtilities::deltaR2(t1, *t2);
   }
 };
 
@@ -277,7 +275,7 @@ inline bool alwaysTrue(const Obj& obj) {return true;}
 //_____________________________________________________________________________
 template <typename Obj>
 std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, const double maxEta = 999, bool (*test)(const Obj&) = 0) {
-  const size          numObjects    = objs.size();
+  const ucsbsusy::size          numObjects    = objs.size();
   std::vector<Obj*>   outObjs;
   outObjs.reserve(numObjects);
   for(auto& obj : objs){
@@ -294,7 +292,7 @@ std::vector<Obj*> filterObjects(std::vector<Obj>& objs, const double minPT = 0, 
 //_____________________________________________________________________________
 /// Locates the given item in the list.
 template<typename Object1, typename Object2>
-int findIndex(const Object1* target, const std::vector<Object2>& items, size first = 0, size last = 0);
+int findIndex(const Object1* target, const std::vector<Object2>& items, ucsbsusy::size first = 0, ucsbsusy::size last = 0);
 
 //_____________________________________________________________________________
 template<typename Thing1, typename Thing2, typename Comparator, typename Distance>
@@ -345,7 +343,7 @@ int sign(Number x) { return (x < 0 ? -1 : 1); }
 
 
 };
-}
+
 
 #include "AnalysisTools/Utilities/src/PhysicsUtilities.icc"
 

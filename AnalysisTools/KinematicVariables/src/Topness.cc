@@ -5,11 +5,11 @@ using namespace std;
 using namespace ucsbsusy;
 
 
-const float Topness::mW  = 81.;
-const float Topness::mT  = 172.;
-const float Topness::aW  = 5.;
-const float Topness::aT  = 15.;
-const float Topness::aCM = 1000.;
+const double Topness::mW  = 81.;
+const double Topness::mT  = 172.;
+const double Topness::aW  = 5.;
+const double Topness::aT  = 15.;
+const double Topness::aCM = 1000.;
 
 
 Topness::Topness() : minimizer(new TFitter(4))
@@ -26,7 +26,7 @@ Topness::~Topness(){
   delete minimizer;
 }
 
-float Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pnz_,
+double Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pnz_,
 			       double plx_, double ply_, double plz_, double ple_,
 			       double pb1x_, double pb1y_, double pb1z_, double pb1e_,
 			       double pb2x_, double pb2y_, double pb2z_, double pb2e_,
@@ -35,40 +35,42 @@ float Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pnz
 
 
   // construct the lorentz vectors
-  MomentumF vW;  vW.p4().SetPxPyPzE(pwx_,pwy_,pwz_,(sqrt((mW*mW)+(pwx_*pwx_)+(pwy_*pwy_)+(pwz_*pwz_)))) ;
+  MomentumD vW;  vW.p4().SetPxPyPzE(pwx_,pwy_,pwz_,(sqrt((mW*mW)+(pwx_*pwx_)+(pwy_*pwy_)+(pwz_*pwz_)))) ;
 
-  MomentumF vL;  vL.p4().SetPxPyPzE(plx_,ply_,plz_,ple_);
+  MomentumD vL;   vL.p4().SetPxPyPzE(plx_,ply_,plz_,ple_);
 
-  MomentumF vB1; vB1.p4().SetPxPyPzE(pb1x_,pb1y_,pb1z_,pb1e_);
+  MomentumD vB1;  vB1.p4().SetPxPyPzE(pb1x_,pb1y_,pb1z_,pb1e_);
 
-  MomentumF vB2; vB2.p4().SetPxPyPzE(pb2x_,pb2y_,pb2z_,pb2e_);
+  MomentumD vB2;  vB2.p4().SetPxPyPzE(pb2x_,pb2y_,pb2z_,pb2e_);
 
-  MomentumF vMET; vMET.p4().SetPxPyPzE(pmx_,pmy_,pmz_,pme_);
+  MomentumD vMET; vMET.p4().SetPxPyPzE(pmx_,pmy_,pmz_,pme_);
 
-  MomentumF vN; vN.p4().SetPxPyPzE((pmx_-pwx_),(pmy_-pwy_),pnz_,(sqrt(pow((pmx_-pwx_),2)+pow((pmy_-pwy_),2)+pow(pnz_,2))));
+  MomentumD vN;   vN.p4().SetPxPyPzE((pmx_-pwx_),(pmy_-pwy_),pnz_,(sqrt(pow((pmx_-pwx_),2)+pow((pmy_-pwy_),2)+pow(pnz_,2))));
 
+  MomentumD vW1;  vW1.p4() = vL.p4() + vN.p4();
 
   // construct the w-term
-  float tW = ( pow( ((mW*mW) - (vW.p4().M2())),2) ) / (pow(aW,4));
+  double tW = ( pow( ((mW*mW) - (vW.p4().M2())),2) ) / (pow(aW,4));
 
   // construct the tL-term [seen lepton]
-  float tTL = ( pow( ((mT*mT) - ((vL.p4()+vB1.p4()+vN.p4()).M2())),2) ) / (pow(aT,4));
+  double tTL = ( pow( ((mT*mT) - ((vL.p4()+vB1.p4()+vN.p4()).M2())),2) ) / (pow(aT,4));
 
   // construct the tM-term [miss lepton]
-  float tTM = ( pow( ((mT*mT) - ((vB2.p4()+vW.p4()).M2())),2) ) / (pow(aT,4));
+  double tTM = ( pow( ((mT*mT) - ((vB2.p4()+vW.p4()).M2())),2) ) / (pow(aT,4));
 
   // construct the CM-term
-  float tCM = ( pow( ((4*(mT*mT)) - ((vL.p4()+vN.p4()+vW.p4()+vB1.p4()+vB2.p4()).M2())),2) ) / (pow(aCM,4));
+  double tCM = ( pow( ((4*(mT*mT)) - ((vL.p4()+vN.p4()+vW.p4()+vB1.p4()+vB2.p4()).M2())),2) ) / (pow(aCM,4));
 
 
   // calculate Topness
-  float Topness_ = tW + tTL + tTM + tCM;
+  double Topness_ = tW + tTL + tTM + tCM;
 
   if(info){
     info->topness = log(Topness_);
     info->top1_l= vL;
     info->top1_n= vN;
     info->top1_b= vB1;
+    info->top1_w= vW1;
     info->top2_w= vW;
     info->top2_b= vB2;
     info->tW  = tW ;
@@ -98,26 +100,26 @@ void Topness::minuitFunctionWrapper(int& nDim, double* gout, double& result, dou
 
 
 
-float Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_, TopnessInformation * info) {
+double Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_, TopnessInformation * info) {
 
 
   // get variables for Topness
-  float iLpx = lep_->p4().px();
-  float iLpy = lep_->p4().py();
-  float iLpz = lep_->p4().pz();
-  float iLpe = lep_->p4().E();
-  float iB1px = bjet1_->p4().px();
-  float iB1py = bjet1_->p4().py();
-  float iB1pz = bjet1_->p4().pz();
-  float iB1pe = bjet1_->p4().E();
-  float iB2px = bjet2_->p4().px();
-  float iB2py = bjet2_->p4().py();
-  float iB2pz = bjet2_->p4().pz();
-  float iB2pe = bjet2_->p4().E();
-  float iMpx = met_->p4().px();
-  float iMpy = met_->p4().py();
-  float iMpz = met_->p4().pz();
-  float iMpe = met_->p4().E();
+  double iLpx = lep_->p4().px();
+  double iLpy = lep_->p4().py();
+  double iLpz = lep_->p4().pz();
+  double iLpe = lep_->p4().E();
+  double iB1px = bjet1_->p4().px();
+  double iB1py = bjet1_->p4().py();
+  double iB1pz = bjet1_->p4().pz();
+  double iB1pe = bjet1_->p4().E();
+  double iB2px = bjet2_->p4().px();
+  double iB2py = bjet2_->p4().py();
+  double iB2pz = bjet2_->p4().pz();
+  double iB2pe = bjet2_->p4().E();
+  double iMpx = met_->p4().px();
+  double iMpy = met_->p4().py();
+  double iMpz = met_->p4().pz();
+  double iMpe = met_->p4().E();
 
   // Define parameters [param number, param name, init val, estimated distance to min, bla, bla] // 300,3000,-3000,3000
   minimizer->SetParameter(0,"pwx",0,500,-3000,3000);
@@ -169,10 +171,10 @@ float Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1
 
 
   //Get the best fit values
-  float pwx_fit = minimizer->GetParameter(0);
-  float pwy_fit = minimizer->GetParameter(1);
-  float pwz_fit = minimizer->GetParameter(2);
-  float pnz_fit = minimizer->GetParameter(3);
+  double pwx_fit = minimizer->GetParameter(0);
+  double pwy_fit = minimizer->GetParameter(1);
+  double pwz_fit = minimizer->GetParameter(2);
+  double pnz_fit = minimizer->GetParameter(3);
 
 
   // get the function value at best fit
@@ -184,7 +186,7 @@ float Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1
       ));
 } // ~ end of Topness Minimization()
 
-float Topness::getMinTopness(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info) {
+double Topness::getMinTopness(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info) {
   TopnessInformation info1, info2;
   if (topnessMinimization(lep_,bjet1_,bjet2_,met_,&info1) < topnessMinimization(lep_,bjet2_,bjet1_,met_,&info2)){
     if(info) (*info) = (info1);
@@ -197,7 +199,7 @@ float Topness::getMinTopness(const MomentumF *lep_, const MomentumF *bjet1_, con
 
 }
 
-float Topness::getMaxTopness(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info) {
+double Topness::getMaxTopness(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info) {
   TopnessInformation info1, info2;
   if (topnessMinimization(lep_,bjet1_,bjet2_,met_,&info1) > topnessMinimization(lep_,bjet2_,bjet1_,met_,&info2)){
     if(info) (*info) = (info1);
@@ -210,11 +212,10 @@ float Topness::getMaxTopness(const MomentumF *lep_, const MomentumF *bjet1_, con
 bool sortInDecreasingCSV(RecoJetF *jet1, RecoJetF *jet2) { return jet1->csv() > jet2->csv() ; }
 
 
-float Topness::findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info) {
+double Topness::findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info) {
 
   if(leptons.size() == 0 || jets.size() < 2) return -99;
-
-
+  
   vector<pair<double,int> > rankedJets(jets.size());
   for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
     rankedJets[iJ].first = jets[iJ]->csv();
@@ -222,5 +223,8 @@ float Topness::findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,
   }
   std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
 
-  return getMinTopness(leptons[0],jets[0],jets[1],met,info);
+  int csv1 = rankedJets[0].second;
+  int csv2 = rankedJets[1].second;
+
+  return getMinTopness(leptons[0],jets[csv1],jets[csv2],met,info);
 } // end of Topness::findMinTopnessConfiguration

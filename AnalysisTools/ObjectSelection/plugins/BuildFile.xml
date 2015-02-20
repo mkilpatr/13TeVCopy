@@ -1,0 +1,3 @@
+<use name="AnalysisTools/ObjectSelection"/>
+<library   name="AnalysisToolsObjectSelectionPlugins" file="*.cc">
+</library>

@@ -45,12 +45,15 @@ namespace ucsbsusy {
       std::vector<float> *		d0;
       std::vector<float> *		dz;
       std::vector<float> *		pfdbetaiso;
+      std::vector<float> *		mvaiso;
       std::vector<float> *		mvaidnontrig;
       std::vector<float> *		mvaidtrig;
       std::vector<bool>  *		isveto;
       std::vector<bool>  *		isloose;
       std::vector<bool>  *		ismedium;
       std::vector<bool>  *		istight;
+
+      //      std::vector<bool>  *              passCutBaseMediumID;
 
       ElectronFCollection electrons;
 

@@ -28,26 +28,42 @@ EventInfoReader::EventInfoReader()
   met_pt = 0;
   met_phi = 0;
   metsumEt = 0;
+  genmet_pt = 0;
+  genmet_phi = 0;
+
+  proc = 0;
+  weight = 1;
+  process = defaults::NUMPROCESSES;
 
 }
 
 void EventInfoReader::load(TreeReader *treeReader, int options, string branchName)
 {
+  clog << "Loading (" << branchName << ") event info with: ";
+
   loaded_ = true;
-  treeReader->setBranchAddress("","run", &run);
-  treeReader->setBranchAddress("","lumi", &lumi);
-  treeReader->setBranchAddress("","event", &event);
-  treeReader->setBranchAddress("","npv", &nPV);
-  treeReader->setBranchAddress("","rho", &rho);
-  treeReader->setBranchAddress("","pv_x", &pvx);
-  treeReader->setBranchAddress("","pv_y", &pvy);
-  treeReader->setBranchAddress("","pv_z", &pvz);
-  treeReader->setBranchAddress("","met_pt", &met_pt);
-  treeReader->setBranchAddress("","met_phi", &met_phi);
-  treeReader->setBranchAddress("","met_sumEt", &metsumEt);
+  treeReader->setBranchAddress(branchName,"run", &run);
+  treeReader->setBranchAddress(branchName,"lumi", &lumi);
+  treeReader->setBranchAddress(branchName,"event", &event);
+  treeReader->setBranchAddress(branchName,"npv", &nPV);
+  treeReader->setBranchAddress(branchName,"rho", &rho);
+  treeReader->setBranchAddress(branchName,"pv_x", &pvx);
+  treeReader->setBranchAddress(branchName,"pv_y", &pvy);
+  treeReader->setBranchAddress(branchName,"pv_z", &pvz);
+  treeReader->setBranchAddress(branchName,"met_pt", &met_pt);
+  treeReader->setBranchAddress(branchName,"met_phi", &met_phi);
+  treeReader->setBranchAddress(branchName,"met_sumEt", &metsumEt);
+  treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
+  treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
+
+  treeReader->setBranchAddress(branchName,"process", &proc);
+  treeReader->setBranchAddress(branchName,"weight" , &weight);
+  clog << endl;
 }
 
 void EventInfoReader::refresh()
 {
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+  genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
+  process = static_cast<defaults::Process>(proc);
 }

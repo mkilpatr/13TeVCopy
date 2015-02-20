@@ -19,16 +19,84 @@
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 
 namespace ucsbsusy {
+class BaseTreeAnalyzer {
+public:
+  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
+  //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
-  class BaseTreeAnalyzer {
+  struct ConfigPars {
   public:
-    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
+    float minSelEPt;
+    float maxSelEETA;
+    bool (ElectronF::*selectedElectron)() const;
+
+    float minVetoEPt;
+    float maxVetoEETA;
+    bool (ElectronF::*vetoedElectron)() const;
+
+    float minSelMuPt;
+    float maxSelMuETA;
+    bool (MuonF::*selectedMuon)() const;
+
+    float minVetoMuPt;
+    float maxVetoMuETA;
+    bool (MuonF::*vetoedMuon)() const;
+
+    float minVetoTauPt;
+    float maxVetoTauETA;
+    bool (PFCandidateF::*vetoedTau)() const;
+
+    //    LeptonSelection leptonSelection;
+
+    float        minJetPt;
+    float        minBJetPt;
+    float        maxJetEta;
+    float        maxBJetEta;
+    bool         cleanJetsvSelectedLeptons_;
+    bool         correctPickyPT;
+    VarType      defaultJetCollection;
+
+    ConfigPars() :
+    minSelEPt (10), //was 32
+      maxSelEETA(2.4), //was2.1
+      selectedElectron(&ElectronF::isgoodpogelectron),
+
+      minVetoEPt (5),
+      maxVetoEETA(2.4),
+      vetoedElectron(&ElectronF::ismvavetoelectron),
+
+      minSelMuPt (10), // was 27
+      maxSelMuETA(2.4), // was 2.1
+      selectedMuon(&MuonF::isgoodpogmuon),
+
+      minVetoMuPt (5),
+      maxVetoMuETA(2.4),
+      vetoedMuon(&MuonF::ismvavetomuon),
+
+      minVetoTauPt (10),
+      maxVetoTauETA(2.4),
+      vetoedTau(&PFCandidateF::ismvavetotau),
+
+      //      leptonSelection(SEL_0_LEP),
+
+      minJetPt          (20.0),
+      minBJetPt         (20.0),
+      maxJetEta         (2.4 ),
+      maxBJetEta        (2.4 ),
+      cleanJetsvSelectedLeptons_(false),
+      correctPickyPT    (true),
+      defaultJetCollection (AK4JETS)
+    {}
+  };
+    
+  public:
+    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,ConfigPars *pars = 0, TString readOption = "READ");
     virtual ~BaseTreeAnalyzer() {};
 
-    enum VarType {EVTINFO, AK4JETS,ELECTRONS, MUONS, TAUS, GENPARTICLES};
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -52,7 +120,7 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
 
     // Base function that runs the standard process
-    virtual void analyze(int reportFrequency = 10000);
+    virtual void analyze(int reportFrequency = 10000, int numEvents = -1);
 
     // Sub processes that can be overloaded
     virtual void loadVariables();       //load variables
@@ -70,32 +138,52 @@ namespace ucsbsusy {
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
-    void cleanJetsAgainstLeptons(bool clean=true)  { cleanJetsvLeptons_ = clean; }
-    void cleanJetsAgainstTaus   (bool clean=true)  { cleanJetsvTaus_ = clean;    }
+    void setDefaultJets(VarType type);
+    void setDefaultJets(JetReader * injets)        {defaultJets = injets;}
+    JetReader * getDefaultJets()                   {return defaultJets;}
 
     //--------------------------------------------------------------------------------------------------
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
     template <typename Jet>
-    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > minJetPt && fabs(jet.eta()) < maxJetEta);}
+    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
-    bool isGoodElectron(const ElectronF& electron) const;
-    bool isGoodMuon    (const MuonF& muon        ) const;
-    bool isGoodTau     (const TauF& tau          ) const;
+    bool isLooseBJet   (const RecoJetF& jet) const;
+    bool isSelElectron (const ElectronF& electron) const;
+    bool isVetoElectron(const ElectronF& electron) const;
+    bool isSelMuon     (const MuonF& muon) const;
+    bool isVetoMuon    (const MuonF& muon) const;
+    bool isVetoTau     (const PFCandidateF& tau) const;
+
+    void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
+    double correctedPickyPT(double pt,double eta,double area, double rho) const;
+
+    void selectLeptons(std::vector<LeptonF*>& allLeptons,
+                       std::vector<LeptonF*>& selectedLeptons,
+                       std::vector<LeptonF*>& vetoedLeptons,
+                       std::vector<PFCandidateF*>& vetoedTaus,
+                       int& nSelLeptons,
+                       int& nVetoedLeptons,
+                       int& nVetoedTaus
+                       );
 
     //--------------------------------------------------------------------------------------------------
     // TTree readers
     //--------------------------------------------------------------------------------------------------
   protected:
     bool             isLoaded_;
+    bool             isProcessed_;
     TreeReader       reader;        // default reader
   public:
     EventInfoReader   evtInfoReader         ;
     JetReader         ak4Reader             ;
+    JetReader         puppiJetsReader       ;
+    JetReader         pickyJetReader        ;
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
+    PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
 
   public:
@@ -105,10 +193,14 @@ namespace ucsbsusy {
     unsigned int  run;
     unsigned int  lumi;
     unsigned int  event;
+    float         weight;
+    defaults::Process process;
+
     int   nPV;
     float rho;
-    int   nLeptons;
-    int   nTaus;
+    int   nSelLeptons;
+    int   nVetoedLeptons;
+    int   nVetoedTaus;
     int   nJets;
     int   nBJets;
 
@@ -116,9 +208,12 @@ namespace ucsbsusy {
     // Stored collections
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
-    std::vector<LeptonF*>      leptons ;
-    std::vector<TauF*>         taus    ;
-    std::vector<RecoJetF*>     jets    ;
+    MomentumF*                 genmet  ;
+    std::vector<LeptonF*>      allLeptons        ;
+    std::vector<LeptonF*>      selectedLeptons   ;
+    std::vector<LeptonF*>      vetoedLeptons     ;
+    std::vector<PFCandidateF*> vetoedTaus        ;
+    std::vector<RecoJetF*>     jets            ;
     std::vector<RecoJetF*>     bJets   ;
     std::vector<RecoJetF*>     nonBJets;
     std::vector<GenParticleF*> genParts;
@@ -128,26 +223,12 @@ namespace ucsbsusy {
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
-    bool         cleanJetsvLeptons_;
-    bool         cleanJetsvTaus_;
-
-    //--------------------------------------------------------------------------------------------------
-    // Kinematic settings
-    //--------------------------------------------------------------------------------------------------
-    const float  minElePt;
-    const float  minMuPt;
-    const float  minTauPt;
-    const float  minJetPt;
-    const float  minBJetPt;
-    const float  maxEleEta;
-    const float  maxMuEta;
-    const float  maxTauEta;
-    const float  maxJetEta;
-    const float  maxBJetEta;
-    const float  minJetLepDR;
-
+    JetReader  * defaultJets;
+    const ConfigPars config;
   };
 
+
 }
+
 
 #endif

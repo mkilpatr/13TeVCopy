@@ -6,8 +6,8 @@ using namespace ucsbsusy;
 
 const double T2bWTreeAnalyzer::T2BWDiscCuts[] = {.94,.73,.92,.82,.93};
 
-T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree, TString readOption)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,readOption)
+T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,  TString readOption)
+: BaseTreeAnalyzer(fileName,treeName,isMCTree,0,readOption)
 , minPT (30)
 , maxETA(2.4)
 , T2BWParams(NUM_T2BW_SEARCHREGIONS,0)
@@ -77,6 +77,7 @@ T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMC
 //}
 void T2bWTreeAnalyzer::processVariables(){
   filterJets(jets,minPT,maxETA);
+  met = &evtInfoReader.met;
   fillSearchVars();
   if(loadedT2BW)
     computeT2BWDiscriminators();
@@ -96,13 +97,9 @@ void T2bWTreeAnalyzer::fillSearchVars(){
   for(const auto& l : electronReader.electrons)  if(l.pt() >= 5 && TMath::Abs(l.eta()) < 2.4 && l.isgoodpogelectron()) nElectrons++;
   for(const auto& l : muonReader.muons)  if(l.pt() >= 5 && TMath::Abs(l.eta()) < 2.4 && l.isgoodpogmuon()) nMuons++;
 
-  met = &evtInfoReader.met;
   met_pt = met->pt();
 
-  vector<RecoJetF*> noEtaJets; //used to count DPHI + NJ70
-  filterJets(noEtaJets,0,9999);
-
-  nJ70 = PhysicsUtilities::countObjectsDeref(noEtaJets,70,999);
+  nJ70 = PhysicsUtilities::countObjectsDeref(jets,70,999);
   nJ30 = jets.size();
   nTightBTags = PhysicsUtilities::countObjectsDeref(jets,minPT,maxETA,&T2bWTreeAnalyzer::isTightBTaggedJet);
   dPhiMET12 = JetKinematics::absDPhiMETJ12(*met,jets);

@@ -16,9 +16,12 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 // ---- Configure event information
 , eventInfo           (0)
 , ak4Jets             (0)
+, puppiJets           (0)
+, pickyJets           (0)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
+, pfcands             (0)
 , genparticles        (0)
 {
 
@@ -83,11 +86,13 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case GENPARTICLES : {
       int defaultOptions = GenParticleFiller::defaultOptions;
-      if(cfg.getUntrackedParameter<bool>("saveAllGenParticles")) defaultOptions |= GenParticleFiller::SAVEALL;
+      if(cfg.getUntrackedParameter<bool>("saveAllGenParticles"))     defaultOptions |= GenParticleFiller::SAVEALL;
+      if(cfg.getUntrackedParameter<bool>("savePartonHadronization")) defaultOptions |= GenParticleFiller::SAVEPARTONDECAY;
 
       genparticles = new GenParticleFiller(options < 0 ? defaultOptions : options,
                                            branchName == "" ? defaults::BRANCH_GENPARTS : branchName,
-                                           cfg.getParameter<edm::InputTag>("prunedGenParticles")
+                                           cfg.getParameter<edm::InputTag>("prunedGenParticles"),
+                                           cfg.getParameter<edm::InputTag>("packedGenParticles")
                                            );
       initializedFillers.push_back(genparticles);
       break;
@@ -97,13 +102,16 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = PatJetFiller::defaultOptions; 
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
 
       ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options
                              , branchName == "" ? defaults::BRANCH_AK4JETS : branchName
                              , eventInfo
+                             , genparticles
                              , cfg.getParameter<edm::InputTag>("jets")
                              , cfg.getParameter<edm::InputTag>("reGenJets")
                              , cfg.getParameter<edm::InputTag>("stdGenJets")
+                             , cfg.getParameter<edm::InputTag>("flvAssoc")
                              , cfg.getUntrackedParameter<bool>("fillReGenJets")
                              , cfg.getUntrackedParameter<double>("minJetPt")
       );
@@ -113,17 +121,49 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case PUPPIJETS : {
       int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
+      if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
 
       puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
                                     eventInfo,
-                                    cfg.getParameter<edm::InputTag>("jetsPuppi"),
-                                    cfg.getParameter<edm::InputTag>("reGenJetsPuppi"),
-                                    cfg.getParameter<edm::InputTag>("stdGenJetsPuppi"),
-                                    cfg.getUntrackedParameter<bool>("fillReGenJetsPuppi"),
-                                    cfg.getUntrackedParameter<double>("minJetPtPuppi")
+                                    genparticles,
+                                    cfg.getParameter<edm::InputTag>("jets"),
+                                    cfg.getParameter<edm::InputTag>("btags"),
+                                    cfg.getParameter<edm::InputTag>("reGenJets"),
+                                    cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("flvAssoc"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
+                                    cfg.getUntrackedParameter<bool>("fillReGenJets"),
+                                    cfg.getUntrackedParameter<double>("minJetPt")
                                     );
       initializedFillers.push_back(puppiJets);
+      break;
+    }
+
+    case PICKYJETS : {
+      int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
+      if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
+
+      pickyJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                    branchName == "" ? defaults::BRANCH_PICKYJETS : branchName,
+                                    eventInfo,
+                                    genparticles,
+                                    cfg.getParameter<edm::InputTag>("jets"),
+                                    cfg.getParameter<edm::InputTag>("btags"),
+                                    cfg.getParameter<edm::InputTag>("reGenJets"),
+                                    cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("flvAssoc"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
+                                    cfg.getUntrackedParameter<bool>("fillReGenJets"),
+                                    cfg.getUntrackedParameter<double>("minJetPt")
+                                    );
+      initializedFillers.push_back(pickyJets);
       break;
     }
 
@@ -137,6 +177,10 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                      branchName == "" ? defaults::BRANCH_ELECTRONS : branchName,
                                      eventInfo,
                                      cfg.getParameter<edm::InputTag>("electrons"),
+                                     cfg.getParameter<edm::InputTag>("vetoId"),
+                                     cfg.getParameter<edm::InputTag>("looseId"),
+                                     cfg.getParameter<edm::InputTag>("mediumId"),
+                                     cfg.getParameter<edm::InputTag>("tightId"),
                                      cfg.getUntrackedParameter<int>("bunchSpacing"),
                                      cfg.getUntrackedParameter<double>("minElectronPt")
                                      );
@@ -172,6 +216,26 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                            cfg.getUntrackedParameter<double>("minTauPt")
                            );
       initializedFillers.push_back(taus);
+      break;
+    }
+
+    case PFCANDS : {
+      int defaultOptions = PFCandidateFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("saveAllCandidates")) defaultOptions |= PFCandidateFiller::SAVEALLCANDS;
+
+      pfcands = new PFCandidateFiller(options < 0 ? defaultOptions : options,
+                                      branchName == "" ? defaults::BRANCH_PFCANDS : branchName,
+                                      eventInfo,
+                                      cfg.getParameter<edm::InputTag>("pfcands"),
+                                      cfg.getParameter<edm::InputTag>("jets"),
+                                      cfg.getParameter<edm::InputTag>("taus"),
+                                      cfg.getUntrackedParameter<double>("minCandPt"),
+                                      cfg.getUntrackedParameter<double>("maxCandEta"),
+                                      cfg.getUntrackedParameter<double>("minTauDisc"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName"),
+                                      cfg.getUntrackedParameter<string>("tauMVAName")
+                                      );
+      initializedFillers.push_back(pfcands);
       break;
     }
 
