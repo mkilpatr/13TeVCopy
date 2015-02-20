@@ -714,7 +714,7 @@ public:
   WMVA  wMVA;
   T_MVA  tMVA;
   CORRALData data;
-  CORRALReconstructor (TString MVAPrefix = "") :
+  CORRALReconstructor (TString MVAPrefix = "$CMSSW_BASE/src/data/CORRAL/") :
      wJetLikliMVA( MVAPrefix + "T2tt_merged_wJetLikli_disc.root","mva_0")
     , wMVA(MVAPrefix + "T2tt_merged_wCand_disc.root","mva_0")
     , tMVA(MVAPrefix +"T2tt_merged_tCand_disc.root","mva_0")
