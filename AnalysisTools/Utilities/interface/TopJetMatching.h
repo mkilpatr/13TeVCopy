@@ -26,17 +26,12 @@ enum  PartonDiagnosis {
                       , DISPERSED_PARTON   //Hadronized energy is much less than parton energy
                       , NO_JET             //Not associated to any jet
                       , SPLIT_JETS         //Parton deposits sign. energy in more than one jet
-                      , DIRTY_JET          //Jet has significant contribution from non-hard sources
-                      , RESOLVED_PARTON    //Fully resolved parton
+                      , MERGED_JET        //Parton's jet is also an important parton's jet (if this parton is not 'important' the parton will not be labeled as merged)
+                      , DIRTY_JET          //Jet has significant contribution from other sources
+                      , RESOLVED_PARTON    //Fully resolved
                       , numPartonDiagnoses
                       };
-//diagnosis constants
-const float minPartonPT    = 20;
-const float maxPartonETA   = 2.4;
-const float minHadronRelE  = .50;
-const float minPartontRelE = .50;
-const float extraJetsPartonRelE = .15;
-const float minJetRelE     = .50;
+
 
 
 class Parton {
@@ -55,9 +50,18 @@ public:
     parton(p),genIdx(idx),hadE(inHadE), diag(numPartonDiagnoses), matchedJet(0) {}
 
   void addContainment(const unsigned int jetIDx, const float con) {containment.emplace_back(con,jetIDx);}
-  void finalize(const std::vector<Jet*>&   jets);
 
-  static PartonDiagnosis getDiagnosis(const Parton& parton,const std::vector<Jet*>& jets);
+  static void finalize(const std::vector<Jet*>&   jets, const std::vector<const Parton *>& impPartons, std::vector<Parton>& partons);
+
+  //diagnosis constants
+  static float minPartonPT        ;
+  static float maxPartonETA       ;
+  static float minHadronRelE      ;
+  static float minPartontRelE     ;
+  static float extraJetsPartonRelE;
+  static float minJetRelE         ;
+  static void setPurity(bool pure = true);
+  static PartonDiagnosis getDiagnosis(const std::vector<Jet*>& jets,const std::vector<const Parton *>&impPartons,const Parton& parton);
 };
 
 
@@ -65,6 +69,7 @@ enum TopDiagnosis {
   BAD_PARTON   ,      //At least one parton is soft or dispersed
   LOST_JET     , //At least one parton has no matched jet
   SPLIT_PARTONS,  //At least one parton is split into two jets
+  MERGED_PARTONS, // depending on your accepted contamination, you can have siginficant deposits from other top quarks
   CONTAMINATION,  //At least one parton is highly contaminated from outside
   RESOLVED_TOP ,  //ALL three partons are resolved well
   numTopDiagnoses,

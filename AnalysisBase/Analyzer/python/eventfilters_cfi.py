@@ -13,3 +13,15 @@ hadronicTTBarEventFilter = cms.EDFilter('HadronicTTBarEventFilter',
     savePartonHadronization = cms.untracked.bool(False),
 )
 )
+
+
+met200Filter = cms.EDFilter('METFilter',
+  physicsAnalyzer_configuration,
+   EventInfo = cms.untracked.PSet(
+     isFilled          = cms.untracked.bool(True),
+     vertices          = cms.InputTag('offlineSlimmedPrimaryVertices'),
+     rho               = cms.InputTag('fixedGridRhoFastjetAll'),
+     mets              = cms.InputTag('slimmedMETs'),  
+ ),
+ minMET = cms.double(200)
+)

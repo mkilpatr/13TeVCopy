@@ -31,7 +31,7 @@ namespace ucsbsusy {
       float getPUJetId(const reco::PFJet& jet) const {return -10;}
       float getbDisc(const reco::PFJet& jet) const;
       float getQGDisc(const reco::PFJet& jet) const{ return -10;}
-      float getBetaStar(const reco::PFJet& jet) const{ return -10;}
+      float getBetaStar(const reco::PFJet& jet) const{  return qgTaggingVar_->getBetaStar(&jet,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_);}
 
     protected:
       const edm::InputTag bTagsTag_;
