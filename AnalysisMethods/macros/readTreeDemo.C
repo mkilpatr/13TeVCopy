@@ -37,16 +37,16 @@ public:
     for(const auto* jet : (jets)){
       cout << "Jet " << ": pt = " << jet->pt() << "; eta = " << jet->eta() << "; phi = " << jet->phi()<<endl;
     }
-    for(const auto* lepton : (leptons)){
+    for(const auto* lepton : (selectedLeptons)){
       cout << "Lepton " << ": pt = " << lepton->pt() << "; eta = " << lepton->eta() << "; phi = " << lepton->phi() << endl;
     }
 
-    for(const auto* tau : (taus)){
+    /*for(const auto* tau : (taus)){
             bool passantimutight = (tau->hpsid() & kTightMuMVA);
             bool passantielemedium = (tau->hpsid() & kMediumEleMVA);
             bool passmvaloose = (tau->hpsid() & kLooseIsoMVALT);
             cout << "Tau " <<": pt = " << tau->pt() << "; eta = " << tau->eta() << "; phi = " << tau->phi() <<  "; dxysig = " << tau->dxysig() << "; anti-muon tight rejection = " << passantimutight << "; anti-tau medium rejection = " << passantielemedium << "; pass mva iso (with lifetime) loose = " << passmvaloose << "; passes POG selection? " << tau->isgoodpogtau()  << endl;
-    }
+    }*/
   }
 };
 
@@ -57,7 +57,7 @@ public:
 
 // This part is just a wrapper, you just need to construct your class and
 // call the analyze() function
-void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
+void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree_numEvent1000.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
   BaseTreeAnalyzer::ConfigPars pars;
   pars.minJetPt = 30;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
