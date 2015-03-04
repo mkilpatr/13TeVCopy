@@ -34,8 +34,14 @@ public:
 	if (usePuppi) cout <<     "using PUPPI" << endl;
 	else          cout << "NOT using PUPPI" << endl;
 
+	// blfOnly <-
+	// allVars <- done
+	// noBLF   <- done
+	// noMult  <- done
+	// noMultBLF <- done
+
     //TFile* genFile = TFile::Open("QGDisc_gen_ak4.root",   "READ");
-	TFile* genFile = TFile::Open("QGDisc_gen_ak4_731_fullPtEta.root",   "READ");
+	TFile* genFile = TFile::Open("BLF/QGDisc_gen_ak4_731_BLF_blfOnly.root",   "READ");
     paramGen = dynamic_cast<ParamatrixMVA*>(genFile->Get("QG_0"));
     delete genFile;
     //cout << "done getting genFile" << endl;
@@ -43,8 +49,8 @@ public:
 	string recoFileName = "";
 	//if (usePuppi) recoFileName = "QGDisc_reco_puppi.root";
 	//else          recoFileName = "QGDisc_reco_ak4.root";
-	if (usePuppi) recoFileName = "QGDisc_reco_puppi_731_fullPtEta.root";
-	else          recoFileName = "QGDisc_reco_ak4_731_fullPtEta.root";
+	if (usePuppi) recoFileName = "";
+	else          recoFileName = "BLF/QGDisc_reco_ak4_731_BLF_blfOnly.root";
     TFile* recoFile = TFile::Open(recoFileName.c_str(), "READ");
     paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
     delete recoFile;
@@ -55,17 +61,17 @@ public:
 
   double getGenMVA(const subJet& jet){
 	genMVA = paramGen->get(jet.jet->pt(),TMath::Abs(jet.jet->eta())); // ak4pfchs ak4
-    static const int gen_ak4_genjet_ptD     = genMVA->findVariable("ak4_genjet_ptD"    );
-    static const int gen_ak4_genjet_axis1   = genMVA->findVariable("ak4_genjet_axis1"  );
-    static const int gen_ak4_genjet_axis2   = genMVA->findVariable("ak4_genjet_axis2"  );
-    static const int gen_ak4_genjet_jetMult = genMVA->findVariable("ak4_genjet_jetMult");
+    //static const int gen_ak4_genjet_ptD     = genMVA->findVariable("ak4_genjet_ptD"    );
+    //static const int gen_ak4_genjet_axis1   = genMVA->findVariable("ak4_genjet_axis1"  );
+    //static const int gen_ak4_genjet_axis2   = genMVA->findVariable("ak4_genjet_axis2"  );
+    //static const int gen_ak4_genjet_jetMult = genMVA->findVariable("ak4_genjet_jetMult");
     //static const int gen_ak4_genjet_blf0    = genMVA->findVariable("ak4_genjet_blf0"   );
     //static const int gen_ak4_genjet_blf1    = genMVA->findVariable("ak4_genjet_blf1"   );
     //static const int gen_ak4_genjet_blf2    = genMVA->findVariable("ak4_genjet_blf2"   );
-    genMVA->setVariable(gen_ak4_genjet_ptD    ,jet.ptD);
-    genMVA->setVariable(gen_ak4_genjet_axis1  ,jet.axis1);
-    genMVA->setVariable(gen_ak4_genjet_axis2  ,jet.axis2);
-    genMVA->setVariable(gen_ak4_genjet_jetMult,jet.mult);
+    //genMVA->setVariable(gen_ak4_genjet_ptD    ,jet.ptD);
+    //genMVA->setVariable(gen_ak4_genjet_axis1  ,jet.axis1);
+    //genMVA->setVariable(gen_ak4_genjet_axis2  ,jet.axis2);
+    //genMVA->setVariable(gen_ak4_genjet_jetMult,jet.mult);
     //genMVA->setVariable(gen_ak4_genjet_blf0   ,jet.blf0);
     //genMVA->setVariable(gen_ak4_genjet_blf1   ,jet.blf1);
     //genMVA->setVariable(gen_ak4_genjet_blf2   ,jet.blf2);
@@ -76,36 +82,36 @@ public:
   double getRecoMVA(const subJet& jet){
 	recoMVA = paramRec->get(jet.jet->pt(),TMath::Abs(jet.jet->eta()));
 	if (usePuppi) {
-		static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
-		static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
-		static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
-		static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
-		//static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4pfpuppi_jet_blf0"   );
-		//static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4pfpuppi_jet_blf1"   );
-		//static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4pfpuppi_jet_blf2"   );
-		recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
-		recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
-		recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
-		recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
-		//recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
-		//recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
-		//recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
+		//static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4pfpuppi_jet_ptD"    );
+		//static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4pfpuppi_jet_axis1"  );
+		//static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4pfpuppi_jet_axis2"  );
+		//static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4pfpuppi_jet_jetMult");
+		static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4pfpuppi_jet_blf0"   );
+		static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4pfpuppi_jet_blf1"   );
+		static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4pfpuppi_jet_blf2"   );
+		//recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
+		//recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
+		//recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
+		//recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
+		recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
+		recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
+		recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
 	} // usePuppi
 	else {                                                               // ak4pfchs ak4
-		static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4_jet_ptD"    );
-		static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4_jet_axis1"  );
-		static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4_jet_axis2"  );
-		static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4_jet_jetMult");
-		//static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4_jet_blf0"   );
-		//static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4_jet_blf1"   );
-		//static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4_jet_blf2"   );
-		recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
-		recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
-		recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
-		recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
-		//recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
-		//recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
-		//recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
+		//static const int reco_ak4_jet_ptD     = recoMVA->findVariable("ak4_jet_ptD"    );
+		//static const int reco_ak4_jet_axis1   = recoMVA->findVariable("ak4_jet_axis1"  );
+		//static const int reco_ak4_jet_axis2   = recoMVA->findVariable("ak4_jet_axis2"  );
+		//static const int reco_ak4_jet_jetMult = recoMVA->findVariable("ak4_jet_jetMult");
+		static const int reco_ak4_jet_blf0    = recoMVA->findVariable("ak4_jet_blf0"   );
+		static const int reco_ak4_jet_blf1    = recoMVA->findVariable("ak4_jet_blf1"   );
+		static const int reco_ak4_jet_blf2    = recoMVA->findVariable("ak4_jet_blf2"   );
+		//recoMVA->setVariable(reco_ak4_jet_ptD    ,jet.ptD  );
+		//recoMVA->setVariable(reco_ak4_jet_axis1  ,jet.axis1);
+		//recoMVA->setVariable(reco_ak4_jet_axis2  ,jet.axis2);
+		//recoMVA->setVariable(reco_ak4_jet_jetMult,jet.mult );
+		recoMVA->setVariable(reco_ak4_jet_blf0   ,jet.blf0 );
+		recoMVA->setVariable(reco_ak4_jet_blf1   ,jet.blf1 );
+		recoMVA->setVariable(reco_ak4_jet_blf2   ,jet.blf2 );
 	} // !usePuppi
     return recoMVA->evaluateMethod(0);
     //cout << "done getting recoMVA" << endl;
@@ -149,10 +155,10 @@ public:
     eventPlots.checkPoint(1);
 
     for(const auto& j : jets){
-      if(j.jet->pt()>796 and TMath::Abs(j.jet->eta())>2.4) {
+      /*if(j.jet->pt()>796 and TMath::Abs(j.jet->eta())>2.4) {
     	  cout << "pt = " << j.jet->pt() << "\teta = " << j.jet->eta() << endl;
     	  continue;
-      }
+      } // */
       //if ( TMath::Abs(j.jet->eta()) >= 2.4 ) continue;
       //if ( j.jet->pt() <=30 ) continue;
       eventPlots.revert(1);
@@ -162,9 +168,9 @@ public:
       eventPlots( "pt_low__", j.jet->pt() >  30 and j.jet->pt() <  50 );
       eventPlots( "pt_mid__", j.jet->pt() >  50 and j.jet->pt() < 100 );
       eventPlots( "pt_hgh__", j.jet->pt() > 100                       );
-      eventPlots( "pt_b80__", j.jet->pt() >  80 and j.jet->pt() < 101 );
-      eventPlots( "pt_b201_", j.jet->pt() > 201 and j.jet->pt() < 252 );
-      eventPlots( "pt_b400_", j.jet->pt() > 400 and j.jet->pt() < 503 );
+      //eventPlots( "pt_b80__", j.jet->pt() >  80 and j.jet->pt() < 101 );
+      //eventPlots( "pt_b201_", j.jet->pt() > 201 and j.jet->pt() < 252 );
+      //eventPlots( "pt_b400_", j.jet->pt() > 400 and j.jet->pt() < 503 );
 
       //cout << "...Plots: jeteta" << endl;
       ++eventPlots;
@@ -178,7 +184,7 @@ public:
       //eventPlots( "nonPU__",         j.type != PU );
       eventPlots( "q__", j.type == Q  );
       eventPlots( "g__", j.type == G  );
-      //eventPlots( "b__", j.type == B  );
+      eventPlots( "b__", j.type == B  );
       //eventPlots( "p__", j.type == PU );
       //eventPlots( "U__", j.type == U  );
       //eventPlots( "c_k__", j.type == C  );
@@ -193,13 +199,13 @@ public:
       eventPlots.fill( j.blf0      , 1, "blf0"  , ";blf_{0}"          , 200, -10,    10   );
       eventPlots.fill( j.blf1      , 1, "blf1"  , ";blf_{1}"          , 200, -10,    10   );
       eventPlots.fill( j.blf2      , 1, "blf2"  , ";blf_{2}"          , 200, -10,    10   );
-      if (isReco) {
-    	//cout << "Mult = " << j.mult << "\tjmMult = " << j.jmMult << endl;
-        eventPlots.fill( j.jmQGL     , 1, "jmQGL",   ";JM liklihood"  , 100, -2,    2   );
-        eventPlots.fill( j.jmMult    , 1, "jmMult",  ";JM # of part"  , 100, -0.5, 99.5 );
-        eventPlots.fill( j.jmPtD     , 1, "jmPtD",   ";JM p_{t}(D)"   ,  50,  0,    1   );
-        eventPlots.fill( j.jmAxis2   , 1, "jmAxis2", ";JM axis_{2}"   ,  50,  0,    0.4 );
-      } // isReco
+      //if (isReco) {
+    //	//cout << "Mult = " << j.mult << "\tjmMult = " << j.jmMult << endl;
+      //  eventPlots.fill( j.jmQGL     , 1, "jmQGL",   ";JM liklihood"  , 100, -2,    2   );
+      //  eventPlots.fill( j.jmMult    , 1, "jmMult",  ";JM # of part"  , 100, -0.5, 99.5 );
+      //  eventPlots.fill( j.jmPtD     , 1, "jmPtD",   ";JM p_{t}(D)"   ,  50,  0,    1   );
+      //  eventPlots.fill( j.jmAxis2   , 1, "jmAxis2", ";JM axis_{2}"   ,  50,  0,    0.4 );
+      //} // isReco
 
       //if (i==jets.size()) { cout << "skipping last jet" << endl; continue; }
       //cout << "...Plots: filling MVAs" << endl;

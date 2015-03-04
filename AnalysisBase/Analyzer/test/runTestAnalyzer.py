@@ -32,11 +32,11 @@ options.inputFiles = (
                        #'root://xrootd.unl.edu//store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/4A6FB452-AB71-E411-8327-001E6739689C.root',
                        #'root://xrootd.unl.edu//store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/4C7B3482-AB72-E411-8DF7-002590A50046.root'
                        # QCD_HT  PU20  bx25      dataset=/QCD_HT*/Phys14DR-PU*bx*_PHYS14_*/MINIAODSIM
-                       #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/481A6155-916F-E411-BA52-00266CFFCAF0.root',
-                       #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/60893A5E-916F-E411-B2D9-00266CFBE43C.root',
-                       #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/7A37A45E-916F-E411-94F2-00266CFFBEB4.root',
-                       #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/7A67B658-916F-E411-AE98-1CC1DE1CED22.root',
-                       #'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/827D2760-916F-E411-8F4C-AC162DABAF78.root',#
+                       'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/481A6155-916F-E411-BA52-00266CFFCAF0.root',
+                       'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/60893A5E-916F-E411-B2D9-00266CFBE43C.root',
+                       'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/7A37A45E-916F-E411-94F2-00266CFFBEB4.root',
+                       'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/7A67B658-916F-E411-AE98-1CC1DE1CED22.root',
+                       'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/827D2760-916F-E411-8F4C-AC162DABAF78.root',#
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/86182C53-916F-E411-9DA7-00266CFFBE14.root',
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/CCE6D44F-916F-E411-A0E3-AC162DABBBA0.root',
                        'root://xrootd.unl.edu//store/mc/Phys14DR/QCD_HT-500To1000_13TeV-madgraph/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/E8DF5154-916F-E411-937A-00266CFFBF88.root',
@@ -50,7 +50,7 @@ options.inputFiles = (
                        
                        )
 
-options.maxEvents = 1000
+options.maxEvents = -1
 
 options.register('skipEvents',
                  0,
@@ -121,6 +121,14 @@ process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 process.load('Dummy.Puppi.Puppi_cff')
 process.puppi.PuppiName      = cms.untracked.string("")
 
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+process.QGTagger.srcJets          = cms.InputTag('slimmedJets')  # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
+process.QGTagger.jetsLabel        = cms.string('QGL_AK4PFchs')   # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+
+# for turning off puppi and picky jets
+process.TestAnalyzer.PickyJets.isFilled = False 
+#process.TestAnalyzer.PuppiJets.isFilled = False # should be False by default 
+
 
 process.p = cms.Path(#process.puppi*
                      process.ak4PatAssocSeq * 
@@ -128,5 +136,6 @@ process.p = cms.Path(#process.puppi*
                      process.ca8JetsSeq     *
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
-                     process.pickyJetSeq    *
+                     #process.pickyJetSeq    *
+                     process.QGTagger        *
                      process.TestAnalyzer)
