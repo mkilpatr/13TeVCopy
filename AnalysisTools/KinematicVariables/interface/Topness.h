@@ -65,14 +65,12 @@ class Topness {
 			       );
 
   static void minuitFunctionWrapper(int& nDim, double* gout, double& result, double *par, int flg);
-  //  double topnessMinimization(MomentumD lep_, MomentumD bjet1_, MomentumD bjet2_, MomentumD met_);
   double topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
   double getMinTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
   double getMaxTopness      (const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info = 0);
-  //  bool sortInDecreasingCSV(RecoJetF *jet1, RecoJetF *jet2);
   double findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
-
-
+  double findMinTopnessConfiguration(const LeptonF* lepton,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
+  double find2BtagWeightedTopness(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,int option);
   
 }; // end of class Topness
 
