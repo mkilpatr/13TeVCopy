@@ -209,7 +209,8 @@ class QuarkGluonTaggingVariables {
      double totalPT = 0;
 
      for(int iD = 0; iD < nConstituents; ++iD){
-       const pat::PackedCandidate* part = (pat::PackedCandidate*)jet->daughter(iD);
+       const pat::PackedCandidate* part = dynamic_cast<const pat::PackedCandidate*>(jet->daughter(iD));
+       if(part == 0) return -10;
 //       if(part->pt() < 1) continue;
        if(part->charge() == 0) continue;
        double pt = part->pt();
@@ -233,6 +234,42 @@ class QuarkGluonTaggingVariables {
      if(totalPT == 0) return 10;
      return betaStar / totalPT;
    } // getBetaStar()
+
+   template<typename Jet>
+   double getJetCharge(const Jet * jet){
+     int nConstituents = jet->numberOfDaughters();
+     if(jet->pt() == 0) return -10;
+     double charge = 0;
+     for(int iD = 0; iD < nConstituents; ++iD){
+       const auto * con =  jet->daughter(iD);
+       if(con->charge() == 0) continue;
+       charge += float(con->charge())*con->pt();
+     }
+     return charge/jet->pt();
+   }
+
+   template<typename Jet>
+   void getPull(const Jet * jet, double& pullRap, double& pullPhi){
+     pullRap = 0;
+     pullPhi = 0;
+     double jetRap = jet->rapidity();
+     double jetPhi = jet->phi();
+
+     if(jet->pt() == 0) return;
+
+     int nConstituents = jet->numberOfDaughters();
+     for(int iD = 0; iD < nConstituents; ++iD){
+       const auto * con =  jet->daughter(iD);
+       const double dRap = con->rapidity() - jetRap ;
+       const double dPhi = PhysicsUtilities::deltaPhi(con->phi(), jetPhi);
+       const double dR = TMath::Sqrt(dRap*dRap + dPhi*dPhi);
+       pullRap += dRap * con->pt() * dR;
+       pullPhi += dPhi * con->pt() * dR;
+     }
+     pullRap /= jet->pt();
+     pullPhi /= jet->pt();
+
+   }
 
  private:
   double axis1_    ;
