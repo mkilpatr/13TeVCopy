@@ -228,3 +228,43 @@ double Topness::findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons
 
   return getMinTopness(leptons[0],jets[csv1],jets[csv2],met,info);
 } // end of Topness::findMinTopnessConfiguration
+
+
+double Topness::findMinTopnessConfiguration(const LeptonF* lepton,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info) {
+
+  if(jets.size() < 2) return -99;
+  
+  vector<pair<double,int> > rankedJets(jets.size());
+  for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
+    rankedJets[iJ].first = jets[iJ]->csv();
+    rankedJets[iJ].second = iJ;
+  }
+  std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+
+  int csv1 = rankedJets[0].second;
+  int csv2 = rankedJets[1].second;
+
+  return getMinTopness(lepton,jets[csv1],jets[csv2],met,info);
+} // end of Topness::findMinTopnessConfiguration
+
+
+double Topness::find2BtagWeightedTopness(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met, int option) {
+
+  if(leptons.size() == 0 || jets.size() < 2) return -99;
+  
+  vector<pair<double,int> > rankedJets(jets.size());
+  for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
+    rankedJets[iJ].first = jets[iJ]->csv();
+    rankedJets[iJ].second = iJ;
+  }
+  std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+
+  int csv1 = rankedJets[0].second;
+  int csv2 = rankedJets[1].second;
+
+  double tmpTop = -99;
+  if      (option == 1) { tmpTop = topnessMinimization(leptons[0],jets[csv1],jets[csv2],met); }
+  else if (option == 2) { tmpTop = topnessMinimization(leptons[0],jets[csv2],jets[csv1],met); }
+
+  return tmpTop;
+} // end of Topness::findMinTopnessConfiguration

@@ -1,4 +1,6 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTMVAProducer.h"
+#include <TMVA/Config.h>
+#include <TMVA/MethodBDT.h>
 
 using namespace std;
 using namespace ucsbsusy;
@@ -105,30 +107,37 @@ void BaseTMVAProducer::runVarSet(size iSet){
   classifiedMVA->bake         ();
 
   name.Prepend(TString::Format("%s/",config.xmlDir.Data()));
-  Panvariate::createFactories ( inputTrees
-      , inputVariables
-      , classifiedMVA
-      , name
-      , config.factoryOptions
-      , true
-  );
-
 
   //-- Train methods --------------------------------------------------------
-  for (ParamatrixMVA::Iterator iterator = classifiedMVA->iterator(); iterator.next();) {
+  for (ParamatrixMVA::Iterator iterator = classifiedMVA->iterator(); iterator.nextBin();) {
+    Panvariate::initSpecificFactory (
+        iterator
+        , inputTrees
+        , inputVariables
+        , classifiedMVA
+        , name
+        , config.factoryOptions
+        , true
+    );
+    if(iterator.get() == 0) continue;
+
     Panvariate*     mva         = iterator.get();
     TMVA::Factory*  factory     = mva->getFactory();
+
     cout << "_____________________________________________________________________________________________________\n" << endl;
     cout << "  " << iterator.getBinTitle()                                                                            << endl;
     cout << "_____________________________________________________________________________________________________\n" << endl;
 
+    (TMVA::gConfig().GetVariablePlotting()).fMaxNumOfAllowedVariablesForScatterPlots = 0;
+
+
     if(config.weightExpr != "") factory->SetWeightExpression(config.weightExpr);
 
     factory->PrepareTrainingAndTestTree("", config.splittingOptions);
+
     for(unsigned int iF = 0; iF < config.factories.size(); ++iF)
       mva    ->bookMethod         ( config.factories[iF].type, config.factories[iF].title, config.factories[iF].options  );
     factory->TrainAllMethods    ();
-
   }
 
   outFile->cd();

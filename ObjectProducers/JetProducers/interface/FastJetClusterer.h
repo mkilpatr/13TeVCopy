@@ -31,7 +31,7 @@ class FastJetClusterer
 /*   Supporting Types    */
 /*************************/
 public:
-  enum PRTTYPE {RECO,GEN,PU};
+  enum PRTTYPE {RECO,GEN,PARTON,PU};
   class UserInfo : public fastjet::PseudoJet::UserInfoBase, public reco::CandidatePtr {
   public:
     PRTTYPE type;

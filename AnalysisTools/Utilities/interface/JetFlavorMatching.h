@@ -118,6 +118,15 @@ struct GreaterParticleE : public std::binary_function<const Particle&, const Par
       std::vector<JetFlavorInfo::JetFlavor>& flavors, std::vector<float>& hadronPTs,std::vector<std::vector<ParticleDecayRef> > & matchedParticles
   );
   //_____________________________________________________________________________
+  /// Match partons to jets, based on clustering
+  /// The partonJets must be one to one (by index) to the jets
+  //_____________________________________________________________________________
+  template<typename flvSource, typename Object>
+  void assignJetPartonFlavors(const std::vector<const flvSource*>& partonJets, const std::vector<Object>& jets,
+      std::vector<JetFlavorInfo::JetFlavor>& flavors, bool ignoreHeavyFlavors
+  );
+
+  //_____________________________________________________________________________
   /// Match partons to jets, based on the one with the greatest pT in some radius cone. (squared)
   //  if cusRad2 != 0 then use that radius for each jet (usefull for variable cone jets)
   //_____________________________________________________________________________

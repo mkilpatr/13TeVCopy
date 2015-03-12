@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 pickyjet_configuration = cms.PSet(
-                                    pickyMVAFileName    = cms.string("support/pickymva_nopuppi_reco.root")
+                                    pickyMVAFileName    = cms.string("$CMSSW_BASE/src/ObjectProducers/JetProducers/data/pickymva_nopuppi_reco.root")
                                   , pickyMVAName        = cms.string("picky_nopuppi_reco_0")                            
                                   , beta                = cms.double(1)                                                                                             
                                   , rCutoff             = cms.double(10000)                                                                                         
@@ -19,6 +19,7 @@ jet_configuration      = cms.PSet(
                                     trimmedjet_configuration,
                                     isRealData = cms.int32(0),
                                     produceGen      = cms.bool(True),
+                                    producePartonJets      = cms.bool(True),
                                     ignoreBosonInv  = cms.bool(True),
                                     ignoreBSMInv    = cms.bool(True),
                                     src             = cms.InputTag("packedPFCandidates"), 

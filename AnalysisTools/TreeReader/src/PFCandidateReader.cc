@@ -31,6 +31,15 @@ PFCandidateReader::PFCandidateReader() : BaseReader(){
   fromPV       = new vector<int>   ;
   jetIndex     = new vector<int>   ;
   tauIndex     = new vector<int>   ;
+  chiso0p1     = new vector<float> ;
+  chiso0p2     = new vector<float> ;
+  chiso0p3     = new vector<float> ;
+  chiso0p4     = new vector<float> ;
+  totiso0p1    = new vector<float> ;
+  totiso0p2    = new vector<float> ;
+  totiso0p3    = new vector<float> ;
+  totiso0p4    = new vector<float> ;
+  neartrkdr    = new vector<float> ;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -57,6 +66,18 @@ void PFCandidateReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName , "fromPV"      , &fromPV      , true);
     treeReader->setBranchAddress(branchName , "contJetIndex", &jetIndex    , true);
     treeReader->setBranchAddress(branchName , "contTauIndex", &tauIndex    , true);
+    if(options_ & LOADEXTRECO){
+      clog << " + extra info ";
+      treeReader->setBranchAddress(branchName , "chiso0p1"     , &chiso0p1    , true);
+      treeReader->setBranchAddress(branchName , "chiso0p2"     , &chiso0p2    , true);
+      treeReader->setBranchAddress(branchName , "chiso0p3"     , &chiso0p3    , true);
+      treeReader->setBranchAddress(branchName , "chiso0p4"     , &chiso0p4    , true);
+      treeReader->setBranchAddress(branchName , "totiso0p1"    , &totiso0p1   , true);
+      treeReader->setBranchAddress(branchName , "totiso0p2"    , &totiso0p2   , true);
+      treeReader->setBranchAddress(branchName , "totiso0p3"    , &totiso0p3   , true);
+      treeReader->setBranchAddress(branchName , "totiso0p4"    , &totiso0p4   , true);
+      treeReader->setBranchAddress(branchName , "nearestTrkDR" , &neartrkdr   , true);
+    }
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -82,6 +103,35 @@ void PFCandidateReader::refresh(){
       pfcands.back().setJetIndex(jetIndex->at(iL));
       pfcands.back().setTauIndex(tauIndex->at(iL));
       pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+    }
+  }
+  if(options_ & LOADEXTRECO){
+    extpfcands.clear();
+    extpfcands.reserve(pt->size());
+    for(unsigned int iL = 0; iL < pt->size(); ++iL){
+      ExtendedPFCandidate cand;
+      cand.setP4(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)));
+      cand.setIndex(iL);
+      cand.setPdgId(pdgid->at(iL));
+      cand.setCharge(q->at(iL));
+      cand.setD0(d0->at(iL));
+      cand.setDz(dz->at(iL));
+      cand.setMt(mt->at(iL));
+      cand.setTauDisc(taudisc->at(iL));
+      cand.setFromPV(fromPV->at(iL));
+      cand.setJetIndex(jetIndex->at(iL));
+      cand.setTauIndex(tauIndex->at(iL));
+      cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+      cand.setChIso0p1(chiso0p1->at(iL));
+      cand.setChIso0p2(chiso0p2->at(iL));
+      cand.setChIso0p3(chiso0p3->at(iL));
+      cand.setChIso0p4(chiso0p4->at(iL));
+      cand.setTotIso0p1(totiso0p1->at(iL));
+      cand.setTotIso0p2(totiso0p2->at(iL));
+      cand.setTotIso0p3(totiso0p3->at(iL));
+      cand.setTotIso0p4(totiso0p4->at(iL));
+      cand.setNearTrkDR(neartrkdr->at(iL));
+      extpfcands.push_back(cand);
     }
   }
 }

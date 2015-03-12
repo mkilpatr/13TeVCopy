@@ -134,7 +134,6 @@ void JetReader::refresh(){
     genJets.reserve(genjetpt_->size());
     for(unsigned int iJ = 0; iJ < genjetpt_->size(); ++iJ)
       genJets.emplace_back(CylLorentzVectorF(genjetpt_->at(iJ),genjeteta_->at(iJ),genjetphi_->at(iJ),genjetmass_->at(iJ)),iJ,genjetflavor_->at(iJ));
-    std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
   }
 
   if(options_ & LOADRECO){
@@ -147,6 +146,9 @@ void JetReader::refresh(){
     }
     std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
+  if(options_ & LOADGEN)
+    std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
+
 }
 
 //--------------------------------------------------------------------------------------------------
