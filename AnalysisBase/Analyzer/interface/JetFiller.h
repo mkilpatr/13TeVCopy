@@ -15,9 +15,6 @@
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 
 #include "DataFormats/JetReco/interface/GenJet.h"
-#include "DataFormats/Common/interface/ValueMap.h"
-#include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 namespace ucsbsusy {
 class EventInfoFiller;
@@ -75,10 +72,6 @@ public:
       const edm::InputTag reGenJetTag_;
       const edm::InputTag stdGenJetTag_;
       const edm::InputTag flvAssocTag_;
-      const edm::InputTag qgTagQGL_;
-      const edm::InputTag qgTagMult_;
-      const edm::InputTag qgTagPtD_;
-      const edm::InputTag qgTagAxis2_;
       const double        jptMin_;
       const bool          fillReGenJets_;
 
@@ -108,21 +101,10 @@ public:
       size ijetaxis1_   ;
       size ijetaxis2_   ;
       size ijetMult_    ;
-      size ijetblf0_    ;
-      size ijetblf1_    ;
-      size ijetblf2_    ;
       size igenjetptD_   ;
       size igenjetaxis1_ ;
       size igenjetaxis2_ ;
       size igenjetMult_  ;
-      size igenjetblf0_  ;
-      size igenjetblf1_  ;
-      size igenjetblf2_  ;
-      // for JetMET qgTagger
-      size ijetjmQGL_   ;
-      size ijetjmMult_  ;
-      size ijetjmPtD_   ;
-      size ijetjmAxis2_ ;
       //for top assoc
       size iGenAssocPrtIndex_;
       size iGenAssocJetIndex_;
@@ -142,10 +124,6 @@ public:
       edm::Handle<reco::GenJetCollection> reGenJets_;
       edm::Handle<reco::GenJetCollection> stdGenJets_;
       edm::Handle<std::vector<size8   > > flvAssoc_;
-      edm::Handle<edm::ValueMap<float>>   qgHandleQGL_;
-      edm::Handle<edm::ValueMap<int>>     qgHandleMult_;
-      edm::Handle<edm::ValueMap<float>>   qgHandlePtD_;
-      edm::Handle<edm::ValueMap<float>>   qgHandleAxis2_;
 
   };
 

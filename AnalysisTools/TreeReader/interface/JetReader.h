@@ -61,21 +61,10 @@ public:
   std::vector<float>*  jetaxis1_    ;
   std::vector<float>*  jetaxis2_    ;
   std::vector<size16>* jetMult_     ;
-  std::vector<float>*  jetblf0_     ;
-  std::vector<float>*  jetblf1_     ;
-  std::vector<float>*  jetblf2_     ;
   std::vector<float>*  genjetptD_   ;
   std::vector<float>*  genjetaxis1_ ;
   std::vector<float>*  genjetaxis2_ ;
   std::vector<size16>* genjetMult_  ;
-  std::vector<float>*  genjetblf0_  ;
-  std::vector<float>*  genjetblf1_  ;
-  std::vector<float>*  genjetblf2_  ;
-  // for JetMET qgTagger
-  std::vector<float>*  jetjmQGL_   ;
-  std::vector<size16>* jetjmMult_  ;
-  std::vector<float>*  jetjmPtD_   ;
-  std::vector<float>*  jetjmAxis2_ ;
   //for top assoc
   std::vector<size16>* genAssocPrtIndex_;
   std::vector<size16>* genAssocJetIndex_;
