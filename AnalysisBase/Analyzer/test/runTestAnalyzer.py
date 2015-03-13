@@ -80,9 +80,14 @@ process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 
 
-
 process.load('Dummy.Puppi.Puppi_cff')
 process.puppi.PuppiName      = cms.untracked.string("")
+
+
+# for QG tagging
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+process.QGTagger.srcJets          = cms.InputTag('slimmedJets')  # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
+process.QGTagger.jetsLabel        = cms.string('QGL_AK4PFchs')   # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
 
 
 process.p = cms.Path(#process.puppi*
@@ -92,4 +97,5 @@ process.p = cms.Path(#process.puppi*
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
                      process.pickyJetSeq    *
+                     process.QGTagger       *
                      process.TestAnalyzer)

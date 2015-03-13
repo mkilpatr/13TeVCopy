@@ -226,6 +226,15 @@ public:
 
 
 
+    double mva1 = getMVA(param);
+    double mva2 = getMVA(param3);
+
+    ++eventPlots;
+    eventPlots("",true);
+    eventPlots("mva1__",mva1 > .97);
+    eventPlots("mva3__",mva2 > .96);
+
+
     eventPlots.fill(1, weight, "nEvts"                , ";nEvents"         , 1,  .5,  1.5, prefix);
 
 
@@ -252,9 +261,9 @@ public:
 //    eventPlots.fill(vars.secLeadBPT, weight, "secleading_bPT"    , ";p_{T} bJet 2"                     , 24,  0  ,  600,  prefix);
 
 
-    eventPlots.fill(getMVA(param)               , weight, "mva"    , ";MVA Disc"                                               , 200,  -1  ,  1,  prefix);
+    eventPlots.fill(mva1               , weight, "mva"    , ";MVA Disc"                                               , 200,  -1  ,  1,  prefix);
 //    eventPlots.fill(getMVAExtra(param2)          , weight, "mva2"    , ";MVA Disc 2"                                            , 200,  -1  ,  1,  prefix);
-    eventPlots.fill(getMVA(param3)          , weight, "mva3"    , ";MVA Disc 3"                                            , 200,  -1  ,  1,  prefix);
+    eventPlots.fill(mva2         , weight, "mva3"    , ";MVA Disc 3"                                            , 200,  -1  ,  1,  prefix);
 //    eventPlots.fill(getMVAExtra(param4)          , weight, "mva4"    , ";MVA Disc 4"                                            , 200,  -1  ,  1,  prefix);
 
   }

@@ -13,8 +13,25 @@ using namespace TopJetMatching;
 conType TopJetMatching::toContainmentType(const float inCon ){ return ucsbsusy::convertTo<conType>( std::floor(inCon*100) ,"TopJetMatching::toContainmentType");}
 float TopJetMatching::fromContainmentType(const conType inCon){return float(inCon)/100; }
 
+
+float Parton::minPartonPT         = 20 ;
+float Parton::maxPartonETA        = 2.4;
+float Parton::minHadronRelE       = .50;
+float Parton::minPartontRelE      = .50;
+float Parton::extraJetsPartonRelE = .15;
+float Parton::minJetRelE          = .50 ;
+
 //--------------------------------------------------------------------------------------------------
-PartonDiagnosis Parton::getDiagnosis(const Parton& parton,const std::vector<Jet*>& jets) {
+void Parton::setPurity(bool pure){
+  minPartonPT         = pure ? 20   : 20 ;
+  maxPartonETA        = pure ? 2.4  : 2.4;
+  minHadronRelE       = pure ? .50  : .50;
+  minPartontRelE      = pure ? .50  : .15;
+  extraJetsPartonRelE = pure ? .15  : .15;
+  minJetRelE          = pure ? .50  : .0 ;
+}
+//--------------------------------------------------------------------------------------------------
+PartonDiagnosis Parton::getDiagnosis(const std::vector<Jet*>& jets,const std::vector<const Parton *>& impPartons,const Parton& parton) {
   if( parton.parton->pt() < minPartonPT)             return SOFT_PARTON;
   if( TMath::Abs(parton.parton->eta()) > maxPartonETA)return HIGH_ETA_PARTON;
   if(parton.hadE < minHadronRelE* parton.parton->energy() ) return DISPERSED_PARTON;
@@ -26,27 +43,36 @@ PartonDiagnosis Parton::getDiagnosis(const Parton& parton,const std::vector<Jet*
   if(!numMainJets)                                   return NO_JET;
   if(numSigJets > 1)                                return SPLIT_JETS;
 
+
+  for(const auto* iP : impPartons){
+    if(iP->genIdx == parton.genIdx) continue;
+    if(iP->filteredContaiment.size() && iP->filteredContaiment[0].second == parton.filteredContaiment[0].second )
+      return MERGED_JET;
+  }
+
  if(parton.filteredContaiment[0].first*parton.hadE < minJetRelE*jets[parton.filteredContaiment[0].second ]->energy())
    return DIRTY_JET;
 
-
-
  return RESOLVED_PARTON;
 }
+
 //--------------------------------------------------------------------------------------------------
-void Parton::finalize(const std::vector<Jet*>& jets) {
-  sort(containment.begin(),containment.end(),PhysicsUtilities::greaterFirst<float,int>());
-  filteredContaiment.clear();
-  for(const auto& c : containment){
-	  for(unsigned int iJ =0; iJ < jets.size(); ++iJ)
-		  if(jets[iJ]->index() == c.second){
-			  filteredContaiment.emplace_back(c.first,iJ);
-		  }
-
+void Parton::finalize(const std::vector<Jet*>&   jets, const std::vector<const Parton *>& impPartons, std::vector<Parton>& partons){
+  //first assign important jets to each parton
+  for(auto& p : partons){
+    sort(p.containment.begin(),p.containment.end(),PhysicsUtilities::greaterFirst<float,int>());
+    p.filteredContaiment.clear();
+    for(const auto& c : p.containment){
+      for(unsigned int iJ =0; iJ < jets.size(); ++iJ)
+        if(jets[iJ]->index() == c.second){
+          p.filteredContaiment.emplace_back(c.first,iJ);
+        }
+    }
+    if(p.filteredContaiment.size()) p.matchedJet = jets[p.filteredContaiment[0].second ];
   }
-  if(filteredContaiment.size()) matchedJet = jets[filteredContaiment[0].second ];
 
-  diag = getDiagnosis(*this,jets);
+  //now get the diagnosis per jet
+  for(auto& p : partons){p.diag = getDiagnosis(jets,impPartons,p);}
 }
 //--------------------------------------------------------------------------------------------------
 TopDecay::TopDecay(const Particle * inTop, const std::vector<Parton>& allPartons){
@@ -115,14 +141,14 @@ TopDecay::TopDecay(const Particle * inTop, const std::vector<Parton>& allPartons
     hadronicPartons.push_back(W_dau1);
     hadronicPartons.push_back(W_dau2);
   }
-
-  diag = getDiagnosis(*this);
+  diag = numTopDiagnoses;
 }
 //--------------------------------------------------------------------------------------------------
 TopDiagnosis TopDecay::getDiagnosis(const TopDecay& parton){
   int nBadPartons = 0;
   int nlostJets = 0;
   int nsplitJets = 0;
+  int nmergedJets = 0;
   int ndirtyJets = 0;
 
   for(unsigned int iP1 = 0 ; iP1 < parton.hadronicPartons.size(); ++iP1){
@@ -130,12 +156,14 @@ TopDiagnosis TopDecay::getDiagnosis(const TopDecay& parton){
     if(p1->diag <= DISPERSED_PARTON ) nBadPartons++;
     else if(p1->diag == NO_JET)       nlostJets++;
     else if(p1->diag == SPLIT_JETS)   nsplitJets++;
+    else if(p1->diag == MERGED_JET)   nmergedJets++;
     else if(p1->diag == DIRTY_JET)    ndirtyJets++;
   }
 
   if(nBadPartons) return BAD_PARTON;
   if(nlostJets)   return LOST_JET;
   if(nsplitJets)  return SPLIT_PARTONS;
+  if(nmergedJets)  return MERGED_PARTONS;
   if(ndirtyJets)  return CONTAMINATION;
   return RESOLVED_TOP;
 }
@@ -168,7 +196,6 @@ void TopDecayEvent::initialize(const std::vector<ucsbsusy::size16 >* genAssocPrt
     partons[partonIdxs[genAssocPrtIndex->at(conIndex)]].addContainment(genAssocJetIndex->at(iJ), fromContainmentType(con) );
   }
 
-  for(auto& p : partons ) p.finalize(jets);
 
   //Now let's get our tops!
   for(const auto& p : *genParticles){
@@ -181,6 +208,14 @@ void TopDecayEvent::initialize(const std::vector<ucsbsusy::size16 >* genAssocPrt
 
     topDecays.emplace_back(&p,partons);
   }
+
+  //We have a list of interesting partons and associated them to tops
+  //now we need to finish up the diagnosis
+  vector<const Parton *> topPartons; //needed to know what partons we care about
+  for(const auto& t: topDecays) topPartons.insert(topPartons.end(), t.hadronicPartons.begin(), t.hadronicPartons.end());
+
+  Parton::finalize(jets,topPartons,partons);
+  for(auto& t: topDecays) t.diag = TopDecay::getDiagnosis(t);
 
   sort(topDecays.begin(),topDecays.end(),GreaterTopDecayPT<TopDecay>());
 
@@ -204,6 +239,7 @@ void TopDecayEvent::getDecayMatches(const vector<ucsbsusy::RecoJetF*> recoJets, 
 
     if(decayIDs[iJ].conPartons.size()){
       const Parton * leadPtr = decayIDs[iJ].conPartons.front().second;
+      if(leadPtr->matchedJet != gj) continue;
       for(unsigned int iT = 0; iT < topDecays.size(); ++iT){
         if(leadPtr == topDecays[iT].b){
           decayIDs[iJ].topInd = iT;

@@ -15,6 +15,7 @@
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 namespace ucsbsusy {
 class EventInfoFiller;
@@ -72,6 +73,7 @@ public:
       const edm::InputTag reGenJetTag_;
       const edm::InputTag stdGenJetTag_;
       const edm::InputTag flvAssocTag_;
+      const edm::InputTag qgTagQGL_;
       const double        jptMin_;
       const bool          fillReGenJets_;
 
@@ -124,6 +126,7 @@ public:
       edm::Handle<reco::GenJetCollection> reGenJets_;
       edm::Handle<reco::GenJetCollection> stdGenJets_;
       edm::Handle<std::vector<size8   > > flvAssoc_;
+      edm::Handle<edm::ValueMap<float>>   qgHandleQGL_;
 
   };
 
