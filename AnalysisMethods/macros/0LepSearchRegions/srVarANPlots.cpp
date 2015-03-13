@@ -198,8 +198,8 @@
    };
    
    
-   TString presel = "nMuETau__nJ20_geq6";
-   TString* vars = SRS;
+   TString presel = "nMuETau__nJ20_geq6__mva1";
+   TString* vars = T2bWMVAVars;
    // TString signal = "T2tt_850_100";
    TString signal = "T1tttt_1500_100" ;
    
@@ -210,51 +210,51 @@
 	   p = new Plot("bkg_.*" + presel + "__"+vars[iV] + "$");
        p->sitrep();
 	  double norm = p->at("MC")->Integral(0,-1);
-      // p->scale(1/norm);
+      p->scale(1/norm);
       p->sort("i");
       // p->arrange("MC > t#bar{t} + W  > Z#rightarrow#nu#nu >  t#bar{t}Z > other");
-      // p->drop("MC");
+      p->drop("MC");
 	  TH1 * s = Plot::getCache()->findOne(signal + "_" + presel + "__"+vars[iV] + "$");
 	  double sNorm = s->Integral(0,-1);
-      // s->Scale(1/sNorm);
+      s->Scale(1/sNorm);
 	  p->add(s,signal);
       p->toUnderOverflow();
-      p->rebin(4);
+      // p->rebin(4);
       // p->setMinMax(0.,.17);
 	  p->setYTitle("Normalized # of events");
       o->Add(p);
       if(p->getNumberOfHistograms() == 0) continue;
+      //
+      // InitHist(p->at(1),866);
+      // InitHist(p->at(2),kRed);
+      // InitHist(p->at(3),391);
+      // InitHist(p->at(4),797);
+      // InitHist(p->at(5),606);
+      //
+      //
+      // p->at(6)->SetLineWidth(3);
+      // p->at(6)->SetMarkerSize(0);
+      // p->at(6)->SetLineColor(602);
+      // p->at(6)->SetMarkerColor(602);
       
-      InitHist(p->at(1),866);
-      InitHist(p->at(2),kRed);
-      InitHist(p->at(3),391);
-      InitHist(p->at(4),797);
-      InitHist(p->at(5),606);
       
-
-      p->at(6)->SetLineWidth(3);
-      p->at(6)->SetMarkerSize(0);
-      p->at(6)->SetLineColor(602);
-      p->at(6)->SetMarkerColor(602);
-      
-      
-      
-      TH1 * sb = (TH1*)p->at(0)->Clone();
-      for(unsigned int iB = 1; iB <= sb->GetNbinsX(); ++iB){
-          double bn = p->at("MC")->GetBinContent(iB);
-          double sn = p->at(signal)->GetBinContent(iB);
-          double sig = sn/(TMath::Sqrt(bn + .3*.3*bn*bn + 3/2) );
-          sb->SetBinContent(iB,sig);
-      }
-      new TCanvas();
-      sb->Draw();
-
-      p = (Plot*)p->Clone();
-      p = p->makeIntegral(true);
-      oo->Add(p);
-      p = (Plot*)p->Clone();
-      p = p->makeRatiogram("MC","");
-      ooo->Add(p);
+      //
+      // TH1 * sb = (TH1*)p->at(0)->Clone();
+      // for(unsigned int iB = 1; iB <= sb->GetNbinsX(); ++iB){
+      //     double bn = p->at("MC")->GetBinContent(iB);
+      //     double sn = p->at(signal)->GetBinContent(iB);
+      //     double sig = sn/(TMath::Sqrt(bn + .3*.3*bn*bn + 3/2) );
+      //     sb->SetBinContent(iB,sig);
+      // }
+      // new TCanvas();
+      // sb->Draw();
+      //
+      // p = (Plot*)p->Clone();
+      // p = p->makeIntegral(true);
+      // oo->Add(p);
+      // p = (Plot*)p->Clone();
+      // p = p->makeRatiogram("MC","");
+      // ooo->Add(p);
 
       
       
