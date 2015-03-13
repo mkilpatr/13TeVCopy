@@ -65,7 +65,7 @@ class QuarkGluonTaggingVariables {
 
    void computeBLF(const reco::Jet * jet) {
 
-	 if (totalMult_==0) totalMult_ = jet->numberOfDaughters();
+	 if (totalMult_ == 0) totalMult_ = jet->numberOfDaughters();
      blf0_  = -99;
      blf1_  = -99;
      blf2_  = -99;

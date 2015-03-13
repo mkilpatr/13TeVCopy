@@ -54,9 +54,9 @@ public:
       addLinkedMulti(ak4Reader.jetaxis1_,   "F");
       addLinkedMulti(ak4Reader.jetaxis2_,   "F");
       addLinkedMulti(ak4Reader.jetMult_,    "s");
-      addLinkedMulti(ak4Reader.jetblf0_,    "F");
-      addLinkedMulti(ak4Reader.jetblf1_,    "F");
-      addLinkedMulti(ak4Reader.jetblf2_,    "F");
+      //addLinkedMulti(ak4Reader.jetblf0_,    "F");
+      //addLinkedMulti(ak4Reader.jetblf1_,    "F");
+      //addLinkedMulti(ak4Reader.jetblf2_,    "F");
       addLinkedMulti(ak4Reader.jetpt_,      "F");
       addLinkedMulti(&absEta,"ak4pfchs_jet_eta","F");
     } else {
@@ -64,9 +64,9 @@ public:
       addLinkedMulti(ak4Reader.genjetaxis1_,"F");
       addLinkedMulti(ak4Reader.genjetaxis2_,"F");
       addLinkedMulti(ak4Reader.genjetMult_, "s");
-      addLinkedMulti(ak4Reader.genjetblf0_, "F");
-      addLinkedMulti(ak4Reader.genjetblf1_, "F");
-      addLinkedMulti(ak4Reader.genjetblf2_, "F");
+      //addLinkedMulti(ak4Reader.genjetblf0_, "F");
+      //addLinkedMulti(ak4Reader.genjetblf1_, "F");
+      //addLinkedMulti(ak4Reader.genjetblf2_, "F");
       addLinkedMulti(ak4Reader.genjetpt_,   "F");
       addLinkedMulti(&absEta,"ak4pfchs_genjet_eta","F");
     }
