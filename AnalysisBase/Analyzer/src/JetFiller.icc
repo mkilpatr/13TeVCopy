@@ -95,7 +95,9 @@ void JetFiller<Jet>::load(const edm::Event& iEvent)
     else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
   }
-  FileUtilities::enforceGet(iEvent,qgTagQGL_, qgHandleQGL_, true);
+  if(options_ & LOADJETSHAPE) {
+	  FileUtilities::enforceGet(iEvent,qgTagQGL_, qgHandleQGL_, true);
+  }
 
   isLoaded_ = true;
 
@@ -169,12 +171,6 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
     data.fillMulti<float>(ijetarea_ ,j.jetArea());
 
-    // for official qgTagger
-    auto jet = jets_->begin(); jet += iJ;
-    edm::RefToBase<Jet> jetRef(edm::Ref<vector<Jet>>(jets_, jet - jets_->begin()));
-    float qgQGL = (*qgHandleQGL_ )[jetRef];
-    data.fillMulti<float>(ijetqgl_ , qgQGL );
-
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {
@@ -186,7 +182,11 @@ void JetFiller<Jet>::fill()
 
     if(options_ & LOADJETSHAPE){
       assert(evtInfofiller_->isLoaded());
-      //data.fillMulti<float>(ijetqgl_,getQGDisc(j));
+      // for official qgTagger
+      auto jet = jets_->begin(); jet += iJ;
+      edm::RefToBase<Jet> jetRef(edm::Ref<vector<Jet>>(jets_, jet - jets_->begin()));
+      float qgQGL = (*qgHandleQGL_ )[jetRef];
+      data.fillMulti<float>(ijetqgl_ , qgQGL );
       qgTaggingVar_->compute(&j);
       data.fillMulti<float>(ijetbetaStar_,getBetaStar(j));
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
