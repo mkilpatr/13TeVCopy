@@ -16,31 +16,31 @@
 
 namespace StyleTools {
 
-  enum Colors {color_data=1,
-               color_qcd=414,
-               color_ttbar=866,
-               color_ttbar1l=866,
-               color_ttbar2l=625,
-               color_ttW=606,
-               color_ttZ=797,
-               color_tW=391,
-               color_wjets=606,
-               color_znunu=632,
-               color_other=391,
-               color_T2tt=634,
-               color_T2tt_850_100=634,
-               color_T2tt_650_325=633,
-               color_T2tt_500_325=635,
-               color_T1tttt=602,
-               color_T1tttt_1500_100=602,
-               color_T1tttt_1200_800=601,
-               color_comp1=634,
-               color_comp2=603,
-               color_comp3=419,
-               color_comp4=882,
-               color_comp5=802,
-               color_comp6=862,
-               color_comp7=902};
+  enum Colors {color_data=1,                 // kBlack
+               color_qcd=414,                // kGreen-2
+               color_ttbar=866,              // kAzure+6
+               color_ttbar1l=866,            // kAzure+6
+               color_ttbar2l=625,            // kRed-7
+               color_ttW=606,                // kBlue+6
+               color_ttZ=797,                // kOrange-3
+               color_tW=391,                 // kYellow-9
+               color_wjets=606,              // kBlue+6
+               color_znunu=632,              // kRed
+               color_other=391,              // kYellow-9
+               color_T2tt=634,               // kRed+2
+               color_T2tt_850_100=634,       // kRed+2
+               color_T2tt_650_325=633,       // kRed+3
+               color_T2tt_500_325=635,       // kRed+4
+               color_T1tttt=602,             // kBlue+2
+               color_T1tttt_1500_100=602,    // kBlue+2
+               color_T1tttt_1200_800=601,    // kBlue+1
+               color_comp1=634,              // kRed+2
+               color_comp2=603,              // kBlue+3
+               color_comp3=419,              // kGreen+3
+               color_comp4=882,              // kViolet+2
+               color_comp5=802,              // kOrange+2
+               color_comp6=862,              // kAzure+2
+               color_comp7=902};             // kPink+2
 
   typedef std::map<TString, unsigned int> ColorMap;
 
