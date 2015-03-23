@@ -48,7 +48,7 @@ public:
 
 
 
-void produceTauMVA(string sigFileName = "run/plots/ttbar_plots.root", string bkgFileName = "run/plots/T2tt_650_325_plots.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_mt100presel.root") {
+void produceTauMVA(string sigFileName = "run/plots/ttbar.root", string bkgFileName = "run/plots/T2tt_650_325.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_mt100presel.root") {
   TFile * sigFile = new TFile(sigFileName.c_str(),"read");
   TFile * bkgFile = new TFile(bkgFileName.c_str(),"read");
   TTree * sigTree = 0;
