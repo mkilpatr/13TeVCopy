@@ -77,8 +77,8 @@ process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBas
 
 
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
+process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
-
 
 
 process.load('Dummy.Puppi.Puppi_cff')
@@ -92,4 +92,5 @@ process.p = cms.Path(#process.puppi*
                      process.lsfSubJets     *
                      process.egmGsfElectronIDSequence * 
                      process.pickyJetSeq    *
+                     process.QGTagger       *
                      process.TestAnalyzer)

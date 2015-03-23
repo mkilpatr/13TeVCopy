@@ -1,18 +1,20 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "QGHelper.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 class Copier : public TreeFlattenCopier {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool doReco, bool isMCTree) : TreeFlattenCopier(fileName,treeName,outFileName,isMCTree), reco(doReco) {};
+  Copier(string fileName, string treeName, string outFileName, bool doReco, bool usePuppi, bool isMCTree) : TreeFlattenCopier(fileName,treeName,outFileName,isMCTree), reco(doReco), usePuppi(usePuppi) {};
   virtual ~Copier() {};
 
   void loadVariables(){
     load(EVTINFO);
-    load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    if (usePuppi) load( PUPPIJETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    else          load( AK4JETS,   JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     load(GENPARTICLES);
   }
 
@@ -46,20 +48,26 @@ public:
 
   void book() {
     if(reco){
-      addLinkedMulti(ak4Reader.jetbetaStar_,"F");
-      addLinkedMulti(ak4Reader.jetqgl_,"F");
-      addLinkedMulti(ak4Reader.jetptD_,"F");
-      addLinkedMulti(ak4Reader.jetaxis1_,"F");
-      addLinkedMulti(ak4Reader.jetaxis2_,"F");
-      addLinkedMulti(ak4Reader.jetMult_,"I");
-      addLinkedMulti(ak4Reader.jetpt_,"F");
+      //addLinkedMulti(ak4Reader.jetbetaStar_,"F");
+      //addLinkedMulti(ak4Reader.jetqgl_,     "F");
+      addLinkedMulti(ak4Reader.jetptD_,     "F");
+      addLinkedMulti(ak4Reader.jetaxis1_,   "F");
+      addLinkedMulti(ak4Reader.jetaxis2_,   "F");
+      addLinkedMulti(ak4Reader.jetMult_,    "s");
+      //addLinkedMulti(ak4Reader.jetblf0_,    "F");
+      //addLinkedMulti(ak4Reader.jetblf1_,    "F");
+      //addLinkedMulti(ak4Reader.jetblf2_,    "F");
+      addLinkedMulti(ak4Reader.jetpt_,      "F");
       addLinkedMulti(&absEta,"ak4pfchs_jet_eta","F");
     } else {
-      addLinkedMulti(ak4Reader.genjetptD_,"F");
+      addLinkedMulti(ak4Reader.genjetptD_,  "F");
       addLinkedMulti(ak4Reader.genjetaxis1_,"F");
       addLinkedMulti(ak4Reader.genjetaxis2_,"F");
-      addLinkedMulti(ak4Reader.genjetMult_,"I");
-      addLinkedMulti(ak4Reader.genjetpt_,"F");
+      addLinkedMulti(ak4Reader.genjetMult_, "s");
+      //addLinkedMulti(ak4Reader.genjetblf0_, "F");
+      //addLinkedMulti(ak4Reader.genjetblf1_, "F");
+      //addLinkedMulti(ak4Reader.genjetblf2_, "F");
+      addLinkedMulti(ak4Reader.genjetpt_,   "F");
       addLinkedMulti(&absEta,"ak4pfchs_genjet_eta","F");
     }
     addLinkedMulti(&flv,"flavor","I");
@@ -69,6 +77,7 @@ public:
 
 
   bool reco;
+  bool usePuppi;
   vector<int> flv;
   vector<float> absEta;
   std::vector<subJet> genJets ;
@@ -81,7 +90,7 @@ public:
 
 
 
-void flattenQGTree(string fileName = "evttree.root", string treeName = "TestAnalyzer/Events", string outFileName ="newTree.root", bool doReco = true, bool isMCTree = true) {
-  Copier a(fileName,treeName,outFileName,doReco,isMCTree);
+void flattenQGTree(string fileName = "evttree_lowStat_QCD_test.root", string treeName = "TestAnalyzer/Events", string outFileName ="newTree_reco_puppi_test.root", bool doReco = true, bool usePuppi = true, bool isMCTree = true) {
+  Copier a(fileName,treeName,outFileName,doReco,usePuppi,isMCTree);
   a.analyze();
 }
