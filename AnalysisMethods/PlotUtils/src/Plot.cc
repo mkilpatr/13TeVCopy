@@ -330,14 +330,14 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
   // make legend entries appear in reverse of the order the histograms are added
   if(label.Length()>0) {
     fStackEntries.push_back(fLeg->AddEntry(hist,label,"F"));
-    /*for(Int_t ientry=(fStackEntries.size()-2); ientry>=0; ientry--) {
+    for(Int_t ientry=(fStackEntries.size()-2); ientry>=0; ientry--) {
       TObject* hh = fStackEntries[ientry]->GetObject();
       TString ll  = fStackEntries[ientry]->GetLabel();
       fStackEntries[ientry+1]->SetObject(hh);
       fStackEntries[ientry+1]->SetLabel(ll);
     }
     fStackEntries[0]->SetObject(hist);
-    fStackEntries[0]->SetLabel(label);*/
+    fStackEntries[0]->SetLabel(label);
   }
      
   fStack->Add(hist);  
@@ -389,7 +389,7 @@ void Plot::addLine(double x1, double y1, double x2, double y2, int color, int st
   TLine *line = new TLine(x1,y1,x2,y2);
   line->SetLineColor(color);
   line->SetLineStyle(style);
-  line->SetLineWidth(2);
+  line->SetLineWidth(3);
   fLines.push_back(line);
 
 }
@@ -400,7 +400,7 @@ void Plot::addLine(double x1, double y1, double x2, double y2, int color, int st
   TLine *line = new TLine(x1,y1,x2,y2);
   line->SetLineColor(color);
   line->SetLineStyle(style);
-  line->SetLineWidth(2);
+  line->SetLineWidth(3);
   fLines.push_back(line);
 
   if(!fLeg)
@@ -846,6 +846,8 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
     }
   }
 
+  c->RedrawAxis();
+  
   // Draw profile histograms
   std::vector<TProfile*> vProfiles;
   std::vector<TString> vProfileOpts;
@@ -886,6 +888,8 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
     }
   }
       
+  c->RedrawAxis();
+  
   // Draw legend
   if(fLeg) {
     fLeg->SetFillStyle(0);

@@ -334,21 +334,23 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
           nbins = hists[isam]->GetNbinsX();
 
         if(hists[isam]->GetMaximum() > max) {
-          max = hists[isam]->GetMaximum();
-          maxbin = hists[isam]->GetMaximumBin();
+          if(isData(sname) || isBackground(sname) || (isSignal(sname) && config_.sigscale == 1)) {
+            max = hists[isam]->GetMaximum();
+            maxbin = hists[isam]->GetMaximumBin();
+          }
         }
 
         if(isData(sname)) {
           plot->addHist(hists[isam], sample->label, "E");
         } else if(isSignal(sname)) {
           if(config_.sigscale < 0) {
-            plot->addHistScaled(hists[isam], bkgtot, sample->label+" (scaled to #sum(bkg))", "hist", config_.colormap[sname], 0, config_.colormap[sname]);
+            plot->addHistScaled(hists[isam], bkgtot, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname]);
             if(bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1) > max) {
               max = bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1);
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else if (config_.sigscale != 1) {
-            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), TString::Format("%dx %s",config_.sigscale, sample->label.Data()), "hist", config_.colormap[sname], 0, config_.colormap[sname]);
+            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), config_.addsigscaletxt ? TString::Format("%dx %s",config_.sigscale, sample->label.Data()) : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname]);
             if(config_.sigscale*hists[isam]->GetMaximum() > max) {
               max = config_.sigscale*hists[isam]->GetMaximum();
               maxbin = hists[isam]->GetMaximumBin();
@@ -371,6 +373,9 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
         plot->setName(name+"_sigscalesumbkg");
       else if(config_.sigscale != 1)
         plot->setName(name+TString::Format("_sigscale%dx",config_.sigscale));
+
+      if(config_.ytitle != "")
+        plot->setYTitle(config_.ytitle);
 
       break;
 
@@ -406,10 +411,14 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
         }
       }
 
-      if(config_.scalecompto1)
-        plot->setYTitle("Normalized (to 1.) Events");
-      else
-        plot->setYTitle("Events");
+      if(config_.ytitle != "")
+        plot->setYTitle(config_.ytitle);
+      else {
+        if(config_.scalecompto1)
+          plot->setYTitle("Normalized (to 1.) Events");
+        else
+          plot->setYTitle("Events");
+      }
 
       break;
 
@@ -452,10 +461,14 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
         hists[isam]->SetName(newname);
       }
 
-      if(samples_.size()==2)
-        plot->setYTitle("dN("+samples_[1]->label+")/dN("+samples_[0]->label+")");
-      else
-        plot->setYTitle("dN()/dN("+samples_[0]->label+")");
+      if(config_.ytitle != "")
+        plot->setYTitle(config_.ytitle);
+      else {
+        if(samples_.size()==2)
+          plot->setYTitle("dN("+samples_[1]->label+")/dN("+samples_[0]->label+")");
+        else
+          plot->setYTitle("dN/dN("+samples_[0]->label+")");
+      }
 
       break;
 
@@ -480,7 +493,10 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
     plot->setYRange(0.0, config_.maxscale*max);
   }
 
-  plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+  if(config_.sqrts != "" && config_.lumi != "")
+    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+  else
+    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
 
   if(config_.legx1 != 0)
     plot->setLegend(config_.legx1, config_.legy1, config_.legx2, config_.legy2);
