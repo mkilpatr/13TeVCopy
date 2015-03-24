@@ -52,10 +52,11 @@ public:
 
     // ===== preselection =====
     bool passPreselection = true;
+    bool passDphiCuts     = true;
     if(vars.ptMet < 200 || vars.nJ90 < 2) return; // trigger preselection, so auto reject events that don't pass
-    if(vars.dPhiMET12 < .5 || vars.dPhiMET3 < .3) passPreselection = false;
-    if(vars.ntBtag == 0) passPreselection = false;
-    if(vars.nJ20 < 3)    passPreselection = false;
+    if(vars.nJ20 < 5)                               passPreselection = false;
+    if(vars.ntBtag < 1)                           { passPreselection = false; passDphiCuts = false; }
+    if(vars.dPhiMET12 < .5 || vars.dPhiMET3 < .3) { passPreselection = false; passDphiCuts = false; }
 
     eventPlots.rewind();
 
@@ -66,11 +67,18 @@ public:
     eventPlots("psel_", passPreselection);
     ++eventPlots;
 
+    // preselection
+    eventPlots("all__", true);
+    eventPlots("dphi_", passDphiCuts);
+    ++eventPlots;
+
     // b-tags
     eventPlots("g0b__", true);
     eventPlots("e1bt_", vars.ntBtag == 1);
+    eventPlots("g1bt_", vars.ntBtag >= 1);
     eventPlots("g2bt_", vars.ntBtag >= 2);
     eventPlots("e1bm_", vars.nmBtag == 1);
+    eventPlots("g1bm_", vars.nmBtag >= 1);
     eventPlots("g2bm_", vars.nmBtag >= 2);
     ++eventPlots;
 
@@ -98,15 +106,15 @@ public:
 
     eventPlots.fill(vars.ptMet         , weight, "met"           , ";#slash{E}_{T}"                       ,  60, 200  ,  800    ); // 10
     eventPlots.fill(vars.nJ90          , weight, "nj90"          , ";N jets p_{T} #geq 90"                ,  14,   1.5,   15.5  ); //  1
-    eventPlots.fill(vars.nJ20          , weight, "nj20"          , ";N jets p_{T} #geq 30"                ,  19,   1.5,   20.5  ); //  1
-    eventPlots.fill(vars.ntBtag        , weight, "ntBtag"        , ";N tight b p_{T} #geq 30"             ,   5,  -0.5,    4.5  ); //  1
-    eventPlots.fill(vars.nmBtag        , weight, "nmBtag"        , ";N med b p_{T} #geq 30"               ,   8,  -0.5,    7.5  ); //  1
+    eventPlots.fill(vars.nJ20          , weight, "nj20"          , ";N jets p_{T} #geq 20"                ,  19,   1.5,   20.5  ); //  1
+    eventPlots.fill(vars.ntBtag        , weight, "ntBtag"        , ";N tight b p_{T} #geq 20"             ,   5,  -0.5,    4.5  ); //  1
+    eventPlots.fill(vars.nmBtag        , weight, "nmBtag"        , ";N med b p_{T} #geq 20"               ,   8,  -0.5,    7.5  ); //  1
     eventPlots.fill(vars.dPhiMET12     , weight, "dPhiMET12"     , ";min|#Delta#phi(#slash{E}_{T},j1-2)|" ,  21,   0  ,    3.15 ); //  0.15
     eventPlots.fill(vars.dPhiMET3      , weight, "dPhiMET3"      , ";|#Delta#phi(#slash{E}_{T},j3)|"      ,  21,   0  ,    3.15 ); //  0.15
     eventPlots.fill(vars.qgl0          , weight, "qgl0"          , ";QGL_{0}"                             ,  50,   0  ,    1    ); //  0.02   (was 20 bins)
     eventPlots.fill(vars.qgl1          , weight, "qgl1"          , ";QGL_{1}"                             ,  50,   0  ,    1    ); //  0.02   (was 20 bins)
     eventPlots.fill(vars.qglprod       , weight, "qglprod"       , ";ln[#prod QGL_{q}]"                   ,  25, -12  ,    0    ); // 12
-    eventPlots.fill(vars.ht            , weight, "ht"            , ";H_{T}"                               , 120,   0  , 3000    ); // 25
+    eventPlots.fill(vars.ht            , weight, "Ht"            , ";H_{T}"                               , 120,   0  , 3000    ); // 25
     eventPlots.fill(vars.htAlongAway   , weight, "htAlongAway"   , ";H_{T}^{along}/H_{T}^{away}"          ,  40,   0  ,    2    ); //  0.05
     eventPlots.fill(vars.rmsJetPT      , weight, "rmsJetPT"      , ";RMS[p_{T}(jet)]"                     ,  40,   0  ,  400    ); // 10
     eventPlots.fill(vars.rmsJetDphiMET , weight, "rmsJetDphiMET" , ";RMS[#Delta#phi(jet,#slash{E}_{T})]"  ,  25,   0  ,    2.5  ); //  0.1
