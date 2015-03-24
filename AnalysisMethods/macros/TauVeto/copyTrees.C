@@ -4,7 +4,7 @@
 void copyTrees(const TString infilename  = "TauVeto/run/plots/ttbar.root",
                const TString treename    = "Events",
                const TString outfilename = "TauVeto/run/plots/realtaus_tt1tau.root",
-               const TString selection   = "nGenLeptons==0 && nGenTaus==nGenHadTaus && nGenHadTaus==1") {
+               const TString selection   = "nGenLeptons==0 && nGenTaus==nGenHadTaus && nGenHadTaus==1 && gentaumatch==1") {
 
   TFile* infile = new TFile(infilename);
   assert(infile);
