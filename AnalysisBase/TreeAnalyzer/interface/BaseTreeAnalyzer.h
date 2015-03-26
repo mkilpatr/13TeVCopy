@@ -91,6 +91,7 @@ public:
       maxBJetEta        (2.4 ),
       cleanJetsvSelectedLeptons_(false),
       correctPickyPT    (true),
+      tauVetoPreselection  (MT),
       defaultJetCollection (AK4JETS)
     {}
   };
