@@ -92,7 +92,7 @@ nominal_configuration = cms.PSet(
                                       minJetPt             = cms.untracked.double(20.0),
                                       fillCustomBtagInfo   = cms.untracked.bool(True),
                                       fillJetGenInfo       = cms.untracked.bool(True),
-                                      fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillJetShapeInfo     = cms.untracked.bool(False),
                                       fillTopJetAssoc   = cms.untracked.bool(True),
                                       applyJEC             = cms.untracked.bool(False)
                                   ),
@@ -139,7 +139,8 @@ nominal_configuration = cms.PSet(
                                       minCandPt                 = cms.untracked.double(8.0),
                                       maxCandEta                = cms.untracked.double(3.0),
                                       minTauDisc                = cms.untracked.double(0.0),
-                                      tauMVAFileName            = cms.untracked.string('AnalysisTools/ObjectSelection/data/Taus/tauDisc_10GeV.root'),
+                                      tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel.root'),
+                                      tauMVAFileName_DphiPresel = cms.untracked.string('tauDisc_dphi1p34presel.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
                                       saveAllCandidates         = cms.untracked.bool(False),
                                   )
