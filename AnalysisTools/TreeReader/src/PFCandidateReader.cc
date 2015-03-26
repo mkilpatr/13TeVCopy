@@ -103,6 +103,7 @@ void PFCandidateReader::refresh(){
       pfcands.back().setD0(d0->at(iL));
       pfcands.back().setDz(dz->at(iL));
       pfcands.back().setMt(mt->at(iL));
+      pfcands.back().setDphiMet(dphimet->at(iL));
       pfcands.back().setTauDisc(taudisc->at(iL));
       pfcands.back().setFromPV(fromPV->at(iL));
       pfcands.back().setJetIndex(jetIndex->at(iL));
@@ -125,7 +126,7 @@ void PFCandidateReader::refresh(){
       cand.setD0(d0->at(iL));
       cand.setDz(dz->at(iL));
       cand.setMt(mt->at(iL));
-      cand.setMt(dphimet->at(iL));
+      cand.setDphiMet(dphimet->at(iL));
       cand.setTauDisc(taudisc->at(iL));
       cand.setFromPV(fromPV->at(iL));
       cand.setJetIndex(jetIndex->at(iL));

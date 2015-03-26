@@ -64,7 +64,7 @@ namespace ucsbsusy {
       void   setDz(float newDz)           { dz_ = newDz;             }
       void   setFromPV(int newFromPV)     { fromPV_ = newFromPV;     }
       void   setMt(float newMt)           { mt_ = newMt;             }
-      void   setDphi(float newDphi)       { dphimet_ = newDphi;      }
+      void   setDphiMet(float newDphi)    { dphimet_ = newDphi;      }
       void   setTauDisc(float newDisc)    { taudisc_ = newDisc;      }
       void   setJetIndex(int newJetIndex) { jetIndex_ = newJetIndex; }
       void   setTauIndex(int newTauIndex) { tauIndex_ = newTauIndex; }
