@@ -26,6 +26,7 @@ namespace ucsbsusy {
 class BaseTreeAnalyzer {
 public:
   enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
+  enum TauVetoPresel {MT, DPHI};
   //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
   struct ConfigPars {
@@ -52,13 +53,14 @@ public:
 
     //    LeptonSelection leptonSelection;
 
-    float        minJetPt;
-    float        minBJetPt;
-    float        maxJetEta;
-    float        maxBJetEta;
-    bool         cleanJetsvSelectedLeptons_;
-    bool         correctPickyPT;
-    VarType      defaultJetCollection;
+    float         minJetPt;
+    float         minBJetPt;
+    float         maxJetEta;
+    float         maxBJetEta;
+    bool          cleanJetsvSelectedLeptons_;
+    bool          correctPickyPT;
+    TauVetoPresel tauVetoPreselection;         
+    VarType       defaultJetCollection;
 
     ConfigPars() :
     minSelEPt (10), //was 32
@@ -89,6 +91,7 @@ public:
       maxBJetEta        (2.4 ),
       cleanJetsvSelectedLeptons_(false),
       correctPickyPT    (true),
+      tauVetoPreselection  (MT),
       defaultJetCollection (AK4JETS)
     {}
   };

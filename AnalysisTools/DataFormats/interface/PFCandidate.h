@@ -20,18 +20,18 @@ namespace ucsbsusy {
   {
 
     public :
-      PFCandidate() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), fromPV_(0), mt_(0), taudisc_(0), jetIndex_(-1), tauIndex_(-1), ismvavetotau_(false) {}
+      PFCandidate() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), fromPV_(0), mt_(0), dphimet_(0), taudisc_(0), jetIndex_(-1), tauIndex_(-1), ismvavetotau_(false) {}
 
       template <class InputCoordSystem>
       PFCandidate(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
                 int inIndex = -1, int inPdgid = 0, int inCharge = 0,
                 float inD0 = 0, float inDz = 0, int inFromPV = 0,
-                float inMt = 0, float inTauDisc = 0,
+                float inMt = 0, float inDphiMet = 0, float inTauDisc = 0,
                 int inJetIndex = -1, int inTauIndex = -1) :
                 Momentum<InputCoordSystem>(inMomentum), 
                 index_(inIndex), pdgid_(inPdgid), q_(inCharge),
                 d0_(inD0), dz_(inDz), fromPV_(inFromPV),
-                mt_(inMt), taudisc_(inTauDisc),
+                mt_(inMt), dphimet_(inDphiMet), taudisc_(inTauDisc),
                 jetIndex_(inJetIndex), tauIndex_(inTauIndex),
                 ismvavetotau_(false) {}
 
@@ -46,6 +46,7 @@ namespace ucsbsusy {
       float dz()              const { return dz_;       }
       int   fromPV()          const { return fromPV_;   }
       float mt()              const { return mt_;       }
+      float dphimet()         const { return dphimet_;  }
       float taudisc()         const { return taudisc_;  }
       int   jetIndex()        const { return jetIndex_; }
       int   tauIndex()        const { return tauIndex_; }
@@ -63,6 +64,7 @@ namespace ucsbsusy {
       void   setDz(float newDz)           { dz_ = newDz;             }
       void   setFromPV(int newFromPV)     { fromPV_ = newFromPV;     }
       void   setMt(float newMt)           { mt_ = newMt;             }
+      void   setDphiMet(float newDphi)    { dphimet_ = newDphi;      }
       void   setTauDisc(float newDisc)    { taudisc_ = newDisc;      }
       void   setJetIndex(int newJetIndex) { jetIndex_ = newJetIndex; }
       void   setTauIndex(int newTauIndex) { tauIndex_ = newTauIndex; }
@@ -76,6 +78,7 @@ namespace ucsbsusy {
       float dz_;
       int   fromPV_;
       float mt_;
+      float dphimet_;
       float taudisc_;
       int   jetIndex_;
       int   tauIndex_;

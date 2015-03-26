@@ -76,7 +76,17 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       break;
     }
     case PFCANDS : {
-      int defaultOptions = PFCandidateReader::defaultOptions;
+      int defaultOptions;
+      switch (config.tauVetoPreselection) {
+        case MT :
+          defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETOMT;
+        case DPHI :
+          defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETODPHI;
+        default : {
+          defaultOptions = PFCandidateReader::defaultOptions;
+          break;
+        }
+      }
       reader.load(&pfcandReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PFCANDS : branchName );
       break;
     }

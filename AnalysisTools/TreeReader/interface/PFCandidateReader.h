@@ -25,6 +25,8 @@ namespace ucsbsusy {
                             , LOADRECO        = (1 <<  0)   ///< Load standard candidates
                             , LOADEXTRECO     = (1 <<  1)   ///< Load extra info
                             , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers)
+                            , LOADTAUVETOMT   = (1 <<  3)   ///< Tau veto based on mT preselection
+                            , LOADTAUVETODPHI = (1 <<  4)   ///< Tau veto based on dphi preselection
     };
     static const int defaultOptions;
 
@@ -44,6 +46,7 @@ namespace ucsbsusy {
       std::vector<float> * d0;
       std::vector<float> * dz;
       std::vector<float> * mt;
+      std::vector<float> * dphimet;
       std::vector<float> * taudisc;
       std::vector<int>   * fromPV;
       std::vector<int>   * jetIndex;

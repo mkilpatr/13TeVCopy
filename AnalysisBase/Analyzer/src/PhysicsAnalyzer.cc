@@ -232,7 +232,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                       cfg.getUntrackedParameter<double>("minCandPt"),
                                       cfg.getUntrackedParameter<double>("maxCandEta"),
                                       cfg.getUntrackedParameter<double>("minTauDisc"),
-                                      cfg.getUntrackedParameter<string>("tauMVAFileName"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName_MtPresel"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName_DphiPresel"),
                                       cfg.getUntrackedParameter<string>("tauMVAName")
                                       );
       initializedFillers.push_back(pfcands);
