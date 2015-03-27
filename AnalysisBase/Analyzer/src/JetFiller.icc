@@ -68,8 +68,7 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     ijetaxis1_   =data.addMulti<float>(branchName_,"jet_axis1"   ,0);
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
-    if (options_ & SAVEQGL)
-      ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
+    ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
@@ -96,7 +95,7 @@ void JetFiller<Jet>::load(const edm::Event& iEvent)
     else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
   }
-  if(options_ & LOADJETSHAPE && options_ & SAVEQGL) {
+  if(options_ & LOADJETSHAPE) {
 	  FileUtilities::enforceGet(iEvent,qgTagQGL_, qgHandleQGL_, true);
   }
 
@@ -189,12 +188,12 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
+      data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
       if(options_ & SAVEQGL) {
         auto jet = jets_->begin(); jet += iJ;
         edm::RefToBase<Jet> jetRef(edm::Ref<vector<Jet>>(jets_, jet - jets_->begin()));
         float qgQGL = (*qgHandleQGL_ )[jetRef];
         data.fillMulti<float>(ijetqgl_ , qgQGL );
-        data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
       } // SAVEQGL
     } // LOADJETSHAPE
 
