@@ -59,10 +59,12 @@ public:
   }
 
   void configure(){
+	// to run e.g. likelihood, need to change "Quark", "Gluon" to "Signal", "Background"
     addInputTree(inputTree,"Quark","flavor == 0");
     addInputTree(inputTree,"Gluon","flavor == 1");
 
     addFactory(TMVA::Types::kBDT,"BDTG");
+    //addFactory(TMVA::Types::kLikelihood,"LikelihoodD","!H:V:PDFInterpol=Spline2:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmooth=5:NAvEvtPerBin=50");
     if (reco) {
     	// loosely binned test
 		//if (usePuppi) addAxis( new BinnedSpace("ak4pfpuppi_jet_pt",  "ak4pfpuppi_jet_pt",  "20,100,6000") );
@@ -82,6 +84,7 @@ public:
 		addAxis( new BinnedSpace("ak4pfchs_genjet_eta", "ak4pfchs_genjet_eta", "0,2.4,5")     );
     } // !reco
     setConfiguration("QG","QurakGluonDisc", reco ? "qgXML_reco" : "qgXML_gen");
+
   }
 
   TTree * inputTree;
