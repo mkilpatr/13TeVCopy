@@ -92,7 +92,7 @@ ElectronFiller::ElectronFiller(const int options,
   iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
 
   string base = getenv("CMSSW_BASE");
-  string electronisomva=base+"/src/AnalysisTools/ObjectSelection/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  string electronisomva=base+"/src/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
   eleMVAiso = new LeptonMVA();
   eleMVAiso->initialize(electronisomva);
 
@@ -112,25 +112,25 @@ void ElectronFiller::initMVA()
   vector<string> eleNonTrigIDMVAPhys14Weights;
 
   if(bunchSpacing_ == 50) {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
   } else {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_10_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_10_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB2_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EE_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB1_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB2_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EE_10_oldscenario2phys14_BDT.weights.xml");
   }
 
     

@@ -21,7 +21,8 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   const double candptMin,
   const double candetaMax,
   const double taudiscMin,
-  const string tauMVAFileName,
+  const string tauMVAFileName_MtPresel,
+  const string tauMVAFileName_DphiPresel,
   const string tauMVAName) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
@@ -33,9 +34,10 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   taudiscMin_(taudiscMin)
 {
 
-  string base = getenv("CMSSW_BASE") + string("/src/");
+  string base = getenv("CMSSW_BASE") + string("/src/data/Taus/");
 
-  tauMVA_ = new TauMVA(base+tauMVAFileName, tauMVAName);
+  tauMVA_MtPresel_   = new TauMVA(base+tauMVAFileName_MtPresel, tauMVAName);
+  tauMVA_DphiPresel_ = new TauMVA(base+tauMVAFileName_DphiPresel, tauMVAName);
 
   ipt_     = data.addMulti<float>(branchName_,"pt",0);
   ieta_    = data.addMulti<float>(branchName_,"eta",0);
@@ -47,6 +49,7 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   idz_     = data.addMulti<float>(branchName_,"dz",0);
   ifromPV_ = data.addMulti<int  >(branchName_,"fromPV",-1);
   imt_     = data.addMulti<float>(branchName_,"mttrkplusphoton",0);
+  idphimet_      = data.addMulti<float>(branchName_,"dphimet",0);
   ichiso0p1_     = data.addMulti<float>(branchName_,"chiso0p1",0);
   ichiso0p2_     = data.addMulti<float>(branchName_,"chiso0p2",0);
   ichiso0p3_     = data.addMulti<float>(branchName_,"chiso0p3",0);
@@ -60,7 +63,8 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   icontJetDR_    = data.addMulti<float>(branchName_,"contJetDR",-1.0);
   icontJetCSV_   = data.addMulti<float>(branchName_,"contJetCSV",-1.0);
   icontTauIndex_ = data.addMulti<int  >(branchName_,"contTauIndex",-1);
-  itaudisc_      = data.addMulti<float>(branchName_,"taudisc",-10.0);
+  itaudisc_mtpresel_      = data.addMulti<float>(branchName_,"taudisc_mtpresel",-10.0);
+  itaudisc_dphipresel_    = data.addMulti<float>(branchName_,"taudisc_dphipresel",-10.0);
 }
 
 int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
@@ -234,9 +238,10 @@ void PFCandidateFiller::fill()
     float contjetdr = jetmatch ? PhysicsUtilities::deltaR(*pfc, *jet) : -1.0;
     float contjetcsv = jetmatch ? jet->bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
 
-    float taumva = tauMVA_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
+    float taumva_mtpresel   = tauMVA_MtPresel_  ->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
+    float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
 
-    if(taumva < taudiscMin_) continue;
+    if(taumva_mtpresel < taudiscMin_ && taumva_dphipresel < taudiscMin_) continue;
 
     data.fillMulti<float>(ipt_, pfc->pt());
     data.fillMulti<float>(ieta_, pfc->eta());
@@ -248,6 +253,7 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(idz_, pfc->dz());
     data.fillMulti<int  >(ifromPV_, pfc->fromPV());
     data.fillMulti<float>(imt_, computeMT(pfc));
+    data.fillMulti<float>(idphimet_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->met())));
     data.fillMulti<float>(ichiso0p1_, chiso0p1);
     data.fillMulti<float>(ichiso0p2_, chiso0p2);
     data.fillMulti<float>(ichiso0p3_, chiso0p3);
@@ -261,7 +267,8 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(icontJetDR_, contjetdr);
     data.fillMulti<float>(icontJetCSV_, contjetcsv);
     data.fillMulti<int  >(icontTauIndex_, getHPSTauIndex(ic));
-    data.fillMulti<float>(itaudisc_, taumva);
+    data.fillMulti<float>(itaudisc_mtpresel_, taumva_mtpresel);
+    data.fillMulti<float>(itaudisc_dphipresel_, taumva_dphipresel);
   }
 
   isFilled_ = true;

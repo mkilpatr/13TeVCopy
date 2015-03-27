@@ -61,7 +61,7 @@ MuonFiller::MuonFiller(const int options,
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
   string base = getenv("CMSSW_BASE");
-  string muonisomva=base+"/src/AnalysisTools/ObjectSelection/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  string muonisomva=base+"/src/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
   muMVAiso = new LeptonMVA();
   muMVAiso->initialize(muonisomva);
 
