@@ -64,11 +64,11 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
 
   if(options_ & LOADJETSHAPE) {
     ijetbetaStar_=data.addMulti<float>(branchName_,"jet_betaStar",0);
-    ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"     ,0);
     ijetptD_     =data.addMulti<float>(branchName_,"jet_ptD"     ,0);
     ijetaxis1_   =data.addMulti<float>(branchName_,"jet_axis1"   ,0);
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
+    ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
@@ -183,17 +183,19 @@ void JetFiller<Jet>::fill()
     if(options_ & LOADJETSHAPE){
       assert(evtInfofiller_->isLoaded());
       // for official qgTagger
-      auto jet = jets_->begin(); jet += iJ;
-      edm::RefToBase<Jet> jetRef(edm::Ref<vector<Jet>>(jets_, jet - jets_->begin()));
-      float qgQGL = (*qgHandleQGL_ )[jetRef];
-      data.fillMulti<float>(ijetqgl_ , qgQGL );
       qgTaggingVar_->compute(&j);
       data.fillMulti<float>(ijetbetaStar_,getBetaStar(j));
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
       data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
-    }
+      if(options_ & SAVEQGL) {
+        auto jet = jets_->begin(); jet += iJ;
+        edm::RefToBase<Jet> jetRef(edm::Ref<vector<Jet>>(jets_, jet - jets_->begin()));
+        float qgQGL = (*qgHandleQGL_ )[jetRef];
+        data.fillMulti<float>(ijetqgl_ , qgQGL );
+      } // SAVEQGL
+    } // LOADJETSHAPE
 
   }
 

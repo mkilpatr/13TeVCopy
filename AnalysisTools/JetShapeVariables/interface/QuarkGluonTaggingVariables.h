@@ -8,6 +8,7 @@
 #include "TF1.h"
 #include "TGraph.h"
 
+#include "DataFormats/JetReco/interface/Jet.h"
 
 namespace ucsbsusy{
 
@@ -29,10 +30,82 @@ class QuarkGluonTaggingVariables {
 
    void compute(const reco::Jet * jet){
 
+	 if (jet->numberOfDaughters()==0) return;
+
+	 float sum_weight    = 0.0;
+	 float sum_dEta      = 0.0;
+	 float sum_dPhi      = 0.0;
+	 float sum_dEta2     = 0.0;
+	 float sum_dPhi2     = 0.0;
+	 float sum_dEta_dPhi = 0.0;
+	 float sum_pt        = 0.0;
+	 bool useQC          = false; // useQualityCuts; hard-coded for now to mimic what jetMet does in 731
+	 totalMult_          = 0;
+
+	 // loop over the jet constituents
+	 // (packed candidate situation)
+	 for(auto part : jet->getJetConstituentsQuick()) {
+       auto p = static_cast<const pat::PackedCandidate*>(part);
+       if(p->charge()){ // charged particles
+       	 if(!( p->fromPV() > 1 && p->trackHighPurity() )) continue;
+       	 if(useQC) { // currently hard-coded to false above
+       	   // this crashes for some jets, so will need debugging if useQC is changed to true
+           if( (p->dz()*p->dz() ) / (p->dzError()*p->dzError() ) > 25. ) continue;
+           if( (p->dxy()*p->dxy()) / (p->dxyError()*p->dxyError()) < 25. ) ++totalMult_; // this cut only applies to multiplicity
+       	 } else ++totalMult_;
+       } else { // neutral particles
+       	 if(p->pt() < 1.0) continue;
+       	 ++totalMult_;
+       } // charged, neutral particles
+
+       float dEta   = part->eta() - jet->eta();
+       float dPhi   = reco::deltaPhi(part->phi(), jet->phi());
+       float partPt = part->pt();
+       float weight = partPt*partPt;
+
+       sum_weight    += weight;
+       sum_pt        += partPt;
+       sum_dEta      += dEta      * weight;
+       sum_dPhi      += dPhi      * weight;
+       sum_dEta2     += dEta*dEta * weight;
+       sum_dEta_dPhi += dEta*dPhi * weight;
+       sum_dPhi2     += dPhi*dPhi * weight;
+	 } // jet->getJetConstituentsQuick()
+
+	 // calculate axis2 and ptD
+	 float a = 0.0;
+     float b = 0.0;
+     float c = 0.0;
+	 float ave_dEta  = 0.0;
+	 float ave_dPhi  = 0.0;
+	 float ave_dEta2 = 0.0;
+	 float ave_dPhi2 = 0.0;
+
+	 if(sum_weight > 0){
+	   ptD_ = sqrt(sum_weight)/sum_pt;
+	   ave_dEta  = sum_dEta  / sum_weight;
+	   ave_dPhi  = sum_dPhi  / sum_weight;
+	   ave_dEta2 = sum_dEta2 / sum_weight;
+	   ave_dPhi2 = sum_dPhi2 / sum_weight;
+	   a = ave_dEta2 - ave_dEta*ave_dEta;
+	   b = ave_dPhi2 - ave_dPhi*ave_dPhi;
+	   c = -(sum_dEta_dPhi/sum_weight - ave_dEta*ave_dPhi);
+	 } else ptD_ = 0;
+
+	 float delta = sqrt(fabs( (a-b)*(a-b) + 4*c*c ));
+	 if(a+b-delta > 0) axis2_ = sqrt(0.5*(a+b-delta));
+	 else              axis2_ = 0.0;
+	 if(a+b+delta > 0) axis1_ = sqrt(0.5*(a+b+delta));
+	 else              axis1_ = 0.0;
+   }
+
+
+   void computeOld(const reco::Jet * jet){
+
      totalMult_ = jet->numberOfDaughters();
-     ptD_ = 0;
-     axis1_ = 0;
-     axis2_ = 0;
+     ptD_       = 0;
+     axis1_     = 0;
+     axis2_     = 0;
      if(totalMult_ == 0) return;
 
      double sumPT2 = 0;
@@ -102,7 +175,7 @@ class QuarkGluonTaggingVariables {
 	 Nhist->Sumw2();
 	 TGraph *logGraph = new TGraph(Nhist->GetNbinsX());
 
-	 bool printBins = false;
+	 bool printBins = false; // print out bin counts per jet for debugging and example fit plots
 	 if (printBins) std::cout << " mult=" << totalMult_ << " ";
 	 for (int i=0; i<Nhist->GetNbinsX(); ++i) {
 		 logGraph->SetPoint( i, log10((1.0*(i+2))/0.8), log10(1.0*Nhist->GetBinContent(i+1)) );
