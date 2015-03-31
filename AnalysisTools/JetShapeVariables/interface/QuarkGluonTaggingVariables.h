@@ -29,7 +29,8 @@ class QuarkGluonTaggingVariables {
 
 
    void compute(const reco::Jet * jet){
-	 std::cout << "computing qgl vars" << std::endl;
+
+	 if (jet->numberOfDaughters()==0) return;
 
 	 float sum_weight    = 0.0;
 	 float sum_dEta      = 0.0;
@@ -38,19 +39,17 @@ class QuarkGluonTaggingVariables {
 	 float sum_dPhi2     = 0.0;
 	 float sum_dEta_dPhi = 0.0;
 	 float sum_pt        = 0.0;
-	 bool useQC          = false; // works for now, still need to look into...
+	 bool useQC          = false; // useQualityCuts; hard-coded for now to mimic what jetMet does in 731
 	 totalMult_          = 0;
 
 	 // loop over the jet constituents
 	 // (packed candidate situation)
-	 std::cout << "...begin part loop" << std::endl;
-	 int temp = 0;
 	 for(auto part : jet->getJetConstituentsQuick()) {
-	   std::cout << "...... " << temp << std::endl; ++temp;
        auto p = static_cast<const pat::PackedCandidate*>(part);
        if(p->charge()){ // charged particles
        	 if(!( p->fromPV() > 1 && p->trackHighPurity() )) continue;
-       	 if(useQC) {
+       	 if(useQC) { // currently hard-coded to false above
+       	   // this crashes for some jets, so will need debugging if useQC is changed to true
            if( (p->dz()*p->dz() ) / (p->dzError()*p->dzError() ) > 25. ) continue;
            if( (p->dxy()*p->dxy()) / (p->dxyError()*p->dxyError()) < 25. ) ++totalMult_; // this cut only applies to multiplicity
        	 } else ++totalMult_;
@@ -72,7 +71,6 @@ class QuarkGluonTaggingVariables {
        sum_dEta_dPhi += dEta*dPhi * weight;
        sum_dPhi2     += dPhi*dPhi * weight;
 	 } // jet->getJetConstituentsQuick()
-	 std::cout << "...done with loop" << std::endl;
 
 	 // calculate axis2 and ptD
 	 float a = 0.0;
@@ -97,16 +95,17 @@ class QuarkGluonTaggingVariables {
 	 float delta = sqrt(fabs( (a-b)*(a-b) + 4*c*c ));
 	 if(a+b-delta > 0) axis2_ = sqrt(0.5*(a+b-delta));
 	 else              axis2_ = 0.0;
-	 std::cout << "done computing qgl vars" << std::endl;
+	 if(a+b+delta > 0) axis1_ = sqrt(0.5*(a+b+delta));
+	 else              axis1_ = 0.0;
    }
 
 
-   void computeOld(const reco::Jet * jet, edm::Handle<reco::VertexCollection> vtxs){
+   void computeOld(const reco::Jet * jet){
 
      totalMult_ = jet->numberOfDaughters();
-     ptD_ = 0;
-     axis1_ = 0;
-     axis2_ = 0;
+     ptD_       = 0;
+     axis1_     = 0;
+     axis2_     = 0;
      if(totalMult_ == 0) return;
 
      double sumPT2 = 0;
@@ -176,7 +175,7 @@ class QuarkGluonTaggingVariables {
 	 Nhist->Sumw2();
 	 TGraph *logGraph = new TGraph(Nhist->GetNbinsX());
 
-	 bool printBins = false;
+	 bool printBins = false; // print out bin counts per jet for debugging and example fit plots
 	 if (printBins) std::cout << " mult=" << totalMult_ << " ";
 	 for (int i=0; i<Nhist->GetNbinsX(); ++i) {
 		 logGraph->SetPoint( i, log10((1.0*(i+2))/0.8), log10(1.0*Nhist->GetBinContent(i+1)) );
