@@ -30,7 +30,11 @@ class QuarkGluonTaggingVariables {
 
    void compute(const reco::Jet * jet){
 
-	 if (jet->numberOfDaughters()==0) return;
+	 totalMult_ = jet->numberOfDaughters();
+	 ptD_       = 0;
+	 axis1_     = 0;
+	 axis2_     = 0;
+	 if(totalMult_ == 0) return;
 
 	 float sum_weight    = 0.0;
 	 float sum_dEta      = 0.0;
