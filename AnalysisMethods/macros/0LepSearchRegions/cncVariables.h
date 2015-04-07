@@ -1,5 +1,5 @@
-#ifndef selectionVariables_H
-#define selectionVariables_H
+#ifndef cncVariables_H
+#define cncVariables_H
 
 class Panvariate;
 template<typename Object> class Paramatrix;
