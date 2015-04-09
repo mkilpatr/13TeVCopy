@@ -17,9 +17,9 @@ echo "workdir: $workdir"
 echo "args: $*"
 ls -l
 
-source /uscmst1/prod/sw/cms/shrc prod
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 cd $scramdir/src/
-SCRAM_ARCH=slc6_amd64_gcc481
+SCRAM_ARCH=slc6_amd64_gcc491
 eval `scramv1 runtime -sh`
 cd $workdir
 
@@ -30,5 +30,11 @@ cmsRun $cfgfile print inputFiles_clear inputFiles_load=${filename} outputFile=${
 
 status=`echo $?`
 echo "Status = $status"
+
+if [ $maxevents -gt -1 ]; then
+  outputname=`echo ${outputname} | sed "s/.root/_numEvent${maxevents}.root/"`
+fi
+
+xrdcp ${outputname} root://cmseos:1094/${outputdir}
 
 exit $status

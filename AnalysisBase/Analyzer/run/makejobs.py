@@ -151,10 +151,8 @@ Error                   = logs/{sname}_{num}.err
 Log                     = logs/{sname}_{num}.log
 use_x509userproxy       = true
 initialdir              = {jobdir}
-output_destination      = root://cmseos:1094/{outputdir}
 Should_Transfer_Files   = YES
 transfer_input_files    = {workdir}/{cfg},{workdir}/{infile}
-transfer_output_files   = output_{num}_{sname}{evttag}.root
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF
