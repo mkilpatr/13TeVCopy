@@ -127,26 +127,26 @@ public:
   } // processVariables()
 
   //bool   passPresel;
-  double ptMet;
-  int    nJ90;
-  int    nJ20;
-  int    ntBtag;
-  int    nmBtag;
-  double dPhiMET12;
-  double dPhiMET3;
-  double qgl0;
-  double qgl1;
-  double qglprod;
-  double ht;
-  double htAlongAway;
-  double rmsJetPT;
-  double rmsJetDphiMET;
-  double bInvMass;
-  double bTransMass;
-  double rmsBEta;
-  double wInvMass;
-  double Bpt0;
-  double Bpt1;
+  float ptMet;
+  int   nJ90;
+  int   nJ20;
+  int   ntBtag;
+  int   nmBtag;
+  float dPhiMET12;
+  float dPhiMET3;
+  float qgl0;
+  float qgl1;
+  float qglprod;
+  float ht;
+  float htAlongAway;
+  float rmsJetPT;
+  float rmsJetDphiMET;
+  float bInvMass;
+  float bTransMass;
+  float rmsBEta;
+  float wInvMass;
+  float Bpt0;
+  float Bpt1;
 }; // VariableCalculator
 
 }

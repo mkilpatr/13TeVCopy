@@ -112,9 +112,9 @@ void Analyzer::loadPlots() {
   string yTitle  = "Events";
 
   // partial presel plots
-  plots["met_passJet" ] = new TH1F( "met_passPre" , (passJet+"; #slash{E}_{T} [GeV]; "+yTitle).c_str(), 50,  0  , 500   );
-  plots["nJ90_passMet"] = new TH1F( "nJ90_passPre", (passMet+"; Number of Jets; "     +yTitle).c_str(), 10, -0.5,  19.5 );
-  plots["nJ20_passMet"] = new TH1F( "nJ20_passPre", (passMet+"; Number of B Jets; "   +yTitle).c_str(), 10, -0.5,  19.5 );
+  plots["met_passJet" ] = new TH1F( "met_passJet" , (passJet+"; #slash{E}_{T} [GeV]; "+yTitle).c_str(), 100,  0  , 1000   );
+  plots["nJ90_passMet"] = new TH1F( "nJ90_passMet", (passMet+"; Number of Jets; "     +yTitle).c_str(),  10, -0.5,   19.5 );
+  plots["nJ20_passMet"] = new TH1F( "nJ20_passMet", (passMet+"; Number of B Jets; "   +yTitle).c_str(),  10, -0.5,   19.5 );
   // preselection plots
   plots["j1pt_passPre"]         = new TH1F("jet1pt_passPre"       , (passPre+"; Lead jet p_{T} [GeV]; "            +yTitle).c_str(), 200,   0  , 1000    );
   plots["ntBtag_passPre"]       = new TH1F("ntBtag_passPre"       , (passPre+"; Number of B Jets; "                +yTitle).c_str(),   8,  -0.5,    7.5  );
@@ -227,7 +227,7 @@ double getXsec(string sample) {
   if (sample=="T2tt_650_325") return 0.107045  ;
   if (sample=="T2tt_850_100") return 0.0189612 ;
   cout << "WARNING: no cross section available for " << sample << "!" << endl
-	   << "         setting xsec = 1" << endl;
+	     << "         setting xsec = 1" << endl;
   return 1;
 }
 
