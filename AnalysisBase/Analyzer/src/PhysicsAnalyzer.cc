@@ -103,6 +103,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
+      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
 
       ak4Jets = new PatJetFiller( options < 0 ? defaultOptions : options
                              , branchName == "" ? defaults::BRANCH_AK4JETS : branchName
@@ -125,6 +126,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
+      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
 
       puppiJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName,
@@ -149,6 +151,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
+      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
 
       pickyJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_PICKYJETS : branchName,
@@ -232,7 +235,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                       cfg.getUntrackedParameter<double>("minCandPt"),
                                       cfg.getUntrackedParameter<double>("maxCandEta"),
                                       cfg.getUntrackedParameter<double>("minTauDisc"),
-                                      cfg.getUntrackedParameter<string>("tauMVAFileName"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName_MtPresel"),
+                                      cfg.getUntrackedParameter<string>("tauMVAFileName_DphiPresel"),
                                       cfg.getUntrackedParameter<string>("tauMVAName")
                                       );
       initializedFillers.push_back(pfcands);

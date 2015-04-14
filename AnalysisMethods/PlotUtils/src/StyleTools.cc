@@ -75,6 +75,7 @@ void StyleTools::SetLegendStyle(TLegend* leg)
   leg->SetFillStyle (0);
   leg->SetFillColor (0);
   leg->SetBorderSize(0);
+  leg->SetTextSize(0.05);
 }
 
 void StyleTools::SetStyle()

@@ -8,7 +8,6 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/KinematicVariables/interface/Topness.h"
-#include "AnalysisTools/ObjectSelection/interface/LeptonIsolation.h"
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #endif
 
@@ -18,29 +17,14 @@ class Analyzer : public BaseTreeAnalyzer {
 
   public :
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec, TString sname, TString outputdir) : 
-    BaseTreeAnalyzer(fileName, treeName, isMCTree),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir) : 
+    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
       // configuration
-      cleanJetsAgainstLeptons();
       tNess     = new Topness();
       tNessInfo = new TopnessInformation();
 
       // initialize plots
       loadPlots();
-
-  /*
-  void loadVariables() {
-    
-    load(EVTINFO);
-    load(AK4JETS,-1,"ak8pfchstrimmed");
-    load(ELECTRONS);
-    load(MUONS);
-    load(TAUS);
-    if(isMC()) load(GENPARTICLES);
-    
-  }
-  */   
-
 
       // initiliaze tree
       gSystem->mkdir(outputdir,true);
@@ -52,7 +36,7 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("NAK5PFJets",&NAK5PFJets,"NAK5PFJets/I");
       outtree->Branch("NAK5PFBJets",&NAK5PFBJets,"NAK5PFBJets/I");
       outtree->Branch("NRecoLep",&NRecoLep,"NRecoLep/I");
-      outtree->Branch("NHPSTau",&NHPSTau,"NHPSTau/I");
+      outtree->Branch("NVetoTau",&NVetoTau,"NVetoTau/I");
       outtree->Branch("MET",&MET,"MET/F");
       outtree->Branch("HT",&HT,"HT/F");
       outtree->Branch("HTAovA",&HTAovA,"HTAovA/F");
@@ -76,10 +60,14 @@ class Analyzer : public BaseTreeAnalyzer {
   const double xsec_;
   const double lumi_         = 1000.0; // in /pb
   const double metcut_       = 150.0;
-  const int    minNSelJets_  = 4;
-  const int    minNSelBjets_ = 1;
-  const int    maxNSelTaus_  = 0;
-  const int    nSelLeptons_  = 1;
+  const int    minNJets_     = 4;
+  const int    minNBjets_    = 1;
+  const int    maxNTaus_     = 0;
+  const int    nLeptons_     = 1;
+  const float  minTrigMuPt_  = 27.0;
+  const float  maxTrigMuEta_ = 2.1;
+  const float  minTrigEPt_   = 32.0;
+  const float  maxTrigEEta_  = 2.1;
   const TString sname_       = "testLoukas.root";
   const TString outputdir_   = "./plots/";  
 
@@ -93,7 +81,7 @@ class Analyzer : public BaseTreeAnalyzer {
   int NAK5PFJets;
   int NAK5PFBJets;
   int NRecoLep;
-  int NHPSTau;
+  int NVetoTau;
   float MET;
   float HT;
   float HTAovA;
@@ -150,43 +138,51 @@ void Analyzer::runEvent()
 
   double wgt = lumi_*xsec_/getEntries();
 
-  if(nLeptons != nSelLeptons_) return;
+  if(nSelLeptons < nLeptons_) return; // check for at least one lepton passing pog definitions
+
+  vector<LeptonF*> trigLeptons;
+  for(auto* lepton : selectedLeptons) {
+    if(lepton->ismuon() && lepton->pt() > minTrigMuPt_ && fabs(lepton->eta()) < maxTrigMuEta_) trigLeptons.push_back(lepton);
+    else if(lepton->iselectron() && lepton->pt() > minTrigEPt_ && fabs(lepton->eta()) < maxTrigEEta_) trigLeptons.push_back(lepton);
+  }
+
+  if(trigLeptons.size() != 1) return; // require exactly one good lepton in trigger acceptance
+
+  if(nSelLeptons > nLeptons_) return; // veto additional leptons passing pog definitions
+
+  //if(nVetoedTaus > maxNTaus_)     return;
 
   // fill tree variables
   ScaleFactor = wgt;
   NPV = nPV;
   NAK5PFJets = nJets;
   NAK5PFBJets = nBJets;
-  NRecoLep = nLeptons;
-  NHPSTau = nTaus;
+  NRecoLep = nSelLeptons;
+  NVetoTau = nVetoedTaus;
   MET = met->pt();
   HT = JetKinematics::ht(jets,40,2.4);
   HTAovA = JetKinematics::htAlongHtAway(*met,jets,40,2.4);
 
+  LeptonF* lep = trigLeptons.at(0);
+  MomentumF* W = new MomentumF(lep->p4() + met->p4());
+  DphiLepW = PhysicsUtilities::deltaPhi(*lep, *W);
 
-  MomentumF* W = new MomentumF(leptons.at(0)->p4() + met->p4());
-  DphiLepW = PhysicsUtilities::deltaPhi(*leptons.at(0), *W);
+  stdIso = (lep->pfdbetaiso())/(lep->pt());
 
-  stdIso = (leptons.at(0)->pfdbetaiso())/(leptons.at(0)->p4().pt());
-
-  minTopness = tNess->findMinTopnessConfiguration(leptons,jets,met,tNessInfo);
+  minTopness = tNess->findMinTopnessConfiguration(selectedLeptons,jets,met,tNessInfo);
   minTopnessNoLog = std::exp(minTopness);
 
   DphiLepWRecoSeen = PhysicsUtilities::deltaPhi(tNessInfo->top1_l,tNessInfo->top1_w);
   DphiLepWRecoMiss = PhysicsUtilities::deltaPhi(tNessInfo->top1_l,tNessInfo->top2_w);
 
 
-  LepPdgId = leptons.at(0)->pdgid();
-  LepPt    = leptons.at(0)->p4().pt();
+  LepPdgId = lep->pdgid();
+  LepPt    = lep->pt();
 
   outtree->Fill();
 
-
-  //  if(nLeptons != nSelLeptons_) return;
-  if(nTaus > maxNSelTaus_)     return;
-
   bool passmet = met->pt() > metcut_;
-  bool passjets = nJets >= minNSelJets_ && nBJets >= minNSelBjets_;
+  bool passjets = nJets >= minNJets_ && nBJets >= minNBjets_;
   bool passpreselection = passmet && passjets;
 
   // Fill histograms
@@ -200,11 +196,11 @@ void Analyzer::runEvent()
 
   // plots after preselection
   plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
-  plots["leppt_passpresel"]     ->Fill(leptons.at(0)->pt(), wgt);
+  plots["leppt_passpresel"]     ->Fill(lep->pt(), wgt);
   plots["jet1pt_passpresel"]    ->Fill(jets.at(0)->pt(), wgt);
-  plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*leptons.at(0), *met)), wgt);
-  plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*leptons.at(0), *W)), wgt);
-  plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*leptons.at(0), *met), wgt);
+  plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *met)), wgt);
+  plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *W)), wgt);
+  plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*lep, *met), wgt);
 
 }
 
@@ -232,10 +228,10 @@ void Analyzer::out(TString outputName, TString outputPath)
 void processSingleLepton(TString sname = "test",               // sample name
                          const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
                          const bool isMC = true,               // data or MC
-                         const TString fname = "evttree_numEvent10000.root", // path of file to be processed
+                         const TString fname = "evttree_numEvent1000.root", // path of file to be processed
                          const double xsec = 1.0,              // cross section to be used with this file
                          const TString outputdir = "run/plots",    // directory to which files with histograms will be written
-                         const TString fileprefix = "file:/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_2_0/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
+                         const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -249,8 +245,13 @@ void processSingleLepton(TString sname = "test",               // sample name
 
   TString fullname = fileprefix+fname;
 
+  // Adjustments to default configuration
+  BaseTreeAnalyzer::ConfigPars pars;
+  pars.defaultJetCollection = BaseTreeAnalyzer::PICKYJETS;
+  pars.cleanJetsvSelectedLeptons_ = true;
+
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, xsec, sname, outputdir);
+  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(100000);

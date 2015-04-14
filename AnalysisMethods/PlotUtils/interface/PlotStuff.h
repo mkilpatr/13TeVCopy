@@ -101,6 +101,7 @@ class PlotStuff {
         TString                sqrts;
         TString                lumi;
         TString                channel;
+        TString                ytitle;
         double                 headerx;
         double                 headery;
         double                 legx1;
@@ -110,6 +111,7 @@ class PlotStuff {
         TString                drawopt;
         int                    rebinx;
         int                    sigscale;
+        bool                   addsigscaletxt;
         double                 maxscale;
         double                 minlogscale;
         double                 maxlogscale;
@@ -137,6 +139,7 @@ class PlotStuff {
           sqrts("#sqrt{s} = 13 TeV"),
           lumi("4 fb^{-1}"),
           channel(""),
+          ytitle(""),
           headerx(0.61),
           headery(0.92),
           legx1(0),
@@ -146,6 +149,7 @@ class PlotStuff {
           drawopt("hist"),
           rebinx(1),
           sigscale(1),
+          addsigscaletxt(true),
           maxscale(1.3),
           minlogscale(0.2),
           maxlogscale(2000.),
@@ -232,6 +236,8 @@ class PlotStuff {
     void     setPlotFileSuffix(TString plotfilesuffix) { config_.plotfilesuffix = plotfilesuffix; }
     // Text to be displayed in header (com energy, lumi, channel)
     void     setHeaderText(TString sqrts, TString lumi, TString channel) { config_.sqrts = sqrts; config_.lumi = lumi; config_.channel = channel; }
+    // Y-axis title (if different from default)
+    void     setYTitle(TString ytitle) { config_.ytitle = ytitle; }
     // x, y coordinates of lower left corner of header box
     void     setHeaderPosition(double headerx, double headery) { config_.headerx = headerx; config_.headery = headery; }
     // Change coordinates of legend box, only if default behavior is not desired
@@ -242,6 +248,8 @@ class PlotStuff {
     void     setRebinX(int rebinx) { config_.rebinx = rebinx; }
     // Factor by which to scale signal. -1 implies signal will be scaled to sum of all backgrounds
     void     setSigScale(int sigscale) { config_.sigscale = sigscale; }
+    // Add signal scale factor to legend (default = true)
+    void     setAddSigScaleTxt(bool addsigscaletxt) { config_.addsigscaletxt = addsigscaletxt; }
     // Proportion of y axis maximum to maximum bin content of histograms for linear plots
     void     setMaxScale(double maxscale) { config_.maxscale = maxscale; }
     // Absolute y axis minimum for log plots

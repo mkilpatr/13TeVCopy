@@ -72,10 +72,13 @@ echo "$cfgfile $runscript $workdir $outputdir"
 """.format(pathtocfg=args.path,runscript=args.script,stype=args.submittype))
 
 for isam in range(len(samples)) :
-    os.system("./das_client.py --query \"file dataset=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+    cmd = ("./das_client.py --query \"file dataset=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+    subprocess.call(cmd,shell=True)
     cmd = ("./das_client.py --query \"dataset=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam]))
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
     numevents=int(ps.communicate()[0])
+    if args.maxevents > -1  and args.maxevents < numevents :
+        numevents = args.maxevents
     numlines = 0
     numperjob = args.numperjob
     infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
@@ -126,7 +129,7 @@ for isam in range(len(samples)) :
         elif args.submittype == "lsf" :
             cpinput = ""
             if args.splittype == "file" or (args.splittype == "event" and ijob == 0) :
-                cpinput = "cp $jobdir/%s $workdir \n" % (jobfile)
+                cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
             script.write("""{cptxt}
 bsub -q {queue} $runscript $cfgfile {infile} $outputdir {outputname} {maxevents} {skipevents} $workdir \n""".format(
             cptxt=cpinput,queue=args.queue,infile=jobfile,outputname=outfile,maxevents=maxevts,skipevents=skipevts
@@ -148,10 +151,8 @@ Error                   = logs/{sname}_{num}.err
 Log                     = logs/{sname}_{num}.log
 use_x509userproxy       = true
 initialdir              = {jobdir}
-output_destination      = root://cmseos:1094/{outputdir}
 Should_Transfer_Files   = YES
 transfer_input_files    = {workdir}/{cfg},{workdir}/{infile}
-transfer_output_files   = output_{num}_{sname}{evttag}.root
 WhenToTransferOutput    = ON_EXIT
 Queue
 EOF

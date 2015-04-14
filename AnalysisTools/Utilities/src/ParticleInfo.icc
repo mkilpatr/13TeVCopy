@@ -135,4 +135,62 @@ void ParticleInfo::printPackedGenParticleInfo(const Particle& genParticle, const
   printPackedGenParticleInfo(&genParticle, idx);
 }
 
+//_____________________________________________________________________________
+template<typename Particle>
+bool ParticleInfo::hasMother(const Particle* genParticle, const int pid, bool checkCharge) {
+
+  for(unsigned int iMom = 0; iMom < genParticle->numberOfMothers(); ++iMom) {
+    if(isA(pid, genParticle->mother(iMom), checkCharge)) return true;
+  }
+
+  return false;
+
+}
+
+//_____________________________________________________________________________
+template<typename Particle>
+const Particle* ParticleInfo::findMother(const Particle* genParticle, const int pid, bool checkCharge) {
+
+  const Particle* mother = 0;
+
+  for(unsigned int iMom = 0; iMom < genParticle->numberOfMothers(); ++iMom) {
+    if(isA(pid, genParticle->mother(iMom), checkCharge)) {
+      mother = genParticle->mother(iMom);
+      break;
+    }
+  }
+
+  return mother;
+
+}
+
+//_____________________________________________________________________________
+template<typename Particle>
+bool ParticleInfo::hasDaughter(const Particle* genParticle, const int pid, bool checkCharge) {
+
+  for(unsigned int iDau = 0; iDau < genParticle->numberOfDaughters(); ++iDau) {
+    if(isA(pid, genParticle->daughter(iDau), checkCharge)) return true;
+  }
+
+  return false;
+
+}
+
+//_____________________________________________________________________________
+template<typename Particle>
+const Particle* ParticleInfo::findDaughter(const Particle* genParticle, const int pid, bool checkCharge) {
+
+  const Particle* daughter = 0;
+
+  for(unsigned int iDau = 0; iDau < genParticle->numberOfDaughters(); ++iDau) {
+    if(isA(pid, genParticle->daughter(iDau), checkCharge)) {
+      daughter = genParticle->daughter(iDau);
+      break;
+    }
+  }
+
+  return daughter;
+
+}
+
 #endif //PARTICLEINFO_ICC

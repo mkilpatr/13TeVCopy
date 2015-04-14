@@ -172,6 +172,19 @@ void printPackedGenParticleInfo(const Particle* genParticle, const int idx = 0);
 template<typename Particle>
 void printPackedGenParticleInfo(const Particle& genParticle, const int idx = 0);
 
+/// Inheritance
+template<typename Particle>
+bool hasMother(const Particle* genParticle, const int pid, bool checkCharge = false);
+
+template<typename Particle>
+const Particle* findMother(const Particle* genParticle, const int pid, bool checkCharge = false);
+
+template<typename Particle>
+bool hasDaughter(const Particle* genParticle, const int pid, bool checkCharge = false);
+
+template<typename Particle>
+const Particle* findDaughter(const Particle* genParticle, const int pid, bool checkCharge = false);
+
 };  // end class ParticleInfo
 
 

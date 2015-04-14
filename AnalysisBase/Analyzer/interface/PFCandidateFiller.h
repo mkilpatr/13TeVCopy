@@ -37,7 +37,8 @@ namespace ucsbsusy {
                         const double candptMin,
                         const double candetaMax,
                         const double taudiscMin,
-                        const string tauMVAFileName,
+                        const string tauMVAFileName_MtPresel,
+                        const string tauMVAFileName_DphiPresel,
                         const string tauMVAName);
       ~PFCandidateFiller() {}
 
@@ -64,7 +65,8 @@ namespace ucsbsusy {
       const double        candptMin_;
       const double        candetaMax_;
       const double        taudiscMin_;
-      TauMVA*             tauMVA_;
+      TauMVA*             tauMVA_MtPresel_;
+      TauMVA*             tauMVA_DphiPresel_;
 
       size ipt_;
       size ieta_;
@@ -76,6 +78,7 @@ namespace ucsbsusy {
       size idz_;
       size ifromPV_;
       size imt_;
+      size idphimet_;
       size ichiso0p1_;
       size ichiso0p2_;
       size ichiso0p3_;
@@ -89,7 +92,8 @@ namespace ucsbsusy {
       size icontJetDR_;
       size icontJetCSV_;
       size icontTauIndex_;
-      size itaudisc_;
+      size itaudisc_mtpresel_;
+      size itaudisc_dphipresel_;
 
     public :
       edm::Handle<pat::PackedCandidateCollection> pfcands_;

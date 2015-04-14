@@ -78,7 +78,7 @@ void procesSubjets(vector<subJet>& recoJets, vector<subJet>& genJets, BaseTreeAn
   if(analyzer->genParticleReader.isLoaded()){
     analyzer->genParts.clear();
     analyzer->genParts.reserve(4);
-    for(auto& p : analyzer->genParticleReader.genParticles.particles){
+    for(auto& p : analyzer->genParticleReader.genParticles){
       if(p.status() == 23)
         analyzer->genParts.push_back(&p);
     }
