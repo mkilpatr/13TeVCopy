@@ -43,7 +43,7 @@ class Analyzer : public BaseTreeAnalyzer {
 
     outtree->Branch( "ptMet"          , &vars.ptMet          ,          "ptMet/F" );
     outtree->Branch( "npv"            , &vars.npv            ,            "npv/I" );
-    outtree->Branch( "nJ90"           , &vars.nJ90           ,           "nJ90/I" );
+    outtree->Branch( "nj60"           , &vars.nj60           ,           "nj60/I" );
     outtree->Branch( "nJ20"           , &vars.nJ20           ,           "nJ20/I" );
     outtree->Branch( "ntBtag"         , &vars.ntBtag         ,         "ntBtag/I" );
     outtree->Branch( "nmBtag"         , &vars.nmBtag         ,         "nmBtag/I" );
@@ -57,7 +57,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "Mb1b2n"         , &vars.Mb1b2n         ,         "Mb1b2n/F" );
     outtree->Branch( "mtB0MET"        , &vars.mtB0MET        ,        "mtB0MET/F" );
     outtree->Branch( "mtB1MET"        , &vars.mtB1MET        ,        "mtB1MET/F" );
-    outtree->Branch( "mtB2MET"        , &vars.mtB2MET        ,        "mtB2MET/F" );
+    outtree->Branch( "mtB01MET"       , &vars.mtB01MET       ,       "mtB01MET/F" );
     outtree->Branch( "sSumB01oMET"    , &vars.sSumB01oMET    ,    "sSumB01oMET/F" );
     outtree->Branch( "vSumB01oMET"    , &vars.vSumB01oMET    ,    "vSumB01oMET/F" );
     outtree->Branch( "qgl0"           , &vars.qgl0           ,           "qgl0/F" );
@@ -88,9 +88,8 @@ class Analyzer : public BaseTreeAnalyzer {
   const int     minNJets_  =   3   ;
   const int     minNBjets_ =   1   ;
   const int     maxNTaus_  =   0   ;
-  const int     nLeptons_  =   0   ;
 
-  const double  lumi_      = 1000.0 ; // in /pb
+  const double  lumi_      = 4000.0 ; // in /pb
   const double  xsec_      ;
   const TString sample_    ;
   const TString outputdir_ ;
@@ -127,7 +126,7 @@ void Analyzer::loadPlots() {
 
   // partial presel plots
   plots["met_passJet" ] = new TH1F( "met_passJet" , (passJet+"; #slash{E}_{T} [GeV]; "+yTitle).c_str(), 100,  0  , 1000   );
-  plots["nJ90_passMet"] = new TH1F( "nJ90_passMet", (passMet+"; Number of Jets; "     +yTitle).c_str(),  10, -0.5,   19.5 );
+  plots["nj60_passMet"] = new TH1F( "nj60_passMet", (passMet+"; Number of Jets; "     +yTitle).c_str(),  10, -0.5,   19.5 );
   plots["nJ20_passMet"] = new TH1F( "nJ20_passMet", (passMet+"; Number of B Jets; "   +yTitle).c_str(),  10, -0.5,   19.5 );
   // preselection plots
   plots["j1pt_passPre"]          = new TH1F("jet1pt_passPre"        , (passPre+"; Lead jet p_{T} [GeV]; "             +yTitle).c_str(), 200,   0  , 1000    );
@@ -138,12 +137,13 @@ void Analyzer::loadPlots() {
   plots["dPhiB0MET_passPre"]     = new TH1F("dPhiB0MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B0)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
   plots["dPhiB1MET_passPre"]     = new TH1F("dPhiB1MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B1)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
   plots["dPhiB2MET_passPre"]     = new TH1F("dPhiB2MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B2)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiB01MET_passPre"]    = new TH1F("dPhiB01MET_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},B1-2)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiB01MET_passPre"]    = new TH1F("dPhiB01MET_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},B0-1)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
   plots["dPhiCVSnearMET_passPre"]= new TH1F("dPhiCVSnearMET_passPre", (passPre+"; |#Delta#phi(#slash{E}_{T},Bner)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
   plots["Mb1b2n_passPre"]        = new TH1F("Mb1b2n_passPre"        , (passPre+"; m(b1+b2) (by CVS); "                +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["mtB0MET_passPre"]       = new TH1F("mtB0MET_passPre"       , (passPre+"; m_{T}(b0,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["mtB1MET_passPre"]       = new TH1F("mtB1MET_passPre"       , (passPre+"; m_{T}(b1,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["mtB2MET_passPre"]       = new TH1F("mtB2MET_passPre"       , (passPre+"; m_{T}(b2,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["mtB01MET_passPre"]      = new TH1F("mtB01MET_passPre"      , (passPre+"; m_{T}(b0-1,#slash{E}_{T}); "        +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["sSumB01oMET_passPre"]   = new TH1F("sSumB01oMET_passPre"   , (passPre+"; sSum(B0,B1)/#slash{E}_{T}; "        +yTitle).c_str(), 100,   0  ,    5    );
   plots["vSumB01oMET_passPre"]   = new TH1F("vSumB01oMET_passPre"   , (passPre+"; vSum(B0,B1)/#slash{E}_{T}; "        +yTitle).c_str(), 100,   0  ,    5    );
   plots["qgl0_passPre"]          = new TH1F("qgl0_passPre"          , (passPre+"; QGL_{0}; "                          +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
@@ -182,7 +182,7 @@ void Analyzer::loadVariables() {
 void Analyzer::runEvent() {
 
   double wt = lumi_ * xsec_ / getEntries();
-  if(nSelLeptons < nLeptons_) return; // only look at 0-lep events
+  if(nVetoedLeptons > 0) return; // only look at 0-lep events
 
   // fill tree variables
   scaleFactor = wt;
@@ -203,7 +203,7 @@ void Analyzer::runEvent() {
   // ===== Fill histograms =====
   // partial preselection plots
   if (passJet) plots["met_passJet" ]->Fill(vars.ptMet, wt);
-  if (passMet) plots["nJ90_passMet"]->Fill(vars.nJ90 , wt);
+  if (passMet) plots["nj60_passMet"]->Fill(vars.nj60 , wt);
   if (passMet) plots["nJ20_passMet"]->Fill(vars.nJ20 , wt);
   // plots after preselection
   if(!passPre) return;
@@ -221,6 +221,7 @@ void Analyzer::runEvent() {
   plots["mtB0MET_passPre"]       ->Fill(vars.mtB0MET       , wt);
   plots["mtB1MET_passPre"]       ->Fill(vars.mtB1MET       , wt);
   plots["mtB2MET_passPre"]       ->Fill(vars.mtB2MET       , wt);
+  plots["mtB01MET_passPre"]      ->Fill(vars.mtB01MET      , wt);
   plots["sSumB01oMET_passPre"]   ->Fill(vars.sSumB01oMET   , wt);
   plots["vSumB01oMET_passPre"]   ->Fill(vars.vSumB01oMET   , wt);
   plots["qgl0_passPre"]          ->Fill(vars.qgl0          , wt);
@@ -293,8 +294,8 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
   //pars.cleanJetsvSelectedLeptons_ = true;
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
   a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(100,5000); // for testing
   a.out(sample, outputdir); // write outputfile with plots
 
 } // processSingleLepton()

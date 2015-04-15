@@ -28,7 +28,7 @@ public:
     //passPresel     (0)
       ptMet          (0)
     , npv            (0)
-    , nJ90           (0)
+    , nj60           (0)
     , nJ20           (0)
     , ntBtag         (0)
     , nmBtag         (0)
@@ -43,6 +43,7 @@ public:
     , mtB0MET        (0)
     , mtB1MET        (0)
     , mtB2MET        (0)
+    , mtB01MET       (0)
     , sSumB01oMET    (8000)
     , vSumB01oMET    (8000)
     , qgl0           (0)
@@ -77,7 +78,7 @@ public:
     //passPresel    = 0;
     ptMet          = 0;
     npv            = 0;
-    nJ90           = 0;
+    nj60           = 0;
     nJ20           = 0;
     ntBtag         = 0;
     nmBtag         = 0;
@@ -92,6 +93,7 @@ public:
     mtB0MET        = 0;
     mtB1MET        = 0;
     mtB2MET        = 0;
+    mtB01MET       = 0;
     sSumB01oMET    = 8000;
     vSumB01oMET    = 8000;
     qgl0           = 0;
@@ -116,7 +118,7 @@ public:
     // AK4 jets are always used for met/jet correlations, trigger requirements, and QGTagging
     for(unsigned int iJ = 0; iJ < inAK4Jets.size(); ++iJ){
       const auto& j = *inAK4Jets[iJ];
-      if(j.pt() >= 90 ) nJ90++;
+      if(j.pt() >= 60 ) nj60++;
       // qgl stuff
       if(analyzer->isLooseBJet(j)) continue;
       double tempqgl = 1; //(1.+ak4JetReader->jetqgl_->at(j.index()))/2.; // transform [-1,1] -> [0,1]
@@ -141,7 +143,7 @@ public:
       }
     } // iJ in Jets
 
-    //passPresel = ptMet >= 200 && nJ90 >= 2 && nJ20 >= 6 && ntBtag >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
+    //passPresel = ptMet >= 200 && nj60 >= 2 && nJ20 >= 6 && ntBtag >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
 
     htAlongAway20 = JetKinematics::htAlongHtAway(*inMet,inJets,20,2.4);
     htAlongAway40 = JetKinematics::htAlongHtAway(*inMet,inJets,40,2.4);
@@ -163,6 +165,7 @@ public:
     if(jetsCSV.size()>0) mtB0MET = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*inMet);
     if(jetsCSV.size()>1) mtB1MET = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*inMet);
     if(jetsCSV.size()>2) mtB2MET = JetKinematics::transverseMass(jetsCSV.at(2)->p4(),*inMet);
+    mtB01MET = (mtB0MET<mtB1MET) ? mtB0MET : mtB1MET;
 
     if (ptMet>0) {
       if(jetsCSV.size()>1) sSumB01oMET = ( jetsCSV.at(0)->pt() + jetsCSV.at(1)->pt() )      / ptMet;
@@ -180,7 +183,7 @@ public:
   //bool   passPresel;
   float ptMet;
   int   npv;
-  int   nJ90;
+  int   nj60;
   int   nJ20;
   int   ntBtag;
   int   nmBtag;
@@ -195,6 +198,7 @@ public:
   float mtB0MET;       // new
   float mtB1MET;       // new
   float mtB2MET;       // new
+  float mtB01MET;      // new
   float sSumB01oMET;   // new
   float vSumB01oMET;   // new
   float qgl0;
