@@ -25,30 +25,45 @@ const BaseTreeAnalyzer * a::analyzer = 0;
 class VariableCalculator{
 public:
   VariableCalculator() :
-    //passPresel    (0)
-      ptMet         (0)
-    , nJ90          (0)
-    , nJ20          (0)
-    , ntBtag        (0)
-    , nmBtag        (0)
-    , dPhiMET12     (10.7)
-    , dPhiMET3      (10.7)
-    , qgl0          (0)
-    , qgl1          (0)
-    , qglprod       (1)
-    , ht            (0)
-    , htAlongAway   (8000)
-    , rmsJetPT      (0)
-    , rmsJetDphiMET (0)
-    , bInvMass      (0)
-    , bTransMass    (0)
-    , rmsBEta       (0)
-    , wInvMass      (0)
-    , Bpt0          (0)
-    , Bpt1          (0)
+    //passPresel     (0)
+      ptMet          (0)
+    , npv            (0)
+    , nj60           (0)
+    , nJ20           (0)
+    , ntBtag         (0)
+    , nmBtag         (0)
+    , dPhiMET12      (10.7)
+    , dPhiMET3       (10.7)
+    , dPhiB0MET      (10.7)
+    , dPhiB1MET      (10.7)
+    , dPhiB2MET      (10.7)
+    , dPhiB01MET     (10.7)
+    , dPhiCVSnearMET (10.7)
+    , Mb1b2n         (0)
+    , mtB0MET        (0)
+    , mtB1MET        (0)
+    , mtB2MET        (0)
+    , mtB01MET       (0)
+    , sSumB01oMET    (8000)
+    , vSumB01oMET    (8000)
+    , qgl0           (0)
+    , qgl1           (0)
+    , qglprod        (1)
+    , ht             (0)
+    , htAlongAway20  (8000)
+    , htAlongAway40  (8000)
+    , maxMj12        (0)
+    , rmsJetPT       (0)
+    , rmsJetDphiMET  (0)
+    , bInvMass       (0)
+    , bTransMass     (0)
+    , rmsBEta        (0)
+    , wInvMass       (0)
+    , Bpt0           (0)
+    , Bpt1           (0)
   {}
 
-
+  void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
 
   // assumes that jets are inclusive in eta and pt!!!
   // also assumes that the jets are pt sorted!
@@ -61,33 +76,49 @@ public:
     a::analyzer = analyzer;
 
     //passPresel    = 0;
-    ptMet         = 0;
-    nJ90          = 0;
-    nJ20          = 0;
-    ntBtag        = 0;
-    nmBtag        = 0;
-    dPhiMET12     = 10.7;
-    dPhiMET3      = 10.7;
-    qgl0          = 0;
-    qgl1          = 0;
-    qglprod       = 1;
-    ht            = 0;
-    htAlongAway   = 8000;
-    rmsJetPT      = 0;
-    rmsJetDphiMET = 0;
-    bInvMass      = 0;
-    bTransMass    = 0;
-    rmsBEta       = 0;
-    wInvMass      = 0;
-    Bpt0          = 0;
-    Bpt1          = 0;
+    ptMet          = 0;
+    npv            = 0;
+    nj60           = 0;
+    nJ20           = 0;
+    ntBtag         = 0;
+    nmBtag         = 0;
+    dPhiMET12      = 10.7;
+    dPhiMET3       = 10.7;
+    dPhiB0MET      = 10.7;
+    dPhiB1MET      = 10.7;
+    dPhiB2MET      = 10.7;
+    dPhiB01MET     = 10.7;
+    dPhiCVSnearMET = 10.7;
+    Mb1b2n         = 0;
+    mtB0MET        = 0;
+    mtB1MET        = 0;
+    mtB2MET        = 0;
+    mtB01MET       = 0;
+    sSumB01oMET    = 8000;
+    vSumB01oMET    = 8000;
+    qgl0           = 0;
+    qgl1           = 0;
+    qglprod        = 1;
+    ht             = 0;
+    htAlongAway20  = 8000;
+    htAlongAway40  = 8000;
+    maxMj12        = 0;
+    rmsJetPT       = 0;
+    rmsJetDphiMET  = 0;
+    bInvMass       = 0;
+    bTransMass     = 0;
+    rmsBEta        = 0;
+    wInvMass       = 0;
+    Bpt0           = 0;
+    Bpt1           = 0;
 
     ptMet = inMet->pt();
+    npv   = analyzer->nPV;
 
     // AK4 jets are always used for met/jet correlations, trigger requirements, and QGTagging
     for(unsigned int iJ = 0; iJ < inAK4Jets.size(); ++iJ){
       const auto& j = *inAK4Jets[iJ];
-      if(j.pt() >= 90 ) nJ90++;
+      if(j.pt() >= 60 ) nj60++;
       // qgl stuff
       if(analyzer->isLooseBJet(j)) continue;
       double tempqgl = 1; //(1.+ak4JetReader->jetqgl_->at(j.index()))/2.; // transform [-1,1] -> [0,1]
@@ -112,11 +143,34 @@ public:
       }
     } // iJ in Jets
 
-    //passPresel = ptMet >= 200 && nJ90 >= 2 && nJ20 >= 6 && ntBtag >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
+    //passPresel = ptMet >= 200 && nj60 >= 2 && nJ20 >= 6 && ntBtag >= 1  && dPhiMET12 >= .5 && dPhiMET3 >= .3;
 
-    htAlongAway   = JetKinematics::htAlongHtAway(*inMet,inJets);
+    htAlongAway20 = JetKinematics::htAlongHtAway(*inMet,inJets,20,2.4);
+    htAlongAway40 = JetKinematics::htAlongHtAway(*inMet,inJets,40,2.4);
+    maxMj12       = JetKinematics::highestPTJetPair(inJets);
     rmsJetPT      = JetKinematics::ptRMS(inJets);
     rmsJetDphiMET = JetKinematics::deltaPhiMETRMS(*inMet,inJets);
+
+    vector<RecoJetF*> jetsCSV;
+    rankedByCSV(inJets,jetsCSV);
+    double nearestDphi = -9.;
+    int bjetNearMETindx = PhysicsUtilities::findNearestDPhiDeref(*inMet,analyzer->bJets,nearestDphi);
+    if(jetsCSV.size()>0)   dPhiB0MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*inMet);
+    if(jetsCSV.size()>1)   dPhiB1MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*inMet);
+    if(jetsCSV.size()>2)   dPhiB2MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(2)->p4(),*inMet);
+    if(bjetNearMETindx>=0) dPhiCVSnearMET = PhysicsUtilities::deltaPhi(analyzer->bJets.at(bjetNearMETindx)->p4(),*inMet);
+    dPhiB01MET = (dPhiB0MET<dPhiB1MET) ? dPhiB0MET : dPhiB1MET;
+
+    if(jetsCSV.size()>1) Mb1b2n  = (jetsCSV.at(0)->p4()+jetsCSV.at(1)->p4()).mass();
+    if(jetsCSV.size()>0) mtB0MET = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*inMet);
+    if(jetsCSV.size()>1) mtB1MET = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*inMet);
+    if(jetsCSV.size()>2) mtB2MET = JetKinematics::transverseMass(jetsCSV.at(2)->p4(),*inMet);
+    mtB01MET = (mtB0MET<mtB1MET) ? mtB0MET : mtB1MET;
+
+    if (ptMet>0) {
+      if(jetsCSV.size()>1) sSumB01oMET = ( jetsCSV.at(0)->pt() + jetsCSV.at(1)->pt() )      / ptMet;
+      if(jetsCSV.size()>1) vSumB01oMET = ( jetsCSV.at(0)->p4() + jetsCSV.at(1)->p4() ).pt() / ptMet;
+    } // ptMet>0
 
     bInvMass   = JetKinematics::bJetInvMass(inJets,&a::isMediumBJet);
     bTransMass = JetKinematics::bJetTranverseMass(*inMet,inJets,&a::isMediumBJet);
@@ -127,29 +181,59 @@ public:
   } // processVariables()
 
   //bool   passPresel;
-  double ptMet;
-  int    nJ90;
-  int    nJ20;
-  int    ntBtag;
-  int    nmBtag;
-  double dPhiMET12;
-  double dPhiMET3;
-  double qgl0;
-  double qgl1;
-  double qglprod;
-  double ht;
-  double htAlongAway;
-  double rmsJetPT;
-  double rmsJetDphiMET;
-  double bInvMass;
-  double bTransMass;
-  double rmsBEta;
-  double wInvMass;
-  double Bpt0;
-  double Bpt1;
+  float ptMet;
+  int   npv;
+  int   nj60;
+  int   nJ20;
+  int   ntBtag;
+  int   nmBtag;
+  float dPhiMET12;
+  float dPhiMET3;
+  float dPhiB0MET;     // new
+  float dPhiB1MET;     // new
+  float dPhiB2MET;     // new
+  float dPhiB01MET;    // new
+  float dPhiCVSnearMET;// new
+  float Mb1b2n;        // new
+  float mtB0MET;       // new
+  float mtB1MET;       // new
+  float mtB2MET;       // new
+  float mtB01MET;      // new
+  float sSumB01oMET;   // new
+  float vSumB01oMET;   // new
+  float qgl0;
+  float qgl1;
+  float qglprod;
+  float ht;
+  float htAlongAway20;
+  float htAlongAway40;  // new
+  float maxMj12;        // new
+  float rmsJetPT;
+  float rmsJetDphiMET;
+  float bInvMass;
+  float bTransMass;
+  float rmsBEta;
+  float wInvMass;
+  float Bpt0;
+  float Bpt1;
 }; // VariableCalculator
 
-}
+
+void VariableCalculator::rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets) {
+  outJets.clear();
+  outJets.resize(inJets.size());
+  vector<pair<double,int> > rankedJets(inJets.size());
+
+  for(unsigned int iJ =0; iJ < inJets.size(); ++iJ){
+    rankedJets[iJ].first = inJets[iJ]->csv();
+    rankedJets[iJ].second = iJ;
+  } // inJets.size()
+
+  std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+  for(unsigned int iJ =0; iJ < inJets.size(); ++iJ){ outJets[iJ] = inJets[rankedJets[iJ].second]; }
+} // rankedByCSV()
+
+} // namespace ucsbsusy
 
 
 
