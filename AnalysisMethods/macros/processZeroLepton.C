@@ -177,9 +177,9 @@ void Analyzer::loadPlots() {
   plots["htnoB_passPre"]             = new TH1F("htnoB_passPre"            , (passPre+"; H_{T} [GeV] (noBs); "                    +yTitle).c_str(),  80,   0  , 2000    ); // 10
   plots["htJ12_passPre"]             = new TH1F("htJ12_passPre"            , (passPre+"; p_{t}(j1)+p_{t}(j2); "                   +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["htJ12noB_passPre"]          = new TH1F("htJ12noB_passPre"         , (passPre+"; p_{t}(j1)+p_{t}(j2) (noBs); "            +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["metOsqrtHt_passPre"]        = new TH1F("metOsqrtHt_passPre"       , (passPre+"; #slash{E}_{T}/sqrt(H_{T}); "             +yTitle).c_str(),  50,   0  ,   10    ); // 10
-  plots["metOsqrtHtnoB_passPre"]     = new TH1F("metOsqrtHtnoB_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T}) (noBs); "      +yTitle).c_str(),  50,   0  ,   10    ); // 10
-  plots["metOsqrtHtJ12_passPre"]     = new TH1F("metOsqrtHtJ12_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T12}); "           +yTitle).c_str(),  50,   0  ,   10    ); // 10
+  plots["metOsqrtHt_passPre"]        = new TH1F("metOsqrtHt_passPre"       , (passPre+"; #slash{E}_{T}/sqrt(H_{T}); "             +yTitle).c_str(),  50,   0  ,  100    ); // 10
+  plots["metOsqrtHtnoB_passPre"]     = new TH1F("metOsqrtHtnoB_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T}) (noBs); "      +yTitle).c_str(),  50,   0  ,  100    ); // 10
+  plots["metOsqrtHtJ12_passPre"]     = new TH1F("metOsqrtHtJ12_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T12}); "           +yTitle).c_str(),  50,   0  ,  100    ); // 10
   plots["metOsqrtHtJ12noB_passPre"]  = new TH1F("metOsqrtHtJ12noB_passPre" , (passPre+"; #slash{E}_{T}/sqrt(H_{T12}) (noBs); "    +yTitle).c_str(),  50,   0  ,   10    ); // 10
   plots["dPhivHtMET_passPre"]        = new TH1F("dPhivHtMET_passPre"       , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)|; "       +yTitle).c_str(),  21,   0  ,    3.15 ); // 10
   plots["dPhivHtMETnoB_passPre"]     = new TH1F("dPhivHtMETnoB_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)| (noBs); "+yTitle).c_str(),  21,   0  ,    3.15 ); // 10
@@ -334,8 +334,8 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
   //pars.cleanJetsvSelectedLeptons_ = true;
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
-  a.analyze(1000,100000); // for testing
+  a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(1000,100000); // for testing
   a.out(sample, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
