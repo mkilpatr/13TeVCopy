@@ -8,6 +8,7 @@ typedef   Paramatrix<Panvariate>  ParamatrixMVA;
 
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
+#include "math.h"
 
 using namespace std;
 
@@ -25,42 +26,53 @@ const BaseTreeAnalyzer * a::analyzer = 0;
 class VariableCalculator{
 public:
   VariableCalculator() :
-    //passPresel     (0)
-      ptMet          (0)
-    , npv            (0)
-    , nj60           (0)
-    , nJ20           (0)
-    , ntBtag         (0)
-    , nmBtag         (0)
-    , dPhiMET12      (10.7)
-    , dPhiMET3       (10.7)
-    , dPhiB0MET      (10.7)
-    , dPhiB1MET      (10.7)
-    , dPhiB2MET      (10.7)
-    , dPhiB01MET     (10.7)
-    , dPhiCVSnearMET (10.7)
-    , Mb1b2n         (0)
-    , mtB0MET        (0)
-    , mtB1MET        (0)
-    , mtB2MET        (0)
-    , mtB01MET       (0)
-    , sSumB01oMET    (8000)
-    , vSumB01oMET    (8000)
-    , qgl0           (0)
-    , qgl1           (0)
-    , qglprod        (1)
-    , ht             (0)
-    , htAlongAway20  (8000)
-    , htAlongAway40  (8000)
-    , maxMj12        (0)
-    , rmsJetPT       (0)
-    , rmsJetDphiMET  (0)
-    , bInvMass       (0)
-    , bTransMass     (0)
-    , rmsBEta        (0)
-    , wInvMass       (0)
-    , Bpt0           (0)
-    , Bpt1           (0)
+    //passPresel        ( 0)
+      ptMet             (-1)
+    , npv               (-1)
+    , nj60              (-1)
+    , nJ20              (-1)
+    , ntBtag            (-1)
+    , nmBtag            (-1)
+    , dPhiMET12         (-1)
+    , dPhiMET3          (-1)
+    , dPhiB0MET         (-1)
+    , dPhiB1MET         (-1)
+    , dPhiB2MET         (-1)
+    , dPhiB01MET        (-1)
+    , dPhiCVSnearMET    (-1)
+    , Mb1b2n            (-1)
+    , mtB0MET           (-1)
+    , mtB1MET           (-1)
+    , mtB2MET           (-1)
+    , mtB01MET          (-1)
+    , sSumB01oMET       (-1)
+    , vSumB01oMET       (-1)
+    , qgl0              (-1)
+    , qgl1              (-1)
+    , qglprod           (-1)
+    , ht                (-1)
+    , htAlongAway20     (-1)
+    , htAlongAway40     (-1)
+    , maxMj12           (-1)
+    , rmsJetPT          (-1)
+    , rmsJetDphiMET     (-1)
+    , bInvMass          (-1)
+    , bTransMass        (-1)
+    , rmsBEta           (-1)
+    , wInvMass          (-1)
+    , Bpt0              (-1)
+    , Bpt1              (-1)
+    , htnoB             (-1)
+    , htJ12             (-1)
+    , htJ12noB          (-1)
+    , metOsqrtHt        (-1)
+    , metOsqrtHtnoB     (-1)
+    , metOsqrtHtJ12     (-1)
+    , metOsqrtHtJ12noB  (-1)
+    , dPhivHtMET        (-1)
+    , dPhivHtMETnoB     (-1)
+    , dotHtAlongAway    (-1)
+    , dotHtAlongAwayNoB (-1)
   {}
 
   void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
@@ -75,42 +87,56 @@ public:
   		             ) {
     a::analyzer = analyzer;
 
-    //passPresel    = 0;
-    ptMet          = 0;
-    npv            = 0;
-    nj60           = 0;
-    nJ20           = 0;
-    ntBtag         = 0;
-    nmBtag         = 0;
-    dPhiMET12      = 10.7;
-    dPhiMET3       = 10.7;
-    dPhiB0MET      = 10.7;
-    dPhiB1MET      = 10.7;
-    dPhiB2MET      = 10.7;
-    dPhiB01MET     = 10.7;
-    dPhiCVSnearMET = 10.7;
-    Mb1b2n         = 0;
-    mtB0MET        = 0;
-    mtB1MET        = 0;
-    mtB2MET        = 0;
-    mtB01MET       = 0;
-    sSumB01oMET    = 8000;
-    vSumB01oMET    = 8000;
-    qgl0           = 0;
-    qgl1           = 0;
-    qglprod        = 1;
-    ht             = 0;
-    htAlongAway20  = 8000;
-    htAlongAway40  = 8000;
-    maxMj12        = 0;
-    rmsJetPT       = 0;
-    rmsJetDphiMET  = 0;
-    bInvMass       = 0;
-    bTransMass     = 0;
-    rmsBEta        = 0;
-    wInvMass       = 0;
-    Bpt0           = 0;
-    Bpt1           = 0;
+    // preselection so that variable initializations that follow make sense
+    if (inJets.size()<5) return;
+
+    //passPresel      =  0;
+    ptMet             =  0;
+    npv               =  0;
+    nj60              =  0;
+    nJ20              =  0;
+    ntBtag            =  0;
+    nmBtag            =  0;
+    dPhiMET12         = -1;
+    dPhiMET3          = -1;
+    dPhiB0MET         = -1;
+    dPhiB1MET         = -1;
+    dPhiB2MET         = -1;
+    dPhiB01MET        = -1;
+    dPhiCVSnearMET    = -1;
+    Mb1b2n            = -1;
+    mtB0MET           = -1;
+    mtB1MET           = -1;
+    mtB2MET           = -1;
+    mtB01MET          = -1;
+    sSumB01oMET       = -1;
+    vSumB01oMET       = -1;
+    qgl0              =  0;
+    qgl1              =  0;
+    qglprod           =  1;
+    ht                =  0;
+    htAlongAway20     =  0;
+    htAlongAway40     =  0;
+    maxMj12           =  0;
+    rmsJetPT          =  0;
+    rmsJetDphiMET     =  0;
+    bInvMass          = -1;
+    bTransMass        = -1;
+    rmsBEta           =  0;
+    wInvMass          =  0;
+    Bpt0              = -1;
+    Bpt1              = -1;
+    htnoB             =  0;
+    htJ12             =  0;
+    htJ12noB          =  0;
+    metOsqrtHt        = -1;
+    metOsqrtHtnoB     = -1;
+    metOsqrtHtJ12     = -1;
+    metOsqrtHtJ12noB  = -1;
+    dPhivHtMET        = -1;
+    dPhivHtMETnoB     = -1;
+    dotHtAlongAway    = -1;
+    dotHtAlongAwayNoB = -1;
 
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
@@ -155,10 +181,10 @@ public:
     rankedByCSV(inJets,jetsCSV);
     double nearestDphi = -9.;
     int bjetNearMETindx = PhysicsUtilities::findNearestDPhiDeref(*inMet,analyzer->bJets,nearestDphi);
-    if(jetsCSV.size()>0)   dPhiB0MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*inMet);
-    if(jetsCSV.size()>1)   dPhiB1MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*inMet);
-    if(jetsCSV.size()>2)   dPhiB2MET      = PhysicsUtilities::deltaPhi(jetsCSV.at(2)->p4(),*inMet);
-    if(bjetNearMETindx>=0) dPhiCVSnearMET = PhysicsUtilities::deltaPhi(analyzer->bJets.at(bjetNearMETindx)->p4(),*inMet);
+    if(jetsCSV.size()>0)   dPhiB0MET      = PhysicsUtilities::absDeltaPhi(jetsCSV.at(0)->p4(),*inMet);
+    if(jetsCSV.size()>1)   dPhiB1MET      = PhysicsUtilities::absDeltaPhi(jetsCSV.at(1)->p4(),*inMet);
+    if(jetsCSV.size()>2)   dPhiB2MET      = PhysicsUtilities::absDeltaPhi(jetsCSV.at(2)->p4(),*inMet);
+    if(bjetNearMETindx>=0) dPhiCVSnearMET = PhysicsUtilities::absDeltaPhi(analyzer->bJets.at(bjetNearMETindx)->p4(),*inMet);
     dPhiB01MET = (dPhiB0MET<dPhiB1MET) ? dPhiB0MET : dPhiB1MET;
 
     if(jetsCSV.size()>1) Mb1b2n  = (jetsCSV.at(0)->p4()+jetsCSV.at(1)->p4()).mass();
@@ -177,6 +203,47 @@ public:
     rmsBEta    = JetKinematics::deltaEtaBJetRMS(inJets,&a::isMediumBJet);
     wInvMass   = JetKinematics::highestPTJetPair(inJets);
     ht         = JetKinematics::ht(inJets);
+
+    htJ12 = inJets[0]->pt() + inJets[1]->pt();
+    MomentumF vHt;
+    MomentumF vHtnoB;
+    double htAlong    = 0;
+    double htAway     = 0;
+    double htAlongNoB = 0;
+    double htAwayNoB  = 0;
+    int nNonB = 0;
+    for(unsigned int nJ = 0; nJ < inJets.size(); ++nJ){
+      auto& j = *inJets[nJ];
+      if (j.pt()<20)   continue;
+      if (j.eta()>2.4) continue;
+      vHt = vHt.p4() + j.p4();
+
+      // dotted HTalongOaway
+      double dPhi = PhysicsUtilities::absDeltaPhi(j,*inMet);
+      if (dPhi < TMath::PiOver2()) htAlong += abs(j.pt() * cos(dPhi));
+      else                         htAway  += abs(j.pt() * cos(dPhi));
+
+      // past this, only want to use non-B jets
+      if(analyzer->isMediumBJet(j)) continue;
+      htnoB += j.pt();
+      vHtnoB = vHt.p4() + j.p4();
+      if(nNonB<2) htJ12noB += j.pt();
+
+      // dotted HTalongOaway
+      if (dPhi < TMath::PiOver2()) htAlongNoB += abs(j.pt() * cos(dPhi));
+      else                         htAwayNoB  += abs(j.pt() * cos(dPhi));
+
+      ++nNonB;
+    } // iJ in Jets
+
+    if(ht      >0) metOsqrtHt       = ptMet / sqrt(ht      ) ;
+    if(htnoB   >0) metOsqrtHtnoB    = ptMet / sqrt(htnoB   ) ;
+    if(htJ12   >0) metOsqrtHtJ12    = ptMet / sqrt(htJ12   ) ;
+    if(htJ12noB>0) metOsqrtHtJ12noB = ptMet / sqrt(htJ12noB) ;
+    dPhivHtMET    = PhysicsUtilities::absDeltaPhi(vHt   ,*inMet);
+    dPhivHtMETnoB = PhysicsUtilities::absDeltaPhi(vHtnoB,*inMet);
+    if(htAway   >0) dotHtAlongAway    = htAlong    / htAway   ;
+    if(htAwayNoB>0) dotHtAlongAwayNoB = htAlongNoB / htAwayNoB;
 
   } // processVariables()
 
@@ -216,6 +283,17 @@ public:
   float wInvMass;
   float Bpt0;
   float Bpt1;
+  float htnoB;             // new2
+  float htJ12;             // new2
+  float htJ12noB;          // new2
+  float metOsqrtHt;        // new2
+  float metOsqrtHtnoB;     // new2
+  float metOsqrtHtJ12;     // new2
+  float metOsqrtHtJ12noB;  // new2
+  float dPhivHtMET;        // new2
+  float dPhivHtMETnoB;     // new2
+  float dotHtAlongAway;    // new2
+  float dotHtAlongAwayNoB; // new2
 }; // VariableCalculator
 
 
