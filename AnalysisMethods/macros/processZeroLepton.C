@@ -41,40 +41,52 @@ class Analyzer : public BaseTreeAnalyzer {
     //outtree->Branch( "ht_0"         , &ht_0         ,          "ht_0/F" );
     //outtree->Branch( "htAoA_0"      , &htAoA_0      ,       "htAoA_0/F" );
 
-    outtree->Branch( "ptMet"          , &vars.ptMet          ,          "ptMet/F" );
-    outtree->Branch( "npv"            , &vars.npv            ,            "npv/I" );
-    outtree->Branch( "nj60"           , &vars.nj60           ,           "nj60/I" );
-    outtree->Branch( "nJ20"           , &vars.nJ20           ,           "nJ20/I" );
-    outtree->Branch( "ntBtag"         , &vars.ntBtag         ,         "ntBtag/I" );
-    outtree->Branch( "nmBtag"         , &vars.nmBtag         ,         "nmBtag/I" );
-    outtree->Branch( "dPhiMET12"      , &vars.dPhiMET12      ,      "dPhiMET12/F" );
-    outtree->Branch( "dPhiMET3"       , &vars.dPhiMET3       ,       "dPhiMET3/F" );
-    outtree->Branch( "dPhiB0MET"      , &vars.dPhiB0MET      ,      "dPhiB0MET/F" );
-    outtree->Branch( "dPhiB1MET"      , &vars.dPhiB1MET      ,      "dPhiB1MET/F" );
-    outtree->Branch( "dPhiB2MET"      , &vars.dPhiB2MET      ,      "dPhiB2MET/F" );
-    outtree->Branch( "dPhiB01MET"     , &vars.dPhiB01MET     ,     "dPhiB01MET/F" );
-    outtree->Branch( "dPhiCVSnearMET" , &vars.dPhiCVSnearMET , "dPhiCVSnearMET/F" );
-    outtree->Branch( "Mb1b2n"         , &vars.Mb1b2n         ,         "Mb1b2n/F" );
-    outtree->Branch( "mtB0MET"        , &vars.mtB0MET        ,        "mtB0MET/F" );
-    outtree->Branch( "mtB1MET"        , &vars.mtB1MET        ,        "mtB1MET/F" );
-    outtree->Branch( "mtB01MET"       , &vars.mtB01MET       ,       "mtB01MET/F" );
-    outtree->Branch( "sSumB01oMET"    , &vars.sSumB01oMET    ,    "sSumB01oMET/F" );
-    outtree->Branch( "vSumB01oMET"    , &vars.vSumB01oMET    ,    "vSumB01oMET/F" );
-    outtree->Branch( "qgl0"           , &vars.qgl0           ,           "qgl0/F" );
-    outtree->Branch( "qgl1"           , &vars.qgl1           ,           "qgl1/F" );
-    outtree->Branch( "qglprod"        , &vars.qglprod        ,        "qglprod/F" );
-    outtree->Branch( "ht"             , &vars.ht             ,             "ht/F" );
-    outtree->Branch( "htAlongAway20"  , &vars.htAlongAway20  ,  "htAlongAway20/F" );
-    outtree->Branch( "htAlongAway40"  , &vars.htAlongAway40  ,  "htAlongAway40/F" );
-    outtree->Branch( "maxMj12"        , &vars.maxMj12        ,        "maxMj12/F" );
-    outtree->Branch( "rmsJetPT"       , &vars.rmsJetPT       ,       "rmsJetPT/F" );
-    outtree->Branch( "rmsJetDphiMET"  , &vars.rmsJetDphiMET  ,  "rmsJetDphiMET/F" );
-    outtree->Branch( "bInvMass"       , &vars.bInvMass       ,       "bInvMass/F" );
-    outtree->Branch( "bTransMass"     , &vars.bTransMass     ,     "bTransMass/F" );
-    outtree->Branch( "rmsBEta"        , &vars.rmsBEta        ,        "rmsBEta/F" );
-    outtree->Branch( "wInvMass"       , &vars.wInvMass       ,       "wInvMass/F" );
-    outtree->Branch( "Bpt0"           , &vars.Bpt0           ,           "Bpt0/F" );
-    outtree->Branch( "Bpt1"           , &vars.Bpt1           ,           "Bpt1/F" );
+    outtree->Branch( "ptMet"            , &vars.ptMet            ,            "ptMet/F" );
+    outtree->Branch( "npv"              , &vars.npv              ,              "npv/I" );
+    outtree->Branch( "nj60"             , &vars.nj60             ,             "nj60/I" );
+    outtree->Branch( "nJ20"             , &vars.nJ20             ,             "nJ20/I" );
+    outtree->Branch( "ntBtag"           , &vars.ntBtag           ,           "ntBtag/I" );
+    outtree->Branch( "nmBtag"           , &vars.nmBtag           ,           "nmBtag/I" );
+    outtree->Branch( "dPhiMET12"        , &vars.dPhiMET12        ,        "dPhiMET12/F" );
+    outtree->Branch( "dPhiMET3"         , &vars.dPhiMET3         ,         "dPhiMET3/F" );
+    outtree->Branch( "dPhiB0MET"        , &vars.dPhiB0MET        ,        "dPhiB0MET/F" );
+    outtree->Branch( "dPhiB1MET"        , &vars.dPhiB1MET        ,        "dPhiB1MET/F" );
+    outtree->Branch( "dPhiB2MET"        , &vars.dPhiB2MET        ,        "dPhiB2MET/F" );
+    outtree->Branch( "dPhiB01MET"       , &vars.dPhiB01MET       ,       "dPhiB01MET/F" );
+    outtree->Branch( "dPhiCVSnearMET"   , &vars.dPhiCVSnearMET   ,   "dPhiCVSnearMET/F" );
+    outtree->Branch( "Mb1b2n"           , &vars.Mb1b2n           ,           "Mb1b2n/F" );
+    outtree->Branch( "mtB0MET"          , &vars.mtB0MET          ,          "mtB0MET/F" );
+    outtree->Branch( "mtB1MET"          , &vars.mtB1MET          ,          "mtB1MET/F" );
+    outtree->Branch( "mtB2MET"          , &vars.mtB2MET          ,          "mtB1MET/F" );
+    outtree->Branch( "mtB01MET"         , &vars.mtB01MET         ,         "mtB01MET/F" );
+    outtree->Branch( "sSumB01oMET"      , &vars.sSumB01oMET      ,      "sSumB01oMET/F" );
+    outtree->Branch( "vSumB01oMET"      , &vars.vSumB01oMET      ,      "vSumB01oMET/F" );
+    outtree->Branch( "qgl0"             , &vars.qgl0             ,             "qgl0/F" );
+    outtree->Branch( "qgl1"             , &vars.qgl1             ,             "qgl1/F" );
+    outtree->Branch( "qglprod"          , &vars.qglprod          ,          "qglprod/F" );
+    outtree->Branch( "ht"               , &vars.ht               ,               "ht/F" );
+    outtree->Branch( "htAlongAway20"    , &vars.htAlongAway20    ,    "htAlongAway20/F" );
+    outtree->Branch( "htAlongAway40"    , &vars.htAlongAway40    ,    "htAlongAway40/F" );
+    outtree->Branch( "maxMj12"          , &vars.maxMj12          ,          "maxMj12/F" );
+    outtree->Branch( "rmsJetPT"         , &vars.rmsJetPT         ,         "rmsJetPT/F" );
+    outtree->Branch( "rmsJetDphiMET"    , &vars.rmsJetDphiMET    ,    "rmsJetDphiMET/F" );
+    outtree->Branch( "bInvMass"         , &vars.bInvMass         ,         "bInvMass/F" );
+    outtree->Branch( "bTransMass"       , &vars.bTransMass       ,       "bTransMass/F" );
+    outtree->Branch( "rmsBEta"          , &vars.rmsBEta          ,          "rmsBEta/F" );
+    outtree->Branch( "wInvMass"         , &vars.wInvMass         ,         "wInvMass/F" );
+    outtree->Branch( "Bpt0"             , &vars.Bpt0             ,             "Bpt0/F" );
+    outtree->Branch( "Bpt1"             , &vars.Bpt1             ,             "Bpt1/F" );
+    outtree->Branch( "htnoB"            , &vars.htnoB            ,            "htnoB/F" );
+    outtree->Branch( "htJ12"            , &vars.htJ12            ,            "htJ12/F" );
+    outtree->Branch( "htJ12noB"         , &vars.htJ12noB         ,         "htJ12noB/F" );
+    outtree->Branch( "metOsqrtHt"       , &vars.metOsqrtHt       ,       "metOsqrtHt/F" );
+    outtree->Branch( "metOsqrtHtnoB"    , &vars.metOsqrtHtnoB    ,    "metOsqrtHtnoB/F" );
+    outtree->Branch( "metOsqrtHtJ12"    , &vars.metOsqrtHtJ12    ,    "metOsqrtHtJ12/F" );
+    outtree->Branch( "metOsqrtHtJ12noB" , &vars.metOsqrtHtJ12noB , "metOsqrtHtJ12noB/F" );
+    outtree->Branch( "dPhivHtMET"       , &vars.dPhivHtMET       ,       "dPhivHtMET/F" );
+    outtree->Branch( "dPhivHtMETnoB"    , &vars.dPhivHtMETnoB    ,    "dPhivHtMETnoB/F" );
+    outtree->Branch( "dotHtAlongAway"   , &vars.dotHtAlongAway   ,   "dotHtAlongAway/F" );
+    outtree->Branch( "dotHtAlongAwayNoB", &vars.dotHtAlongAwayNoB,"dotHtAlongAwayNoB/F" );
 
   } // Analyzer()
 
@@ -85,7 +97,7 @@ class Analyzer : public BaseTreeAnalyzer {
   } // ~Analyzer()
 
   const double  metcut_    = 200.0 ;
-  const int     minNJets_  =   3   ;
+  const int     minNJets_  =   5   ;
   const int     minNBjets_ =   1   ;
   const int     maxNTaus_  =   0   ;
 
@@ -129,38 +141,50 @@ void Analyzer::loadPlots() {
   plots["nj60_passMet"] = new TH1F( "nj60_passMet", (passMet+"; Number of Jets; "     +yTitle).c_str(),  10, -0.5,   19.5 );
   plots["nJ20_passMet"] = new TH1F( "nJ20_passMet", (passMet+"; Number of B Jets; "   +yTitle).c_str(),  10, -0.5,   19.5 );
   // preselection plots
-  plots["j1pt_passPre"]          = new TH1F("jet1pt_passPre"        , (passPre+"; Lead jet p_{T} [GeV]; "             +yTitle).c_str(), 200,   0  , 1000    );
-  plots["ntBtag_passPre"]        = new TH1F("ntBtag_passPre"        , (passPre+"; Number of B Jets; "                 +yTitle).c_str(),   8,  -0.5,    7.5  );
-  plots["nmBtag_passPre"]        = new TH1F("nmBtag_passPre"        , (passPre+"; Number of B Jets; "                 +yTitle).c_str(),   8,  -0.5,    7.5  );
-  plots["dPhiMET12_passPre"]     = new TH1F("dPhiMET12_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},j1-2)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiMET3_passPre"]      = new TH1F("dPhiMET3_passPre"      , (passPre+"; |#Delta#phi(#slash{E}_{T},j3)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiB0MET_passPre"]     = new TH1F("dPhiB0MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B0)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiB1MET_passPre"]     = new TH1F("dPhiB1MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B1)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiB2MET_passPre"]     = new TH1F("dPhiB2MET_passPre"     , (passPre+"; |#Delta#phi(#slash{E}_{T},B2)|; "   +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiB01MET_passPre"]    = new TH1F("dPhiB01MET_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},B0-1)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["dPhiCVSnearMET_passPre"]= new TH1F("dPhiCVSnearMET_passPre", (passPre+"; |#Delta#phi(#slash{E}_{T},Bner)|; " +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
-  plots["Mb1b2n_passPre"]        = new TH1F("Mb1b2n_passPre"        , (passPre+"; m(b1+b2) (by CVS); "                +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["mtB0MET_passPre"]       = new TH1F("mtB0MET_passPre"       , (passPre+"; m_{T}(b0,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["mtB1MET_passPre"]       = new TH1F("mtB1MET_passPre"       , (passPre+"; m_{T}(b1,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["mtB2MET_passPre"]       = new TH1F("mtB2MET_passPre"       , (passPre+"; m_{T}(b2,#slash{E}_{T}); "          +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["mtB01MET_passPre"]      = new TH1F("mtB01MET_passPre"      , (passPre+"; m_{T}(b0-1,#slash{E}_{T}); "        +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["sSumB01oMET_passPre"]   = new TH1F("sSumB01oMET_passPre"   , (passPre+"; sSum(B0,B1)/#slash{E}_{T}; "        +yTitle).c_str(), 100,   0  ,    5    );
-  plots["vSumB01oMET_passPre"]   = new TH1F("vSumB01oMET_passPre"   , (passPre+"; vSum(B0,B1)/#slash{E}_{T}; "        +yTitle).c_str(), 100,   0  ,    5    );
-  plots["qgl0_passPre"]          = new TH1F("qgl0_passPre"          , (passPre+"; QGL_{0}; "                          +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
-  plots["qgl1_passPre"]          = new TH1F("qgl1_passPre"          , (passPre+"; QGL_{1}; "                          +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
-  plots["qglprod_passPre"]       = new TH1F("qglprod_passPre"       , (passPre+"; ln[#prod QGL_{q}]; "                +yTitle).c_str(),  25, -12  ,    0    ); // 12
-  plots["ht_passPre"]            = new TH1F("ht_passPre"            , (passPre+"; H_{T} [GeV]; "                      +yTitle).c_str(),  80,   0  , 2000    );
-  plots["htAlongAway20_passPre"] = new TH1F("htAlongAway20_passPre" , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt20); "+yTitle).c_str(),  40,   0  ,    2    ); //  0.05
-  plots["htAlongAway40_passPre"] = new TH1F("htAlongAway40_passPre" , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt40); "+yTitle).c_str(),  40,   0  ,    2    ); //  0.05
-  plots["maxMj12_passPre"]       = new TH1F("maxMj12_passPre"       , (passPre+"; highest pt jet pair; "              +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["rmsJetPT_passPre"]      = new TH1F("rmsJetPT_passPre"      , (passPre+"; rmsJetPT; "                         +yTitle).c_str(),  40,   0  ,  400    ); // 10
-  plots["rmsJetDphiMET_passPre"] = new TH1F("rmsJetDphiMET_passPre" , (passPre+"; RMS[#Delta#phi(J,#slash{E}_{T})]; " +yTitle).c_str(),  25,   0  ,    2.5  ); //  0.1
-  plots["bInvMass_passPre"]      = new TH1F("bInvMass_passPre"      , (passPre+"; m(b1+b2); "                         +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  plots["bTransMass_passPre"]    = new TH1F("bTransMass_passPre"    , (passPre+"; m_{T}(near b to #slash{E}_{T}); "   +yTitle).c_str(),  80,   0  ,  800    ); // 10
-  plots["rmsBEta_passPre"]       = new TH1F("rmsBEta_passPre"       , (passPre+"; RMS[#Delta#eta(b,jets)]; "          +yTitle).c_str(),  25,   0  ,    2.5  ); //  0.1
-  plots["wInvMass_passPre"]      = new TH1F("wInvMass_passPre"      , (passPre+"; m(max p_{T} jj); "                  +yTitle).c_str(),  40,   0  ,  800    ); // 20
-  plots["Bpt0_passPre"]          = new TH1F("Bpt0_passPre"          , (passPre+"; p_{t}(b0); "                        +yTitle).c_str(),  40,   0  ,  800    ); // 20
-  plots["Bpt1_passPre"]          = new TH1F("Bpt1_passPre"          , (passPre+"; p_{t}(b1); "                        +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["j1pt_passPre"]              = new TH1F("jet1pt_passPre"           , (passPre+"; Lead jet p_{T} [GeV]; "                  +yTitle).c_str(), 200,   0  , 1000    );
+  plots["ntBtag_passPre"]            = new TH1F("ntBtag_passPre"           , (passPre+"; Number of B Jets; "                      +yTitle).c_str(),   8,  -0.5,    7.5  );
+  plots["nmBtag_passPre"]            = new TH1F("nmBtag_passPre"           , (passPre+"; Number of B Jets; "                      +yTitle).c_str(),   8,  -0.5,    7.5  );
+  plots["dPhiMET12_passPre"]         = new TH1F("dPhiMET12_passPre"        , (passPre+"; |#Delta#phi(#slash{E}_{T},j1-2)|; "      +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiMET3_passPre"]          = new TH1F("dPhiMET3_passPre"         , (passPre+"; |#Delta#phi(#slash{E}_{T},j3)|; "        +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiB0MET_passPre"]         = new TH1F("dPhiB0MET_passPre"        , (passPre+"; |#Delta#phi(#slash{E}_{T},B0)|; "        +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiB1MET_passPre"]         = new TH1F("dPhiB1MET_passPre"        , (passPre+"; |#Delta#phi(#slash{E}_{T},B1)|; "        +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiB2MET_passPre"]         = new TH1F("dPhiB2MET_passPre"        , (passPre+"; |#Delta#phi(#slash{E}_{T},B2)|; "        +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiB01MET_passPre"]        = new TH1F("dPhiB01MET_passPre"       , (passPre+"; |#Delta#phi(#slash{E}_{T},B0-1)|; "      +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["dPhiCVSnearMET_passPre"]    = new TH1F("dPhiCVSnearMET_passPre"   , (passPre+"; |#Delta#phi(#slash{E}_{T},Bner)|; "      +yTitle).c_str(),  21,   0  ,    3.15 ); //  0.15
+  plots["Mb1b2n_passPre"]            = new TH1F("Mb1b2n_passPre"           , (passPre+"; m(b1+b2) (by CVS); "                     +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["mtB0MET_passPre"]           = new TH1F("mtB0MET_passPre"          , (passPre+"; m_{T}(b0,#slash{E}_{T}); "               +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["mtB1MET_passPre"]           = new TH1F("mtB1MET_passPre"          , (passPre+"; m_{T}(b1,#slash{E}_{T}); "               +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["mtB2MET_passPre"]           = new TH1F("mtB2MET_passPre"          , (passPre+"; m_{T}(b2,#slash{E}_{T}); "               +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["mtB01MET_passPre"]          = new TH1F("mtB01MET_passPre"         , (passPre+"; m_{T}(b0-1,#slash{E}_{T}); "             +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["sSumB01oMET_passPre"]       = new TH1F("sSumB01oMET_passPre"      , (passPre+"; sSum(B0,B1)/#slash{E}_{T}; "             +yTitle).c_str(), 100,   0  ,    5    );
+  plots["vSumB01oMET_passPre"]       = new TH1F("vSumB01oMET_passPre"      , (passPre+"; vSum(B0,B1)/#slash{E}_{T}; "             +yTitle).c_str(), 100,   0  ,    5    );
+  plots["qgl0_passPre"]              = new TH1F("qgl0_passPre"             , (passPre+"; QGL_{0}; "                               +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
+  plots["qgl1_passPre"]              = new TH1F("qgl1_passPre"             , (passPre+"; QGL_{1}; "                               +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
+  plots["qglprod_passPre"]           = new TH1F("qglprod_passPre"          , (passPre+"; ln[#prod QGL_{q}]; "                     +yTitle).c_str(),  25, -12  ,    0    ); // 12
+  plots["ht_passPre"]                = new TH1F("ht_passPre"               , (passPre+"; H_{T} [GeV]; "                           +yTitle).c_str(),  80,   0  , 2000    );
+  plots["htAlongAway20_passPre"]     = new TH1F("htAlongAway20_passPre"    , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt20); "     +yTitle).c_str(),  40,   0  ,    2    ); //  0.05
+  plots["htAlongAway40_passPre"]     = new TH1F("htAlongAway40_passPre"    , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt40); "     +yTitle).c_str(),  40,   0  ,    2    ); //  0.05
+  plots["maxMj12_passPre"]           = new TH1F("maxMj12_passPre"          , (passPre+"; highest pt jet pair; "                   +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["rmsJetPT_passPre"]          = new TH1F("rmsJetPT_passPre"         , (passPre+"; rmsJetPT; "                              +yTitle).c_str(),  40,   0  ,  400    ); // 10
+  plots["rmsJetDphiMET_passPre"]     = new TH1F("rmsJetDphiMET_passPre"    , (passPre+"; RMS[#Delta#phi(J,#slash{E}_{T})]; "      +yTitle).c_str(),  25,   0  ,    2.5  ); //  0.1
+  plots["bInvMass_passPre"]          = new TH1F("bInvMass_passPre"         , (passPre+"; m(b1+b2); "                              +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["bTransMass_passPre"]        = new TH1F("bTransMass_passPre"       , (passPre+"; m_{T}(near b to #slash{E}_{T}); "        +yTitle).c_str(),  80,   0  ,  800    ); // 10
+  plots["rmsBEta_passPre"]           = new TH1F("rmsBEta_passPre"          , (passPre+"; RMS[#Delta#eta(b,jets)]; "               +yTitle).c_str(),  25,   0  ,    2.5  ); //  0.1
+  plots["wInvMass_passPre"]          = new TH1F("wInvMass_passPre"         , (passPre+"; m(max p_{T} jj); "                       +yTitle).c_str(),  40,   0  ,  800    ); // 20
+  plots["Bpt0_passPre"]              = new TH1F("Bpt0_passPre"             , (passPre+"; p_{t}(b0); "                             +yTitle).c_str(),  40,   0  ,  800    ); // 20
+  plots["Bpt1_passPre"]              = new TH1F("Bpt1_passPre"             , (passPre+"; p_{t}(b1); "                             +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  // new stuff 2
+  plots["htnoB_passPre"]             = new TH1F("htnoB_passPre"            , (passPre+"; H_{T} [GeV] (noBs); "                    +yTitle).c_str(),  80,   0  , 2000    ); // 10
+  plots["htJ12_passPre"]             = new TH1F("htJ12_passPre"            , (passPre+"; p_{t}(j1)+p_{t}(j2); "                   +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["htJ12noB_passPre"]          = new TH1F("htJ12noB_passPre"         , (passPre+"; p_{t}(j1)+p_{t}(j2) (noBs); "            +yTitle).c_str(),  60,   0  ,  600    ); // 10
+  plots["metOsqrtHt_passPre"]        = new TH1F("metOsqrtHt_passPre"       , (passPre+"; #slash{E}_{T}/sqrt(H_{T}); "             +yTitle).c_str(),  50,   0  ,   10    ); // 10
+  plots["metOsqrtHtnoB_passPre"]     = new TH1F("metOsqrtHtnoB_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T}) (noBs); "      +yTitle).c_str(),  50,   0  ,   10    ); // 10
+  plots["metOsqrtHtJ12_passPre"]     = new TH1F("metOsqrtHtJ12_passPre"    , (passPre+"; #slash{E}_{T}/sqrt(H_{T12}); "           +yTitle).c_str(),  50,   0  ,   10    ); // 10
+  plots["metOsqrtHtJ12noB_passPre"]  = new TH1F("metOsqrtHtJ12noB_passPre" , (passPre+"; #slash{E}_{T}/sqrt(H_{T12}) (noBs); "    +yTitle).c_str(),  50,   0  ,   10    ); // 10
+  plots["dPhivHtMET_passPre"]        = new TH1F("dPhivHtMET_passPre"       , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)|; "       +yTitle).c_str(),  21,   0  ,    3.15 ); // 10
+  plots["dPhivHtMETnoB_passPre"]     = new TH1F("dPhivHtMETnoB_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)| (noBs); "+yTitle).c_str(),  21,   0  ,    3.15 ); // 10
+  plots["dotHtAlongAway_passPre"]    = new TH1F("dotHtAlongAway_passPre"   , (passPre+"; dot H_{T}^{along}/H_{T}^{away}; "        +yTitle).c_str(),  40,   0  ,    2    ); // 10
+  plots["dotHtAlongAwayNoB_passPre"] = new TH1F("dotHtAlongAwayNoB_passPre", (passPre+"; dot H_{T}^{along}/H_{T}^{away} (noBs); " +yTitle).c_str(),  40,   0  ,    2    ); // 10
 
   // set Sumw2 for all histograms
   for(map<TString,TH1F*>::iterator plotsIt = plots.begin(); plotsIt != plots.end(); ++plotsIt) plotsIt->second->Sumw2();
@@ -182,7 +206,12 @@ void Analyzer::loadVariables() {
 void Analyzer::runEvent() {
 
   double wt = lumi_ * xsec_ / getEntries();
-  if(nVetoedLeptons > 0) return; // only look at 0-lep events
+
+  // preselection
+  if(nVetoedLeptons > 0)  return;
+  if(met->pt() < metcut_) return;
+  if(nJets<minNJets_)     return;
+  if(nBJets < minNBjets_) return;
 
   // fill tree variables
   scaleFactor = wt;
@@ -207,38 +236,49 @@ void Analyzer::runEvent() {
   if (passMet) plots["nJ20_passMet"]->Fill(vars.nJ20 , wt);
   // plots after preselection
   if(!passPre) return;
-  plots["j1pt_passPre"]          ->Fill(jets[0]->pt()      , wt);
-  plots["ntBtag_passPre"]        ->Fill(vars.ntBtag        , wt);
-  plots["nmBtag_passPre"]        ->Fill(vars.nmBtag        , wt);
-  plots["dPhiMET12_passPre"]     ->Fill(vars.dPhiMET12     , wt);
-  plots["dPhiMET3_passPre"]      ->Fill(vars.dPhiMET3      , wt);
-  plots["dPhiB0MET_passPre"]     ->Fill(vars.dPhiB0MET     , wt);
-  plots["dPhiB1MET_passPre"]     ->Fill(vars.dPhiB1MET     , wt);
-  plots["dPhiB2MET_passPre"]     ->Fill(vars.dPhiB2MET     , wt);
-  plots["dPhiB01MET_passPre"]    ->Fill(vars.dPhiB01MET    , wt);
-  plots["dPhiCVSnearMET_passPre"]->Fill(vars.dPhiCVSnearMET, wt);
-  plots["Mb1b2n_passPre"]        ->Fill(vars.Mb1b2n        , wt);
-  plots["mtB0MET_passPre"]       ->Fill(vars.mtB0MET       , wt);
-  plots["mtB1MET_passPre"]       ->Fill(vars.mtB1MET       , wt);
-  plots["mtB2MET_passPre"]       ->Fill(vars.mtB2MET       , wt);
-  plots["mtB01MET_passPre"]      ->Fill(vars.mtB01MET      , wt);
-  plots["sSumB01oMET_passPre"]   ->Fill(vars.sSumB01oMET   , wt);
-  plots["vSumB01oMET_passPre"]   ->Fill(vars.vSumB01oMET   , wt);
-  plots["qgl0_passPre"]          ->Fill(vars.qgl0          , wt);
-  plots["qgl1_passPre"]          ->Fill(vars.qgl1          , wt);
-  plots["qglprod_passPre"]       ->Fill(vars.qglprod       , wt);
-  plots["ht_passPre"]            ->Fill(vars.ht            , wt);
-  plots["htAlongAway20_passPre"] ->Fill(vars.htAlongAway20 , wt);
-  plots["htAlongAway40_passPre"] ->Fill(vars.htAlongAway40 , wt);
-  plots["maxMj12_passPre"]       ->Fill(vars.maxMj12       , wt);
-  plots["rmsJetPT_passPre"]      ->Fill(vars.rmsJetPT      , wt);
-  plots["rmsJetDphiMET_passPre"] ->Fill(vars.rmsJetDphiMET , wt);
-  plots["bInvMass_passPre"]      ->Fill(vars.bInvMass      , wt);
-  plots["bTransMass_passPre"]    ->Fill(vars.bTransMass    , wt);
-  plots["rmsBEta_passPre"]       ->Fill(vars.rmsBEta       , wt);
-  plots["wInvMass_passPre"]      ->Fill(vars.wInvMass      , wt);
-  plots["Bpt0_passPre"]          ->Fill(vars.Bpt0          , wt);
-  plots["Bpt1_passPre"]          ->Fill(vars.Bpt1          , wt);
+  plots["j1pt_passPre"]             ->Fill(jets[0]->pt()         , wt);
+  plots["ntBtag_passPre"]           ->Fill(vars.ntBtag           , wt);
+  plots["nmBtag_passPre"]           ->Fill(vars.nmBtag           , wt);
+  plots["dPhiMET12_passPre"]        ->Fill(vars.dPhiMET12        , wt);
+  plots["dPhiMET3_passPre"]         ->Fill(vars.dPhiMET3         , wt);
+  plots["dPhiB0MET_passPre"]        ->Fill(vars.dPhiB0MET        , wt);
+  plots["dPhiB1MET_passPre"]        ->Fill(vars.dPhiB1MET        , wt);
+  plots["dPhiB2MET_passPre"]        ->Fill(vars.dPhiB2MET        , wt);
+  plots["dPhiB01MET_passPre"]       ->Fill(vars.dPhiB01MET       , wt);
+  plots["dPhiCVSnearMET_passPre"]   ->Fill(vars.dPhiCVSnearMET   , wt);
+  plots["Mb1b2n_passPre"]           ->Fill(vars.Mb1b2n           , wt);
+  plots["mtB0MET_passPre"]          ->Fill(vars.mtB0MET          , wt);
+  plots["mtB1MET_passPre"]          ->Fill(vars.mtB1MET          , wt);
+  plots["mtB2MET_passPre"]          ->Fill(vars.mtB2MET          , wt);
+  plots["mtB01MET_passPre"]         ->Fill(vars.mtB01MET         , wt);
+  plots["sSumB01oMET_passPre"]      ->Fill(vars.sSumB01oMET      , wt);
+  plots["vSumB01oMET_passPre"]      ->Fill(vars.vSumB01oMET      , wt);
+  plots["qgl0_passPre"]             ->Fill(vars.qgl0             , wt);
+  plots["qgl1_passPre"]             ->Fill(vars.qgl1             , wt);
+  plots["qglprod_passPre"]          ->Fill(vars.qglprod          , wt);
+  plots["ht_passPre"]               ->Fill(vars.ht               , wt);
+  plots["htAlongAway20_passPre"]    ->Fill(vars.htAlongAway20    , wt);
+  plots["htAlongAway40_passPre"]    ->Fill(vars.htAlongAway40    , wt);
+  plots["maxMj12_passPre"]          ->Fill(vars.maxMj12          , wt);
+  plots["rmsJetPT_passPre"]         ->Fill(vars.rmsJetPT         , wt);
+  plots["rmsJetDphiMET_passPre"]    ->Fill(vars.rmsJetDphiMET    , wt);
+  plots["bInvMass_passPre"]         ->Fill(vars.bInvMass         , wt);
+  plots["bTransMass_passPre"]       ->Fill(vars.bTransMass       , wt);
+  plots["rmsBEta_passPre"]          ->Fill(vars.rmsBEta          , wt);
+  plots["wInvMass_passPre"]         ->Fill(vars.wInvMass         , wt);
+  plots["Bpt0_passPre"]             ->Fill(vars.Bpt0             , wt);
+  plots["Bpt1_passPre"]             ->Fill(vars.Bpt1             , wt);
+  plots["htnoB_passPre"]            ->Fill(vars.htnoB            , wt);
+  plots["htJ12_passPre"]            ->Fill(vars.htJ12            , wt);
+  plots["htJ12noB_passPre"]         ->Fill(vars.htJ12noB         , wt);
+  plots["metOsqrtHt_passPre"]       ->Fill(vars.metOsqrtHt       , wt);
+  plots["metOsqrtHtnoB_passPre"]    ->Fill(vars.metOsqrtHtnoB    , wt);
+  plots["metOsqrtHtJ12_passPre"]    ->Fill(vars.metOsqrtHtJ12    , wt);
+  plots["metOsqrtHtJ12noB_passPre"] ->Fill(vars.metOsqrtHtJ12noB , wt);
+  plots["dPhivHtMET_passPre"]       ->Fill(vars.dPhivHtMET       , wt);
+  plots["dPhivHtMETnoB_passPre"]    ->Fill(vars.dPhivHtMETnoB    , wt);
+  plots["dotHtAlongAway_passPre"]   ->Fill(vars.dotHtAlongAway   , wt);
+  plots["dotHtAlongAwayNoB_passPre"]->Fill(vars.dotHtAlongAwayNoB, wt);
 
 } // Analyzer::runEvent()
 
@@ -294,8 +334,8 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
   //pars.cleanJetsvSelectedLeptons_ = true;
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
-  a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(100,5000); // for testing
+  //a.analyze(10000); // run: Argument is frequency of printout
+  a.analyze(1000,100000); // for testing
   a.out(sample, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
