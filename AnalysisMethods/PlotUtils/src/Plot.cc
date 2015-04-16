@@ -556,6 +556,29 @@ void Plot::drawRatio(TCanvas *c, TH1F *h1, TH1F *h2, bool doSave, TString format
 
 }
 
+void Plot::integrateHists(bool reversecutdir)
+{
+	if (fHists1D.empty())
+		return;
+
+	for (auto h1D: fHists1D){
+		TH1F *hist = (TH1F *)h1D->member->Clone("_hnew");
+		Double_t integral, error;
+
+		int nbins = hist->GetNbinsX();
+		for(int ibin = 0; ibin <= nbins; ibin++) {
+			if(reversecutdir) {
+				integral = hist->IntegralAndError(0, ibin, error);
+			} else {
+				integral = hist->IntegralAndError(ibin, nbins+1, error);
+			}
+			h1D->member->SetBinContent(ibin, integral);
+			h1D->member->SetBinError(ibin, error);
+		}
+		delete hist;
+	}
+}
+
 void Plot::drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave, TString format)
 {
   c->cd();

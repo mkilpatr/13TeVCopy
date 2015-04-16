@@ -122,6 +122,8 @@ class PlotStuff {
         vector<PlotTreeVar>    treevars;
         vector<PlotComp>       compplots;
         vector<TString>        tablesels;
+        bool				   make_integral;
+        bool 				   reverse_integral_dir;
 
         PlotConfig() :
           type(DATAMC),
@@ -155,7 +157,9 @@ class PlotStuff {
           maxlogscale(2000.),
           logy(false),
           tablelumi(4000.),
-          colormap(DefaultColors())
+          colormap(DefaultColors()),
+		  make_integral(false),
+		  reverse_integral_dir(false)
         {}
 
         void print() {
@@ -184,6 +188,9 @@ class PlotStuff {
           }
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of %d\n",rebinx);
           if(drawopt != "hist") printf("Using draw option %s\n",drawopt.Data());
+          if(make_integral){
+        	  printf("Histograms will be integrated %s. \n", reverse_integral_dir?"from the left":"to the right");
+          }
         }
 
     };
@@ -260,6 +267,8 @@ class PlotStuff {
     void     setLogy() { config_.logy = true; }
     // Customize color for a particular sample
     void     setColor(TString sname, unsigned int color) { config_.colormap[sname] = color; }
+    // Make integral plots. Default integral direction: (value > [cut]).
+    void     setIntegral(bool reverse_integral_direction = false) {config_.make_integral = true; config_.reverse_integral_dir = reverse_integral_direction; }
 
   // Helper functions
   private :
