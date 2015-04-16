@@ -92,7 +92,10 @@ class Plot {
     void addToStack(TH1F *h, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0);
     void addToStack(TFile *f, TString histname, int color);
     void addToStack(TFile *f, TString histname, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0);
-  
+
+    // Integrate all the 1D histograms. Default direction: (value > [cut])
+    void integrateHists(bool reversecutdir = false);
+
     // Adding a text box to the plot
     void addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=1, int textcolor=0, int fillcolor=0);
   

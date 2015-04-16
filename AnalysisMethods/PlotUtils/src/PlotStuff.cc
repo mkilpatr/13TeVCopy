@@ -409,6 +409,16 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
             maxbin = hists[isam]->GetMaximumBin();
           }
         }
+        if(config_.make_integral) {
+      	  if(hists[isam]->Integral(0,nbins+1) > max) {
+      		max = hists[isam]->Integral(0,nbins+1);
+            maxbin = config_.reverse_integral_dir ? nbins : 1;
+      	  }
+        }
+      }
+
+      if(config_.make_integral){
+    	plot->integrateHists(config_.reverse_integral_dir);
       }
 
       if(config_.ytitle != "")
