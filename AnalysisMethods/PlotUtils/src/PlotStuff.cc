@@ -255,8 +255,8 @@ void PlotStuff::loadTables()
          for(auto sel : config_.tablesels) {
           TString drawstr = config_.wgtvar + ">>htmp";
           TString cutstr = config_.wgtvar + "*(" + sel + ")";
-          intree->Draw(drawstr.Data(), cutstr.Data());
-          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp"); 
+          intree->Draw(drawstr.Data(), cutstr.Data(), "e");
+          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp");
           double tmperr = 0.0;
           tmpyieldsv.push_back(htmp->IntegralAndError(0, htmp->GetNbinsX()+1, tmperr));
           tmpyielderrsv.push_back(tmperr);
