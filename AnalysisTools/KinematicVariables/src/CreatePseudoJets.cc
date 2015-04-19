@@ -32,11 +32,6 @@ void CreatePseudoJets::getInitAxis(const std::vector<RecoJetF*>& jets,RecoJetF &
 
     } // end of looping over jets-i2
   } // end of looping over jets-i1
-
-  
-  //  cout << invMassMax << " " << indx1 << " " << indx2 << " " 
-  //       << initJet1.p4().Pt() << " " << initJet2.p4().Pt()
-  //       << "\n";
   
 } //end of getInitAxis
 
@@ -52,7 +47,7 @@ float CreatePseudoJets::getLundDistance(RecoJetF JetAxis,RecoJetF *tmpJet) {
 } //end of getLundDistance()
 
 
-void CreatePseudoJets::makePseudoJets(const std::vector<RecoJetF*>& jets, RecoJetF &pseudoJet1, RecoJetF &pseudoJet2) {
+void CreatePseudoJets::makePseudoJets(const std::vector<RecoJetF*>& jets, MomentumF &pseudoJet1, MomentumF &pseudoJet2) {
 
   RecoJetF initJet1; RecoJetF initJet2;
   unsigned int indx1 = 0; unsigned int indx2 = 0;
@@ -72,7 +67,5 @@ void CreatePseudoJets::makePseudoJets(const std::vector<RecoJetF*>& jets, RecoJe
     else            { pseudoJet2.p4() += tmpJet->p4(); }
 
   }
-
-  cout << "the 2 pseudo-Jets: " << pseudoJet1.p4().Pt() << " " << pseudoJet2.p4().Pt() << "\n";
 
 } // end of makePseudoJets

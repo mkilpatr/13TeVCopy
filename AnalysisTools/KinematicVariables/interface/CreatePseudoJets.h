@@ -27,7 +27,7 @@ class CreatePseudoJets {
   // operations
   void getInitAxis(const std::vector<RecoJetF*>& jets,RecoJetF &initJet1,RecoJetF &initJet2,unsigned int &indx1,unsigned int &indx2);
   float getLundDistance(RecoJetF JetAxis,RecoJetF *tmpJet);
-  void makePseudoJets(const std::vector<RecoJetF*>& jets,RecoJetF &pseudoJet1, RecoJetF &pseudoJet2);
+  void makePseudoJets(const std::vector<RecoJetF*>& jets,MomentumF &pseudoJet1, MomentumF &pseudoJet2);
 
 }; // end of class CreatePseudoJets
 
