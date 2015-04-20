@@ -50,6 +50,17 @@ public:
     , qgl0              (-1)
     , qgl1              (-1)
     , qglprod           (-1)
+    , qglprodNorm       (-1)
+    , qglJ0             (-1)
+    , qglJ1             (-1)
+    , qglCVS0           (-1)
+    , qglCVS1           (-1)
+    , qgl0noB           (-1)
+    , qgl1noB           (-1)
+    , qglprodnoB        (-1)
+    , qglprodNormnoB    (-1)
+    , qglJ0noB          (-1)
+    , qglJ1noB          (-1)
     , ht                (-1)
     , htAlongAway20     (-1)
     , htAlongAway40     (-1)
@@ -111,9 +122,20 @@ public:
     mtB01MET          = -1;
     sSumB01oMET       = -1;
     vSumB01oMET       = -1;
-    qgl0              =  0;
-    qgl1              =  0;
+    qgl0              = -1;
+    qgl1              = -1;
     qglprod           =  1;
+    qglprodNorm       =  1;
+    qglJ0             = -1;
+    qglJ1             = -1;
+    qglCVS0           = -1;
+    qglCVS1           = -1;
+    qgl0noB           = -1;
+    qgl1noB           = -1;
+    qglprodnoB        =  1;
+    qglprodNormnoB    =  1;
+    qglJ0noB          = -1;
+    qglJ1noB          = -1;
     ht                =  0;
     htAlongAway20     =  0;
     htAlongAway40     =  0;
@@ -141,19 +163,43 @@ public:
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
 
-    // AK4 jets are always used for met/jet correlations, trigger requirements, and QGTagging
+    // AK4 jets are always used for met/jet correlations, trigger requirements, and QGTaggingvector<RecoJetF*> jetsCSV;
+    int nNonBak4 = 0;
     for(unsigned int iJ = 0; iJ < inAK4Jets.size(); ++iJ){
       const auto& j = *inAK4Jets[iJ];
       if(j.pt() >= 60 ) nj60++;
       // qgl stuff
-      if(analyzer->isLooseBJet(j)) continue;
-      double tempqgl = 1; //(1.+ak4JetReader->jetqgl_->at(j.index()))/2.; // transform [-1,1] -> [0,1]
+      double tempqgl = ak4JetReader->jetqgl_->at(j.index()); // already in [0,1]
       double qgl = std::max( .01, double(tempqgl) ); // make sure qglprod isn't zeroed out
+      // with bjet
       qglprod *= qgl;
       if      (qgl > qgl0) { qgl1 = qgl0; qgl0 = qgl; }
       else if (qgl > qgl1) { qgl1 = qgl;              }
+      if (iJ==0) qglJ0 = qgl;
+      if (iJ==1) qglJ1 = qgl;
+      // without bjets"
+      if(analyzer->isLooseBJet(j)) continue;
+      qglprodnoB *= qgl;
+      if      (qgl > qgl0noB) { qgl1noB = qgl0noB; qgl0noB = qgl; }
+      else if (qgl > qgl1noB) { qgl1noB = qgl;                    }
+      if (nNonBak4==0) qglJ0noB = qgl;
+      if (nNonBak4==1) qglJ1noB = qgl;
+      ++nNonBak4;
     } // iJ in ak4jets
-    qglprod   = TMath::Log(qglprod);
+    if (qgl0>0)    qgl0    = TMath::Log(qgl0);
+    if (qgl1>0)    qgl1    = TMath::Log(qgl1);
+    if (qgl0noB>0) qgl0noB = TMath::Log(qgl0noB);
+    if (qgl1noB>0) qgl1noB = TMath::Log(qgl1noB);
+    //qglprod    = TMath::Log(qglprod);
+    qglprodNorm    = qglprod    / inAK4Jets.size();
+    qglprodNormnoB = qglprodnoB / nNonBak4;
+    // for highest 2 CVS jets
+    vector<RecoJetF*> jetsCSVak4;
+    rankedByCSV(inAK4Jets,jetsCSVak4);
+    if(jetsCSVak4.size()>0) qglCVS0 = ak4JetReader->jetqgl_->at(jetsCSVak4.at(0)->index());
+    if(jetsCSVak4.size()>1) qglCVS1 = ak4JetReader->jetqgl_->at(jetsCSVak4.at(1)->index());
+
+
     dPhiMET12 = JetKinematics::absDPhiMETJ12(*inMet,inAK4Jets);
     dPhiMET3  = JetKinematics::absDPhiMETJ3 (*inMet,inAK4Jets);
 
@@ -268,9 +314,20 @@ public:
   float mtB01MET;      // new
   float sSumB01oMET;   // new
   float vSumB01oMET;   // new
-  float qgl0;
-  float qgl1;
-  float qglprod;
+  float qgl0;           // QGL
+  float qgl1;           // QGL
+  float qglprod;        // QGL
+  float qglprodNorm;    // QGL
+  float qglJ0;          // QGL
+  float qglJ1;          // QGL
+  float qglCVS0;        // QGL
+  float qglCVS1;        // QGL
+  float qgl0noB;        // QGL
+  float qgl1noB;        // QGL
+  float qglprodnoB;     // QGL
+  float qglprodNormnoB; // QGL
+  float qglJ0noB;       // QGL
+  float qglJ1noB;       // QGL
   float ht;
   float htAlongAway20;
   float htAlongAway40;  // new
