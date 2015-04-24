@@ -255,8 +255,8 @@ void PlotStuff::loadTables()
          for(auto sel : config_.tablesels) {
           TString drawstr = config_.wgtvar + ">>htmp";
           TString cutstr = config_.wgtvar + "*(" + sel + ")";
-          intree->Draw(drawstr.Data(), cutstr.Data());
-          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp"); 
+          intree->Draw(drawstr.Data(), cutstr.Data(), "e");
+          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp");
           double tmperr = 0.0;
           tmpyieldsv.push_back(htmp->IntegralAndError(0, htmp->GetNbinsX()+1, tmperr));
           tmpyielderrsv.push_back(tmperr);
@@ -409,6 +409,16 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
             maxbin = hists[isam]->GetMaximumBin();
           }
         }
+        if(config_.make_integral) {
+      	  if(hists[isam]->Integral(0,nbins+1) > max) {
+      		max = config_.scalecompto1 ? 1.0 : hists[isam]->Integral(0,nbins+1);
+            maxbin = config_.reverse_integral_dir ? nbins : 1;
+      	  }
+        }
+      }
+
+      if(config_.make_integral){
+    	plot->integrateHists(config_.reverse_integral_dir);
       }
 
       if(config_.ytitle != "")

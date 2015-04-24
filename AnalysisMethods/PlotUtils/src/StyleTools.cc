@@ -186,6 +186,7 @@ ColorMap StyleTools::DefaultColors()
   colors["T2tt_850_100"]    = color_T2tt_850_100;
   colors["T2tt_650_325"]    = color_T2tt_650_325;
   colors["T2tt_500_325"]    = color_T2tt_500_325;
+  colors["T2tt_425_325"]    = color_T2tt_425_325;
   colors["T1tttt_1500_100"] = color_T1tttt_1500_100;
   colors["T1tttt_1200_800"] = color_T1tttt_1200_800;
   colors["comp1"]           = color_comp1;
@@ -194,7 +195,12 @@ ColorMap StyleTools::DefaultColors()
   colors["comp4"]           = color_comp4;
   colors["comp5"]           = color_comp5;
   colors["comp6"]           = color_comp6;
-  colors["ttbar"]           = color_ttbar;
+  colors["comp7"]           = color_comp7;
+  colors["comp8"]           = color_comp8;
+  colors["comp9"]           = color_comp9;
+  colors["comp10"]          = color_comp10;
+  colors["comp11"]          = color_comp11;
+  colors["comp12"]          = color_comp12;
 
   return colors;
 
