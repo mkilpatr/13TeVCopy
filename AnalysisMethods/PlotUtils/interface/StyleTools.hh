@@ -21,16 +21,17 @@ namespace StyleTools {
                color_ttbar=866,              // kAzure+6
                color_ttbar1l=866,            // kAzure+6
                color_ttbar2l=625,            // kRed-7
-               color_ttW=606,                // kBlue+6
+               color_ttW=606,                // kMagenta-10
                color_ttZ=797,                // kOrange-3
                color_tW=391,                 // kYellow-9
-               color_wjets=606,              // kBlue+6
+               color_wjets=433,              // kCyan+1
                color_znunu=632,              // kRed
                color_other=391,              // kYellow-9
                color_T2tt=634,               // kRed+2
                color_T2tt_850_100=634,       // kRed+2
-               color_T2tt_650_325=633,       // kRed+3
-               color_T2tt_500_325=635,       // kRed+4
+               color_T2tt_650_325=633,       // kRed+1
+               color_T2tt_500_325=635,       // kRed+3
+               color_T2tt_425_325=622,       // kRed-10
                color_T1tttt=602,             // kBlue+2
                color_T1tttt_1500_100=602,    // kBlue+2
                color_T1tttt_1200_800=601,    // kBlue+1
@@ -40,7 +41,13 @@ namespace StyleTools {
                color_comp4=882,              // kViolet+2
                color_comp5=802,              // kOrange+2
                color_comp6=862,              // kAzure+2
-               color_comp7=902};             // kPink+2
+               color_comp7=600,              // kBlue
+               color_comp8=616,              // kMagenta
+               color_comp9=434,              // kCyan+2
+               color_comp10=800,             // kOrange
+               color_comp11=417,             // kGreen+1
+               color_comp12=632              // kRed
+  };
 
   typedef std::map<TString, unsigned int> ColorMap;
 

@@ -411,7 +411,7 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
         }
         if(config_.make_integral) {
       	  if(hists[isam]->Integral(0,nbins+1) > max) {
-      		max = hists[isam]->Integral(0,nbins+1);
+      		max = config_.scalecompto1 ? 1.0 : hists[isam]->Integral(0,nbins+1);
             maxbin = config_.reverse_integral_dir ? nbins : 1;
       	  }
         }
