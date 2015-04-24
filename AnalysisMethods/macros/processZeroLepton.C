@@ -195,7 +195,6 @@ void Analyzer::loadPlots() {
   plots["wInvMass_passPre"]          = new TH1F("wInvMass_passPre"         , (passPre+"; m(max p_{T} jj); "                       +yTitle).c_str(),  40,   0  ,  800    ); // 20
   plots["Bpt0_passPre"]              = new TH1F("Bpt0_passPre"             , (passPre+"; p_{t}(b0); "                             +yTitle).c_str(),  40,   0  ,  800    ); // 20
   plots["Bpt1_passPre"]              = new TH1F("Bpt1_passPre"             , (passPre+"; p_{t}(b1); "                             +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  // new stuff 2
   plots["htnoB_passPre"]             = new TH1F("htnoB_passPre"            , (passPre+"; H_{T} [GeV] (noBs); "                    +yTitle).c_str(),  80,   0  , 2000    ); // 10
   plots["htJ12_passPre"]             = new TH1F("htJ12_passPre"            , (passPre+"; p_{t}(j1)+p_{t}(j2); "                   +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["htJ12noB_passPre"]          = new TH1F("htJ12noB_passPre"         , (passPre+"; p_{t}(j1)+p_{t}(j2) (noBs); "            +yTitle).c_str(),  60,   0  ,  600    ); // 10
@@ -216,8 +215,7 @@ void Analyzer::loadPlots() {
 // also uncomment nVetoTau
 void Analyzer::loadVariables() {
   load(EVTINFO);
-  //load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-  load(AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+  load(AK4JETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
   load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
@@ -332,7 +330,7 @@ void Analyzer::out(TString outputName, TString outputPath) {
 // get the x-section for the given sample
 double getXsec(string sample) {
   if (sample=="ttbar") return 831.76   ;
-  if (sample=="ttZ")   return   0.5662 ;
+  if (sample=="ttZ")   return   .7598  ;
   if (sample=="znunu_ht100to200") return 372.6   ;
   if (sample=="znunu_ht200to400") return 100.8   ;
   if (sample=="znunu_ht400to600") return  11.99  ;
