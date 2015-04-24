@@ -14,6 +14,7 @@
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/DataFormats/interface/Lepton.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
+#include "AnalysisTools/KinematicVariables/interface/Davismt2.h"
 
 using namespace ucsbsusy;
 
