@@ -9,30 +9,51 @@ using namespace ucsbsusy;
 CreatePseudoJets::CreatePseudoJets() {}
 CreatePseudoJets::~CreatePseudoJets(){}
 
-void CreatePseudoJets::getInitAxis(const std::vector<RecoJetF*>& jets,RecoJetF &initJet1,RecoJetF &initJet2,unsigned int &indx1,unsigned int &indx2) {
+void CreatePseudoJets::getInitAxis(const std::vector<RecoJetF*>& jets,RecoJetF &initJet1,RecoJetF &initJet2,unsigned int &indx1,unsigned int &indx2,
+				   int method) {
 
   if (jets.size()<2) { 
     initJet1.p4().SetPxPyPzE(0.0001,0.0001,0.0001,0.0001);
     initJet2.p4().SetPxPyPzE(0.0001,0.0001,0.0001,0.0001); }
   
 
-  float invMassMax = -1.;
-  for (UInt_t i1=0; i1<jets.size(); ++i1) {
-    for (UInt_t i2=0; i2<jets.size(); ++i2) {
+  if (method==0) { //intial axis based on the largest inv mass
 
-      if (i1>i2) {
-	float tmpMass = (jets[i1]->p4()+jets[i2]->p4()).M();
-	if (tmpMass>invMassMax) { 
-	  invMassMax = tmpMass; 
-	  indx1 = i1; indx2 = i2; 
-	  initJet1.p4().SetPxPyPzE(jets[i1]->p4().Px(),jets[i1]->p4().Py(),jets[i1]->p4().Pz(),jets[i1]->p4().E());
-	  initJet2.p4().SetPxPyPzE(jets[i2]->p4().Px(),jets[i2]->p4().Py(),jets[i2]->p4().Pz(),jets[i2]->p4().E()); }
-      } else { continue; }
+    float invMassMax = -1.;
+    for (UInt_t i1=0; i1<jets.size(); ++i1) {
+      for (UInt_t i2=0; i2<jets.size(); ++i2) {
+	
+	if (i1>i2) {
+	  float tmpMass = (jets[i1]->p4()+jets[i2]->p4()).M();
+	  if (tmpMass>invMassMax) { 
+	    invMassMax = tmpMass; 
+	    indx1 = i1; indx2 = i2; 
+	    initJet1.p4().SetPxPyPzE(jets[i1]->p4().Px(),jets[i1]->p4().Py(),jets[i1]->p4().Pz(),jets[i1]->p4().E());
+	    initJet2.p4().SetPxPyPzE(jets[i2]->p4().Px(),jets[i2]->p4().Py(),jets[i2]->p4().Pz(),jets[i2]->p4().E()); }
+	} else { continue; }
+	
+      } // end of looping over jets-i2
+    } // end of looping over jets-i1
+  } // end of method == 0
 
 
-    } // end of looping over jets-i2
-  } // end of looping over jets-i1
+  if (method==1) { // choose the two highest CSV for the intial axis
+
+    vector<pair<double,int> > rankedJets(jets.size());
+
+    for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
+      rankedJets[iJ].first = jets[iJ]->csv();
+      rankedJets[iJ].second = iJ;  }
+
+    std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+    int csv1 = rankedJets[0].second;
+    int csv2 = rankedJets[1].second;
   
+    initJet1.p4().SetPxPyPzE(jets[csv1]->p4().Px(),jets[csv1]->p4().Py(),jets[csv1]->p4().Pz(),jets[csv1]->p4().E());
+    initJet2.p4().SetPxPyPzE(jets[csv2]->p4().Px(),jets[csv2]->p4().Py(),jets[csv2]->p4().Pz(),jets[csv2]->p4().E()); 
+
+  } // end of method == 1
+
 } //end of getInitAxis
 
 
@@ -47,11 +68,12 @@ float CreatePseudoJets::getLundDistance(RecoJetF JetAxis,RecoJetF *tmpJet) {
 } //end of getLundDistance()
 
 
-void CreatePseudoJets::makePseudoJets(const std::vector<RecoJetF*>& jets, MomentumF &pseudoJet1, MomentumF &pseudoJet2) {
+void CreatePseudoJets::makePseudoJets(const std::vector<RecoJetF*>& jets, MomentumF &pseudoJet1, MomentumF &pseudoJet2,
+				      int initAxisMethod) {
 
   RecoJetF initJet1; RecoJetF initJet2;
   unsigned int indx1 = 0; unsigned int indx2 = 0;
-  getInitAxis(jets,initJet1,initJet2,indx1,indx2);
+  getInitAxis(jets,initJet1,initJet2,indx1,indx2,initAxisMethod);
 
   pseudoJet1 = initJet1;
   pseudoJet2 = initJet2;
