@@ -1,0 +1,9 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="AnalysisTools/DataFormats"/>
+<use name="AnalysisTools/Utilities"/>
+<use name="AnalysisTools/Parang"/>
+<export>
+  <lib   name="1"/>
+</export>
