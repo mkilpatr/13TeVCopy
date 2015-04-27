@@ -765,4 +765,61 @@ public:
 
 };
 
+void fillCORRALData(CORRALData * data, const CORRALReader* corralReader, const GenParticleReader * genParticleReader, JetReader * jetReader, const int nPV){
+  data->reset();
+
+  //filter jets
+  setup(genParticleReader,jetReader, data->recoJets,data->decays);
+
+
+
+
+  //we now need to associate our reco jets with the jet ind
+  vector<int> trnBjetind (corralReader->bjetind->size());
+  vector<int> trnWjet1ind(corralReader->bjetind->size());
+  vector<int> trnWjet2ind(corralReader->bjetind->size());
+
+  for(unsigned int iT = 0; iT < corralReader->bjetind->size(); ++iT){
+    trnBjetind[iT]  = corralReader->transformIndex(corralReader->bjetind->at(iT) , data->recoJets, true);
+    trnWjet1ind[iT] = corralReader->transformIndex(corralReader->wjet1ind->at(iT), data->recoJets, true);
+    trnWjet2ind[iT] = corralReader->transformIndex(corralReader->wjet2ind->at(iT), data->recoJets, true);
+
+  }
+
+  //now fill W cands
+  data->wCands.reserve(corralReader->bjetind->size());
+  for(unsigned int iT = 0; iT < corralReader->bjetind->size(); ++iT){
+    addWCandidate(trnWjet1ind[iT],trnWjet2ind[iT],data->recoJets,data->decays,data->wCands);
+  }
+
+  //now fill T cands
+  data->tCands.reserve(corralReader->bjetind->size() );
+  data->tCandVars.reserve(corralReader->bjetind->size() );
+  for(unsigned int iT = 0; iT < corralReader->bjetind->size(); ++iT){
+    addTCandidate(iT,data->wCands[iT], trnBjetind[iT],data->recoJets,data->decays,data->tCands);
+    TCandVars vars;
+    vars.wDisc = corralReader->wmva->at(iT);
+    vars.mva = corralReader->tmva->at(iT);
+    data->tCandVars.push_back(vars);
+  }
+  vector<RankedIndex> prunedTops;
+  for(unsigned int iT = 0; iT < corralReader->bjetind->size(); ++iT){
+    prunedTops.emplace_back(corralReader->tmva->at(iT),iT);
+  }
+
+  //now fill pairs
+  data->rankedTPairs = getRankedTopPairs(0,data->tCands,data->tCandVars,prunedTops);
+
+  if(data->rankedTPairs.size()){
+    data->reconstructedTop = true;
+    data->top1 = &data->tCands[data->rankedTPairs[0].first];
+    data->top2 = &data->tCands[data->rankedTPairs[0].second];
+    data->top1_disc = data->tCandVars[data->rankedTPairs[0].first].mva;
+    data->top2_disc = data->tCandVars[data->rankedTPairs[0].second].mva;
+  }
+
+
+}
+
+
 
