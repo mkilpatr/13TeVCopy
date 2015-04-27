@@ -74,12 +74,12 @@
 
 
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wJetLikli_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wJetLikli_plots.root")' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wJetLikli_plots.root")'  &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wJetLikli_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wJetLikli_plots.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetLikliVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wJetLikli_plots.root")'  &
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/flattenWJetLikliTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wJetLikli_tree.root"))' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/produceWJetLikliMVA.C+("T2tt_merged_wJetLikli_tree.root","Events","mva","T2tt_merged_wJetLikli_disc.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/flattenWJetLikliTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wJetLikli_tree.root"))' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/produceWJetLikliMVA.C+("T2tt_merged_wJetLikli_tree.root","Events","mva","T2tt_merged_wJetLikli_disc.root")' &
 
 // ---------------------------------------------------------------------
 //
@@ -164,8 +164,8 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
 {
     Plot::cache("*_wCand_plots.root");
     
-TString sample = "^merged_picky_";
-        // TString sample = "^650_325_picky_";
+// TString sample = "^merged_picky_";
+        TString sample = "^650_325_picky_";
         // TString sample = "^850_100_picky_";
     TString mva = "mva";
     o = new TObjArray();
@@ -220,12 +220,12 @@ TString sample = "^merged_picky_";
 }
 
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_wCand_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wCand_plots.root")' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wCand_plots.root")'  &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_wCand_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wCand_plots.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wCand_plots.root")'  &
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/flattenWTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wCand_tree.root"))' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/produceWMVA.C+("T2tt_merged_wCand_tree.root","Events","mva","T2tt_merged_wCand_disc.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/flattenWTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wCand_tree.root"))' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/produceWMVA.C+("T2tt_merged_wCand_tree.root","Events","mva","T2tt_merged_wCand_disc.root")' &
         
 
 
@@ -279,6 +279,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     TString vars[] = {"tMass","pruned_mva",""};
 
     TString sample = "^merged_picky_";
+    // TString sample = "^ttbar_merged_picky_";
             // TString sample = "^650_325_picky_";
             // TString sample = "^850_100_picky_";
     
@@ -302,7 +303,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
         oo->Add(pn);
         
         TCanvas * c = pn->makeCutEfficiencies(*pb,"t","not t");
-        ooo->Add(c);        
+        ooo->Add(c);    
     }
     Pint::drawAll(o,"t","",":mr");
     Pint::drawAll(oo,"not t","",":mr");
@@ -396,12 +397,12 @@ TString sample = "^merged_picky_";
 
 
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tCand_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tCand_plots.root")' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tCand_plots.root")'  &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tCand_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tCand_plots.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tCand_plots.root")'  &
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/flattenTTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_tCand_tree.root"))' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/produceTMVA.C+("T2tt_merged_tCand_tree.root","Events","mva","T2tt_merged_tCand_disc.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/flattenTTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_tCand_tree.root"))' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/produceTMVA.C+("T2tt_merged_tCand_tree.root","Events","mva","T2tt_merged_tCand_disc.root")' &
 
 
 // ---------------------------------------------------------------------
@@ -415,8 +416,8 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     
     Plot::cache("*_tPairs_plots.root");
     TString vars[] = {"leadTopPT","subLeadTopPT","avgTopPT",""};
-    // TString samples[] ={"650_325","850_100","merged",""};
-        TString samples[] ={"merged",""};
+    TString samples[] ={"650_325","850_100","merged",""};
+        // TString samples[] ={"merged",""};
         // TString samples[] ={"650_325","merged",""};
     o = new TObjArray;
     oo = new TObjArray;
@@ -424,6 +425,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     for(unsigned int iS = 0; samples[iS][0]; ++iS)
         for(unsigned int iV = 0; vars[iV][0]; ++iV){
             p = new Plot(samples[iS] +"_picky_(best_pair|reconstructed|resolved_jets|all)__"+ vars[iV]+"$");
+            // p = new Plot(samples[iS] +"_picky_(best_pair|reconstructed)__"+ vars[iV]+"$");
             p->toUnderOverflow();
             p->rebin(b);
             p->SetTitle(samples[iS]);
@@ -454,7 +456,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
             o->Add(p);
         }
     }
-    Pint::drawAll(o,"");
+    Pint::drawAll(o,"","",":i(0,-1)");
     
 }
 
@@ -462,25 +464,51 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     Plot::cache("*_tPairs_plots.root");
     
     TString sample = "^merged_picky_";
+    // TString sample = "^850_100_picky_";
     
     o = new TObjArray();
-    p = new Plot(sample+"all__nFakes$");
-    o->Add(p);
+    oo = new TObjArray();
+    // p = new Plot(sample+"all__nFakes$");
+    // o->Add(p);
+    //
+    // p = new Plot(sample + "(t|not_t)__rank$");
+    // p->normalize();
+    // o->Add(p);
     
-    p = new Plot(sample + "(t|not_t)__rank$");
-    p->normalize();
-    o->Add(p);
+    nottcomp = new Plot();
+    tcomp = new Plot();
+    
     
     p = new Plot(sample + ".*__mva1p2$");    
     p->normalize();
+    nottcomp->add(p->at("not_t"),"1+2");
+    tcomp->add(p->at("t"),"1+2");
     p = p->makeIntegral(true);
     
     o->Add(p);
     
     p = new Plot(sample + ".*__mva1t2$");
     p->normalize();
+    nottcomp->add(p->at("not_t"),"1x2");
+    tcomp->add(p->at("t"),"1x2");
     p = p->makeIntegral(true);
     o->Add(p);
+    
+    // p = new Plot(sample + ".*__mvap2$");
+    // p->normalize();
+    // nottcomp->add(p->at("not_t"),"2");
+    // tcomp->add(p->at("t"),"2");
+    // p = p->makeIntegral(true);
+    // o->Add(p);
+    
+    p = new Plot(sample + ".*__mval$");
+    p->normalize();
+    nottcomp->add(p->at("not_t"),"mval");
+    tcomp->add(p->at("t"),"mval");
+    p = p->makeIntegral(true);
+    o->Add(p);
+    
+    nottcomp->makeCutEfficiencies(*tcomp,"t","not t");
  
     Pint::drawAll(o,"");
     
@@ -489,9 +517,9 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     
     
         
-    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tPairs_plots.root")'   &
-    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tPairs_plots.root")' &
-    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tPairs_plots.root")'  &
+    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tPairs_plots.root")'   &
+    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tPairs_plots.root")' &
+    root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTopPairs.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tPairs_plots.root")'  &
         
         
 // ---------------------------------------------------------------------
@@ -534,6 +562,6 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMe
     
 }
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/T2tt_850_100.root" ,"TestAnalyzer/Events","T2tt_850_100_testCORRAL_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/T2tt_650_325.root" ,"TestAnalyzer/Events","T2tt_650_325_testCORRAL_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_0/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/ttbar_metgeq200.root" ,"TestAnalyzer/Events","ttbar_testCORRAL_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/T2tt_850_100.root" ,"TestAnalyzer/Events","T2tt_850_100_testCORRAL_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/T2tt_650_325.root" ,"TestAnalyzer/Events","T2tt_650_325_testCORRAL_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testCORRAL.C+("sigSamples/ttbar_metgeq200.root" ,"TestAnalyzer/Events","ttbar_testCORRAL_plots.root")'   &
