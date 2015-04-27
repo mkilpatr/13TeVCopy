@@ -40,10 +40,15 @@ TopJetMatching::TopDecayEvent* associateDecays(const GenParticleReader* genParti
     genJets.push_back(j.genJet());
   }
 
-  TopJetMatching::TopDecayEvent * topDecayEvent = new TopJetMatching::TopDecayEvent(*genParticleReader,*jetReader,genJets);
-  topDecayEvent->getDecayMatches(recoJets,decays);
+  if(genParticleReader){
+    TopJetMatching::TopDecayEvent * topDecayEvent = new TopJetMatching::TopDecayEvent(*genParticleReader,*jetReader,genJets);
+    topDecayEvent->getDecayMatches(recoJets,decays);
+    return topDecayEvent;
+  } else {
+    return 0;
+  }
 
-  return topDecayEvent;
+
 }
 
 bool setup(const GenParticleReader* genParticleReader, JetReader * jetReader, std::vector<RecoJetF*>& recoJets,  std::vector<TopDecayEvent::DecayID>& decays){
@@ -168,6 +173,16 @@ struct WCand {
     fakeCategory(fakeCategory_)
   {
   }
+  WCand(const WCand& other) :
+    jet1(other.jet1),
+    jet2(other.jet2),
+    ind1(other.ind1),
+    ind2(other.ind2),
+    mom(other.mom),
+    isW(other.isW),
+    topIndex(other.topIndex),
+    fakeCategory(other.fakeCategory)
+  {}
 
   const RecoJetF * jet1;
   const RecoJetF * jet2;
@@ -179,6 +194,38 @@ struct WCand {
   const int fakeCategory;
 };
 
+void addWCandidate(const unsigned int iJ, const unsigned int iJ2, const std::vector<RecoJetF*>& recoJets, const std::vector<TopDecayEvent::DecayID>& decays, vector<WCand>& wCands){
+  bool isW = false;
+  int topIn = -1;
+  TopDecayEvent::DecayID::Type id1 = decays[iJ].type;
+  TopDecayEvent::DecayID::Type id2 = decays[iJ2].type;
+  if(id1 ==  TopDecayEvent::DecayID::TOP_W &&  id2 == TopDecayEvent::DecayID::TOP_W){
+    if(decays[iJ].topInd == decays[iJ2].topInd){
+      if(decays[iJ].mainParton() != decays[iJ2].mainParton())
+        isW = true;
+        topIn = decays[iJ].topInd;
+    }
+  }
+  int fakeCategory = -10;
+  if(!isW){
+    int nWs = 0;
+    int nBs = 0;
+    if(id1 ==  TopDecayEvent::DecayID::TOP_B )nBs++;
+    if(id2 ==  TopDecayEvent::DecayID::TOP_B )nBs++;
+    if(id1 ==  TopDecayEvent::DecayID::TOP_W )nWs++;
+    if(id2 ==  TopDecayEvent::DecayID::TOP_W )nWs++;
+
+    if(nWs == 2) fakeCategory = 0;
+    else if(nWs == 1) {
+      if(nBs == 1) fakeCategory = 1;
+      else fakeCategory = 2;
+    } else if (nBs == 2) fakeCategory  = 3;
+    else if (nBs == 1) fakeCategory = 4;
+    else fakeCategory = 5;
+  }
+  wCands.emplace_back(recoJets[iJ],recoJets[iJ2],iJ,iJ2,isW, topIn, fakeCategory);
+}
+
 void getWCandidates(const std::vector<RecoJetF*>& recoJets, const std::vector<TopDecayEvent::DecayID>& decays, vector<WCand>& wCands  ){
   wCands.clear();
   if(recoJets.size() < 2) return;
@@ -186,35 +233,7 @@ void getWCandidates(const std::vector<RecoJetF*>& recoJets, const std::vector<To
 
   for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
     for(unsigned int iJ2 = iJ + 1; iJ2 < recoJets.size(); ++iJ2){
-      bool isW = false;
-      int topIn = -1;
-      TopDecayEvent::DecayID::Type id1 = decays[iJ].type;
-      TopDecayEvent::DecayID::Type id2 = decays[iJ2].type;
-      if(id1 ==  TopDecayEvent::DecayID::TOP_W &&  id2 == TopDecayEvent::DecayID::TOP_W){
-        if(decays[iJ].topInd == decays[iJ2].topInd){
-          if(decays[iJ].mainParton() != decays[iJ2].mainParton())
-            isW = true;
-            topIn = decays[iJ].topInd;
-        }
-      }
-      int fakeCategory = -10;
-      if(!isW){
-        int nWs = 0;
-        int nBs = 0;
-        if(id1 ==  TopDecayEvent::DecayID::TOP_B )nBs++;
-        if(id2 ==  TopDecayEvent::DecayID::TOP_B )nBs++;
-        if(id1 ==  TopDecayEvent::DecayID::TOP_W )nWs++;
-        if(id2 ==  TopDecayEvent::DecayID::TOP_W )nWs++;
-
-        if(nWs == 2) fakeCategory = 0;
-        else if(nWs == 1) {
-          if(nBs == 1) fakeCategory = 1;
-          else fakeCategory = 2;
-        } else if (nBs == 2) fakeCategory  = 3;
-        else if (nBs == 1) fakeCategory = 4;
-        else fakeCategory = 5;
-      }
-      wCands.emplace_back(recoJets[iJ],recoJets[iJ2],iJ,iJ2,isW, topIn, fakeCategory);
+      addWCandidate(iJ,iJ2,recoJets,decays,wCands);
     }
   }
 }
@@ -256,11 +275,11 @@ WCandVars calculateWCandVars(const JetReader * jetReader, const std::vector<Reco
   vars.dphi        = TMath::Abs(PhysicsUtilities::deltaPhi(*j1,*j2));
   vars.charge      = 0;//vars.wPT == 0? 10 :  (jetReader->jetcharge_->at(j1->index())*j1->pt() + jetReader->jetcharge_->at(j2->index())*j2->pt())/(vars.wPT);
 
-  const double dRapJ2J1 = j2->p4().Rapidity() - j1->p4().Rapidity();
-  const double dPhiJ2J1 = PhysicsUtilities::deltaPhi(*j2,*j1);
-  const double dJ2J1Norm =   TMath::Sqrt(dRapJ2J1*dRapJ2J1 + dPhiJ2J1*dPhiJ2J1);
-  const double dJ2J1RapN = dRapJ2J1/dJ2J1Norm;
-  const double dJ2J1PhiN = dPhiJ2J1/dJ2J1Norm;
+//  const double dRapJ2J1 = j2->p4().Rapidity() - j1->p4().Rapidity();
+//  const double dPhiJ2J1 = PhysicsUtilities::deltaPhi(*j2,*j1);
+//  const double dJ2J1Norm =   TMath::Sqrt(dRapJ2J1*dRapJ2J1 + dPhiJ2J1*dPhiJ2J1);
+//  const double dJ2J1RapN = dRapJ2J1/dJ2J1Norm;
+//  const double dJ2J1PhiN = dPhiJ2J1/dJ2J1Norm;
 
 
 //  const double pull1N =  TMath::Sqrt(jetReader->jetpulleta_->at(j1->index())*jetReader->jetpulleta_->at(j1->index()) +jetReader->jetpullphi_->at(j1->index())*jetReader->jetpullphi_->at(j1->index()));
@@ -391,6 +410,36 @@ struct TCand {
   }
 };
 
+void addTCandidate(const unsigned int iW, const WCand& wCand, const unsigned int iJ, const std::vector<RecoJetF*>& recoJets, const std::vector<TopDecayEvent::DecayID>& decays, vector<TCand>& tCands){
+  int type = 2;
+  int topIndex = -1;
+  if(decays[iJ].topInd >= 0 ){
+    if(decays[iJ].topInd  ==  decays[wCand.ind1].topInd && decays[iJ].topInd  ==  decays[wCand.ind2].topInd ){
+      topIndex = decays[iJ].topInd;
+      if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B){
+        type = 1;
+      } else {
+        type = 0;
+      }
+    }
+  }
+  int fakeCategory = -1;
+  if(type == 2){
+    if(wCand.isW){
+      if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B) fakeCategory = 0; //w1b2;
+      else fakeCategory = 1; //wF;
+    } else if(decays[wCand.ind1].topInd == decays[wCand.ind2].topInd){
+      fakeCategory = 2; //w(bw)F
+    } else if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B){
+      if( decays[wCand.ind1].topInd ==  decays[iJ].topInd ) fakeCategory = 3; //w(wf)b
+      else if( decays[wCand.ind2].topInd ==  decays[iJ].topInd) fakeCategory = 3; //w(wf)b
+      else fakeCategory = 4; //w(ff)b;
+    }
+    else fakeCategory = 5; //w(ff)F
+  }
+  tCands.emplace_back(&wCand,recoJets[iJ],iW,iJ,type, topIndex, fakeCategory);
+}
+
 void getTCandidates(const WMVA& wMVA, const std::vector<RecoJetF*>& recoJets, const std::vector<TopDecayEvent::DecayID>& decays, const vector<WCand>& wCands,const vector<WCandVars>& wCandVars, vector<TCand>& tCands   ){
   tCands.clear();
   if(recoJets.size() < 3) return;
@@ -401,33 +450,7 @@ void getTCandidates(const WMVA& wMVA, const std::vector<RecoJetF*>& recoJets, co
     if(!wMVA.passMVA(wCandVars[iW].wPT,wCandVars[iW].mva)) continue;
     for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
       if(wCand.ind1 == int(iJ) || wCand.ind2 == int(iJ)  ) continue;
-      int type = 2;
-      int topIndex = -1;
-      if(decays[iJ].topInd >= 0 ){
-        if(decays[iJ].topInd  ==  decays[wCand.ind1].topInd && decays[iJ].topInd  ==  decays[wCand.ind2].topInd ){
-          topIndex = decays[iJ].topInd;
-          if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B){
-            type = 1;
-          } else {
-            type = 0;
-          }
-        }
-      }
-      int fakeCategory = -1;
-      if(type == 2){
-        if(wCand.isW){
-          if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B) fakeCategory = 0; //w1b2;
-          else fakeCategory = 1; //wF;
-        } else if(decays[wCand.ind1].topInd == decays[wCand.ind2].topInd){
-          fakeCategory = 2; //w(bw)F
-        } else if(decays[iJ].type == TopDecayEvent::DecayID::TOP_B){
-          if( decays[wCand.ind1].topInd ==  decays[iJ].topInd ) fakeCategory = 3; //w(wf)b
-          else if( decays[wCand.ind2].topInd ==  decays[iJ].topInd) fakeCategory = 3; //w(wf)b
-          else fakeCategory = 4; //w(ff)b;
-        }
-        else fakeCategory = 5; //w(ff)F
-      }
-      tCands.emplace_back(&wCand,recoJets[iJ],iW,iJ,type, topIndex, fakeCategory);
+      addTCandidate(iW,wCand,iJ,recoJets,decays,tCands);
     }
   }
 }
@@ -624,20 +647,18 @@ void pruneTopCandidates(const vector<TCand>& tCands,const vector<TCandVars>& tCa
   }
 }
 
-vector<pair<int,int>> getRankedTopPairs(const T_MVA& tMVA, const vector<TCand>& tCands,const vector<TCandVars>& tCandVars, const vector<RankedIndex>& rankedTops){
+vector<pair<int,int>> getRankedTopPairs(const T_MVA* tMVA, const vector<TCand>& tCands,const vector<TCandVars>& tCandVars, const vector<RankedIndex>& rankedTops){
   vector<pair<int,int>> rankedPairs;
   vector<RankedIndex> multiRanks;
 
   for(unsigned int iC = 0; iC < rankedTops.size();++iC){
   const auto& cand = tCands[rankedTops[iC].second];
   const auto& vars = tCandVars[rankedTops[iC].second];
-  bool goodT = tMVA.passMVA(vars.tPT, vars.mva);
-  if(!goodT) continue;
+  if(tMVA && !tMVA->passMVA(vars.tPT, vars.mva)) continue;
   for(unsigned int iC2 = iC + 1; iC2 < rankedTops.size(); ++iC2){
     const auto& cand2 = tCands[rankedTops[iC2].second];
     const auto& vars2 = tCandVars[rankedTops[iC2].second];
-    bool goodT2 = tMVA.passMVA(vars2.tPT, vars2.mva);
-    if(!goodT2) continue;
+    if(tMVA && !tMVA->passMVA(vars2.tPT, vars2.mva)) continue;
     if(!cand.exclJets(cand2)) continue;
     multiRanks.emplace_back(
         vars.mva + vars2.mva
@@ -704,8 +725,8 @@ struct CORRALData {
     reconstructedTop = false;
     top1 = 0;
     top2 = 0;
-    top1_disc = 0;
-    top2_disc = 0;
+    top1_disc = -1;
+    top2_disc = -1;
   }
 };
 
@@ -721,7 +742,7 @@ public:
     , tMVA(MVAPrefix +"T2tt_merged_tCand_disc.root","mva_0")
   {}
 
-  bool getTopPairs(const GenParticleReader * genParticleReader, JetReader * jetReader, const int nPV) {
+  bool getTopPairs(const GenParticleReader * genParticleReader, JetReader * jetReader, const int nPV, vector<RankedIndex> * prunedTops = 0 ) {
     data.reset();
     setup(genParticleReader,jetReader, data.recoJets,data.decays);
 
@@ -748,9 +769,16 @@ public:
       tMVA.mvaVal(data.tCandVars[iC]);
     }
 
-    vector<RankedIndex> prunedTops;
-    pruneTopCandidates(data.tCands,data.tCandVars,prunedTops,&tMVA);
-    data.rankedTPairs = getRankedTopPairs(tMVA,data.tCands,data.tCandVars,prunedTops);
+    if(prunedTops == 0){
+      prunedTops = new vector<RankedIndex>();
+      pruneTopCandidates(data.tCands,data.tCandVars,*prunedTops,&tMVA);
+      data.rankedTPairs = getRankedTopPairs(&tMVA,data.tCands,data.tCandVars,*prunedTops);
+      delete prunedTops;
+    } else{
+      prunedTops->clear();
+      pruneTopCandidates(data.tCands,data.tCandVars,*prunedTops,&tMVA);
+      data.rankedTPairs = getRankedTopPairs(&tMVA,data.tCands,data.tCandVars,*prunedTops);
+    }
 
     if(data.rankedTPairs.size()){
       data.reconstructedTop = true;
