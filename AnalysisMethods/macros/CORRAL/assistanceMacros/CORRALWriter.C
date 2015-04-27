@@ -13,7 +13,7 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
 
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -22,7 +22,7 @@ static TString MVAprefix;
 class Copier : public TreeCopierAllBranches {
 public:
 
-  CORRALReconstructor  corral;
+  CORRAL::CORRALReconstructor  corral;
 
   Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars * pars) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree,pars)
   ,corral(MVAprefix){};
@@ -32,19 +32,12 @@ public:
     load(EVTINFO);
     load(GENPARTICLES, GenParticleReader::FILLOBJ | GenParticleReader::LOADPARTONDECAY);
     load(PICKYJETS,JetReader::FILLOBJ | JetReader::LOADGEN | JetReader::LOADRECO | JetReader::LOADTOPASSOC | JetReader::LOADJETSHAPE );
-    load(ELECTRONS);
-    load(MUONS);
-    load(PFCANDS);
   }
-
-
 
   virtual bool fillEvent() {
     vector<RankedIndex> prunedTops;
-    corral.getTopPairs(&genParticleReader, defaultJets,nPV,&prunedTops);
-
-
-    CORRALData& corralData = corral.data;
+    corral.getTopPairs(&genParticleReader, &pickyJetReader,nPV,&prunedTops);
+    CORRAL::CORRALData& corralData = corral.data;
 
     for(const auto& pT : prunedTops){
       const auto& cand = corralData.tCands[pT.second];
@@ -83,10 +76,6 @@ public:
 
 void CORRALWriter(string fileName, string treeName = "TestAnalyzer/Events", string outPostfix ="corral", TString MVAprefix_ = "$CMSSW_BASE/src/data/CORRAL/") {
   BaseTreeAnalyzer::ConfigPars pars;
-  pars.cleanJetsvSelectedLeptons_ = false;
-  pars.defaultJetCollection = BaseTreeAnalyzer::PICKYJETS;
-  pars.minJetPt = 20;
-  pars.maxJetEta = 2.4;
 
   MVAprefix = MVAprefix_;
 
@@ -97,7 +86,7 @@ void CORRALWriter(string fileName, string treeName = "TestAnalyzer/Events", stri
   TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
 
 
-  Copier a(fileName,treeName,outName.Data(),true, &pars);
+  Copier a(fileName,treeName,outName.Data(),true, 0);
 
 
   clog << "Adding CORRAL to "<< a.getEntries() <<" events into file "<< outName << endl;

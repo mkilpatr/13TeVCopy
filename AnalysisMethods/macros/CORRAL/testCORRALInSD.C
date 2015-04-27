@@ -47,36 +47,31 @@ public:
 
   void runEvent(){
 
+    // -------------  Return corral info from the event
+    corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
+    CORRAL::CORRALData& data = *corralReader.corral;
+    // -------------
+
+    // -------------  preselection
     vector<RecoJetF*> ak4Jets;
     vector<RecoJetF*> ak4BJets;
     vector<RecoJetF*> ak4NonBJets;
     cleanJets(&ak4Reader,ak4Jets,&ak4BJets,&ak4NonBJets);
-
-    //presel
     if(ak4Jets.size() < 6) return;
     if(met->pt() < 200) return;
     int nTPICKY = 0;
     for(auto* j : bJets) if(isTightBJet(*j)) nTPICKY++;
     if(nTPICKY == 0) return;
     if(nVetoedLeptons + nVetoedTaus > 0) return;
-    corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
-    CORRAL::CORRALData& data = *corralReader.corral;
-
-    vector<pair<int,int> > newRankedPairs;
-    for(unsigned int iT = 0; iT < data.rankedTPairs.size(); ++iT){
-      if(data.tCandVars[data.rankedTPairs[iT].first].mva < 0) continue;
-      if(data.tCandVars[data.rankedTPairs[iT].second].mva < 0) continue;
-      newRankedPairs.push_back(data.rankedTPairs[iT]);
-    }
-    data.rankedTPairs = newRankedPairs;
+    // -------------
 
     eventPlots.rewind();
-
     eventPlots("ttbar__",process == defaults::TTBAR);
     eventPlots("znunu__",process == defaults::SINGLE_Z);
     eventPlots("ttz__",process == defaults::TTZ);
     eventPlots("",process == defaults::SIGNAL);
 
+    // -------------  Remove leptonic signal
     if(process == defaults::SIGNAL) {
       std::vector<RecoJetF*> recoJets;
       std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
@@ -90,11 +85,10 @@ public:
       }
 
       if(decision == false) return;
-
     }
+    // -------------
 
     ++eventPlots;
-
     eventPlots("met_geq200__",true);
     eventPlots("met_eq200to300__",met->pt() >= 200 && met->pt() < 300);
     eventPlots("met_eq300to400__",met->pt() >= 300 && met->pt() < 400);
@@ -104,10 +98,12 @@ public:
     eventPlots("nTopPairs_incl__",true);
     eventPlots("nTopPairs_geq1__",data.reconstructedTop == true);
 
-
+    // ------------- Plot info on the chosen top pair
     eventPlots.fill(data.top1_disc ,weight,"leadTopDisc",";Leading top disc.",100,-1,1);
     eventPlots.fill(data.top2_disc ,weight,"subleadTopDisc",";Sub-leading top disc.",100,-1,1);
-    eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4 ,weight,"topPairDisc",";top1 disc * top2 dic",100,0,1);
+    eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4 ,weight,"topTimesPairDisc",";top1 disc * top2 dic",100,0,1);
+    eventPlots.fill((data.top1_disc + data.top2_disc) / 2 ,weight,"topPairDisc",";top1 disc + top2 dic",100,-1,1);
+    // -------------
 
     double maxLead = -1;
     double maxSubLead = -1;
