@@ -15,10 +15,12 @@
 #include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Parang/interface/Polybook.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 
 using namespace std;
 using namespace ucsbsusy;
+using namespace CORRAL;
+using TopJetMatching::TopDecayEvent;
 
 static TString MVAprefix;
 
@@ -89,7 +91,7 @@ public:
       vector<RankedIndex> prunedTops;
       pruneTopCandidates(tCands,tCandVars,prunedTops,&tMVA);
 
-      vector<pair<int,int>> rankedPairs =  getRankedTopPairs(&tMVA,tCands,tCandVars,prunedTops);
+      vector<pair<int,int>> rankedPairs =  getRankedTopPairs(tCands,tCandVars,prunedTops);
 
       for(unsigned int iR = 0; iR < rankedPairs.size(); ++iR){
         if(tCands[rankedPairs[iR].first].type != 2 &&tCands[rankedPairs[iR].second].type != 2 ){

@@ -12,7 +12,7 @@
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -35,7 +35,7 @@ public:
 //    ParticleInfo::printGenInfo(genParticleReader.genParticles,-1);
     auto * jetReader = &pickyJetReader;
         std::vector<RecoJetF*> recoJets;
-        std::vector<TopDecayEvent::DecayID> decays;
+        std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
         if(!setup(&genParticleReader,jetReader, recoJets,decays)) return false;
 
     return true;

@@ -15,10 +15,13 @@
 #include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Parang/interface/Polybook.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 
 using namespace std;
 using namespace ucsbsusy;
+using namespace ucsbsusy;
+using namespace CORRAL;
+using TopJetMatching::TopDecayEvent;
 
 class Analyze : public BaseTreeAnalyzer{
 public:
@@ -242,17 +245,17 @@ public:
 //      eventPlots.fill(rankRealTops1.size() > 1 ? rankRealTops1[1] : 0   ,1,"exclTops12_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
 //    }
 
-    vector<pair<int,int>> rankedPairs =  getRankedTopPairs(&tMVA,tCands,tCandVars,prunedTops);
-
-    eventPlots.fill(rankedPairs.size()  ,1,"nExclPairs"  ,";# of exclusive pairs",200,-.5,199.5,prefix);
-    int realRank = 0;
-    for(unsigned int iR = 0; iR < rankedPairs.size(); ++iR){
-      if(tCands[rankedPairs[iR].first].type != 2 &&tCands[rankedPairs[iR].second].type != 2 ){
-        realRank = iR + 1;
-        break;
-      }
-    }
-    eventPlots.fill(realRank  ,1,"realPairRanlk"  ,";rank of real top pair",200,-.5,199.5,prefix);
+//    vector<pair<int,int>> rankedPairs =  getRankedTopPairs(&tMVA,tCands,tCandVars,prunedTops);
+//
+//    eventPlots.fill(rankedPairs.size()  ,1,"nExclPairs"  ,";# of exclusive pairs",200,-.5,199.5,prefix);
+//    int realRank = 0;
+//    for(unsigned int iR = 0; iR < rankedPairs.size(); ++iR){
+//      if(tCands[rankedPairs[iR].first].type != 2 &&tCands[rankedPairs[iR].second].type != 2 ){
+//        realRank = iR + 1;
+//        break;
+//      }
+//    }
+//    eventPlots.fill(realRank  ,1,"realPairRanlk"  ,";rank of real top pair",200,-.5,199.5,prefix);
 
 
 
