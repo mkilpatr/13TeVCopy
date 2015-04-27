@@ -15,7 +15,7 @@
 #include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Parang/interface/Polybook.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 #include "AnalysisTools/KinematicVariables/interface/Mt2Helper.h"
 #include "AnalysisTools/KinematicVariables/interface/CreatePseudoJets.h"
 
@@ -28,9 +28,7 @@ public:
   PlotterD*                       plotter;
   Polybook                        eventPlots;
   TString                         prefix;
-  CORRALReconstructor  corral;
   Analyze(TString fname, string treeName, bool isMCTree, ConfigPars* pars) : BaseTreeAnalyzer(fname,treeName, isMCTree,pars), plotter (new PlotterD(3)), eventPlots(plotter)
-  ,corral()
   {
   };
 
@@ -61,10 +59,9 @@ public:
     for(auto* j : bJets) if(isTightBJet(*j)) nTPICKY++;
     if(nTPICKY == 0) return;
     if(nVetoedLeptons + nVetoedTaus > 0) return;
+    corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
+    CORRAL::CORRALData& data = *corralReader.corral;
 
-
-    CORRALData data;
-    fillCORRALData(&data,&corralReader,&genParticleReader,&pickyJetReader,nPV);
     vector<pair<int,int> > newRankedPairs;
     for(unsigned int iT = 0; iT < data.rankedTPairs.size(); ++iT){
       if(data.tCandVars[data.rankedTPairs[iT].first].mva < 0) continue;
@@ -82,8 +79,8 @@ public:
 
     if(process == defaults::SIGNAL) {
       std::vector<RecoJetF*> recoJets;
-      std::vector<TopDecayEvent::DecayID> decays;
-      TopJetMatching::TopDecayEvent* topDecayEvent = associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
+      std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
+      TopJetMatching::TopDecayEvent* topDecayEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
       bool decision = true;
 
       //filter
