@@ -12,12 +12,15 @@ public:
   WMVA  wMVA;
 
 
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree) : TreeCopierManualBranches(fileName,treeName,outFileName,isMCTree)
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, bool onlyGoodTops_) : TreeCopierManualBranches(fileName,treeName,outFileName,isMCTree)
   , wJetLikliMVA("T2tt_merged_wJetLikli_disc.root","mva_0")
   , wMVA("T2tt_merged_wCand_disc.root","mva_0")
+  , onlyGoodTops(onlyGoodTops_)
 
   {};
   virtual ~Copier() {};
+
+   bool onlyGoodTops;
 
   void loadVariables(){
     load(EVTINFO);
@@ -48,6 +51,19 @@ public:
     std::vector<TopDecayEvent::DecayID> decays;
     if(!setup(&genParticleReader,jetReader, recoJets,decays)) return false;
 
+
+    if(onlyGoodTops){
+      std::vector<RecoJetF*> newRecoJets;
+      std::vector<TopDecayEvent::DecayID> newDecays;
+      for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
+        if(decays[iJ].type < TopDecayEvent::DecayID::TOP_B ) continue;
+        newRecoJets.push_back(recoJets[iJ]);
+        newDecays.push_back(decays[iJ]);
+      }
+      recoJets = newRecoJets;
+      decays = newDecays;
+    }
+
     vector<jetCandVars> jetVars(recoJets.size());
     for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
       jetVars[iJ] = calculateJetCandVars(nPV,jetReader,recoJets[iJ]);
@@ -56,6 +72,18 @@ public:
 
     vector<WCand> wCands;
     getWCandidates(recoJets,decays,wCands);
+//    if(onlyGoodTops){
+//      vector<WCand> newWCands;
+//      for(unsigned int iC = 0; iC < wCands.size(); ++iC){
+//        if(!wCands[iC].isW ) continue;
+//        newWCands.push_back(wCands[iC]);
+//      }
+//      wCands.clear();
+//      for(unsigned int iC = 0; iC < newWCands.size(); ++iC){
+//        wCands.push_back(newWCands[iC]);
+//      }
+//    }
+
     vector<WCandVars> wCandVars(wCands.size());
     for(unsigned int iC = 0; iC < wCands.size(); ++iC){
       wCandVars[iC] = calculateWCandVars(jetReader,recoJets,jetVars,wCands[iC]);
@@ -64,6 +92,17 @@ public:
 
     vector<TCand> tCands;
     getTCandidates(wMVA,recoJets,decays,wCands,wCandVars, tCands);
+    if(onlyGoodTops){
+      vector<TCand> newTCands;
+      for(unsigned int iC = 0; iC < tCands.size(); ++iC){
+        if(tCands[iC].type != 1 ) continue;
+        newTCands.push_back(tCands[iC]);
+      }
+      tCands.clear();
+      for(unsigned int iC = 0; iC < newTCands.size(); ++iC){
+        tCands.push_back(newTCands[iC]);
+      }
+    }
     vector<TCandVars> tCandVars(tCands.size());
     for(unsigned int iC = 0; iC < tCands.size(); ++iC){
       tCandVars[iC] = calculateTCandVars(jetReader,recoJets,wCands,jetVars,wCandVars,tCands[iC]);
@@ -73,7 +112,6 @@ public:
     for(unsigned int iC = 0; iC < tCands.size(); ++iC){
       if(tCands[iC].type == 0) continue;
       auto& vars = tCandVars[iC];
-
       data.fill<float>(tPT          ,float(vars.tPT)            );
       data.fill<float>(wPT          ,float(vars.wPT)            );
       data.fill<float>(tMass        ,min(float(500),vars.tMass) );
@@ -156,7 +194,7 @@ public:
 
 
 
-void flattenTTree(string fileName = "evttree.root", string treeName = "TestAnalyzer/Events", string outFileName ="newTree.root", bool isMCTree = true) {
-  Copier a(fileName,treeName,outFileName,isMCTree);
-  a.analyze();
+void flattenTTree(string fileName = "evttree.root", string treeName = "TestAnalyzer/Events", string outFileName ="newTree.root", bool isMCTree = true, bool onlyGoodTops = false) {
+  Copier a(fileName,treeName,outFileName,isMCTree,onlyGoodTops);
+  a.analyze(10000);
 }
