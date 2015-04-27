@@ -15,9 +15,11 @@
 #include "AnalysisTools/Parang/interface/Plotter.h"
 #include "AnalysisTools/Parang/interface/Polybook.h"
 #include "AnalysisTools/Parang/interface/Panvariate.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 using namespace std;
 using namespace ucsbsusy;
+using namespace CORRAL;
+using TopJetMatching::TopDecayEvent;
 
 class Analyze : public BaseTreeAnalyzer{
 public:

@@ -21,11 +21,12 @@
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
+#include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 
 namespace ucsbsusy {
 class BaseTreeAnalyzer {
 public:
-  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES};
+  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES, CORRAL};
   enum TauVetoPresel {MT, DPHI};
   //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
@@ -188,6 +189,7 @@ public:
     TauReader         tauReader             ;
     PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
+    CORRALReader      corralReader     ;
 
   public:
     //--------------------------------------------------------------------------------------------------

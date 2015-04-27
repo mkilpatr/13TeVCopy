@@ -2,9 +2,11 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/Utilities/interface/TopJetMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "CORRALHelper.h"
+#include "ObjectProducers/TopTagging/interface/CORRAL.h"
 using namespace std;
 using namespace ucsbsusy;
+using namespace CORRAL;
+using TopJetMatching::TopDecayEvent;
 
 class Copier : public TreeCopierManualBranches {
 public:

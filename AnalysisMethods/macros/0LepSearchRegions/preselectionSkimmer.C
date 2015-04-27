@@ -18,12 +18,7 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  ParamatrixMVA* paramRec;
-  bool jetNoLep;
   Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars * pars) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree,pars) {
-    TFile* recoFile = TFile::Open("/uscms/home/mullin/nobackup/stuff2015/quarkGluonTagger/QGDisc_reco_ak4.root", "READ");
-    paramRec = dynamic_cast<ParamatrixMVA*>(recoFile->Get("QG_0"));
-    delete recoFile;
   };
   virtual ~Copier() {};
 
@@ -31,21 +26,10 @@ public:
     load(EVTINFO);
     load(AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
     load(PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(ELECTRONS);
+    load(MUONS);
+    load(PFCANDS);
   }
-
-  double getRecoMVA(const RecoJetF& jet, const JetReader * reader){
-    const Panvariate* recoMVA = paramRec->get(jet.pt(),TMath::Abs(jet.eta()));
-    if(!recoMVA) return -1;
-    static const int reco_ak4pfchs_jet_ptD     = recoMVA->findVariable("ak4pfchs_jet_ptD"    );
-    static const int reco_ak4pfchs_jet_axis1   = recoMVA->findVariable("ak4pfchs_jet_axis1"  );
-    static const int reco_ak4pfchs_jet_axis2   = recoMVA->findVariable("ak4pfchs_jet_axis2"  );
-    static const int reco_ak4pfchs_jet_jetMult = recoMVA->findVariable("ak4pfchs_jet_jetMult");
-    recoMVA->setVariable(reco_ak4pfchs_jet_ptD    ,reader->jetptD_->at(jet.index())  );
-    recoMVA->setVariable(reco_ak4pfchs_jet_axis1  ,reader->jetaxis1_->at(jet.index()));
-    recoMVA->setVariable(reco_ak4pfchs_jet_axis2  ,reader->jetaxis2_->at(jet.index()));
-    recoMVA->setVariable(reco_ak4pfchs_jet_jetMult,reader->jetMult_->at(jet.index()));
-    return recoMVA->evaluateMethod(0);
-  } //
 
   virtual bool fillEvent() {
 
@@ -69,11 +53,8 @@ public:
     //5 jet requirement
     if(nJets < 4 && pickyJets.size() < 4) return false;
 
-    //replace old qgl with new one
-    for(unsigned int iJ = 0; iJ < ak4Reader.recoJets.size(); ++iJ){
-      const auto& j =  ak4Reader.recoJets[iJ];
-      ak4Reader.jetqgl_->at(j.index()) = getRecoMVA(j,&ak4Reader);
-    }
+    //no leptons
+    if(nVetoedLeptons + nVetoedTaus > 0) return false;
 
     return true;
   }
@@ -104,7 +85,6 @@ public:
 void preselectionSkimmer(string fileName, string processName, double crossSection, double lumi = 4, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
   BaseTreeAnalyzer::ConfigPars pars;
   pars.cleanJetsvSelectedLeptons_ = false;
-  pars.leptonSelection = BaseTreeAnalyzer::SEL_0_LEP;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
 
   //get the output name
