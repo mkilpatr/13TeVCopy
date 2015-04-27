@@ -15,7 +15,14 @@
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 
+namespace CORRAL{
+  class CORRALData;
+}
+
 namespace ucsbsusy {
+
+class GenParticleReader;
+class JetReader;
 
 class CORRALReader : public BaseReader {
 public :
@@ -25,7 +32,7 @@ public :
   static const int defaultOptions;
 
   CORRALReader();
-  ~CORRALReader() {}
+  ~CORRALReader();
 
   void load(TreeReader *treeReader, int options, std::string branchName);
   void refresh();
@@ -37,7 +44,12 @@ public:
   std::vector<float>* wmva    ;
   std::vector<float>* tmva    ;
 
+  //CORRAL data that can be used;
+  //must manually run getCORRALData
+  CORRAL::CORRALData * corral;
+
   int transformIndex(int inIndex, const std::vector<RecoJetF*>& recoJets, bool forceMatch = false) const;
+  void getCORRALData(const GenParticleReader * genParticleReader, JetReader * jetReader, const int nPV) const;
 };
 
 }
