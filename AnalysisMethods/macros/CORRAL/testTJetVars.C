@@ -199,50 +199,50 @@ public:
     for(unsigned int iT = 0; iT < realRanks.size(); ++iT)
       eventPlots.fill(realRanks[iT]      ,1,"all_realRank"  ,";rank of real ts",100,-.5,99.5,prefix);
 
-    vector<RankedIndex> exclTops1 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,0,prunedTops);
-    vector<RankedIndex> exclTops2 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,1,prunedTops);
-    vector<RankedIndex> exclTops3 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,2,prunedTops);
+//    vector<RankedIndex> exclTops1 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,0,prunedTops);
+//    vector<RankedIndex> exclTops2 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,1,prunedTops);
+//    vector<RankedIndex> exclTops3 = getExclusiveTopCandidates(tMVA,tCands,tCandVars,2,prunedTops);
+//
+//
+//    eventPlots.fill(exclTops1.size()  ,1,"exclTops1_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(exclTops2.size()  ,1,"exclTops2_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(exclTops3.size()  ,1,"exclTops3_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
+//
+//    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
+//      eventPlots.fill(exclTops3.size()  ,1,"exclTops12_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
+//    } else {
+//      eventPlots.fill(exclTops1.size()  ,1,"exclTops12_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
+//    }
+//
+//
+//    vector<int> rankRealTops1;
+//    vector<int> rankRealTops2;
+//    vector<int> rankRealTops3;
+//
+//    getRealStats(tCands,exclTops1,rankRealTops1);
+//    getRealStats(tCands,exclTops2,rankRealTops2);
+//    getRealStats(tCands,exclTops3,rankRealTops3);
+//
+//    eventPlots.fill(rankRealTops1.size()  ,1,"exclTops1_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(rankRealTops2.size()  ,1,"exclTops2_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(rankRealTops3.size()  ,1,"exclTops3_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
+//    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
+//      eventPlots.fill(rankRealTops3.size()  ,1,"exclTops12_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
+//    } else {
+//      eventPlots.fill(rankRealTops1.size()  ,1,"exclTops12_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
+//    }
+//
+//    eventPlots.fill(rankRealTops1.size() > 1 ? rankRealTops1[1] : 0   ,1,"exclTops1_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(rankRealTops2.size() > 1 ? rankRealTops2[1] : 0   ,1,"exclTops2_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
+//    eventPlots.fill(rankRealTops3.size() > 1 ? rankRealTops3[1] : 0   ,1,"exclTops3_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
+//
+//    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
+//      eventPlots.fill(rankRealTops3.size() > 1 ? rankRealTops3[1] : 0   ,1,"exclTops12_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
+//    } else {
+//      eventPlots.fill(rankRealTops1.size() > 1 ? rankRealTops1[1] : 0   ,1,"exclTops12_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
+//    }
 
-
-    eventPlots.fill(exclTops1.size()  ,1,"exclTops1_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(exclTops2.size()  ,1,"exclTops2_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(exclTops3.size()  ,1,"exclTops3_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
-
-    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
-      eventPlots.fill(exclTops3.size()  ,1,"exclTops12_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
-    } else {
-      eventPlots.fill(exclTops1.size()  ,1,"exclTops12_nexcl"  ,";number of exclusive ts",100,-.5,99.5,prefix);
-    }
-
-
-    vector<int> rankRealTops1;
-    vector<int> rankRealTops2;
-    vector<int> rankRealTops3;
-
-    getRealStats(tCands,exclTops1,rankRealTops1);
-    getRealStats(tCands,exclTops2,rankRealTops2);
-    getRealStats(tCands,exclTops3,rankRealTops3);
-
-    eventPlots.fill(rankRealTops1.size()  ,1,"exclTops1_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(rankRealTops2.size()  ,1,"exclTops2_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(rankRealTops3.size()  ,1,"exclTops3_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
-    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
-      eventPlots.fill(rankRealTops3.size()  ,1,"exclTops12_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
-    } else {
-      eventPlots.fill(rankRealTops1.size()  ,1,"exclTops12_nreal"  ,";number of real exclusive ts",100,-.5,99.5,prefix);
-    }
-
-    eventPlots.fill(rankRealTops1.size() > 1 ? rankRealTops1[1] : 0   ,1,"exclTops1_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(rankRealTops2.size() > 1 ? rankRealTops2[1] : 0   ,1,"exclTops2_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
-    eventPlots.fill(rankRealTops3.size() > 1 ? rankRealTops3[1] : 0   ,1,"exclTops3_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
-
-    if(exclTops1.size() < 2 && exclTops3.size() >= 2){
-      eventPlots.fill(rankRealTops3.size() > 1 ? rankRealTops3[1] : 0   ,1,"exclTops12_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
-    } else {
-      eventPlots.fill(rankRealTops1.size() > 1 ? rankRealTops1[1] : 0   ,1,"exclTops12_realsubrank"  ,";subleading rank of real exclusive ts",100,-.5,99.5,prefix);
-    }
-
-    vector<pair<int,int>> rankedPairs =  getRankedTopPairs(tMVA,tCands,tCandVars,prunedTops);
+    vector<pair<int,int>> rankedPairs =  getRankedTopPairs(&tMVA,tCands,tCandVars,prunedTops);
 
     eventPlots.fill(rankedPairs.size()  ,1,"nExclPairs"  ,";# of exclusive pairs",200,-.5,199.5,prefix);
     int realRank = 0;

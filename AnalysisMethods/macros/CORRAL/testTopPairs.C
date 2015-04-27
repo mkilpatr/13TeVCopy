@@ -89,7 +89,7 @@ public:
       vector<RankedIndex> prunedTops;
       pruneTopCandidates(tCands,tCandVars,prunedTops,&tMVA);
 
-      vector<pair<int,int>> rankedPairs =  getRankedTopPairs(tMVA,tCands,tCandVars,prunedTops);
+      vector<pair<int,int>> rankedPairs =  getRankedTopPairs(&tMVA,tCands,tCandVars,prunedTops);
 
       for(unsigned int iR = 0; iR < rankedPairs.size(); ++iR){
         if(tCands[rankedPairs[iR].first].type != 2 &&tCands[rankedPairs[iR].second].type != 2 ){
@@ -158,8 +158,14 @@ public:
           double transMVA1 = (var1.mva +1)/2;
           double transMVA2 = (var2.mva +1)/2;
 
-          eventPlots.fill(transMVA1 + transMVA2,1,"mva1p2",";MVA(t1+t2)",100,0,2,prefix);
+          eventPlots.fill((transMVA1 + transMVA2)/2,1,"mva1p2",";MVA(t1+t2)",100,0,1,prefix);
           eventPlots.fill(transMVA1 * transMVA2,1,"mva1t2",";MVA(t1 x t2)",100,0,1,prefix);
+
+          eventPlots.fill(transMVA1 * transMVA2,1,"mva1t2",";MVA(t1 x t2)",100,0,1,prefix);
+
+          eventPlots.fill(((var1.mva +1)*(var2.mva +1) + (1-var1.mva)*(1-var2.mva)) == 0 ? 0 : (var1.mva +1)*(var2.mva +1)/((var1.mva +1)*(var2.mva +1) + (1-var1.mva)*(1-var2.mva)) ,"mval",";mval",100,0,1,prefix);
+
+          eventPlots.fill(var1.mva,var2.mva  ,1,"top1mva_top2mva"  ,";top1 mva;top2 mva",100,-1,1,100,-1,1,prefix);
         }
 
       }
