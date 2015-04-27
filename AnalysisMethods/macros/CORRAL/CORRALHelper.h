@@ -640,7 +640,8 @@ vector<pair<int,int>> getRankedTopPairs(const T_MVA& tMVA, const vector<TCand>& 
     if(!goodT2) continue;
     if(!cand.exclJets(cand2)) continue;
     multiRanks.emplace_back(
-        (vars2.mva + 1)*( vars.mva + 1)/4
+        vars.mva + vars2.mva
+        //        (vars2.mva + 1)*( vars.mva + 1)/4
         ,rankedPairs.size());
     rankedPairs.emplace_back(rankedTops[iC].second,rankedTops[iC2].second);
   }
