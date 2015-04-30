@@ -51,6 +51,12 @@ public:
     , qgl1              (-1)
     , qglprod           (-1)
     , qglprodNorm       (-1)
+    , qglprod30         (-1)
+    , qglprodNorm30     (-1)
+    , qglsum            (-1)
+    , qglsumNorm        (-1)
+    , qglsum30          (-1)
+    , qglsumNorm30      (-1)
     , qglJ0             (-1)
     , qglJ1             (-1)
     , qglCVS0           (-1)
@@ -59,6 +65,12 @@ public:
     , qgl1noB           (-1)
     , qglprodnoB        (-1)
     , qglprodNormnoB    (-1)
+    , qglprodnoB30      (-1)
+    , qglprodNormnoB30  (-1)
+    , qglsumnoB         (-1)
+    , qglsumNormnoB     (-1)
+    , qglsumnoB30       (-1)
+    , qglsumNormnoB30   (-1)
     , qglJ0noB          (-1)
     , qglJ1noB          (-1)
     , ht                (-1)
@@ -126,6 +138,12 @@ public:
     qgl1              = -1;
     qglprod           =  1;
     qglprodNorm       =  1;
+    qglprod30         =  1;
+    qglprodNorm30     =  1;
+    qglsum            =  0;
+    qglsumNorm        =  0;
+    qglsum30          =  0;
+    qglsumNorm30      =  0;
     qglJ0             = -1;
     qglJ1             = -1;
     qglCVS0           = -1;
@@ -134,6 +152,12 @@ public:
     qgl1noB           = -1;
     qglprodnoB        =  1;
     qglprodNormnoB    =  1;
+    qglprodnoB30      =  1;
+    qglprodNormnoB30  =  1;
+    qglsumnoB         =  0;
+    qglsumNormnoB     =  0;
+    qglsumnoB30       =  0;
+    qglsumNormnoB30   =  0;
     qglJ0noB          = -1;
     qglJ1noB          = -1;
     ht                =  0;
@@ -164,35 +188,55 @@ public:
     npv   = analyzer->nPV;
 
     // AK4 jets are always used for met/jet correlations, trigger requirements, and QGTaggingvector<RecoJetF*> jetsCSV;
-    int nNonBak4 = 0;
+    int nak4         = 0; // need to count the number of jets where the liklihood could be calculated
+    int nak4pt30     = 0; // count valid jets with pt>30
+    int nNonBak4     = 0;
+    int nNonBak4pt30 = 0;
     for(unsigned int iJ = 0; iJ < inAK4Jets.size(); ++iJ){
       const auto& j = *inAK4Jets[iJ];
       if(j.pt() >= 60 ) nj60++;
       // qgl stuff
-      double tempqgl = ak4JetReader->jetqgl_->at(j.index()); // already in [0,1]
-      double qgl = std::max( .01, double(tempqgl) ); // make sure qglprod isn't zeroed out
+      double tempqgl = ak4JetReader->jetqgl_->at(j.index()); // in [0,1]
+      if (tempqgl<0) continue; // skip any jets where the liklihood couldn't be calculated
+      double qgltrans = (tempqgl+1) / 2; // transform [0,1] -> [0.5,1]
+      double qgl      = std::max( .01, double(tempqgl)      ); // make sure qglprod isn't zeroed out
       // with bjet
-      qglprod *= qgl;
+      qglprod *= qgltrans;
+      qglsum  += qgl;
       if      (qgl > qgl0) { qgl1 = qgl0; qgl0 = qgl; }
       else if (qgl > qgl1) { qgl1 = qgl;              }
-      if (iJ==0) qglJ0 = qgl;
-      if (iJ==1) qglJ1 = qgl;
+      if (nak4==0) qglJ0 = qgl;
+      if (nak4==1) qglJ1 = qgl;
+      ++nak4;
+      if (j.pt()>30) {
+        qglprod30 *= qgltrans;
+        qglsum30  += qgl;
+        ++nak4pt30;
+      } // j.pt()>30
       // without bjets"
       if(analyzer->isLooseBJet(j)) continue;
-      qglprodnoB *= qgl;
+      qglprodnoB *= qgltrans;
+      qglsumnoB  += qgl;
       if      (qgl > qgl0noB) { qgl1noB = qgl0noB; qgl0noB = qgl; }
       else if (qgl > qgl1noB) { qgl1noB = qgl;                    }
       if (nNonBak4==0) qglJ0noB = qgl;
       if (nNonBak4==1) qglJ1noB = qgl;
       ++nNonBak4;
+      if (j.pt()>30) {
+        qglprodnoB30 *= qgltrans;
+        qglsumnoB30  += qgl;
+        ++nNonBak4pt30;
+      } // j.pt()>30
     } // iJ in ak4jets
-    if (qgl0>0)    qgl0    = TMath::Log(qgl0);
-    if (qgl1>0)    qgl1    = TMath::Log(qgl1);
-    if (qgl0noB>0) qgl0noB = TMath::Log(qgl0noB);
-    if (qgl1noB>0) qgl1noB = TMath::Log(qgl1noB);
     //qglprod    = TMath::Log(qglprod);
-    qglprodNorm    = qglprod    / inAK4Jets.size();
-    qglprodNormnoB = qglprodnoB / nNonBak4;
+    if(nak4        >0) qglprodNorm      = qglprod      / nak4;         else qglprodNorm      = -1;
+    if(nNonBak4    >0) qglprodNormnoB   = qglprodnoB   / nNonBak4;     else qglprodNormnoB   = -1;
+    if(nak4pt30    >0) qglprodNorm30    = qglprod30    / nak4pt30;     else qglprodNorm30    = -1;
+    if(nNonBak4pt30>0) qglprodNormnoB30 = qglprodnoB30 / nNonBak4pt30; else qglprodNormnoB30 = -1;
+    if(nak4        >0) qglsumNorm       = qglsum       / nak4;         else qglsumNorm       = -1;
+    if(nNonBak4    >0) qglsumNormnoB    = qglsumnoB    / nNonBak4;     else qglsumNormnoB    = -1;
+    if(nak4pt30    >0) qglsumNorm30     = qglsum30     / nak4pt30;     else qglsumNorm30     = -1;
+    if(nNonBak4pt30>0) qglsumNormnoB30  = qglsumnoB30  / nNonBak4pt30; else qglsumNormnoB30  = -1;
     // for highest 2 CVS jets
     vector<RecoJetF*> jetsCSVak4;
     rankedByCSV(inAK4Jets,jetsCSVak4);
@@ -314,20 +358,32 @@ public:
   float mtB01MET;      // new
   float sSumB01oMET;   // new
   float vSumB01oMET;   // new
-  float qgl0;           // QGL
-  float qgl1;           // QGL
-  float qglprod;        // QGL
-  float qglprodNorm;    // QGL
-  float qglJ0;          // QGL
-  float qglJ1;          // QGL
-  float qglCVS0;        // QGL
-  float qglCVS1;        // QGL
-  float qgl0noB;        // QGL
-  float qgl1noB;        // QGL
-  float qglprodnoB;     // QGL
-  float qglprodNormnoB; // QGL
-  float qglJ0noB;       // QGL
-  float qglJ1noB;       // QGL
+  float qgl0;             // QGL
+  float qgl1;             // QGL
+  float qglprod;          // QGL
+  float qglprodNorm;      // QGL
+  float qglprod30;        // QGL jet pt>30
+  float qglprodNorm30;    // QGL jet pt>30
+  float qglsum;           // QGL 2
+  float qglsumNorm;       // QGL 2
+  float qglsum30;         // QGL 2 jet pt>30
+  float qglsumNorm30;     // QGL 2 jet pt>30
+  float qglJ0;            // QGL
+  float qglJ1;            // QGL
+  float qglCVS0;          // QGL
+  float qglCVS1;          // QGL
+  float qgl0noB;          // QGL
+  float qgl1noB;          // QGL
+  float qglprodnoB;       // QGL
+  float qglprodNormnoB;   // QGL
+  float qglprodnoB30;     // QGL jet pt>30
+  float qglprodNormnoB30; // QGL jet pt>30
+  float qglsumnoB;        // QGL 2
+  float qglsumNormnoB;    // QGL 2
+  float qglsumnoB30;      // QGL 2 jet pt>30
+  float qglsumNormnoB30;  // QGL 2 jet pt>30
+  float qglJ0noB;         // QGL
+  float qglJ1noB;         // QGL
   float ht;
   float htAlongAway20;
   float htAlongAway40;  // new
