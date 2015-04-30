@@ -215,11 +215,11 @@ bool BaseTreeAnalyzer::isLooseBJet(const RecoJetF& jet) const {
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isSelElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minSelEPt && fabs(electron.scEta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
+  return (electron.pt() > config.minSelEPt && fabs(electron.eta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minVetoEPt && fabs(electron.scEta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
+  return (electron.pt() > config.minVetoEPt && fabs(electron.eta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isSelMuon(const MuonF& muon) const {

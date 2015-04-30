@@ -63,6 +63,8 @@ class Analyzer : public BaseTreeAnalyzer {
   float mT;
   int lepton_pdgid;
   float lepton_pt;
+  float lepton_eta;
+  float lepton_phi;
 
   void runEvent();
 
@@ -83,13 +85,15 @@ void Analyzer::runEvent()
 
   // fill tree variables
   MET = met->pt();
-  HT = JetKinematics::ht(jets,30,2.4);
+  HT  = JetKinematics::ht(jets,30,2.4);
 
   LeptonF* lep = selectedLeptons.at(0);
   mT = JetKinematics::transverseMass(*lep, *met);
 
   lepton_pdgid = lep->pdgid();
   lepton_pt    = lep->pt();
+  lepton_eta   = lep->eta();
+  lepton_phi   = lep->phi();
 
   outtree->Fill();
 
