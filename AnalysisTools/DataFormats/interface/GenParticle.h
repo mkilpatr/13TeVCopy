@@ -93,6 +93,7 @@ public:
   const Type* operator->() const {return  ptr;}
   const Type& operator* () const {return *ptr;}
   unsigned int key() const {return idx;}
+  bool isNull() const {return ptr == 0;}
 
 private:
   const Type * ptr;

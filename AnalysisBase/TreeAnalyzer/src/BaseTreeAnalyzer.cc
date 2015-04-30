@@ -95,6 +95,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
       break;
     }
+    case CORRAL : {
+      int defaultOptions = CORRALReader::defaultOptions;
+      reader.load(&corralReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CORRAL : branchName );
+      break;
+    }
     default : {
       cout << endl << "No settings for type: " << type << " found!" << endl;
       break;
