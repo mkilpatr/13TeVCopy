@@ -23,9 +23,9 @@ struct a {
 const BaseTreeAnalyzer * a::analyzer = 0;
 
 
-class VariableCalculator{
+class VariableCalculator0L{
 public:
-  VariableCalculator() :
+  VariableCalculator0L() :
     //passPresel        ( 0)
       ptMet             (-1)
     , npv               (-1)
@@ -407,10 +407,10 @@ public:
   float dPhivHtMETnoB;     // new2
   float dotHtAlongAway;    // new2
   float dotHtAlongAwayNoB; // new2
-}; // VariableCalculator
+}; // VariableCalculator0L
 
 
-void VariableCalculator::rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets) {
+void VariableCalculator0L::rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets) {
   outJets.clear();
   outJets.resize(inJets.size());
   vector<pair<double,int> > rankedJets(inJets.size());

@@ -9,7 +9,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 //#include "AnalysisTools/KinematicVariables/interface/Topness.h"
 //#include "AnalysisTools/TreeReader/interface/ElectronReader.h"
-#include "AnalysisMethods/macros/0LepSearchRegions/cncVariables.h"
+#include "AnalysisMethods/macros/0LepSearchRegions/variableCalculator0L.h"
 
 
 using namespace ucsbsusy;
@@ -17,7 +17,7 @@ using namespace ucsbsusy;
 class Analyzer : public BaseTreeAnalyzer {
 
   public :
-  VariableCalculator vars;
+  VariableCalculator0L vars;
 
   Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sample, TString outputdir)
           : BaseTreeAnalyzer(fileName, treeName, isMCTree, pars)
@@ -382,7 +382,8 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
 
   // Adjustments to default configuration
   BaseTreeAnalyzer::ConfigPars pars;
-  pars.defaultJetCollection       = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
+  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
+  pars.minJetPt = 30; // tempory to see if things improve
   //pars.cleanJetsvSelectedLeptons_ = true;
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
