@@ -64,6 +64,29 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "qgl0"             , &vars.qgl0             ,             "qgl0/F" );
     outtree->Branch( "qgl1"             , &vars.qgl1             ,             "qgl1/F" );
     outtree->Branch( "qglprod"          , &vars.qglprod          ,          "qglprod/F" );
+    outtree->Branch( "qglprodNorm"      , &vars.qglprodNorm      ,      "qglprodNorm/F" );
+    outtree->Branch( "qglprod30"        , &vars.qglprod30        ,        "qglprod30/F" );
+    outtree->Branch( "qglprodNorm30"    , &vars.qglprodNorm30    ,    "qglprodNorm30/F" );
+    outtree->Branch( "qglsum"           , &vars.qglsum           ,           "qglsum/F" );
+    outtree->Branch( "qglsumNorm"       , &vars.qglsumNorm       ,       "qglsumNorm/F" );
+    outtree->Branch( "qglsum30"         , &vars.qglsum30         ,         "qglsum30/F" );
+    outtree->Branch( "qglsumNorm30"     , &vars.qglsumNorm30     ,     "qglsumNorm30/F" );
+    outtree->Branch( "qglJ0"            , &vars.qglJ0            ,            "qglJ0/F" );
+    outtree->Branch( "qglJ1"            , &vars.qglJ1            ,            "qglJ1/F" );
+    outtree->Branch( "qglCVS0"          , &vars.qglCVS0          ,          "qglCVS0/F" );
+    outtree->Branch( "qglCVS1"          , &vars.qglCVS1          ,          "qglCVS1/F" );
+    outtree->Branch( "qgl0noB"          , &vars.qgl0noB          ,          "qgl0noB/F" );
+    outtree->Branch( "qgl1noB"          , &vars.qgl1noB          ,          "qgl1noB/F" );
+    outtree->Branch( "qglprodnoB"       , &vars.qglprodnoB       ,       "qglprodnoB/F" );
+    outtree->Branch( "qglprodNormnoB"   , &vars.qglprodNormnoB   ,   "qglprodNormnoB/F" );
+    outtree->Branch( "qglprodnoB30"     , &vars.qglprodnoB30     ,     "qglprodnoB30/F" );
+    outtree->Branch( "qglprodNormnoB30" , &vars.qglprodNormnoB30 , "qglprodNormnoB30/F" );
+    outtree->Branch( "qglsumnoB"        , &vars.qglsumnoB        ,        "qglsumnoB/F" );
+    outtree->Branch( "qglsumNormnoB"    , &vars.qglsumNormnoB    ,    "qglsumNormnoB/F" );
+    outtree->Branch( "qglsumnoB30"      , &vars.qglsumnoB30      ,      "qglsumnoB30/F" );
+    outtree->Branch( "qglsumNormnoB30"  , &vars.qglsumNormnoB30  ,  "qglsumNormnoB30/F" );
+    outtree->Branch( "qglJ0noB"         , &vars.qglJ0noB         ,         "qglJ0noB/F" );
+    outtree->Branch( "qglJ1noB"         , &vars.qglJ1noB         ,         "qglJ1noB/F" );
     outtree->Branch( "ht"               , &vars.ht               ,               "ht/F" );
     outtree->Branch( "htAlongAway20"    , &vars.htAlongAway20    ,    "htAlongAway20/F" );
     outtree->Branch( "htAlongAway40"    , &vars.htAlongAway40    ,    "htAlongAway40/F" );
@@ -160,7 +183,22 @@ void Analyzer::loadPlots() {
   plots["vSumB01oMET_passPre"]       = new TH1F("vSumB01oMET_passPre"      , (passPre+"; vSum(B0,B1)/#slash{E}_{T}; "             +yTitle).c_str(), 100,   0  ,    5    );
   plots["qgl0_passPre"]              = new TH1F("qgl0_passPre"             , (passPre+"; QGL_{0}; "                               +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
   plots["qgl1_passPre"]              = new TH1F("qgl1_passPre"             , (passPre+"; QGL_{1}; "                               +yTitle).c_str(),  50,   0  ,    1    ); //  0.02
-  plots["qglprod_passPre"]           = new TH1F("qglprod_passPre"          , (passPre+"; ln[#prod QGL_{q}]; "                     +yTitle).c_str(),  25, -12  ,    0    ); // 12
+  plots["qglprod_passPre"]           = new TH1F("qglprod_passPre"          , (passPre+"; #prod QGL_{q}; "                         +yTitle).c_str(),  25,   0  ,    1    ); // 25, -12, 0
+  plots["qglprodNorm_passPre"]       = new TH1F("qglprodNorm_passPre"      , (passPre+"; norm  #prod QGL_{q}; "                   +yTitle).c_str(),  25,   0  ,    1    ); //  0.02
+  plots["qglprod30_passPre"]         = new TH1F("qglprod30_passPre"        , (passPre+"; #prod QGL_{q} (jpt>30); "                +yTitle).c_str(),  25,   0  ,    1    ); // 25, -12, 0
+  plots["qglprodNorm30_passPre"]     = new TH1F("qglprodNorm30_passPre"    , (passPre+"; norm  #prod QGL_{q} (jpt>30); "          +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglJ0_passPre"]             = new TH1F("qglJ0_passPre"            , (passPre+"; QGL J_{0}; "                             +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglJ1_passPre"]             = new TH1F("qglJ1_passPre"            , (passPre+"; QGL J_{1}; "                             +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglCVS0_passPre"]           = new TH1F("qglCVS0_passPre"          , (passPre+"; QGL CVS_{0}; "                           +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglCVS1_passPre"]           = new TH1F("qglCVS1_passPre"          , (passPre+"; QGL CVS_{1}; "                           +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qgl0noB_passPre"]           = new TH1F("qgl0noB_passPre"          , (passPre+"; QGL_{0} (noBs); "                        +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qgl1noB_passPre"]           = new TH1F("qgl1noB_passPre"          , (passPre+"; QGL_{1} (noBs); "                        +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglprodnoB_passPre"]        = new TH1F("qglprodnoB_passPre"       , (passPre+"; #prod QGL_{q} (noBs); "                  +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglprodNormnoB_passPre"]    = new TH1F("qglprodNormnoB_passPre"   , (passPre+"; norm  #prod QGL_{q} (noBs); "            +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglprodnoB30_passPre"]      = new TH1F("qglprodnoB30_passPre"     , (passPre+"; #prod QGL_{q} (noBs) (jpt>30); "         +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglprodNormnoB30_passPre"]  = new TH1F("qglprodNormnoB30_passPre" , (passPre+"; norm  #prod QGL_{q} (noBs) (jpt>30); "   +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglJ0noB_passPre"]          = new TH1F("qglJ0noB_passPre"         , (passPre+"; QGL J_{0} (noBs); "                      +yTitle).c_str(),  25,   0  ,    1    );
+  plots["qglJ1noB_passPre"]          = new TH1F("qglJ1noB_passPre"         , (passPre+"; QGL J_{1} (noBs); "                      +yTitle).c_str(),  25,   0  ,    1    );
   plots["ht_passPre"]                = new TH1F("ht_passPre"               , (passPre+"; H_{T} [GeV]; "                           +yTitle).c_str(),  80,   0  , 2000    );
   plots["htAlongAway20_passPre"]     = new TH1F("htAlongAway20_passPre"    , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt20); "     +yTitle).c_str(),  40,   0  ,    2    ); //  0.05
   plots["htAlongAway40_passPre"]     = new TH1F("htAlongAway40_passPre"    , (passPre+"; H_{T}^{along}/H_{T}^{away} (pt40); "     +yTitle).c_str(),  40,   0  ,    2    ); //  0.05
@@ -173,7 +211,6 @@ void Analyzer::loadPlots() {
   plots["wInvMass_passPre"]          = new TH1F("wInvMass_passPre"         , (passPre+"; m(max p_{T} jj); "                       +yTitle).c_str(),  40,   0  ,  800    ); // 20
   plots["Bpt0_passPre"]              = new TH1F("Bpt0_passPre"             , (passPre+"; p_{t}(b0); "                             +yTitle).c_str(),  40,   0  ,  800    ); // 20
   plots["Bpt1_passPre"]              = new TH1F("Bpt1_passPre"             , (passPre+"; p_{t}(b1); "                             +yTitle).c_str(),  60,   0  ,  600    ); // 10
-  // new stuff 2
   plots["htnoB_passPre"]             = new TH1F("htnoB_passPre"            , (passPre+"; H_{T} [GeV] (noBs); "                    +yTitle).c_str(),  80,   0  , 2000    ); // 10
   plots["htJ12_passPre"]             = new TH1F("htJ12_passPre"            , (passPre+"; p_{t}(j1)+p_{t}(j2); "                   +yTitle).c_str(),  60,   0  ,  600    ); // 10
   plots["htJ12noB_passPre"]          = new TH1F("htJ12noB_passPre"         , (passPre+"; p_{t}(j1)+p_{t}(j2) (noBs); "            +yTitle).c_str(),  60,   0  ,  600    ); // 10
@@ -194,7 +231,7 @@ void Analyzer::loadPlots() {
 // also uncomment nVetoTau
 void Analyzer::loadVariables() {
   load(EVTINFO);
-  load(AK4JETS);
+  load(AK4JETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
   load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
@@ -256,6 +293,21 @@ void Analyzer::runEvent() {
   plots["qgl0_passPre"]             ->Fill(vars.qgl0             , wt);
   plots["qgl1_passPre"]             ->Fill(vars.qgl1             , wt);
   plots["qglprod_passPre"]          ->Fill(vars.qglprod          , wt);
+  plots["qglprodNorm_passPre"]      ->Fill(vars.qglprodNorm      , wt);
+  plots["qglprod30_passPre"]        ->Fill(vars.qglprod30        , wt);
+  plots["qglprodNorm30_passPre"]    ->Fill(vars.qglprodNorm30    , wt);
+  plots["qglJ0_passPre"]            ->Fill(vars.qglJ0            , wt);
+  plots["qglJ1_passPre"]            ->Fill(vars.qglJ1            , wt);
+  plots["qglCVS0_passPre"]          ->Fill(vars.qglCVS0          , wt);
+  plots["qglCVS1_passPre"]          ->Fill(vars.qglCVS1          , wt);
+  plots["qgl0noB_passPre"]          ->Fill(vars.qgl0noB          , wt);
+  plots["qgl1noB_passPre"]          ->Fill(vars.qgl1noB          , wt);
+  plots["qglprodnoB_passPre"]       ->Fill(vars.qglprodnoB       , wt);
+  plots["qglprodNormnoB_passPre"]   ->Fill(vars.qglprodNormnoB   , wt);
+  plots["qglprodnoB30_passPre"]     ->Fill(vars.qglprodnoB30     , wt);
+  plots["qglprodNormnoB30_passPre"] ->Fill(vars.qglprodNormnoB30 , wt);
+  plots["qglJ0noB_passPre"]         ->Fill(vars.qglJ0noB         , wt);
+  plots["qglJ1noB_passPre"]         ->Fill(vars.qglJ1noB         , wt);
   plots["ht_passPre"]               ->Fill(vars.ht               , wt);
   plots["htAlongAway20_passPre"]    ->Fill(vars.htAlongAway20    , wt);
   plots["htAlongAway40_passPre"]    ->Fill(vars.htAlongAway40    , wt);
@@ -298,7 +350,7 @@ void Analyzer::out(TString outputName, TString outputPath) {
 // get the x-section for the given sample
 double getXsec(string sample) {
   if (sample=="ttbar") return 831.76   ;
-  if (sample=="ttZ")   return   0.5662 ;
+  if (sample=="ttZ")   return    .7598 ;
   if (sample=="znunu_ht100to200") return 372.6   ;
   if (sample=="znunu_ht200to400") return 100.8   ;
   if (sample=="znunu_ht400to600") return  11.99  ;
@@ -319,7 +371,7 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
                      ,       double xsec       = -1.0    // -1 to use hard-coded xsecs
                      , const bool   isMC       = true
                      , const string outputdir  = "plots"
-                     , const string filePrefix = "/eos/uscms/store/user/vdutta/13TeV/040215/merged/" // location of files
+                     , const string filePrefix = "/eos/uscms/store/user/vdutta/13TeV/310315/merged/" // location of files
                      , const string fileSuffix = "_ntuple.root"
                      ) {
   cout << "processing " << sample << endl;
@@ -335,7 +387,7 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,100000); // for testing
+  //a.analyze(1000,500000); // for testing
   a.out(sample, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
