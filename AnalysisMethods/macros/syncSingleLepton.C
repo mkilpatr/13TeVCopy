@@ -95,6 +95,8 @@ void Analyzer::runEvent()
   lepton_eta   = lep->eta();
   lepton_phi   = lep->phi();
 
+  if(nJets < 4 || nBJets < 1 || MET < 80) return; // baseline selection
+
   outtree->Fill();
 
 }
