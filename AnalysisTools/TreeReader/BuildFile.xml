@@ -2,6 +2,7 @@
 <use name="rootmath"/>
 <use name="AnalysisTools/DataFormats"/>
 <use name="AnalysisTools/ObjectSelection"/>
+<use name="ObjectProducers/TopTagging"/>
 <export>
   <lib   name="1"/>
 </export>

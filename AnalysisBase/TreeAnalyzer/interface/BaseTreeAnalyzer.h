@@ -22,13 +22,15 @@
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
+#include "AnalysisTools/TreeReader/interface/CORRALReader.h"
+
 
 namespace ucsbsusy {
 class BaseTreeAnalyzer {
 public:
-  enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES, CMSTOPS};
-  enum TauVetoPresel {MT, DPHI};
-  //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
+    enum TauVetoPresel {MT, DPHI};
+    //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
   struct ConfigPars {
   public:
@@ -42,10 +44,14 @@ public:
 
     float minSelMuPt;
     float maxSelMuETA;
+    float maxSelMuD0;
+    float maxSelMuDz;
     bool (MuonF::*selectedMuon)() const;
 
     float minVetoMuPt;
     float maxVetoMuETA;
+    float maxVetoMuD0;
+    float maxVetoMuDz;
     bool (MuonF::*vetoedMuon)() const;
 
     float minVetoTauPt;
@@ -59,7 +65,9 @@ public:
     float         maxJetEta;
     float         maxBJetEta;
     bool          cleanJetsvSelectedLeptons_;
+    float         cleanJetsMaxDR;
     bool          correctPickyPT;
+    bool          applyMuIPCuts;
     TauVetoPresel tauVetoPreselection;         
     VarType       defaultJetCollection;
 
@@ -74,10 +82,14 @@ public:
 
       minSelMuPt (10), // was 27
       maxSelMuETA(2.4), // was 2.1
+      maxSelMuD0(0.02),
+      maxSelMuDz(0.1),
       selectedMuon(&MuonF::isgoodpogmuon),
 
       minVetoMuPt (5),
       maxVetoMuETA(2.4),
+      maxVetoMuD0(0.02),
+      maxVetoMuDz(0.1),
       vetoedMuon(&MuonF::ismvavetomuon),
 
       minVetoTauPt (10),
@@ -91,7 +103,9 @@ public:
       maxJetEta         (2.4 ),
       maxBJetEta        (2.4 ),
       cleanJetsvSelectedLeptons_(false),
+      cleanJetsMaxDR    (1e308),
       correctPickyPT    (true),
+      applyMuIPCuts     (true),
       tauVetoPreselection  (MT),
       defaultJetCollection (AK4JETS)
     {}
@@ -190,6 +204,8 @@ public:
     PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
     CMSTopReader      cmsTopReader          ;
+    CORRALReader      corralReader     ;
+
 
   public:
     //--------------------------------------------------------------------------------------------------

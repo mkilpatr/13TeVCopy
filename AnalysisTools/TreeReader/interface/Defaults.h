@@ -26,6 +26,7 @@ namespace defaults {
   const std::string BRANCH_PFCANDS   = "pfcand";
   const std::string BRANCH_GENPARTS  = "gen";
   const std::string BRANCH_CMSTOPS   = "ctt";
+  const std::string BRANCH_CORRAL    = "corral";
   const double CSV_LOOSE      = 0.423;
   const double CSV_MEDIUM     = 0.814;
   const double CSV_TIGHT      = 0.941;

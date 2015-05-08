@@ -101,12 +101,39 @@ TopDecay::TopDecay(const Particle * inTop, const std::vector<Parton>& allPartons
   }
 
   //Now do the W decay
-  if(W->numberOfDaughters() != 2){
+  if(W->numberOfDaughters() < 2){
     ParticleInfo::printGenParticleInfo(W,-1);
     throw std::invalid_argument("TopDecay::TopDecay(): W has abnormal decay!");
    }
 
   CandidateRef<Particle> dau1Ref,dau2Ref;
+  bool leptonic = false;
+  for(unsigned int iD = 0; iD< W->numberOfDaughters(); ++iD){
+    bool isLep = false;
+    bool isQuark = false;
+    auto dau = W->daughterRef(iD);
+    if(ParticleInfo::isLeptonOrNeutrino(dau->pdgId())) {isLep = true; leptonic = true;}
+    if(ParticleInfo::isQuark(dau->pdgId())) isQuark = true;
+    if(!isLep && !isQuark) continue;
+    if(dau1Ref.isNull()){
+      dau1Ref = dau;
+      continue;
+    }
+    if(!dau2Ref.isNull()
+        ||
+        (isLep != ParticleInfo::isLeptonOrNeutrino(dau1Ref->pdgId()))
+    ){
+      ParticleInfo::printGenParticleInfo(inTop,-1);
+      throw std::invalid_argument("TopDecay::TopDecay(): W has abnormal decay!");
+    }
+    dau2Ref = dau;
+  }
+
+  if(dau2Ref.isNull()){
+    ParticleInfo::printGenParticleInfo(inTop,-1);
+    throw std::invalid_argument("TopDecay::TopDecay(): W has abnormal decay!");
+  }
+
   if(W->daughter(0)->pt() > W->daughter(1)->pt()){
     dau1Ref = W->daughterRef(0);
     dau2Ref = W->daughterRef(1);
@@ -116,7 +143,7 @@ TopDecay::TopDecay(const Particle * inTop, const std::vector<Parton>& allPartons
   }
 
   //special case for leptons
-  if(ParticleInfo::isLeptonOrNeutrino(dau1Ref->pdgId())){
+  if(leptonic){
     isLeptonic = true;
     leptonPartons.emplace_back( &*dau1Ref,  dau1Ref.key(), 0);
     leptonPartons.emplace_back( &*dau2Ref,  dau2Ref.key(), 0);
