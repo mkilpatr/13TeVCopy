@@ -23,6 +23,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , taus                (0)
 , pfcands             (0)
 , genparticles        (0)
+, cmstops             (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -242,11 +243,21 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(pfcands);
       break;
     }
-
-    default : {
-      cout << endl << "No settings for type: " << type << " found!" << endl;
+      
+  case CMSTOPS : { 
+      cmstops = new CMSTopFiller(1,
+				 branchName == "" ? defaults::BRANCH_CMSTOPS : branchName,
+				 eventInfo,
+				 cfg.getParameter<edm::InputTag>("fatJets")
+				 );
+      initializedFillers.push_back(cmstops);
       break;
-    }
+  }
+    
+  default : {
+    cout << endl << "No settings for type: " << type << " found!" << endl;
+    break;
+  }
   }
 }
 //--------------------------------------------------------------------------------------------------

@@ -95,6 +95,12 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
       break;
     }
+  case CMSTOPS : { 
+      int defaultOptions = CMSTopReader::defaultOptions;
+      reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
+      break;
+    }
+
     default : {
       cout << endl << "No settings for type: " << type << " found!" << endl;
       break;
@@ -110,6 +116,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(ELECTRONS);
   load(MUONS);
   load(PFCANDS);
+  load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -135,6 +142,12 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
+
+  if(cmsTopReader.isLoaded()){
+    cttTops.clear();
+    cttTops.reserve(cmsTopReader.cmsTops.size());
+    for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
+  }
 
   selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
 

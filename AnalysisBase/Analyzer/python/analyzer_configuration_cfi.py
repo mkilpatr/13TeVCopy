@@ -146,5 +146,10 @@ nominal_configuration = cms.PSet(
                                       tauMVAFileName_DphiPresel = cms.untracked.string('tauDisc_dphi1p34presel.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
                                       saveAllCandidates         = cms.untracked.bool(False),
+                                  ),
+
+                                  CMSTops = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      fatJets  = cms.InputTag('slimmedJetsAK8'),
                                   )
                                 )
