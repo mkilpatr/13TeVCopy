@@ -3,9 +3,47 @@
 
 #include "TH1F.h"
 #include "TGraph.h"
+#include "TGraphAsymmErrors.h"
+#include "TEfficiency.h"
 #include "TString.h"
 
 namespace EffPlotTools {
+
+  TGraphAsymmErrors* computeEffGraph(TH1F* pass, TH1F* total, bool debug=false) {
+  
+    // make sure <pass> and <total> have the same binning!
+  
+    int npoints = total->GetNbinsX();
+  
+    float x[npoints], y[npoints], errx[npoints], erryl[npoints], erryh[npoints];
+  
+    float npass = 0.0;
+    float ntotal = 0.0;
+  
+    for(int ibin = 1; ibin < npoints+1; ibin++) {
+      x[ibin-1] = total->GetBinCenter(ibin);
+      npass = pass->GetBinContent(ibin);
+      ntotal = total->GetBinContent(ibin);
+      y[ibin-1] = ntotal < 1.0 ? 0.0 : npass/ntotal;
+      errx[ibin-1] = 0.5*total->GetBinWidth(ibin);
+      if(y[ibin-1]==0.0) {
+        erryl[ibin-1] = 0.0; erryh[ibin-1] = 0.0;
+      } else {
+        if(debug) printf("npass = %3.1f, ntotal = %3.1f, eff = %4.2f\n", npass, ntotal, y[ibin-1]);
+        erryl[ibin-1] = y[ibin-1] - TEfficiency::ClopperPearson((unsigned int)ntotal, (unsigned int)npass, 0.683, false);
+        erryh[ibin-1] = TEfficiency::ClopperPearson((unsigned int)ntotal, (unsigned int)npass, 0.683, true) - y[ibin-1];
+      }
+    }
+  
+    TGraphAsymmErrors *gr = new TGraphAsymmErrors(npoints, x, y, errx, errx, erryl, erryh);
+    gr->SetTitle("");
+    gr->GetXaxis()->SetTitle(pass->GetXaxis()->GetTitle());
+    gr->GetYaxis()->SetTitle("Efficiency");
+  
+    return gr;
+  
+  }
+  
 
   TGraph* computeROCCurve(TH1F* signal, TH1F* background, TString title, bool reversecutdir = false, bool plotbkgrej = false, bool reverseaxes=false)
   {

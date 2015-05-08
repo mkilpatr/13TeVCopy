@@ -70,6 +70,33 @@ void StyleTools::InitHist(TH1 *hist, const char *xtit, const char *ytit, int col
   return;
 }
 
+void StyleTools::InitGraph(TGraph *gr, const char *title, const char *xtit, const char *ytit, double xmin, double xmax, double ymin, double ymax, int color)
+{
+  gr->SetTitle(title);
+  gr->GetXaxis()->SetTitle(xtit);
+  gr->GetYaxis()->SetTitle(ytit);
+  gr->SetLineColor(color);
+  gr->SetLineWidth(    3.);
+  gr->SetMarkerStyle(20);
+  gr->SetMarkerColor(color);
+  gr->SetMarkerSize (1.3);
+  gr->GetYaxis()->SetTitleSize  (0.055);
+  gr->GetYaxis()->SetTitleOffset(1.600);
+  gr->GetYaxis()->SetLabelOffset(0.014);
+  gr->GetYaxis()->SetLabelSize  (0.040);
+  gr->GetYaxis()->SetLabelFont  (62   );
+  gr->GetXaxis()->SetTitleSize  (0.055);
+  gr->GetXaxis()->SetTitleOffset(1.300);
+  gr->GetXaxis()->SetLabelOffset(0.014);
+  gr->GetXaxis()->SetLabelSize  (0.040);
+  gr->GetXaxis()->SetLabelFont  (62   );
+  gr->GetYaxis()->SetTitleFont(62);
+  gr->GetXaxis()->SetTitleFont(62);
+  gr->GetXaxis()->SetLimits(xmin, xmax);
+  gr->GetYaxis()->SetLimits(ymin, ymax);
+  return;
+}
+
 void StyleTools::SetLegendStyle(TLegend* leg)
 {
   leg->SetFillStyle (0);

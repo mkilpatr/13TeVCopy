@@ -66,18 +66,28 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbins, xmin, xmax);
   config_.treevars.push_back(treevar);
-  plotnames_.push_back(plotname);
+  histplotnames_.push_back(plotname);
 
 }
 
-void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels)
+void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax, PlotComp::CompPlotType compplottype)
 {
 
   assert(plots.size() == labels.size());
 
-  PlotComp comp(compplotname, plots, labels);
-  config_.compplots.push_back(comp);
-  plotnames_.push_back(compplotname);
+  PlotComp comp(compplotname, plots, labels, ymax, compplottype);
+  if(compplottype == PlotComp::HISTCOMP) {
+    config_.comphistplots.push_back(comp);
+    histplotnames_.push_back(compplotname);
+  }
+  else if(compplottype == PlotComp::GRAPHCOMP) {
+    config_.compgraphplots.push_back(comp);
+    graphplotnames_.push_back(compplotname);
+  }
+  else {
+    printf("CompPlot type not known! Specify either HISTS or GRAPHS\n");
+    return;
+  }
 
 }
 
@@ -145,14 +155,17 @@ void PlotStuff::loadPlots()
 
     case HISTS : {
 
-      vector<TH1F*> tmphistsv;
+      vector<TH1F*>   tmphistsv;
+      vector<TGraph*> tmpgraphsv;
 
       TFile *infile = 0;
 
-      bool first = true;
+      bool firsthist  = true;
+      bool firstgraph = true;
 
       for(auto* sample : samples_) {
         tmphistsv.clear();
+        tmpgraphsv.clear();
 
         if(sample->filenames.size() > 1) {
           TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_*%s", inputdir_.Data(), sample->name.Data(), config_.plotfilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.plotfilesuffix.Data());
@@ -168,14 +181,19 @@ void PlotStuff::loadPlots()
           TObject *obj = key->ReadObj();
           if(obj->IsA() == TH1F::Class()) {
             tmphistsv.push_back((TH1F*)obj);
-            if(first) plotnames_.push_back(obj->GetName());
+            if(firsthist) histplotnames_.push_back(obj->GetName());
             tmphistsv.back()->SetName(TString::Format("%s_%s",obj->GetName(), sample->name.Data()));
+          }
+          else if(obj->InheritsFrom(TGraph::Class())) {
+            tmpgraphsv.push_back((TGraph*)obj);
+            if(firstgraph) graphplotnames_.push_back(obj->GetName());
+            tmpgraphsv.back()->SetName(TString::Format("%s_%s",obj->GetName(), sample->name.Data()));
           }
         }
 
         unsigned int nhist = 0;
         for(vector<TH1F*>::iterator ihist = tmphistsv.begin(); ihist != tmphistsv.end(); ++ihist) {
-          if(first) {
+          if(firsthist) {
             vector<TH1F*> tmpvec(ihist, ihist+1);
             hists_.push_back(tmpvec);
           } else {
@@ -184,8 +202,21 @@ void PlotStuff::loadPlots()
           }
           nhist++;
         }
-     
-        if(first) first = false;
+
+        unsigned int ngraph = 0;
+        for(vector<TGraph*>::iterator igraph = tmpgraphsv.begin(); igraph != tmpgraphsv.end(); ++igraph) {
+          if(firstgraph) {
+            vector<TGraph*> tmpvec(igraph, igraph+1);
+            graphs_.push_back(tmpvec);
+          } else {
+            assert(graphs_.size() > ngraph);
+            graphs_[ngraph].push_back(*igraph);
+          }
+          ngraph++;
+        }
+
+        if(firsthist)  firsthist = false;
+        if(firstgraph) firstgraph = false;
       }
 
       break;
@@ -198,9 +229,10 @@ void PlotStuff::loadPlots()
 
       infile_->cd();
 
-      vector<TH1F*> tmphistsv;
+      vector<TH1F*>   tmphistsv;
+      vector<TGraph*> tmpgraphsv;
 
-      for(auto compplot : config_.compplots) {
+      for(auto compplot : config_.comphistplots) {
         tmphistsv.clear();
 
         for(auto name : compplot.compnames) {
@@ -210,6 +242,18 @@ void PlotStuff::loadPlots()
         }
 
         hists_.push_back(tmphistsv);
+      }
+
+      for(auto compplot : config_.compgraphplots) {
+        tmpgraphsv.clear();
+
+        for(auto name : compplot.compnames) {
+          TGraph* graph = (TGraph*)infile_->Get(name);
+          assert(graph);
+          tmpgraphsv.push_back(graph);
+        }
+
+        graphs_.push_back(tmpgraphsv);
       }
 
       break;
@@ -303,7 +347,7 @@ void PlotStuff::loadTables()
 
 }
 
-void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists)
+void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists)
 {
 
   Plot *plot = new Plot(name, title, xtitle, ytitle);
@@ -520,6 +564,75 @@ void PlotStuff::makePlot(TString name, TString title, TString xtitle, TString yt
 
 }
 
+void PlotStuff::makeGraphPlot(TString name, TString title, TString xtitle, TString ytitle, double ymax, vector<TGraph*> graphs)
+{
+
+  Plot *plot = new Plot(name, title, xtitle, ytitle);
+  plot->outputdir = outputdir_;
+  gSystem->mkdir(outputdir_, true);
+
+  TGraph* gr0 = graphs.at(0);
+  int npoints = gr0->GetN();
+  double xmin = gr0->GetX()[0] - 0.5*(gr0->GetX()[1] - gr0->GetX()[0]);
+  double xmax = gr0->GetX()[npoints-1] + 0.5*(gr0->GetX()[npoints-1] - gr0->GetX()[npoints-2]);
+  plot->setXRange(xmin, xmax);
+  if(ymax > 0.0) plot->setYRange(0.0, ymax);
+
+  double max = 0.0;
+  int maxpoint = 0;
+
+  switch (config_.type) {
+
+    case COMP : {
+
+      int isam = -1;
+
+      for(auto* sample : samples_) {
+        isam++;
+
+        TString colorname = TString::Format("comp%d",isam+1);
+
+        plot->addGraph(graphs[isam], sample->label,config_.graphdrawopt, config_.colormap[colorname], 0, config_.colormap[colorname],1);
+        for(int ipoint = 0; ipoint < graphs[isam]->GetN(); ++ipoint) {
+          if(graphs[isam]->GetY()[ipoint] > max) {
+            maxpoint = ipoint;
+            max = graphs[isam]->GetY()[ipoint];
+          }
+        }
+      }
+
+      break;
+
+    }
+
+    default : {
+
+      printf("Plot type option not available!\n");
+      break;
+
+    }
+
+  }
+
+  bool legonleft = maxpoint > 0.5*npoints ? true : false;
+
+  if(config_.sqrts != "" && config_.lumi != "")
+    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+  else
+    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+
+  if(config_.legx1 != 0)
+    plot->setLegend(config_.legx1, config_.legy1, config_.legx2, config_.legy2);
+
+  if(legonleft && plot->getLegend()->GetX1() > 0.5)
+    plot->moveLegend(0.2-plot->getLegend()->GetX1(), 0.0);
+
+  plot->draw(canvas_, true, config_.format);
+
+  delete plot;
+
+}
+
 void PlotStuff::plot()
 {
 
@@ -530,11 +643,13 @@ void PlotStuff::plot()
     outfile_ = new TFile(outputdir_+"/"+config_.outfilename,"RECREATE");
 
   hists_.clear();
+  graphs_.clear();
   loadPlots();
 
   SetStyle();
 
-  assert(plotnames_.size() == hists_.size());
+  assert(histplotnames_.size()  == hists_.size());
+  assert(graphplotnames_.size() == graphs_.size());
 
   canvas_ = MakeCanvas("plotc","plotc",600,600);
 
@@ -545,22 +660,50 @@ void PlotStuff::plot()
 
     if(config_.source == HISTSSINGLEFILE) {
       samples_.clear();
-      for(auto& compname : config_.compplots.at(ihist).compnames) {
-        auto iname = &compname - &(config_.compplots.at(ihist).compnames[0]);
+      for(auto& compname : config_.comphistplots.at(ihist).compnames) {
+        auto iname = &compname - &(config_.comphistplots.at(ihist).compnames[0]);
         samples_.push_back(new Sample());
         samples_.back()->name = compname;
-        samples_.back()->label = config_.compplots.at(ihist).complabels[iname];
+        samples_.back()->label = config_.comphistplots.at(ihist).complabels[iname];
       }
     }
 
     assert(histvec.size() == samples_.size());
 
-    makePlot(plotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
+    makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
 
     if(config_.writehists) {
       outfile_->cd();
       for(auto* hist : hists_[ihist]) {
         hist->Write();
+      }
+    }
+  
+  }
+
+  for(auto& graphvec : graphs_) {
+    auto igraph = &graphvec - &graphs_[0];
+    TGraph* graph0 = graphvec.at(0);
+    assert(graph0);
+
+    if(config_.source == HISTSSINGLEFILE) {
+      samples_.clear();
+      for(auto& compname : config_.compgraphplots.at(igraph).compnames) {
+        auto iname = &compname - &(config_.compgraphplots.at(igraph).compnames[0]);
+        samples_.push_back(new Sample());
+        samples_.back()->name = compname;
+        samples_.back()->label = config_.compgraphplots.at(igraph).complabels[iname];
+      }
+    }
+
+    assert(graphvec.size() == samples_.size());
+
+    makeGraphPlot(graphplotnames_[igraph], graph0->GetTitle(), graph0->GetXaxis()->GetTitle(), graph0->GetYaxis()->GetTitle(), config_.compgraphplots.at(igraph).ymax, graphvec);
+
+    if(config_.writehists) {
+      outfile_->cd();
+      for(auto* graph : graphs_[igraph]) {
+        graph->Write();
       }
     }
   
