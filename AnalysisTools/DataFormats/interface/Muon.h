@@ -47,9 +47,9 @@ namespace ucsbsusy {
       bool	isloosemuon() 	const { return isloose_;		}
       bool	ismediummuon() 	const { return ismedium_;		}
       bool	istightmuon() 	const { return istight_;		}
-      bool	ispfmuon() 			const { return ispf_;			}
-      bool	isglobal() 			const { return isglobal_;		}
-      bool	istracker() 		const { return istracker_;		}
+      bool	ispfmuon() 	const { return ispf_;			}
+      bool	isglobal() 	const { return isglobal_;		}
+      bool	istracker() 	const { return istracker_;		}
       bool	isstandalone() 	const { return isstandalone_;		}
       bool	isgoodpogmuon() const { return isgoodpogmuon_;	}
       bool	ismvavetomuon() const { return ismvavetomuon_;	}

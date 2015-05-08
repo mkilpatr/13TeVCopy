@@ -37,9 +37,9 @@ namespace ucsbsusy {
       int	index() 				{ return index_;		}
       int	pdgid() 				{ return pdgid_;		}
       int	q() 					{ return q_;			}
-      float	d0() 					{ return d0_;			}
-      float	dz() 					{ return dz_;			}
-      float	pfdbetaiso() 				{ return pfdbetaiso_;		}
+      float	d0() 				const	{ return d0_;			}
+      float	dz() 				const	{ return dz_;			}
+      float	pfdbetaiso() 			const	{ return pfdbetaiso_;		}
       float	mvaiso() 				{ return mvaiso_;		}
       bool	passpogid() 				{ return passpogid_;		}
       bool	passpogiso() 				{ return passpogiso_;		}
