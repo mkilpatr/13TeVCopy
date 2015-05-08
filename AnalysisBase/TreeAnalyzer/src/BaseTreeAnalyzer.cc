@@ -95,15 +95,23 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
       break;
     }
+      
+    case CMSTOPS : { 
+      int defaultOptions = CMSTopReader::defaultOptions;
+      reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
+      break;
+    }
+
     case CORRAL : {
       int defaultOptions = CORRALReader::defaultOptions;
       reader.load(&corralReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CORRAL : branchName );
       break;
     }
-    default : {
-      cout << endl << "No settings for type: " << type << " found!" << endl;
-      break;
-    }
+
+  default : {
+    cout << endl << "No settings for type: " << type << " found!" << endl;
+    break;
+  }
   }
 }
 //--------------------------------------------------------------------------------------------------
@@ -115,6 +123,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(ELECTRONS);
   load(MUONS);
   load(PFCANDS);
+  load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -140,6 +149,12 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
+
+  if(cmsTopReader.isLoaded()){
+    cttTops.clear();
+    cttTops.reserve(cmsTopReader.cmsTops.size());
+    for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
+  }
 
   selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
 
@@ -215,19 +230,25 @@ bool BaseTreeAnalyzer::isLooseBJet(const RecoJetF& jet) const {
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isSelElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minSelEPt && fabs(electron.scEta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
+  return (electron.pt() > config.minSelEPt && fabs(electron.eta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minVetoEPt && fabs(electron.scEta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
+  return (electron.pt() > config.minVetoEPt && fabs(electron.eta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isSelMuon(const MuonF& muon) const {
-  return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && (muon.*config.selectedMuon)());
+  if(config.applyMuIPCuts)
+    return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && fabs(muon.d0()) < config.maxSelMuD0 && fabs(muon.dz()) < config.maxSelMuDz && (muon.*config.selectedMuon)());
+  else
+    return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && (muon.*config.selectedMuon)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
-  return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && (muon.*config.vetoedMuon)());
+  if(config.applyMuIPCuts)
+    return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && fabs(muon.d0()) < config.maxVetoMuD0 && fabs(muon.dz()) < config.maxVetoMuDz && (muon.*config.vetoedMuon)());
+  else
+    return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && (muon.*config.vetoedMuon)());
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
@@ -302,7 +323,7 @@ void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jet
 	if(config.cleanJetsvSelectedLeptons_) {
 	  for(const auto* glep : selectedLeptons) {
 	    double nearDR = 0;
-	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR);
+	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR,config.cleanJetsMaxDR);
 	    if(near >= 0) vetoJet[near] = true;
 	  }
 	}
