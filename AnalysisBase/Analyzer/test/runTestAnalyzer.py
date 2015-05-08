@@ -85,12 +85,12 @@ process.load('Dummy.Puppi.Puppi_cff')
 process.puppi.PuppiName      = cms.untracked.string("")
 
 
-process.p = cms.Path(#process.puppi*
-                     process.ak4PatAssocSeq * 
-                     #process.ak4PuppiJetSeq * 
-                     process.ca8JetsSeq     *
-                     process.lsfSubJets     *
+process.p = cms.Path(process.puppi*
+                     process.ak4PatAssocSeq           * 
+                     process.ak4PuppiJetSeq           * 
+                     process.ca8JetsSeq               *
+                     process.lsfSubJets               *
                      process.egmGsfElectronIDSequence * 
-                     process.pickyJetSeq    *
-                     process.QGTagger       *
+                     process.pickyJetSeq              *
+                     process.QGTagger                 *
                      process.TestAnalyzer)
