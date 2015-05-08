@@ -254,8 +254,8 @@ public:
       if(analyzer->isTightBJet(j)) ++ntBtag;
       if(analyzer->isMediumBJet(j)){
         ++nmBtag;
-        if      (Bpt0 == 0) Bpt0 = j.pt();
-        else if (Bpt1 == 0) Bpt1 = j.pt();
+        if      (Bpt0 < 0) Bpt0 = j.pt();
+        else if (Bpt1 < 0) Bpt1 = j.pt();
       }
     } // iJ in Jets
 
