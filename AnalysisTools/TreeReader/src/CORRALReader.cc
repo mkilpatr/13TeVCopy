@@ -99,7 +99,8 @@ void CORRALReader::getCORRALData(const GenParticleReader * genParticleReader, Je
   }
 
   //now fill pairs
-  corral->rankedTPairs = CORRAL::getRankedTopPairs(corral->tCands,corral->tCandVars,prunedTops);
+  corral->rankedTPairs = CORRAL::getRankedTopPairs(corral->tCands,prunedTops);
+//  corral->bestTopMatches = CORRAL::countTops(corral->tCands,prunedTops);
 
   if(corral->rankedTPairs.size()){
     corral->reconstructedTop = true;
