@@ -8,6 +8,7 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TGraph.h>
 #include <TPad.h>
 #include <TStyle.h>
 #include <TLegend.h>
@@ -51,12 +52,13 @@ namespace StyleTools {
 
   typedef std::map<TString, unsigned int> ColorMap;
 
-  TCanvas*	MakeCanvas	(const char* name, const char *title, int dX = 500, int dY = 500);
-  void		InitSubPad	(TPad* pad, int i);
-  void		InitHist	(TH1 *hist, const char *xtit, const char *ytit  = "Number of Entries", int color = kBlack, int style = 0);
-  void		SetLegendStyle	(TLegend* leg);
-  void		SetStyle	();
-  ColorMap      DefaultColors   ();
+  TCanvas*  MakeCanvas     (const char* name, const char *title, int dX = 500, int dY = 500);
+  void      InitSubPad     (TPad* pad, int i);
+  void      InitHist       (TH1 *hist, const char *xtit, const char *ytit  = "Number of Entries", int color = kBlack, int style = 0);
+  void      InitGraph      (TGraph *gr, const char *title, const char *xtit, const char *ytit, double xmin, double xmax, double ymin, double ymax, int color = kBlack);
+  void      SetLegendStyle (TLegend* leg);
+  void      SetStyle       ();
+  ColorMap  DefaultColors  ();
   
 };
 

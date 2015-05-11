@@ -63,18 +63,23 @@ class PlotStuff {
 
     };
 
-    // Hold information about sets of histograms to be compared in a plot
+    // Hold information about sets of histograms/graphs to be compared in a plot
     struct PlotComp {
 
       public :
+        enum CompPlotType {HISTCOMP, GRAPHCOMP};
         TString         name;
         vector<TString> compnames;
         vector<TString> complabels;
+        double          ymax;
+        CompPlotType    compplottype;
 
-        PlotComp(TString inname, vector<TString> incompnames, vector<TString> incomplabels) :
+        PlotComp(TString inname, vector<TString> incompnames, vector<TString> incomplabels, double inymax, CompPlotType incompplottype=HISTCOMP) :
           name(inname),
           compnames(incompnames),
-          complabels(incomplabels)
+          complabels(incomplabels),
+          ymax(inymax),
+          compplottype(incompplottype)
         {}
 
     };
@@ -96,7 +101,7 @@ class PlotStuff {
         TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
-	TString                treefilesuffix;
+        TString                treefilesuffix;
         TString                plotfilesuffix;
         TString                sqrts;
         TString                lumi;
@@ -109,6 +114,7 @@ class PlotStuff {
         double                 legx2;
         double                 legy2;
         TString                drawopt;
+        TString                graphdrawopt;
         int                    rebinx;
         int                    sigscale;
         bool                   addsigscaletxt;
@@ -120,10 +126,11 @@ class PlotStuff {
         SelMap                 selmap;
         ColorMap               colormap;
         vector<PlotTreeVar>    treevars;
-        vector<PlotComp>       compplots;
+        vector<PlotComp>       comphistplots;
+        vector<PlotComp>       compgraphplots;
         vector<TString>        tablesels;
-        bool				   make_integral;
-        bool 				   reverse_integral_dir;
+        bool                   make_integral;
+        bool                   reverse_integral_dir;
 
         PlotConfig() :
           type(DATAMC),
@@ -149,6 +156,7 @@ class PlotStuff {
           legx2(0),
           legy2(0),
           drawopt("hist"),
+          graphdrawopt("P"),
           rebinx(1),
           sigscale(1),
           addsigscaletxt(true),
@@ -158,8 +166,8 @@ class PlotStuff {
           logy(false),
           tablelumi(4000.),
           colormap(DefaultColors()),
-		  make_integral(false),
-		  reverse_integral_dir(false)
+          make_integral(false),
+          reverse_integral_dir(false)
         {}
 
         void print() {
@@ -180,16 +188,17 @@ class PlotStuff {
             printf("Plotting all histograms from files ending with %s in input directory\n",plotfilesuffix.Data());
           }
           if(source == HISTSSINGLEFILE) {
-            printf("Producing %lu plots from histograms saved in input file\n",compplots.size());
+            printf("Producing %lu plots from histograms/graphs saved in input file\n",(comphistplots.size()+compgraphplots.size()));
           }
           if(type == DATAMC) {
             if(sigscale < 0) printf("Signal histograms will be scaled to sum of backgrounds\n");
             else if(sigscale != 1) printf("Signal histograms will be scaled by a factor of %d\n",sigscale);
           }
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of %d\n",rebinx);
-          if(drawopt != "hist") printf("Using draw option %s\n",drawopt.Data());
+          if(drawopt != "hist") printf("Using histogram draw option %s\n",drawopt.Data());
+          if(graphdrawopt != "P") printf("Using graph draw option %s\n",graphdrawopt.Data());
           if(make_integral){
-        	  printf("Histograms will be integrated %s. \n", reverse_integral_dir?"from the left":"to the right");
+            printf("Histograms will be integrated %s. \n", reverse_integral_dir?"from the left":"to the right");
           }
         }
 
@@ -206,8 +215,8 @@ class PlotStuff {
 
     // Add a plot to be made from the provided TTrees: use with TREES
     void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbins, double xmin, double xmax);
-    // Add a set of names of histograms to be compared on a single plot: use with HISTSSINGLEFILE
-    void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels);
+    // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
+    void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
     void     addSelection(TString label, TString selection);
     // Get name of outputfile to which histograms are saved if writehists option is chosen in config
@@ -251,6 +260,8 @@ class PlotStuff {
     void     setLegend(double legx1, double legy1, double legx2, double legy2) { config_.legx1 = legx1; config_.legy1 = legy1; config_.legx2 = legx2; config_.legy2 = legy2; }
     // Draw option for histograms in comparison plots (doesn't apply to DATAMC)
     void     setDrawOption(TString drawopt) { config_.drawopt = drawopt; }
+    // Draw option for graphs in comparison plots
+    void     setGraphDrawOption(TString graphdrawopt) { config_.graphdrawopt = graphdrawopt; }
     // Rebin factor for histograms
     void     setRebinX(int rebinx) { config_.rebinx = rebinx; }
     // Factor by which to scale signal. -1 implies signal will be scaled to sum of all backgrounds
@@ -282,7 +293,9 @@ class PlotStuff {
     // Fill yields and uncertainties
     void     loadTables();
     // Plot the given histograms on a canvas
-    void     makePlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists);
+    void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists);
+    // Plot the given graphs on a canvas
+    void     makeGraphPlot(TString name, TString title, TString xtitle, TString ytitle, double ymax, vector<TGraph*> graphs);
     // Make yields table
     void     makeTable(TString label, vector<double> yields, vector<double> yielderrs);
     // Check if a given name corresponds to a data sample
@@ -293,20 +306,22 @@ class PlotStuff {
     bool     isSignal(TString sname);
 
   protected :
-    PlotConfig              config_;
-    vector<vector<TH1F*> >  hists_;
-    vector<vector<double> > yields_;
-    vector<vector<double> > yielderrs_;
-    vector<TString>         plotnames_;
-    vector<TString>         tablelabels_;
-    vector<Sample*>         samples_;
-    TFile*                  infile_;
-    TString                 inputdir_;
-    TString                 outputdir_;
-    TCanvas*                canvas_;
-    TFile*                  outfile_;
-    ofstream                yieldfile_;
-    bool                    verbose_;
+    PlotConfig               config_;
+    vector<vector<TH1F*> >   hists_;
+    vector<vector<TGraph*> > graphs_;
+    vector<vector<double> >  yields_;
+    vector<vector<double> >  yielderrs_;
+    vector<TString>          histplotnames_;
+    vector<TString>          graphplotnames_;
+    vector<TString>          tablelabels_;
+    vector<Sample*>          samples_;
+    TFile*                   infile_;
+    TString                  inputdir_;
+    TString                  outputdir_;
+    TCanvas*                 canvas_;
+    TFile*                   outfile_;
+    ofstream                 yieldfile_;
+    bool                     verbose_;
 
 };
 

@@ -218,12 +218,15 @@ void Plot::addGraph(TGraph* item, TString label, TString drawopt, int color, int
 
   TGraph* gr = (TGraph*)item->Clone();
 
+  StyleTools::InitGraph(item, fTitle, fXTitle, fYTitle, fXmin, fXmax, fYmin, fYmax, color);
+
   if(linecolor==0)
     gr->SetLineColor(color);
   else
     gr->SetLineColor(linecolor);
 
   gr->SetLineStyle(linestyle);
+  gr->SetMarkerColor(color);
   gr->SetFillColor(color);
   gr->SetFillStyle(fillstyle);
 
