@@ -9,6 +9,8 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/KinematicVariables/interface/Topness.h"
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
+#include "AnalysisTools/KinematicVariables/interface/mt2w.h"
+#include "AnalysisTools/KinematicVariables/interface/mt2bl.h"
 #endif
 
 using namespace ucsbsusy;
@@ -48,6 +50,8 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("stdIso",&stdIso,"stdIso/F");
       outtree->Branch("LepPdgId",&LepPdgId,"LepPdgId/I");
       outtree->Branch("LepPt",&LepPt,"LepPt/F");
+      outtree->Branch("mt2w",&mt2w,"mt2w/F");
+      outtree->Branch("mt2bl",&mt2bl,"mt2bl/F");
     }
 
   virtual ~Analyzer() {
@@ -93,6 +97,7 @@ class Analyzer : public BaseTreeAnalyzer {
   float stdIso;
   int LepPdgId;
   float LepPt;
+  double mt2w, mt2bl;
 
   void runEvent();
   
@@ -124,7 +129,9 @@ void Analyzer::loadPlots()
   plots["dphilepmet_passpresel"] = new TH1F("dphilepmet_passpresel", TString(txt_passpresel+"; |#Delta#phi(l, #slash{E}_{T})| [GeV]; "+txt_ytitle).Data(), 50, 0, 3.15);
   plots["dphilepw_passpresel"]   = new TH1F("dphilepw_passpresel", TString(txt_passpresel+"; |#Delta#phi(l, W)| [GeV]; "+txt_ytitle).Data(), 50, 0, 3.15);
   plots["mtlepmet_passpresel"]   = new TH1F("mtlepmet_passpresel", TString(txt_passpresel+"; m_{T}(l, #slash{E}_{T}) [GeV]; "+txt_ytitle).Data(), 40, 0, 200);
-
+  plots["mt2w_passpresel"]       = new TH1F("mt2w_passpresel", TString(txt_passpresel+"; mt2w [GeV]; "+txt_ytitle).Data(), 50, 0, 1000);
+  plots["mt2bl_passpresel"]      = new TH1F("mt2bl_passpresel", TString(txt_passpresel+"; mt2bl [GeV]; "+txt_ytitle).Data(), 50, 0, 1000);
+  
   // set Sumw2 for histograms
   for(map<TString,TH1F*>::iterator plotsIt = plots.begin(); plotsIt != plots.end(); ++plotsIt) {
     plotsIt->second->Sumw2();
@@ -179,8 +186,6 @@ void Analyzer::runEvent()
   LepPdgId = lep->pdgid();
   LepPt    = lep->pt();
 
-  outtree->Fill();
-
   bool passmet = met->pt() > metcut_;
   bool passjets = nJets >= minNJets_ && nBJets >= minNBjets_;
   bool passpreselection = passmet && passjets;
@@ -194,6 +199,9 @@ void Analyzer::runEvent()
 
   if(!passpreselection) return;
 
+  // fill trees after preselection
+  outtree->Fill();
+
   // plots after preselection
   plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
   plots["leppt_passpresel"]     ->Fill(lep->pt(), wgt);
@@ -201,7 +209,50 @@ void Analyzer::runEvent()
   plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *met)), wgt);
   plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *W)), wgt);
   plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*lep, *met), wgt);
+  plots["mt2w_passpresel"]      ->Fill(mt2w,wgt);
+  plots["mt2bl_passpresel"]     ->Fill(mt2bl,wgt);
 
+  // calculate MT2 variables (must be done after preselection; requires >=3 jets)
+  // calculate mt2w directly with mt2wDirect
+  mt2w_bisect::mt2w mt2w_test;
+  MomentumF* b1 = new MomentumF(jets.at(0)->p4()); // use two highest pt jets as dummies
+  MomentumF* b2 = new MomentumF(jets.at(1)->p4());
+  mt2w = mt2w_test.mt2wDirect(b1, b2, lep, met);
+
+  // calculate mt2bl directly with mt2blDirect
+  mt2bl_bisect::mt2bl mt2bl_test;
+  MomentumF* b1_bl = new MomentumF(jets.at(0)->p4()); // use two highest pt jets as dummies
+  MomentumF* b2_bl = new MomentumF(jets.at(1)->p4());
+  mt2bl = mt2bl_test.mt2blDirect(b1_bl, b2_bl, lep, met);
+
+// calculate mt2w with user-defined btags with mt2wIndirect
+  // make vector<bool> of btags, and
+  // convert jets objects from RecoJetF or GenJetF to MomentumF
+  mt2w_bisect::mt2w mt2w_test2;
+  vector<bool> btags;
+  vector<MomentumF*> fjets;
+  MomentumF* tempjet;
+  for(auto* jet : jets) {
+    btags.push_back(jet->csv() > 0.600);
+    tempjet = new MomentumF(jet->p4());
+    fjets.push_back(tempjet);
+  }
+  mt2w = mt2w_test2.mt2wIndirect(fjets,btags,lep,met);
+
+  // calculate mt2bl with user-defined btags with mt2blIndirect
+  // make vector<bool> of btags, and
+  // convert jets objects from RecoJetF or GenJetF to MomentumF
+  mt2bl_bisect::mt2bl mt2bl_test2;
+  vector<bool> btags_bl;
+  vector<MomentumF*> fjets_bl;
+  MomentumF* tempjet_bl;
+  for(auto* jet : jets) {
+    btags_bl.push_back(jet->csv() > 0.600);
+    tempjet_bl = new MomentumF(jet->p4());
+    fjets_bl.push_back(tempjet_bl);
+  }
+  mt2bl = mt2bl_test2.mt2blIndirect(fjets_bl,btags_bl,lep,met);
+  
 }
 
 // Write histograms to file in designated directory
