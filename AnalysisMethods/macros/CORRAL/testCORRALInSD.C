@@ -68,25 +68,62 @@ public:
     eventPlots.rewind();
     eventPlots("ttbar__",process == defaults::TTBAR);
     eventPlots("znunu__",process == defaults::SINGLE_Z);
-    eventPlots("ttz__",process == defaults::TTZ);
+//    eventPlots("ttz__",process == defaults::TTZ);
     eventPlots("",process == defaults::SIGNAL);
 
+
+
+
     // -------------  Remove leptonic signal
+    bool leptonic             = false;
+    bool badPartons           = false;
+    bool badJets              = false;
+    bool badPair              = false;
+    bool subLeadingPair       = false;
+
     if(process == defaults::SIGNAL) {
       std::vector<RecoJetF*> recoJets;
       std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
       TopJetMatching::TopDecayEvent* topDecayEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
-      bool decision = true;
-
       //filter
-      for(const auto& t : topDecayEvent->topDecays){
-        if(t.isLeptonic) decision =  false;
-//        if(t.diag != TopJetMatching::RESOLVED_TOP) decision = false;
+        int nB = 0;
+        int nBJ = 0;
+        vector<MomentumF> tops;
+        for(const auto& t : topDecayEvent->topDecays){
+          if(t.isLeptonic) leptonic =  true;
+          if(t.isLeptonic) continue;
+          if(TMath::Abs(t.top->eta()) >= 2.4 ) nB++;
+          if(t.diag  == TopJetMatching::BAD_PARTON)nB++;
+          if(t.diag  != TopJetMatching::RESOLVED_TOP ) nBJ++;
+          tops.push_back(t.top->p4());
       }
+      badPartons = nB > 0 || tops.size() != 2;
+      badJets =  (nBJ > 0);
 
-      if(decision == false) return;
+      int realRank = -1;
+      for(unsigned int iR = 0; iR < data.rankedTPairs.size(); ++iR){
+        if(data.tCands[data.rankedTPairs[iR].first].type != 2 &&data.tCands[data.rankedTPairs[iR].second].type != 2 ){
+          realRank = iR + 1;
+          break;
+        }
     }
+      badPair =  realRank <= 0;
+      subLeadingPair = realRank != 1;
+    }
+    if(leptonic) return;
+    bool classified = false;
+
+    ++eventPlots;
+    eventPlots("diag_all__",true);
+    eventPlots("diag_bad_partons__",!classified && (classified = badPartons ));
+    eventPlots("diag_bad_jets__",!classified && (classified =badJets));
+    eventPlots("diag_no_pair__",!classified && (classified =badPair));
+    eventPlots("diag_wrong_pair__",!classified && (classified =subLeadingPair));
+    eventPlots("diag_good_pair__",!classified);
+
+
     // -------------
+
 
     ++eventPlots;
     eventPlots("met_geq200__",true);
@@ -98,12 +135,33 @@ public:
     eventPlots("nTopPairs_incl__",true);
     eventPlots("nTopPairs_geq1__",data.reconstructedTop == true);
 
+
+
     // ------------- Plot info on the chosen top pair
     eventPlots.fill(data.top1_disc ,weight,"leadTopDisc",";Leading top disc.",100,-1,1);
     eventPlots.fill(data.top2_disc ,weight,"subleadTopDisc",";Sub-leading top disc.",100,-1,1);
     eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4 ,weight,"topTimesPairDisc",";top1 disc * top2 dic",100,0,1);
-    eventPlots.fill((data.top1_disc + data.top2_disc) / 2 ,weight,"topPairDisc",";top1 disc + top2 dic",100,-1,1);
+    eventPlots.fill((data.top1_disc + data.top2_disc) / 2 ,weight,"topPairDisc",";top1 disc + top2 disc",100,-1,1);
     // -------------
+    eventPlots.fill(data.bestTopMatches.size(),weight,"numTops","; Number of exclusive tops",10,-0.5,9.5);
+    eventPlots.fill(jets.size(),weight,"numPickyJets","; Number of picky jets",20,-0.5,19.5);
+    if(data.bestTopMatches.size() > 1)
+      eventPlots.fill(data.tCandVars[data.bestTopMatches[0][0]].mva, data.tCandVars[data.bestTopMatches[1][0]].mva  +data.tCandVars[data.bestTopMatches[1][1]].mva, weight,"bestmvacomp", ";best top MVA;best pair MVA", 100,-2,2,100,-2,2    );
+    if(data.reconstructedTop){
+      eventPlots.fill(data.rankedTPairs[0].first,data.rankedTPairs[0].second,weight,"topranks",";topranks",10,-0.5,9.5,10,-0.5,9.5);
+    }
+
+    double nearestMET = 0;
+    if(data.reconstructedTop){
+      nearestMET =  std::min(PhysicsUtilities::absDeltaPhi(*data.top2->bJet,*met), PhysicsUtilities::absDeltaPhi(*data.top2->wCand->jet1,*met));;
+      nearestMET = std::min(nearestMET, PhysicsUtilities::absDeltaPhi(*data.top2->wCand->jet2,*met));
+    }
+    double top2b = data.reconstructedTop ? PhysicsUtilities::absDeltaPhi(*data.top2->bJet,*met) : 0;
+    double mintopb = data.reconstructedTop ? std::min(PhysicsUtilities::absDeltaPhi(*data.top1->bJet,*met),PhysicsUtilities::absDeltaPhi(*data.top2->bJet,*met)) : 0;
+    eventPlots.fill( top2b,weight,"top2bjet_nearestMET",";#Delta#phi(#slash{E}_{T},b-jet #in top_2)",100,0,3.3);
+    eventPlots.fill( mintopb,weight,"minbjet_nearestMET",";Min[#Delta#phi(#slash{E}_{T},b-jets #in top pair)]",100,0,3.3);
+    eventPlots.fill(nearestMET ,weight,"top2Jet_nearestMET",";Min[#Delta#phi(#slash{E}_{T},jets #in top_2)]",100,0,3.3);
+
 
     double maxLead = -1;
     double maxSubLead = -1;
@@ -140,9 +198,9 @@ public:
 
     eventPlots.fill(data.top1_disc,corral_MT2 ,weight,"leadTopDiscvcorral_MT2",";Leading top disc.;corral_MT2",20,-1,1,20,0,900);
     eventPlots.fill(data.top2_disc,corral_MT2 ,weight,"subleadTopDiscvcorral_MT2",";Sub-leading top disc.;corral_MT2",20,-1,1,20,0,900);
-    eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4,corral_MT2 ,weight,"topPairDiscvcorral_MT2",";top1 disc * top2 dic;corral_MT2",20,0,1,20,0,900);
-    eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4,picky_MT2 ,weight,"topPairDiscvpicky_MT2",";top1 disc * top2 dic;picky_MT2",20,0,1,20,0,900);
-    eventPlots.fill((data.top1_disc + 1) * (data.top2_disc +1 )/4,ak4_MT2 ,weight,"topPairDiscvak4_MT2",";top1 disc * top2 dic;ak4_MT2",20,0,1,20,0,900);
+    eventPlots.fill(data.top1_disc+data.top2_disc,corral_MT2 ,weight,"topPairDiscvcorral_MT2",";top1 disc + top2 dic;corral_MT2",20,-2,2,20,0,900);
+    eventPlots.fill(data.top1_disc+data.top2_disc,picky_MT2 ,weight,"topPairDiscvpicky_MT2",";top1 disc + top2 dic;picky_MT2",20,-2,2,20,0,900);
+    eventPlots.fill(data.top1_disc+data.top2_disc,ak4_MT2 ,weight,"topPairDiscvak4_MT2",";top1 disc + top2 dic;ak4_MT2",20,-2,2,20,0,900);
 
 
      delete Mt2Calc;

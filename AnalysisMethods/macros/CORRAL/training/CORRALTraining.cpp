@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------
-//
-//     W Jet Likilihood
-//
+//                                                                      
+//     W Jet Likilihood                                                 
+//                                                                      
 // ---------------------------------------------------------------------
-{
-    
+{                                                                       
+                                    
     double bins[] = {20,40,60,100,200,400,800};
     RebinToNewBins b(6,bins);
 
@@ -103,7 +103,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     pn->SetTitle("non W");
     o->Add(pn);
     pbr = (Plot*)pb->Clone();
-    pbr->divide(*pn);
+    // pbr->divide(*pn);
     o->Add(pbr);
     
     pn = (Plot*)pn->Clone();
@@ -113,7 +113,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     pn->rebin(b);
     pb->rebin(b);
     pbr = (Plot*)pb->Clone();
-    pbr = pbr->divide(*pn);
+    // pbr = pbr->divide(*pn);
     o->Add(pn);
     o->Add(pb);
     o->Add(pbr);
@@ -133,13 +133,15 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
             // TString sample = "^650_325_picky_";
             // TString sample = "^850_100_picky_";
     
+    TString pass = "pass_presel__";
+        // TString pass = "";
     o = new TObjArray;
     oo = new TObjArray;
     ooo = new TObjArray;
     
     for(unsigned int iV = 0; vars[iV][0]; ++iV){
-        pb = new Plot(sample + "W__.*__"+ vars[iV]+"$");
-        pn = new Plot(sample + "non_W__.*__"+ vars[iV]+"$");
+        pb = new Plot(sample + "W__"+pass+"pt_.*__"+ vars[iV]+"$");
+        pn = new Plot(sample + "non_W__"+pass+"pt_.*__"+ vars[iV]+"$");
         if(pn->getNumberOfHistograms() != pb->getNumberOfHistograms()) continue;
         pb->toUnderOverflow();
         pn->toUnderOverflow();
@@ -153,7 +155,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
         oo->Add(pn);
         
         TCanvas * c = pn->makeCutEfficiencies(*pb,"W","non W");
-        ooo->Add(c);        
+        ooo->Add(c);    
     }
     Pint::drawAll(o,"W","",":mr");
     Pint::drawAll(oo,"non W","",":mr");
@@ -164,14 +166,14 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
 {
     Plot::cache("*_wCand_plots.root");
     
-// TString sample = "^merged_picky_";
-        TString sample = "^650_325_picky_";
+TString sample = "^merged_picky_";
+        // TString sample = "^650_325_picky_";
         // TString sample = "^850_100_picky_";
     TString mva = "mva";
     o = new TObjArray();
     
-    pb = new Plot(sample + "W__.*__"+ mva+"$");
-    pn = new Plot(sample + "non_W__.*__"+ mva+"$");
+    pb = new Plot(sample + "W__pt_.*__"+ mva+"$");
+    pn = new Plot(sample + "non_W__pt_.*__"+ mva+"$");
     pb->toUnderOverflow();
     pn->toUnderOverflow();
     pb->SetTitle("W");
@@ -197,8 +199,8 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     pn = pn->makeIntegral(true);
     o->Add(pn);
     
-    pb = new Plot(sample + "W__.*__allWs$");
-    pn = new Plot(sample + "non_W__.*__allWs$");
+    pb = new Plot(sample + "W__pt_.*__allWs$");
+    pn = new Plot(sample + "non_W__pt_.*__allWs$");
     pb->SetTitle("W");
     pn->SetTitle("non W");
     for(unsigned int iH = 0; iH < pb->getNumberOfHistograms(); ++iH){
@@ -208,11 +210,11 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     o->Add(pb);    
     o->Add(pn);
     
-    pn = new Plot(sample + "non_W__.*__fakeCategory$");
+    pn = new Plot(sample + "non_W_.*__fakeCategory$");
     pn->normalize();
     o->Add(pn);
     
-    pn = new Plot(sample + "non_W__.*_nFakes$");
+    pn = new Plot(sample + "non_W_.*_nFakes$");
     pn->normalize();
     o->Add(pn);
     
@@ -220,12 +222,12 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
 }
 
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_wCand_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wCand_plots.root")' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testWJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wCand_plots.root")'  &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testWJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_wCand_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testWJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_wCand_plots.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testWJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_wCand_plots.root")'  &
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/flattenWTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wCand_tree.root"))' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/produceWMVA.C+("T2tt_merged_wCand_tree.root","Events","mva","T2tt_merged_wCand_disc.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/flattenWTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_wCand_tree.root"))' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/produceWMVA.C+("T2tt_merged_wCand_tree.root","Events","mva","T2tt_merged_wCand_disc.root")' &
         
 
 
@@ -275,8 +277,12 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
 {
     Plot::cache("*_tCand_plots.root");
     
-    // TString vars[] = {"wPT","tMass","wMass","bPTotPT","bCSV","maxWCSV","bWLikli","wDisc","maxOWDisc","m23om123","m13om12","atan_m13om12","maxjjdr","wbDR","wbDEta","wbDPhi","nTCon","mva","pruned_mva",""};
-    TString vars[] = {"tMass","pruned_mva",""};
+    TString vars[] = {"wPT","tMass","wMass","bPTotPT","bCSV","maxWCSV","bWLikli","wDisc","maxOWDisc","m23om123","m13om12","atan_m13om12","maxjjdr","wbDR","wbDEta","wbDPhi","nTCon","mva","pruned_mva",""};
+
+    TString pass = "pass_presel__";
+        // TString pass = "";
+
+    // TString vars[] = {"tMass","pruned_mva",""};
 
     TString sample = "^merged_picky_";
     // TString sample = "^ttbar_merged_picky_";
@@ -288,8 +294,8 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     ooo = new TObjArray;
     
     for(unsigned int iV = 0; vars[iV][0]; ++iV){
-        pb = new Plot(sample + "t__.*__"+ vars[iV]+"$");
-        pn = new Plot(sample + "not_t__.*__"+ vars[iV]+"$");
+        pb = new Plot(sample + "t__"+pass+"pt_.*__"+ vars[iV]+"$");
+        pn = new Plot(sample + "not_t__"+pass+"pt_.*__"+ vars[iV]+"$");
         if(pn->getNumberOfHistograms() != pb->getNumberOfHistograms()) continue;
         pb->toUnderOverflow();
         pn->toUnderOverflow();
@@ -305,8 +311,8 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
         TCanvas * c = pn->makeCutEfficiencies(*pb,"t","not t");
         ooo->Add(c);    
     }
-    Pint::drawAll(o,"t","",":mr");
-    Pint::drawAll(oo,"not t","",":mr");
+    Pint::drawAll(o,"t","","");
+    Pint::drawAll(oo,"not t","","");
     Pint::drawAll(ooo,"ROC");
 
 }
@@ -320,8 +326,8 @@ TString sample = "^merged_picky_";
     TString mva = "mva";
     o = new TObjArray();
         //
-    pb = new Plot(sample + "t__.*__"+ mva+"$");
-    pn = new Plot(sample + "not_t__.*__"+ mva+"$");
+    pb = new Plot(sample + "t__pt_.*__"+ mva+"$");
+    pn = new Plot(sample + "not_t__pt_.*__"+ mva+"$");
     pb->toUnderOverflow();
     pn->toUnderOverflow();
     pb->SetTitle("t");
@@ -347,8 +353,8 @@ TString sample = "^merged_picky_";
     pn = pn->makeIntegral(true);
     o->Add(pn);
 
-    pb = new Plot(sample + "t__.*__allTs$");
-    pn = new Plot(sample + "not_t__.*__allTs$");
+    pb = new Plot(sample + "t__pt_.*__allTs$");
+    pn = new Plot(sample + "not_t__pt_.*__allTs$");
     pb->SetTitle("W");
     pn->SetTitle("non W");
     for(unsigned int iH = 0; iH < pb->getNumberOfHistograms(); ++iH){
@@ -358,7 +364,7 @@ TString sample = "^merged_picky_";
     o->Add(pb);
     o->Add(pn);
     
-    pn = new Plot(sample + "not_t__.*__fakeCategory$");
+    pn = new Plot(sample + "not_t__pt_.*__fakeCategory$");
     pn->normalize();
     o->Add(pn);
     
@@ -371,25 +377,25 @@ TString sample = "^merged_picky_";
     pb->normalize();
     o->Add(pb);
     
-    pb = new Plot(sample + "t__.*_nexcl$");
-    pb->normalize();
-    o->Add(pb);
-    
-    pb = new Plot(sample + "t__.*_nreal$");
-    pb->normalize();
-    o->Add(pb);
-    
-    pb = new Plot(sample + "t__.*_realsubrank$");
-    pb->normalize();
-    o->Add(pb);
-    
-    pb = new Plot(sample + "t__nExclPairs$");
-    pb->normalize();
-    o->Add(pb);
-    
-    pb = new Plot(sample + "t__realPairRanlk$");
-    pb->normalize();
-    o->Add(pb);
+    // pb = new Plot(sample + "t__.*_nexcl$");
+    // pb->normalize();
+    // o->Add(pb);
+    //
+    // pb = new Plot(sample + "t__.*_nreal$");
+    // pb->normalize();
+    // o->Add(pb);
+    //
+    // pb = new Plot(sample + "t__.*_realsubrank$");
+    // pb->normalize();
+    // o->Add(pb);
+    //
+    // pb = new Plot(sample + "t__nExclPairs$");
+    // pb->normalize(); 
+    // o->Add(pb);
+    //
+    // pb = new Plot(sample + "t__realPairRanlk$");
+    // pb->normalize();
+    // o->Add(pb);
     
     Pint::drawAll(o,"","hist",":m");
 }
@@ -397,12 +403,12 @@ TString sample = "^merged_picky_";
 
 
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tCand_plots.root")'   &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tCand_plots.root")' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/testTJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tCand_plots.root")'  &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testTJetVars.C+("sigSamples/T2tt_merged.root" ,"TestAnalyzer/Events","T2tt_merged_tCand_plots.root")'   &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testTJetVars.C+("sigSamples/T2tt_650_325.root","TestAnalyzer/Events","T2tt_650_325_tCand_plots.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/testTJetVars.C+("sigSamples/T2tt_850_100.root","TestAnalyzer/Events","T2tt_850_100_tCand_plots.root")'  &
 
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/flattenTTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_tCand_tree.root"))' &
-root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/produceTMVA.C+("T2tt_merged_tCand_tree.root","Events","mva","T2tt_merged_tCand_disc.root")' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/flattenTTree.C+("sigSamples/T2tt_merged.root","TestAnalyzer/Events","T2tt_merged_tCand_tree.root"))' &
+root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMethods/macros/CORRAL/training/produceTMVA.C+("T2tt_merged_tCand_tree.root","Events","mva","T2tt_merged_tCand_disc.root")' &
 
 
 // ---------------------------------------------------------------------
@@ -415,8 +421,11 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     RebinToNewBins b(13,bins);
     
     Plot::cache("*_tPairs_plots.root");
-    TString vars[] = {"leadTopPT","subLeadTopPT","avgTopPT",""};
+    // TString vars[] = {"leadTopPT","subLeadTopPT","avgTopPT",""};
     TString samples[] ={"650_325","850_100","merged",""};
+    
+    TString vars[] = {"avgTopPT",""};
+    // TString samples[] ={"merged",""};
         // TString samples[] ={"merged",""};
         // TString samples[] ={"650_325","merged",""};
     o = new TObjArray;
@@ -435,7 +444,7 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
             p->setMinMax(0.,1.);
             oo->Add(p);
         }
-        Pint::drawAll(o,"");
+        Pint::drawAll(o,"","",":m");
         Pint::drawAll(oo,"");
     
 }
