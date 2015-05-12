@@ -61,10 +61,10 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
     nohup root -b -q 'CORRAL/assistanceMacros/CORRALWriter.C+("metskim/T2tt_500_325_ntuple_metSkim.root"    ,"Events","corral")' &
     nohup root -b -q 'CORRAL/assistanceMacros/CORRALWriter.C+("metskim/T1tttt_1500_100_ntuple_metSkim.root"    ,"Events","corral")' &
         
-        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim_tag/SM_ntuple_metSkim_corral.root","Events","SM_corralInSD.root")' &
-        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim_tag/T2tt_850_100_ntuple_metSkim_corral.root","Events","T2tt_850_100_corralInSD.root")' &
-        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim_tag/T2tt_650_325_ntuple_metSkim_corral.root","Events","T2tt_650_325_corralInSD.root")' &
-        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim_tag/T1tttt_1500_100_ntuple_metSkim_corral.root","Events","T1tttt_1500_100_corralInSD.root")' &
+        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim/SM_ntuple_metSkim_corral.root","Events","SM_corralInSD.root")' &
+        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim/T2tt_850_100_ntuple_metSkim_corral.root","Events","T2tt_850_100_corralInSD.root")' &
+        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim/T2tt_650_325_ntuple_metSkim_corral.root","Events","T2tt_650_325_corralInSD.root")' &
+        root -b -q 'CORRAL/testCORRALInSD.C+("corralskim/T1tttt_1500_100_ntuple_metSkim_corral.root","Events","T1tttt_1500_100_corralInSD.root")' &
             
 
 {
@@ -164,4 +164,58 @@ root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_3_1/src/AnalysisMe
 }
 
     
+}
+
+
+{
+    TString pts[] = {"pt_lt150__","pt_eq150to300__","pt_eq300to500__","pt_geq500__",""};
+        // TString pts[] = {"pt_eq150to300__","pt_eq300to500__","pt_geq500__",""};
+    // TString vars[] = {"leadTopPTRes","subleadTopPTRes","avgTopPTRes","deltaPhiRes","deltaEtaRes","invMassRes",""};
+    // TString vars[] = {"avgTopPTRes",""};
+        TString vars[] = {"gen_MT2","","corralMT2Res","ak4MT2Res",""};
+    
+    o = new TObjArray;
+    oo = new TObjArray;
+    for(unsigned int iV = 0; vars[iV][0]; ++iV){
+        for(unsigned int iP = 0; pts[iP][0]; ++iP){
+            p = new Plot("(all|good_partons|good_jets|good_pair)__"+ pts[iP] + vars[iV]);
+            p->sitrep();
+            p->arrange("all > .*partons > .*jets > .*pair");
+            p->SetTitle(Plot::translated(pts[iP]));
+            p->toUnderOverflow();
+            o->Add(p);
+            p = (Plot*)p->Clone();
+            p->normalize();
+            oo->Add(p);                
+    }
+}
+Pint::drawAll(o,"","","");
+Pint::drawAll(oo,"","","");
+}
+
+
+{
+    // TString pts[] = {"pt_lt150__","pt_eq150to300__","pt_eq300to500__","pt_geq500__",""};
+        TString pts[] = {"pt_eq150to300__","pt_eq300to500__","pt_geq500__",""};
+    // TString vars[] = {"leadTopPTRes","subleadTopPTRes","avgTopPTRes","deltaPhiRes","deltaEtaRes","invMassRes",""};
+    // TString vars[] = {"avgTopPTRes","invMassRes",""};
+        TString vars[] = {"(corral|ak4)MT2Res","",""};
+    
+    o = new TObjArray;
+    oo = new TObjArray;
+    for(unsigned int iV = 0; vars[iV][0]; ++iV){
+        for(unsigned int iP = 0; pts[iP][0]; ++iP){
+            p = new Plot("all__"+ pts[iP] + vars[iV]);
+            p->sitrep();
+            p->arrange("all > .*partons > .*jets > .*pair");
+            p->SetTitle(Plot::translated(pts[iP]));
+            p->toUnderOverflow();
+            o->Add(p);
+            p = (Plot*)p->Clone();
+            p->normalize();
+            oo->Add(p);                
+    }
+}
+Pint::drawAll(o,"","","");
+Pint::drawAll(oo,"","","");
 }

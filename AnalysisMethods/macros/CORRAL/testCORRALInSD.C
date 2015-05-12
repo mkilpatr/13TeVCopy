@@ -44,26 +44,27 @@ public:
 
   }
 
-
-  void runEvent(){
-
-    // -------------  Return corral info from the event
-    corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
-    CORRAL::CORRALData& data = *corralReader.corral;
-    // -------------
-
+  bool setupEvent(){
     // -------------  preselection
     vector<RecoJetF*> ak4Jets;
     vector<RecoJetF*> ak4BJets;
     vector<RecoJetF*> ak4NonBJets;
     cleanJets(&ak4Reader,ak4Jets,&ak4BJets,&ak4NonBJets);
-    if(ak4Jets.size() < 6) return;
-    if(met->pt() < 200) return;
+    if(ak4Jets.size() < 6) return false;
+    if(met->pt() < 200) return false;
     int nTPICKY = 0;
     for(auto* j : bJets) if(isTightBJet(*j)) nTPICKY++;
-    if(nTPICKY == 0) return;
-    if(nVetoedLeptons + nVetoedTaus > 0) return;
-    // -------------
+    if(nTPICKY == 0) return false;
+    if(nVetoedLeptons + nVetoedTaus > 0) return false;
+
+    // -------------  Return corral info from the event
+    corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
+    return true;
+  }
+
+  void testSRVariables(){
+    if(!setupEvent()) return;
+    CORRAL::CORRALData& data = *corralReader.corral;
 
     eventPlots.rewind();
     eventPlots("ttbar__",process == defaults::TTBAR);
@@ -188,7 +189,12 @@ public:
 
 
 
+
     MomentumF ak4pseudoJet1; MomentumF ak4pseudoJet2;
+    vector<RecoJetF*> ak4Jets;
+    vector<RecoJetF*> ak4BJets;
+    vector<RecoJetF*> ak4NonBJets;
+    cleanJets(&ak4Reader,ak4Jets,&ak4BJets,&ak4NonBJets);
     psuedoCalc->makePseudoJets(ak4Jets,ak4pseudoJet1,ak4pseudoJet2,0);
     double ak4_MT2   = Mt2Calc->CalcMT2(&ak4pseudoJet1,&ak4pseudoJet2, met, 0);
 
@@ -206,6 +212,122 @@ public:
      delete Mt2Calc;
      delete psuedoCalc;
 
+  }
+
+  void testTopResolution(){
+
+    if(!setupEvent()) return;
+    CORRAL::CORRALData& data = *corralReader.corral;
+
+    if(!data.reconstructedTop) return;
+
+    eventPlots.rewind();
+    eventPlots("",process == defaults::SIGNAL);
+
+    std::vector<RecoJetF*> recoJets;
+    std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
+    TopJetMatching::TopDecayEvent* topDecayEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
+
+    int nBadTops = 0;
+    int nBadPartons = 0;
+    int nBadJets = 0;
+
+    vector<MomentumF> tops;
+    for(const auto& t : topDecayEvent->topDecays){
+      if(t.isLeptonic) return;
+      if(TMath::Abs(t.top->eta()) >= 2.4 ) nBadTops++;
+      if(t.diag  == TopJetMatching::BAD_PARTON) nBadPartons++;
+      if(t.diag  != TopJetMatching::RESOLVED_TOP ) nBadJets++;
+      tops.push_back(t.top->p4());
+    }
+    sort(tops.begin(), tops.end(), PhysicsUtilities::greaterPT<MomentumF>());
+    if(tops.size() != 2) return;
+
+    int realRank = -1;
+    for(unsigned int iR = 0; iR < data.rankedTPairs.size(); ++iR){
+      if(data.tCands[data.rankedTPairs[iR].first].type != 2 &&data.tCands[data.rankedTPairs[iR].second].type != 2 ){
+        realRank = iR + 1;
+        break;
+      }
+    }
+
+    ++eventPlots;
+    eventPlots("all__",true);
+    eventPlots("good_tops__", nBadTops == 0);
+    eventPlots("good_partons__", nBadTops == 0 && nBadPartons == 0 );
+    eventPlots("good_jets__", nBadTops == 0 && nBadPartons == 0 && nBadJets == 0);
+    eventPlots("good_pair__", nBadTops == 0 && nBadPartons == 0 && nBadJets == 0 && realRank == 1);
+
+    eventPlots.checkPoint(0);
+
+    const CORRAL::TCand * top1 = PhysicsUtilities::deltaR2(data.top1->mom,tops[0]) < PhysicsUtilities::deltaR2(data.top2->mom,tops[0]) ? data.top1 : data.top2;
+    const CORRAL::TCand * top2 = top1 == data.top1 ? data.top2 : data.top1;
+
+    eventPlots.revert(0);
+    ++eventPlots;
+    eventPlots("pt_lt150__", tops[0].pt() < 150);
+    eventPlots("pt_eq150to300__", tops[0].pt() >= 150 && tops[0].pt() < 300);
+    eventPlots("pt_eq300to500__", tops[0].pt() >= 300 && tops[0].pt() < 500);
+    eventPlots("pt_geq500__", tops[0].pt() >= 500);
+
+    eventPlots.fill( tops[0].pt() == 0 ? 10.0 : top1->mom.pt() / tops[0].pt(), weight, "leadTopPTRes",";Leading top p_{T,reco} / p_{T,gen}", 50,0,2);
+
+    eventPlots.revert(0);
+    ++eventPlots;
+    eventPlots("pt_lt150__", tops[1].pt() < 150);
+    eventPlots("pt_eq150to300__", tops[1].pt() >= 150 && tops[1].pt() < 300);
+    eventPlots("pt_eq300to500__", tops[1].pt() >= 300 && tops[1].pt() < 500);
+    eventPlots("pt_geq500__", tops[1].pt() >= 500);
+
+    eventPlots.fill( tops[1].pt() == 0 ? 10.0 : top2->mom.pt() / tops[1].pt(), weight, "subleadTopPTRes",";Sub leading top p_{T,reco} / p_{T,gen}", 50,0,2);
+
+    double ptAvg = (tops[1].pt() + tops[0].pt()) / 2;
+    eventPlots.revert(0);
+    ++eventPlots;
+    eventPlots("pt_lt150__", ptAvg < 150);
+    eventPlots("pt_eq150to300__", ptAvg >= 150 && ptAvg < 300);
+    eventPlots("pt_eq300to500__", ptAvg >= 300 && ptAvg < 500);
+    eventPlots("pt_geq500__", ptAvg >= 500);
+
+    eventPlots.fill( ptAvg == 0 ? 10.0 : ( (top1->mom.pt() + top2->mom.pt() ) / 2  ) / ptAvg, weight, "avgTopPTRes",";Avg. top p_{T,reco} / p_{T,gen}", 50,0,2);
+
+    eventPlots.fill( PhysicsUtilities::absDeltaPhi(top1->mom,top2->mom) - PhysicsUtilities::absDeltaPhi(tops[0],tops[1]), weight, "deltaPhiRes",";Top pair |#Delta#phi|_{reco} - |#Delta#phi|_{gen}", 50,-3.2,3.2);
+    eventPlots.fill( PhysicsUtilities::absDeltaEta(top1->mom,top2->mom) - PhysicsUtilities::absDeltaEta(tops[0],tops[1]), weight, "deltaEtaRes",";Top pair |#Delta#eta|_{reco} - |#Delta#eta|_{gen}", 50,-3.2,3.2);
+    eventPlots.fill( (tops[0].p4() + tops[1].p4()).mass() == 0 ? 10.0 : (top1->mom.p4() + top2->mom.p4()).mass() / (tops[0].p4() + tops[1].p4()).mass(), weight, "invMassRes",";top pair  mass_{reco} / mass_{gen}", 50,0,2);
+
+    Mt2Helper * Mt2Calc    = new Mt2Helper();
+
+
+    double corral_MT2   = data.reconstructedTop ? Mt2Calc->CalcMT2(&data.top1->mom,&data.top2->mom, met, 0) : 0;
+    double gen_MT2   =  Mt2Calc->CalcMT2(&tops[0],&tops[1], met, 0);
+
+
+    MomentumF ak4pseudoJet1; MomentumF ak4pseudoJet2;
+    vector<RecoJetF*> ak4Jets;
+    vector<RecoJetF*> ak4BJets;
+    vector<RecoJetF*> ak4NonBJets;
+    cleanJets(&ak4Reader,ak4Jets,&ak4BJets,&ak4NonBJets);
+    CreatePseudoJets * psuedoCalc = new CreatePseudoJets();
+    psuedoCalc->makePseudoJets(ak4Jets,ak4pseudoJet1,ak4pseudoJet2,0);
+    double ak4_MT2   = Mt2Calc->CalcMT2(&ak4pseudoJet1,&ak4pseudoJet2, met, 0);
+
+    eventPlots.fill(gen_MT2 ,weight,"gen_MT2",";gen MT2.",100,0,900);
+    eventPlots.fill(corral_MT2 ,weight,"corral_MT2",";corral MT2.",100,0,900);
+    eventPlots.fill(ak4_MT2 ,weight,"ak4_MT2",";ak4 MT2.",100,0,900);
+
+    if(gen_MT2 > 0 ){
+      eventPlots.fill( gen_MT2 == 0 ? 10.0 : corral_MT2 / gen_MT2, weight, "corralMT2Res",";MT2_{reco top pair}/MT2_{gen top pair}", 75,0,4);
+      eventPlots.fill( gen_MT2 == 0 ? 10.0 : ak4_MT2 / gen_MT2, weight, "ak4MT2Res",";MT2_{ak4 jets}/MT2_{gen top pair}", 75,0,4);
+    }
+
+
+
+
+  }
+
+
+  void runEvent(){
+    testTopResolution();
   }
 
   void out(TString outputPath){
