@@ -199,9 +199,6 @@ void Analyzer::runEvent()
 
   if(!passpreselection) return;
 
-  // fill trees after preselection
-  outtree->Fill();
-
   // plots after preselection
   plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
   plots["leppt_passpresel"]     ->Fill(lep->pt(), wgt);
@@ -252,6 +249,9 @@ void Analyzer::runEvent()
     fjets_bl.push_back(tempjet_bl);
   }
   mt2bl = mt2bl_test2.mt2blIndirect(fjets_bl,btags_bl,lep,met);
+  
+  // fill trees after preselection, and after mt2 calculations
+  outtree->Fill();
   
 }
 
