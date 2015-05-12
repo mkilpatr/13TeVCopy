@@ -262,8 +262,23 @@ CORRAL::WMVA::WMVA(TString filename,TString bdtName ){
   i_nWCon      = mva->findVariable("nWCon"      );
 }
 
+bool CORRAL::WMVA::passPresel(WCandVars& vars) const {
+//  if(vars.wMass > 200)      return false;
+//  if(vars.maxCSV > .941)     return false;
+//  if(vars.wJetLikli2 < -.8) return false;
+//  if(vars.deta > 2.5)        return false;
+//  if(vars.dr > 3.5)         return false;
+  return true;
+}
+
 float CORRAL::WMVA::mvaVal(WCandVars& vars) const {
   const auto * mva = param->get(min(vars.wPT,float(950.)));
+
+  if(!passPresel(vars)){
+    vars.mva = -1;
+    return -1;
+  }
+
   mva->setVariable(i_wPT        ,vars.wPT               );
   mva->setVariable(i_wMass      ,min(vars.wMass,float(500)));
   mva->setVariable(i_pt2opt1    ,vars.pt2opt1           );
@@ -446,6 +461,12 @@ CORRAL::T_MVA::T_MVA(TString filename,TString bdtName ){
 
 float CORRAL::T_MVA::mvaVal(TCandVars& vars) const {
     const auto * mva = param->get(min(vars.tPT,float(950.)));
+
+    if(!passPresel(vars)){
+      vars.mva = -1;
+      return -1;
+    }
+
     mva->setVariable(i_tPT           ,float(vars.tPT)           );
     mva->setVariable(i_wPT           ,float(vars.wPT)           );
     mva->setVariable(i_tMass         ,min(float(500),vars.tMass));
@@ -469,6 +490,15 @@ float CORRAL::T_MVA::mvaVal(TCandVars& vars) const {
     return vars.mva;
 
   }
+
+bool CORRAL::T_MVA::passPresel(const TCandVars& vars) const {
+//  if(vars.tMass > 300 || vars.tMass < 110 ) return false;
+//  if(vars.bWLikli < -.9 ) return false;
+//  if(vars.m23om123 < .2) return false;
+//  if(vars.m13om12 > 3) return false;
+  return true;
+}
+
 
 bool CORRAL::T_MVA::passMVA(const double pt, const double mvaV) const {
   if(pt < 150){
@@ -512,20 +542,17 @@ void CORRAL::pruneTopCandidates(const std::vector<TCand>& tCands,const std::vect
   }
 }
 
-std::vector<std::pair<int,int>> CORRAL::getRankedTopPairs(const std::vector<TCand>& tCands,const std::vector<TCandVars>& tCandVars,
-    const std::vector<ucsbsusy::RankedIndex>& rankedTops){
+std::vector<std::pair<int,int>> CORRAL::getRankedTopPairs(const std::vector<TCand>& tCands, const std::vector<ucsbsusy::RankedIndex>& rankedTops){
   std::vector<std::pair<int,int>> rankedPairs;
   std::vector<ucsbsusy::RankedIndex> multiRanks;
 
   for(unsigned int iC = 0; iC < rankedTops.size();++iC){
   const auto& cand = tCands[rankedTops[iC].second];
-  const auto& vars = tCandVars[rankedTops[iC].second];
   for(unsigned int iC2 = iC + 1; iC2 < rankedTops.size(); ++iC2){
     const auto& cand2 = tCands[rankedTops[iC2].second];
-    const auto& vars2 = tCandVars[rankedTops[iC2].second];
     if(!cand.exclJets(cand2)) continue;
     multiRanks.emplace_back(
-        pairMetric(vars.mva,vars2.mva)
+        pairMetric(rankedTops[iC].first,rankedTops[iC2].first)
         ,rankedPairs.size());
     rankedPairs.emplace_back(rankedTops[iC].second,rankedTops[iC2].second);
   }
@@ -539,6 +566,52 @@ std::vector<std::pair<int,int>> CORRAL::getRankedTopPairs(const std::vector<TCan
     rankedByMulti[iR].second = rankedPairs[multiRanks[iR].second].second;
   }
   return rankedByMulti;
+}
+
+void CORRAL::findExclusiveTops(
+    const std::vector<TCand>& tCands, const std::vector<ucsbsusy::RankedIndex>& rankedTops,
+    const std::pair<double, std::vector<int> >& currentList, const unsigned int startI, const unsigned int endI,
+    std::vector< std::pair<double, std::vector<int> > >& bestList)
+{
+  const unsigned int currentLevel = currentList.second.size();
+  assert(bestList.size() >= currentLevel);
+
+    for(unsigned int iJ = startI; iJ < endI; ++iJ){
+      bool found = false;
+      for(unsigned int iO = 0; iO <currentLevel; ++iO ){
+        if(tCands[currentList.second[iO]].exclJets(tCands[rankedTops[iJ].second]) ) continue;
+        found = true;
+        break;
+      }
+      if(found) continue;
+
+      std::pair<double, std::vector<int> >* newList = new std::pair<double, std::vector<int> >(currentList);
+      newList->first += rankedTops[iJ].first;
+      newList->second.push_back(rankedTops[iJ].second);
+
+      if(bestList.size() < currentLevel + 1){
+        bestList.push_back(*newList);
+      } else if(bestList[currentLevel].first < newList->first ){
+        bestList[currentLevel] = *newList;
+      }
+      if(currentLevel + 1 < 4)
+        findExclusiveTops(tCands,rankedTops,*newList,iJ+1,endI, bestList);
+      delete newList;
+    }
+}
+
+std::vector<std::vector<int> > CORRAL::countTops(const std::vector<TCand>& tCands,const std::vector<ucsbsusy::RankedIndex>& rankedTops){
+  std::vector< std::pair<double, std::vector<int> > >* bestList = new std::vector< std::pair<double, std::vector<int> > >;
+  std::pair<double, std::vector<int> >* newList = new  std::pair<double, std::vector<int> >;
+  findExclusiveTops(tCands,rankedTops,*newList,0, rankedTops.size(), *bestList);
+
+  std::vector<std::vector<int> > prunedList;
+  prunedList.reserve(bestList->size());
+  for(const auto& bL : *bestList)
+    prunedList.push_back(bL.second);
+  delete bestList;
+  delete newList;
+  return prunedList;
 }
 
 // ---------------------------------------------------------------------
@@ -556,6 +629,7 @@ void CORRAL::CORRALData::reset(){
   tCands   .clear();
   tCandVars.clear();
   rankedTPairs.clear();
+  bestTopMatches.clear();
   reconstructedTop = false;
   top1 = 0;
   top2 = 0;
@@ -594,12 +668,14 @@ bool CORRAL::CORRALReconstructor::getTopPairs(const ucsbsusy::GenParticleReader 
   if(prunedTops == 0){
     prunedTops = new vector<RankedIndex>();
     pruneTopCandidates(data.tCands,data.tCandVars,*prunedTops,&tMVA);
-    data.rankedTPairs = getRankedTopPairs(data.tCands,data.tCandVars,*prunedTops);
+    data.rankedTPairs = getRankedTopPairs(data.tCands,*prunedTops);
+//    data.bestTopMatches = countTops(data.tCands,*prunedTops);
     delete prunedTops;
   } else{
     prunedTops->clear();
     pruneTopCandidates(data.tCands,data.tCandVars,*prunedTops,&tMVA);
-    data.rankedTPairs = getRankedTopPairs(data.tCands,data.tCandVars,*prunedTops);
+    data.rankedTPairs = getRankedTopPairs(data.tCands,*prunedTops);
+//    data.bestTopMatches = countTops(data.tCands,*prunedTops);
   }
 
   if(data.rankedTPairs.size()){

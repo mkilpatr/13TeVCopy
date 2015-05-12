@@ -69,6 +69,10 @@ public:
       eventPlots("W__"    ,wCands[iC].isW);
       eventPlots("non_W__",!wCands[iC].isW);
 
+      ++eventPlots;
+      eventPlots("",true);
+      eventPlots("pass_presel__",wMVA.passPresel(vars));
+
       const float pt = vars.wPT;
 
       eventPlots.fill(pt,1,"pt",";p_{T}",80,0,800,prefix);
@@ -79,6 +83,7 @@ public:
       eventPlots("pt_eq100to200__" ,pt >= 100 && pt < 200);
       eventPlots("pt_eq200to300__" ,pt >= 200 && pt < 300);
       eventPlots("pt_geq300__" ,pt >= 300);
+
 
       eventPlots.fill(vars.wMass        ,1,"mass"      ,";mass"               ,100,0,500,prefix);
       eventPlots.fill(vars.pt2opt1      ,1,"pt2opt1"   ,";j2(p_{T})/j1(p_{T})",100,0,1,prefix);
@@ -105,6 +110,10 @@ public:
       eventPlots.rewind();
       eventPlots("W__"    ,wCands[iC].isW);
       eventPlots("non_W__",!wCands[iC].isW);
+
+      ++eventPlots;
+      eventPlots("",true);
+      eventPlots("pass_presel__",wMVA.passPresel(wCandVars[iC]));
 
       ++eventPlots;
       eventPlots("pt_all__"      ,true);

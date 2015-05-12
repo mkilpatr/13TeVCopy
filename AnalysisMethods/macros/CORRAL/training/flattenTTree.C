@@ -113,6 +113,12 @@ public:
     for(unsigned int iC = 0; iC < tCands.size(); ++iC){
       if(tCands[iC].type == 0) continue;
       auto& vars = tCandVars[iC];
+
+//      if(vars.tMass > 300 || vars.tMass < 110 ) continue;
+//      if(vars.bWLikli < -.9 ) continue;
+//      if(vars.m23om123 < .2) continue;
+//      if(vars.m13om12 > 3) continue;
+
       data.fill<float>(tPT          ,float(vars.tPT)            );
       data.fill<float>(wPT          ,float(vars.wPT)            );
       data.fill<float>(tMass        ,min(float(500),vars.tMass) );
