@@ -143,6 +143,7 @@ struct WMVA{
 
   WMVA(TString filename,TString bdtName );
 
+  bool passPresel(WCandVars& vars) const;
   float mvaVal(WCandVars& vars) const;
   bool passMVA(const double pt, const double mvaV) const;
 };
@@ -238,6 +239,7 @@ struct T_MVA{
 
   T_MVA(TString filename,TString bdtName );
 
+  bool passPresel(const TCandVars& vars) const;
   float mvaVal(TCandVars& vars) const;
   bool passMVA(const double pt, const double mvaV) const;
 };
@@ -259,8 +261,15 @@ float pairMetric(const float mva1, const float mva2){ return mva1 + mva2; }
 //Find top pairs
 //Make combinations of all non-overlapping top pairs
 //rank them by some metric
-std::vector<std::pair<int,int>> getRankedTopPairs(const std::vector<TCand>& tCands,const std::vector<TCandVars>& tCandVars,
-    const std::vector<ucsbsusy::RankedIndex>& rankedTops);
+std::vector<std::pair<int,int>> getRankedTopPairs(const std::vector<TCand>& tCands, const std::vector<ucsbsusy::RankedIndex>& rankedTops);
+
+
+void findExclusiveTops(
+    const std::vector<TCand>& tCands, const std::vector<ucsbsusy::RankedIndex>& rankedTops,
+    const std::pair<double, std::vector<int> >& currentList, const unsigned int startI, const unsigned int endI,
+    std::vector< std::pair<double, std::vector<int> > >& bestList);
+
+std::vector<std::vector<int> > countTops(const std::vector<TCand>& tCands,const std::vector<ucsbsusy::RankedIndex>& rankedTops);
 
 // ---------------------------------------------------------------------
 //
@@ -279,6 +288,7 @@ struct CORRALData {
   std::vector<TCand>     tCands   ;
   std::vector<TCandVars> tCandVars;
   std::vector<std::pair<int,int>> rankedTPairs;
+  std::vector<std::vector<int> > bestTopMatches;
 
   //user level information
   bool reconstructedTop;

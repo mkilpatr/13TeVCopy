@@ -57,6 +57,11 @@ public:
     getWCandidates(recoJets,decays,wCands);
     for(auto& cand : wCands){
       auto vars = calculateWCandVars(jetReader,recoJets,jetVars,cand);
+//      if(vars.wMass > 200)      continue;
+//      if(vars.maxCSV > .941)     continue;
+//      if(vars.wJetLikli2 < -.8) continue;
+//      if(vars.deta > 2.5)        continue;
+//      if(vars.dr > 3.5)         continue;
 
       data.fill<float>(wPT       ,float(vars.wPT               ));
       data.fill<float>(wMass     ,float(min(vars.wMass,float(500))));

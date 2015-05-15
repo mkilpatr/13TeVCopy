@@ -84,6 +84,10 @@ public:
       eventPlots("t_bad_combo__",tCands[iC].type == 0);
       eventPlots("not_t__"      ,tCands[iC].type == 2);
 
+      ++eventPlots;
+      eventPlots("",true);
+      eventPlots("pass_presel__",tMVA.passPresel(vars));
+
       auto pt = vars.tPT;
       eventPlots.fill(pt,1,"pt",";p_{T}",100,0,1000,prefix);
 
@@ -128,6 +132,10 @@ public:
       eventPlots("t__"          ,cand.type == 1 || cand.type == 0);
       eventPlots("t_bad_combo__",false);
       eventPlots("not_t__"      ,cand.type == 2);
+
+      ++eventPlots;
+      eventPlots("",true);
+      eventPlots("pass_presel__",tMVA.passPresel(vars));
 
       auto pt = vars.tPT;
       eventPlots.fill(pt,1,"pt",";p_{T}",100,0,1000,prefix);
