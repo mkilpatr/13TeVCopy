@@ -110,6 +110,16 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "dPhivHtMETnoB"    , &vars.dPhivHtMETnoB    ,    "dPhivHtMETnoB/F" );
     outtree->Branch( "dotHtAlongAway"   , &vars.dotHtAlongAway   ,   "dotHtAlongAway/F" );
     outtree->Branch( "dotHtAlongAwayNoB", &vars.dotHtAlongAwayNoB,"dotHtAlongAwayNoB/F" );
+    outtree->Branch( "MT2a_000"         , &vars.MT2a_000         ,         "MT2a_000/F" );
+    outtree->Branch( "MT2a_100"         , &vars.MT2a_100         ,         "MT2a_100/F" );
+    outtree->Branch( "MT2a_150"         , &vars.MT2a_150         ,         "MT2a_150/F" );
+    outtree->Branch( "MT2a_200"         , &vars.MT2a_200         ,         "MT2a_200/F" );
+    outtree->Branch( "MT2a_250"         , &vars.MT2a_250         ,         "MT2a_250/F" );
+    outtree->Branch( "MT2b_000"         , &vars.MT2b_000         ,         "MT2b_000/F" );
+    outtree->Branch( "MT2b_100"         , &vars.MT2b_100         ,         "MT2b_100/F" );
+    outtree->Branch( "MT2b_150"         , &vars.MT2b_150         ,         "MT2b_150/F" );
+    outtree->Branch( "MT2b_200"         , &vars.MT2b_200         ,         "MT2b_200/F" );
+    outtree->Branch( "MT2b_250"         , &vars.MT2b_250         ,         "MT2b_250/F" );
 
   } // Analyzer()
 
@@ -222,6 +232,16 @@ void Analyzer::loadPlots() {
   plots["dPhivHtMETnoB_passPre"]     = new TH1F("dPhivHtMETnoB_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)| (noBs); "+yTitle).c_str(),  21,   0  ,    3.15 ); // 10
   plots["dotHtAlongAway_passPre"]    = new TH1F("dotHtAlongAway_passPre"   , (passPre+"; dot H_{T}^{along}/H_{T}^{away}; "        +yTitle).c_str(),  40,   0  ,    2    ); // 10
   plots["dotHtAlongAwayNoB_passPre"] = new TH1F("dotHtAlongAwayNoB_passPre", (passPre+"; dot H_{T}^{along}/H_{T}^{away} (noBs); " +yTitle).c_str(),  40,   0  ,    2    ); // 10
+  plots["MT2a_000_passPre"]          = new TH1F("MT2a_000_passPree"        , (passPre+"; MT2a_000; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2a_100_passPre"]          = new TH1F("MT2a_100_passPree"        , (passPre+"; MT2a_100; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2a_150_passPre"]          = new TH1F("MT2a_150_passPree"        , (passPre+"; MT2a_150; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2a_200_passPre"]          = new TH1F("MT2a_200_passPree"        , (passPre+"; MT2a_200; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2a_250_passPre"]          = new TH1F("MT2a_250_passPree"        , (passPre+"; MT2a_250; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2b_000_passPre"]          = new TH1F("MT2b_000_passPree"        , (passPre+"; MT2b_000; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2b_100_passPre"]          = new TH1F("MT2b_100_passPree"        , (passPre+"; MT2b_100; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2b_150_passPre"]          = new TH1F("MT2b_150_passPree"        , (passPre+"; MT2b_150; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2b_200_passPre"]          = new TH1F("MT2b_200_passPree"        , (passPre+"; MT2b_200; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2b_250_passPre"]          = new TH1F("MT2b_250_passPree"        , (passPre+"; MT2b_250; "                              +yTitle).c_str(), 100,   0  ,  1000   );
 
   // set Sumw2 for all histograms
   for(map<TString,TH1F*>::iterator plotsIt = plots.begin(); plotsIt != plots.end(); ++plotsIt) plotsIt->second->Sumw2();
@@ -331,6 +351,16 @@ void Analyzer::runEvent() {
   plots["dPhivHtMETnoB_passPre"]    ->Fill(vars.dPhivHtMETnoB    , wt);
   plots["dotHtAlongAway_passPre"]   ->Fill(vars.dotHtAlongAway   , wt);
   plots["dotHtAlongAwayNoB_passPre"]->Fill(vars.dotHtAlongAwayNoB, wt);
+  plots["MT2a_000_passPre"]         ->Fill(vars.MT2a_000         , wt);
+  plots["MT2a_100_passPre"]         ->Fill(vars.MT2a_100         , wt);
+  plots["MT2a_150_passPre"]         ->Fill(vars.MT2a_150         , wt);
+  plots["MT2a_200_passPre"]         ->Fill(vars.MT2a_200         , wt);
+  plots["MT2a_250_passPre"]         ->Fill(vars.MT2a_250         , wt);
+  plots["MT2b_000_passPre"]         ->Fill(vars.MT2b_000         , wt);
+  plots["MT2b_100_passPre"]         ->Fill(vars.MT2b_100         , wt);
+  plots["MT2b_150_passPre"]         ->Fill(vars.MT2b_150         , wt);
+  plots["MT2b_200_passPre"]         ->Fill(vars.MT2b_200         , wt);
+  plots["MT2b_250_passPre"]         ->Fill(vars.MT2b_250         , wt);
 
 } // Analyzer::runEvent()
 
@@ -383,12 +413,12 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
   // Adjustments to default configuration
   BaseTreeAnalyzer::ConfigPars pars;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
-  pars.minJetPt = 30; // tempory to see if things improve
+  pars.minJetPt = 20;
   //pars.cleanJetsvSelectedLeptons_ = true;
 
   Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,500000); // for testing
+  //a.analyze(1000,100000); // for testing
   a.out(sample, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
