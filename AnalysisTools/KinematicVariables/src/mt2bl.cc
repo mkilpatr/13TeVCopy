@@ -97,7 +97,7 @@
 #include <utility>
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h" // need for deltaR
-#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
+//#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
