@@ -113,6 +113,8 @@ void GenParticleFiller::addHardInteraction(reco::GenParticleRefVector& outPartic
     bool addable = false;
     if(ParticleInfo::isDocOutgoing(status)) addable = true;
     else if(ParticleInfo::isDocIntermediate(status)) addable = true;
+    //Add all BSM particles in status==1 (to include e.g., LSP)
+    else if(ParticleInfo::isBSM(pdgId) && ParticleInfo::isFinal(status)) addable = true;
     //also add all direct decay products of EWK bosons
     else if(!ParticleInfo::isEWKBoson(pdgId)) {
       for(unsigned int iM = 0; iM < part->numberOfMothers(); ++iM)

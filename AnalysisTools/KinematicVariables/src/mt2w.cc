@@ -64,33 +64,11 @@
 
 *******************************************************************************/
 
-#include <iostream>
-#include <math.h>
 #include "AnalysisTools/KinematicVariables/interface/mt2w.h"
-#include <string>
-#include <cstdlib>
-#include <iostream>
-#include <iomanip>
-#include <stdlib.h>
-#include <stdio.h>
-#include "TLorentzVector.h"
-#include "TFitter.h"
-#include "TString.h"
-#include "Math/VectorUtil.h"
-#include "AnalysisTools/DataFormats/interface/Momentum.h"
-#include "AnalysisTools/DataFormats/interface/Lepton.h"
-#include "AnalysisTools/DataFormats/interface/Jet.h"
 
-// not sure on these
-#include <vector>
-#include <utility>
-#include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h" // need for deltaR
-#include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/Utilities/interface/Types.h"
-
+using namespace std;
 using namespace ucsbsusy;
+
 namespace mt2w_bisect
 {
 // user calls this with vector of jets and their btags. it calculates mt for a choice of two bjets.
