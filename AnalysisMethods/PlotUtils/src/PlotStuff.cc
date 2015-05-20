@@ -385,22 +385,22 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         }
 
         if(isData(sname)) {
-          plot->addHist(hists[isam], sample->label, "E");
+          plot->addHist(hists[isam], sample->label, "E", 0, 0, 1, 1, config_.plotoverflow);
         } else if(isSignal(sname)) {
           if(config_.sigscale < 0) {
-            plot->addHistScaled(hists[isam], bkgtot, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname]);
+            plot->addHistScaled(hists[isam], bkgtot, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 1, config_.plotoverflow);
             if(bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1) > max) {
               max = bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1);
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else if (config_.sigscale != 1) {
-            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), config_.addsigscaletxt ? TString::Format("%dx %s",config_.sigscale, sample->label.Data()) : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname]);
+            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), config_.addsigscaletxt ? TString::Format("%dx %s",config_.sigscale, sample->label.Data()) : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 1, config_.plotoverflow);
             if(config_.sigscale*hists[isam]->GetMaximum() > max) {
               max = config_.sigscale*hists[isam]->GetMaximum();
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else {
-            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname]);
+            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 1, config_.plotoverflow);
           }
         } else {
           bkgtot += hists[isam]->Integral(0, hists[isam]->GetNbinsX()+1);
@@ -441,13 +441,13 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
           nbins = hists[isam]->GetNbinsX();
 
         if(config_.scalecompto1) {
-          plot->addHistScaled(hists[isam], 1.0, sample->label, config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname],1);
+          plot->addHistScaled(hists[isam], 1.0, sample->label, config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname], 1, config_.plotoverflow);
           if(hists[isam]->GetMaximum()/hists[isam]->Integral(0,nbins+1) > max) {
             max = hists[isam]->GetMaximum()/hists[isam]->Integral(0,nbins+1);
             maxbin = hists[isam]->GetMaximumBin();
           }
         } else {
-          plot->addHist(hists[isam], sample->label,config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname],1);
+          plot->addHist(hists[isam], sample->label,config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname], 1, config_.plotoverflow);
           if(hists[isam]->GetMaximum() > max) {
             max = hists[isam]->GetMaximum();
             maxbin = hists[isam]->GetMaximumBin();
@@ -502,7 +502,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
 
         hists[isam]->Divide(hist0);
 
-        plot->addHist(hists[isam], sample->label, config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname],1);
+        plot->addHist(hists[isam], sample->label, config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname], 1, config_.plotoverflow);
 
         if(hists[isam]->GetMaximum() > max) {
           max = hists[isam]->GetMaximum();
