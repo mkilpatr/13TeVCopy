@@ -89,7 +89,54 @@ int Plot::getStackMaxBin()
 
 }
 
-void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+TH1F* Plot::addOverFlow(TH1F* h, unsigned int overflowopt)
+{
+
+  int nbins = h->GetNbinsX()+1;
+
+  if(overflowopt == 1) {
+    double e1 = h->GetBinError(nbins-1);
+    double e2 = h->GetBinError(nbins);
+    h->AddBinContent(nbins-1, h->GetBinContent(nbins));
+    h->SetBinError(nbins-1, sqrt(e1*e1 + e2*e2));
+    h->SetBinContent(nbins, 0);
+    h->SetBinError(nbins, 0);
+    return h;
+  }
+
+  double* xbins = new double[nbins+1];
+
+  for(int ibin = 0; ibin < nbins; ++ibin)
+    xbins[ibin] = h->GetBinLowEdge(ibin+1);
+
+  xbins[nbins] = xbins[nbins-1]+h->GetBinWidth(nbins);
+
+  char* tempname = new char[strlen(h->GetName())+10];
+  sprintf(tempname,"%s_woverflow",h->GetName());
+
+  TH1F* htmp = new TH1F(tempname, h->GetTitle(), nbins, xbins);
+  htmp->SetXTitle(h->GetXaxis()->GetTitle());
+  htmp->SetYTitle(h->GetYaxis()->GetTitle());
+
+  for(int ibin = 1; ibin < nbins+1; ++ibin)
+    htmp->Fill(htmp->GetBinCenter(ibin), h->GetBinContent(ibin));
+
+  htmp->Fill(h->GetBinLowEdge(1)-1, h->GetBinContent(0));
+
+  htmp->SetEntries(h->GetEntries());
+
+  htmp->SetLineStyle(h->GetLineStyle());
+  htmp->SetLineColor(h->GetLineColor());
+  htmp->SetFillStyle(h->GetFillStyle());
+  htmp->SetFillColor(h->GetFillColor());
+  htmp->SetMarkerStyle(h->GetMarkerStyle());
+  htmp->SetMarkerColor(h->GetMarkerColor());
+
+  return htmp;
+
+}
+
+void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
 {
 
   if(!item)
@@ -97,6 +144,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
 
   TH1F* hist = (TH1F*)item->Clone();
 
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
   if(linecolor==0)
@@ -122,7 +170,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
 
 }
 
-void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
 {
 
   if(!f)
@@ -130,11 +178,11 @@ void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, i
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle);
+  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
 
 }
 
-void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
 {
 
   if(!item)
@@ -143,6 +191,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
   TH1F* hist = (TH1F*)item->Clone();
 
   hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1));
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
 
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
@@ -169,7 +218,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
 
 }
 
-void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
 {
 
   if(!f)
@@ -177,7 +226,7 @@ void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString lab
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle);
+  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
 
 }
 

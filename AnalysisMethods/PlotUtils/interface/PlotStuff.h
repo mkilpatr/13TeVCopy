@@ -129,6 +129,7 @@ class PlotStuff {
         vector<PlotComp>       comphistplots;
         vector<PlotComp>       compgraphplots;
         vector<TString>        tablesels;
+        unsigned int           plotoverflow;
         bool                   make_integral;
         bool                   reverse_integral_dir;
 
@@ -166,6 +167,7 @@ class PlotStuff {
           logy(false),
           tablelumi(4000.),
           colormap(DefaultColors()),
+          plotoverflow(0),
           make_integral(false),
           reverse_integral_dir(false)
         {}
@@ -197,6 +199,7 @@ class PlotStuff {
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of %d\n",rebinx);
           if(drawopt != "hist") printf("Using histogram draw option %s\n",drawopt.Data());
           if(graphdrawopt != "P") printf("Using graph draw option %s\n",graphdrawopt.Data());
+          if(plotoverflow > 0) printf("Histograms will be plotted with %s\n", plotoverflow == 1 ? "overflow bin contents added to last bin" : "additional bin displaying overflow");
           if(make_integral){
             printf("Histograms will be integrated %s. \n", reverse_integral_dir?"from the left":"to the right");
           }
@@ -278,6 +281,8 @@ class PlotStuff {
     void     setLogy() { config_.logy = true; }
     // Customize color for a particular sample
     void     setColor(TString sname, unsigned int color) { config_.colormap[sname] = color; }
+    // Set option for plotting overflow bin by default
+    void     setPlotOverflow(unsigned int plotoverflow) { config_.plotoverflow = plotoverflow; }
     // Make integral plots. Default integral direction: (value > [cut]).
     void     setIntegral(bool reverse_integral_direction = false) {config_.make_integral = true; config_.reverse_integral_dir = reverse_integral_direction; }
 

@@ -78,11 +78,11 @@ class Plot {
     // Draw the plot to a given canvas
     void draw(TCanvas *c, bool doSave=false, TString format="png");
   
-    // Adding a histogram/graph to the plot
-    void addHist(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
-    void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
-    void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
-    void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+    // Adding a histogram/graph to the plot. Overflow options: 0=no overflow, 1=add overflow content to last bin, 2=add extra bin with overflow contents
+    void addHist(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
+    void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
+    void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
+    void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
     void addHist2D(TH2F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addProfile(TProfile* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
@@ -95,6 +95,9 @@ class Plot {
 
     // Integrate all the 1D histograms. Default direction: (value > [cut])
     void integrateHists(bool reversecutdir = false);
+
+    // Get version of histogram with overflow bin added
+    TH1F* addOverFlow(TH1F* h, unsigned int overflowopt=1);
 
     // Adding a text box to the plot
     void addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=1, int textcolor=0, int fillcolor=0);
