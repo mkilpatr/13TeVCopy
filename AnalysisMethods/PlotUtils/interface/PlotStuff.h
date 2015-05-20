@@ -47,18 +47,24 @@ class PlotStuff {
         TString varname;
         TString selection;
         TString label;
-        int     nbins;
+        int     nbinsx;
         double  xmin;
         double  xmax;
+        int     nbinsy;
+        double  ymin;
+        double  ymax;
 
-        PlotTreeVar(TString inname, TString invarname, TString inselection, TString inlabel, int innbins, double inxmin, double inxmax) :
+        PlotTreeVar(TString inname, TString invarname, TString inselection, TString inlabel, int innbinsx, double inxmin, double inxmax, int innbinsy, double inymin, double inymax) :
           name(inname),
           varname(invarname),
           selection(inselection),
           label(inlabel),
-          nbins(innbins),
+          nbinsx(innbinsx),
           xmin(inxmin),
-          xmax(inxmax)
+          xmax(inxmax),
+          nbinsy(innbinsy),
+          ymin(inymin),
+          ymax(inymax)
         {}
 
     };
@@ -67,7 +73,7 @@ class PlotStuff {
     struct PlotComp {
 
       public :
-        enum CompPlotType {HISTCOMP, GRAPHCOMP};
+        enum CompPlotType {HISTCOMP, HIST2DCOMP, GRAPHCOMP};
         TString         name;
         vector<TString> compnames;
         vector<TString> complabels;
@@ -114,8 +120,10 @@ class PlotStuff {
         double                 legx2;
         double                 legy2;
         TString                drawopt;
+        TString                drawopt2d;
         TString                graphdrawopt;
         int                    rebinx;
+        int                    rebiny;
         int                    sigscale;
         bool                   addsigscaletxt;
         double                 maxscale;
@@ -127,6 +135,7 @@ class PlotStuff {
         ColorMap               colormap;
         vector<PlotTreeVar>    treevars;
         vector<PlotComp>       comphistplots;
+        vector<PlotComp>       comphist2dplots;
         vector<PlotComp>       compgraphplots;
         vector<TString>        tablesels;
         unsigned int           plotoverflow;
@@ -157,8 +166,10 @@ class PlotStuff {
           legx2(0),
           legy2(0),
           drawopt("hist"),
+          drawopt2d("COLZ"),
           graphdrawopt("P"),
           rebinx(1),
+          rebiny(1),
           sigscale(1),
           addsigscaletxt(true),
           maxscale(1.3),
@@ -196,8 +207,10 @@ class PlotStuff {
             if(sigscale < 0) printf("Signal histograms will be scaled to sum of backgrounds\n");
             else if(sigscale != 1) printf("Signal histograms will be scaled by a factor of %d\n",sigscale);
           }
-          if(rebinx != 1) printf("Histograms will be rebinned by a factor of %d\n",rebinx);
+          if(rebinx != 1) printf("Histograms will be rebinned by a factor of in x%d\n",rebinx);
+          if(rebiny != 1) printf("Histograms will be rebinned by a factor of in y%d\n",rebiny);
           if(drawopt != "hist") printf("Using histogram draw option %s\n",drawopt.Data());
+          if(drawopt2d != "COLZ") printf("Using 2D histogram draw option %s\n",drawopt2d.Data());
           if(graphdrawopt != "P") printf("Using graph draw option %s\n",graphdrawopt.Data());
           if(plotoverflow > 0) printf("Histograms will be plotted with %s\n", plotoverflow == 1 ? "overflow bin contents added to last bin" : "additional bin displaying overflow");
           if(make_integral){
@@ -217,7 +230,7 @@ class PlotStuff {
     virtual ~PlotStuff() {}
 
     // Add a plot to be made from the provided TTrees: use with TREES
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbins, double xmin, double xmax);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0);
     // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
@@ -263,10 +276,14 @@ class PlotStuff {
     void     setLegend(double legx1, double legy1, double legx2, double legy2) { config_.legx1 = legx1; config_.legy1 = legy1; config_.legx2 = legx2; config_.legy2 = legy2; }
     // Draw option for histograms in comparison plots (doesn't apply to DATAMC)
     void     setDrawOption(TString drawopt) { config_.drawopt = drawopt; }
+    // Draw option for 2D histograms
+    void     setDrawOption2D(TString drawopt2d) { config_.drawopt2d = drawopt2d; }
     // Draw option for graphs in comparison plots
     void     setGraphDrawOption(TString graphdrawopt) { config_.graphdrawopt = graphdrawopt; }
     // Rebin factor for histograms
     void     setRebinX(int rebinx) { config_.rebinx = rebinx; }
+    // Rebin factor for y-axis for 2D histograms
+    void     setRebinY(int rebiny) { config_.rebiny = rebiny; }
     // Factor by which to scale signal. -1 implies signal will be scaled to sum of all backgrounds
     void     setSigScale(int sigscale) { config_.sigscale = sigscale; }
     // Add signal scale factor to legend (default = true)
@@ -292,6 +309,7 @@ class PlotStuff {
     void     addData(TString dataname) { config_.dataname = dataname; }
     // Add a background sample
     void     addBackground(TString bkgname) { config_.backgroundnames.push_back(bkgname); }
+    // Add a signal sample
     void     addSignal(TString signame) { config_.signalnames.push_back(signame); }
     // Fill the list of histograms to be plotted
     void     loadPlots();
@@ -299,6 +317,8 @@ class PlotStuff {
     void     loadTables();
     // Plot the given histograms on a canvas
     void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists);
+    // Plot the given 2D histograms separately
+    void     makeHist2DPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH2F*> hists);
     // Plot the given graphs on a canvas
     void     makeGraphPlot(TString name, TString title, TString xtitle, TString ytitle, double ymax, vector<TGraph*> graphs);
     // Make yields table
@@ -313,10 +333,12 @@ class PlotStuff {
   protected :
     PlotConfig               config_;
     vector<vector<TH1F*> >   hists_;
+    vector<vector<TH2F*> >   hists2d_;
     vector<vector<TGraph*> > graphs_;
     vector<vector<double> >  yields_;
     vector<vector<double> >  yielderrs_;
     vector<TString>          histplotnames_;
+    vector<TString>          hist2dplotnames_;
     vector<TString>          graphplotnames_;
     vector<TString>          tablelabels_;
     vector<Sample*>          samples_;

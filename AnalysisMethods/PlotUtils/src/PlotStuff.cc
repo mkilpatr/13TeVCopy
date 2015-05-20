@@ -61,12 +61,15 @@ bool PlotStuff::isSignal(TString sname)
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbins, double xmin, double xmax)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax)
 {
 
-  PlotTreeVar treevar(plotname, varname, selection, label, nbins, xmin, xmax);
+  PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
   config_.treevars.push_back(treevar);
-  histplotnames_.push_back(plotname);
+  if(varname.Contains(":"))
+    hist2dplotnames_.push_back(plotname);
+  else
+    histplotnames_.push_back(plotname);
 
 }
 
@@ -80,12 +83,16 @@ void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<T
     config_.comphistplots.push_back(comp);
     histplotnames_.push_back(compplotname);
   }
+  else if(compplottype == PlotComp::HIST2DCOMP) {
+    config_.comphist2dplots.push_back(comp);
+    hist2dplotnames_.push_back(compplotname);
+  }
   else if(compplottype == PlotComp::GRAPHCOMP) {
     config_.compgraphplots.push_back(comp);
     graphplotnames_.push_back(compplotname);
   }
   else {
-    printf("CompPlot type not known! Specify either HISTS or GRAPHS\n");
+    printf("CompPlot type not known! Specify either HISTCOMP, HIST2DCOMP or GRAPHCOMP\n");
     return;
   }
 
@@ -107,14 +114,17 @@ void PlotStuff::loadPlots()
     case TREES : {
 
       vector<TH1F*> tmphistsv;
+      vector<TH2F*> tmphists2dv;
 
       TFile *infile = 0;
       TTree *intree = 0;
 
-      bool first = true;
+      bool firsthist = true;
+      bool first2dhist = true;
 
       for(auto* sample : samples_) {
          tmphistsv.clear();
+         tmphists2dv.clear();
 
          TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
          infile = TFile::Open(filename);
@@ -125,18 +135,26 @@ void PlotStuff::loadPlots()
 
          for(auto var : config_.treevars) {
           TString histname = var.name + "_" + sample->name;
-          TH1F* hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbins, var.xmin, var.xmax);
-          hist->Sumw2();
           TString drawstr = var.varname + ">>" + histname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
-          intree->Draw(drawstr.Data(), cutstr.Data());
-          tmphistsv.push_back(hist);
-          tmphistsv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
+          if(var.varname.Contains(":")) {
+            TH2F* hist2d = new TH2F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax, var.nbinsy, var.ymin, var.ymax);
+            hist2d->Sumw2();
+            intree->Draw(drawstr.Data(), cutstr.Data());
+            tmphists2dv.push_back(hist2d);
+            tmphists2dv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
+          } else {
+            TH1F* hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax);
+            hist->Sumw2();
+            intree->Draw(drawstr.Data(), cutstr.Data());
+            tmphistsv.push_back(hist);
+            tmphistsv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
+          }
         }
 
         unsigned int nhist = 0;
         for(vector<TH1F*>::iterator ihist = tmphistsv.begin(); ihist != tmphistsv.end(); ++ihist) {
-          if(first) {
+          if(firsthist) {
             vector<TH1F*> tmpvec(ihist, ihist+1);
             hists_.push_back(tmpvec);
           } else {
@@ -146,7 +164,20 @@ void PlotStuff::loadPlots()
           nhist++;
         }
 
-        if(first) first = false;
+        unsigned int nhist2d = 0;
+        for(vector<TH2F*>::iterator ihist = tmphists2dv.begin(); ihist != tmphists2dv.end(); ++ihist) {
+          if(first2dhist) {
+            vector<TH2F*> tmpvec(ihist, ihist+1);
+            hists2d_.push_back(tmpvec);
+          } else {
+            assert(hists2d_.size() > nhist2d);
+            hists2d_[nhist2d].push_back(*ihist);
+          }
+          nhist2d++;
+        }
+
+        if(firsthist)   firsthist = false;
+        if(first2dhist) first2dhist = false;
       }
 
       break;
@@ -156,15 +187,18 @@ void PlotStuff::loadPlots()
     case HISTS : {
 
       vector<TH1F*>   tmphistsv;
+      vector<TH2F*>   tmphists2dv;
       vector<TGraph*> tmpgraphsv;
 
       TFile *infile = 0;
 
-      bool firsthist  = true;
-      bool firstgraph = true;
+      bool firsthist   = true;
+      bool first2dhist = true;
+      bool firstgraph  = true;
 
       for(auto* sample : samples_) {
         tmphistsv.clear();
+        tmphists2dv.clear();
         tmpgraphsv.clear();
 
         if(sample->filenames.size() > 1) {
@@ -183,6 +217,11 @@ void PlotStuff::loadPlots()
             tmphistsv.push_back((TH1F*)obj);
             if(firsthist) histplotnames_.push_back(obj->GetName());
             tmphistsv.back()->SetName(TString::Format("%s_%s",obj->GetName(), sample->name.Data()));
+          }
+          else if(obj->IsA() == TH2F::Class()) {
+            tmphists2dv.push_back((TH2F*)obj);
+            if(first2dhist) hist2dplotnames_.push_back(obj->GetName());
+            tmphists2dv.back()->SetName(TString::Format("%s_%s",obj->GetName(), sample->name.Data()));
           }
           else if(obj->InheritsFrom(TGraph::Class())) {
             tmpgraphsv.push_back((TGraph*)obj);
@@ -203,6 +242,18 @@ void PlotStuff::loadPlots()
           nhist++;
         }
 
+        unsigned int nhist2d = 0;
+        for(vector<TH2F*>::iterator ihist = tmphists2dv.begin(); ihist != tmphists2dv.end(); ++ihist) {
+          if(first2dhist) {
+            vector<TH2F*> tmpvec(ihist, ihist+1);
+            hists2d_.push_back(tmpvec);
+          } else {
+            assert(hists2d_.size() > nhist2d);
+            hists2d_[nhist2d].push_back(*ihist);
+          }
+          nhist2d++;
+        }
+
         unsigned int ngraph = 0;
         for(vector<TGraph*>::iterator igraph = tmpgraphsv.begin(); igraph != tmpgraphsv.end(); ++igraph) {
           if(firstgraph) {
@@ -215,8 +266,9 @@ void PlotStuff::loadPlots()
           ngraph++;
         }
 
-        if(firsthist)  firsthist = false;
-        if(firstgraph) firstgraph = false;
+        if(firsthist)   firsthist = false;
+        if(first2dhist) first2dhist = false;
+        if(firstgraph)  firstgraph = false;
       }
 
       break;
@@ -230,6 +282,7 @@ void PlotStuff::loadPlots()
       infile_->cd();
 
       vector<TH1F*>   tmphistsv;
+      vector<TH2F*>   tmphists2dv;
       vector<TGraph*> tmpgraphsv;
 
       for(auto compplot : config_.comphistplots) {
@@ -242,6 +295,18 @@ void PlotStuff::loadPlots()
         }
 
         hists_.push_back(tmphistsv);
+      }
+
+      for(auto compplot : config_.comphist2dplots) {
+        tmphists2dv.clear();
+
+        for(auto name : compplot.compnames) {
+          TH2F* hist = (TH2F*)infile_->Get(name);
+          assert(hist);
+          tmphists2dv.push_back(hist);
+        }
+
+        hists2d_.push_back(tmphists2dv);
       }
 
       for(auto compplot : config_.compgraphplots) {
@@ -564,6 +629,35 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
 
 }
 
+void PlotStuff::makeHist2DPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH2F*> hists)
+{
+
+  int isam = -1;
+  for(auto* sample : samples_) {
+    isam++;
+
+    TString sname = sample->name;
+
+    if(config_.rebinx != 1)
+      hists[isam]->RebinX(config_.rebinx);
+    if(config_.rebiny != 1)
+      hists[isam]->RebinY(config_.rebiny);
+
+    Plot *plot = new Plot(name+"_"+sname, title, xtitle, ytitle);
+    plot->outputdir = outputdir_;
+    gSystem->mkdir(outputdir_, true);
+
+    plot->addHist2D(hists[isam], sample->label, config_.drawopt2d);
+
+    plot->setLegend(0,0,0,0);
+
+    plot->draw(canvas_, true, config_.format);
+    delete plot;
+
+  }
+
+}
+
 void PlotStuff::makeGraphPlot(TString name, TString title, TString xtitle, TString ytitle, double ymax, vector<TGraph*> graphs)
 {
 
@@ -643,13 +737,15 @@ void PlotStuff::plot()
     outfile_ = new TFile(outputdir_+"/"+config_.outfilename,"RECREATE");
 
   hists_.clear();
+  hists2d_.clear();
   graphs_.clear();
   loadPlots();
 
   SetStyle();
 
-  assert(histplotnames_.size()  == hists_.size());
-  assert(graphplotnames_.size() == graphs_.size());
+  assert(histplotnames_.size()   == hists_.size());
+  assert(hist2dplotnames_.size() == hists2d_.size());
+  assert(graphplotnames_.size()  == graphs_.size());
 
   canvas_ = MakeCanvas("plotc","plotc",600,600);
 
@@ -675,6 +771,34 @@ void PlotStuff::plot()
     if(config_.writehists) {
       outfile_->cd();
       for(auto* hist : hists_[ihist]) {
+        hist->Write();
+      }
+    }
+  
+  }
+
+  for(auto& histvec : hists2d_) {
+    auto ihist = &histvec - &hists2d_[0];
+    TH2F* hist0 = histvec.at(0);
+    assert(hist0);
+
+    if(config_.source == HISTSSINGLEFILE) {
+      samples_.clear();
+      for(auto& compname : config_.comphist2dplots.at(ihist).compnames) {
+        auto iname = &compname - &(config_.comphist2dplots.at(ihist).compnames[0]);
+        samples_.push_back(new Sample());
+        samples_.back()->name = compname;
+        samples_.back()->label = config_.comphist2dplots.at(ihist).complabels[iname];
+      }
+    }
+
+    assert(histvec.size() == samples_.size());
+
+    makeHist2DPlot(hist2dplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
+
+    if(config_.writehists) {
+      outfile_->cd();
+      for(auto* hist : hists2d_[ihist]) {
         hist->Write();
       }
     }
