@@ -67,33 +67,20 @@
 #ifndef MT2W_H
 #define MT2W_H
 
-#include <vector>
-#include <sstream>
-#include <string>
-#include <cstdlib>
 #include <iostream>
-#include <iomanip>
+#include <math.h>
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
+#include <utility>
 #include "TLorentzVector.h"
-#include "TFitter.h"
-#include "TString.h"
 #include "Math/VectorUtil.h"
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/DataFormats/interface/Lepton.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
-
-// not sure on these
-#include <vector>
-#include <utility>
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-// #include "AnalysisTools/Utilities/interface/ParticleUtilities.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/Utilities/interface/Types.h"
-
-using namespace ucsbsusy;
-// using namespace std;
+//#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h" // need for deltaR
 
 namespace mt2w_bisect
 {
