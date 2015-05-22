@@ -18,9 +18,11 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak4Jets             (0)
 , puppiJets           (0)
 , pickyJets           (0)
+, ca8Jets             (0)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
+, photons             (0)
 , pfcands             (0)
 , genparticles        (0)
 , cmstops             (0)
@@ -220,6 +222,24 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                            cfg.getUntrackedParameter<double>("minTauPt")
                            );
       initializedFillers.push_back(taus);
+      break;
+    }
+
+    case PHOTONS : {
+      int defaultOptions = PhotonFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+
+      photons = new PhotonFiller(options < 0 ? defaultOptions : options,
+                                     branchName == "" ? defaults::BRANCH_PHOTONS : branchName,
+                                     eventInfo,
+                                     cfg.getParameter<edm::InputTag>("photons"),
+                                     cfg.getParameter<edm::InputTag>("looseId"),
+                                     cfg.getParameter<edm::InputTag>("mediumId"),
+                                     cfg.getParameter<edm::InputTag>("tightId"),
+                                     cfg.getUntrackedParameter<double>("minPhotonPt")
+                                     );
+      initializedFillers.push_back(photons);
       break;
     }
 
