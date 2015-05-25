@@ -259,6 +259,36 @@ void Plot::addHist2D(TH2F* item, TString label, TString drawopt, int color, int 
 
 }
 
+void Plot::addHist2DScaled(TH2F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
+{
+
+  if(!item)
+    return;
+
+  TH2F* hist = (TH2F*)item->Clone();
+  hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1, 0, hist->GetNbinsY()+1));
+
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+  else              fLeg->AddEntry(hist,label,"L");
+
+  fHists2D.push_back(new h2D(hist, drawopt));
+
+}
+
 void Plot::addGraph(TGraph* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle)
 {
 
