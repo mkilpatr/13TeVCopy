@@ -133,6 +133,17 @@ nominal_configuration = cms.PSet(
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
                                   ),
+                                 
+                                 Photons = cms.untracked.PSet(
+                                      isFilled                  = cms.untracked.bool(True),
+                                      photons                   = cms.InputTag('slimmedPhotons'),
+                                      looseId                   = cms.InputTag(''),
+                                      mediumId                  = cms.InputTag(''),
+                                      tightId                   = cms.InputTag(''),
+                                      minPhotonPt               = cms.untracked.double(5.0),
+                                      fillPhotonIDVars          = cms.untracked.bool(False),
+                                      fillPhotonIsoVars         = cms.untracked.bool(False),
+                                  ),
 
                                   PFCandidates = cms.untracked.PSet(
                                       isFilled                  = cms.untracked.bool(True),
