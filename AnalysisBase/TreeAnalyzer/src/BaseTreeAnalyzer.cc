@@ -75,6 +75,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&tauReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TAUS : branchName );
       break;
     }
+    case PHOTONS : {
+      int defaultOptions = PhotonReader::defaultOptions;
+      reader.load(&photonReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PHOTONS : branchName );
+      break;
+    }
     case PFCANDS : {
       int defaultOptions;
       switch (config.tauVetoPreselection) {
@@ -122,6 +127,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
+  load(PHOTONS);
   load(PFCANDS);
   load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
@@ -157,6 +163,14 @@ void BaseTreeAnalyzer::processVariables()
   }
 
   selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
+
+  if(photonReader.isLoaded()){
+    selectedPhotons.clear();
+    selectedPhotons.reserve(photonReader.photons.size());
+    std::sort(photonReader.photons.begin(), photonReader.photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
+    for(auto& p : photonReader.photons)
+      if(isGoodPhoton(p)) selectedPhotons.push_back(&p);
+  }
 
   //Picky jet corrections
   if(pickyJetReader.isLoaded() && config.correctPickyPT){
@@ -253,6 +267,10 @@ bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
   return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && (tau.*config.vetoedTau)());
+}
+//--------------------------------------------------------------------------------------------------
+bool ucsbsusy::BaseTreeAnalyzer::isGoodPhoton(const PhotonF& pho) const {
+  return (pho.pt() > config.minSelPhoPt && fabs(pho.eta()) < config.maxSelPhoETA && (pho.*config.selectedPhoton)());
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::selectLeptons(

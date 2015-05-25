@@ -34,3 +34,7 @@ qcd_pt800to1000	/QCD_Pt-800to1000_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU
 qcd_pt1000to1400	/QCD_Pt-1000to1400_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	8.195	2884228
 qcd_pt1400to1800	/QCD_Pt-1400to1800_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.7346	2931414
 qcd_pt1800toinf	/QCD_Pt-1800_Tune4C_13TeV_pythia8/Spring14miniaod-castor_PU20bx25_POSTLS170_V5-v1/MINIAODSIM	0.1091	2935195
+gjets_ht100to200 /GJets_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM   1534    4734234
+gjets_ht200to400 /GJets_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM   489.9   4533420
+gjets_ht400to600 /GJets_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM   62.05   4560801
+gjets_ht600toinf /GJets_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM   20.87   4341179
