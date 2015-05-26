@@ -18,12 +18,15 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak4Jets             (0)
 , puppiJets           (0)
 , pickyJets           (0)
+, ca8Jets             (0)
 , muons               (0)
 , electrons           (0)
 , taus                (0)
+, photons             (0)
 , pfcands             (0)
 , genparticles        (0)
 , cmstops             (0)
+, ak8fatjets          (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -223,6 +226,24 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
+    case PHOTONS : {
+      int defaultOptions = PhotonFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+
+      photons = new PhotonFiller(options < 0 ? defaultOptions : options,
+                                     branchName == "" ? defaults::BRANCH_PHOTONS : branchName,
+                                     eventInfo,
+                                     cfg.getParameter<edm::InputTag>("photons"),
+                                     cfg.getParameter<edm::InputTag>("looseId"),
+                                     cfg.getParameter<edm::InputTag>("mediumId"),
+                                     cfg.getParameter<edm::InputTag>("tightId"),
+                                     cfg.getUntrackedParameter<double>("minPhotonPt")
+                                     );
+      initializedFillers.push_back(photons);
+      break;
+    }
+
     case PFCANDS : {
       int defaultOptions = PFCandidateFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("saveAllCandidates")) defaultOptions |= PFCandidateFiller::SAVEALLCANDS;
@@ -251,6 +272,16 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 				 cfg.getParameter<edm::InputTag>("fatJets")
 				 );
       initializedFillers.push_back(cmstops);
+      break;
+  }
+
+  case AK8FATJETS : { 
+      ak8fatjets = new FatJetFiller(1,
+				 branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName,
+				 eventInfo,
+				 cfg.getParameter<edm::InputTag>("fatJets")
+				 );
+      initializedFillers.push_back(ak8fatjets);
       break;
   }
     
