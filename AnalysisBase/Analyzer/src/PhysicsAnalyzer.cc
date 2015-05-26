@@ -26,6 +26,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , pfcands             (0)
 , genparticles        (0)
 , cmstops             (0)
+, ak8fatjets          (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -271,6 +272,16 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 				 cfg.getParameter<edm::InputTag>("fatJets")
 				 );
       initializedFillers.push_back(cmstops);
+      break;
+  }
+
+  case AK8FATJETS : { 
+      ak8fatjets = new FatJetFiller(1,
+				 branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName,
+				 eventInfo,
+				 cfg.getParameter<edm::InputTag>("fatJets")
+				 );
+      initializedFillers.push_back(ak8fatjets);
       break;
   }
     

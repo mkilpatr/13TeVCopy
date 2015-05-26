@@ -31,6 +31,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Photons", PHOTONS);
       initialize(cfg, "PFCandidates", PFCANDS);
       initialize(cfg, "CMSTops", CMSTOPS);
+      initialize(cfg, "AK8FatJets", AK8FATJETS);
       book();
     }
 
