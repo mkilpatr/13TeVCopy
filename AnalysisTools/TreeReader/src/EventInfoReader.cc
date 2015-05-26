@@ -57,7 +57,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
 
   treeReader->setBranchAddress(branchName,"process", &proc);
-  treeReader->setBranchAddress(branchName,"weight" , &weight);
+  treeReader->setBranchAddress(branchName,"wgtXSec", &weight);
   clog << endl;
 }
 

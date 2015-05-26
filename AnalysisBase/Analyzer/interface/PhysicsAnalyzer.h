@@ -25,6 +25,7 @@
 #include "AnalysisBase/Analyzer/interface/MuonFiller.h"
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
 #include "AnalysisBase/Analyzer/interface/TauFiller.h"
+#include "AnalysisBase/Analyzer/interface/PhotonFiller.h"
 #include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
 #include "AnalysisBase/Analyzer/interface/PFCandidateFiller.h"
 #include "AnalysisBase/Analyzer/interface/CMSTopFiller.h"
@@ -53,7 +54,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -84,6 +85,7 @@ namespace ucsbsusy {
       MuonFiller        * muons;
       ElectronFiller    * electrons;
       TauFiller         * taus;
+      PhotonFiller      * photons;
       PFCandidateFiller * pfcands;
       GenParticleFiller * genparticles;
       CMSTopFiller      * cmstops;

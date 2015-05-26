@@ -28,6 +28,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Electrons", ELECTRONS);
       initialize(cfg, "Muons", MUONS);
       initialize(cfg, "Taus", TAUS);
+      initialize(cfg, "Photons", PHOTONS);
       initialize(cfg, "PFCandidates", PFCANDS);
       initialize(cfg, "CMSTops", CMSTOPS);
       initialize(cfg, "AK8FatJets", AK8FATJETS);
