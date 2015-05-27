@@ -18,17 +18,20 @@ namespace defaults {
   const std::string BRANCH_PICKYJETS = "picky";
   const std::string BRANCH_CASUBJETS = "subjetsca";
   enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G,SINGLE_T, TTZ, TTW,DIBOSON,SIGNAL, NUMPROCESSES };
-  const std::string PROCESS_NAMES[] = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal",""};
-  const std::string BRANCH_PUPPIJETS = "ak4puppi";
-  const std::string BRANCH_CA8JETS ="ca8";
-  const std::string BRANCH_ELECTRONS = "ele";
-  const std::string BRANCH_MUONS     = "mu";
-  const std::string BRANCH_TAUS      = "tau";
-  const std::string BRANCH_PHOTONS   = "pho";
-  const std::string BRANCH_PFCANDS   = "pfcand";
-  const std::string BRANCH_GENPARTS  = "gen";
-  const std::string BRANCH_CMSTOPS   = "ctt";
-  const std::string BRANCH_CORRAL    = "corral";
+
+  const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal",""};
+  const std::string BRANCH_PUPPIJETS  = "ak4puppi";
+  const std::string BRANCH_CA8JETS    = "ca8";
+  const std::string BRANCH_ELECTRONS  = "ele";
+  const std::string BRANCH_MUONS      = "mu";
+  const std::string BRANCH_TAUS       = "tau";
+  const std::string BRANCH_PHOTONS    = "pho";
+  const std::string BRANCH_PFCANDS    = "pfcand";
+  const std::string BRANCH_GENPARTS   = "gen";
+  const std::string BRANCH_CMSTOPS    = "ctt";
+  const std::string BRANCH_CORRAL     = "corral";
+  const std::string BRANCH_AK8FATJETS = "ak8";
+
   const double CSV_LOOSE      = 0.423;
   const double CSV_MEDIUM     = 0.814;
   const double CSV_TIGHT      = 0.941;
