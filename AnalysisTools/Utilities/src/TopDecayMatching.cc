@@ -395,7 +395,7 @@ void TopDecayMatching::associatePartonsToJets(const Partons& partons,const reco:
     const auto& j = jets[iJ];
     for (size iDau = 0; iDau < j.numberOfDaughters(); ++iDau) {
       if(j.daughterPtr(iDau).isNull()) continue;
-      int pIdx = prtPartonAssoc[j.daughterPtr(iDau).key()];
+      int pIdx = (j.daughterPtr(iDau).key() < prtPartonAssoc.size()) ? prtPartonAssoc.at(j.daughterPtr(iDau).key()) : -1;
       if(pIdx < 0) continue;
       partons[pIdx].jetAssoc[iJ]     += j.daughterPtr(iDau)->p4();
     }

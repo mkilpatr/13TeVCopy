@@ -25,6 +25,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Jets", AK4JETS);
       initialize(cfg, "PuppiJets", PUPPIJETS);
       initialize(cfg, "PickyJets", PICKYJETS);
+      initialize(cfg, "CASubJets", CASUBJETS);
       initialize(cfg, "Electrons", ELECTRONS);
       initialize(cfg, "Muons", MUONS);
       initialize(cfg, "Taus", TAUS);

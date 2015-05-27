@@ -100,6 +100,24 @@ nominal_configuration = cms.PSet(
                                       fillqgl              = cms.untracked.bool(False)
                                   ),
 
+                                  CASubJets = cms.untracked.PSet(
+                                      isFilled             = cms.untracked.bool(True),
+                                      jets                 = cms.InputTag('subjetsca',''),
+                                      btags                = cms.InputTag('subjetscaCSVIV2'),
+                                      reGenJets            = cms.InputTag('subjetsca','Gen'),
+                                      stdGenJets           = cms.InputTag(''),
+                                      flvAssoc             = cms.InputTag('subjetscaFlvAssoc','flavors'),
+                                      reGenJetAssoc        = cms.InputTag('subjetsca:GenPtr'),
+                                      fillReGenJets        = cms.untracked.bool(True),
+                                      minJetPt             = cms.untracked.double(20.0),
+                                      fillCustomBtagInfo   = cms.untracked.bool(True),
+                                      fillJetGenInfo       = cms.untracked.bool(True),
+                                      fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillTopJetAssoc      = cms.untracked.bool(True),
+                                      applyJEC             = cms.untracked.bool(False),
+                                      fillqgl              = cms.untracked.bool(False)
+                                  ),
+
                                   Muons = cms.untracked.PSet(
                                       isFilled          = cms.untracked.bool(True),
                                       muons             = cms.InputTag('slimmedMuons'),

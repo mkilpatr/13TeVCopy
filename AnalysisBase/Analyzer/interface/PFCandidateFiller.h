@@ -20,6 +20,7 @@
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisTools/ObjectSelection/interface/TauMVA.h"
 
