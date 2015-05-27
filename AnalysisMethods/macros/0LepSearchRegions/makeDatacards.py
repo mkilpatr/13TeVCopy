@@ -3,21 +3,29 @@
 import os
 import commands
   
-# user defined stuff
-baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1'
-runDate = 'testing' # subfolder to put datacards in under <saveLocation>/
+# ===== user defined stuff =====
+
+baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&fabs(DphiTopMET)>1'
+saveLocation = 'datacards/testing/' # subfolder to put datacards in under <saveLocation>/
+ttreeLocation = 'ttrees/150526/'
+lumi = 4 # the trees are filled with weights that assume 1/fb, so use this to scale as desired
+
+# All filenames need to have the format <sampleName><fileNameTail> e.g. ttbar_tree.root.
+# The list of signal and background samples is used both to get the filenames and 
+# to label things in the datacards and datacard names.
 sigPoints = ['T2tt_850_100','T2tt_650_325','T2tt_500_325']
 backgrounds = ['ttbar','ttZ','znunu']
 fileNameTail = '_tree.root'
-backgroundFileName = 'bkg_tree.root'
-ttreeLocation = 'ttrees/150501/'
-saveLocation = 'datacards/'+runDate+'/'
 
-# met bins will be printed in each datacard (MUST be seperate from other bins)
-# all bins will have one datacard per bin combination 
-varBins = [['ptMet',(200,300),(300,400),(400,999999)],
+# This will produce one datacard per bin combination. 
+# Bins must be defined as a list with [ binVarName, bin1, bin2, ... ].
+# Bins are tuples (low,high) where low is inclusive and high is exclusive
+# such that (1,2) is the same as >=1 && >2. Note that the high limit on 
+# the high limit on the last bin should be absurdly high for inclusive 
+# cuts, e.g. >=500 -> (500,100000000000).
+varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
            ['nmBtag',(1,2),(2,100)],
-           ['dPhiMET12',(0,1),(1,4)],          
+           ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],          
            ]
 
 ##### ##### ##### ##### ##### ##### ##### 
@@ -54,7 +62,7 @@ def getNumEvents(filename,bin):
   binCuts = baselineSelection
   for i in range(len(bin)):
     binCuts += '&&'+bin[i][0]+'>='+str(bin[i][1]) + '&&'+bin[i][0]+'<'+str(bin[i][2])
-  binCuts = '(scaleFactor)*('+binCuts+')'
+  binCuts = '('+str(lumi)+'*scaleFactor)*('+binCuts+')'
   rootCommand = 'root -l -b -q "getBinNumbers.C( \\"'+filename+'\\" , \\"'+binCuts+'\\" )"'
   output = commands.getoutput(rootCommand)
   output = output.split('\n')[-1]
