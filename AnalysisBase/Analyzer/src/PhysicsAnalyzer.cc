@@ -18,6 +18,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak4Jets             (0)
 , puppiJets           (0)
 , pickyJets           (0)
+, caSubJets           (0)
 , ca8Jets             (0)
 , muons               (0)
 , electrons           (0)
@@ -170,6 +171,31 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getUntrackedParameter<double>("minJetPt")
                                     );
       initializedFillers.push_back(pickyJets);
+      break;
+    }
+
+    case CASUBJETS : {
+      int defaultOptions = RecoJetFiller::defaultOptions;
+      if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= RecoJetFiller::LOADGEN;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
+      if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
+      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+
+      caSubJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
+                                    branchName == "" ? defaults::BRANCH_CASUBJETS : branchName,
+                                    eventInfo,
+                                    genparticles,
+                                    cfg.getParameter<edm::InputTag>("jets"),
+                                    cfg.getParameter<edm::InputTag>("btags"),
+                                    cfg.getParameter<edm::InputTag>("reGenJets"),
+                                    cfg.getParameter<edm::InputTag>("stdGenJets"),
+                                    cfg.getParameter<edm::InputTag>("flvAssoc"),
+                                    cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
+                                    cfg.getUntrackedParameter<bool>("fillReGenJets"),
+                                    cfg.getUntrackedParameter<double>("minJetPt")
+                                    );
+      initializedFillers.push_back(caSubJets);
       break;
     }
 

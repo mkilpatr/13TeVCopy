@@ -29,9 +29,14 @@ pickyISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("pickyIP
 pickyCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("pickyIPTagInfos"), cms.InputTag("pickyISVTagInfos")))
 pickyJetSeq          = cms.Sequence(pickyJets * pickyFlvAssoc * pickyIPTagInfos *pickyISVTagInfos*pickyCSVIV2 )
 
-
-
-
+subjetsca                = ak4Jets.clone(rParameter = cms.double(1.0), useSubjetCountingCA = cms.bool(True), outputSuperJets = cms.bool(True))
+subjetscaFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('subjetsca','Gen'),
+                                             recoJetSrc = cms.InputTag('subjetsca'),partonJetSrc = cms.InputTag('subjetsca','parton'),
+                                             recoToGenTag = cms.InputTag('subjetsca','GenPtr'),recoToPartonTag = cms.InputTag('subjetsca','partonPtr'))
+subjetscaIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("subjetsca"))
+subjetscaISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("subjetscaIPTagInfos"))
+subjetscaCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("subjetscaIPTagInfos"), cms.InputTag("subjetscaISVTagInfos")))
+subjetscaJetSeq          = cms.Sequence(subjetsca * subjetscaFlvAssoc * subjetscaIPTagInfos *subjetscaISVTagInfos*subjetscaCSVIV2 )
 
 # trimmedJetSeq = cms.Sequence(trimmedJets*trimmedJetFlvAssoc*trimmedJetIPTagInfos*trimmedJetISVFinderTagInfos*trimmedJetCSVIVF)
 

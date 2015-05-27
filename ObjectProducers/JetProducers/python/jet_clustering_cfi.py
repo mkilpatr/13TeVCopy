@@ -14,9 +14,17 @@ trimmedjet_configuration = cms.PSet (
                                     rFilt           = cms.double(.1),
                                     trimPtFracMin   = cms.double(.03)     
                                      )
+subjetcounting_configuration = cms.PSet (
+                                        useSubjetCountingCA = cms.bool(False),
+                                        ptCut   = cms.double(20.0),
+                                        mCutoff = cms.double(20.0),
+                                        yCut    = cms.double(0.05),
+                                        rMin    = cms.double(0.10)
+                                        )
 jet_configuration      = cms.PSet(
                                     pickyjet_configuration,
                                     trimmedjet_configuration,
+                                    subjetcounting_configuration,
                                     isRealData = cms.int32(0),
                                     produceGen      = cms.bool(True),
                                     producePartonJets      = cms.bool(True),

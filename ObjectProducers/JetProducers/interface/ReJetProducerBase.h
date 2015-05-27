@@ -83,6 +83,7 @@ public:
     if(outputSuperJets) clusterer.storeSuperJets();
     if(doPickyJets)clusterer.pickySubjets(splitter,pickyMaxSplits);
     if(useTrimming)clusterer.trimJets(rFilt,trimPtFracMin,useTrimmedSubjets);
+    if(useSubjetCountingCA)clusterer.applySubjetCountingCA(mCutoff, yCut, rMin, ptCut);
   }
 
   void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets);
@@ -126,6 +127,11 @@ protected:
   const bool   useTrimmedSubjets;
   const double rFilt;
   const double trimPtFracMin;
+  const bool   useSubjetCountingCA;
+  const double ptCut;
+  const double mCutoff;
+  const double yCut;
+  const double rMin;
 
   const bool doPickyJets;
   const int  pickyMaxSplits;
