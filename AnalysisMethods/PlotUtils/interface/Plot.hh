@@ -84,6 +84,7 @@ class Plot {
     void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
     void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
     void addHist2D(TH2F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+    void addHist2DScaled(TH2F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addProfile(TProfile* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
