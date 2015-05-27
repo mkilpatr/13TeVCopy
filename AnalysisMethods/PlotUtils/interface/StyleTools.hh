@@ -39,9 +39,9 @@ namespace StyleTools {
                color_comp1=634,              // kRed+2
                color_comp2=862,              // kAzure+2
                color_comp3=797,              // kOrange-3
-               color_comp4=603,              // kBlue+3
+               color_comp4=882,              // kViolet+2
                color_comp5=419,              // kGreen+3
-               color_comp6=882,              // kViolet+2
+               color_comp6=603,              // kBlue+3
                color_comp7=802,              // kOrange+2
                color_comp8=616,              // kMagenta
                color_comp9=600,              // kBlue
