@@ -39,7 +39,7 @@ if [[ "$outputdir" =~ ^/eos/uscms/.* ]]; then
   xrdcp ${outputname} root://cmseos:1094/${outputdir}/
   rm ${outputname}
 else
-  mv ${outputname} ${outputdir}
+  mv ${outputname} ${outputdir}/
 fi
 
 exit $status
