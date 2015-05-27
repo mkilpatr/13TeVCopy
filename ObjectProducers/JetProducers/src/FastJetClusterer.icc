@@ -46,8 +46,8 @@ void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& i
 /*************************/
 
 //_____________________________________________________________________________
-template<typename Particle, typename Jet>
-void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& inputParticles,const std::vector<fastjet::PseudoJet>& inputJets, std::vector<Jet>& outputJets
+template<typename Particle, typename InputJet, typename Jet>
+void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& inputParticles,const std::vector<InputJet>& inputJets, std::vector<Jet>& outputJets
                                   , const edm::EventSetup& eventSetup, bool (*select)(const Particle&),bool keepEmptyJets, bool recomputeP4, const reco::Jet::Point& vertex
                                   ) 
 {
@@ -55,7 +55,7 @@ void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& i
 
   for (unsigned int iJet = 0; iJet < inputJets.size(); ++iJet)
   {
-    const fastjet::PseudoJet&         inJet         = inputJets[iJet];
+    const InputJet&                   inJet         = inputJets[iJet];
     std::vector<fastjet::PseudoJet>   constituents  = inJet.constituents();
 
     std::vector<reco::CandidatePtr>   daughters;
@@ -95,7 +95,6 @@ void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& i
     }
   } // end loop over outputJets
 }
-
 
 //_____________________________________________________________________________
 template<typename Jet>

@@ -60,6 +60,7 @@ namespace ucsbsusy {
       // WARNING! if this is called again, the parton collection is changed
       const TopDecayMatching::Partons& getPartons(const reco::GenJetCollection& jets) const;
       const std::vector<int>& getPartonPrtAssoc() const {return prtPartonAssoc;}
+      const std::vector<float>& getHadronizedE() const {return hadronizationE;}
 
 
 

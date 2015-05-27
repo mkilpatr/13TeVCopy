@@ -33,8 +33,8 @@ with open(args.input,"r") as f :
         content = line.split()
         if "#" in content[0] :
             continue
-        samples.append(content[0])
-        datasets.append(content[1])
+        samples.append(content[1])
+        datasets.append(content[3])
 
 os.system("mkdir -p %s" % args.jobdir)
 
