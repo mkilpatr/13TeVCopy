@@ -5,6 +5,9 @@ import commands
   
 # ===== user defined stuff =====
 
+# Note: if you want to copy this to a convient location to run, you will also need 
+# to copy getBinNumbers.C and datacard.txt_template to the same directory.
+
 baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&fabs(DphiTopMET)>1'
 saveLocation = 'datacards/testing/' # subfolder to put datacards in under <saveLocation>/
 ttreeLocation = 'ttrees/150526/'
@@ -20,9 +23,8 @@ fileNameTail = '_tree.root'
 # This will produce one datacard per bin combination. 
 # Bins must be defined as a list with [ binVarName, bin1, bin2, ... ].
 # Bins are tuples (low,high) where low is inclusive and high is exclusive
-# such that (1,2) is the same as >=1 && >2. Note that the high limit on 
-# the high limit on the last bin should be absurdly high for inclusive 
-# cuts, e.g. >=500 -> (500,100000000000).
+# such that (1,2) is >=1 && <2. Note that the high limit on the last bin 
+# should be absurdly high for inclusive cuts, e.g. >=500 -> (500,100000000000).
 varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
            ['nmBtag',(1,2),(2,100)],
            ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],          
@@ -55,9 +57,9 @@ def expandBins(bins):
   return allBinCombos
 
 def getNumEvents(filename,bin): 
-  """Returns the number of events in the given file for the given bin. All the 
-  necessary formatting to get the proper cut string for root is done here. This includes
-  the baselineSelection defined by the user and the cuts to get the passed bin.
+  """Returns the number of events in the given file for the given bin. All the necessary 
+  formatting to get the proper cut string for root is done here. This includes the
+  baselineSelection and lumi sacling defined by the user and the cuts to get the current bin.
   """
   binCuts = baselineSelection
   for i in range(len(bin)):
@@ -65,13 +67,14 @@ def getNumEvents(filename,bin):
   binCuts = '('+str(lumi)+'*scaleFactor)*('+binCuts+')'
   rootCommand = 'root -l -b -q "getBinNumbers.C( \\"'+filename+'\\" , \\"'+binCuts+'\\" )"'
   output = commands.getoutput(rootCommand)
-  output = output.split('\n')[-1]
-  output = output.replace('(double)','')
+  output = output.split('\n')[-1]  # only look at the last line which should have the number of events
+  # note: it's possible the next line may need tweaking if your version of root formats things too differently
+  output = output.replace('(double)','') # (double)123.4e+00 -> 123.4e+00
   numEvents = float(output)
   return numEvents
   
-def getTemplateFileName(bins):
-  """creates the name of the template datacard file from the bins
+def getFileName(bins):
+  """makes the name of the template datacard file from the bins
   """
   name = ''
   for bin in bins:
@@ -98,20 +101,21 @@ if not os.path.exists(saveDir): os.makedirs(saveDir)
 # e.g. (other): [['ptMet', 200, 300], ['nmBtag', 1, 2], ['dPhiMET12', 0, 1]]
 allBinCombos = expandBins(varBins)[:]
 
-# make datacards, one for every bin combination,
-# if the template datacard does not exist, make that first
+# Make datacards, one for every bin combination.
+# First the template card is made with all backgrounds,
+# then the signal points are looped to get the sig numbers.
 for bins in allBinCombos:
   print bins #DEBUGGING ONLY
-
-  #=== first create the template file for this set of bins
-  binFileBaseName = getTemplateFileName(bins)
+  binFileBaseName = getFileName(bins)
   templateFile = saveLocation + 'template'+binFileBaseName+'_template'
+
+  #=== first create the template file for this combination of bins
   fdatacard = open('datacard.txt_template','r')
   templateDatacard  = fdatacard.read()
   fdatacard.close()
   
-  #lines to replace placeholders for current bin template datacard
-  #placeholders are left for signal numbers
+  # lines to replace placeholders for current bin's template datacard
+  # placeholders are left for signal numbers
   lineSBin     = 'bin\t\t'       + 'METs\t'  
   lineSObs     = 'observation\t' + 'SIGOBS'
   lineSBBin    = 'bin\t'         + 'METs\t\t'
@@ -121,7 +125,7 @@ for bins in allBinCombos:
   lineSysSig   = 'tosSysS lnN\t' + 'SIGSYS'
   lineSysBkg   = 'tosSysB lnN\t' + '-\t'
   
-  #loop through background inputs ##########TODO#################
+  #loop through backgrounds to get numbers 
   for background in backgrounds:
     bkgFile = ttreeLocation + background + fileNameTail
     lineSBBin    += 'METb\t\t'
@@ -149,7 +153,6 @@ for bins in allBinCombos:
   f.write(templateDatacard)
   f.close()
 
-  
   #=== now loop through the signal files to get the actual datacards
   for sigPoint in sigPoints:
     sigFile = ttreeLocation+sigPoint+fileNameTail
@@ -157,13 +160,13 @@ for bins in allBinCombos:
     nSigObs = int(nSig+0.5)
     uncSig  = getUncertanties('sig',bins)
     
-    #put signal numbers into the placeholders in the template datacard for this set of bins
+    #put signal numbers into the placeholders in the template datacard
     fdatacard = open(templateFile,'r')
     datacard  = fdatacard.read()
     fdatacard.close()
-    datacard = datacard.replace('SIGOBS' ,str(nSigObs)+'\t'  )
+    datacard = datacard.replace('SIGOBS' ,str(nSigObs)+'\t')
     datacard = datacard.replace('SIGRATE',str(nSig   )+'\t')
-    datacard = datacard.replace('SIGSYS' ,str(uncSig )+'\t'  )
+    datacard = datacard.replace('SIGSYS' ,str(uncSig )+'\t')
     
     #save the current datacard
     datacardName = saveLocation + sigPoint+binFileBaseName
@@ -173,7 +176,6 @@ for bins in allBinCombos:
     
     print '\n', datacardName, '\n', '='*60 #DEBUGGING ONLY
     print datacard #DEBUGGING ONLY
-    #break #DEBUGGING ONLY
   #for sigPoint in sigPoints
   #break
 #for bins in allBinCombo

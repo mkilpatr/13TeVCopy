@@ -249,15 +249,13 @@ void Analyzer::loadPlots() {
   for(map<TString,TH1F*>::iterator plotsIt = plots.begin(); plotsIt != plots.end(); ++plotsIt) plotsIt->second->Sumw2();
 } // loadPlots()
 
-// temporally overload to NOT load tau stuff; remove when new ttrees are avaliable
-// also uncomment nVetoTau
 void Analyzer::loadVariables() {
   load(EVTINFO);
   load(AK4JETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
   load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
-  //load(PFCANDS);
+  load(PFCANDS);
   load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
 } // Analyzer::loadVariables()
@@ -270,6 +268,7 @@ void Analyzer::runEvent() {
   if(met->pt() < metcut_) return;
   if(nJets<minNJets_)     return;
   if(nBJets < minNBjets_) return;
+  if(nVetoedTaus>0)       return;
 
   // fill tree variables [assmune lumi = 1 fb^(-1)]
   scaleFactor = weight; // lumi_*xsec_/getEntries(); <- old procedure, now stored in files to handle split samples correctly
