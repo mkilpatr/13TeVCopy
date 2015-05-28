@@ -29,7 +29,7 @@
 namespace ucsbsusy {
 class BaseTreeAnalyzer {
 public:
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
     enum TauVetoPresel {MT, DPHI};
     //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
@@ -208,6 +208,7 @@ public:
     JetReader         ak4Reader             ;
     JetReader         puppiJetsReader       ;
     JetReader         pickyJetReader        ;
+    JetReader         caSubJetReader        ;
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
