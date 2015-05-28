@@ -120,8 +120,9 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "MT2tp1_150"       , &vars.MT2tp1_150       ,       "MT2tp1_150/F" );
     outtree->Branch( "MT2tp1_200"       , &vars.MT2tp1_200       ,       "MT2tp1_200/F" );
     outtree->Branch( "MT2tp1_250"       , &vars.MT2tp1_250       ,       "MT2tp1_250/F" );
-    outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" );
+    outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" ); //DphiTopMET
     outtree->Branch( "NCTTstd"          , &vars.NCTTstd          ,          "NCTTstd/I" );
+    outtree->Branch( "DphiTopMET"       , &vars.DphiTopMET       , "DphiTopMET[NCTT]/F" );
 
   } // Analyzer()
 
@@ -420,6 +421,6 @@ void processZeroLepton(const string sample     = "ttbar" // sample name
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sample, fileNum, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
   //a.analyze(1000,100000); // for testing
-  a.out(sample+fileNum, outputdir); // write outputfile with plots
+  //a.out(sample+fileNum, outputdir); // write outputfile with plots
 
 } // processSingleLepton()

@@ -8,7 +8,7 @@ import commands
 # Note: if you want to copy this to a convient location to run, you will also need 
 # to copy getBinNumbers.C and datacard.txt_template to the same directory.
 
-baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&fabs(DphiTopMET)>1'
+baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>&&(DphiTopMET>1||DphiTopMET<-1)' #
 saveLocation = 'datacards/testing/' # subfolder to put datacards in under <saveLocation>/
 ttreeLocation = 'ttrees/150526/'
 lumi = 4 # the trees are filled with weights that assume 1/fb, so use this to scale as desired
@@ -94,8 +94,7 @@ def getUncertanties(filename,bins):
 ##### actual work #####
 ##### ##### ##### #####  
 
-saveDir = 'datacards/'+runDate+'/'
-if not os.path.exists(saveDir): os.makedirs(saveDir)
+if not os.path.exists(saveLocation): os.makedirs(saveLocation)
 
 # expand variable bins to a list of all combiations using [variable, low, high]
 # e.g. (other): [['ptMet', 200, 300], ['nmBtag', 1, 2], ['dPhiMET12', 0, 1]]
