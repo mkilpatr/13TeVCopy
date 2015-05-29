@@ -19,17 +19,17 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
   VariableCalculator0L vars;
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sample, TString fileNumber, TString outputdir)
+  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir)
           : BaseTreeAnalyzer(fileName, treeName, isMCTree, pars)
           , xsec_(xSec)
-          , sample_(sample)
+          , sample_(sname)
           , outputdir_(outputdir)
   {
     //loadPlots(); // initialize plots
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
-    fout = new TFile (outputdir+"/"+sample+fileNumber+"_tree.root","RECREATE");
+    fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("events","analysis tree");
     outtree->Branch( "scaleFactor", &scaleFactor, "scaleFactor/F" );
@@ -153,7 +153,7 @@ class Analyzer : public BaseTreeAnalyzer {
   //float met_0         ;
   //float ht_0          ;
   //float htAoA_0       ;
-  int test;
+  //int test;
 
 
   void loadVariables();
@@ -369,6 +369,8 @@ void Analyzer::runEvent() {
 
 // Write histograms to file in designated directory
 void Analyzer::out(TString outputName, TString outputPath) {
+
+
   gSystem->mkdir(outputPath,true);
   TString filename = outputPath + "/" + outputName + "_plots.root";
   TFile  *outfile  = new TFile(filename, "RECREATE");
@@ -400,29 +402,33 @@ double getXsec(string sample) {
 #endif
 
 // Process file belonging to specified sample with a given cross section
-void processZeroLepton(const string sample     = "ttbar" // sample name
-                     , const string fileNum    = "" // leave as an empty string if only 1 file (with no number), otherwise something like "_1"
-                     ,       double xsec       = -1.0    // <0 to use hard-coded xsecs
-                     , const bool   isMC       = true
-                     , const string outputdir  = "plots"
-                     , const string filePath   = "root://xrootd-cms.infn.it//store/user/gouskos/13TeV/Phys14/20150503/merged/" // location of files
-                     , const string fileSuffix = "_wgtXSec.root" // "_ntuple.root"
-                     ) {
-  cout << "processing " << sample << endl;
+//root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/0LepSearchRegions/processZeroLepton.C+()"
+void processZeroLepton(      TString sname      = "ttbar" // sample name
+                     , const int     fileindex  = 1       // index of file (-1 means there is only 1 file for this sample)
+                     , const bool    isMC       = true    // data or MC
+                     , const TString fname      = "ttbar_ntuple_1_wgtXSec.root" // path of file to be processed
+                     , const double  xsec       = 831.76    // cross section to be used with this file
+                     , const string  outputdir  = "plots/"  // directory to which files with histograms will be written
+                     , const TString fileprefix = "root://xrootd-cms.infn.it//store/user/gouskos/13TeV/Phys14/20150503/merged/"
+                     )
+{
+  printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
-  if (xsec<0) xsec = getXsec(sample);
-  if (isMC) cout << "using cross section = " << xsec << " pb" << endl;
-  string fullname = filePath + sample +"_ntuple" + fileNum + fileSuffix ;
+  // Make sure the output has a unique name in case there are multiple files to process
+  if(fileindex > -1) sname += TString::Format("_%d",fileindex);
+
+  if(isMC) printf("Cross section: %5.2f pb\n", xsec);
+
+  TString fullname = fileprefix+fname;
 
   // Adjustments to default configuration
   BaseTreeAnalyzer::ConfigPars pars;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
   pars.minJetPt = 20;
-  //pars.cleanJetsvSelectedLeptons_ = true;
 
-  Analyzer a(fullname, "Events", isMC, &pars, xsec, sample, fileNum, outputdir); // declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
-  a.analyze(1000,10000); // for testing
-  //a.out(sample+fileNum, outputdir); // write outputfile with plots
+  Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
+  a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(1000,10000); // for testing
+  //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
