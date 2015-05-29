@@ -8,15 +8,15 @@ import commands
 # Note: if you want to copy this to a convient location to run, you will also need 
 # to copy getBinNumbers.C and datacard.txt_template to the same directory.
 
-baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>&&(DphiTopMET>1||DphiTopMET<-1)' #
-saveLocation = 'datacards/testing/' # subfolder to put datacards in under <saveLocation>/
-ttreeLocation = 'ttrees/150526/'
+baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&(DphiTopMET>1||DphiTopMET<-1)&&(DphiTopMET<2.8&&DphiTopMET>-2.8)' 
+saveLocation = 'datacards/150529/' # subfolder to put datacards in under <saveLocation>/
+ttreeLocation = 'ttrees/150529/'
 lumi = 4 # the trees are filled with weights that assume 1/fb, so use this to scale as desired
 
 # All filenames need to have the format <sampleName><fileNameTail> e.g. ttbar_tree.root.
 # The list of signal and background samples is used both to get the filenames and 
 # to label things in the datacards and datacard names.
-sigPoints = ['T2tt_850_100','T2tt_650_325','T2tt_500_325']
+sigPoints = ['T2tt_850_100','T2tt_650_325'] # 'T2tt_500_325'
 backgrounds = ['ttbar','ttZ','znunu']
 fileNameTail = '_tree.root'
 
@@ -66,6 +66,7 @@ def getNumEvents(filename,bin):
     binCuts += '&&'+bin[i][0]+'>='+str(bin[i][1]) + '&&'+bin[i][0]+'<'+str(bin[i][2])
   binCuts = '('+str(lumi)+'*scaleFactor)*('+binCuts+')'
   rootCommand = 'root -l -b -q "getBinNumbers.C( \\"'+filename+'\\" , \\"'+binCuts+'\\" )"'
+  #print rootCommand #DEBUGGING ONLY
   output = commands.getoutput(rootCommand)
   output = output.split('\n')[-1]  # only look at the last line which should have the number of events
   # note: it's possible the next line may need tweaking if your version of root formats things too differently
