@@ -403,10 +403,10 @@ double getXsec(string sample) {
 
 // Process file belonging to specified sample with a given cross section
 //root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/0LepSearchRegions/processZeroLepton.C+()"
-void processZeroLepton(      TString sname      = "ttbar_1_ntuple_wgtxsec.root" // sample name
+void processZeroLepton(      TString sname      = "ttbar" // sample name
                      , const int     fileindex  = 1       // index of file (-1 means there is only 1 file for this sample)
                      , const bool    isMC       = true    // data or MC
-                     , const TString fname      = "ttbar_ntuple_1_wgtXSec.root" // path of file to be processed
+                     , const TString fname      = "ttbar_1_ntuple_wgtxsec.root" // path of file to be processed
                      , const double  xsec       = 831.76    // cross section to be used with this file
                      , const string  outputdir  = "plots/"  // directory to which files with histograms will be written
                      , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/270515/merged/"
