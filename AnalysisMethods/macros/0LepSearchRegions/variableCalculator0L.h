@@ -99,15 +99,15 @@ public:
     , dotHtAlongAway    (-1)
     , dotHtAlongAwayNoB (-1)
     , MT2tp0_000        (-1)
-    , MT2tp0_100        (-1)
-    , MT2tp0_150        (-1)
-    , MT2tp0_200        (-1)
-    , MT2tp0_250        (-1)
-    , MT2tp1_000        (-1)
-    , MT2tp1_100        (-1)
-    , MT2tp1_150        (-1)
-    , MT2tp1_200        (-1)
-    , MT2tp1_250        (-1)
+    //, MT2tp0_100        (-1)
+    //, MT2tp0_150        (-1)
+    //, MT2tp0_200        (-1)
+    //, MT2tp0_250        (-1)
+    //, MT2tp1_000        (-1)
+    //, MT2tp1_100        (-1)
+    //, MT2tp1_150        (-1)
+    //, MT2tp1_200        (-1)
+    //, MT2tp1_250        (-1)
     , NCTT              (-1)
     , NCTTstd           (-1)
     //, DphiTopMET        (-1)
@@ -201,15 +201,15 @@ public:
     dotHtAlongAway    = -1;
     dotHtAlongAwayNoB = -1;
     MT2tp0_000        = -1;
-    MT2tp0_100        = -1;
-    MT2tp0_150        = -1;
-    MT2tp0_200        = -1;
-    MT2tp0_250        = -1;
-    MT2tp1_000        = -1;
-    MT2tp1_100        = -1;
-    MT2tp1_150        = -1;
-    MT2tp1_200        = -1;
-    MT2tp1_250        = -1;
+    //MT2tp0_100        = -1;
+    //MT2tp0_150        = -1;
+    //MT2tp0_200        = -1;
+    //MT2tp0_250        = -1;
+    //MT2tp1_000        = -1;
+    //MT2tp1_100        = -1;
+    //MT2tp1_150        = -1;
+    //MT2tp1_200        = -1;
+    //MT2tp1_250        = -1;
     NCTT              = -1;
     NCTTstd           = -1;
     //DphiTopMET        =
@@ -379,22 +379,22 @@ public:
     pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1a,pseudoJet2a,0);
     pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1b,pseudoJet2b,1);
     double mEachInvisible_000 =   0.; // in GeV
-    double mEachInvisible_100 = 100.; // in GeV
-    double mEachInvisible_150 = 150.; // in GeV
-    double mEachInvisible_200 = 200.; // in GeV
-    double mEachInvisible_250 = 250.; // in GeV
+    //double mEachInvisible_100 = 100.; // in GeV
+    //double mEachInvisible_150 = 150.; // in GeV
+    //double mEachInvisible_200 = 200.; // in GeV
+    //double mEachInvisible_250 = 250.; // in GeV
 
-    MT2tp0_000 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_000);
-    MT2tp0_100 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_100);
-    MT2tp0_150 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_150);
-    MT2tp0_200 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_200);
-    MT2tp0_250 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_250);
-
-    MT2tp1_000 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_000);
-    MT2tp1_100 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_100);
-    MT2tp1_150 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_150);
-    MT2tp1_200 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_200);
-    MT2tp1_250 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_250);
+    MT2tp0_000 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_000);
+    //MT2tp0_100 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_100);
+    //MT2tp0_150 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_150);
+    //MT2tp0_200 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_200);
+    //MT2tp0_250 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_250);
+    //
+    //MT2tp1_000 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_000);
+    //MT2tp1_100 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_100);
+    //MT2tp1_150 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_150);
+    //MT2tp1_200 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_200);
+    //MT2tp1_250 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_250);
 
     // ===== top-tagging stuff =====
 
@@ -480,15 +480,15 @@ public:
   float dotHtAlongAway;    // new2
   float dotHtAlongAwayNoB; // new2
   float MT2tp0_000;    // mt2
-  float MT2tp0_100;    // mt2
-  float MT2tp0_150;    // mt2
-  float MT2tp0_200;    // mt2
-  float MT2tp0_250;    // mt2
-  float MT2tp1_000;    // mt2
-  float MT2tp1_100;    // mt2
-  float MT2tp1_150;    // mt2
-  float MT2tp1_200;    // mt2
-  float MT2tp1_250;    // mt2
+  //float MT2tp0_100;    // mt2
+  //float MT2tp0_150;    // mt2
+  //float MT2tp0_200;    // mt2
+  //float MT2tp0_250;    // mt2
+  //float MT2tp1_000;    // mt2
+  //float MT2tp1_100;    // mt2
+  //float MT2tp1_150;    // mt2
+  //float MT2tp1_200;    // mt2
+  //float MT2tp1_250;    // mt2
   int   NCTT;           // top
   int   NCTTstd;        // top
   float DphiTopMET[50]; // top
