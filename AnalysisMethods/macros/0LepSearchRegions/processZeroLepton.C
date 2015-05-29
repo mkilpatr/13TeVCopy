@@ -427,8 +427,8 @@ void processZeroLepton(      TString sname      = "ttbar_1_ntuple_wgtxsec.root" 
   pars.minJetPt = 20;
 
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
-  a.analyze(1000,10000); // for testing
+  a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(1000,10000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
