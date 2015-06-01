@@ -50,7 +50,7 @@ double Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pn
   MomentumD vW1;  vW1.p4() = vL.p4() + vN.p4();
 
   // construct the w-term
-  double tW = ( pow( ((mW*mW) - (vW.p4().M2())),2) ) / (pow(aW,4));
+  double tW = ( pow( ((mW*mW) - (vW1.p4().M2())),2) ) / (pow(aW,4));
 
   // construct the tL-term [seen lepton]
   double tTL = ( pow( ((mT*mT) - ((vL.p4()+vB1.p4()+vN.p4()).M2())),2) ) / (pow(aT,4));
