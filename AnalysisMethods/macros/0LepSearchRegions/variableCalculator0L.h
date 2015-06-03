@@ -35,6 +35,7 @@ public:
     , nJ20              (-1)
     , ntBtag            (-1)
     , nmBtag            (-1)
+    , J0pt              (-1)
     , dPhiMET12         (-1)
     , dPhiMET3          (-1)
     , dPhiB0MET         (-1)
@@ -127,9 +128,6 @@ public:
   		             ) {
     a::analyzer = analyzer;
 
-    // preselection so that variable initializations that follow make sense
-    if (inJets.size()<5) return;
-
     //passPresel      =  0;
     ptMet             =  0;
     npv               =  0;
@@ -137,6 +135,7 @@ public:
     nJ20              =  0;
     ntBtag            =  0;
     nmBtag            =  0;
+    J0pt              = -1;
     dPhiMET12         = -1;
     dPhiMET3          = -1;
     dPhiB0MET         = -1;
@@ -283,6 +282,7 @@ public:
     // can be ak4, picky
     for(unsigned int iJ = 0; iJ < inJets.size(); ++iJ){
       auto& j = *inJets[iJ];
+      if (iJ==0) J0pt = j.pt();
       ++nJ20;
       if(analyzer->isTightBJet(j)) ++ntBtag;
       if(analyzer->isMediumBJet(j)){
@@ -376,8 +376,8 @@ public:
 
     MomentumF pseudoJet1a; MomentumF pseudoJet2a;
     MomentumF pseudoJet1b; MomentumF pseudoJet2b;
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1a,pseudoJet2a,0);
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1b,pseudoJet2b,1);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1a,pseudoJet2a,0);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1b,pseudoJet2b,1);
     double mEachInvisible_000 =   0.; // in GeV
     //double mEachInvisible_100 = 100.; // in GeV
     //double mEachInvisible_150 = 150.; // in GeV
@@ -416,6 +416,7 @@ public:
   int   nJ20;
   int   ntBtag;
   int   nmBtag;
+  float J0pt;
   float dPhiMET12;
   float dPhiMET3;
   float dPhiB0MET;     // new
