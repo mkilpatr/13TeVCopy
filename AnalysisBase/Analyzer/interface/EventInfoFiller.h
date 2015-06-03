@@ -63,7 +63,7 @@ namespace ucsbsusy {
       size imetsumEt_ ;
       size igenmetpt_ ;
       size igenmetphi_;
-
+      size igoodvertex_;
     public:
       // Data members
       EventCoords    eventCoords;
