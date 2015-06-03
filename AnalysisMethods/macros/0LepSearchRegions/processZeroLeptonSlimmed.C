@@ -58,7 +58,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "nJ20"             , &vars.nJ20             ,             "nJ20/I" );
     outtree->Branch( "ntBtag"           , &vars.ntBtag           ,           "ntBtag/I" );
     outtree->Branch( "nmBtag"           , &vars.nmBtag           ,           "nmBtag/I" );
-    outtree->Branch( "J0pt"             , &vars.J0pt             ,             "J0pt/I" );
+    outtree->Branch( "J0pt"             , &vars.J0pt             ,             "J0pt/F" );
     outtree->Branch( "ht"               , &vars.ht               ,               "ht/F" );
     outtree->Branch( "Bpt0"             , &vars.Bpt0             ,             "Bpt0/F" );
     outtree->Branch( "Bpt1"             , &vars.Bpt1             ,             "Bpt1/F" );
@@ -70,7 +70,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "ca_nJ20"             , &caVars.nJ20             ,             "ca_nJ20/I" );
     outtree->Branch( "ca_ntBtag"           , &caVars.ntBtag           ,           "ca_ntBtag/I" );
     outtree->Branch( "ca_nmBtag"           , &caVars.nmBtag           ,           "ca_nmBtag/I" );
-    outtree->Branch( "ca_J0pt"             , &caVars.J0pt             ,             "ca_J0pt/I" );
+    outtree->Branch( "ca_J0pt"             , &caVars.J0pt             ,             "ca_J0pt/F" );
     outtree->Branch( "ca_ht"               , &caVars.ht               ,               "ca_ht/F" );
     outtree->Branch( "ca_Bpt0"             , &caVars.Bpt0             ,             "ca_Bpt0/F" );
     outtree->Branch( "ca_Bpt1"             , &caVars.Bpt1             ,             "ca_Bpt1/F" );
