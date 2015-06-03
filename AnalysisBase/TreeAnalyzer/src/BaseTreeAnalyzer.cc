@@ -60,6 +60,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
       reader.load(&pickyJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PICKYJETS : branchName);
       break;
     }
+    case CASUBJETS : {
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      reader.load(&caSubJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CASUBJETS : branchName);
+      break;
+    }
     case ELECTRONS : {
       int defaultOptions = ElectronReader::defaultOptions;
       reader.load(&electronReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_ELECTRONS : branchName );
@@ -73,6 +78,11 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
     case TAUS : {
       int defaultOptions = TauReader::defaultOptions;
       reader.load(&tauReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TAUS : branchName );
+      break;
+    }
+    case PHOTONS : {
+      int defaultOptions = PhotonReader::defaultOptions;
+      reader.load(&photonReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PHOTONS : branchName );
       break;
     }
     case PFCANDS : {
@@ -120,8 +130,10 @@ void BaseTreeAnalyzer::loadVariables()
   load(EVTINFO);
   load(AK4JETS);
   load(PICKYJETS);
+  load(CASUBJETS);
   load(ELECTRONS);
   load(MUONS);
+  load(PHOTONS);
   load(PFCANDS);
   load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
@@ -157,6 +169,14 @@ void BaseTreeAnalyzer::processVariables()
   }
 
   selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
+
+  if(photonReader.isLoaded()){
+    selectedPhotons.clear();
+    selectedPhotons.reserve(photonReader.photons.size());
+    std::sort(photonReader.photons.begin(), photonReader.photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
+    for(auto& p : photonReader.photons)
+      if(isGoodPhoton(p)) selectedPhotons.push_back(&p);
+  }
 
   //Picky jet corrections
   if(pickyJetReader.isLoaded() && config.correctPickyPT){
@@ -208,6 +228,11 @@ void BaseTreeAnalyzer::setDefaultJets(VarType type) {
        clog << "picky"  <<endl;
        break;
      }
+     case CASUBJETS : {
+       setDefaultJets(&caSubJetReader);
+       clog << "subjetsca"  <<endl;
+       break;
+     }
      default : {
        cout << endl << "No valid jet for type: " << type << " found!" << endl;
        break;
@@ -253,6 +278,10 @@ bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
   return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && (tau.*config.vetoedTau)());
+}
+//--------------------------------------------------------------------------------------------------
+bool ucsbsusy::BaseTreeAnalyzer::isGoodPhoton(const PhotonF& pho) const {
+  return (pho.pt() > config.minSelPhoPt && fabs(pho.eta()) < config.maxSelPhoETA && (pho.*config.selectedPhoton)());
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::selectLeptons(

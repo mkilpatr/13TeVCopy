@@ -19,6 +19,7 @@
 #include "AnalysisTools/TreeReader/interface/ElectronReader.h"
 #include "AnalysisTools/TreeReader/interface/MuonReader.h"
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
+#include "AnalysisTools/TreeReader/interface/PhotonReader.h"
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
@@ -28,7 +29,7 @@
 namespace ucsbsusy {
 class BaseTreeAnalyzer {
 public:
-    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS, ELECTRONS, MUONS, TAUS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
+    enum VarType {EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
     enum TauVetoPresel {MT, DPHI};
     //  enum LeptonSelection  {SEL_0_LEP, SEL_1_LEP,SEL_1_MU,SEL_1_E, SEL_ALL_LEP};
 
@@ -58,6 +59,10 @@ public:
     float maxVetoTauETA;
     bool (PFCandidateF::*vetoedTau)() const;
 
+    float minSelPhoPt;
+    float maxSelPhoETA;
+    bool (PhotonF::*selectedPhoton)() const;
+
     //    LeptonSelection leptonSelection;
 
     float         minJetPt;
@@ -72,7 +77,7 @@ public:
     VarType       defaultJetCollection;
 
     ConfigPars() :
-    minSelEPt (10), //was 32
+      minSelEPt (10), //was 32
       maxSelEETA(2.4), //was2.1
       selectedElectron(&ElectronF::isgoodpogelectron),
 
@@ -95,6 +100,10 @@ public:
       minVetoTauPt (10),
       maxVetoTauETA(2.4),
       vetoedTau(&PFCandidateF::ismvavetotau),
+
+      minSelPhoPt (10),
+      maxSelPhoETA (2.4),
+      selectedPhoton(&PhotonF::isloose),
 
       //      leptonSelection(SEL_0_LEP),
 
@@ -173,6 +182,7 @@ public:
     bool isSelMuon     (const MuonF& muon) const;
     bool isVetoMuon    (const MuonF& muon) const;
     bool isVetoTau     (const PFCandidateF& tau) const;
+    bool isGoodPhoton  (const PhotonF& pho) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
     double correctedPickyPT(double pt,double eta,double area, double rho) const;
@@ -198,9 +208,11 @@ public:
     JetReader         ak4Reader             ;
     JetReader         puppiJetsReader       ;
     JetReader         pickyJetReader        ;
+    JetReader         caSubJetReader        ;
     ElectronReader    electronReader        ;
     MuonReader        muonReader            ;
     TauReader         tauReader             ;
+    PhotonReader      photonReader          ;
     PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
     CMSTopReader      cmsTopReader          ;
@@ -234,6 +246,7 @@ public:
     std::vector<LeptonF*>      selectedLeptons   ;
     std::vector<LeptonF*>      vetoedLeptons     ;
     std::vector<PFCandidateF*> vetoedTaus        ;
+    std::vector<PhotonF*>      selectedPhotons   ;
     std::vector<RecoJetF*>     jets            ;
     std::vector<RecoJetF*>     bJets   ;
     std::vector<RecoJetF*>     nonBJets;

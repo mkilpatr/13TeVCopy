@@ -34,6 +34,7 @@ FastJetClusterer& FastJetClusterer::operator=(const FastJetClusterer& other)
 
   particles           = other.particles           ;
   jets                = other.jets                ;
+  compoundJets        = other.compoundJets        ;
   superJets           = other.superJets           ;
 
   return *this;
@@ -108,6 +109,7 @@ void FastJetClusterer::clusterJets( fastjet::JetDefinition::Plugin* plugin, doub
   clusterJets( fastjet::JetDefinition(plugin), minJetPT, maxGhostEta, ghostArea, meanGhostPT, numAreaRepeats, ghostGridScatter, ghostPTScatter );
 }
 
+//_____________________________________________________________________________
 void    FastJetClusterer::trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets){
   fastjet::Filter trimmer( fastjet::JetDefinition(fastjet::kt_algorithm, rFilter), fastjet::SelectorPtFractionMin(trimPtFracMin));
 
@@ -123,7 +125,41 @@ void    FastJetClusterer::trimJets         (const double rFilter, double trimPtF
   }
   jets = trimmedJets;
 }
+// implementation from https://github.com/cms-externals/fastjet-contrib/blob/master/SubjetCounting/SubjetCounting.cc
+//_____________________________________________________________________________
+void FastJetClusterer::applySubjetCountingCA(const double mass_cut_off, const double ycut, const double R_min, const double pt_cut)
+{
 
+  fastjet::JetDefinition jetDef(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R);
+
+  std::vector<CompoundPseudoJet> outputSubJets;
+  nSubJetsCA.clear();
+
+  nSubJetsCA.reserve(jets.size());
+
+  std::vector<fastjet::PseudoJet>::const_iterator ijetBegin = jets.begin(), ijet = ijetBegin, ijetEnd = jets.end();
+  int njet = -1;
+  for(; ijet != ijetEnd; ++ijet) {
+    njet++;
+    nSubJetsCA.push_back(0);
+    if(*ijet == 0) continue;
+    if(!ijet->has_constituents()) continue;
+    fastjet::ClusterSequence clust_seq(ijet->constituents(), jetDef);
+    std::vector<fastjet::PseudoJet> ca_jets = sorted_by_pt(clust_seq.inclusive_jets());
+    std::vector<fastjet::PseudoJet> output_subjets;
+
+    findHardSubst(ca_jets[0], output_subjets, mass_cut_off, R_min, ycut);
+
+    for(unsigned int isub = 0; isub < output_subjets.size(); ++isub) {
+      if(!(output_subjets[isub].perp() > pt_cut)) continue;
+      outputSubJets.emplace_back(output_subjets[isub], output_subjets[isub].constituents(), njet);
+      nSubJetsCA[njet]++;
+    }
+  }
+
+  compoundJets = outputSubJets;
+
+}
 
 //_____________________________________________________________________________
 void FastJetClusterer::selectJets(double minJetPT, double maxJetEta)
@@ -168,6 +204,41 @@ const TString& FastJetClusterer::fastJetAlgoName(fastjet::JetAlgorithm algorithm
   default:
     throw cms::Exception("FastJetClusterer::fastJetAlgoName()", "Unsupported algorithm.");
   }
+}
+
+//_____________________________________________________________________________
+void FastJetClusterer::findHardSubst(const fastjet::PseudoJet & this_jet,
+                                     std::vector<fastjet::PseudoJet> & t_parts, const double mCutoff, const double rMin, const double yCut) const
+ {
+  fastjet::PseudoJet parent1(0.0,0.0,0.0,0.0), parent2(0.0,0.0,0.0,0.0);
+  bool had_parents=this_jet.validated_cs()->has_parents(this_jet,parent1,parent2);
+
+  if ( (this_jet.m() < mCutoff) || (!had_parents) )
+  {
+  t_parts.push_back(this_jet);  return;
+  } // stop recursion on this branch
+
+  if (had_parents && parent1.plain_distance(parent2) < (rMin*rMin) )
+  {
+  t_parts.push_back(this_jet);  return;
+  } // stop recursion on this branch
+
+  if (parent1.perp() < parent2.perp()) std::swap(parent1,parent2);
+
+  double pt1=parent1.perp();
+  double pt2=parent2.perp();
+  double totalpt=pt1+pt2;
+
+  if (pt2>yCut*totalpt)
+  {
+    findHardSubst(parent1, t_parts, mCutoff, rMin, yCut);
+    findHardSubst(parent2, t_parts, mCutoff, rMin, yCut);
+  } // continue recursion on both branches
+
+  else
+    findHardSubst(parent1, t_parts, mCutoff, rMin, yCut);
+    // continue recursion on harder branch, discarding softer branch
+  return;
 }
 
 namespace reco

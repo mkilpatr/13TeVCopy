@@ -41,6 +41,23 @@ public:
     { }
   };
   
+  class CompoundPseudoJet : public fastjet::PseudoJet {
+  public :
+    CompoundPseudoJet(const fastjet::PseudoJet & jet, const std::vector<fastjet::PseudoJet> & constituents, const int superjetindex) : fastjet::PseudoJet(jet), constituents_(constituents.size()), superjetindex_(superjetindex) {
+      std::copy(constituents.begin(), constituents.end(), constituents_.begin());
+    }
+
+    ~CompoundPseudoJet() {}
+
+    std::vector<fastjet::PseudoJet>  constituents () const { return constituents_;  }
+    int                              superjetIndex() const { return superjetindex_; }
+
+  protected :
+    std::vector<fastjet::PseudoJet>  constituents_;
+    int                              superjetindex_;
+
+  };
+  
   static const reco::Jet::Point                             DEFAULT_VERTEX;
 
   
@@ -63,7 +80,9 @@ protected:
   std::vector<fastjet::PseudoJet>                           particles           ;
   std::vector<fastjet::PseudoJet>                           jets                ;
   std::vector<fastjet::PseudoJet>                           superJets           ;
+  std::vector<CompoundPseudoJet>                            compoundJets        ;
 
+  std::vector<unsigned int>                                 nSubJetsCA          ;
 
 
 /*************************/
@@ -93,11 +112,15 @@ public:
   const std::vector<fastjet::PseudoJet>&  getParticles() const  { return particles; }
   const std::vector<fastjet::PseudoJet>&  getJets     () const  { return jets     ; }
   std::vector<fastjet::PseudoJet>&        getJets     ()        { return jets     ; }
+  const std::vector<CompoundPseudoJet>&   getCompoundJets () const  { return compoundJets; }
+  std::vector<CompoundPseudoJet>&         getCompoundJets ()        { return compoundJets; }
+  const std::vector<fastjet::PseudoJet>&  getSuperJets    () const  { return superJets     ; }
+  std::vector<fastjet::PseudoJet>&        getSuperJets    ()        { return superJets     ; }
   void                                    sortJets    ()        { jets  = fastjet::sorted_by_pt(jets); }
 
-  template<typename Particle, typename Jet>
+  template<typename Particle, typename InputJet, typename Jet>
   static void     distillJets ( const edm::Handle<std::vector<Particle> >&  inputParticles
-                              , const std::vector<fastjet::PseudoJet>&      inputJets
+                              , const std::vector<InputJet>&                inputJets
                               , std::vector<Jet>&                           outputJets
                               , const edm::EventSetup&                      eventSetup
                               , bool                                        (*select)(const Particle&) = 0
@@ -132,6 +155,8 @@ public:
   
   static double   getCurrentGhostArea()   { return currentGhostArea;  }
   void setDeterministicSeed(const unsigned int runNumber, const unsigned int eventNumber);
+
+  std::vector<unsigned int> getNSubjetsCA() { return nSubJetsCA; }
 
 /*************************/
 /*      Computations     */
@@ -168,6 +193,7 @@ public:
                             );
   void    storeSuperJets   () {superJets = jets;}
   void    trimJets         (const double rFilter, double trimPtFracMin, bool useTrimmedSubjets);
+  void    applySubjetCountingCA(const double mass_cut_off, const double ycut, const double R_min, const double pt_cut);
 
   void    selectJets        ( double                    minJetPT 
                             , double                    maxJetEta
@@ -187,6 +213,7 @@ public:
 /*************************/
 public:
   static const TString&   fastJetAlgoName(fastjet::JetAlgorithm algorithm);
+  void         findHardSubst(const fastjet::PseudoJet & this_jet, std::vector<fastjet::PseudoJet> & t_parts, const double mCutoff, const double rMin, const double yCut) const;
 };  // end class FastJetClusterer
 }
 

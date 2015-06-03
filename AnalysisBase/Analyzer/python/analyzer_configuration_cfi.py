@@ -100,6 +100,24 @@ nominal_configuration = cms.PSet(
                                       fillqgl              = cms.untracked.bool(False)
                                   ),
 
+                                  CASubJets = cms.untracked.PSet(
+                                      isFilled             = cms.untracked.bool(True),
+                                      jets                 = cms.InputTag('subjetsca',''),
+                                      btags                = cms.InputTag('subjetscaCSVIV2'),
+                                      reGenJets            = cms.InputTag('subjetsca','Gen'),
+                                      stdGenJets           = cms.InputTag(''),
+                                      flvAssoc             = cms.InputTag('subjetscaFlvAssoc','flavors'),
+                                      reGenJetAssoc        = cms.InputTag('subjetsca:GenPtr'),
+                                      fillReGenJets        = cms.untracked.bool(True),
+                                      minJetPt             = cms.untracked.double(20.0),
+                                      fillCustomBtagInfo   = cms.untracked.bool(True),
+                                      fillJetGenInfo       = cms.untracked.bool(True),
+                                      fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillTopJetAssoc      = cms.untracked.bool(True),
+                                      applyJEC             = cms.untracked.bool(False),
+                                      fillqgl              = cms.untracked.bool(False)
+                                  ),
+
                                   Muons = cms.untracked.PSet(
                                       isFilled          = cms.untracked.bool(True),
                                       muons             = cms.InputTag('slimmedMuons'),
@@ -133,6 +151,17 @@ nominal_configuration = cms.PSet(
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
                                   ),
+                                 
+                                 Photons = cms.untracked.PSet(
+                                      isFilled                  = cms.untracked.bool(True),
+                                      photons                   = cms.InputTag('slimmedPhotons'),
+                                      looseId                   = cms.InputTag(''),
+                                      mediumId                  = cms.InputTag(''),
+                                      tightId                   = cms.InputTag(''),
+                                      minPhotonPt               = cms.untracked.double(5.0),
+                                      fillPhotonIDVars          = cms.untracked.bool(False),
+                                      fillPhotonIsoVars         = cms.untracked.bool(False),
+                                  ),
 
                                   PFCandidates = cms.untracked.PSet(
                                       isFilled                  = cms.untracked.bool(True),
@@ -151,5 +180,10 @@ nominal_configuration = cms.PSet(
                                   CMSTops = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
-                                  )
+                                      ),
+                                      
+                                  AK8FatJets = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      fatJets  = cms.InputTag('slimmedJetsAK8'),
+                                      )
                                 )
