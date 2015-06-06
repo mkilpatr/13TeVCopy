@@ -112,6 +112,9 @@ public:
     , NCTT              (-1)
     , NCTTstd           (-1)
     //, DphiTopMET        (-1)
+    , dPhiHtJ12MET       (-1)
+    , dPhiHtJ123MET      (-1)
+    , dPhiHtJMET         (-1)
   {}
 
   void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
@@ -212,6 +215,9 @@ public:
     NCTT              = -1;
     NCTTstd           = -1;
     //DphiTopMET        =
+    dPhiHtJ12MET      =-99;
+    dPhiHtJ123MET     =-99;
+    dPhiHtJMET        =-99;
 
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
@@ -333,11 +339,14 @@ public:
 
     htJ12 = inJets[0]->pt() + inJets[1]->pt();
     MomentumF vHt;
+    MomentumF vHtJ12;
+    MomentumF vHtJ123;
     MomentumF vHtnoB;
     double htAlong    = 0;
     double htAway     = 0;
     double htAlongNoB = 0;
     double htAwayNoB  = 0;
+    int n     = 0;
     int nNonB = 0;
     for(unsigned int nJ = 0; nJ < inJets.size(); ++nJ){
       auto& j = *inJets[nJ];
@@ -348,11 +357,14 @@ public:
       double dPhi = PhysicsUtilities::absDeltaPhi(j,*inMet);
       if (dPhi < TMath::PiOver2()) htAlong += fabs(j.pt() * cos(dPhi));
       else                         htAway  += fabs(j.pt() * cos(dPhi));
+      ++n;
+      if (n==2) vHtJ12  = vHt;
+      if (n==3) vHtJ123 = vHt;
 
       // past this, only want to use non-B jets
       if(analyzer->isMediumBJet(j)) continue;
       htnoB += j.pt();
-      vHtnoB = vHt.p4() + j.p4();
+      vHtnoB = vHtnoB.p4() + j.p4();
       if(nNonB<2) htJ12noB += j.pt();
       // dotted HTalongOaway
       if (dPhi < TMath::PiOver2()) htAlongNoB += abs(j.pt() * cos(dPhi));
@@ -368,6 +380,9 @@ public:
     dPhivHtMETnoB = PhysicsUtilities::absDeltaPhi(vHtnoB,*inMet);
     if(htAway   >0) dotHtAlongAway    = htAlong    / htAway   ;
     if(htAwayNoB>0) dotHtAlongAwayNoB = htAlongNoB / htAwayNoB;
+    if (vHtJ12 .pt()>0 ) dPhiHtJ12MET  = PhysicsUtilities::absDeltaPhi(vHtJ12 ,*inMet);
+    if (vHtJ123.pt()>0 ) dPhiHtJ123MET = PhysicsUtilities::absDeltaPhi(vHtJ123,*inMet);
+    if (vHt    .pt()>0 ) dPhiHtJMET    = PhysicsUtilities::absDeltaPhi(vHt    ,*inMet);
 
     // ===== MT2 stuff =====
 
@@ -493,6 +508,9 @@ public:
   int   NCTT;           // top
   int   NCTTstd;        // top
   float DphiTopMET[50]; // top
+  float dPhiHtJ12MET;
+  float dPhiHtJ123MET;
+  float dPhiHtJMET;
 }; // VariableCalculator0L
 
 
