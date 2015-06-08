@@ -123,6 +123,9 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" ); //DphiTopMET
     outtree->Branch( "NCTTstd"          , &vars.NCTTstd          ,          "NCTTstd/I" );
     outtree->Branch( "DphiTopMET"       , &vars.DphiTopMET       , "DphiTopMET[NCTT]/F" );
+    outtree->Branch( "dPhiHtJ12MET"     , &vars.dPhiHtJ12MET     ,     "dPhiHtJ12MET/F" );
+    outtree->Branch( "dPhiHtJ123MET"    , &vars.dPhiHtJ123MET    ,    "dPhiHtJ123MET/F" );
+    outtree->Branch( "dPhiHtJMET"       , &vars.dPhiHtJMET       ,       "dPhiHtJMET/F" );
 
   } // Analyzer()
 
@@ -133,7 +136,7 @@ class Analyzer : public BaseTreeAnalyzer {
   } // ~Analyzer()
 
   const double  metcut_    = 200.0 ;
-  const int     minNJets_  =   5   ;
+  const int     minNJets_  =   3   ;
   const int     minNBjets_ =   1   ;
   const int     maxNTaus_  =   0   ;
 
@@ -408,7 +411,7 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
                      , const bool    isMC       = true    // data or MC
                      , const TString fname      = "ttbar_1_ntuple_wgtxsec.root" // path of file to be processed
                      , const double  xsec       = 831.76    // cross section to be used with this file
-                     , const string  outputdir  = "plots/"  // directory to which files with histograms will be written
+                     , const string  outputdir  = "plots/testing/"  // directory to which files with histograms will be written
                      , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/270515/merged/"
                      )
 {
@@ -428,7 +431,7 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
 
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,10000); // for testing
+  //a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()

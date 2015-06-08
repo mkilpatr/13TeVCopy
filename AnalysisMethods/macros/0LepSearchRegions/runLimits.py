@@ -23,8 +23,8 @@
 datacard and then runs the limits. At the moment it assumes that the datacards for each
 signal point are in their own folder and combines all files in each signal point's folder.
 
-It currently runs the "ExpSign" mode from Loukas's code (changing '-t -1' to '-t 100'; see 
-below), but may be updated with the other methods at some point.
+It currently runs the "ExpSign" mode from Loukas's code (changing '-t -1' to '-t 500'; see 
+below).
 """
 
 import os
@@ -32,8 +32,9 @@ import commands
   
 # ===== user defined stuff =====
 
-sigPoints = ['T2tt_850_100','T2tt_650_325',] # 'T2tt_500_325' ]
-saveLocation = 'datacards/150602/' # this should be the same as the one in makeDatacards.py
+sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1200_800','T1tttt_1500_100'] 
+saveLocation = 'datacards/150608_defaultLepMVAvetos-binNCTTstd/'  # this should be the same as the one in makeDatacards.py
+outputLocation = 'limitRootFiles/150608_defaultLepMVAvetos-binNCTTstd/' # place to move all the output files from running the limits
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
@@ -41,6 +42,8 @@ saveLocation = 'datacards/150602/' # this should be the same as the one in makeD
 ##### ##### ##### ##### ##### ##### ##### 
 
 for sigPoint in sigPoints:
+  currentFiles = os.listdir('./') # hack to move output files properly
+  
   datacardSaveLocation = saveLocation + sigPoint+'/'
   datacards = os.listdir(datacardSaveLocation)
   combinedDatacard = 'combined_'+sigPoint+'.txt'
@@ -60,12 +63,27 @@ for sigPoint in sigPoints:
   # expanded with the other methods soon
   
   limitsOutputFile = 'limitsOutput_' + sigPoint 
-  runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance --pvalue -t 100 --expectSignal=1 -n '+limitsOutputFile
+  runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t 500 --expectSignal=1 -n '+limitsOutputFile
+  # for now, remove '--pvalue' (between --significance and -t 500)
   # note: the default for -t is -1 (Asimov dataset) see https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideHiggsAnalysisCombinedLimit
   print 'now running:' #DEUBGGING ONLY 
   print runLimitsCommand, '\n' # keep this in some kind of log file?
   output = commands.getoutput(runLimitsCommand)
   print output # maybe redirect this to some kind of log file?
+  
+  # hack to move output files properly
+  allFiles = os.listdir('./')
+  if not os.path.exists(outputLocation): os.makedirs(outputLocation)
+  print '\n'
+  print 'moving files to:', outputLocation
+  for f in allFiles:
+    if f not in currentFiles:
+      print ' '*3, f
+      os.rename(f,os.path.join(outputLocation,f)) 
+  # for f in allFiles
+  
+  print '\n', '='*60, '\n'
+  
 
 # for sigPoint in sigPoints
 
