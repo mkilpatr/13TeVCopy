@@ -43,7 +43,8 @@ MuonFiller::MuonFiller(const int options,
   iMVAiso_       = data.addMulti<float>(branchName_,"MVAiso",0);
   iismedium_     = data.addMulti<bool >(branchName_,"isMedium",false);
   iminiiso_      = data.addMulti<float>(branchName_,"miniiso",0);
-  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
+  iptrel_        = data.addMulti<float>(branchName_,"ptrel",0);
+  iptratio_      = data.addMulti<float>(branchName_,"ptratio",0);
 
   if(options_ & FILLIDVARS) {
     inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
@@ -144,6 +145,7 @@ void MuonFiller::fill()
     data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,-1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()) ,mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()),mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, mu, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, mu ));
+    data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, mu ));
   }
   isFilled_ = true;
 
@@ -302,6 +304,32 @@ double MuonFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pa
   TLorentzVector lepFourVector(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
   return lepFourVector.Perp(closestJetFourVector.Vect());
 }
+
+
+double MuonFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 10) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+
+  TLorentzVector closestJetP4(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  TLorentzVector lepP4(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  double lepOvJetPt = lepP4.Pt()/closestJetP4.Pt();
+
+  return lepOvJetPt;
+}
+
+
+
 
 double MuonFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
   double ptmin = 5.0;

@@ -49,8 +49,9 @@ ElectronFiller::ElectronFiller(const int options,
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iMVAiso_     = data.addMulti<float>(branchName_,"MVAiso",0);
-  iminiiso_       = data.addMulti<float>(branchName_,"miniiso",0);
-  iptrel_       = data.addMulti<float>(branchName_,"ptrel",0);
+  iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
+  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
+  iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
 
   if(options_ & FILLIDVARS) {
     iecalE_              = data.addMulti<float>(branchName_,"ecalE",0);
@@ -284,6 +285,7 @@ void ElectronFiller::fill()
     data.fillMulti<bool>(iPassCutBaseNonIsoMID_,tmp_iPassCutBaseNonIsoMID_);
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, *elPtr, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, *elPtr));
+    data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, *elPtr ));
 
     float lsf2Iso = 9.; float lsf2IsoDR = 9.;
     float lsf3Iso = 9.; float lsf3IsoDR = 9.;
@@ -476,6 +478,31 @@ double ElectronFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, cons
   TLorentzVector lepFourVector(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
   return lepFourVector.Perp(closestJetFourVector.Vect());
 }
+
+
+double ElectronFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 10) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+
+  TLorentzVector closestJetP4(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  TLorentzVector lepP4(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  double lepOvJetPt = lepP4.Pt()/closestJetP4.Pt();
+
+  return lepOvJetPt;
+}
+
+
 
 
 double ElectronFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
