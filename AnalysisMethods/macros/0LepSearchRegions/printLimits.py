@@ -8,19 +8,20 @@ import commands
 
 # ===== user defined stuff =====
 
-sigPoints = ['T2tt_850_100','T2tt_650_325','T2tt_500_325' ]
-rootFileLocation = 'limitFiles/150603/' # this should be the same as the one in makeDatacards.py
+sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1200_800','T1tttt_1500_100'] 
+rootFileLocation = 'limitRootFiles/150608_defaultLepMVAvetos-binNCTTstd/' # location of the output files from runLimits ('outputLocation' from runLimits.py)
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
 ##### anything below this point!!!  ##### 
 ##### ##### ##### ##### ##### ##### ##### 
 
-rootFiles = datacards = os.listdir(rootFileLocation)
+rootFiles = os.listdir(rootFileLocation)
 
 for sigPoint in sigPoints:
   rootFile = ''
   for rf in rootFiles:
+    if 'higgsCombine' not in rf: continue # this assmes you kept the default name
     if sigPoint in rf: rootFile = rootFileLocation + rf
   if rootFile == '': 
     print "The file for", sigPoint, "doesn't exist! skipping..."
