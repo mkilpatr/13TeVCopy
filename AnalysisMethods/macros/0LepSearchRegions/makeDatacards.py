@@ -1,23 +1,23 @@
 #! /usr/bin/python
+#
+# Note: if you want to copy this to a different location to run, you will also need 
+# to copy getBinNumbers.C and datacard.txt_template to the same directory.
 
 import os
 import commands
   
 # ===== user defined stuff =====
 
-# Note: if you want to copy this to a convient location to run, you will also need 
-# to copy getBinNumbers.C and datacard.txt_template to the same directory.
-
 baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&(DphiTopMET>1||DphiTopMET<-1)&&(DphiTopMET<2.8&&DphiTopMET>-2.8)' 
-saveLocation = 'datacards/150529/' # subfolder to put datacards in under <saveLocation>/
-ttreeLocation = 'ttrees/150529/'
-lumi = 4 # the trees are filled with weights that assume 1/fb, so use this to scale as desired
+saveLocation = 'datacards/150608_defaultLepMVAvetos-binNCTTstd/' 
+ttreeLocation = 'ttrees/150608/'
+lumi = 5 # this assumes that the trees are filled with weights that assume 1/fb, so use this to scale as desired
 
-# All filenames need to have the format <sampleName><fileNameTail> e.g. ttbar_tree.root.
+# All filenames need to have the format <sampleName><fileNameTail> e.g. ttbar + _tree.root.
 # The list of signal and background samples is used both to get the filenames and 
 # to label things in the datacards and datacard names.
-sigPoints = ['T2tt_850_100','T2tt_650_325'] # 'T2tt_500_325'
-backgrounds = ['ttbar','ttZ','znunu']
+sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1200_800','T1tttt_1500_100'] 
+backgrounds = ['ttbar','ttZ','znunu','ttW'] # add wjets
 fileNameTail = '_tree.root'
 
 # This will produce one datacard per bin combination. 
@@ -27,7 +27,8 @@ fileNameTail = '_tree.root'
 # should be absurdly high for inclusive cuts, e.g. >=500 -> (500,100000000000).
 varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
            ['nmBtag',(1,2),(2,100)],
-           ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],          
+           ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],   
+           #['NCTTstd',(0,1),(1,100)],       
            ]
 
 ##### ##### ##### ##### ##### ##### ##### 
@@ -105,7 +106,7 @@ allBinCombos = expandBins(varBins)[:]
 # First the template card is made with all backgrounds,
 # then the signal points are looped to get the sig numbers.
 for bins in allBinCombos:
-  print bins #DEBUGGING ONLY
+  #print bins #DEBUGGING ONLY
   binFileBaseName = getFileName(bins)
   templateFile = saveLocation + 'template'+binFileBaseName+'_template'
 
@@ -128,7 +129,7 @@ for bins in allBinCombos:
   #loop through backgrounds to get numbers 
   for background in backgrounds:
     bkgFile = ttreeLocation + background + fileNameTail
-    lineSBBin    += 'METb\t\t'
+    lineSBBin    += 'METs\t\t'
     lineProcess1 += background+'\t\t'
     lineProcess2 += '1\t\t'
     lineRate     += str(getNumEvents(bkgFile,bins))+'\t'
@@ -169,13 +170,15 @@ for bins in allBinCombos:
     datacard = datacard.replace('SIGSYS' ,str(uncSig )+'\t')
     
     #save the current datacard
-    datacardName = saveLocation + sigPoint+binFileBaseName
+    datacardSaveLocation = saveLocation + sigPoint+'/'
+    if not os.path.exists(datacardSaveLocation): os.makedirs(datacardSaveLocation)
+    datacardName = datacardSaveLocation + sigPoint+binFileBaseName
     f = open(datacardName,'w')
     f.write(datacard)
     f.close()
     
-    print '\n', datacardName, '\n', '='*60 #DEBUGGING ONLY
-    print datacard #DEBUGGING ONLY
+    #print '\n', datacardName, '\n', '='*60 #DEBUGGING ONLY
+    #print datacard #DEBUGGING ONLY
   #for sigPoint in sigPoints
   #break
 #for bins in allBinCombo
