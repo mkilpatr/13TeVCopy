@@ -115,7 +115,11 @@ nominal_configuration = cms.PSet(
                                       fillJetShapeInfo     = cms.untracked.bool(True),
                                       fillTopJetAssoc      = cms.untracked.bool(True),
                                       applyJEC             = cms.untracked.bool(False),
-                                      fillqgl              = cms.untracked.bool(False)
+                                      fillqgl              = cms.untracked.bool(False),
+                                      fillSuper            = cms.untracked.bool(True),
+                                      superJets            = cms.InputTag('subjetsca','Super'),
+                                      superJetAssoc        = cms.InputTag('subjetsca','SuperJetIndex'),
+                                      superJetNsub         = cms.InputTag('subjetsca','NCASubjets'),
                                   ),
 
                                   Muons = cms.untracked.PSet(

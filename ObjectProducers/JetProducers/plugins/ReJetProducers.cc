@@ -25,7 +25,15 @@ public:
     clusterJets(clusterer,recoCandidates,edm::Handle<reco::PFCandidateCollection >());
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
-    if(useSubjetCountingCA) clusterer.distillJets<reco::PFCandidate, FastJetClusterer::CompoundPseudoJet, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup, 0, true);
+    std::auto_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
+    if(useSubjetCountingCA) {
+      if(outputSuperJets) {
+        superJetIndices.reset(new std::vector<int>(clusterer.getCompoundJets().size(), -1));
+         clusterer.distillJets<reco::PFCandidate, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup, 0, true, true, FastJetClusterer::DEFAULT_VERTEX, *superJetIndices);
+      } else {
+        clusterer.distillJets<reco::PFCandidate, FastJetClusterer::CompoundPseudoJet, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup, 0, true);
+      }
+    }
     else clusterer.distillJets<reco::PFCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup, 0, true);
 
     std::auto_ptr<reco::GenJetCollection>               genJets ;
@@ -56,7 +64,7 @@ public:
       }
     }
 
-    putJets(iEvent,recoJets,genJets,partonJets, std::auto_ptr<reco::PFJetCollection>(0));
+    putJets(iEvent,recoJets,genJets,partonJets, std::auto_ptr<reco::PFJetCollection>(0), superJetIndices);
   }
 
 protected:
@@ -89,7 +97,15 @@ public:
               : clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle);
 
     std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
-    if(useSubjetCountingCA) clusterer.distillJets<pat::PackedCandidate, FastJetClusterer::CompoundPseudoJet, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup,&isNonPUParticle, true);
+    std::auto_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
+    if(useSubjetCountingCA) {
+      if(outputSuperJets) {
+        superJetIndices.reset(new std::vector<int>(clusterer.getCompoundJets().size(), -1));
+        clusterer.distillJets<pat::PackedCandidate, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup,&isNonPUParticle, true, true, FastJetClusterer::DEFAULT_VERTEX, *superJetIndices);
+      } else {
+        clusterer.distillJets<pat::PackedCandidate, FastJetClusterer::CompoundPseudoJet, reco::PFJet>(recoCandidates, clusterer.getCompoundJets(), *recoJets, iSetup,&isNonPUParticle, true);
+      }
+    }
     else clusterer.distillJets<pat::PackedCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup,&isNonPUParticle, true);
 
     std::auto_ptr<reco::GenJetCollection>               genJets ;
@@ -126,7 +142,7 @@ public:
        }
      }
 
-    putJets(iEvent,recoJets,genJets,partonJets,puInJets);
+    putJets(iEvent,recoJets,genJets,partonJets,puInJets,superJetIndices);
   }
 
   static bool isPUParticle(const pat::PackedCandidate& p) {return p.fromPV() == 0; }
