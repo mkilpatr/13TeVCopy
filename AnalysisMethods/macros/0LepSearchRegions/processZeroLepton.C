@@ -428,6 +428,11 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
   BaseTreeAnalyzer::ConfigPars pars;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
   pars.minJetPt = 20;
+  // vetoed leptons
+  pars.minVetoEPt = 5;
+  pars.vetoedElectron = &ElectronF::isgoodpogelectron;
+  pars.minVetoMuPt = 5;
+  pars.vetoedMuon = &MuonF::isgoodpogmuon;
 
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
