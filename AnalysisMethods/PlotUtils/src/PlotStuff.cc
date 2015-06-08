@@ -123,17 +123,23 @@ void PlotStuff::loadPlots()
       bool first2dhist = true;
 
       for(auto* sample : samples_) {
-         tmphistsv.clear();
-         tmphists2dv.clear();
+        tmphistsv.clear();
+        tmphists2dv.clear();
 
-         TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
-         infile = TFile::Open(filename);
-         assert(infile);
+        TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
 
-         intree = (TTree*)infile->Get(config_.treename);
-         assert(intree);
+        if(sample->filenames.size() > 1 && gSystem->AccessPathName(filename.Data())) {
+          TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_*%s", inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data());
+          gSystem->Exec(cmd.Data());
+        }
 
-         for(auto var : config_.treevars) {
+        infile = TFile::Open(filename);
+        assert(infile);
+
+        intree = (TTree*)infile->Get(config_.treename);
+        assert(intree);
+
+        for(auto var : config_.treevars) {
           TString histname = var.name + "_" + sample->name;
           TString drawstr = var.varname + ">>" + histname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
@@ -201,12 +207,13 @@ void PlotStuff::loadPlots()
         tmphists2dv.clear();
         tmpgraphsv.clear();
 
-        if(sample->filenames.size() > 1) {
+        TString filename = inputdir_ + "/" + sample->name + config_.plotfilesuffix;
+
+        if(sample->filenames.size() > 1 && gSystem->AccessPathName(filename.Data())) {
           TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_*%s", inputdir_.Data(), sample->name.Data(), config_.plotfilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.plotfilesuffix.Data());
           gSystem->Exec(cmd.Data());
         }
 
-        TString filename = inputdir_ + "/" + sample->name + config_.plotfilesuffix;
         infile = TFile::Open(filename);
         assert(infile);
 
@@ -351,17 +358,23 @@ void PlotStuff::loadTables()
       bool first = true;
 
       for(auto* sample : samples_) {
-         tmpyieldsv.clear();
-         tmpyielderrsv.clear();
+        tmpyieldsv.clear();
+        tmpyielderrsv.clear();
 
-         TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
-         infile = TFile::Open(filename);
-         assert(infile);
+        TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
 
-         intree = (TTree*)infile->Get(config_.treename);
-         assert(intree);
+        if(sample->filenames.size() > 1 && gSystem->AccessPathName(filename.Data())) {
+          TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_*%s", inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data());
+          gSystem->Exec(cmd.Data());
+        }
 
-         for(auto sel : config_.tablesels) {
+        infile = TFile::Open(filename);
+        assert(infile);
+
+        intree = (TTree*)infile->Get(config_.treename);
+        assert(intree);
+
+        for(auto sel : config_.tablesels) {
           TString drawstr = config_.wgtvar + ">>htmp";
           TString cutstr = config_.wgtvar + "*(" + sel + ")";
           intree->Draw(drawstr.Data(), cutstr.Data(), "e");
@@ -647,7 +660,10 @@ void PlotStuff::makeHist2DPlot(TString name, TString title, TString xtitle, TStr
     plot->outputdir = outputdir_;
     gSystem->mkdir(outputdir_, true);
 
-    plot->addHist2D(hists[isam], sample->label, config_.drawopt2d);
+    if(config_.scalecompto1)
+      plot->addHist2DScaled(hists[isam], 1.0, sample->label, config_.drawopt2d);
+    else
+      plot->addHist2D(hists[isam], sample->label, config_.drawopt2d);
 
     plot->setLegend(0,0,0,0);
 

@@ -49,6 +49,9 @@ ElectronFiller::ElectronFiller(const int options,
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iMVAiso_     = data.addMulti<float>(branchName_,"MVAiso",0);
+  iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
+  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
+  iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
 
   if(options_ & FILLIDVARS) {
     iecalE_              = data.addMulti<float>(branchName_,"ecalE",0);
@@ -166,11 +169,13 @@ void ElectronFiller::load(const edm::Event& iEvent)
   FileUtilities::enforceGet(iEvent, mediumIdTag_,medium_id_decisions_,true);
   FileUtilities::enforceGet(iEvent, tightIdTag_,tight_id_decisions_,true);
   //  FileUtilities::enforceGet(iEvent, "ak8PFJetsCHSTrimmedr0p1ptf0p03",trimmedJets,true);
-  FileUtilities::enforceGet(iEvent, "redCA8",ca8Jets,true);
+  FileUtilities::enforceGet(iEvent, "redCA8",ca8jets,true);
   iEvent.getByLabel("lsfSubJets","LSFJets2",lsfSubJets2);
   iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
   iEvent.getByLabel("lsfSubJets","LSFJets4",lsfSubJets4);
   FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
+  FileUtilities::enforceGet(iEvent,"slimmedJets",ak4jets_,true);
+  FileUtilities::enforceGet(iEvent,"packedPFCandidates",pfcands,true);
   isLoaded_ = true;
 }
 
@@ -244,13 +249,13 @@ void ElectronFiller::fill()
     if (fabs(el->superCluster()->eta()) <= 1.479) {
       //      cout << "EB\n";      
       if (
-	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.0106 &&
-	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.0323 &&
-	  el->full5x5_sigmaIetaIeta()                                                         <  0.0107 &&
-	  el->hadronicOverEm()                                                                <  0.067  &&
-	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.0131 &&
-	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.2231 &&	
-	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.1043 &&
+	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.008925  &&
+	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.035973 &&
+	  el->full5x5_sigmaIetaIeta()                                                         <  0.009996  &&
+	  el->hadronicOverEm()                                                                <  0.050537 &&
+	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.012235 &&
+	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.042020   &&	
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.091942 &&
 	  el->passConversionVeto()                                                                      &&
 	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
 	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
@@ -262,13 +267,13 @@ void ElectronFiller::fill()
     else if ((fabs(el->superCluster()->eta()) > 1.479) && fabs(el->superCluster()->eta())<2.5 ) {
 
       if (
-	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.0108 &&
-	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.0455 &&
-	  el->full5x5_sigmaIetaIeta()                                                         <  0.0318 &&
-	  el->hadronicOverEm()                                                                <  0.097  &&
-	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.0845 &&
-	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.7523 &&	
-	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.1201 &&
+	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.007429  &&
+	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.067879  &&
+	  el->full5x5_sigmaIetaIeta()                                                         <  0.030135  &&
+	  el->hadronicOverEm()                                                                <  0.086782   &&
+	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.036719  &&
+	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.138142  &&	
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.100683 &&
 	  el->passConversionVeto()                                                                      &&
 	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
 	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
@@ -278,7 +283,9 @@ void ElectronFiller::fill()
     }
     
     data.fillMulti<bool>(iPassCutBaseNonIsoMID_,tmp_iPassCutBaseNonIsoMID_);
-    
+    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, *elPtr, 0.05, 0.2, 10., false, false));
+    data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, *elPtr));
+    data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, *elPtr ));
 
     float lsf2Iso = 9.; float lsf2IsoDR = 9.;
     float lsf3Iso = 9.; float lsf3IsoDR = 9.;
@@ -322,7 +329,7 @@ void ElectronFiller::fill()
 
     double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
-    data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), lsf3Iso, sip3d, rhoiso));
+    data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), LSF(el_,ca8jets) , sip3d, rhoiso));
   }
   isFilled_ = true;
 
@@ -358,3 +365,185 @@ float ElectronFiller::calculateRhoIso(double eta, double pfchargediso, double pf
      return pfchargediso+TMath::Max(pfneutraliso+pfphotoniso-rho*EA,0.0);
 
 }
+
+double ElectronFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Electron ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only) {
+   if (ptcl.pt()<5.) return 99999.;
+   double deadcone_nh(0.), deadcone_ch(0.), deadcone_ph(0.), deadcone_pu(0.);
+   //   if(ptcl.isElectron()) {
+   // if (fabs(ptcl.eta())>1.479) {
+   deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;//}
+     //} else if(ptcl.isMuon()) {
+     //     deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;
+     //   } else {
+     //deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01; // maybe use muon cones??
+     //   }
+   double iso_nh(0.); double iso_ch(0.);
+   double iso_ph(0.); double iso_pu(0.);
+   double ptThresh(0.5);
+   //   if(ptcl.isElectron()) 
+   ptThresh = 0;
+   double r_iso = max(r_iso_min,min(r_iso_max, kt_scale/ptcl.pt()));
+   for (const pat::PackedCandidate &pfc : *pfcands) {
+     if (abs(pfc.pdgId())<7) continue;
+     double dr = deltaR(pfc, ptcl);
+     if (dr > r_iso) continue;
+     ////////////////// NEUTRALS /////////////////////////
+     if (pfc.charge()==0){
+       if (pfc.pt()>ptThresh) {
+	 double wpf(1.);
+	 if (use_pfweight){
+	   double wpv(0.), wpu(0.);
+	   for (const pat::PackedCandidate &jpfc : *pfcands) {
+	     double jdr = deltaR(pfc, jpfc);
+	     if (pfc.charge()!=0 || jdr<0.00001) continue;
+	     double jpt = jpfc.pt();
+	     if (pfc.fromPV()>1) wpv *= jpt/jdr;
+	     else wpu *= jpt/jdr;
+	   }
+	   wpv = log(wpv);
+	   wpu = log(wpu);
+	   wpf = wpv/(wpv+wpu);
+	 }
+	 /////////// PHOTONS ////////////
+	 if (abs(pfc.pdgId())==22) {
+	   if(dr < deadcone_ph) continue;
+	   iso_ph += wpf*pfc.pt();
+	   /////////// NEUTRAL HADRONS ////////////
+	 } else if (abs(pfc.pdgId())==130) {
+	   if(dr < deadcone_nh) continue;
+	   iso_nh += wpf*pfc.pt();
+	 }
+       }
+       ////////////////// CHARGED from PV /////////////////////////
+     } else if (pfc.fromPV()>1){
+       if (abs(pfc.pdgId())==211) {
+	 if(dr < deadcone_ch) continue;
+	 iso_ch += pfc.pt();
+       }
+       ////////////////// CHARGED from PU /////////////////////////
+     } else {
+       if (pfc.pt()>ptThresh){
+	 if(dr < deadcone_pu) continue;
+	 iso_pu += pfc.pt();
+       }
+     }
+   }
+   double iso(0.);
+   if (charged_only){
+     iso = iso_ch;
+   } else {
+     iso = iso_ph + iso_nh;
+     if (!use_pfweight) iso -= 0.5*iso_pu;
+     if (iso>0) iso += iso_ch;
+     else iso = iso_ch;
+   }
+   iso = iso/ptcl.pt();
+   return iso;
+ }
+
+double ElectronFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 20) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+  TLorentzVector closestJetFourVector(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  for (unsigned int i = 0, n = closestJet->numberOfSourceCandidatePtrs(); i < n; ++i) {
+    const pat::PackedCandidate &candidate = dynamic_cast<const pat::PackedCandidate &>(*(closestJet->sourceCandidatePtr(i)));
+    bool isPartOfLepton = false;
+      // muon candidate pointers to the PF candidate is null in miniAOD.
+      // we will match by relative pt difference and deltaR. thresholds at 0.1% and 0.001 in DR were tuned by eye
+    for (auto itr : lepton.associatedPackedPFCandidates()) {
+      if ( &(*itr) == &candidate) {
+	isPartOfLepton = true;
+	break;
+      } 
+    }
+    //if the PF candidate is part of the muon, subtract its momentum from the jet momentum
+    if (isPartOfLepton) {
+      closestJetFourVector.SetPxPyPzE( closestJetFourVector.Px() - candidate.px(),
+				       closestJetFourVector.Py() - candidate.py(),
+				       closestJetFourVector.Pz() - candidate.pz(),
+				       closestJetFourVector.E() - candidate.energy());
+    }
+  }
+  TLorentzVector lepFourVector(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  return lepFourVector.Perp(closestJetFourVector.Vect());
+}
+
+
+double ElectronFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 10) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+
+  TLorentzVector closestJetP4(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  TLorentzVector lepP4(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  double lepOvJetPt = lepP4.Pt()/closestJetP4.Pt();
+
+  return lepOvJetPt;
+}
+
+
+
+
+double ElectronFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
+  double ptmin = 5.0;
+  double deltaRjet=100;
+  int jetnumber=0;
+  //Find closest jet
+  for(unsigned int iJ = 0; iJ < ca8jets->size(); ++iJ){
+    const reco::PFJet& j = ca8jets->at(iJ);
+    if(j.pt() < ptmin) continue;
+    LorentzVector jet;
+    jet.SetPxPyPzE(j.px(),j.py(),j.pz(),j.energy());
+    if(deltaR(lep,jet)<deltaRjet) {
+      deltaRjet=deltaR(lep,jet);
+      jetnumber=iJ;
+    }
+  }
+  double deltaRsub=100;
+  double subjetpt=-1;
+  //Create subjets and find the closest one.
+  if(deltaRjet<10){
+    const reco::PFJet& jet = ca8jets->at(jetnumber);
+    std::vector<fastjet::PseudoJet> FJparticles;
+    for (unsigned int k = 0; k < jet.numberOfDaughters(); k++)
+      {
+        const pat::PackedCandidate* this_constituent = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(k));
+        FJparticles.push_back( fastjet::PseudoJet( this_constituent->px(), this_constituent->py(), this_constituent->pz(), this_constituent->energy() ) );
+      }
+    fastjet::JetDefinition jet_def_kt2(fastjet::kt_algorithm, 0.2);
+    fastjet::ClusterSequence clust_seq_kt(FJparticles, jet_def_kt2);
+    std::vector<fastjet::PseudoJet> subjets_kt = sorted_by_pt(clust_seq_kt.inclusive_jets(ptmin));
+    int num_cust_subs_kt = subjets_kt.size();
+    for(int iSJ=0;iSJ<num_cust_subs_kt;iSJ++){
+      LorentzVector subjet;
+      subjet.SetPxPyPzE(subjets_kt[iSJ].px(),subjets_kt[iSJ].py(),subjets_kt[iSJ].pz(),subjets_kt[iSJ].e());
+      if(deltaR(lep,subjet)<deltaRsub) {
+        deltaRsub=deltaR(lep,subjet);
+        subjetpt=subjets_kt[iSJ].pt();
+      }
+    }
+  }
+ return lep.Pt()/subjetpt;
+}
+

@@ -19,17 +19,17 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
   VariableCalculator0L vars;
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sample, TString outputdir)
+  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir)
           : BaseTreeAnalyzer(fileName, treeName, isMCTree, pars)
           , xsec_(xSec)
-          , sample_(sample)
+          , sample_(sname)
           , outputdir_(outputdir)
   {
-    loadPlots(); // initialize plots
+    //loadPlots(); // initialize plots
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
-    fout = new TFile (outputdir+"/"+sample+"_tree.root","RECREATE");
+    fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("events","analysis tree");
     outtree->Branch( "scaleFactor", &scaleFactor, "scaleFactor/F" );
@@ -110,16 +110,19 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "dPhivHtMETnoB"    , &vars.dPhivHtMETnoB    ,    "dPhivHtMETnoB/F" );
     outtree->Branch( "dotHtAlongAway"   , &vars.dotHtAlongAway   ,   "dotHtAlongAway/F" );
     outtree->Branch( "dotHtAlongAwayNoB", &vars.dotHtAlongAwayNoB,"dotHtAlongAwayNoB/F" );
-    outtree->Branch( "MT2a_000"         , &vars.MT2a_000         ,         "MT2a_000/F" );
-    outtree->Branch( "MT2a_100"         , &vars.MT2a_100         ,         "MT2a_100/F" );
-    outtree->Branch( "MT2a_150"         , &vars.MT2a_150         ,         "MT2a_150/F" );
-    outtree->Branch( "MT2a_200"         , &vars.MT2a_200         ,         "MT2a_200/F" );
-    outtree->Branch( "MT2a_250"         , &vars.MT2a_250         ,         "MT2a_250/F" );
-    outtree->Branch( "MT2b_000"         , &vars.MT2b_000         ,         "MT2b_000/F" );
-    outtree->Branch( "MT2b_100"         , &vars.MT2b_100         ,         "MT2b_100/F" );
-    outtree->Branch( "MT2b_150"         , &vars.MT2b_150         ,         "MT2b_150/F" );
-    outtree->Branch( "MT2b_200"         , &vars.MT2b_200         ,         "MT2b_200/F" );
-    outtree->Branch( "MT2b_250"         , &vars.MT2b_250         ,         "MT2b_250/F" );
+    outtree->Branch( "MT2tp0_000"       , &vars.MT2tp0_000       ,       "MT2tp0_000/F" );
+    //outtree->Branch( "MT2tp0_100"       , &vars.MT2tp0_100       ,       "MT2tp0_100/F" );
+    //outtree->Branch( "MT2tp0_150"       , &vars.MT2tp0_150       ,       "MT2tp0_150/F" );
+    //outtree->Branch( "MT2tp0_200"       , &vars.MT2tp0_200       ,       "MT2tp0_200/F" );
+    //outtree->Branch( "MT2tp0_250"       , &vars.MT2tp0_250       ,       "MT2tp0_250/F" );
+    //outtree->Branch( "MT2tp1_000"       , &vars.MT2tp1_000       ,       "MT2tp1_000/F" );
+    //outtree->Branch( "MT2tp1_100"       , &vars.MT2tp1_100       ,       "MT2tp1_100/F" );
+    //outtree->Branch( "MT2tp1_150"       , &vars.MT2tp1_150       ,       "MT2tp1_150/F" );
+    //outtree->Branch( "MT2tp1_200"       , &vars.MT2tp1_200       ,       "MT2tp1_200/F" );
+    //outtree->Branch( "MT2tp1_250"       , &vars.MT2tp1_250       ,       "MT2tp1_250/F" );
+    outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" ); //DphiTopMET
+    outtree->Branch( "NCTTstd"          , &vars.NCTTstd          ,          "NCTTstd/I" );
+    outtree->Branch( "DphiTopMET"       , &vars.DphiTopMET       , "DphiTopMET[NCTT]/F" );
 
   } // Analyzer()
 
@@ -134,7 +137,7 @@ class Analyzer : public BaseTreeAnalyzer {
   const int     minNBjets_ =   1   ;
   const int     maxNTaus_  =   0   ;
 
-  const double  lumi_      = 4000.0 ; // in /pb
+  const double  lumi_      = 1000.0 ; // in /pb
   const double  xsec_      ;
   const TString sample_    ;
   const TString outputdir_ ;
@@ -150,7 +153,7 @@ class Analyzer : public BaseTreeAnalyzer {
   //float met_0         ;
   //float ht_0          ;
   //float htAoA_0       ;
-  int test;
+  //int test;
 
 
   void loadVariables();
@@ -232,46 +235,44 @@ void Analyzer::loadPlots() {
   plots["dPhivHtMETnoB_passPre"]     = new TH1F("dPhivHtMETnoB_passPre"    , (passPre+"; |#Delta#phi(#slash{E}_{T},vHt)| (noBs); "+yTitle).c_str(),  21,   0  ,    3.15 ); // 10
   plots["dotHtAlongAway_passPre"]    = new TH1F("dotHtAlongAway_passPre"   , (passPre+"; dot H_{T}^{along}/H_{T}^{away}; "        +yTitle).c_str(),  40,   0  ,    2    ); // 10
   plots["dotHtAlongAwayNoB_passPre"] = new TH1F("dotHtAlongAwayNoB_passPre", (passPre+"; dot H_{T}^{along}/H_{T}^{away} (noBs); " +yTitle).c_str(),  40,   0  ,    2    ); // 10
-  plots["MT2a_000_passPre"]          = new TH1F("MT2a_000_passPree"        , (passPre+"; MT2a_000; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2a_100_passPre"]          = new TH1F("MT2a_100_passPree"        , (passPre+"; MT2a_100; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2a_150_passPre"]          = new TH1F("MT2a_150_passPree"        , (passPre+"; MT2a_150; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2a_200_passPre"]          = new TH1F("MT2a_200_passPree"        , (passPre+"; MT2a_200; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2a_250_passPre"]          = new TH1F("MT2a_250_passPree"        , (passPre+"; MT2a_250; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2b_000_passPre"]          = new TH1F("MT2b_000_passPree"        , (passPre+"; MT2b_000; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2b_100_passPre"]          = new TH1F("MT2b_100_passPree"        , (passPre+"; MT2b_100; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2b_150_passPre"]          = new TH1F("MT2b_150_passPree"        , (passPre+"; MT2b_150; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2b_200_passPre"]          = new TH1F("MT2b_200_passPree"        , (passPre+"; MT2b_200; "                              +yTitle).c_str(), 100,   0  ,  1000   );
-  plots["MT2b_250_passPre"]          = new TH1F("MT2b_250_passPree"        , (passPre+"; MT2b_250; "                              +yTitle).c_str(), 100,   0  ,  1000   );
+  plots["MT2tp0_000_passPre"]        = new TH1F("MT2tp0_000_passPree"      , (passPre+"; MT2tp0_000; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp0_100_passPre"]        = new TH1F("MT2tp0_100_passPree"      , (passPre+"; MT2tp0_100; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp0_150_passPre"]        = new TH1F("MT2tp0_150_passPree"      , (passPre+"; MT2tp0_150; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp0_200_passPre"]        = new TH1F("MT2tp0_200_passPree"      , (passPre+"; MT2tp0_200; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp0_250_passPre"]        = new TH1F("MT2tp0_250_passPree"      , (passPre+"; MT2tp0_250; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp1_000_passPre"]        = new TH1F("MT2tp1_000_passPree"      , (passPre+"; MT2tp1_000; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp1_100_passPre"]        = new TH1F("MT2tp1_100_passPree"      , (passPre+"; MT2tp1_100; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp1_150_passPre"]        = new TH1F("MT2tp1_150_passPree"      , (passPre+"; MT2tp1_150; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp1_200_passPre"]        = new TH1F("MT2tp1_200_passPree"      , (passPre+"; MT2tp1_200; "                            +yTitle).c_str(), 100,   0  ,  1000   );
+  //plots["MT2tp1_250_passPre"]        = new TH1F("MT2tp1_250_passPree"      , (passPre+"; MT2tp1_250; "                            +yTitle).c_str(), 100,   0  ,  1000   );
 
   // set Sumw2 for all histograms
   for(map<TString,TH1F*>::iterator plotsIt = plots.begin(); plotsIt != plots.end(); ++plotsIt) plotsIt->second->Sumw2();
 } // loadPlots()
 
-// temporally overload to NOT load tau stuff; remove when new ttrees are avaliable
-// also uncomment nVetoTau
 void Analyzer::loadVariables() {
   load(EVTINFO);
   load(AK4JETS, JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
   load(PICKYJETS);
   load(ELECTRONS);
   load(MUONS);
-  //load(PFCANDS);
+  load(PFCANDS);
+  load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
 } // Analyzer::loadVariables()
 
 // Analyze event and fill plots
 void Analyzer::runEvent() {
 
-  double wt = lumi_ * xsec_ / getEntries();
-
   // preselection
   if(nVetoedLeptons > 0)  return;
   if(met->pt() < metcut_) return;
   if(nJets<minNJets_)     return;
   if(nBJets < minNBjets_) return;
+  if(nVetoedTaus>0)       return;
 
-  // fill tree variables
-  scaleFactor = wt;
+  // fill tree variables [assmune lumi = 1 fb^(-1)]
+  scaleFactor = weight; // lumi_*xsec_/getEntries(); <- old procedure, now stored in files to handle split samples correctly
   npv         = nPV;
   nAK4pfJets  = nJets;
   nVetoTau    = nVetoedTaus;
@@ -279,8 +280,10 @@ void Analyzer::runEvent() {
   //nAK4pfBJets = nBJets;
   //ht          = JetKinematics::ht(jets,20,2.4);
   //htAoA       = JetKinematics::htAlongHtAway(*met,jets,20,2.4);
-  vars.processVariables(this,&ak4Reader,jets,jets,met); // calculate variables
+  vars.processVariables(this,&ak4Reader,jets,jets,met,cttTops); // calculate variables
   outtree->Fill();
+
+  return;
 
   bool passMet = met->pt() > metcut_;
   bool passJet = nJets >= minNJets_ && nBJets >= minNBjets_;
@@ -288,84 +291,86 @@ void Analyzer::runEvent() {
 
   // ===== Fill histograms =====
   // partial preselection plots
-  if (passJet) plots["met_passJet" ]->Fill(vars.ptMet, wt);
-  if (passMet) plots["nj60_passMet"]->Fill(vars.nj60 , wt);
-  if (passMet) plots["nJ20_passMet"]->Fill(vars.nJ20 , wt);
+  if (passJet) plots["met_passJet" ]->Fill(vars.ptMet, scaleFactor);
+  if (passMet) plots["nj60_passMet"]->Fill(vars.nj60 , scaleFactor);
+  if (passMet) plots["nJ20_passMet"]->Fill(vars.nJ20 , scaleFactor);
   // plots after preselection
   if(!passPre) return;
-  plots["j1pt_passPre"]             ->Fill(jets[0]->pt()         , wt);
-  plots["ntBtag_passPre"]           ->Fill(vars.ntBtag           , wt);
-  plots["nmBtag_passPre"]           ->Fill(vars.nmBtag           , wt);
-  plots["dPhiMET12_passPre"]        ->Fill(vars.dPhiMET12        , wt);
-  plots["dPhiMET3_passPre"]         ->Fill(vars.dPhiMET3         , wt);
-  plots["dPhiB0MET_passPre"]        ->Fill(vars.dPhiB0MET        , wt);
-  plots["dPhiB1MET_passPre"]        ->Fill(vars.dPhiB1MET        , wt);
-  plots["dPhiB2MET_passPre"]        ->Fill(vars.dPhiB2MET        , wt);
-  plots["dPhiB01MET_passPre"]       ->Fill(vars.dPhiB01MET       , wt);
-  plots["dPhiCVSnearMET_passPre"]   ->Fill(vars.dPhiCVSnearMET   , wt);
-  plots["Mb1b2n_passPre"]           ->Fill(vars.Mb1b2n           , wt);
-  plots["mtB0MET_passPre"]          ->Fill(vars.mtB0MET          , wt);
-  plots["mtB1MET_passPre"]          ->Fill(vars.mtB1MET          , wt);
-  plots["mtB2MET_passPre"]          ->Fill(vars.mtB2MET          , wt);
-  plots["mtB01MET_passPre"]         ->Fill(vars.mtB01MET         , wt);
-  plots["sSumB01oMET_passPre"]      ->Fill(vars.sSumB01oMET      , wt);
-  plots["vSumB01oMET_passPre"]      ->Fill(vars.vSumB01oMET      , wt);
-  plots["qgl0_passPre"]             ->Fill(vars.qgl0             , wt);
-  plots["qgl1_passPre"]             ->Fill(vars.qgl1             , wt);
-  plots["qglprod_passPre"]          ->Fill(vars.qglprod          , wt);
-  plots["qglprodNorm_passPre"]      ->Fill(vars.qglprodNorm      , wt);
-  plots["qglprod30_passPre"]        ->Fill(vars.qglprod30        , wt);
-  plots["qglprodNorm30_passPre"]    ->Fill(vars.qglprodNorm30    , wt);
-  plots["qglJ0_passPre"]            ->Fill(vars.qglJ0            , wt);
-  plots["qglJ1_passPre"]            ->Fill(vars.qglJ1            , wt);
-  plots["qglCVS0_passPre"]          ->Fill(vars.qglCVS0          , wt);
-  plots["qglCVS1_passPre"]          ->Fill(vars.qglCVS1          , wt);
-  plots["qgl0noB_passPre"]          ->Fill(vars.qgl0noB          , wt);
-  plots["qgl1noB_passPre"]          ->Fill(vars.qgl1noB          , wt);
-  plots["qglprodnoB_passPre"]       ->Fill(vars.qglprodnoB       , wt);
-  plots["qglprodNormnoB_passPre"]   ->Fill(vars.qglprodNormnoB   , wt);
-  plots["qglprodnoB30_passPre"]     ->Fill(vars.qglprodnoB30     , wt);
-  plots["qglprodNormnoB30_passPre"] ->Fill(vars.qglprodNormnoB30 , wt);
-  plots["qglJ0noB_passPre"]         ->Fill(vars.qglJ0noB         , wt);
-  plots["qglJ1noB_passPre"]         ->Fill(vars.qglJ1noB         , wt);
-  plots["ht_passPre"]               ->Fill(vars.ht               , wt);
-  plots["htAlongAway20_passPre"]    ->Fill(vars.htAlongAway20    , wt);
-  plots["htAlongAway40_passPre"]    ->Fill(vars.htAlongAway40    , wt);
-  plots["maxMj12_passPre"]          ->Fill(vars.maxMj12          , wt);
-  plots["rmsJetPT_passPre"]         ->Fill(vars.rmsJetPT         , wt);
-  plots["rmsJetDphiMET_passPre"]    ->Fill(vars.rmsJetDphiMET    , wt);
-  plots["bInvMass_passPre"]         ->Fill(vars.bInvMass         , wt);
-  plots["bTransMass_passPre"]       ->Fill(vars.bTransMass       , wt);
-  plots["rmsBEta_passPre"]          ->Fill(vars.rmsBEta          , wt);
-  plots["wInvMass_passPre"]         ->Fill(vars.wInvMass         , wt);
-  plots["Bpt0_passPre"]             ->Fill(vars.Bpt0             , wt);
-  plots["Bpt1_passPre"]             ->Fill(vars.Bpt1             , wt);
-  plots["htnoB_passPre"]            ->Fill(vars.htnoB            , wt);
-  plots["htJ12_passPre"]            ->Fill(vars.htJ12            , wt);
-  plots["htJ12noB_passPre"]         ->Fill(vars.htJ12noB         , wt);
-  plots["metOsqrtHt_passPre"]       ->Fill(vars.metOsqrtHt       , wt);
-  plots["metOsqrtHtnoB_passPre"]    ->Fill(vars.metOsqrtHtnoB    , wt);
-  plots["metOsqrtHtJ12_passPre"]    ->Fill(vars.metOsqrtHtJ12    , wt);
-  plots["metOsqrtHtJ12noB_passPre"] ->Fill(vars.metOsqrtHtJ12noB , wt);
-  plots["dPhivHtMET_passPre"]       ->Fill(vars.dPhivHtMET       , wt);
-  plots["dPhivHtMETnoB_passPre"]    ->Fill(vars.dPhivHtMETnoB    , wt);
-  plots["dotHtAlongAway_passPre"]   ->Fill(vars.dotHtAlongAway   , wt);
-  plots["dotHtAlongAwayNoB_passPre"]->Fill(vars.dotHtAlongAwayNoB, wt);
-  plots["MT2a_000_passPre"]         ->Fill(vars.MT2a_000         , wt);
-  plots["MT2a_100_passPre"]         ->Fill(vars.MT2a_100         , wt);
-  plots["MT2a_150_passPre"]         ->Fill(vars.MT2a_150         , wt);
-  plots["MT2a_200_passPre"]         ->Fill(vars.MT2a_200         , wt);
-  plots["MT2a_250_passPre"]         ->Fill(vars.MT2a_250         , wt);
-  plots["MT2b_000_passPre"]         ->Fill(vars.MT2b_000         , wt);
-  plots["MT2b_100_passPre"]         ->Fill(vars.MT2b_100         , wt);
-  plots["MT2b_150_passPre"]         ->Fill(vars.MT2b_150         , wt);
-  plots["MT2b_200_passPre"]         ->Fill(vars.MT2b_200         , wt);
-  plots["MT2b_250_passPre"]         ->Fill(vars.MT2b_250         , wt);
+  plots["j1pt_passPre"]             ->Fill(jets[0]->pt()         , scaleFactor);
+  plots["ntBtag_passPre"]           ->Fill(vars.ntBtag           , scaleFactor);
+  plots["nmBtag_passPre"]           ->Fill(vars.nmBtag           , scaleFactor);
+  plots["dPhiMET12_passPre"]        ->Fill(vars.dPhiMET12        , scaleFactor);
+  plots["dPhiMET3_passPre"]         ->Fill(vars.dPhiMET3         , scaleFactor);
+  plots["dPhiB0MET_passPre"]        ->Fill(vars.dPhiB0MET        , scaleFactor);
+  plots["dPhiB1MET_passPre"]        ->Fill(vars.dPhiB1MET        , scaleFactor);
+  plots["dPhiB2MET_passPre"]        ->Fill(vars.dPhiB2MET        , scaleFactor);
+  plots["dPhiB01MET_passPre"]       ->Fill(vars.dPhiB01MET       , scaleFactor);
+  plots["dPhiCVSnearMET_passPre"]   ->Fill(vars.dPhiCVSnearMET   , scaleFactor);
+  plots["Mb1b2n_passPre"]           ->Fill(vars.Mb1b2n           , scaleFactor);
+  plots["mtB0MET_passPre"]          ->Fill(vars.mtB0MET          , scaleFactor);
+  plots["mtB1MET_passPre"]          ->Fill(vars.mtB1MET          , scaleFactor);
+  plots["mtB2MET_passPre"]          ->Fill(vars.mtB2MET          , scaleFactor);
+  plots["mtB01MET_passPre"]         ->Fill(vars.mtB01MET         , scaleFactor);
+  plots["sSumB01oMET_passPre"]      ->Fill(vars.sSumB01oMET      , scaleFactor);
+  plots["vSumB01oMET_passPre"]      ->Fill(vars.vSumB01oMET      , scaleFactor);
+  plots["qgl0_passPre"]             ->Fill(vars.qgl0             , scaleFactor);
+  plots["qgl1_passPre"]             ->Fill(vars.qgl1             , scaleFactor);
+  plots["qglprod_passPre"]          ->Fill(vars.qglprod          , scaleFactor);
+  plots["qglprodNorm_passPre"]      ->Fill(vars.qglprodNorm      , scaleFactor);
+  plots["qglprod30_passPre"]        ->Fill(vars.qglprod30        , scaleFactor);
+  plots["qglprodNorm30_passPre"]    ->Fill(vars.qglprodNorm30    , scaleFactor);
+  plots["qglJ0_passPre"]            ->Fill(vars.qglJ0            , scaleFactor);
+  plots["qglJ1_passPre"]            ->Fill(vars.qglJ1            , scaleFactor);
+  plots["qglCVS0_passPre"]          ->Fill(vars.qglCVS0          , scaleFactor);
+  plots["qglCVS1_passPre"]          ->Fill(vars.qglCVS1          , scaleFactor);
+  plots["qgl0noB_passPre"]          ->Fill(vars.qgl0noB          , scaleFactor);
+  plots["qgl1noB_passPre"]          ->Fill(vars.qgl1noB          , scaleFactor);
+  plots["qglprodnoB_passPre"]       ->Fill(vars.qglprodnoB       , scaleFactor);
+  plots["qglprodNormnoB_passPre"]   ->Fill(vars.qglprodNormnoB   , scaleFactor);
+  plots["qglprodnoB30_passPre"]     ->Fill(vars.qglprodnoB30     , scaleFactor);
+  plots["qglprodNormnoB30_passPre"] ->Fill(vars.qglprodNormnoB30 , scaleFactor);
+  plots["qglJ0noB_passPre"]         ->Fill(vars.qglJ0noB         , scaleFactor);
+  plots["qglJ1noB_passPre"]         ->Fill(vars.qglJ1noB         , scaleFactor);
+  plots["ht_passPre"]               ->Fill(vars.ht               , scaleFactor);
+  plots["htAlongAway20_passPre"]    ->Fill(vars.htAlongAway20    , scaleFactor);
+  plots["htAlongAway40_passPre"]    ->Fill(vars.htAlongAway40    , scaleFactor);
+  plots["maxMj12_passPre"]          ->Fill(vars.maxMj12          , scaleFactor);
+  plots["rmsJetPT_passPre"]         ->Fill(vars.rmsJetPT         , scaleFactor);
+  plots["rmsJetDphiMET_passPre"]    ->Fill(vars.rmsJetDphiMET    , scaleFactor);
+  plots["bInvMass_passPre"]         ->Fill(vars.bInvMass         , scaleFactor);
+  plots["bTransMass_passPre"]       ->Fill(vars.bTransMass       , scaleFactor);
+  plots["rmsBEta_passPre"]          ->Fill(vars.rmsBEta          , scaleFactor);
+  plots["wInvMass_passPre"]         ->Fill(vars.wInvMass         , scaleFactor);
+  plots["Bpt0_passPre"]             ->Fill(vars.Bpt0             , scaleFactor);
+  plots["Bpt1_passPre"]             ->Fill(vars.Bpt1             , scaleFactor);
+  plots["htnoB_passPre"]            ->Fill(vars.htnoB            , scaleFactor);
+  plots["htJ12_passPre"]            ->Fill(vars.htJ12            , scaleFactor);
+  plots["htJ12noB_passPre"]         ->Fill(vars.htJ12noB         , scaleFactor);
+  plots["metOsqrtHt_passPre"]       ->Fill(vars.metOsqrtHt       , scaleFactor);
+  plots["metOsqrtHtnoB_passPre"]    ->Fill(vars.metOsqrtHtnoB    , scaleFactor);
+  plots["metOsqrtHtJ12_passPre"]    ->Fill(vars.metOsqrtHtJ12    , scaleFactor);
+  plots["metOsqrtHtJ12noB_passPre"] ->Fill(vars.metOsqrtHtJ12noB , scaleFactor);
+  plots["dPhivHtMET_passPre"]       ->Fill(vars.dPhivHtMET       , scaleFactor);
+  plots["dPhivHtMETnoB_passPre"]    ->Fill(vars.dPhivHtMETnoB    , scaleFactor);
+  plots["dotHtAlongAway_passPre"]   ->Fill(vars.dotHtAlongAway   , scaleFactor);
+  plots["dotHtAlongAwayNoB_passPre"]->Fill(vars.dotHtAlongAwayNoB, scaleFactor);
+  plots["MT2tp0_000_passPre"]       ->Fill(vars.MT2tp0_000       , scaleFactor);
+  //plots["MT2tp0_100_passPre"]       ->Fill(vars.MT2tp0_100       , scaleFactor);
+  //plots["MT2tp0_150_passPre"]       ->Fill(vars.MT2tp0_150       , scaleFactor);
+  //plots["MT2tp0_200_passPre"]       ->Fill(vars.MT2tp0_200       , scaleFactor);
+  //plots["MT2tp0_250_passPre"]       ->Fill(vars.MT2tp0_250       , scaleFactor);
+  //plots["MT2tp1_000_passPre"]       ->Fill(vars.MT2tp1_000       , scaleFactor);
+  //plots["MT2tp1_100_passPre"]       ->Fill(vars.MT2tp1_100       , scaleFactor);
+  //plots["MT2tp1_150_passPre"]       ->Fill(vars.MT2tp1_150       , scaleFactor);
+  //plots["MT2tp1_200_passPre"]       ->Fill(vars.MT2tp1_200       , scaleFactor);
+  //plots["MT2tp1_250_passPre"]       ->Fill(vars.MT2tp1_250       , scaleFactor);
 
 } // Analyzer::runEvent()
 
 // Write histograms to file in designated directory
 void Analyzer::out(TString outputName, TString outputPath) {
+
+
   gSystem->mkdir(outputPath,true);
   TString filename = outputPath + "/" + outputName + "_plots.root";
   TFile  *outfile  = new TFile(filename, "RECREATE");
@@ -397,28 +402,33 @@ double getXsec(string sample) {
 #endif
 
 // Process file belonging to specified sample with a given cross section
-void processZeroLepton(const string sample     = "ttbar" // sample name
-                     ,       double xsec       = -1.0    // -1 to use hard-coded xsecs
-                     , const bool   isMC       = true
-                     , const string outputdir  = "plots"
-                     , const string filePrefix = "/eos/uscms/store/user/vdutta/13TeV/310315/merged/" // location of files
-                     , const string fileSuffix = "_ntuple.root"
-                     ) {
-  cout << "processing " << sample << endl;
+//root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/0LepSearchRegions/processZeroLepton.C+()"
+void processZeroLepton(      TString sname      = "ttbar" // sample name
+                     , const int     fileindex  = 1       // index of file (-1 means there is only 1 file for this sample)
+                     , const bool    isMC       = true    // data or MC
+                     , const TString fname      = "ttbar_1_ntuple_wgtxsec.root" // path of file to be processed
+                     , const double  xsec       = 831.76    // cross section to be used with this file
+                     , const string  outputdir  = "plots/"  // directory to which files with histograms will be written
+                     , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/270515/merged/"
+                     )
+{
+  printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
-  if (xsec<0) xsec = getXsec(sample);
-  if (isMC) cout << "using cross section = " << xsec << " pb" << endl;
-  string fullname = filePrefix + sample + fileSuffix;
+  // Make sure the output has a unique name in case there are multiple files to process
+  if(fileindex > -1) sname += TString::Format("_%d",fileindex);
+
+  if(isMC) printf("Cross section: %5.2f pb\n", xsec);
+
+  TString fullname = fileprefix+fname;
 
   // Adjustments to default configuration
   BaseTreeAnalyzer::ConfigPars pars;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
   pars.minJetPt = 20;
-  //pars.cleanJetsvSelectedLeptons_ = true;
 
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sample, outputdir); // declare analyzer
+  Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,100000); // for testing
-  a.out(sample, outputdir); // write outputfile with plots
+  //a.analyze(1000,10000); // for testing
+  //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()

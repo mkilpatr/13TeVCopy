@@ -31,6 +31,11 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
 		    , useTrimmedSubjets(iConfig.getParameter<bool  >("useTrimmedSubjets"  ))
         , rFilt           (iConfig.getParameter<double>("rFilt"  ))
         , trimPtFracMin   (iConfig.getParameter<double>("trimPtFracMin"  ))
+        , useSubjetCountingCA(iConfig.getParameter<bool>("useSubjetCountingCA"  ))
+        , ptCut           (iConfig.getParameter<double>("ptCut"  ))
+        , mCutoff         (iConfig.getParameter<double>("mCutoff"  ))
+        , yCut            (iConfig.getParameter<double>("yCut"  ))
+        , rMin            (iConfig.getParameter<double>("rMin"  ))
         , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))
         , pickyMaxSplits  (iConfig.getParameter<int>("pickyMaxSplits"  ))
         , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::NOPUPPI_RECO,iConfig) : 0)
@@ -47,6 +52,9 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
     }
     if(outputSuperJets){
       produces< reco::PFJetCollection           >("Super"   );
+      if(useSubjetCountingCA) {
+        produces< std::vector<unsigned int> >    ("NCASubjets");
+      }
     }
 
     if (jetAlgorithmName=="CambridgeAachen")

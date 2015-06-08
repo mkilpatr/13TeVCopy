@@ -35,6 +35,11 @@ if [ $maxevents -gt -1 ]; then
   outputname=`echo ${outputname} | sed "s/.root/_numEvent${maxevents}.root/"`
 fi
 
-xrdcp ${outputname} root://cmseos:1094/${outputdir}
+if [[ "$outputdir" =~ ^/eos/uscms/.* ]]; then
+  xrdcp ${outputname} root://cmseos:1094/${outputdir}/
+  rm ${outputname}
+else
+  mv ${outputname} ${outputdir}/
+fi
 
 exit $status

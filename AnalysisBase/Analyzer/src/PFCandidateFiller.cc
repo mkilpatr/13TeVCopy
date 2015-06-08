@@ -151,8 +151,7 @@ float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc)
 
   reco::Candidate::PolarLorentzVector candP4 = pfc->polarP4();
   if(photonInd > -1) candP4+=(*pfcands_)[photonInd].polarP4();
-  pat::PackedCandidate* cand = new pat::PackedCandidate();
-  cand->setP4(candP4);
+  MomentumF* cand = new MomentumF(candP4);
 
   const pat::MET* met = evtInfoFiller_->met();
 

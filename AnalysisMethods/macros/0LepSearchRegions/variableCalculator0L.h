@@ -35,6 +35,7 @@ public:
     , nJ20              (-1)
     , ntBtag            (-1)
     , nmBtag            (-1)
+    , J0pt              (-1)
     , dPhiMET12         (-1)
     , dPhiMET3          (-1)
     , dPhiB0MET         (-1)
@@ -98,32 +99,34 @@ public:
     , dPhivHtMETnoB     (-1)
     , dotHtAlongAway    (-1)
     , dotHtAlongAwayNoB (-1)
-    , MT2a_000          (-1)
-    , MT2a_100          (-1)
-    , MT2a_150          (-1)
-    , MT2a_200          (-1)
-    , MT2a_250          (-1)
-    , MT2b_000          (-1)
-    , MT2b_100          (-1)
-    , MT2b_150          (-1)
-    , MT2b_200          (-1)
-    , MT2b_250          (-1)
+    , MT2tp0_000        (-1)
+    //, MT2tp0_100        (-1)
+    //, MT2tp0_150        (-1)
+    //, MT2tp0_200        (-1)
+    //, MT2tp0_250        (-1)
+    //, MT2tp1_000        (-1)
+    //, MT2tp1_100        (-1)
+    //, MT2tp1_150        (-1)
+    //, MT2tp1_200        (-1)
+    //, MT2tp1_250        (-1)
+    , NCTT              (-1)
+    , NCTTstd           (-1)
+    //, DphiTopMET        (-1)
   {}
 
   void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
+  bool ApplyCTTSelection(CMSTopF* fj);
 
   // assumes that jets are inclusive in eta and pt!!!
   // also assumes that the jets are pt sorted!
-  void processVariables( const BaseTreeAnalyzer * analyzer
-  		             , const JetReader*         ak4JetReader
-  		             , const vector<RecoJetF*>& inAK4Jets
-  		             , const vector<RecoJetF*>& inJets
-  		             , const MomentumF*         inMet
+  void processVariables( const BaseTreeAnalyzer*     analyzer
+  		                 , const JetReader*            ak4JetReader
+  		                 , const vector<RecoJetF*>&    inAK4Jets
+  		                 , const vector<RecoJetF*>&    inJets
+  		                 , const MomentumF*            inMet
+  		                 , const vector<CMSTopF*>&     inTops
   		             ) {
     a::analyzer = analyzer;
-
-    // preselection so that variable initializations that follow make sense
-    if (inJets.size()<5) return;
 
     //passPresel      =  0;
     ptMet             =  0;
@@ -132,6 +135,7 @@ public:
     nJ20              =  0;
     ntBtag            =  0;
     nmBtag            =  0;
+    J0pt              = -1;
     dPhiMET12         = -1;
     dPhiMET3          = -1;
     dPhiB0MET         = -1;
@@ -195,16 +199,19 @@ public:
     dPhivHtMETnoB     = -1;
     dotHtAlongAway    = -1;
     dotHtAlongAwayNoB = -1;
-    MT2a_000          = -1;
-    MT2a_100          = -1;
-    MT2a_150          = -1;
-    MT2a_200          = -1;
-    MT2a_250          = -1;
-    MT2b_000          = -1;
-    MT2b_100          = -1;
-    MT2b_150          = -1;
-    MT2b_200          = -1;
-    MT2b_250          = -1;
+    MT2tp0_000        = -1;
+    //MT2tp0_100        = -1;
+    //MT2tp0_150        = -1;
+    //MT2tp0_200        = -1;
+    //MT2tp0_250        = -1;
+    //MT2tp1_000        = -1;
+    //MT2tp1_100        = -1;
+    //MT2tp1_150        = -1;
+    //MT2tp1_200        = -1;
+    //MT2tp1_250        = -1;
+    NCTT              = -1;
+    NCTTstd           = -1;
+    //DphiTopMET        =
 
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
@@ -275,6 +282,7 @@ public:
     // can be ak4, picky
     for(unsigned int iJ = 0; iJ < inJets.size(); ++iJ){
       auto& j = *inJets[iJ];
+      if (iJ==0) J0pt = j.pt();
       ++nJ20;
       if(analyzer->isTightBJet(j)) ++ntBtag;
       if(analyzer->isMediumBJet(j)){
@@ -338,8 +346,8 @@ public:
       vHt = vHt.p4() + j.p4();
       // dotted HTalongOaway
       double dPhi = PhysicsUtilities::absDeltaPhi(j,*inMet);
-      if (dPhi < TMath::PiOver2()) htAlong += abs(j.pt() * cos(dPhi));
-      else                         htAway  += abs(j.pt() * cos(dPhi));
+      if (dPhi < TMath::PiOver2()) htAlong += fabs(j.pt() * cos(dPhi));
+      else                         htAway  += fabs(j.pt() * cos(dPhi));
 
       // past this, only want to use non-B jets
       if(analyzer->isMediumBJet(j)) continue;
@@ -368,26 +376,34 @@ public:
 
     MomentumF pseudoJet1a; MomentumF pseudoJet2a;
     MomentumF pseudoJet1b; MomentumF pseudoJet2b;
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1a,pseudoJet2a,0);
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1b,pseudoJet2b,1);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1a,pseudoJet2a,0);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1b,pseudoJet2b,1);
     double mEachInvisible_000 =   0.; // in GeV
-    double mEachInvisible_100 = 100.; // in GeV
-    double mEachInvisible_150 = 150.; // in GeV
-    double mEachInvisible_200 = 200.; // in GeV
-    double mEachInvisible_250 = 250.; // in GeV
+    //double mEachInvisible_100 = 100.; // in GeV
+    //double mEachInvisible_150 = 150.; // in GeV
+    //double mEachInvisible_200 = 200.; // in GeV
+    //double mEachInvisible_250 = 250.; // in GeV
 
-    MT2a_000 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_000);
-    MT2a_100 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_100);
-    MT2a_150 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_150);
-    MT2a_200 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_200);
-    MT2a_250 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2b, inMet, mEachInvisible_250);
+    MT2tp0_000 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_000);
+    //MT2tp0_100 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_100);
+    //MT2tp0_150 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_150);
+    //MT2tp0_200 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_200);
+    //MT2tp0_250 = mt2Calc.CalcMT2(&pseudoJet1a, &pseudoJet2a, inMet, mEachInvisible_250);
+    //
+    //MT2tp1_000 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_000);
+    //MT2tp1_100 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_100);
+    //MT2tp1_150 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_150);
+    //MT2tp1_200 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_200);
+    //MT2tp1_250 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_250);
 
-    MT2b_000 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_000);
-    MT2b_100 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_100);
-    MT2b_150 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_150);
-    MT2b_200 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_200);
-    MT2b_250 = mt2Calc.CalcMT2(&pseudoJet1b, &pseudoJet2b, inMet, mEachInvisible_250);
+    // ===== top-tagging stuff =====
 
+    NCTT    = inTops.size();
+    NCTTstd = 0; // "standard" tops passing the below selection
+    for (UInt_t i=0; i<inTops.size(); ++i) {
+        if( ApplyCTTSelection(inTops.at(i)) ) ++NCTTstd;
+        DphiTopMET[i] = PhysicsUtilities::deltaPhi(inTops.at(i)->p4(),*inMet);
+    }
 
 
 
@@ -400,6 +416,7 @@ public:
   int   nJ20;
   int   ntBtag;
   int   nmBtag;
+  float J0pt;
   float dPhiMET12;
   float dPhiMET3;
   float dPhiB0MET;     // new
@@ -463,16 +480,19 @@ public:
   float dPhivHtMETnoB;     // new2
   float dotHtAlongAway;    // new2
   float dotHtAlongAwayNoB; // new2
-  float MT2a_000;    // mt2
-  float MT2a_100;    // mt2
-  float MT2a_150;    // mt2
-  float MT2a_200;    // mt2
-  float MT2a_250;    // mt2
-  float MT2b_000;    // mt2
-  float MT2b_100;    // mt2
-  float MT2b_150;    // mt2
-  float MT2b_200;    // mt2
-  float MT2b_250;    // mt2
+  float MT2tp0_000;    // mt2
+  //float MT2tp0_100;    // mt2
+  //float MT2tp0_150;    // mt2
+  //float MT2tp0_200;    // mt2
+  //float MT2tp0_250;    // mt2
+  //float MT2tp1_000;    // mt2
+  //float MT2tp1_100;    // mt2
+  //float MT2tp1_150;    // mt2
+  //float MT2tp1_200;    // mt2
+  //float MT2tp1_250;    // mt2
+  int   NCTT;           // top
+  int   NCTTstd;        // top
+  float DphiTopMET[50]; // top
 }; // VariableCalculator0L
 
 
@@ -489,6 +509,18 @@ void VariableCalculator0L::rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*
   std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
   for(unsigned int iJ =0; iJ < inJets.size(); ++iJ){ outJets[iJ] = inJets[rankedJets[iJ].second]; }
 } // rankedByCSV()
+
+bool VariableCalculator0L::ApplyCTTSelection(CMSTopF* fj) {
+
+      bool tmpVal = false;
+
+      float fjMass   = fj->fJMass();
+      float minMass  = fj->minMass();
+      int   nSubJets = fj->nSubJets();
+
+      if ( ((fjMass)>140.) && ((fjMass)<250.) && ((minMass)>50.) && ((nSubJets)>=3) ) { tmpVal = true; }
+      return tmpVal;
+    }
 
 } // namespace ucsbsusy
 
