@@ -51,6 +51,7 @@ ElectronFiller::ElectronFiller(const int options,
   iMVAiso_     = data.addMulti<float>(branchName_,"MVAiso",0);
   iminiiso_       = data.addMulti<float>(branchName_,"miniiso",0);
   iptrel_       = data.addMulti<float>(branchName_,"ptrel",0);
+  isip3d_       = data.addMulti<float>(branchName_,"sip3d",0);
 
   if(options_ & FILLIDVARS) {
     iecalE_              = data.addMulti<float>(branchName_,"ecalE",0);
@@ -101,6 +102,17 @@ ElectronFiller::ElectronFiller(const int options,
   //  iPassTriggerLID_ = data.addMulti<bool>(branchName_,"passTriggerLID",0);
   iPassCutBaseNonIsoMID_ = data.addMulti<bool>(branchName_,"passCutBaseNonIsoMID",0);
   //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
+
+  if(options_ & LOADGEN) {
+    igenpt_           = data.addMulti<float>(branchName_, "gen_pt", 0);
+    igeneta_          = data.addMulti<float>(branchName_, "gen_eta", 0);
+    igenphi_          = data.addMulti<float>(branchName_, "gen_phi", 0);
+    igenmass_         = data.addMulti<float>(branchName_, "gen_mass", 0);
+    igenstatus_       = data.addMulti<int  >(branchName_, "gen_status", 0);
+    igenpdgid_        = data.addMulti<int  >(branchName_, "gen_pdgid", 0);
+    igenmotherstatus_ = data.addMulti<int  >(branchName_, "genmother_status", 0);
+    igenmotherpdgid_  = data.addMulti<int  >(branchName_, "genmother_pdgid", 0);
+  }
 
 }
 
@@ -328,6 +340,38 @@ void ElectronFiller::fill()
     double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
     data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), LSF(el_,ca8jets) , sip3d, rhoiso));
+    data.fillMulti<float>(isip3d_, sip3d);
+
+    if(options_ & LOADGEN) {
+      const reco::GenParticle* genEle = el->genParticle();
+      if(genEle) {
+        data.fillMulti<float>(igenpt_, genEle->pt());
+        data.fillMulti<float>(igeneta_, genEle->eta());
+        data.fillMulti<float>(igenphi_, genEle->phi());
+        data.fillMulti<float>(igenmass_, genEle->mass());
+        data.fillMulti<int  >(igenstatus_, genEle->status());
+        data.fillMulti<int  >(igenpdgid_, genEle->pdgId());
+        if(genEle->numberOfMothers()) {
+          const auto* mother = genEle->mother(0);
+          data.fillMulti<int  >(igenmotherstatus_, mother->status());
+          data.fillMulti<int  >(igenmotherpdgid_, mother->pdgId());
+        } else {
+          data.fillMulti<int  >(igenmotherstatus_, -1);
+          data.fillMulti<int  >(igenmotherpdgid_, -1);
+        }
+      }
+      else {
+        data.fillMulti<float>(igenpt_, -1);
+        data.fillMulti<float>(igeneta_, -1);
+        data.fillMulti<float>(igenphi_, -1);
+        data.fillMulti<float>(igenmass_, -1);
+        data.fillMulti<int  >(igenstatus_, -1);
+        data.fillMulti<int  >(igenpdgid_, -1);
+        data.fillMulti<int  >(igenmotherstatus_, -1);
+        data.fillMulti<int  >(igenmotherpdgid_, -1);
+      }
+    }
+
   }
   isFilled_ = true;
 

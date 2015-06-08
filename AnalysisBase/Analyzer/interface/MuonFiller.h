@@ -102,6 +102,16 @@ namespace ucsbsusy {
     size iMVAiso_;
     size iminiiso_;
     size iptrel_;
+    size isip3d_;
+    // pat matched gen lepton info
+    size igenpt_;
+    size igeneta_;
+    size igenphi_;
+    size igenmass_;
+    size igenstatus_;
+    size igenpdgid_;
+    size igenmotherstatus_;
+    size igenmotherpdgid_;
 
   public :
     // Data members

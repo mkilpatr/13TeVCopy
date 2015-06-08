@@ -93,8 +93,7 @@ void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& i
       Jet&                            outJet        = outputJets.back();
       reco::writeSpecific ( outJet, jetP4, vertex, daughters, eventSetup );
       outJet.setJetArea   ( inJet.has_area() ? inJet.area() : ghostArea  );
-      std::cout << inJet.superjetIndex() << std::endl;
-      if(superJetIndices.size()) { std::cout << "setting index : "; superJetIndices[iJet] = inJet.superjetIndex(); std::cout << superJetIndices[iJet] << std::endl;}
+      if(superJetIndices.size()) superJetIndices[iJet] = inJet.superjetIndex();
     }
   } // end loop over outputJets
 }

@@ -143,7 +143,7 @@ nominal_configuration = cms.PSet(
                                       bunchSpacing              = cms.untracked.int32(25),
                                       printElectronIDs          = cms.untracked.bool(False),
                                       fillElectronIDVars        = cms.untracked.bool(False),
-                                      fillElectronIsoVars       = cms.untracked.bool(False),
+                                      fillElectronIsoVars       = cms.untracked.bool(True),
                                       evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
                                       fillElectronGenInfo       = cms.untracked.bool(True),
                                   ),
