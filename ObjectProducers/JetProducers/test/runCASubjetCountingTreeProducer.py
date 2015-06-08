@@ -44,10 +44,17 @@ from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configurati
 process.Analyzer = cms.EDFilter('CASubjetCountingTreeProducer',
   nominal_configuration,
   doSplitting = cms.bool(True),
+  splittingAlgo = cms.string("Picky"),
   #somewhat optimized cuts
   mCut = cms.double(20.0),
   rMin = cms.double(0.10),
   yCut = cms.double(0.05),
+  pickyMVAFileName    = cms.string("$CMSSW_BASE/src/data/pickyJets/pickymva_nopuppi_reco.root"),
+  pickyMVAName        = cms.string("picky_nopuppi_reco_0"),
+  beta                = cms.double(1),
+  rCutoff             = cms.double(10000),
+  nSubAxes            = cms.string("1passKT"),
+  pickyMaxSplits      = cms.int32(4)
 )
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -61,19 +68,19 @@ from ObjectProducers.JetProducers.jet_clustering_cfi import *
 from ObjectProducers.JetProducers.redefined_genjet_associator_cfi import *
 from ObjectProducers.JetProducers.jet_flavor_associator_cfi import *
 
-process.ak10 = ak4Jets.clone(rParameter = cms.double(1.0))
-process.ak10FlvAssoc = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('ak10','Gen'),
-                                         recoJetSrc = cms.InputTag('ak10'),
-                                         partonJetSrc = cms.InputTag('ak10','parton'),
-                                         recoToGenTag = cms.InputTag('ak10','GenPtr'),
-                                         recoToPartonTag = cms.InputTag('ak10','partonPtr'))
+process.ca10 = ak4Jets.clone(rParameter = cms.double(1.0), jetAlgorithm = cms.string('CambridgeAachen'))
+process.ca10FlvAssoc = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('ca10','Gen'),
+                                         recoJetSrc = cms.InputTag('ca10'),
+                                         partonJetSrc = cms.InputTag('ca10','parton'),
+                                         recoToGenTag = cms.InputTag('ca10','GenPtr'),
+                                         recoToPartonTag = cms.InputTag('ca10','partonPtr'))
 
-process.Analyzer.PickyJets.jets = cms.InputTag('ak10')
+process.Analyzer.PickyJets.jets = cms.InputTag('ca10')
 process.Analyzer.PickyJets.fillCustomBtagInfo = False
 process.Analyzer.PickyJets.fillJetShapeInfo   = False
-process.Analyzer.PickyJets.reGenJets          = cms.InputTag('ak10','Gen')
-process.Analyzer.PickyJets.reGenJetAssoc      = cms.InputTag('ak10:GenPtr')
-process.Analyzer.PickyJets.flvAssoc           = cms.InputTag('ak10FlvAssoc','flavors')
+process.Analyzer.PickyJets.reGenJets          = cms.InputTag('ca10','Gen')
+process.Analyzer.PickyJets.reGenJetAssoc      = cms.InputTag('ca10:GenPtr')
+process.Analyzer.PickyJets.flvAssoc           = cms.InputTag('ca10FlvAssoc','flavors')
 
 process.Analyzer.Electrons.isFilled = False
 process.Analyzer.Muons.isFilled = False
@@ -87,7 +94,7 @@ process.Analyzer.AK8FatJets.isFilled = False
 
 process.p = cms.Path( 
                      process.hadronicTTBarEventFilter *
-                     process.ak10   *
-                     process.ak10FlvAssoc *
+                     process.ca10   *
+                     process.ca10FlvAssoc *
                      process.Analyzer
                      )
