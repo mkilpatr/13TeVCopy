@@ -37,6 +37,7 @@ MuonReader::MuonReader() : BaseReader(){
   ptrel        = new vector<float>;
   miniiso      = new vector<float>;
   muonId       = new LeptonId();
+  ptratio      = new vector<float>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -68,6 +69,7 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
     treeReader->setBranchAddress(branchName ,"miniiso", &miniiso          , true);
     treeReader->setBranchAddress(branchName ,"ptrel", &ptrel              , true);
+    treeReader->setBranchAddress(branchName ,"ptratio", &ptratio          , true);
 
   }
   if(options_ & FILLOBJ)
@@ -101,7 +103,9 @@ void MuonReader::refresh(){
       muons.back().setIsMVAVetoMuon(muonId->passMuonId((&muons.back()), muonId->MVAVeto));
       muons.back().setPtRel(ptrel->at(iL));
       muons.back().setMiniIso(miniiso->at(iL));
-
+      muons.back().setPtRatio(ptratio->at(iL));
+      muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
+      muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
     }
   }
 }

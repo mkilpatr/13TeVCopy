@@ -63,6 +63,7 @@ namespace ucsbsusy {
     double LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets);
     double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Muon ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only);
     double getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton);
+    double getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton);
 
   private :
     const EventInfoFiller * evtInfoFiller_;
@@ -102,6 +103,7 @@ namespace ucsbsusy {
     size iMVAiso_;
     size iminiiso_;
     size iptrel_;
+    size iptratio_;
     size isip3d_;
     // pat matched gen lepton info
     size igenpt_;
@@ -115,12 +117,12 @@ namespace ucsbsusy {
 
   public :
     // Data members
-    edm::Handle<pat::MuonCollection>  muons_;
-    edm::Handle<LorentzVectorCollection> lsfSubJets3;
-    edm::Handle<double>                 rho_;
+    edm::Handle<pat::MuonCollection>            muons_;
+    edm::Handle<LorentzVectorCollection>        lsfSubJets3;
+    edm::Handle<double>                         rho_;
     edm::Handle<pat::PackedCandidateCollection> pfcands;
     edm::Handle<std::vector<reco::PFJet>>       ca8jets;
-    edm::Handle<pat::JetCollection>         ak4jets_;
+    edm::Handle<pat::JetCollection>             ak4jets_;
   };
 
 }
