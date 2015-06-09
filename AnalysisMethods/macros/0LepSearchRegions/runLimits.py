@@ -29,17 +29,34 @@ below).
 
 import os
 import commands
+import sys 
+
+# to get the subdirectory
+args = sys.argv[1:] 
+if len(args)<1:
+  print "You need to give me a subdirectory! (the same one from makeDatacards.py; also used for printLimits.py)"
+  print "$ ./runLimits subdir_from_makeDatacards"
+  sys.exit(1)
+subdir = args[0]
+
   
 # ===== user defined stuff =====
 
 sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1200_800','T1tttt_1500_100'] 
-saveLocation = 'datacards/150608_defaultLepMVAvetos-binNCTTstd/'  # this should be the same as the one in makeDatacards.py
-outputLocation = 'limitRootFiles/150608_defaultLepMVAvetos-binNCTTstd/' # place to move all the output files from running the limits
+
+# you probably don't need to change this unless you want different directory names
+saveLocation = 'datacards/'+subdir+'/'  # this should be the same as the one in makeDatacards.py
+outputLocation = 'limitRootFiles/'+subdir+'/' # place to move all the output files from running the limits
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
 ##### anything below this point!!!  ##### 
 ##### ##### ##### ##### ##### ##### ##### 
+
+if not os.path.exists(saveLocation):
+  print saveLocation, 'does not exist!' 
+  print 'Are you sure', subdir, 'is the one you used in makeDatacards.py?'
+  sys.exit(1)
 
 for sigPoint in sigPoints:
   currentFiles = os.listdir('./') # hack to move output files properly

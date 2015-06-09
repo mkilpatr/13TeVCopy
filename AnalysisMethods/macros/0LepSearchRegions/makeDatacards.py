@@ -5,12 +5,20 @@
 
 import os
 import commands
+import sys 
+
+# to get the subdirectory
+args = sys.argv[1:] 
+if len(args)<1:
+  print "You need to give me a subdirectory! (the same one will be used for runLimits.py and printLimits.py)"
+  print "$ ./runLimits subdir_of_your_choice"
+  sys.exit(1)
+subdir = args[0]
   
 # ===== user defined stuff =====
 
-baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&NCTTstd>0&&(DphiTopMET>1||DphiTopMET<-1)&&(DphiTopMET<2.8&&DphiTopMET>-2.8)' 
-saveLocation = 'datacards/150608_defaultLepMVAvetos-binNCTTstd/' 
-ttreeLocation = 'ttrees/150608/'
+baselineSelection = 'ptMet>200&&nj60>=2&&nJ20>=5&&nmBtag>=1&&mtB01MET>175&&(DphiTopMET>1||DphiTopMET<-1)&&(DphiTopMET<2.8&&DphiTopMET>-2.8)'
+ttreeLocation = 'ttrees/150609/'
 lumi = 5 # this assumes that the trees are filled with weights that assume 1/fb, so use this to scale as desired
 
 # All filenames need to have the format <sampleName><fileNameTail> e.g. ttbar + _tree.root.
@@ -28,8 +36,14 @@ fileNameTail = '_tree.root'
 varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
            ['nmBtag',(1,2),(2,100)],
            ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],   
-           #['NCTTstd',(0,1),(1,100)],       
+           ['NCTTstd',(0,1),(1,100)],       
            ]
+
+# place to save the datacards
+# you probably don't need to change this unless you want different directory names
+saveLocation = 'datacards/'+subdir+'/' 
+
+printStuff = True # if true, will print the bins, datacards to the terminal as well as save them 
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
@@ -106,7 +120,7 @@ allBinCombos = expandBins(varBins)[:]
 # First the template card is made with all backgrounds,
 # then the signal points are looped to get the sig numbers.
 for bins in allBinCombos:
-  #print bins #DEBUGGING ONLY
+  if (printStuff): print bins 
   binFileBaseName = getFileName(bins)
   templateFile = saveLocation + 'template'+binFileBaseName+'_template'
 
@@ -177,8 +191,8 @@ for bins in allBinCombos:
     f.write(datacard)
     f.close()
     
-    #print '\n', datacardName, '\n', '='*60 #DEBUGGING ONLY
-    #print datacard #DEBUGGING ONLY
+    if (printStuff): print '\n', datacardName, '\n', '='*60 #DEBUGGING ONLY
+    if (printStuff): print datacard #DEBUGGING ONLY
   #for sigPoint in sigPoints
   #break
 #for bins in allBinCombo
