@@ -58,8 +58,9 @@ if not os.path.exists(saveLocation):
   print 'Are you sure', subdir, 'is the one you used in makeDatacards.py?'
   sys.exit(1)
 
+
 for sigPoint in sigPoints:
-  currentFiles = os.listdir('./') # hack to move output files properly
+  currentFiles = os.listdir('./') # needed to move the output files correctly at the end of each sigPoint 
   
   datacardSaveLocation = saveLocation + sigPoint+'/'
   datacards = os.listdir(datacardSaveLocation)
@@ -76,8 +77,7 @@ for sigPoint in sigPoints:
   print output # probably keep this in case of datacard syntax problems
   
   #=== run the limits ===
-  # this currently uses "ExpSign" from Loukas's code but should be 
-  # expanded with the other methods soon
+  # this currently uses "ExpSign" from Loukas's code 
   
   limitsOutputFile = 'limitsOutput_' + sigPoint 
   runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t 500 --expectSignal=1 -n '+limitsOutputFile
@@ -88,7 +88,7 @@ for sigPoint in sigPoints:
   output = commands.getoutput(runLimitsCommand)
   print output # maybe redirect this to some kind of log file?
   
-  # hack to move output files properly
+  # move any output files to the correct directory
   allFiles = os.listdir('./')
   if not os.path.exists(outputLocation): os.makedirs(outputLocation)
   print '\n'

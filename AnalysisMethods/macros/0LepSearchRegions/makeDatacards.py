@@ -25,7 +25,7 @@ lumi = 5 # this assumes that the trees are filled with weights that assume 1/fb,
 # The list of signal and background samples is used both to get the filenames and 
 # to label things in the datacards and datacard names.
 sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1200_800','T1tttt_1500_100'] 
-backgrounds = ['ttbar','ttZ','znunu','ttW'] # add wjets
+backgrounds = ['ttbar','ttZ','znunu','ttW', 'wjets'] 
 fileNameTail = '_tree.root'
 
 # This will produce one datacard per bin combination. 
@@ -35,7 +35,7 @@ fileNameTail = '_tree.root'
 # should be absurdly high for inclusive cuts, e.g. >=500 -> (500,100000000000).
 varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
            ['nmBtag',(1,2),(2,100)],
-           ['MT2tp0_000',(200,300),(300,400),(400,500),(500,600),(600,1000000000)],   
+           ['ptMet',(200,300),(300,400),(400,500),(500,600),(600,1000000000)], # MT2tp0_000   ptMet
            ['NCTTstd',(0,1),(1,100)],       
            ]
 
@@ -43,7 +43,7 @@ varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
 # you probably don't need to change this unless you want different directory names
 saveLocation = 'datacards/'+subdir+'/' 
 
-printStuff = False # if true, will print the bins, datacards to the terminal as well as save them 
+printStuff = True # if true, will print the bins, datacards to the terminal as well as save them 
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
