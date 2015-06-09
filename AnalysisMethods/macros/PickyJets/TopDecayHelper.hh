@@ -2,7 +2,6 @@
 #define TOPDECAYHELPER_HH
 
 #include "TString.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
@@ -10,7 +9,7 @@ using namespace ucsbsusy;
 
 namespace topdecays {
 
-  enum SplitDecision {NOSPLIT_NO_PARENTS, NOSPLIT_BELOW_MCUT, NOSPLIT_FAIL_PTCUT, NOSPLIT_BELOW_DRMIN, SPLIT_BOTH_SUBJETS, SPLIT_LEADING_SUBJET, EMPTY};
+  enum SplitDecision {NOSPLIT_NO_PARENTS, NOSPLIT_BELOW_MCUT, NOSPLIT_FAIL_PTCUT, NOSPLIT_BELOW_DRMIN, SPLIT_BOTH_SUBJETS, SPLIT_LEADING_SUBJET, PICKY_SHOULD_SPLIT, NOSPLIT_TOO_MANY_SPLITS, NOSPLIT_FAIL_MVA, EMPTY};
 
   static double minpt_           = 20.0;
   static double maxeta_          = 2.4;
@@ -28,6 +27,9 @@ namespace topdecays {
       case NOSPLIT_BELOW_DRMIN  : { return "subjets fail drcut, won't split"; break; }
       case SPLIT_BOTH_SUBJETS   : { return "both subjets will continue"; break; }
       case SPLIT_LEADING_SUBJET : { return "leading subjet will continue"; break; }
+      case PICKY_SHOULD_SPLIT   : { return "both subjets will continue"; break; }
+      case NOSPLIT_TOO_MANY_SPLITS : { return "reached maximum number of splits, won't split further"; break; }
+      case NOSPLIT_FAIL_MVA     : { return "split failed mva, won't split"; break; }
       default                   : { return "empty"; break; }
     }
   }
@@ -252,8 +254,9 @@ namespace topdecays {
 
       std::string getLabel() {
         char label[50];
-
-        if(mcut < 10.0)
+        if(mcut == 0 && rmin == 0 && ycut == 0)
+          sprintf(label, "picky");
+        else if(mcut < 10.0)
           sprintf(label, "cuts_mcut%1.0f_rmin%4.2f_ycut%4.2f",mcut,rmin,ycut);
         else 
           sprintf(label, "cuts_mcut%2.0f_rmin%4.2f_ycut%4.2f",mcut,rmin,ycut);
@@ -281,7 +284,8 @@ namespace topdecays {
 
       void print() {
         printf("Run: %d, Lumi: %d, Event: %d\n",run,lumi,event);
-        printf("Cuts: mcut=%4.0f, rmin=%4.2f, ycut=%4.2f\n",mcut,rmin,ycut);
+        if(mcut > 0 && rmin > 0 && ycut > 0)
+          printf("Cuts: mcut=%4.0f, rmin=%4.2f, ycut=%4.2f\n",mcut,rmin,ycut);
         printf("Tops:\n");
         for(auto* t : tops) {
           printf("\ttop pt, eta, phi, mass: %4.2f, %4.2f, %4.2f, %4.2f: \n", t->pt, t->eta, t->phi, t->mass);

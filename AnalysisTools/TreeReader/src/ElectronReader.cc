@@ -36,6 +36,9 @@ ElectronReader::ElectronReader() : BaseReader(){
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
   //  passCutBaseMediumID = new vector<bool> ;
+  ptrel        = new vector<float>;
+  miniiso      = new vector<float>;
+  ptratio      = new vector<float>;
   eleId        = new LeptonId();
 }
 
@@ -67,6 +70,9 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
+    treeReader->setBranchAddress(branchName , "miniiso"     , &miniiso     , true);
+    treeReader->setBranchAddress(branchName , "ptrel"       , &ptrel       , true);
+    treeReader->setBranchAddress(branchName , "ptratio"     , &ptratio     , true);
     //    treeReader->setBranchAddress(branchName , "passCutBaseMediumId", &passCutBaseMediumId, true);
   }
   if(options_ & FILLOBJ)
@@ -99,6 +105,12 @@ void ElectronReader::refresh(){
       electrons.back().setIsTight(istight->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MVA));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
+      electrons.back().setPtRel(ptrel->at(iL));
+      electrons.back().setMiniIso(miniiso->at(iL));
+      electrons.back().setPtRatio(ptratio->at(iL));
+      electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
+      electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
+
       /*
       // pass pog cut base medium id
       bool tmpPassCutBaseMID = false;

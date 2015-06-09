@@ -17,6 +17,9 @@ namespace ucsbsusy {
           , const edm::InputTag reGenJetAssocTag
           , const bool fillReGenJets
           , const double jptMin
+          , const edm::InputTag superJetTag = edm::InputTag()
+          , const edm::InputTag superJetAssocTag = edm::InputTag()
+          , const edm::InputTag superJetNsubTag = edm::InputTag()
           );
       virtual ~RecoJetFiller() {}
 

@@ -182,6 +182,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+      if(cfg.getUntrackedParameter<bool>("fillSuper"))                  defaultOptions |= RecoJetFiller::LOADSUPER;
 
       caSubJets = new RecoJetFiller(options < 0 ? defaultOptions : options,
                                     branchName == "" ? defaults::BRANCH_CASUBJETS : branchName,
@@ -194,7 +195,10 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                     cfg.getParameter<edm::InputTag>("flvAssoc"),
                                     cfg.getParameter<edm::InputTag>("reGenJetAssoc"),
                                     cfg.getUntrackedParameter<bool>("fillReGenJets"),
-                                    cfg.getUntrackedParameter<double>("minJetPt")
+                                    cfg.getUntrackedParameter<double>("minJetPt"),
+                                    cfg.getParameter<edm::InputTag>("superJets"),
+                                    cfg.getParameter<edm::InputTag>("superJetAssoc"),
+                                    cfg.getParameter<edm::InputTag>("superJetNsub")
                                     );
       initializedFillers.push_back(caSubJets);
       break;
@@ -205,6 +209,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillElectronIDVars"))       defaultOptions |= ElectronFiller::FILLIDVARS;
       if(cfg.getUntrackedParameter<bool>("fillElectronIsoVars"))      defaultOptions |= ElectronFiller::FILLISOVARS;
       if(cfg.getUntrackedParameter<bool>("evaluateElectronPOGIDMVA")) defaultOptions |= ElectronFiller::FILLPOGMVA;
+      if(cfg.getUntrackedParameter<bool>("fillElectronGenInfo"))      defaultOptions |= ElectronFiller::LOADGEN;
 
       electrons = new ElectronFiller(options < 0 ? defaultOptions : options,
                                      branchName == "" ? defaults::BRANCH_ELECTRONS : branchName,
@@ -225,6 +230,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = MuonFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("fillMuonIDVars"))  defaultOptions |= MuonFiller::FILLIDVARS;
       if(cfg.getUntrackedParameter<bool>("fillMuonIsoVars")) defaultOptions |= MuonFiller::FILLISOVARS;
+      if(cfg.getUntrackedParameter<bool>("fillMuonGenInfo")) defaultOptions |= MuonFiller::LOADGEN;
 
       muons = new MuonFiller(options < 0 ? defaultOptions : options,
                             branchName == "" ? defaults::BRANCH_MUONS : branchName,
