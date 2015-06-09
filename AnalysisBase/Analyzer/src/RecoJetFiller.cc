@@ -9,6 +9,9 @@ RecoJetFiller::RecoJetFiller(const int options, const string branchName, const E
   , const edm::InputTag reGenJetAssocTag
   , const bool   fillReGenJets
   , const double jptMin
+  , const edm::InputTag superJetTag
+  , const edm::InputTag superJetAssocTag
+  , const edm::InputTag superJetNsubTag
 ) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller, genParticleFiller
     , jetTag
     , reGenJetTag
@@ -16,6 +19,9 @@ RecoJetFiller::RecoJetFiller(const int options, const string branchName, const E
     , flvAssocTag
     , fillReGenJets
     , jptMin
+    , superJetTag
+    , superJetAssocTag
+    , superJetNsubTag
     )
   , bTagsTag_(bTagsTag)
   , reGenJetAssocTag_(reGenJetAssocTag)
