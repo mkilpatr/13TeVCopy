@@ -36,7 +36,7 @@ if [ $maxevents -gt -1 ]; then
 fi
 
 if [[ "$outputdir" =~ ^/eos/uscms/.* ]]; then
-  xrdcp ${outputname} root://cmseos:1094/${outputdir}/
+  xrdcp -np ${outputname} root://cmseos:1094/${outputdir}/
   rm ${outputname}
 else
   mv ${outputname} ${outputdir}/
