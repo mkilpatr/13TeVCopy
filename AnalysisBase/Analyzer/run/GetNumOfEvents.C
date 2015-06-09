@@ -10,17 +10,17 @@
 #include <string>
 #endif
 
-void getListOfMergedFiles(const TString input);
+vector<TString> getListOfMergedFiles(const TString input, const TString prefix);
 int calcTotalNumOfEvents(std::vector<TString> filenames);
 
-void GetNumOfEvents(const TString input) {
+void GetNumOfEvents(const TString input, const TString prefix="root://eoscms/") {
 
-  getListOfMergedFiles(input);
+  cout << calcTotalNumOfEvents(getListOfMergedFiles(input, prefix)) << endl;
 
 }
 
 
-void getListOfMergedFiles(const TString input) {
+vector<TString> getListOfMergedFiles(const TString input, const TString prefix) {
   
   vector<TString> filenames;
 
@@ -29,11 +29,11 @@ void getListOfMergedFiles(const TString input) {
   string line;
   getline(readFile,line);
   if (readFile.is_open()) { 
-    while(getline(readFile,line)) { filenames.push_back("root://eoscms/"+line); }
+    while(getline(readFile,line)) { filenames.push_back(prefix+line); }
   }
   readFile.close();
 
-  cout << calcTotalNumOfEvents(filenames) << "\n";
+  return filenames;
 
 }
 
@@ -47,7 +47,7 @@ int calcTotalNumOfEvents(std::vector<TString> filenames) {
     TFile *f = TFile::Open(filenames[i],"READONLY");
     TTree *t = (TTree*)f->Get("TestAnalyzer/Events");
     
-    nEntries += (Int_t)t->GetEntries();
+    nEntries += (Int_t)t->GetEntriesFast();
     t->Delete();
     f->Delete();
 
