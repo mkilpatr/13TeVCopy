@@ -43,7 +43,7 @@ varBins = [#['ptMet',(200,300),(300,400),(400,999999)],
 # you probably don't need to change this unless you want different directory names
 saveLocation = 'datacards/'+subdir+'/' 
 
-printStuff = True # if true, will print the bins, datacards to the terminal as well as save them 
+printStuff = False # if true, will print the bins, datacards to the terminal as well as save them 
 
 ##### ##### ##### ##### ##### ##### ##### 
 ##### you should not need to touch  ##### 
