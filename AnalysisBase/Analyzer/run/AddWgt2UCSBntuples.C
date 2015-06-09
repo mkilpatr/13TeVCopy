@@ -65,12 +65,6 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
 
   //get the output name
-  //TString prefix(fileName);
-  //prefix.Remove(0,prefix.Last('/') + 1);
-  //if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
-  //TString outName = prefix.ReplaceAll(".root", "_"+outPostfix+".root");
-  //TString outName = TString::Format("/tmp/your_userid/cache/%s_%s.root",prefix.Data(),outPostfix.c_str());
-  //TString outName = TString::Format("/tmp/your_userid/cache/%s_%s.root",prefix.Data(),outPostfix.c_str());
   TString outName(fileName);
   outName.ReplaceAll(".root", "_"+outPostfix+".root");
 
