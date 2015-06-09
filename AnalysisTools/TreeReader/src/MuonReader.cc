@@ -25,6 +25,7 @@ MuonReader::MuonReader() : BaseReader(){
   q            = new vector<int>   ;
   d0           = new vector<float>;
   dz           = new vector<float>;
+  sip3d        = new vector<float>;
   pfdbetaiso   = new vector<float>;
   mvaiso       = new vector<float>;
   isloose      = new vector<bool>;
@@ -58,6 +59,7 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"q", &q                      , true);
     treeReader->setBranchAddress(branchName ,"d0", &d0                    , true);
     treeReader->setBranchAddress(branchName ,"dz", &dz                    , true);
+    treeReader->setBranchAddress(branchName ,"sip3d", &sip3d              , true);
     treeReader->setBranchAddress(branchName ,"pfdbetaiso", &pfdbetaiso    , true);
     treeReader->setBranchAddress(branchName ,"MVAiso", &mvaiso            , true);
     treeReader->setBranchAddress(branchName ,"isLoose", &isloose          , true);
@@ -90,6 +92,7 @@ void MuonReader::refresh(){
       muons.back().setCharge(q->at(iL));
       muons.back().setD0(d0->at(iL));
       muons.back().setDz(dz->at(iL));
+      muons.back().setSip3d(sip3d->at(iL));
       muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       muons.back().setMVAIso(mvaiso->at(iL));
       muons.back().setIsLoose(isloose->at(iL));
