@@ -31,7 +31,7 @@ namespace ucsbsusy {
 
       ~LeptonId();
 
-      enum WorkingPoint{VETO, LOOSE, MEDIUM, TIGHT, MVA, MVAVeto};
+      enum WorkingPoint{VETO, LOOSE, MEDIUM, TIGHT, MVA, MVAVeto, MultiIsoVetoL, MultiIsoVetoVL};
 
       void setBunchSpacing(int val)		{ bunchSpacing_ = val;	}
       bool initElectronCuts(int bunchSpacing);

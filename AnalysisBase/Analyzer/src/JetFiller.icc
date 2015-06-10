@@ -24,6 +24,9 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   , const edm::InputTag flvAssocTag
   , const bool   fillReGenJets
   , const double jptMin
+  , const edm::InputTag superJetTag
+  , const edm::InputTag superJetAssocTag
+  , const edm::InputTag superJetNsubTag
 ) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller), genParticleFiller_(genParticleFiller)
   , jetTag_          (jetTag)
   , reGenJetTag_     (reGenJetTag)
@@ -32,11 +35,17 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   , qgTagQGL_        ("QGTagger", "qgLikelihood")
   , jptMin_          (jptMin)
   , fillReGenJets_   (fillReGenJets)
+  , superJetTag_     (superJetTag)
+  , superJetAssocTag_(superJetAssocTag)
+  , superJetNsubTag_ (superJetNsubTag)
   , qglInterface_    (new QuarkGluonTagInterface)
   , qgTaggingVar_    (new QuarkGluonTaggingVariables)
   , jets_            (0)
   , reGenJets_       (0)
   , stdGenJets_      (0)
+  , superJets_       (0)
+  , superJetAssoc_   (0)
+  , superJetNsub_    (0)
 {
   if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
     throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
@@ -60,6 +69,14 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     igenjetmass_   = data.addMulti<float>(branchName_,"genjet_mass"  ,0);
     igenjetflavor_ = data.addMulti<size8  >(branchName_,"genjet_flavor",0);
 
+  }
+  if(options_ & LOADSUPER) {
+    ijetsuperindex_    = data.addMulti<int16  >(branchName_,"jet_superIndex",-1);
+    isuperjetpt_       = data.addMulti<float>  (branchName_,"superjet_pt"    ,0);
+    isuperjeteta_      = data.addMulti<float>  (branchName_,"superjet_eta"   ,0);
+    isuperjetphi_      = data.addMulti<float>  (branchName_,"superjet_phi"   ,0);
+    isuperjetmass_     = data.addMulti<float>  (branchName_,"superjet_mass"  ,0);
+    isuperjetnsubjets_ = data.addMulti<size16 >(branchName_,"superjet_nsubjets",0);
   }
 
   if(options_ & LOADJETSHAPE) {
@@ -94,6 +111,11 @@ void JetFiller<Jet>::load(const edm::Event& iEvent)
     if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
     else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
     FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
+  }
+  if(options_ & LOADSUPER) {
+    FileUtilities::enforceGet(iEvent,superJetTag_,superJets_,true);
+    FileUtilities::enforceGet(iEvent,superJetAssocTag_,superJetAssoc_,true);
+    FileUtilities::enforceGet(iEvent,superJetNsubTag_,superJetNsub_,true);
   }
   if(options_ & LOADJETSHAPE) {
 	  FileUtilities::enforceGet(iEvent,qgTagQGL_, qgHandleQGL_, true);
@@ -155,8 +177,21 @@ void JetFiller<Jet>::fill()
     }
   }
 
-
-
+  vector<int> filledSJIndex;
+  int curSJIndex = -1;
+  if(options_ & LOADSUPER){
+    filledSJIndex.reserve(superJets_->size());
+    for(unsigned int iJ = 0; iJ < superJets_->size(); ++iJ){
+      const auto& j = superJets_->at(iJ);
+      if(j.pt() < jptMin_){ filledSJIndex.push_back(-1); continue;}
+      filledSJIndex.push_back(++curSJIndex);
+      data.fillMulti<float>(isuperjetpt_    ,j.pt());
+      data.fillMulti<float>(isuperjeteta_   ,j.eta());
+      data.fillMulti<float>(isuperjetphi_   ,j.phi());
+      data.fillMulti<float>(isuperjetmass_  ,j.mass());
+      data.fillMulti<size16>(isuperjetnsubjets_, convertTo<size16>(superJetNsub_->at(iJ),"JetFiller::superJetNsubjets"));
+    }
+  }
 
 
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
@@ -178,6 +213,10 @@ void JetFiller<Jet>::fill()
       } else {
         data.fillMulti<int16>(ijetgenindex_   );
       }
+    }
+    if(options_ & LOADSUPER) {
+      const int sjAssoc = superJetAssoc_->at(iJ);
+      data.fillMulti<int16>(ijetsuperindex_, sjAssoc > -1 ? convertTo<int16>(filledSJIndex[sjAssoc], "JetFiller::superJetIndex") : -1);
     }
 
     if(options_ & LOADJETSHAPE){

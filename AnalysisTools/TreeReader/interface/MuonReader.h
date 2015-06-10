@@ -52,6 +52,9 @@ namespace ucsbsusy {
       std::vector<bool>  *	isglobal;
       std::vector<bool>  *	istracker;
       std::vector<bool>  *	isstandalone;
+      std::vector<float> *	miniiso;
+      std::vector<float> *	ptrel;
+      std::vector<float> *	ptratio;
 
       MuonFCollection muons;
 

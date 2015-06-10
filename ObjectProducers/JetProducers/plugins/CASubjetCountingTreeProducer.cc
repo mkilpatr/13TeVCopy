@@ -2,6 +2,8 @@
 #include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "ObjectProducers/JetProducers/interface/FastJetClusterer.h"
+#include "ObjectProducers/JetProducers/interface/PickyJetSplitting.h"
+#include "ObjectProducers/JetProducers/interface/Splittiness.h"
 
 using namespace ucsbsusy;
 using namespace std;
@@ -13,9 +15,11 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
   int nPrimVertices;
   unsigned int run, lumi, event;
   int ngoodpartons;
+  PickyJetSplitting * splitter;
+  Splittiness splittiness;
 
   enum SplitResult  {PURE_TO_CLEAN, PURE_TO_SPLIT, MIXED_TO_BETTER, MIXED_TO_MOSTLYBETTER, MIXED_TO_CLEANER, MIXED_TO_MOSTLYCLEANER, MIXED_TO_WORSE, EMPTY };
-  enum SplitDecision {NOSPLIT_NO_PARENTS, NOSPLIT_BELOW_MCUT, NOSPLIT_FAIL_PTCUT, NOSPLIT_BELOW_DRMIN, SPLIT_BOTH_SUBJETS, SPLIT_LEADING_SUBJET};
+  enum SplitDecision {NOSPLIT_NO_PARENTS, NOSPLIT_BELOW_MCUT, NOSPLIT_FAIL_PTCUT, NOSPLIT_BELOW_DRMIN, SPLIT_BOTH_SUBJETS, SPLIT_LEADING_SUBJET, PICKY_SHOULD_SPLIT, NOSPLIT_TOO_MANY_SPLITS, NOSPLIT_FAIL_MVA};
 
     ANALYZER_MODE
     CASubjetCountingTreeProducer(const edm::ParameterSet &cfg) :
@@ -25,11 +29,16 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
       lumi(0),
       event(0),
       ngoodpartons(0),
+      splittiness(cfg, false),
       doSplitting(cfg.getParameter<bool>("doSplitting")),
+      splittingAlgo(cfg.getParameter<string>("splittingAlgo")),
       mCut(cfg.getParameter<double>("mCut")),
       rMin(cfg.getParameter<double>("rMin")),
-      yCut(cfg.getParameter<double>("yCut"))
+      yCut(cfg.getParameter<double>("yCut")),
+      maxNSplits(cfg.getParameter<int>("pickyMaxSplits"))
     {
+      splitter = splittingAlgo=="Picky" ? new PickyJetSplitting(cfg.getParameter<string>("pickyMVAFileName"),cfg.getParameter<string>("pickyMVAName"),PickyJetSplitting::NOPUPPI_RECO,cfg) : 0;
+
       initialize(cfg,"EventInfo",EVTINFO);
       initialize(cfg,"Gen",GENPARTICLES);
       initialize(cfg,"PickyJets",PICKYJETS);
@@ -59,6 +68,9 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
       superJet_gene         = data.add<float>("","superJet_gene"        ,"F",0);
       superJet_prtIndex     = data.addMulti<int>("","superJet_prtIndex" ,-1);
       superJet_purity       = data.addMulti<float>("","superJet_purity" , 0);
+      tau1                  = data.add<float>("","tau1"                 ,"F",0);
+      tau2                  = data.add<float>("","tau2"                 ,"F",0);
+      tau3                  = data.add<float>("","tau3"                 ,"F",0);
       subJet_1_pt           = data.add<float>("","subJet_1_pt"          ,"F",0);
       subJet_1_eta          = data.add<float>("","subJet_1_eta"         ,"F",0);
       subJet_1_phi          = data.add<float>("","subJet_1_phi"         ,"F",0);
@@ -109,6 +121,7 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
     size superJet_purity      ;
     size tau1                 ;
     size tau2                 ;
+    size tau3                 ;
     size subJet_1_pt          ;
     size subJet_1_eta         ;
     size subJet_1_phi         ;
@@ -126,9 +139,11 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
     size didSplit             ;
 
     const bool   doSplitting;
+    const std::string         splittingAlgo;
     const double mCut;
     const double rMin;
     const double yCut;
+    const int    maxNSplits;
     std::vector<const reco::GenParticle*> tops;
     std::map<int,int>         topPartonIndex;
     std::vector<unsigned int> topIndex;
@@ -155,6 +170,10 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
 
       assert(subJets.size() <= 2);
       data.reset();
+
+      double nsub1 = splittiness.nSubjettiness.getTau(1, superJet.constituents());
+      double nsub2 = splittiness.nSubjettiness.getTau(2, superJet.constituents());
+      double nsub3 = splittiness.nSubjettiness.getTau(3, superJet.constituents());
 
       data.fill<unsigned int>(irun                  ,run);
       data.fill<unsigned int>(ilumi                 ,lumi);
@@ -192,6 +211,10 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
         data.fillMulti<int>(superJet_prtIndex, topPartonIndex[superJetContainment[icon].second]);
         data.fillMulti<float>(superJet_purity, superJetGenE > 0 ? superJetContainment[icon].first/superJetGenE : 0.0);
       }
+
+      data.fill<float>(tau1                  ,nsub1);
+      data.fill<float>(tau2                  ,nsub2);
+      data.fill<float>(tau3                  ,nsub3);
 
       data.fill<float>(subJet_1_pt           ,subJets.size() >= 1 ? subJets[0].pt()  : 0);
       data.fill<float>(subJet_1_eta          ,subJets.size() >= 1 ? subJets[0].eta() : 0);
@@ -373,46 +396,85 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
                          const double superJetGenE, const vector<pair<double,int>>& superJetContaiment,
                          const int nSplits) {
 
-      vector<fastjet::PseudoJet>       subJets;
-      vector<vector<pair<double,int>>> subJetContaiments;
+      vector<fastjet::PseudoJet>        subJets;
+      vector<fastjet::PseudoJet*>       pickySubJets;
+      vector<vector<pair<double,int>>>  subJetContaiments;
       vector<double> subjetGenEs;
 
-      fastjet::PseudoJet parent1(0.0,0.0,0.0,0.0), parent2(0.0,0.0,0.0,0.0);
-      bool had_parents = doSplitting ? superJet.validated_cs()->has_parents(superJet,parent1,parent2) : false;
+      SplitDecision splitDecision = NOSPLIT_NO_PARENTS;
+      SplitResult   splitResult = EMPTY;
 
-      SplitDecision splitDecision;
-      SplitResult   splitResult;
+      if(splittingAlgo == "CAsubjets") {
+        fastjet::PseudoJet parent1(0.0,0.0,0.0,0.0), parent2(0.0,0.0,0.0,0.0);
+        bool had_parents = doSplitting ? superJet.validated_cs()->has_parents(superJet,parent1,parent2) : false;
 
-      //it must be able to actually split the jets
-      if(!had_parents) {
-        splitDecision = NOSPLIT_NO_PARENTS;
-        splitResult = EMPTY;
-      } else {
-        if (parent1.perp() < parent2.perp()) std::swap(parent1,parent2);
-        subJets.push_back(parent1);
-        subJets.push_back(parent2);
-        //Now we see how good of a split it was
-        splitResult = checkIfGoodSplit(minJetRetainment,minJetAssociation,isGen,partons,partPrtAssoc,superJet,superJetContaiment,subJets,subJetContaiments,subjetGenEs);
+        //it must be able to actually split the jets
+        if(!had_parents) {
+          splitDecision = NOSPLIT_NO_PARENTS;
+          splitResult = EMPTY;
+        } else {
+          if (parent1.perp() < parent2.perp()) std::swap(parent1,parent2);
+          subJets.push_back(parent1);
+          subJets.push_back(parent2);
 
-        double pt1=parent1.perp();
-        double pt2=parent2.perp();
-        double totalpt=pt1+pt2;
+          //Now we see how good of a split it was
+          splitResult = checkIfGoodSplit(minJetRetainment,minJetAssociation,isGen,partons,partPrtAssoc,superJet,superJetContaiment,subJets,subJetContaiments,subjetGenEs);
 
-        if(superJet.m() < mCut){
-          splitDecision = NOSPLIT_BELOW_MCUT;
+          double pt1=parent1.perp();
+          double pt2=parent2.perp();
+          double totalpt=pt1+pt2;
+
+          if(superJet.m() < mCut){
+            splitDecision = NOSPLIT_BELOW_MCUT;
+          }
+          else if(parent1.plain_distance(parent2) < (rMin*rMin)){
+            splitDecision = NOSPLIT_BELOW_DRMIN;
+          }
+          else if(pt2 > yCut*totalpt && pt2 > minJetPT) {
+            splitDecision = SPLIT_BOTH_SUBJETS;
+          }
+          else if(pt1 > minJetPT) {
+            splitDecision = SPLIT_LEADING_SUBJET;
+          }
+          else {
+            splitDecision = NOSPLIT_FAIL_PTCUT;
+          }
         }
-        else if(parent1.plain_distance(parent2) < (rMin*rMin)){
-          splitDecision = NOSPLIT_BELOW_DRMIN;
-        }
-        else if(pt2 > yCut*totalpt && pt2 > minJetPT) {
-          splitDecision = SPLIT_BOTH_SUBJETS;
-        }
-        else if(pt1 > minJetPT) {
-          splitDecision = SPLIT_LEADING_SUBJET;
+      }
+      else if(splittingAlgo == "Picky") {
+
+        //const double splitMetric = splitter->getSubjets(superJet, pickySubJets);
+        const double splitMetric = splittiness.getNSubjettinessSubjets(superJet, pickySubJets);
+
+        //it must be able to actually split the jets
+        if(pickySubJets.size() < 2){
+          splitDecision = NOSPLIT_NO_PARENTS;
+          splitResult = EMPTY;
         }
         else {
-          splitDecision = NOSPLIT_FAIL_PTCUT;
+          //They can't be pure junk...the subjets must be at least 1 GeV
+          bool passPT = true;
+          for(const auto* j : pickySubJets){
+            subJets.push_back(*j);
+            if(j->pt2() >= 1) continue;
+            passPT = false;
+          }
+          if(!passPT){
+            splitDecision = NOSPLIT_FAIL_PTCUT;
+            splitResult = EMPTY;
+            subJets.clear();
+            PhysicsUtilities::trash(pickySubJets);
+          } else {
+            splitResult = checkIfGoodSplit(minJetRetainment,minJetAssociation,isGen,partons,partPrtAssoc,superJet,superJetContaiment,subJets,subJetContaiments,subjetGenEs);
+            if(splitter->shouldSplit(superJet, pickySubJets, &splitMetric, 0)) {
+              if(nSplits < maxNSplits) splitDecision = PICKY_SHOULD_SPLIT;
+              else splitDecision = NOSPLIT_TOO_MANY_SPLITS;
+            } else {
+              splitDecision = NOSPLIT_FAIL_MVA;
+            }
+          }
         }
+
       }
 
       //plot this splitting
@@ -427,6 +489,7 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
         }
       }
 
+      PhysicsUtilities::trash(pickySubJets);
       subJets.clear();
       subJetContaiments.clear();
       subjetGenEs.clear();
@@ -446,9 +509,6 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
       const double minJetRetainment     = .90; //A pure split must retain at least 90% of the parton E in the superjet
       const double minJetAssociation    = 0.15; //Anything with less than 15% of the total parton E is not counted
       const double minJetPT             = filler->jptMin_; //Don't split jets less than this value
-
-      //Use CA for declustering
-      fastjet::JetDefinition jetDef(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R);
 
       //get the list of tops
       tops.clear();
@@ -492,18 +552,32 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
         //the initial vector of interesting particles in this jet
         vector<pair<double,int>> containment;
         getContainment(goodPartons,minJetAssociation,minPartonPT,maxPartonETA,partons,gj.key(),containment);
+        //cout << j.pt() << " " << j.eta() << " " << j.phi() << " " << j.mass() << " " << containment.size() << endl;
         if(containment.size() == 0) continue;
 
         //Get the PSuedo jet version
         fastjet::PseudoJet superJet = addParticles(pfCandidates , &j, genparticles->packedGenParticles_, &*gj);
 
         if(doSplitting) {
-          fastjet::ClusterSequence clust_seq(superJet.constituents(), jetDef);
-          vector<fastjet::PseudoJet> ca_jets = sorted_by_pt(clust_seq.inclusive_jets());
+          if(splittingAlgo == "CAsubjets") {
+            //Use CA for declustering
+            fastjet::JetDefinition jetDef(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R);
 
-          splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,false,
-              partons, partPrtAssoc,
-              ca_jets[0], gj->energy(), containment, 0);
+            fastjet::ClusterSequence clust_seq(superJet.constituents(), jetDef);
+            vector<fastjet::PseudoJet> ca_jets = sorted_by_pt(clust_seq.inclusive_jets());
+
+            splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,false,
+                partons, partPrtAssoc,
+                ca_jets[0], gj->energy(), containment, 0);
+          }
+          else if(splittingAlgo == "Picky") {
+            splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,false,
+                partons, partPrtAssoc,
+                superJet, gj->energy(), containment, 0);
+          }
+          else {
+            throw cms::Exception("UnknownAlgo") << "splittingAlgo " << splittingAlgo << " unknown! Use either CAsubjets or Picky\n";
+          }
         } else {
           splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,false,
               partons, partPrtAssoc,
@@ -524,12 +598,25 @@ class CASubjetCountingTreeProducer : public PhysicsAnalyzer {
         fastjet::PseudoJet superJet = addParticles(genparticles->packedGenParticles_, &j, genparticles->packedGenParticles_, 0);
 
         if(doSplitting) {
-          fastjet::ClusterSequence clust_seq(superJet.constituents(), jetDef);
-          vector<fastjet::PseudoJet> ca_jets = sorted_by_pt(clust_seq.inclusive_jets());
+          if(splittingAlgo == "CAsubjets") {
+            //Use CA for declustering
+            fastjet::JetDefinition jetDef(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R);
 
-          splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,true,
+            fastjet::ClusterSequence clust_seq(superJet.constituents(), jetDef);
+            vector<fastjet::PseudoJet> ca_jets = sorted_by_pt(clust_seq.inclusive_jets());
+
+            splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,true,
               partons,partPrtAssoc,
-              ca_jets[0], j.energy(),containment,0);
+              ca_jets[0], j.energy(), containment, 0);
+          }
+          else if(splittingAlgo == "Picky") {
+            splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,true,
+                partons, partPrtAssoc,
+                superJet, j.energy(), containment, 0);
+          }
+          else {
+            throw cms::Exception("UnknownAlgo") << "splittingAlgo " << splittingAlgo << "unknown! Use either CAsubjets or Picky\n";
+          }
         } else {
           splitAndFillJet(minJetRetainment,minJetAssociation,minJetPT,true,
               partons,partPrtAssoc,

@@ -46,9 +46,63 @@ void FastJetClusterer::addParticles(const edm::Handle<std::vector<Particle> >& i
 /*************************/
 
 //_____________________________________________________________________________
+template<typename Particle, typename Jet>
+void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& inputParticles,const std::vector<CompoundPseudoJet>& inputJets, std::vector<Jet>& outputJets
+                                  , const edm::EventSetup& eventSetup, bool (*select)(const Particle&),bool keepEmptyJets, bool recomputeP4, const reco::Jet::Point& vertex
+                                  , std::vector<int>& superJetIndices
+                                  ) 
+{
+  outputJets.reserve(inputJets.size());
+
+  for (unsigned int iJet = 0; iJet < inputJets.size(); ++iJet)
+  {
+    const CompoundPseudoJet&          inJet         = inputJets[iJet];
+    std::vector<fastjet::PseudoJet>   constituents  = inJet.constituents();
+
+    std::vector<reco::CandidatePtr>   daughters;
+    reco::Particle::LorentzVector     jetP4;
+    if (!recomputeP4)                 jetP4.SetCoordinates(inJet.px(), inJet.py(), inJet.pz(), inJet.E());
+
+
+    double                            ghostArea     = 0;
+    for (unsigned int iCon = 0; iCon < constituents.size(); ++iCon) {
+      const fastjet::PseudoJet&       constituent   = constituents[iCon];
+      
+      if (constituent.has_user_info()) {
+        const UserInfo&               info          = constituent.user_info<UserInfo>();
+        if (info.key() >= inputParticles->size())   continue;
+        const Particle&               particle      = (*inputParticles)[info.key()];
+        if (info.get() != &particle)                continue;
+        if (select && !(*select)(particle))         continue;
+        daughters.push_back(reco::CandidatePtr(inputParticles, info.key()));
+        if (recomputeP4)              jetP4        += particle.p4();
+      }
+      else {
+        ////std::cout << currentGhostArea << std::endl;
+        ghostArea                    += constituent.has_area()
+                                      ? constituent.area()
+                                      : currentGhostArea
+                                      ;
+      }
+    } // end loop over constituents
+
+
+    if (daughters.size() || keepEmptyJets) {
+      outputJets.resize   ( outputJets.size() + 1 );
+
+      Jet&                            outJet        = outputJets.back();
+      reco::writeSpecific ( outJet, jetP4, vertex, daughters, eventSetup );
+      outJet.setJetArea   ( inJet.has_area() ? inJet.area() : ghostArea  );
+      if(superJetIndices.size()) superJetIndices[iJet] = inJet.superjetIndex();
+    }
+  } // end loop over outputJets
+}
+
+//_____________________________________________________________________________
 template<typename Particle, typename InputJet, typename Jet>
 void FastJetClusterer::distillJets( const edm::Handle<std::vector<Particle> >& inputParticles,const std::vector<InputJet>& inputJets, std::vector<Jet>& outputJets
                                   , const edm::EventSetup& eventSetup, bool (*select)(const Particle&),bool keepEmptyJets, bool recomputeP4, const reco::Jet::Point& vertex
+                                  , std::vector<int>& superJetIndices
                                   ) 
 {
   outputJets.reserve(inputJets.size());

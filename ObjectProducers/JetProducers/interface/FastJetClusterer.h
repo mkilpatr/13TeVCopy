@@ -118,6 +118,17 @@ public:
   std::vector<fastjet::PseudoJet>&        getSuperJets    ()        { return superJets     ; }
   void                                    sortJets    ()        { jets  = fastjet::sorted_by_pt(jets); }
 
+  template<typename Particle, typename Jet>
+  static void     distillJets ( const edm::Handle<std::vector<Particle> >&  inputParticles
+                              , const std::vector<CompoundPseudoJet>&       inputJets
+                              , std::vector<Jet>&                           outputJets
+                              , const edm::EventSetup&                      eventSetup
+                              , bool                                        (*select)(const Particle&) = 0
+                              , bool                                        keepEmptyJets = false
+                              , bool                                        recomputeP4   = true
+                              , const reco::Jet::Point&                     vertex        = DEFAULT_VERTEX
+                              , std::vector<int>&                           superJetIndices = *(new std::vector<int>())
+                              );
   template<typename Particle, typename InputJet, typename Jet>
   static void     distillJets ( const edm::Handle<std::vector<Particle> >&  inputParticles
                               , const std::vector<InputJet>&                inputJets
@@ -127,6 +138,7 @@ public:
                               , bool                                        keepEmptyJets = false
                               , bool                                        recomputeP4   = true
                               , const reco::Jet::Point&                     vertex        = DEFAULT_VERTEX
+                              , std::vector<int>&                           superJetIndices = *(new std::vector<int>())
                               );
   template<typename Particle, typename Jet>
   void            distillJets ( const edm::Handle<std::vector<Particle> >&  inputParticles
@@ -136,9 +148,10 @@ public:
                               , bool                                        keepEmptyJets = false
                               , bool                                        recomputeP4   = true
                               , const reco::Jet::Point&                     vertex        = DEFAULT_VERTEX
+                              , std::vector<int>&                           superJetIndices = *(new std::vector<int>())
                               ) const
   {
-    FastJetClusterer::distillJets( inputParticles,jets, outputJets, eventSetup,select, keepEmptyJets, recomputeP4, vertex );
+    FastJetClusterer::distillJets( inputParticles,jets, outputJets, eventSetup,select, keepEmptyJets, recomputeP4, vertex, superJetIndices );
   }
   template<typename Particle, typename Jet>
   void            distillSuperJets ( const edm::Handle<std::vector<Particle> >&  inputParticles

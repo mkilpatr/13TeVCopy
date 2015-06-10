@@ -397,6 +397,7 @@ struct SubjetTreeFiller {
   vector<size> i_contaminatedtop_pt;
   vector<size> i_resolvedtop_pt;
   vector<size> i_jet_pt;
+  vector<size> i_jet_assocparton_pt;
   vector<size> i_jet_eta;
   vector<size> i_jet_phi;
   vector<size> i_jet_mass;
@@ -443,6 +444,7 @@ struct SubjetTreeFiller {
     i_contaminatedtop_pt.push_back	(data->addMulti<float>(label,"contaminatedtop_pt",0));
     i_resolvedtop_pt.push_back		(data->addMulti<float>(label,"resolvedtop_pt",0));
     i_jet_pt.push_back			(data->addMulti<float>(label,"jet_pt",0));
+    i_jet_assocparton_pt.push_back	(data->addMulti<float>(label,"jet_assocparton_pt",0));
     i_jet_eta.push_back			(data->addMulti<float>(label,"jet_eta",0));
     i_jet_phi.push_back			(data->addMulti<float>(label,"jet_phi",0));
     i_jet_mass.push_back		(data->addMulti<float>(label,"jet_mass",0));
@@ -505,6 +507,8 @@ struct SubjetTreeFiller {
     // fill jets
     for(auto* jet : info->finaljets) {
       data->fillMulti<float>(i_jet_pt[index],     jet->pt());
+      if(jet->purity.size())
+        data->fillMulti<float>(i_jet_assocparton_pt[index],     jet->pt());
       data->fillMulti<float>(i_jet_eta[index],    jet->eta());
       data->fillMulti<float>(i_jet_phi[index],    jet->phi());
       data->fillMulti<float>(i_jet_mass[index],   jet->mass());

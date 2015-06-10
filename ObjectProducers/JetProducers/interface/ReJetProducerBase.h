@@ -86,7 +86,7 @@ public:
     if(useSubjetCountingCA)clusterer.applySubjetCountingCA(mCutoff, yCut, rMin, ptCut);
   }
 
-  void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets);
+  void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets, std::auto_ptr<std::vector<int> > superJetIndices);
   template<typename recoJetCol, typename ptrJetCol >
   void putPointer(edm::Event& iEvent, edm::OrphanHandle<recoJetCol> recoJetHandle,edm::OrphanHandle<ptrJetCol> ptrJetHandle, std::string const& label, const std::vector<JetSorter> * sortedJets = 0){
     std::vector<reco::CandidatePtr>                     vPUPtr(ptrJetHandle->size());
