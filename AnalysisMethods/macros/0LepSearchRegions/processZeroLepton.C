@@ -36,6 +36,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "npv"        , &npv        ,         "npv/I" );
     outtree->Branch( "nAK4pfJets" , &nAK4pfJets ,  "nAK4pfJets/I" );
     outtree->Branch( "nVetoTau"   , &nVetoTau   ,    "nVetoTau/I" );
+    outtree->Branch( "nSelLeptons", &nSelLeptons, "nSelLeptons/I" );
     //outtree->Branch( "nAK4pfBJets_0", &nAK4pfBJets_0, "nAK4pfBJets_0/I" );
     //outtree->Branch( "met_0"        , &met_0        ,         "met_0/F" );
     //outtree->Branch( "ht_0"         , &ht_0         ,          "ht_0/F" );
@@ -120,9 +121,11 @@ class Analyzer : public BaseTreeAnalyzer {
     //outtree->Branch( "MT2tp1_150"       , &vars.MT2tp1_150       ,       "MT2tp1_150/F" );
     //outtree->Branch( "MT2tp1_200"       , &vars.MT2tp1_200       ,       "MT2tp1_200/F" );
     //outtree->Branch( "MT2tp1_250"       , &vars.MT2tp1_250       ,       "MT2tp1_250/F" );
-    outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" ); //DphiTopMET
+    outtree->Branch( "NCTT"             , &vars.NCTT             ,             "NCTT/I" );
     outtree->Branch( "NCTTstd"          , &vars.NCTTstd          ,          "NCTTstd/I" );
-    outtree->Branch( "DphiTopMET"       , &vars.DphiTopMET       , "DphiTopMET[NCTT]/F" );
+    outtree->Branch( "DphiTopMET0"      , &vars.DphiTopMET0      ,      "DphiTopMET0/F" );
+    outtree->Branch( "DphiTopMET1"      , &vars.DphiTopMET1      ,      "DphiTopMET1/F" );
+    outtree->Branch( "DphiTopMET2"      , &vars.DphiTopMET2      ,      "DphiTopMET2/F" );
     outtree->Branch( "dPhiHtJ12MET"     , &vars.dPhiHtJ12MET     ,     "dPhiHtJ12MET/F" );
     outtree->Branch( "dPhiHtJ123MET"    , &vars.dPhiHtJ123MET    ,    "dPhiHtJ123MET/F" );
     outtree->Branch( "dPhiHtJMET"       , &vars.dPhiHtJMET       ,       "dPhiHtJMET/F" );
@@ -412,7 +415,7 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
                      , const TString fname      = "ttbar_1_ntuple_wgtxsec.root" // path of file to be processed
                      , const double  xsec       = 831.76    // cross section to be used with this file
                      , const string  outputdir  = "plots/testing/"  // directory to which files with histograms will be written
-                     , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/270515/merged/"
+                     , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/080615/merged/"
                      )
 {
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -430,13 +433,13 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
   pars.minJetPt = 20;
   // vetoed leptons
   pars.minVetoEPt = 5;
-  pars.vetoedElectron = &ElectronF::isgoodpogelectron;
+  pars.vetoedElectron = &ElectronF::ismultiisovetoelectronl;
   pars.minVetoMuPt = 5;
-  pars.vetoedMuon = &MuonF::isgoodpogmuon;
+  pars.vetoedMuon = &MuonF::ismultiisovetomuonl;
 
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
-  a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,100000); // for testing
+  //a.analyze(10000); // run: Argument is frequency of printout
+  a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
