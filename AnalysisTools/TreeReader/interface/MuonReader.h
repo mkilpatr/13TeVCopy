@@ -43,6 +43,7 @@ namespace ucsbsusy {
       std::vector<int>   *	q     ;
       std::vector<float> *	d0    ;
       std::vector<float> *	dz    ;
+      std::vector<float> *	sip3d;
       std::vector<float> *	pfdbetaiso;
       std::vector<float> *	mvaiso;
       std::vector<bool>  *	isloose;

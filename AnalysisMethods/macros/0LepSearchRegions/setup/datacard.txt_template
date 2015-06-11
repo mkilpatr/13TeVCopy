@@ -4,7 +4,7 @@
 ---
 imax IMAX  number of channels
 jmax JMAX  number of backgrounds (BKGLIST)
-kmax 2  number of nuisance parameters (sources of systematical uncertainties)
+kmax KMAX  number of nuisance parameters (sources of systematical uncertainties)
 ---
 
 
@@ -29,7 +29,6 @@ RATE
 ## then we list the independent sources of uncertainties, and give their effect (syst. error)
 ## on each process and bin
 ---
-SYSSIG
-SYSBKG
+SYS
 ---
 
