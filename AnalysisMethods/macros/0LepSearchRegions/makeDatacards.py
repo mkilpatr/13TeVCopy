@@ -111,16 +111,17 @@ class DatacardConfig:
                 lineSysSig  = 'sysSig\tlnN\t' + str(self.getDummyUncertainties('signal',bins)) + '\t'
                 nUncs += 1
                 ibkg = -1
+                lineSysBkg  = ''
                 for background in self.backgrounds :
                     ibkg += 1
                     lineSysSig += '-\t'
-                    lineSysBkg = 'sys'+background+'bin'+str(ibin)+'\tlnN\t-\t'
+                    lineSysBkg += 'sys'+background+'bin'+str(ibin)+'\tlnN\t-\t'
                     if ibkg > 0 :
                         for ibef in range(ibkg) :
                             lineSysBkg += '-\t'
-                    lineSysBkg   += str(self.getDummyUncertanties('bkg',bins))+'\t'
-                    if ibkg < len(backgrounds) :
-                        for iaft in range(len(backgrounds) - ibkg - 1) :
+                    lineSysBkg   += str(self.getDummyUncertainties('bkg',bins))+'\t'
+                    if ibkg < len(self.backgrounds) :
+                        for iaft in range(len(self.backgrounds) - ibkg - 1) :
                             lineSysBkg += '-\t'
                     lineSysBkg   += '\n'
                     nUncs += 1
@@ -227,7 +228,7 @@ class DatacardConfig:
         else :
             return float(output)
 
-    def getDummyUncertanties(self,procname,bins):
+    def getDummyUncertainties(self,procname,bins):
       """Dummy function to get the uncertanties. It returns static numbers for now. Will need to be filled in later. 
       """
       if procname=='sig' :
