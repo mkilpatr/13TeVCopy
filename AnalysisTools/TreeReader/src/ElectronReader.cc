@@ -27,6 +27,7 @@ ElectronReader::ElectronReader() : BaseReader(){
   r9           = new vector<float> ;
   d0           = new vector<float> ;
   dz           = new vector<float> ;
+  sip3d        = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
   mvaiso       = new vector<float> ;
   mvaidnontrig = new vector<float> ;
@@ -35,7 +36,6 @@ ElectronReader::ElectronReader() : BaseReader(){
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
-  //  passCutBaseMediumID = new vector<bool> ;
   ptrel        = new vector<float>;
   miniiso      = new vector<float>;
   ptratio      = new vector<float>;
@@ -62,6 +62,7 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "r9"          , &r9          , true);
     treeReader->setBranchAddress(branchName , "d0"          , &d0          , true);
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
+    treeReader->setBranchAddress(branchName , "sip3d"       , &sip3d       , true);
     treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
     treeReader->setBranchAddress(branchName , "MVAiso"      , &mvaiso      , true);
     treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
@@ -73,7 +74,6 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "miniiso"     , &miniiso     , true);
     treeReader->setBranchAddress(branchName , "ptrel"       , &ptrel       , true);
     treeReader->setBranchAddress(branchName , "ptratio"     , &ptratio     , true);
-    //    treeReader->setBranchAddress(branchName , "passCutBaseMediumId", &passCutBaseMediumId, true);
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -95,6 +95,7 @@ void ElectronReader::refresh(){
       electrons.back().setR9(r9->at(iL));
       electrons.back().setD0(d0->at(iL));
       electrons.back().setDz(dz->at(iL));
+      electrons.back().setSip3d(sip3d->at(iL));
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       electrons.back().setMVAIso(mvaiso->at(iL));
       electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
@@ -110,16 +111,6 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
-
-      /*
-      // pass pog cut base medium id
-      bool tmpPassCutBaseMID = false;
-      if (fabs(scEta->at(iL))<1.479) {
-	if (
-)
-
-      } // end EB
-      */
     }
   }
 }
