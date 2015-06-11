@@ -82,7 +82,7 @@ class DatacardConfig:
             datayield = 0
             if self.has_data :
                 dataFile = self.treebase + '/data' + self.filesuffix
-                datayield = self.getNumEvents(dataFile,bins)
+                datayield = self.getNumEvents(dataFile,bins,True)
             # lines to replace placeholders for current bin's template datacard
             # placeholders are left for signal numbers
             lineSBin     = 'bin\t\t'       + str(ibin)+'\t'  
