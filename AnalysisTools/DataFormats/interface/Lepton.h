@@ -20,15 +20,15 @@ namespace ucsbsusy {
   {
 
     public :
-  Lepton() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), pfdbetaiso_(0), mvaiso_(0), miniiso_(0), ptrel_(0),ptratio_(0),passpogid_(false), passpogiso_(false), isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
+  Lepton() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), sip3d_(0), pfdbetaiso_(0), mvaiso_(0), miniiso_(0), ptrel_(0),ptratio_(0),passpogid_(false), passpogiso_(false), isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
 
       template <class InputCoordSystem>
       Lepton(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inPdgid = 0, int inCharge = 0,
-	     float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, float inMvaiso = 0, float inMiniiso=0, float inPtrel=0, float inPtratio=0) :
+	     float inD0 = 0, float inDz = 0, float inSip3d = 0, float inPfdbetaiso = 0, float inMvaiso = 0, float inMiniiso=0, float inPtrel=0, float inPtratio=0) :
 		Momentum<InputCoordSystem>(inMomentum), 
 		index_(inIndex), pdgid_(inPdgid), q_(inCharge),
-		d0_(inD0), dz_(inDz), pfdbetaiso_(inPfdbetaiso), mvaiso_(inMvaiso), miniiso_(inMiniiso), ptrel_(inPtrel), ptratio_(inPtratio),
+		d0_(inD0), dz_(inDz), sip3d_(inSip3d), pfdbetaiso_(inPfdbetaiso), mvaiso_(inMvaiso), miniiso_(inMiniiso), ptrel_(inPtrel), ptratio_(inPtratio),
 		passpogid_(false), passpogiso_(false),
 		isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
 
@@ -39,6 +39,7 @@ namespace ucsbsusy {
       int	q() 					{ return q_;			}
       float	d0() 				const	{ return d0_;			}
       float	dz() 				const	{ return dz_;			}
+      float	sip3d() 			const	{ return sip3d_;		}
       float	pfdbetaiso() 			const	{ return pfdbetaiso_;		}
       float	mvaiso() 				{ return mvaiso_;		}
       float	miniiso() 				{ return miniiso_;		}
@@ -55,6 +56,7 @@ namespace ucsbsusy {
       void	setCharge(int newCharge)		{ q_ = newCharge;		}
       void	setD0(float newD0)			{ d0_ = newD0;			}
       void	setDz(float newDz)			{ dz_ = newDz;			}
+      void	setSip3d(float newSip3d)		{ sip3d_ = newSip3d;		}
       void	setPFDBetaIso(float newIso0)		{ pfdbetaiso_ = newIso0;	}
       void	setMVAIso(float newIso1)		{ mvaiso_ = newIso1;		}
       void	setPassPOGId(bool flag)			{ passpogid_ = flag;		}
@@ -72,6 +74,7 @@ namespace ucsbsusy {
       int	q_;
       float	d0_;
       float	dz_;
+      float	sip3d_;
       float	pfdbetaiso_;
       float	mvaiso_;
       float     miniiso_;

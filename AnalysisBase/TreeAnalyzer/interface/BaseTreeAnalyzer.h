@@ -112,7 +112,7 @@ public:
       maxJetEta         (2.4 ),
       maxBJetEta        (2.4 ),
       cleanJetsvSelectedLeptons_(false),
-      cleanJetsMaxDR    (1e308),
+      cleanJetsMaxDR    (0.4),
       correctPickyPT    (true),
       applyMuIPCuts     (true),
       tauVetoPreselection  (MT),
