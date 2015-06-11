@@ -301,6 +301,8 @@ class DatacardConfig:
                                 unc.vals[binname][samp] = float(entries[3])
 
     def getUncertaintyLine(self,uncname,unc,binlabel,nbkgevts):
+        """Get line with uncertainty name, type, and values correctly formatted
+        """
         isglobal = unc.vals.has_key('all')
         uncline = uncname.ljust(self.colwidth)
         uncline += unc.type
