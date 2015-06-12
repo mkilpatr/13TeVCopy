@@ -14,6 +14,7 @@ def main():
         sys.exit(1)
     subdir = args[0]
     configparser = SafeConfigParser()
+    configparser.optionxform = str
 
     dcconfig = DatacardConfig('dc_0l_setup.conf',args[0],configparser)
     dcconfig.produceDatacards()
