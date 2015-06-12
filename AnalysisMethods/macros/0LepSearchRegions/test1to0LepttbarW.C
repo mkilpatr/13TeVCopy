@@ -111,6 +111,9 @@ public:
 
 
     bool pass0LepPresel = (selectedLeptons.size() == 0 && nVetoedTaus == 0 && nVetoedLeptons == 0) && (cutMET.pt() >= 200 && nJets >= 5 && nBJets >= 1);
+    bool pass0LepLoosePresel  (cutMET.pt() >= 200 && nJets >= 5 && nBJets >= 1);
+
+
     bool pass1LepPresel = selectedLeptons.size() == 1 && PhysicsUtilities::absDeltaPhi(cutMET,*selectedLeptons[0]) < 1  && (cutMET.pt() >= 200 && cleannJets >= 5 && cleannBJets >= 1);
 
     VariableCalculator0L vars;
@@ -119,11 +122,13 @@ public:
     eventPlots.rewind();
 
     eventPlots("0LepPre__", pass0LepPresel);
+    eventPlots("0LepNoVetoPre__", pass0LepLoosePresel);
     eventPlots("1LepPre__", pass1LepPresel);
     eventPlots("1LepTightPre__", pass1LepPresel && passLepSel);
     ++eventPlots;
     eventPlots("",vars.dPhiMET12 > 1 && vars.dPhiMET3 > .5 && vars.mtB01MET > 175);
     eventPlots("noMTB__",vars.dPhiMET12 > 1 && vars.dPhiMET3 > .5);
+    eventPlots("noDPHi__",true);
 
     ++eventPlots;
     eventPlots("nTops_incl__",true);
@@ -140,7 +145,7 @@ public:
     eventPlots("W__", process == defaults::SINGLE_W);
     eventPlots("ttbar__", process == defaults::TTBAR);
 
-
+    eventPlots.fill(1,weight,"nEvents",";nEvents", 1, .5,1.5);
     eventPlots.fill(cutMET.pt(),weight,"met",";MET", 20, 100,900);
     eventPlots.fill(cutMET.pt(),weight,"coarse_met",";MET", 5, 200,700);
 
