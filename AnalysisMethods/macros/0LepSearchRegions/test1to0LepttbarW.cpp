@@ -19,7 +19,22 @@ nohup root -b -q '0LepSearchRegions/preselectionSkimmer3.C+("/eos/uscms/store/us
 
 
 
-root -b -q '0LepSearchRegions/testPlots.C+("ttbarW.root")' &
+root -b -q '0LepSearchRegions/test1to0LepttbarW.C+("ttbarW.root")' &
+    
+{
+    o = new TObjArray;
+    TString sel[] ={"0LepNoVetoPre__noDPHi__nTops_incl__nBs_geq1__.*__nEvents", "0LepPre__noDPHi__nTops_incl__nBs_geq1__.*__nEvents",
+"0LepPre__noMTB__nTops_incl__nBs_geq1__.*__nEvents","0LepPre__nTops_incl__nBs_geq1__.*__nEvents", ""};
+
+
+for(unsigned int iS = 0; sel[iS][0]; ++iS){
+    p = new Plot(sel[iS]);
+    o->Add(p);
+    
+    }
+    Pint::drawAll(o,"","",":i");
+}    
+    
 
 {
 // TString pre = "incl";
@@ -192,7 +207,7 @@ for(unsigned int iT = 0; nTs[iT][0]; ++iT)
     
     for(unsigned int iB = 1; iB <= 5; ++iB){
             for(unsigned int ibT = 0; nBs[ibT][0]; ++ibT)
-            for(unsigned int iT = 0; nTs[iT][0]; ++iT){
+            for(unsigned int iT = 0; nTs[iT][0]; ++iT){                
                 p = new Plot("(" + lepSel +"|" + noLepSel +")__" + nTs[iT] + nBs[ibT]+ "all__coarse_met" );
                 double n1L = p->at(lepSel)->GetBinContent(iB);  if(iB==5) n1L += p->at(lepSel)->GetBinContent(iB +1);                
                 double e1L = p->at(lepSel)->GetBinError(iB)*p->at(lepSel)->GetBinError(iB); if(iB==5) e1L += p->at(lepSel)->GetBinError(iB +1)*p->at(lepSel)->GetBinError(iB +1);
@@ -214,3 +229,53 @@ for(unsigned int iT = 0; nTs[iT][0]; ++iT)
     
     
 }
+
+
+
+
+{
+    TString lepSel = "1LepTightPre";
+    TString noLepSel = "0LepPre";
+    TString nTs[] = {"nTops_eq0__","nTops_geq1__",""};
+    TString nBs[] = {"nBs_eq1__","nBs_gt1__",""};
+    
+    vector<double> dYields;
+    vector<double> mYields;
+    vector<double> uncs;
+    vector<double> uncs1;
+    vector<double> uncs2;
+    vector<TString> names;
+    
+    TH1 * h = new TH1F("scales","",20,-.5,19.5);
+    
+            for(unsigned int ibT = 0; nBs[ibT][0]; ++ibT)
+            for(unsigned int iT = 0; nTs[iT][0]; ++iT){         
+                for(unsigned int iB = 1; iB <= 5; ++iB){
+                       
+                p = new Plot("(" + lepSel +"|" + noLepSel +")__" + nTs[iT] + nBs[ibT]+ "all__coarse_met" );
+                double n1L = p->at(lepSel)->GetBinContent(iB);  if(iB==5) n1L += p->at(lepSel)->GetBinContent(iB +1);                
+                double e1L = p->at(lepSel)->GetBinError(iB)*p->at(lepSel)->GetBinError(iB); if(iB==5) e1L += p->at(lepSel)->GetBinError(iB +1)*p->at(lepSel)->GetBinError(iB +1);
+                double n0L = p->at(noLepSel)->GetBinContent(iB); if(iB==5) n0L += p->at(noLepSel)->GetBinContent(iB +1);
+                double e0L = p->at(noLepSel)->GetBinError(iB)*p->at(noLepSel)->GetBinError(iB); if(iB==5) e0L += p->at(noLepSel)->GetBinError(iB +1)*p->at(noLepSel)->GetBinError(iB +1);
+                uncs1.push_back(e1L);
+                uncs2.push_back(e0L);
+                dYields.push_back(n1L);
+                mYields.push_back(n0L);
+                uncs.push_back(TMath::Sqrt( e0L/(n1L*n1L) + e1L*n0L*n0L/(n1L*n1L*n1L*n1L)  ));      
+                names.push_back( TString::Format("%u\t%s\t%s", iB,nBs[ibT].Data(), nTs[iT].Data() )  );  
+            }            
+    }
+    
+    cout << endl;
+    for(unsigned int iB = 0; iB < dYields.size(); ++iB){
+        cout << names[iB] << "\t" << dYields[iB] <<"\t"<< mYields[iB] <<"\t"<<(1.0 +uncs[iB]/mYields[iB]) << endl;
+        h->SetBinContent(iB+1, mYields[iB]/dYields[iB]);
+        h->SetBinError(iB+1, uncs[iB]);
+    }
+    
+    h->Draw();
+    
+    
+}
+
+

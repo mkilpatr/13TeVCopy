@@ -8,11 +8,6 @@
  */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
-#include "AnalysisTools/TreeReader/interface/Defaults.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "AnalysisTools/Parang/interface/Panvariate.h"
-
 using namespace std;
 using namespace ucsbsusy;
 
