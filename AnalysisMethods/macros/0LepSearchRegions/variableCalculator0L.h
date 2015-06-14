@@ -109,9 +109,11 @@ public:
     //, MT2tp1_150        (-1)
     //, MT2tp1_200        (-1)
     //, MT2tp1_250        (-1)
-    , NCTT              (-1)
-    , NCTTstd           (-1)
-    //, DphiTopMET        (-1)
+    , NCTT               (-1)
+    , NCTTstd            (-1)
+    , DphiTopMET0        (-1)
+    , DphiTopMET1        (-1)
+    , DphiTopMET2        (-1)
     , dPhiHtJ12MET       (-1)
     , dPhiHtJ123MET      (-1)
     , dPhiHtJMET         (-1)
@@ -214,10 +216,12 @@ public:
     //MT2tp1_250        = -1;
     NCTT              = -1;
     NCTTstd           = -1;
-    //DphiTopMET        =
-    dPhiHtJ12MET      =-99;
-    dPhiHtJ123MET     =-99;
-    dPhiHtJMET        =-99;
+    DphiTopMET0       = -9;
+    DphiTopMET1       = -9;
+    DphiTopMET2       = -9;
+    dPhiHtJ12MET      = -9;
+    dPhiHtJ123MET     = -9;
+    dPhiHtJMET        = -9;
 
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
@@ -415,11 +419,10 @@ public:
 
     NCTT    = inTops.size();
     NCTTstd = 0; // "standard" tops passing the below selection
-    for (UInt_t i=0; i<inTops.size(); ++i) {
-        if( ApplyCTTSelection(inTops.at(i)) ) ++NCTTstd;
-        DphiTopMET[i] = PhysicsUtilities::deltaPhi(inTops.at(i)->p4(),*inMet);
-    }
-
+    for (UInt_t i=0; i<inTops.size(); ++i) if( ApplyCTTSelection(inTops.at(i)) ) ++NCTTstd;
+    if(inTops.size()>=1) DphiTopMET0 = PhysicsUtilities::deltaPhi(inTops.at(0)->p4(),*inMet);
+    if(inTops.size()>=2) DphiTopMET1 = PhysicsUtilities::deltaPhi(inTops.at(1)->p4(),*inMet);
+    if(inTops.size()>=3) DphiTopMET2 = PhysicsUtilities::deltaPhi(inTops.at(2)->p4(),*inMet);
 
 
   } // processVariables()
@@ -507,7 +510,9 @@ public:
   //float MT2tp1_250;    // mt2
   int   NCTT;           // top
   int   NCTTstd;        // top
-  float DphiTopMET[50]; // top
+  float DphiTopMET0;    // top
+  float DphiTopMET1;    // top
+  float DphiTopMET2;    // top
   float dPhiHtJ12MET;
   float dPhiHtJ123MET;
   float dPhiHtJMET;
