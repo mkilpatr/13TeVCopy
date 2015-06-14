@@ -31,44 +31,34 @@ import os
 import sys 
 import time 
 from ConfigParser import SafeConfigParser
-  
-# ===== user defined stuff =====
-
-#sigPoints = ['T2tt_850_100','T2tt_650_325','T1tttt_1500_100','T1tttt_1200_800'] 
-
-# method choices: HybridNew, ProfileLikelihood, Asymptotic
-#limitMethod = 'Asymptotic'
-
-# you probably don't need to change this unless you want different directory names
-#saveLocation = 'datacards/'+subdir+'/'  # this should be the same as the one in makeDatacards.py
-#outputLocation = 'limitRootFiles/'+subdir+'_'+limitMethod+'/' # place to move all the output files from running the limits
-
-##### ##### ##### ##### ##### #####
-#####  define some functions  #####
-##### ##### ##### ##### ##### #####
 
 def main():
-  # to get the subdirectory
+  # to get the config file
+  configFile = 'dc_0l_setup.conf'
   args = sys.argv[1:] 
-  if len(args)<1:
-    print "You need to give me a subdirectory! (the same one from makeDatacards.py)"
-    print "$ ./runLimits subdir_from_makeDatacards"
+  if len(args)>=1:
+    configFile = args[0]
+  if os.path.exists(configFile):
+    print 'running with config file', configFile
+  else:
+    print 'you are trying to use a config file ('+configFile+') that does not exist!'
     sys.exit(1)
-  subdir = args[0]
   configparser = SafeConfigParser()
+  configparser.optionxform = str
   
-  limconfig = DatacardConfig('dc_0l_setup.conf',args[0],configparser)
-  dcconfig.runLimits()
+  limconfig = LimitConfig(configFile,configparser)
+  limconfig.runLimits()
   
-class limitConfig:
+class LimitConfig:
   # setup
-  def __init__(self,conf_file,sub_dir,config_parser):
+  def __init__(self,conf_file,config_parser):
     self.conf_file      = conf_file
     config_parser.read(self.conf_file)
-    self.outputdir      = config_parser.get('config','outputdir') + '/' + sub_dir                      # saveLocation
-    self.limitmethod    = config_parser.get('config','limitmethod')                                    # limitMethod
-    self.limitdir       = config_parser.get('config','limitdir') + '/' + sub_dir+'_'+self.limitmethod  # outputLocation
-    self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')            # sigPoints
+    self.limitmethod    = config_parser.get('config','limitmethod')
+    self.subdir         = config_parser.get('config','subdir')
+    self.datacarddir    = os.path.join( config_parser.get('config','datacarddir'), self.subdir                      )
+    self.limitdir       = os.path.join( config_parser.get('config','limitdir'   ), self.subdir+'_'+self.limitmethod )
+    self.signals        = config_parser.get('signals','samples').replace(' ','').split(',') 
   
   
   def getLimit(self,rootFile):
@@ -80,9 +70,9 @@ class limitConfig:
   # for each signal, combine the datacards for it, run the
   # chosen limit method, then print the significances for
   # eachpoint at the end. 
-  def runLimits():
-    if not os.path.exists(self.outputdir):
-      print self.outputdir, 'does not exist!' 
+  def runLimits(self):
+    if not os.path.exists(self.datacarddir):
+      print self.datacarddir, 'does not exist!' 
       print 'Are you sure you already ran makeDatacards.py?'
       sys.exit(1)
     
@@ -97,13 +87,13 @@ class limitConfig:
       os.makedirs(dummyRunDir)
       os.chdir(dummyRunDir)
         
-      datacardSaveLocation = os.path.join(currentDir,self.outputdir + signal+'/')
+      datacardSaveLocation = os.path.join(currentDir,self.datacarddir,signal)
       datacards = os.listdir(datacardSaveLocation)
       combinedDatacard = 'combined_'+signal+'.txt'
       
       combineDatacardsCommand = 'combineCards.py'
       for datacard in datacards:
-        combineDatacardsCommand += ' ' + datacardSaveLocation+datacard
+        combineDatacardsCommand += ' ' + os.path.join(datacardSaveLocation,datacard)
       combineDatacardsCommand += ' > ' + combinedDatacard
       
       print 'now running:' #DEBUGGING ONLY
@@ -196,6 +186,7 @@ class limitConfig:
       # move any output files to the correct directory
       os.chdir(currentDir)
       dummyFiles = os.listdir(dummyRunDir)
+      outputLocation = os.path.join(currentDir,self.limitdir,signal)
       if not os.path.exists(outputLocation): os.makedirs(outputLocation)
       print '\n'
       print 'moving files to:', outputLocation

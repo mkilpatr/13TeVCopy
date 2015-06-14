@@ -6,26 +6,30 @@ import re
 from ConfigParser import SafeConfigParser
 
 def main():
-    # to get the subdirectory
+    # to get the config file
+    configFile = 'dc_0l_setup.conf'
     args = sys.argv[1:] 
-    if len(args)<1:
-        print "You need to give me a subdirectory! (the same one will be used for runLimits.py and printLimits.py)"
-        print "$ ./runLimits subdir_of_your_choice"
+    if len(args)>=1:
+        configFile = args[0]
+    if os.path.exists(configFile):
+        print 'running with config file', configFile
+    else:
+        print 'you are trying to use a config file ('+configFile+') that does not exist!'
         sys.exit(1)
-    subdir = args[0]
     configparser = SafeConfigParser()
     configparser.optionxform = str
 
-    dcconfig = DatacardConfig('dc_0l_setup.conf',args[0],configparser)
+    dcconfig = DatacardConfig(configFile,configparser)
     dcconfig.produceDatacards()
 
 class DatacardConfig:
     # setup
-    def __init__(self,conf_file,sub_dir,config_parser):
+    def __init__(self,conf_file,config_parser):
         self.conf_file      = conf_file
         config_parser.read(self.conf_file)
         self.treebase       = config_parser.get('config','treelocation')
-        self.outputdir      = config_parser.get('config','outputdir') + '/' + sub_dir
+        self.subdir         = config_parser.get('config','subdir')
+        self.datacarddir    = os.path.join( config_parser.get('config','datacarddir'), self.subdir )
         self.setupbase      = config_parser.get('config','setuplocation')
         self.treename       = config_parser.get('config','treename')
         self.weightname     = config_parser.get('config','weightname')
@@ -67,22 +71,22 @@ class DatacardConfig:
     # First the template card is made with all backgrounds,
     # then the signal points are looped to get the sig numbers.
     def produceDatacards(self):
-        if not os.path.exists(self.outputdir) :
-            os.makedirs(self.outputdir)
+        if not os.path.exists(self.datacarddir) :
+            os.makedirs(self.datacarddir)
         ibin = -1
         for bins in self.allbins :
             print bins
             ibin += 1
             binFileBaseName = self.getFileName(bins)
             binLabel = self.compactbinlist[ibin]
-            templateFile = self.outputdir+'/template'+binFileBaseName+'_template'
+            templateFile = os.path.join( self.datacarddir, 'template'+binFileBaseName+'_template' )
             # first create the template file for this combination of bins
-            fdatacard = open('%s/%s' % (self.setupbase,self.template),'r')
+            fdatacard = open( os.path.join(self.setupbase,self.template), 'r' )
             templateDatacard  = fdatacard.read()
             fdatacard.close()
             datayield = 0
             if self.has_data :
-                dataFile = self.treebase + '/data' + self.filesuffix
+                dataFile = os.path.join( self.treebase, 'data' + self.filesuffix )
                 datayield = self.getNumEvents(dataFile,bins,True)
             # lines to replace placeholders for current bin's template datacard
             # placeholders are left for signal numbers
@@ -97,7 +101,7 @@ class DatacardConfig:
             nBkgEvts = []
             for background in self.backgrounds :
                 ibkg+=1
-                bkgFile = self.treebase + '/' + background + self.filesuffix
+                bkgFile = os.path.join( self.treebase, background+self.filesuffix )
                 lineSBBin    += str(ibin)+'\t\t'
                 lineProcess1 += background+'\t\t'
                 lineProcess2 += str(ibkg+1)+'\t\t'
@@ -154,7 +158,7 @@ class DatacardConfig:
 
             #now loop through the signal files to get the actual datacards
             for signal in self.signals:
-                sigFile = self.treebase + '/' + signal +self.filesuffix
+                sigFile = os.path.join( self.treebase, signal+self.filesuffix )
                 nSig    = self.getNumEvents(sigFile,bins)
 
                 #put signal numbers into the placeholders in the template datacard
@@ -164,10 +168,10 @@ class DatacardConfig:
                 datacard = datacard.replace('SIGRATE',str(nSig   )+'\t')
 
                 #save the current datacard
-                datacardSaveLocation = self.outputdir + '/' + signal +'/'
+                datacardSaveLocation = os.path.join( self.datacarddir, signal )
                 if not os.path.exists(datacardSaveLocation) :
                     os.makedirs(datacardSaveLocation)
-                datacardName = datacardSaveLocation + signal + binFileBaseName
+                datacardName = os.path.join( datacardSaveLocation, signal+binFileBaseName )
                 f = open(datacardName,'w')
                 f.write(datacard)
                 f.close()
