@@ -9,6 +9,7 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
 #endif
 
 using namespace ucsbsusy;
@@ -25,19 +26,24 @@ public :
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("events","analysis tree");
-    outtree->Branch("ScaleFactor",&weight,"ScaleFactor/F");
+    outtree->Branch("weight",&weight,"weight/F");
+    outtree->Branch("GenMET",&GenMET,"GenMET/F");
     outtree->Branch("MET",&MET,"MET/F");
     outtree->Branch("NGenJets",&NGenJets,"NGenJets/I");
     outtree->Branch("NGenBJets",&NGenBJets,"NGenBJets/I");
     outtree->Branch("genBosonPT",&genBosonPT,"genBosonPT/F");
-    outtree->Branch("NVetoLeps",&nVetoedLeptons,"NVetoLeps/I");
-    outtree->Branch("NVetoTaus",&nVetoedTaus,"NVetoTaus/I");
+    outtree->Branch("genBosonEta",&genBosonEta,"genBosonEta/F");
+    outtree->Branch("NVetoLeps",&NVetoLeps,"NVetoLeps/I");
+    outtree->Branch("NVetoTaus",&NVetoTaus,"NVetoTaus/I");
+    outtree->Branch("passLoosePhotons",&passLoosePhotons,"passLoosePhotons/I");
     outtree->Branch("NJets",&nJets,"NJets/I");
+    outtree->Branch("NJ60",&nj60,"NJ60/I");
     outtree->Branch("NBJets",&nBJets,"NBJets/I");
     outtree->Branch("dPhiMET12",&dPhiMET12,"dPhiMET12/F");
     outtree->Branch("dPhiMET3",&dPhiMET3,"dPhiMET3/F");
     outtree->Branch("mtB1MET",&mtB1MET,"mtB1MET/F");
     outtree->Branch("mtB2MET",&mtB2MET,"mtB2MET/F");
+    outtree->Branch("NCTTstd",&NCTTstd,"NCTTstd/I");
 
   }
 
@@ -59,17 +65,20 @@ public :
       }
     }
 
-    // add photon to met
+    // add gen photon to gen met
     if (process == defaults::SINGLE_G)
-      met->p4() += boson->p4();
+      genmet->p4() += boson->p4();
 
     // clean jets
+    nj60 = 0;
     jets.clear(); bJets.clear(); nonBJets.clear();
     for (auto &j : defaultJets->recoJets){
       if (!isGoodJet(j)) continue;
       if (PhysicsUtilities::deltaR2(j, *boson) < 0.16) continue;
 
       jets.push_back(&j);
+
+      if (j.pt()>60) ++nj60;
 
       if(isMediumBJet(j)) bJets.push_back(&j);
       else nonBJets.push_back(&j);
@@ -84,9 +93,28 @@ public :
       if (PhysicsUtilities::deltaR2(j, *boson) < 0.16) continue;
 
       ++NGenJets;
-
-      if (fabs(j.flavor()) == 5)
+      if (fabs(j.flavor()) == JetFlavorInfo::b_jet)
         ++NGenBJets;
+    }
+
+    // clean vetoedLeptons
+    NVetoLeps = 0;
+    for (auto &l : vetoedLeptons){
+      if (PhysicsUtilities::deltaR2(*l, *boson) < 0.16) continue;
+      ++NVetoLeps;
+    }
+    // clean vetoedTaus
+    NVetoTaus = 0;
+    for (auto &ta : vetoedTaus){
+      if (PhysicsUtilities::deltaR2(*ta, *boson) < 0.16) continue;
+      ++NVetoTaus;
+    }
+
+    //count NCTTstd
+    NCTTstd = 0;
+    for (auto &t : cttTops){
+      if ( (t->fJMass()>140.) && (t->fJMass()<250.) && (t->minMass()>50.) && (t->nSubJets()>=3) )
+        ++NCTTstd;
     }
 
   }
@@ -109,10 +137,17 @@ private:
   const int     maxNTaus_  =   0   ;
   const int     maxNLeps_  =   0   ;
 
+  int nj60 = 0;
+  int NVetoLeps = 0;
+  int NVetoTaus = 0;
+  int passLoosePhotons = 0;
+  int NCTTstd = 0;
+  float GenMET = 0;
   float MET = 0;
   int NGenJets = -1;
   int NGenBJets = -1;
   float genBosonPT = 0;
+  float genBosonEta = 0;
 
   float dPhiMET12 = -9;
   float dPhiMET3 = -9;
@@ -135,12 +170,22 @@ void Analyzer::runEvent()
 {
 
   //  // preselection
-  //  if(nVetoedLeptons > 0)  return;
+  //  if(NVetoLeps > 0)  return;
   //  if(met->pt() < metcut_) return;
   //  if(nJets<minNJets_)     return;
   //  if(nBJets < minNBjets_) return;
-  //  if(nVetoedTaus>0)       return;
+  //  if(NVetoTaus>0)       return;
 
+  // constrain the Z/photons within the same eta acceptance
+//  if (fabs(boson->eta())>2.4) return;
+
+  // add photon to met
+  passLoosePhotons = 1;
+  if (process == defaults::SINGLE_G){
+    if (!selectedPhotons.empty())
+      met->p4() += selectedPhotons.front()->p4();
+    else passLoosePhotons = 0;
+  }
 
   vector<RecoJetF*> jetsCSV(jets);
   std::sort(jetsCSV.begin(), jetsCSV.end(), [](const RecoJetF *a, const RecoJetF *b) {
@@ -149,8 +194,10 @@ void Analyzer::runEvent()
 
 
   // fill tree variables
+  GenMET        = genmet->pt();
   MET 				  = met->pt();
   genBosonPT    = boson->pt();
+  genBosonEta   = boson->eta();
   dPhiMET12 = JetKinematics::absDPhiMETJ12(*met,jets);
   dPhiMET3  = JetKinematics::absDPhiMETJ3 (*met,jets);
   if(jetsCSV.size()>0) mtB1MET = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),met->p4());
