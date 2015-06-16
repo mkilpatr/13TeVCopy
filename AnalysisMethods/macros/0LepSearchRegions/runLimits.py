@@ -31,6 +31,8 @@ import os
 import sys 
 import time 
 from ConfigParser import SafeConfigParser
+from ROOT import gROOT,TFile,TTree,TH1D
+gROOT.SetBatch(True)
 
 def main():
   # to get the config file
@@ -62,10 +64,13 @@ class LimitConfig:
   
   
   def getLimit(self,rootFile):
-    rootCommand = 'root -l -q "../getLimitNumbers.C(\\"'+rootFile+'\\")"'
-    output = commands.getoutput(rootCommand)
-    meanAndError = output.split('\n')[-1]
-    return meanAndError
+    file = TFile(rootFile)
+    tree = file.Get('limit')
+    htmp = TH1D('htmp','htmp',1,0,10000)
+    mean = htmp.GetMean()
+    error = htmp.GetError()
+    output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
+    return output
 
   # for each signal, combine the datacards for it, run the
   # chosen limit method, then print the significances for

@@ -1,9 +1,10 @@
 #! /usr/bin/python
 import os
 import sys
-import commands
 import re
 from ConfigParser import SafeConfigParser
+from ROOT import gROOT,TFile,TTree,TH1D
+gROOT.SetBatch(True)
 
 def main():
     # to get the config file
@@ -51,7 +52,6 @@ class DatacardConfig:
         for var in config_parser.options('bins') :
             self.varnames.append(var)
             self.binedges.append(config_parser.get('bins',var).replace(' ','').split(','))
-
         self.allbins = self.expandBins(self.varnames,self.binedges)
 
         # assign shorthand bin labels to all of them
@@ -73,6 +73,8 @@ class DatacardConfig:
     def produceDatacards(self):
         if not os.path.exists(self.datacarddir) :
             os.makedirs(self.datacarddir)
+
+        # loop over all bins
         ibin = -1
         for bins in self.allbins :
             print bins
@@ -80,14 +82,18 @@ class DatacardConfig:
             binFileBaseName = self.getFileName(bins)
             binLabel = self.compactbinlist[ibin]
             templateFile = os.path.join( self.datacarddir, 'template'+binFileBaseName+'_template' )
+
             # first create the template file for this combination of bins
             fdatacard = open( os.path.join(self.setupbase,self.template), 'r' )
             templateDatacard  = fdatacard.read()
             fdatacard.close()
+
+            # compute data yield if applicable
             datayield = 0
             if self.has_data :
                 dataFile = os.path.join( self.treebase, 'data' + self.filesuffix )
                 datayield = self.getNumEvents(dataFile,bins,True)
+
             # lines to replace placeholders for current bin's template datacard
             # placeholders are left for signal numbers
             lineSBin     = 'bin\t\t'       + str(ibin)+'\t'  
@@ -96,7 +102,8 @@ class DatacardConfig:
             lineProcess1 = 'process\t'     + 'susy\t\t'
             lineProcess2 = 'process\t'     + '0\t\t'
             lineRate     = 'rate\t'        + 'SIGRATE'
-            #loop through backgrounds to get numbers 
+
+            # loop through backgrounds to get yields
             ibkg = -1
             nBkgEvts = []
             for background in self.backgrounds :
@@ -108,15 +115,17 @@ class DatacardConfig:
                 nevts = self.getNumEvents(bkgFile,bins)
                 nBkgEvts.append(nevts)
                 lineRate     += str(nevts)+'\t'
+
             # fill uncertainties
             # for now ignore differences in systematics for different signal samples
-            lineSys      = ''
+            lineSys = ''
             nUncs = 0
             if self.usedummyuncs :
-                lineSysSig  = 'sysSig\tlnN\t' + str(self.getDummyUncertainties('signal',bins)) + '\t'
+            # flat uncertainties
+                lineSysSig = 'sysSig\tlnN\t' + str(self.getDummyUncertainties('signal',bins)) + '\t'
                 nUncs += 1
                 ibkg = -1
-                lineSysBkg  = ''
+                lineSysBkg = ''
                 for background in self.backgrounds :
                     ibkg += 1
                     lineSysSig += '-\t'
@@ -124,21 +133,22 @@ class DatacardConfig:
                     if ibkg > 0 :
                         for ibef in range(ibkg) :
                             lineSysBkg += '-\t'
-                    lineSysBkg   += str(self.getDummyUncertainties('bkg',bins))+'\t'
+                    lineSysBkg += str(self.getDummyUncertainties('bkg',bins))+'\t'
                     if ibkg < len(self.backgrounds) :
                         for iaft in range(len(self.backgrounds) - ibkg - 1) :
                             lineSysBkg += '-\t'
-                    lineSysBkg   += '\n'
+                    lineSysBkg += '\n'
                     nUncs += 1
                 lineSys += lineSysSig + '\n' + lineSysBkg
             else :
+            # fill uncertainties according to values defined in uncertainty config files
                 for uncname,unc in self.uncertainties.iteritems() :
                     if not unc.vals.has_key(binLabel) and not unc.vals.has_key('all') :
                         continue
                     nUncs += 1
                     lineSys += self.getUncertaintyLine(uncname,unc,binLabel,nBkgEvts)
 
-            #put current lines into the placeholders in the template datacard
+            # put current lines into the placeholders in the template datacard
             templateDatacard = templateDatacard.replace('IMAX'    ,'1'         ) # need to change if more bins are put into one datacard
             templateDatacard = templateDatacard.replace('JMAX'    ,str(len(self.backgrounds))  )
             templateDatacard = templateDatacard.replace('KMAX'    ,str(nUncs)  )
@@ -151,23 +161,23 @@ class DatacardConfig:
             templateDatacard = templateDatacard.replace('RATE'    ,lineRate    )
             templateDatacard = templateDatacard.replace('SYS\n'   ,lineSys     )
 
-            #save the template datacard 
+            # save the template datacard 
             f = open(templateFile,'w')
             f.write(templateDatacard)
             f.close()
 
-            #now loop through the signal files to get the actual datacards
+            # now loop through the signal files to get the actual datacards
             for signal in self.signals:
                 sigFile = os.path.join( self.treebase, signal+self.filesuffix )
                 nSig    = self.getNumEvents(sigFile,bins)
 
-                #put signal numbers into the placeholders in the template datacard
+                # put signal numbers into the placeholders in the template datacard
                 fdatacard = open(templateFile,'r')
                 datacard  = fdatacard.read()
                 fdatacard.close()
                 datacard = datacard.replace('SIGRATE',str(nSig   )+'\t')
 
-                #save the current datacard
+                # save the current datacard
                 datacardSaveLocation = os.path.join( self.datacarddir, signal )
                 if not os.path.exists(datacardSaveLocation) :
                     os.makedirs(datacardSaveLocation)
@@ -223,15 +233,16 @@ class DatacardConfig:
         projectvar = bins[0][0]
         if not isdata :
             cutstr = '('+str(self.lumiscale)+'*'+self.weightname+'*('+cutstr+'))'
-        rootCommand = 'root -l -b -q "getBinNumbers.C( \\"'+filename+'\\" , \\"'+self.treename+'\\" , \\"'+cutstr+'\\" , \\"'+projectvar+'\\" )"'
-        output = commands.getoutput(rootCommand)
-        output = output.split('\n')[-1]  # only look at the last line which should have the number of events
-        # note: it's possible the next line may need tweaking if your version of root formats things too differently
-        output = output.replace('(double)','') # (double)123.4e+00 -> 123.4e+00
+
+        file = TFile(filename)
+        tree = file.Get(self.treename)
+        htmp = TH1D('htmp','htmp',1,0,10000)
+        tree.Project('htmp',projectvar,cutstr)
+        rate = htmp.Integral(0,2)
+
         if isdata :
-            return int(output)
-        else :
-            return float(output)
+            return int(rate)
+        return rate
 
     def getDummyUncertainties(self,procname,bins):
       """Dummy function to get the uncertanties. It returns static numbers for now. Will need to be filled in later. 
@@ -326,7 +337,7 @@ class DatacardConfig:
             ibkg += 1
             if not isglobal and unc.vals[binlabel].has_key(background) :
                 if unc.type == 'gmN' :
-                    uncline += ('%4.2f\t\t' % float(nbkgevts[ibkg]/float(unc.cr_nevts[binlabel])))
+                    uncline += ('%6.5f\t\t' % float(nbkgevts[ibkg]/float(unc.cr_nevts[binlabel])))
                 else :
                     uncline += ('%4.2f\t\t' % unc.vals[binlabel][background])
             elif isglobal and unc.vals['all'].has_key(background) :
