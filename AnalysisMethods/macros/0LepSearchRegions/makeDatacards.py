@@ -3,6 +3,7 @@ import os
 import sys
 import re
 from ConfigParser import SafeConfigParser
+from collections import OrderedDict
 from ROOT import gROOT,TFile,TTree,TH1D
 gROOT.SetBatch(True)
 
@@ -17,7 +18,7 @@ def main():
     else:
         print 'you are trying to use a config file ('+configFile+') that does not exist!'
         sys.exit(1)
-    configparser = SafeConfigParser()
+    configparser = SafeConfigParser(dict_type=OrderedDict)
     configparser.optionxform = str
 
     dcconfig = DatacardConfig(configFile,configparser)
@@ -44,7 +45,7 @@ class DatacardConfig:
         self.has_data       = config_parser.getboolean('config','havedata')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
         self.backgrounds    = config_parser.get('backgrounds','samples').replace(' ','').split(',')
-        self.colwidth       = 25
+        self.colwidth       = 30
 
         # get expanded binning with all allowed combinations
         self.varnames = []
@@ -56,10 +57,21 @@ class DatacardConfig:
 
         # assign shorthand bin labels to all of them
         self.compactbinlist = []
+        self.binmap = {}
         for bin in self.allbins :
             label = 'bin'
             label += self.getBinName(bin,True)
             self.compactbinlist.append(label)
+            self.binmap[label] = bin
+
+        # get information about control regions
+        self.controlregions = {}
+        for cr in config_parser.options('control_regions') :
+            crinput = config_parser.get('control_regions',cr).replace(' ','').split(',')
+            datafile = os.path.join( self.treebase, crinput[0] + self.filesuffix )
+            label = crinput[0].split('_')[-1]
+            selection = crinput[1] if len(crinput) > 1 else self.basesel
+            self.controlregions[cr] = ControlRegion(datafile,label,selection)
 
         # load uncertainty files
         self.uncvalfiles = [f for f in os.listdir(self.setupbase) if not f.find(self.uncfileprefix) == -1]
@@ -145,8 +157,10 @@ class DatacardConfig:
                 for uncname,unc in self.uncertainties.iteritems() :
                     if not unc.vals.has_key(binLabel) and not unc.vals.has_key('all') :
                         continue
-                    nUncs += 1
-                    lineSys += self.getUncertaintyLine(uncname,unc,binLabel,nBkgEvts)
+                    uncline = self.getUncertaintyLine(uncname,unc,binLabel,nBkgEvts)
+                    lineSys += uncline
+                    if not uncline == '' :
+                        nUncs += 1
 
             # put current lines into the placeholders in the template datacard
             templateDatacard = templateDatacard.replace('IMAX'    ,'1'         ) # need to change if more bins are put into one datacard
@@ -225,10 +239,10 @@ class DatacardConfig:
         name = self.getBinName(bins,False) + '.txt'
         return name
     
-    def getNumEvents(self,filename,bins,isdata=False):
+    def getNumEvents(self,filename,bins,isdata=False,basestr=''):
         """Returns the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
         """
-        cutstr = self.basesel
+        cutstr = self.basesel if basestr == '' else basestr
         cutstr += self.getCutString(bins)
         projectvar = bins[0][0]
         if not isdata :
@@ -303,7 +317,7 @@ class DatacardConfig:
                     binname = entries[0]
                     uncname = entries[1]
                     if not self.uncertainties.has_key(uncname) :
-                        print "Didn't find uncertainty ",uncname
+                        print 'Didn\'t find uncertainty ',uncname
                         continue
                     unc = self.uncertainties[uncname]
                     samples = entries[2].split(',')
@@ -312,8 +326,16 @@ class DatacardConfig:
                             if not unc.vals.has_key(binname) :
                                 unc.vals[binname] = {}
                             if unc.type == 'gmN' :
-                                unc.cr_nevts[binname] = int(entries[3])
-                                unc.vals[binname][samp] = float(entries[4])
+                                crname = uncname.split('_')[0]
+                                if not self.controlregions.has_key(crname) :
+                                    continue
+                                cr = self.controlregions[crname]
+                                crnevts = 0
+                                if self.has_data :
+                                    crnevts = self.getNumEvents(cr.datafile, self.binmap[binname], True, cr.selection)
+                                else :
+                                    crnevts = int(self.getNumEvents(cr.datafile, self.binmap[binname], False, cr.selection))
+                                unc.cr_nevts[binname] = max(crnevts,1)
                             else :
                                 unc.vals[binname][samp] = float(entries[3])
 
@@ -324,6 +346,9 @@ class DatacardConfig:
         uncline = uncname.ljust(self.colwidth)
         uncline += unc.type
         if unc.type == 'gmN' :
+            if not unc.cr_nevts.has_key(binlabel) :
+                print 'Control region yields not loaded for ',uncname
+                return ''
             uncline += ' '+str(unc.cr_nevts[binlabel])
         uncline += '\t\t'
         if not isglobal and unc.vals[binlabel].has_key('signal') :
@@ -346,6 +371,12 @@ class DatacardConfig:
                 uncline += '-\t\t'
         uncline += '\n'
         return uncline
+
+class ControlRegion:
+    def __init__(self,datafile,label,selection):
+        self.datafile = datafile
+        self.label = label
+        self.selection = selection
 
 class Uncertainty:
     def __init__(self,name,type):
