@@ -251,8 +251,8 @@ void processZeroLeptonSlimmed(      TString sname      = "ttbar" // sample name
                      , const bool    isMC       = true    // data or MC
                      , const TString fname      = "ttbar_1_ntuple_wgtxsec.root" // path of file to be processed
                      , const double  xsec       = 831.76    // cross section to be used with this file
-                     , const string  outputdir  = "plots/"  // directory to which files with histograms will be written
-                     , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/270515/merged/"
+                     , const string  outputdir  = "plots/testing/"  // directory to which files with histograms will be written
+                     , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/080615/merged/"
                      )
 {
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -268,10 +268,15 @@ void processZeroLeptonSlimmed(      TString sname      = "ttbar" // sample name
   BaseTreeAnalyzer::ConfigPars pars;
   pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; // BaseTreeAnalyzer::PICKYJETS;
   pars.minJetPt = 20;
+  // vetoed leptons     isgoodpogelectron     ismultiisovetoelectronl     ismultiisovetoelectronvl
+  pars.minVetoEPt = 5;
+  pars.vetoedElectron = &ElectronF::ismultiisovetoelectronl;
+  pars.minVetoMuPt = 5;
+  pars.vetoedMuon = &MuonF::ismultiisovetomuonl;
 
   Analyzer a(fullname, "Events", isMC, &pars, xsec, sname, outputdir); // declare analyzer
-  a.analyze(10000); // run: Argument is frequency of printout
-  //a.analyze(1000,100000); // for testing
+  //a.analyze(10000); // run: Argument is frequency of printout
+  a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()

@@ -8,8 +8,9 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     const TString outputdir="../run/plots/")
 {
 
-  TString all          = "1==1";
-  TString preselection = "NVetoLeps==0 && NVetoTaus==0 && NJets>=5 && NBJets>=1 && MET>=200";
+  TString etaCut       = "genBosonEta < 2.4 && genBosonEta>-2.4 && passLoosePhotons==1";
+  TString all          = etaCut;
+  TString preselection = all + " && NVetoLeps==0 && NVetoTaus==0 && NJets>=5 && NBJets>=1 && MET>200";
   TString baseline     = preselection + " && dPhiMET12>1 && dPhiMET3>0.5 && mtB1MET>175 && mtB2MET>175";
 
 
@@ -19,8 +20,8 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->setPlotType(PlotStuff::NORMCOMP);
     myPlots->setWriteHists();
     myPlots->setOutfile("gzratio.root");
-    myPlots->setFormat("pdf");
-    myPlots->setWgtVar("ScaleFactor");
+    myPlots->setFormat("png");
+    myPlots->setWgtVar("weight");
     myPlots->setDrawOption("histE");
 
 
@@ -45,7 +46,7 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addTreeVar("pre_genPT_NB_ge2", "genBosonPT", preselection+"&& NGenBJets>=2", "boson PT [GeV]", 18, 100, 1000);
 
 
-    myPlots->plot();
+//    myPlots->plot();
     delete myPlots;
   }
 
@@ -76,7 +77,7 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addCompSet("pre_genPT_NJets", njnames, njlabels);
     myPlots->addCompSet("pre_genPT_NBJets", nbnames, nblabels);
 
-    myPlots->plot();
+//    myPlots->plot();
     delete myPlots;
   }
 
@@ -87,10 +88,12 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->setPlotSource(PlotStuff::TREES);
     myPlots->setPlotType(PlotStuff::COMP);
     myPlots->setFormat("pdf");
-    myPlots->setWgtVar("NewSF");
+    myPlots->setUnitScale();
+    myPlots->setWgtVar("ScaleFactor");
     myPlots->setDrawOption("histE");
 
     myPlots->addTreeVar("genBosonPT", "genBosonPT", all, "boson PT [GeV]", 18, 100, 1000);
+    myPlots->addTreeVar("genMET", "GenMET", all, "genMET [GeV]", 18, 100, 1000);
     myPlots->addTreeVar("numGenJet", "NGenJets", all, "N(gen ak4 Jets)", 10, -0.5, 9.5);
     myPlots->addTreeVar("numGenBJets", "NGenBJets", all, "N(gen ak4 BJets)", 5, -0.5, 4.5);
     myPlots->addTreeVar("MET", "MET", all, "MET [GeV]", 18, 100, 1000);
@@ -100,9 +103,11 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addTreeVar("dPhiMET3","dPhiMET3", all, "dPhiMET3", 30, 0, 3);
     myPlots->addTreeVar("mtB1MET", "mtB1MET", all, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
     myPlots->addTreeVar("mtB2MET", "mtB2MET", all, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+    myPlots->addTreeVar("NCTTstd", "NCTTstd", all, "NCTTstd", 5, -0.5, 4.5);
 
 
     myPlots->addTreeVar("pre_genBosonPT", "genBosonPT", preselection, "boson PT [GeV]", 18, 100, 1000);
+    myPlots->addTreeVar("pre_genMET", "GenMET", preselection, "genMET [GeV]", 18, 100, 1000);
     myPlots->addTreeVar("pre_numGenJet", "NGenJets", preselection, "N(gen ak4 Jets)", 10, -0.5, 9.5);
     myPlots->addTreeVar("pre_numGenBJets", "NGenBJets", preselection, "N(gen ak4 BJets)", 5, -0.5, 4.5);
     myPlots->addTreeVar("pre_MET", "MET", preselection, "MET [GeV]", 18, 100, 1000);
@@ -112,20 +117,22 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addTreeVar("pre_dPhiMET3","dPhiMET3", preselection, "dPhiMET3", 30, 0, 3);
     myPlots->addTreeVar("pre_mtB1MET", "mtB1MET", preselection, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
     myPlots->addTreeVar("pre_mtB2MET", "mtB2MET", preselection, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+    myPlots->addTreeVar("pre_NCTTstd", "NCTTstd", preselection, "NCTTstd", 5, -0.5, 4.5);
 
-    myPlots->addTreeVar("baseline_genBosonPT", "genBosonPT", baseline, "boson PT [GeV]", 18, 100, 1000);
-    myPlots->addTreeVar("baseline_numGenJet", "NGenJets", baseline, "N(gen ak4 Jets)", 10, -0.5, 9.5);
-    myPlots->addTreeVar("baseline_numGenBJets", "NGenBJets", baseline, "N(gen ak4 BJets)", 5, -0.5, 4.5);
-    myPlots->addTreeVar("baseline_MET", "MET", baseline, "MET [GeV]", 18, 100, 1000);
-    myPlots->addTreeVar("baseline_numJets", "NJets", baseline, "N(ak4Jets)", 10, -0.5, 9.5);
-    myPlots->addTreeVar("baseline_numBJets", "NBJets", baseline, "N(ak4 BJets)", 5, -0.5, 4.5);
-    myPlots->addTreeVar("baseline_dPhiMET12","dPhiMET12", baseline, "dPhiMET12", 30, 0, 3);
-    myPlots->addTreeVar("baseline_dPhiMET3","dPhiMET3", baseline, "dPhiMET3", 30, 0, 3);
-    myPlots->addTreeVar("baseline_mtB1MET", "mtB1MET", baseline, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
-    myPlots->addTreeVar("baseline_mtB2MET", "mtB2MET", baseline, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+//    myPlots->addTreeVar("baseline_genBosonPT", "genBosonPT", baseline, "boson PT [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_genMET", "GenMET", baseline, "genMET [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_numGenJet", "NGenJets", baseline, "N(gen ak4 Jets)", 10, -0.5, 9.5);
+//    myPlots->addTreeVar("baseline_numGenBJets", "NGenBJets", baseline, "N(gen ak4 BJets)", 5, -0.5, 4.5);
+//    myPlots->addTreeVar("baseline_MET", "MET", baseline, "MET [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_numJets", "NJets", baseline, "N(ak4Jets)", 10, -0.5, 9.5);
+//    myPlots->addTreeVar("baseline_numBJets", "NBJets", baseline, "N(ak4 BJets)", 5, -0.5, 4.5);
+//    myPlots->addTreeVar("baseline_dPhiMET12","dPhiMET12", baseline, "dPhiMET12", 30, 0, 3);
+//    myPlots->addTreeVar("baseline_dPhiMET3","dPhiMET3", baseline, "dPhiMET3", 30, 0, 3);
+//    myPlots->addTreeVar("baseline_mtB1MET", "mtB1MET", baseline, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
+//    myPlots->addTreeVar("baseline_mtB2MET", "mtB2MET", baseline, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
 
 
-//    myPlots->plot();
+    myPlots->plot();
     delete myPlots;
   }
 
@@ -134,10 +141,11 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->setPlotSource(PlotStuff::TREES);
     myPlots->setPlotType(PlotStuff::NORMCOMP);
     myPlots->setFormat("pdf");
-    myPlots->setWgtVar("NewSF");
+    myPlots->setWgtVar("ScaleFactor");
     myPlots->setDrawOption("histE");
 
     myPlots->addTreeVar("genBosonPT", "genBosonPT", all, "boson PT [GeV]", 18, 100, 1000);
+    myPlots->addTreeVar("genMET", "GenMET", all, "genMET [GeV]", 18, 100, 1000);
     myPlots->addTreeVar("numGenJet", "NGenJets", all, "N(gen ak4 Jets)", 10, -0.5, 9.5);
     myPlots->addTreeVar("numGenBJets", "NGenBJets", all, "N(gen ak4 BJets)", 5, -0.5, 4.5);
     myPlots->addTreeVar("MET", "MET", all, "MET [GeV]", 18, 100, 1000);
@@ -147,9 +155,11 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addTreeVar("dPhiMET3","dPhiMET3", all, "dPhiMET3", 30, 0, 3);
     myPlots->addTreeVar("mtB1MET", "mtB1MET", all, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
     myPlots->addTreeVar("mtB2MET", "mtB2MET", all, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+    myPlots->addTreeVar("NCTTstd", "NCTTstd", all, "NCTTstd", 5, -0.5, 4.5);
 
 
     myPlots->addTreeVar("pre_genBosonPT", "genBosonPT", preselection, "boson PT [GeV]", 18, 100, 1000);
+    myPlots->addTreeVar("pre_genMET", "GenMET", preselection, "genMET [GeV]", 18, 100, 1000);
     myPlots->addTreeVar("pre_numGenJet", "NGenJets", preselection, "N(gen ak4 Jets)", 10, -0.5, 9.5);
     myPlots->addTreeVar("pre_numGenBJets", "NGenBJets", preselection, "N(gen ak4 BJets)", 5, -0.5, 4.5);
     myPlots->addTreeVar("pre_MET", "MET", preselection, "MET [GeV]", 18, 100, 1000);
@@ -159,19 +169,21 @@ void plotPhotonZTrees(const TString conffile="runPhotonZ.conf",
     myPlots->addTreeVar("pre_dPhiMET3","dPhiMET3", preselection, "dPhiMET3", 30, 0, 3);
     myPlots->addTreeVar("pre_mtB1MET", "mtB1MET", preselection, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
     myPlots->addTreeVar("pre_mtB2MET", "mtB2MET", preselection, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+    myPlots->addTreeVar("pre_NCTTstd", "NCTTstd", preselection, "NCTTstd", 5, -0.5, 4.5);
 
-    myPlots->addTreeVar("baseline_genBosonPT", "genBosonPT", baseline, "boson PT [GeV]", 18, 100, 1000);
-    myPlots->addTreeVar("baseline_numGenJet", "NGenJets", baseline, "N(gen ak4 Jets)", 10, -0.5, 9.5);
-    myPlots->addTreeVar("baseline_numGenBJets", "NGenBJets", baseline, "N(gen ak4 BJets)", 5, -0.5, 4.5);
-    myPlots->addTreeVar("baseline_MET", "MET", baseline, "MET [GeV]", 18, 100, 1000);
-    myPlots->addTreeVar("baseline_numJets", "NJets", baseline, "N(ak4Jets)", 10, -0.5, 9.5);
-    myPlots->addTreeVar("baseline_numBJets", "NBJets", baseline, "N(ak4 BJets)", 5, -0.5, 4.5);
-    myPlots->addTreeVar("baseline_dPhiMET12","dPhiMET12", baseline, "dPhiMET12", 30, 0, 3);
-    myPlots->addTreeVar("baseline_dPhiMET3","dPhiMET3", baseline, "dPhiMET3", 30, 0, 3);
-    myPlots->addTreeVar("baseline_mtB1MET", "mtB1MET", baseline, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
-    myPlots->addTreeVar("baseline_mtB2MET", "mtB2MET", baseline, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
+//    myPlots->addTreeVar("baseline_genBosonPT", "genBosonPT", baseline, "boson PT [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_genMET", "GenMET", baseline, "genMET [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_numGenJet", "NGenJets", baseline, "N(gen ak4 Jets)", 10, -0.5, 9.5);
+//    myPlots->addTreeVar("baseline_numGenBJets", "NGenBJets", baseline, "N(gen ak4 BJets)", 5, -0.5, 4.5);
+//    myPlots->addTreeVar("baseline_MET", "MET", baseline, "MET [GeV]", 18, 100, 1000);
+//    myPlots->addTreeVar("baseline_numJets", "NJets", baseline, "N(ak4Jets)", 10, -0.5, 9.5);
+//    myPlots->addTreeVar("baseline_numBJets", "NBJets", baseline, "N(ak4 BJets)", 5, -0.5, 4.5);
+//    myPlots->addTreeVar("baseline_dPhiMET12","dPhiMET12", baseline, "dPhiMET12", 30, 0, 3);
+//    myPlots->addTreeVar("baseline_dPhiMET3","dPhiMET3", baseline, "dPhiMET3", 30, 0, 3);
+//    myPlots->addTreeVar("baseline_mtB1MET", "mtB1MET", baseline, "m_{T}(B1,MET) [GeV]", 20, 0, 1000);
+//    myPlots->addTreeVar("baseline_mtB2MET", "mtB2MET", baseline, "m_{T}(B2,MET) [GeV]", 20, 0, 1000);
 
-//    myPlots->plot();
+    myPlots->plot();
     delete myPlots;
   }
 
