@@ -11,6 +11,7 @@
 #ifndef ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
 #define ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
 
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
@@ -27,6 +28,13 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "DataFormats/Math/interface/LorentzVector.h"
+#include "TLorentzVector.h"
+#include "Math/VectorUtil.h"
+#include <fastjet/JetDefinition.hh>
+#include <fastjet/PseudoJet.hh>
+#include "fastjet/tools/Filter.hh"
+#include <fastjet/ClusterSequence.hh>
+#include <fastjet/ClusterSequenceArea.hh>
 
 //typedef math::XYZTLorentzVector LorentzVector;
 typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
@@ -63,6 +71,9 @@ namespace ucsbsusy {
       void fill();
       void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
       float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
+      double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Electron ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only);
+      double getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton);
+      double LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets);
 
     private :
       const EventInfoFiller * evtInfoFiller_;
@@ -132,10 +143,14 @@ namespace ucsbsusy {
       size iLSF2IsoDR_;
       size iLSF3IsoDR_;
       size iLSF4IsoDR_;
+      size iminiiso_;
+      size iptrel_;
 
       // cut-based id - put by hand
       //      size iPassTriggerLID_;
       size iPassCutBaseNonIsoMID_;
+      size iPassLooseIDOnly_;
+
       //      size iPassCutBaseTID_;
 
     public :
@@ -145,11 +160,13 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> > loose_id_decisions_;
       edm::Handle<edm::ValueMap<bool> > medium_id_decisions_;
       edm::Handle<edm::ValueMap<bool> > tight_id_decisions_;
-      edm::Handle<reco::PFJetCollection> ca8Jets;
+      edm::Handle<reco::PFJetCollection> ca8jets;
       edm::Handle<LorentzVectorCollection> lsfSubJets2;
       edm::Handle<LorentzVectorCollection> lsfSubJets3;
       edm::Handle<LorentzVectorCollection> lsfSubJets4;
       edm::Handle<double>                 rho_;
+      edm::Handle<pat::PackedCandidateCollection> pfcands;
+      edm::Handle<pat::JetCollection>         ak4jets_;
 
   };
 

@@ -23,7 +23,7 @@ namespace ucsbsusy {
   {
 
     public :
-      Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), ismvavetomuon_(false) {}
+      Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), isvetomuon_(false) {}
 
       template <class InputCoordSystem>
       Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -40,7 +40,7 @@ namespace ucsbsusy {
 		istight_(inIsTight), ispf_(inIspf),
 		isglobal_(inIsglobal), istracker_(inIstracker),
 		isstandalone_(inIsstandalone), isgoodpogmuon_(false),
-                ismvavetomuon_(false) {}
+                isvetomuon_(false) {}
 
       ~Muon() {}
 
@@ -52,7 +52,7 @@ namespace ucsbsusy {
       bool	istracker() 	const { return istracker_;		}
       bool	isstandalone() 	const { return isstandalone_;		}
       bool	isgoodpogmuon() const { return isgoodpogmuon_;	}
-      bool	ismvavetomuon() const { return ismvavetomuon_;	}
+      bool	isvetomuon() const { return isvetomuon_;	}
 
       void	setIsLoose(bool newType)		{ isloose_ = newType;		}
       void	setIsMedium(bool newType)		{ ismedium_ = newType;		}
@@ -62,7 +62,7 @@ namespace ucsbsusy {
       void	setIsTracker(bool newType)		{ istracker_ = newType;		}
       void	setIsStandalone(bool newType)		{ isstandalone_ = newType;	}
       void	setIsGoodPOGMuon(bool flag)		{ isgoodpogmuon_ = flag;	}
-      void	setIsMVAVetoMuon(bool flag)		{ ismvavetomuon_ = flag;	}
+      void	setIsVetoMuon(bool flag)		{ isvetomuon_ = flag;	}
 
     protected :
       bool	isloose_;
@@ -73,7 +73,7 @@ namespace ucsbsusy {
       bool	istracker_;
       bool	isstandalone_;
       bool	isgoodpogmuon_;
-      bool	ismvavetomuon_;
+      bool	isvetomuon_;
 
   };
 

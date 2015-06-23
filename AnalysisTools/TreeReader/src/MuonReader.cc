@@ -34,6 +34,8 @@ MuonReader::MuonReader() : BaseReader(){
   isglobal     = new vector<bool>;
   istracker    = new vector<bool>;
   isstandalone = new vector<bool>;
+  ptrel        = new vector<float>;
+  miniiso      = new vector<float>;
   muonId       = new LeptonId();
 }
 
@@ -64,6 +66,9 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"isGlobal", &isglobal        , true);
     treeReader->setBranchAddress(branchName ,"isTracker", &istracker      , true);
     treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
+    treeReader->setBranchAddress(branchName ,"miniiso", &miniiso          , true);
+    treeReader->setBranchAddress(branchName ,"ptrel", &ptrel              , true);
+
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";
@@ -73,7 +78,6 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
 //--------------------------------------------------------------------------------------------------
 void MuonReader::refresh(){
   if(!(options_ & FILLOBJ)) return;
-
   if(options_ & LOADRECO){
     muons.clear();
     muons.reserve(pt->size());
@@ -92,8 +96,10 @@ void MuonReader::refresh(){
       muons.back().setIsGlobal(isglobal->at(iL));
       muons.back().setIsTracker(istracker->at(iL));
       muons.back().setIsStandalone(isstandalone->at(iL));
+      muons.back().setPtRel(ptrel->at(iL));
+      muons.back().setMiniIso(miniiso->at(iL));
       muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
-      muons.back().setIsMVAVetoMuon(muonId->passMuonId((&muons.back()), muonId->MVAVeto));
+      muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
     }
   }
 }

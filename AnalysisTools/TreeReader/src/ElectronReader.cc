@@ -29,12 +29,19 @@ ElectronReader::ElectronReader() : BaseReader(){
   dz           = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
   mvaiso       = new vector<float> ;
+  ptrel        = new vector<float> ;
+  miniiso      = new vector<float> ;
   mvaidnontrig = new vector<float> ;
   mvaidtrig    = new vector<float> ;
   isveto       = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
+  ismediumid   = new vector<bool>  ;
+  islooseid   = new vector<bool>  ;
   istight      = new vector<bool>  ;
+  miniiso      = new vector<float> ;
+  ptrel        = new vector<float>;
+
   //  passCutBaseMediumID = new vector<bool> ;
   eleId        = new LeptonId();
 }
@@ -67,7 +74,11 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
-    //    treeReader->setBranchAddress(branchName , "passCutBaseMediumId", &passCutBaseMediumId, true);
+    treeReader->setBranchAddress(branchName , "passCutBaseNonIsoMID", &ismediumid, true);
+    treeReader->setBranchAddress(branchName , "passLooseIDOnly", &islooseid, true);
+    treeReader->setBranchAddress(branchName ,"miniiso", &miniiso          , true);
+    treeReader->setBranchAddress(branchName ,"ptrel", &ptrel              , true);
+
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -93,12 +104,16 @@ void ElectronReader::refresh(){
       electrons.back().setMVAIso(mvaiso->at(iL));
       electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
       electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
-      electrons.back().setIsVeto(isveto->at(iL));
+      //      electrons.back().setIsVeto(isveto->at(iL));
       electrons.back().setIsLoose(isloose->at(iL));
+      electrons.back().setIsLooseId(islooseid->at(iL));
       electrons.back().setIsMedium(ismedium->at(iL));
+      electrons.back().setIsMediumId(ismediumid->at(iL));
       electrons.back().setIsTight(istight->at(iL));
-      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MVA));
-      electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
+      electrons.back().setMiniIso(miniiso->at(iL));
+      electrons.back().setPtRel(ptrel->at(iL));
+      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
+      electrons.back().setIsVeto(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
       /*
       // pass pog cut base medium id
       bool tmpPassCutBaseMID = false;

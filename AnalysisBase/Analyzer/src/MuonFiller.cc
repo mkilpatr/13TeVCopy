@@ -42,6 +42,8 @@ MuonFiller::MuonFiller(const int options,
   iisstandalone_ = data.addMulti<bool >(branchName_,"isStandAlone",false);
   iMVAiso_       = data.addMulti<float>(branchName_,"MVAiso",0);
   iismedium_     = data.addMulti<bool >(branchName_,"isMedium",false);
+  iminiiso_      = data.addMulti<float>(branchName_,"miniiso",0);
+  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
 
   if(options_ & FILLIDVARS) {
     inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
@@ -60,11 +62,12 @@ MuonFiller::MuonFiller(const int options,
     ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
+  iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
   string base = getenv("CMSSW_BASE");
-  string muonisomva=base+"/src/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  string muonisomva=base+"/src/AnalysisTools/ObjectSelection/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
   muMVAiso = new LeptonMVA();
   muMVAiso->initialize(muonisomva);
-
+ 
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -74,6 +77,9 @@ void MuonFiller::load(const edm::Event& iEvent)
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
   iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
   FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
+  FileUtilities::enforceGet(iEvent,"packedPFCandidates",pfcands,true);
+  FileUtilities::enforceGet(iEvent,"redCA8",ca8jets,true);
+  FileUtilities::enforceGet(iEvent,"slimmedJets",ak4jets_,true);
   isLoaded_ = true;
 }
 
@@ -92,8 +98,8 @@ void MuonFiller::fill()
     data.fillMulti<int  >(iq_, mu.charge());
 
     assert(evtInfoFiller_->isLoaded());
-    data.fillMulti<float>(id0_, -1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()));
-    data.fillMulti<float>(idz_, mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()));
+    data.fillMulti<float>(id0_, mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0);
+    data.fillMulti<float>(idz_, mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0);
 
     float dbiso = mu.pfIsolationR04().sumChargedHadronPt + max(0.0 , mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5 * mu.pfIsolationR04().sumPUPt);
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
@@ -123,7 +129,7 @@ void MuonFiller::fill()
       data.fillMulti<float>(ipfpuiso_, mu.pfIsolationR04().sumPUPt);
     }
 
-    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
+    //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
     LorentzVector mu_;
     mu_ = mu.p4();
     LorentzVectorCollection lsfSubJets3_;
@@ -132,12 +138,14 @@ void MuonFiller::fill()
       tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
       lsfSubJets3_.push_back(tmpVec);
     }
-    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    //    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    data.fillMulti<float>(iLSF3Iso_  ,LSF(mu_,ca8jets));
     double rhoiso=calculateRhoIso(mu.eta(),mu.pfIsolationR04().sumChargedHadronPt,mu.pfIsolationR04().sumNeutralHadronEt,mu.pfIsolationR04().sumPhotonEt,*rho_);
     double sip3d=fabs(mu.dB(mu.PV3D) / mu.edB(mu.PV3D));
-    data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), lsf3Iso, sip3d, rhoiso));
-    data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,-1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()) ,mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()),mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
-
+    data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), LSF(mu_,ca8jets), sip3d, rhoiso));
+    data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0 , mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0 ,mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
+    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, mu, 0.05, 0.2, 10., false, false));
+    data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, mu ));
   }
   isFilled_ = true;
 
@@ -175,9 +183,8 @@ float MuonFiller::calculateRhoIso(double eta, double pfchargediso, double pfneut
 bool MuonFiller::mediumID(bool isLoose, double pt , double pfdbetaiso, double d0, double dz, bool isGlobal, double nChi2, double trkKink, double chi2Local, double validFrac, double segComp) {
 
   if(isLoose==kFALSE) return kFALSE;
-  if(pfdbetaiso/pt>0.4) return kFALSE;
-  if(fabs(d0)>0.05)  return kFALSE;
-  if(fabs(dz)>0.2)  return kFALSE;
+  if(fabs(d0)>0.02)  return kFALSE;
+  if(fabs(dz)>0.1)  return kFALSE;
   bool goodglobal=kFALSE;
   if(isGlobal && nChi2<3 && trkKink<20 && chi2Local<12) goodglobal=kTRUE;
   double segmentcut=0.451;
@@ -185,3 +192,158 @@ bool MuonFiller::mediumID(bool isLoose, double pt , double pfdbetaiso, double d0
   if(!(validFrac>=0.8 && segComp>=segmentcut))  return kFALSE;
   return kTRUE;
 }
+
+double MuonFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Muon ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only) {
+   if (ptcl.pt()<5.) return 99999.;
+   double deadcone_nh(0.), deadcone_ch(0.), deadcone_ph(0.), deadcone_pu(0.);
+   //   if(ptcl.isElectron()) {                                                                                                                                                                                                             
+   //     if (fabs(ptcl.eta())>1.479) {deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;}
+     //} else if(ptcl.isMuon()) {                                                                                                                                                                                                           
+     deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;                                                                                                                                                 
+     //   } else {                                                                                                                                                                                                                          
+     //deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01; // maybe use muon cones??                                                                                                                           
+     //   }                                                                                          
+                                                                                                                                       
+   double iso_nh(0.); double iso_ch(0.);
+   double iso_ph(0.); double iso_pu(0.);
+   double ptThresh(0.5);
+   //   if(ptcl.isElectron()) ptThresh = 0;
+   double r_iso = max(r_iso_min,min(r_iso_max, kt_scale/ptcl.pt()));
+   for (const pat::PackedCandidate &pfc : *pfcands) {
+     if (abs(pfc.pdgId())<7) continue;
+     double dr = deltaR(pfc, ptcl);
+     if (dr > r_iso) continue;
+     ////////////////// NEUTRALS /////////////////////////                                                                                                                                                                                  
+     if (pfc.charge()==0){
+       if (pfc.pt()>ptThresh) {
+         double wpf(1.);
+         if (use_pfweight){
+           double wpv(0.), wpu(0.);
+           for (const pat::PackedCandidate &jpfc : *pfcands) {
+             double jdr = deltaR(pfc, jpfc);
+             if (pfc.charge()!=0 || jdr<0.00001) continue;
+             double jpt = jpfc.pt();
+             if (pfc.fromPV()>1) wpv *= jpt/jdr;
+             else wpu *= jpt/jdr;
+           }
+           wpv = log(wpv);
+           wpu = log(wpu);
+           wpf = wpv/(wpv+wpu);
+         }
+         /////////// PHOTONS ////////////                                                                                                                                                                                                   
+         if (abs(pfc.pdgId())==22) {
+           if(dr < deadcone_ph) continue;
+           iso_ph += wpf*pfc.pt();
+           /////////// NEUTRAL HADRONS ////////////                                                                                                                                                                                         
+         } else if (abs(pfc.pdgId())==130) {
+           if(dr < deadcone_nh) continue;
+           iso_nh += wpf*pfc.pt();
+         }
+       }
+       ////////////////// CHARGED from PV /////////////////////////                                                                                                                                                                         
+     } else if (pfc.fromPV()>1){
+       if (abs(pfc.pdgId())==211) {
+         if(dr < deadcone_ch) continue;
+         iso_ch += pfc.pt();
+       }
+       ////////////////// CHARGED from PU /////////////////////////                                                                                                                                                                         
+     } else {
+       if (pfc.pt()>ptThresh){
+         if(dr < deadcone_pu) continue;
+         iso_pu += pfc.pt();
+       }
+     }
+   }
+   double iso(0.);
+   if (charged_only){
+     iso = iso_ch;
+   } else {
+     iso = iso_ph + iso_nh;
+     if (!use_pfweight) iso -= 0.5*iso_pu;
+     if (iso>0) iso += iso_ch;
+     else iso = iso_ch;
+   }
+   iso = iso/ptcl.pt();
+   return iso;
+ }
+
+
+
+double MuonFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 20) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+  TLorentzVector closestJetFourVector(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  for (unsigned int i = 0, n = closestJet->numberOfSourceCandidatePtrs(); i < n; ++i) {
+    const pat::PackedCandidate &candidate = dynamic_cast<const pat::PackedCandidate &>(*(closestJet->sourceCandidatePtr(i)));
+    bool isPartOfLepton = false;
+      // muon candidate pointers to the PF candidate is null in miniAOD.
+      // we will match by relative pt difference and deltaR. thresholds at 0.1% and 0.001 in DR were tuned by eye
+      if (abs(candidate.pdgId()) == 13
+	  && fabs(candidate.pt() - lepton.pt()) / lepton.pt() < 0.001
+	  && deltaR(candidate.eta() , candidate.phi(), lepton.eta() , lepton.phi()) < 0.001
+	  ) isPartOfLepton = true;
+    //if the PF candidate is part of the muon, subtract its momentum from the jet momentum
+    if (isPartOfLepton) {
+      closestJetFourVector.SetPxPyPzE( closestJetFourVector.Px() - candidate.px(),
+				       closestJetFourVector.Py() - candidate.py(),
+				       closestJetFourVector.Pz() - candidate.pz(),
+				       closestJetFourVector.E() - candidate.energy());
+    }
+  }
+  TLorentzVector lepFourVector(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  return lepFourVector.Perp(closestJetFourVector.Vect());
+}
+
+double MuonFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
+  double ptmin = 5.0;
+  double deltaRjet=100;
+  int jetnumber=0;
+//Find closest jet
+  for(unsigned int iJ = 0; iJ < ca8jets->size(); ++iJ){
+    const reco::PFJet& j = ca8jets->at(iJ);
+    if(j.pt() < ptmin) continue;
+    LorentzVector jet;
+    jet.SetPxPyPzE(j.px(),j.py(),j.pz(),j.energy());
+    if(deltaR(lep,jet)<deltaRjet) {
+      deltaRjet=deltaR(lep,jet);
+      jetnumber=iJ;
+    }
+  }
+  double deltaRsub=100;
+  double subjetpt=-1;
+  //Create subjets and find the closest one.
+  if(deltaRjet<10){
+    const reco::PFJet& jet = ca8jets->at(jetnumber);
+    std::vector<fastjet::PseudoJet> FJparticles;
+    for (unsigned int k = 0; k < jet.numberOfDaughters(); k++)
+      {
+        const pat::PackedCandidate* this_constituent = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(k));
+        FJparticles.push_back( fastjet::PseudoJet( this_constituent->px(), this_constituent->py(), this_constituent->pz(), this_constituent->energy() ) );
+      }
+    fastjet::JetDefinition jet_def_kt2(fastjet::kt_algorithm, 0.2);
+    fastjet::ClusterSequence clust_seq_kt(FJparticles, jet_def_kt2);
+    std::vector<fastjet::PseudoJet> subjets_kt = sorted_by_pt(clust_seq_kt.inclusive_jets(ptmin));
+    int num_cust_subs_kt = subjets_kt.size();
+    for(int iSJ=0;iSJ<num_cust_subs_kt;iSJ++){
+      LorentzVector subjet;
+      subjet.SetPxPyPzE(subjets_kt[iSJ].px(),subjets_kt[iSJ].py(),subjets_kt[iSJ].pz(),subjets_kt[iSJ].e());
+      if(deltaR(lep,subjet)<deltaRsub) {
+        deltaRsub=deltaR(lep,subjet);
+        subjetpt=subjets_kt[iSJ].pt();
+      }
+    }
+  }
+  return lep.Pt()/subjetpt;
+}
+

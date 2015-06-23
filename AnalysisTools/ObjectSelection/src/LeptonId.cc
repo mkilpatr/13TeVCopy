@@ -201,10 +201,12 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
     return ele->isvetoelectron();
   }
   else if(WP == LOOSE) {
-    return ele->islooseelectron();
+    //   return ele->islooseelectron();
+    return ele->islooseid() && ele->miniiso()<0.2;
   }
   else if(WP == MEDIUM) {
-    return ele->ismediumelectron();
+    //    return ele->ismediumelectron();
+    return ele->ismediumid() && ele->miniiso()<0.1;
   }
   else if(WP == TIGHT) {
     return ele->istightelectron();
@@ -243,7 +245,13 @@ bool LeptonId::passMuonId(MuonF *mu, unsigned int WP)
 {
 
   if(WP == TIGHT) return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
-  else if(WP == MEDIUM) return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
+  else if(WP == MEDIUM){
+    return (mu->ismediummuon() && mu->miniiso()<0.1);
+    // return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
+  }
+  else if(WP==VETO){
+    return (mu->isloosemuon() && fabs(mu->d0())<0.1 && fabs(mu->dz())<0.5  && mu->miniiso()<0.2);
+  }
   else if (WP == MVAVeto) {
     if(fabs(mu->eta())<1.2 && mu->pt()>10) return (mu->ismediummuon() && mu->mvaiso()>-0.2);
     else if(fabs(mu->eta())<1.2 && mu->pt()<10) return (mu->ismediummuon() && mu->mvaiso()>-0.8);

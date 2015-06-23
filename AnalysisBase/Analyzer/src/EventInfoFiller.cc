@@ -25,19 +25,21 @@ EventInfoFiller::EventInfoFiller(
   primaryVertexIndex_(-1),
   met_(0)
 {
-  irun_      = data.add<unsigned int>(branchName_,"run"      ,"i",0);
-  ilumi_     = data.add<unsigned int>(branchName_,"lumi"     ,"i",0);
-  ievent_    = data.add<unsigned int>(branchName_,"event"    ,"i",0);
-  inpv_      = data.add<unsigned int>(branchName_,"npv"      ,"i",0);
-  irho_      = data.add<float>       (branchName_,"rho"      ,"F",0);
-  ipvx_      = data.add<float>       (branchName_,"pv_x"     ,"F",0);
-  ipvy_      = data.add<float>       (branchName_,"pv_y"     ,"F",0);
-  ipvz_      = data.add<float>       (branchName_,"pv_z"     ,"F",0);
-  imetpt_    = data.add<float>       (branchName_,"met_pt"   ,"F",0);
-  imetphi_   = data.add<float>       (branchName_,"met_phi"  ,"F",0);
-  imetsumEt_ = data.add<float>       (branchName_,"met_sumEt","F",0);
-  igenmetpt_ = data.add<float>       (branchName_,"genmet_pt" ,"F",0);
-  igenmetphi_= data.add<float>       (branchName_,"genmet_phi","F",0);
+  irun_      =  data.add<unsigned int>(branchName_,"run"      ,"i",0);
+  ilumi_     =  data.add<unsigned int>(branchName_,"lumi"     ,"i",0);
+  ievent_    =  data.add<unsigned int>(branchName_,"event"    ,"i",0);
+  inpv_      =  data.add<unsigned int>(branchName_,"npv"      ,"i",0);
+  irho_      =  data.add<float>       (branchName_,"rho"      ,"F",0);
+  ipvx_      =  data.add<float>       (branchName_,"pv_x"     ,"F",0);
+  ipvy_      =  data.add<float>       (branchName_,"pv_y"     ,"F",0);
+  ipvz_      =  data.add<float>       (branchName_,"pv_z"     ,"F",0);
+  imetpt_    =  data.add<float>       (branchName_,"met_pt"   ,"F",0);
+  imetphi_   =  data.add<float>       (branchName_,"met_phi"  ,"F",0);
+  imetsumEt_ =  data.add<float>       (branchName_,"met_sumEt","F",0);
+  igenmetpt_ =  data.add<float>       (branchName_,"genmet_pt" ,"F",0);
+  igenmetphi_=  data.add<float>       (branchName_,"genmet_phi","F",0);
+  igoodvertex_= data.add<bool>        (branchName_,"goodvertex","O",false);
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -62,6 +64,11 @@ void EventInfoFiller::load(const edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::fill()
 {
+
+  bool isgood=kFALSE;
+  if (  !(*vertices_)[primaryVertexIndex_].isFake() && (*vertices_)[primaryVertexIndex_].ndof()>4. && (*vertices_)[primaryVertexIndex_].position().Rho()<=2.0 && fabs((*vertices_)[primaryVertexIndex_].position().Z())<=24.0 ) isgood=kTRUE;
+
+  //  std::cout<<"Lumi "<<eventCoords.lumi<<" event "<< eventCoords.event<<std::endl;
   data.fill<unsigned int>(irun_       ,eventCoords.run);
   data.fill<unsigned int>(ilumi_      ,eventCoords.lumi);
   data.fill<unsigned int>(ievent_     ,eventCoords.event);
@@ -75,6 +82,7 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetsumEt_  ,met_->sumEt());
   data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
   data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
-
+  data.fill<bool>        (igoodvertex_, isgood );
+			  
   isFilled_ = true;
 }

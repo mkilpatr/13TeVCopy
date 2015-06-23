@@ -39,7 +39,7 @@ namespace ucsbsusy {
       float         metsumEt;
       float         genmet_pt;
       float         genmet_phi;
-
+      bool          goodvertex;
       size8             proc;
       defaults::Process process;
       float             weight;

@@ -23,7 +23,7 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false) {}
+   Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false), isgoodpogelectron_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -39,7 +39,7 @@ namespace ucsbsusy {
 		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
 		isveto_(inIsveto), isloose_(inIsloose),
 		ismedium_(inIsmedium), istight_(inIstight),
-		isgoodpogelectron_(false), ismvavetoelectron_(false) {}
+		isgoodpogelectron_(false) {}
 
       ~Electron() {}
 
@@ -52,7 +52,8 @@ namespace ucsbsusy {
       bool	ismediumelectron() 		const { return ismedium_;	}
       bool	istightelectron() 		const { return istight_;	}
       bool	isgoodpogelectron() 	const { return isgoodpogelectron_;	}
-      bool	ismvavetoelectron() 	const { return ismvavetoelectron_;	}
+      bool	ismediumid() 		const { return ismediumid_;	}
+      bool      islooseid()            const { return islooseid_;     }
 
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       void	setR9(float newR9)		{ r9_ = newR9;		}
@@ -61,9 +62,10 @@ namespace ucsbsusy {
       void	setIsVeto(bool newType)		{ isveto_ = newType;	}
       void	setIsLoose(bool newType)	{ isloose_ = newType;	}
       void	setIsMedium(bool newType)	{ ismedium_ = newType;	}
+      void	setIsMediumId(bool newType)	{ ismediumid_ = newType;	}
+      void      setIsLooseId(bool newType)     { islooseid_ = newType;        }
       void	setIsTight(bool newType)	{ istight_ = newType;	}
       void	setIsGoodPOGElectron(bool flag)	{ isgoodpogelectron_ = flag;	}
-      void	setIsMVAVetoElectron(bool flag)	{ ismvavetoelectron_ = flag;	}
 
     protected :
       float	scEta_;
@@ -73,9 +75,10 @@ namespace ucsbsusy {
       bool	isveto_;
       bool	isloose_;
       bool	ismedium_;
+      bool	ismediumid_;
+      bool      islooseid_;
       bool	istight_;
       bool	isgoodpogelectron_;
-      bool	ismvavetoelectron_;
 
   };
 
