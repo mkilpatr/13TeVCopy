@@ -11,10 +11,10 @@ const double Topness::aW  = 5.;
 const double Topness::aT  = 15.;
 const double Topness::aCM = 1000.;
 
-
 Topness::Topness() : minimizer(new TFitter(4))
   {
   // less print-outs
+    cout.precision(11);
     double p1 = -1;
     minimizer->ExecuteCommand("SET PRINTOUT",&p1,1);
 
@@ -33,6 +33,7 @@ double Topness::topnessFunction(double pwx_, double pwy_, double pwz_, double pn
 			       double pmx_, double pmy_, double pmz_, double pme_, TopnessInformation * info
 			       ) {
 
+  cout.precision(11);
 
   // construct the lorentz vectors
   MomentumD vW;  vW.p4().SetPxPyPzE(pwx_,pwy_,pwz_,(sqrt((mW*mW)+(pwx_*pwx_)+(pwy_*pwy_)+(pwz_*pwz_)))) ;
@@ -101,25 +102,25 @@ void Topness::minuitFunctionWrapper(int& nDim, double* gout, double& result, dou
 
 
 double Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_, TopnessInformation * info) {
-
+  cout.precision(11);
 
   // get variables for Topness
-  double iLpx = lep_->p4().px();
-  double iLpy = lep_->p4().py();
-  double iLpz = lep_->p4().pz();
-  double iLpe = lep_->p4().E();
-  double iB1px = bjet1_->p4().px();
-  double iB1py = bjet1_->p4().py();
-  double iB1pz = bjet1_->p4().pz();
-  double iB1pe = bjet1_->p4().E();
-  double iB2px = bjet2_->p4().px();
-  double iB2py = bjet2_->p4().py();
-  double iB2pz = bjet2_->p4().pz();
-  double iB2pe = bjet2_->p4().E();
-  double iMpx = met_->p4().px();
-  double iMpy = met_->p4().py();
-  double iMpz = met_->p4().pz();
-  double iMpe = met_->p4().E();
+  double iLpx = Topness::round(lep_->p4().px(),3);
+  double iLpy = Topness::round(lep_->p4().py(),3);
+  double iLpz = Topness::round(lep_->p4().pz(),3);
+  double iLpe = Topness::round(lep_->p4().E(),3);
+  double iB1px = Topness::round(bjet1_->p4().px(),3);
+  double iB1py = Topness::round(bjet1_->p4().py(),3);
+  double iB1pz = Topness::round(bjet1_->p4().pz(),3);
+  double iB1pe = Topness::round(bjet1_->p4().E(),3);
+  double iB2px = Topness::round(bjet2_->p4().px(),3);
+  double iB2py = Topness::round(bjet2_->p4().py(),3);
+  double iB2pz = Topness::round(bjet2_->p4().pz(),3);
+  double iB2pe = Topness::round(bjet2_->p4().E(),3);
+  double iMpx = Topness::round(met_->p4().px(),3);
+  double iMpy = Topness::round(met_->p4().py(),3);
+  double iMpz = Topness::round(met_->p4().pz(),3);
+  double iMpe = Topness::round(met_->p4().E(),3);
 
   // Define parameters [param number, param name, init val, estimated distance to min, bla, bla] // 300,3000,-3000,3000
   minimizer->SetParameter(0,"pwx",0,500,-3000,3000);
@@ -179,21 +180,25 @@ double Topness::topnessMinimization(const MomentumF *lep_, const MomentumF *bjet
 
   // get the function value at best fit
   return  log(topnessFunction(pwx_fit,pwy_fit,pwz_fit,pnz_fit,
-      iLpx,iLpy,iLpz,iLpe,
-      iB1px,iB1py,iB1pz,iB1pe,
-      iB2px,iB2py,iB2pz,iB2pe,
-      iMpx,iMpy,iMpz,iMpe,info
-      ));
+   iLpx,iLpy,iLpz,iLpe,
+   iB1px,iB1py,iB1pz,iB1pe,
+   iB2px,iB2py,iB2pz,iB2pe,
+   iMpx,iMpy,iMpz,iMpe,info
+   ));
+ 
+
 } // ~ end of Topness Minimization()
 
 double Topness::getMinTopness(const MomentumF *lep_, const MomentumF *bjet1_, const MomentumF *bjet2_, const MomentumF *met_,TopnessInformation * info) {
   TopnessInformation info1, info2;
-  if (topnessMinimization(lep_,bjet1_,bjet2_,met_,&info1) < topnessMinimization(lep_,bjet2_,bjet1_,met_,&info2)){
+  double topness1=topnessMinimization(lep_,bjet1_,bjet2_,met_,&info1);
+  double topness2= topnessMinimization(lep_,bjet2_,bjet1_,met_,&info2);
+  if (topness1 < topness2){
     if(info) (*info) = (info1);
-    return info1.topness;
+    return topness1;
   } else{
     if(info) (*info) = (info2);
-    return info2.topness;
+    return topness2;
   }
 
 
@@ -214,25 +219,16 @@ bool sortInDecreasingCSV(RecoJetF *jet1, RecoJetF *jet2) { return jet1->csv() > 
 
 double Topness::findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info) {
 
-  if(leptons.size() == 0 || jets.size() < 2) return -99;
-  
-  vector<pair<double,int> > rankedJets(jets.size());
-  for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
-    rankedJets[iJ].first = jets[iJ]->csv();
-    rankedJets[iJ].second = iJ;
-  }
-  std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
-
-  int csv1 = rankedJets[0].second;
-  int csv2 = rankedJets[1].second;
-
-  return getMinTopness(leptons[0],jets[csv1],jets[csv2],met,info);
+  if(leptons.size() == 0 || jets.size() < 3) return -99;
+ 
+  return findMinTopnessConfiguration(leptons[0],jets,met,info);
+ 
 } // end of Topness::findMinTopnessConfiguration
 
 
 double Topness::findMinTopnessConfiguration(const LeptonF* lepton,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info) {
 
-  if(jets.size() < 2) return -99;
+  if(jets.size() < 3) return -99;
   
   vector<pair<double,int> > rankedJets(jets.size());
   for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
@@ -240,11 +236,46 @@ double Topness::findMinTopnessConfiguration(const LeptonF* lepton,const std::vec
     rankedJets[iJ].second = iJ;
   }
   std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+  vector<int> bjets;
+  vector<int> addjets;
 
-  int csv1 = rankedJets[0].second;
-  int csv2 = rankedJets[1].second;
+  for(unsigned int iJ =0; iJ < rankedJets.size(); ++iJ){
+    if(rankedJets[iJ].first>0.814) bjets.push_back(rankedJets[iJ].second);
+    else {
+      if (bjets.size()<2 && bjets.size()+addjets.size()<3) addjets.push_back(rankedJets[iJ].second);
+    }
+  }
+  float topness=1000;
+  TopnessInformation info1;
 
-  return getMinTopness(lepton,jets[csv1],jets[csv2],met,info);
+  if(bjets.size()>0){
+    for(unsigned int n = 0; n<bjets.size(); ++n){
+      for(unsigned int m = n+1; m<bjets.size(); ++m){
+        float tmptop = getMinTopness(lepton,jets[bjets[n]],jets[bjets[m]],met,&info1);
+        if(tmptop<topness){
+	  topness = tmptop;
+	  if(info) (*info) = (info1);
+	}
+      }
+      for(unsigned int m = 0; m<addjets.size(); ++m){
+        float tmptop = getMinTopness(lepton,jets[bjets[n]],jets[addjets[m]],met,&info1);
+        if(tmptop<topness){
+          topness = tmptop;
+          if(info) (*info) = (info1);
+	}
+      }
+    }
+  }
+  else{
+    for(unsigned int m = 1; m<addjets.size(); ++m){
+      float tmptop = getMinTopness(lepton,jets[addjets[0]],jets[addjets[m]],met,&info1);
+      if(tmptop<topness){
+	topness = tmptop;
+	if(info) (*info) = (info1);
+      }
+    }
+  }
+  return topness;
 } // end of Topness::findMinTopnessConfiguration
 
 

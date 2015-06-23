@@ -88,20 +88,22 @@ ElectronFiller::ElectronFiller(const int options,
     eleIdCuts = new LeptonId();
   }
 
-  iLSF2Iso_   = data.addMulti<float>(branchName_,"lsf2Iso",0);
-  iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
-  iLSF4Iso_   = data.addMulti<float>(branchName_,"lsf4Iso",0);
-  iLSF2IsoDR_ = data.addMulti<float>(branchName_,"lsf2IsoDR",0);
-  iLSF3IsoDR_ = data.addMulti<float>(branchName_,"lsf3IsoDR",0);
-  iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
+  //  iLSF2Iso_   = data.addMulti<float>(branchName_,"lsf2Iso",0);
+   iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
+   // iLSF4Iso_   = data.addMulti<float>(branchName_,"lsf4Iso",0);
+   //  iLSF2IsoDR_ = data.addMulti<float>(branchName_,"lsf2IsoDR",0);
+   //  iLSF3IsoDR_ = data.addMulti<float>(branchName_,"lsf3IsoDR",0);
+   //  iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
 
   string base = getenv("CMSSW_BASE");
-  string electronisomva=base+"/src/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  string electronisomva=base+"/src/AnalysisTools/ObjectSelection/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
   eleMVAiso = new LeptonMVA();
   eleMVAiso->initialize(electronisomva);
 
   //  iPassTriggerLID_ = data.addMulti<bool>(branchName_,"passTriggerLID",0);
   iPassCutBaseNonIsoMID_ = data.addMulti<bool>(branchName_,"passCutBaseNonIsoMID",0);
+  iPassLooseIDOnly_ = data.addMulti<bool>(branchName_,"passLooseIDOnly",0);
+
   //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
 
   if(options_ & LOADGEN) {
@@ -127,25 +129,25 @@ void ElectronFiller::initMVA()
   vector<string> eleNonTrigIDMVAPhys14Weights;
 
   if(bunchSpacing_ == 50) {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_50ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_50ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
   } else {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
-    eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB2_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EE_5_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB1_10_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB2_10_oldscenario2phys14_BDT.weights.xml");
-    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EE_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
+    eleNonTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
+    eleTrigIDMVAWeights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_5_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB1_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EB2_10_oldscenario2phys14_BDT.weights.xml");
+    eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/AnalysisTools/ObjectSelection/data/Phys14/EIDmva_EE_10_oldscenario2phys14_BDT.weights.xml");
   }
 
     
@@ -258,6 +260,7 @@ void ElectronFiller::fill()
     
     // calculate cut-based electrons ids
     bool tmp_iPassCutBaseNonIsoMID_ = false; //cout << "eta: " << el->superCluster()->eta() << "\n";
+    bool tmp_iPassLooseIDOnly_ = false;
     if (fabs(el->superCluster()->eta()) <= 1.479) {
       //      cout << "EB\n";      
       if (
@@ -273,6 +276,20 @@ void ElectronFiller::fill()
 	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
       
       else { tmp_iPassCutBaseNonIsoMID_ = false; }
+      if(
+        fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.013625  &&
+	fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.230374  &&
+	el->full5x5_sigmaIetaIeta()                                                         <  0.011586  &&
+	el->hadronicOverEm()                                                                <  0.181130  &&
+	fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.094095  &&
+	fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.713070 &&
+	fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.295751  &&
+	el->passConversionVeto()                                                                      &&
+	el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 2
+	) { tmp_iPassLooseIDOnly_ = true; }
+
+    else { tmp_iPassLooseIDOnly_ = false; }
+
 
     } 
     
@@ -288,20 +305,37 @@ void ElectronFiller::fill()
 	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.100683 &&
 	  el->passConversionVeto()                                                                      &&
 	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
-	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
-
+	  ) { 
+	//	std::cout<<"Electron passed"<<std::endl;
+	tmp_iPassCutBaseNonIsoMID_ = true; }
       else { tmp_iPassCutBaseNonIsoMID_ = false; }
+      if(
+	 fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.011932   &&
+	 fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.255450   &&
+	 el->full5x5_sigmaIetaIeta()                                                         <  0.031849   &&
+	 el->hadronicOverEm()                                                                <  0.223870   &&
+	 fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.342293  &&
+	 fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.953461  &&
+	 fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.155501  &&
+	 el->passConversionVeto()                                                                      &&
+	 el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 3
+	 ) { tmp_iPassLooseIDOnly_ = true; }
+
+      else { tmp_iPassLooseIDOnly_ = false; }
+
+
 
     }
     
     data.fillMulti<bool>(iPassCutBaseNonIsoMID_,tmp_iPassCutBaseNonIsoMID_);
+    data.fillMulti<bool>(iPassLooseIDOnly_,tmp_iPassLooseIDOnly_);
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, *elPtr, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, *elPtr));
     data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, *elPtr ));
 
-    float lsf2Iso = 9.; float lsf2IsoDR = 9.;
-    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
-    float lsf4Iso = 9.; float lsf4IsoDR = 9.;
+    //    float lsf2Iso = 9.; float lsf2IsoDR = 9.;
+    //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
+    //    float lsf4Iso = 9.; float lsf4IsoDR = 9.;
 
     LorentzVector el_;
     el_ = el->p4();
@@ -327,16 +361,16 @@ void ElectronFiller::fill()
       lsfSubJets4_.push_back(tmpVec);
     }
 
-    calculateLSFIso(el_,lsfSubJets2_,&lsf2Iso,&lsf2IsoDR);
-    calculateLSFIso(el_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
-    calculateLSFIso(el_,lsfSubJets4_,&lsf4Iso,&lsf4IsoDR);
+    //    calculateLSFIso(el_,lsfSubJets2_,&lsf2Iso,&lsf2IsoDR);
+    //    calculateLSFIso(el_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    //    calculateLSFIso(el_,lsfSubJets4_,&lsf4Iso,&lsf4IsoDR);
     
-    data.fillMulti<float>(iLSF2Iso_  ,lsf2Iso);
-    data.fillMulti<float>(iLSF2IsoDR_,lsf2IsoDR);
-    data.fillMulti<float>(iLSF3Iso_  ,lsf3Iso);
-    data.fillMulti<float>(iLSF3IsoDR_,lsf3IsoDR);
-    data.fillMulti<float>(iLSF4Iso_  ,lsf4Iso);
-    data.fillMulti<float>(iLSF4IsoDR_,lsf4IsoDR);
+    //    data.fillMulti<float>(iLSF2Iso_  ,LSF(el_,ca8jets));
+    //    data.fillMulti<float>(iLSF2IsoDR_,lsf2IsoDR);
+    data.fillMulti<float>(iLSF3Iso_  ,LSF(el_,ca8jets));
+  //    data.fillMulti<float>(iLSF3IsoDR_,lsf3IsoDR);
+  //    data.fillMulti<float>(iLSF4Iso_  ,lsf4Iso);
+  //    data.fillMulti<float>(iLSF4IsoDR_,lsf4IsoDR);
 
 
     double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
@@ -414,13 +448,8 @@ double ElectronFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection
    if (ptcl.pt()<5.) return 99999.;
    double deadcone_nh(0.), deadcone_ch(0.), deadcone_ph(0.), deadcone_pu(0.);
    //   if(ptcl.isElectron()) {
-   // if (fabs(ptcl.eta())>1.479) {
-   deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;//}
-     //} else if(ptcl.isMuon()) {
-     //     deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;
-     //   } else {
-     //deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01; // maybe use muon cones??
-     //   }
+   if (fabs(ptcl.superCluster()->eta())>1.479) {
+      deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;}
    double iso_nh(0.); double iso_ch(0.);
    double iso_ph(0.); double iso_pu(0.);
    double ptThresh(0.5);
@@ -545,9 +574,6 @@ double ElectronFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, co
 
   return lepOvJetPt;
 }
-
-
-
 
 double ElectronFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
   double ptmin = 5.0;

@@ -52,6 +52,8 @@ namespace ucsbsusy {
       std::vector<bool>  *	isveto;
       std::vector<bool>  *	isloose;
       std::vector<bool>  *	ismedium;
+      std::vector<bool>  *      ismediumid;
+      std::vector<bool>  *      islooseid;
       std::vector<bool>  *	istight;
       std::vector<float> *      miniiso;
       std::vector<float> *      ptrel;

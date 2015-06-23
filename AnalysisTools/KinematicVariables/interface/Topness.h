@@ -71,6 +71,10 @@ class Topness {
   double findMinTopnessConfiguration(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
   double findMinTopnessConfiguration(const LeptonF* lepton,const std::vector<RecoJetF*>& jets,const MomentumF *met,TopnessInformation * info = 0);
   double find2BtagWeightedTopness(const std::vector<LeptonF*>& leptons,const std::vector<RecoJetF*>& jets,const MomentumF *met,int option);
+
+  double round(double num, int x){
+    return ceil( ( num * pow( 10,x ) ) - 0.5 ) / pow( 10,x );
+  }
   
 }; // end of class Topness
 

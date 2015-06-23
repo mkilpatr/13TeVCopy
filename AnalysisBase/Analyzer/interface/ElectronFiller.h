@@ -161,6 +161,8 @@ namespace ucsbsusy {
       // cut-based id - put by hand
       //      size iPassTriggerLID_;
       size iPassCutBaseNonIsoMID_;
+      size iPassLooseIDOnly_;
+
       //      size iPassCutBaseTID_;
 
     public :

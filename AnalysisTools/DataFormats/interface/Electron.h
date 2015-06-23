@@ -23,7 +23,7 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false), ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
+      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false), ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -41,7 +41,7 @@ namespace ucsbsusy {
 		isveto_(inIsveto), isloose_(inIsloose),
 		ismedium_(inIsmedium), istight_(inIstight),
 		isgoodpogelectron_(false), ismvavetoelectron_(false), 
-		  ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
+   	  ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
 
       ~Electron() {}
 
@@ -57,6 +57,9 @@ namespace ucsbsusy {
       bool	ismvavetoelectron() 	   const { return ismvavetoelectron_;	}
       bool	ismultiisovetoelectronl()  const { return ismultiisovetoelectronl_;	}
       bool	ismultiisovetoelectronvl() const { return ismultiisovetoelectronvl_; }
+      bool      ismediumid()               const { return ismediumid_;     }
+      bool      islooseid()                const { return islooseid_;     }
+
 
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
       void	setR9(float newR9)		{ r9_ = newR9;		}
@@ -64,6 +67,8 @@ namespace ucsbsusy {
       void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
       void	setIsVeto(bool newType)		{ isveto_ = newType;	}
       void	setIsLoose(bool newType)	{ isloose_ = newType;	}
+      void	setIsMediumId(bool newType)	{ ismediumid_ = newType;	}
+      void      setIsLooseId(bool newType)     { islooseid_ = newType;        }
       void	setIsMedium(bool newType)              { ismedium_ = newType;	}
       void	setIsTight(bool newType)               { istight_ = newType;	}
       void	setIsGoodPOGElectron(bool flag)        { isgoodpogelectron_ = flag;	}
@@ -79,6 +84,8 @@ namespace ucsbsusy {
       bool	isveto_;
       bool	isloose_;
       bool	ismedium_;
+      bool	ismediumid_;
+      bool      islooseid_;
       bool	istight_;
       bool	isgoodpogelectron_;
       bool	ismvavetoelectron_;

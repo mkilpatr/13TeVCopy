@@ -58,6 +58,7 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   itotiso0p2_    = data.addMulti<float>(branchName_,"totiso0p2",0);
   itotiso0p3_    = data.addMulti<float>(branchName_,"totiso0p3",0);
   itotiso0p4_    = data.addMulti<float>(branchName_,"totiso0p4",0);
+  itrackiso_    = data.addMulti<float>(branchName_,"trackiso",0);
   inearestTrkDR_ = data.addMulti<float>(branchName_,"nearestTrkDR",0.0);
   icontJetIndex_ = data.addMulti<int  >(branchName_,"contJetIndex",-1);
   icontJetDR_    = data.addMulti<float>(branchName_,"contJetDR",-1.0);
@@ -159,6 +160,24 @@ float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc)
 
 }
 
+float PFCandidateFiller::TrackIso(const pat::PackedCandidate* particle, const float maxDR, const float deltaZCut)
+{
+
+  float absIso=0;
+
+  for (unsigned int ipf = 0; ipf < pfcands_->size(); ipf++) {
+    const pat::PackedCandidate* cand = &pfcands_->at(ipf);
+    if(particle == cand) continue;
+    if(cand->charge() == 0) continue; // skip neutrals
+    const float dR = PhysicsUtilities::deltaR(particle->eta(), particle->phi(), cand->eta(), cand->phi());
+    if(dR > maxDR) continue;
+    if( cand->pt()>=0.0 && fabs(cand->dz()) < deltaZCut) absIso += cand->pt();
+  }
+
+  return absIso;
+}
+
+
 float PFCandidateFiller::computePFIsolation(const pat::PackedCandidate* particle, const float minDR, const float maxDR, const unsigned int isotype, const float minNeutralPt, const float minPUPt, const float dBeta)
 {
 
@@ -217,7 +236,7 @@ void PFCandidateFiller::fill()
     const pat::PackedCandidate* pfc = &pfcands_->at(ic);
     if (pfc->pt() < candptMin_ || fabs(pfc->eta()) > candetaMax_) continue;
 
-    if(!(options_ & SAVEALLCANDS) && !ParticleInfo::isA(ParticleInfo::p_piplus, pfc)) continue; // only save charged hadrons unless otherwise specified
+   if(!(options_ & SAVEALLCANDS) && !ParticleInfo::isA(ParticleInfo::p_piplus, pfc)) continue; // only save charged hadrons unless otherwise specified
 
     float chiso0p1 = computePFIsolation(pfc, 0.0, 0.1, 0);
     float chiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 0);
@@ -227,7 +246,7 @@ void PFCandidateFiller::fill()
     float totiso0p2 = computePFIsolation(pfc, 0.0, 0.2, 1);
     float totiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 1);
     float totiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 1);
-
+    float trackiso = TrackIso(pfc,0.3,0.1);
     float nearesttrkdr = getDRNearestTrack(pfc);
 
     int jetIndex = getContainingJetIndex(pfc);
@@ -240,7 +259,7 @@ void PFCandidateFiller::fill()
     float taumva_mtpresel   = tauMVA_MtPresel_  ->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
     float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
 
-    if(taumva_mtpresel < taudiscMin_ && taumva_dphipresel < taudiscMin_) continue;
+  //    if(taumva_mtpresel < taudiscMin_ && taumva_dphipresel < taudiscMin_) continue;
 
     data.fillMulti<float>(ipt_, pfc->pt());
     data.fillMulti<float>(ieta_, pfc->eta());
@@ -258,6 +277,7 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(ichiso0p3_, chiso0p3);
     data.fillMulti<float>(ichiso0p4_, chiso0p4);
     data.fillMulti<float>(itotiso0p1_, totiso0p1);
+    data.fillMulti<float>(itrackiso_, trackiso);
     data.fillMulti<float>(itotiso0p2_, totiso0p2);
     data.fillMulti<float>(itotiso0p3_, totiso0p3);
     data.fillMulti<float>(itotiso0p4_, totiso0p4);

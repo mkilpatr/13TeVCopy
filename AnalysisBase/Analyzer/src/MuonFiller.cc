@@ -64,8 +64,9 @@ MuonFiller::MuonFiller(const int options,
     ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
+  iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
   string base = getenv("CMSSW_BASE");
-  string muonisomva=base+"/src/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
+  string muonisomva=base+"/src/AnalysisTools/ObjectSelection/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
   muMVAiso = new LeptonMVA();
   muMVAiso->initialize(muonisomva);
  
@@ -110,8 +111,8 @@ void MuonFiller::fill()
     data.fillMulti<int  >(iq_, mu.charge());
 
     assert(evtInfoFiller_->isLoaded());
-    data.fillMulti<float>(id0_, -1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()));
-    data.fillMulti<float>(idz_, mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()));
+    data.fillMulti<float>(id0_, mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0);
+    data.fillMulti<float>(idz_, mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0);
 
     float dbiso = mu.pfIsolationR04().sumChargedHadronPt + max(0.0 , mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5 * mu.pfIsolationR04().sumPUPt);
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
@@ -141,7 +142,7 @@ void MuonFiller::fill()
       data.fillMulti<float>(ipfpuiso_, mu.pfIsolationR04().sumPUPt);
     }
 
-    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
+    //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
     LorentzVector mu_;
     mu_ = mu.p4();
     LorentzVectorCollection lsfSubJets3_;
@@ -150,11 +151,12 @@ void MuonFiller::fill()
       tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
       lsfSubJets3_.push_back(tmpVec);
     }
-    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    //    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
+    data.fillMulti<float>(iLSF3Iso_  ,LSF(mu_,ca8jets));
     double rhoiso=calculateRhoIso(mu.eta(),mu.pfIsolationR04().sumChargedHadronPt,mu.pfIsolationR04().sumNeutralHadronEt,mu.pfIsolationR04().sumPhotonEt,*rho_);
     double sip3d=fabs(mu.dB(mu.PV3D) / mu.edB(mu.PV3D));
     data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), LSF(mu_,ca8jets), sip3d, rhoiso));
-    data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,-1.*mu.muonBestTrack()->dxy(evtInfoFiller_->primaryVertex()) ,mu.muonBestTrack()->dz(evtInfoFiller_->primaryVertex()),mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
+    data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0 , mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0 ,mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, mu, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, mu ));
     data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, mu ));
@@ -227,8 +229,8 @@ float MuonFiller::calculateRhoIso(double eta, double pfchargediso, double pfneut
 bool MuonFiller::mediumID(bool isLoose, double pt , double pfdbetaiso, double d0, double dz, bool isGlobal, double nChi2, double trkKink, double chi2Local, double validFrac, double segComp) {
 
   if(isLoose==kFALSE) return kFALSE;
-  if(fabs(d0)>0.01)  return kFALSE;
-  if(fabs(dz)>0.2)  return kFALSE;
+  if(fabs(d0)>0.02)  return kFALSE;
+  if(fabs(dz)>0.1)  return kFALSE;
   bool goodglobal=kFALSE;
   if(isGlobal && nChi2<3 && trkKink<20 && chi2Local<12) goodglobal=kTRUE;
   double segmentcut=0.451;
@@ -371,8 +373,6 @@ double MuonFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const 
 
   return lepOvJetPt;
 }
-
-
 
 
 double MuonFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {

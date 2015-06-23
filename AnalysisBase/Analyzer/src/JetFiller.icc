@@ -58,6 +58,7 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
   ijetmass_   = data.addMulti<float>(branchName_,"jet_mass"  ,0);
   ijetptraw_  = data.addMulti<float>(branchName_,"jet_ptraw" ,0);
   ijetpuId_   = data.addMulti<float>(branchName_,"jet_puId"  ,0);
+  ijetlooseId_= data.addMulti<bool>(branchName_,"jet_looseId"  ,0);
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"   ,0);
   ijetarea_   = data.addMulti<float>(branchName_,"jet_area"  ,0);
 
@@ -205,6 +206,8 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
     data.fillMulti<float>(ijetarea_ ,j.jetArea());
+    data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
+//    if(j.pt()>30) std::cout<<j.pt()<<" "<<j.eta()<<" "<<j.chargedMultiplicity()<<" "<<j.neutralMultiplicity()<<" "<<j.neutralEmEnergyFraction()<<" "<<j.neutralHadronEnergyFraction()<<" "<< j.chargedEmEnergyFraction()<<" "<<j.chargedHadronEnergyFraction()<<std::endl;
 
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
