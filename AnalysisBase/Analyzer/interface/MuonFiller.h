@@ -103,6 +103,7 @@ namespace ucsbsusy {
     size iMVAiso_;
     size iminiiso_;
     size iptrel_;
+    size iLSF3Iso_;
     size iptratio_;
     size isip3d_;
     // pat matched gen lepton info

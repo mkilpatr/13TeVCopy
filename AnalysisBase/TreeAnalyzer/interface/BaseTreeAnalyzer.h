@@ -58,6 +58,7 @@ public:
     float minVetoTauPt;
     float maxVetoTauETA;
     bool (PFCandidateF::*vetoedTau)() const;
+    float minVetoTrackPt;
 
     float minSelPhoPt;
     float maxSelPhoETA;
@@ -77,29 +78,32 @@ public:
     VarType       defaultJetCollection;
 
     ConfigPars() :
-      minSelEPt (10), //was 32
-      maxSelEETA(2.4), //was2.1
+      minSelEPt (40), //was 32
+      maxSelEETA(2.1), //was2.1
       selectedElectron(&ElectronF::isgoodpogelectron),
 
-      minVetoEPt (5),
+      minVetoEPt (10),
       maxVetoEETA(2.4),
-      vetoedElectron(&ElectronF::ismvavetoelectron),
+      vetoedElectron(&ElectronF::isvetoelectron),
 
-      minSelMuPt (10), // was 27
-      maxSelMuETA(2.4), // was 2.1
+      minSelMuPt (30), // was 27
+      maxSelMuETA(2.1), // was 2.1
       maxSelMuD0(0.02),
       maxSelMuDz(0.1),
       selectedMuon(&MuonF::isgoodpogmuon),
 
-      minVetoMuPt (5),
+      minVetoMuPt (10),
       maxVetoMuETA(2.4),
-      maxVetoMuD0(0.02),
-      maxVetoMuDz(0.1),
-      vetoedMuon(&MuonF::ismvavetomuon),
+      maxVetoMuD0(0.1),
+      maxVetoMuDz(0.5),
+      vetoedMuon(&MuonF::isvetomuon),
 
       minVetoTauPt (10),
       maxVetoTauETA(2.4),
       vetoedTau(&PFCandidateF::ismvavetotau),
+
+      minVetoTrackPt (5),
+
 
       minSelPhoPt (10),
       maxSelPhoETA (2.4),
@@ -107,8 +111,8 @@ public:
 
       //      leptonSelection(SEL_0_LEP),
 
-      minJetPt          (20.0),
-      minBJetPt         (20.0),
+      minJetPt          (30.0),
+      minBJetPt         (30.0),
       maxJetEta         (2.4 ),
       maxBJetEta        (2.4 ),
       cleanJetsvSelectedLeptons_(false),
@@ -173,7 +177,8 @@ public:
     // Default processing of physics objects
     //--------------------------------------------------------------------------------------------------
     template <typename Jet>
-    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
+    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta && jet.looseid());}
+      //    bool isGoodJet     (const Jet& jet     ) const {return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxJetEta);}
     bool isTightBJet   (const RecoJetF& jet) const;
     bool isMediumBJet  (const RecoJetF& jet) const;
     bool isLooseBJet   (const RecoJetF& jet) const;
@@ -182,6 +187,7 @@ public:
     bool isSelMuon     (const MuonF& muon) const;
     bool isVetoMuon    (const MuonF& muon) const;
     bool isVetoTau     (const PFCandidateF& tau) const;
+    bool isVetoTrack     (const PFCandidateF& track) const;
     bool isGoodPhoton  (const PhotonF& pho) const;
 
     void cleanJets(JetReader * reader,std::vector<RecoJetF*>& jets,std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const;
@@ -191,9 +197,11 @@ public:
                        std::vector<LeptonF*>& selectedLeptons,
                        std::vector<LeptonF*>& vetoedLeptons,
                        std::vector<PFCandidateF*>& vetoedTaus,
+                       std::vector<PFCandidateF*>& vetoedTracks,
                        int& nSelLeptons,
                        int& nVetoedLeptons,
-                       int& nVetoedTaus
+                       int& nVetoedTaus,
+		       int &nVetoedTracks
                        );
 
     //--------------------------------------------------------------------------------------------------
@@ -234,6 +242,7 @@ public:
     int   nSelLeptons;
     int   nVetoedLeptons;
     int   nVetoedTaus;
+    int   nVetoedTracks;
     int   nJets;
     int   nBJets;
 
@@ -242,10 +251,12 @@ public:
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
     MomentumF*                 genmet  ;
+    bool goodvertex;
     std::vector<LeptonF*>      allLeptons        ;
     std::vector<LeptonF*>      selectedLeptons   ;
     std::vector<LeptonF*>      vetoedLeptons     ;
     std::vector<PFCandidateF*> vetoedTaus        ;
+    std::vector<PFCandidateF*> vetoedTracks        ;
     std::vector<PhotonF*>      selectedPhotons   ;
     std::vector<RecoJetF*>     jets            ;
     std::vector<RecoJetF*>     bJets   ;

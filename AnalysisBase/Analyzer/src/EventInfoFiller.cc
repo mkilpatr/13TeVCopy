@@ -38,7 +38,7 @@ EventInfoFiller::EventInfoFiller(
   imetsumEt_ =  data.add<float>       (branchName_,"met_sumEt","F",0);
   igenmetpt_ =  data.add<float>       (branchName_,"genmet_pt" ,"F",0);
   igenmetphi_=  data.add<float>       (branchName_,"genmet_phi","F",0);
-  igoodvertex_= data.add<bool>        (branchName_,"igoodvertex","b",0);
+  igoodvertex_= data.add<bool>        (branchName_,"goodvertex","O",false);
 
 }
 

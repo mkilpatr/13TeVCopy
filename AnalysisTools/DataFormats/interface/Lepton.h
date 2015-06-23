@@ -21,7 +21,6 @@ namespace ucsbsusy {
 
     public :
   Lepton() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), sip3d_(0), pfdbetaiso_(0), mvaiso_(0), miniiso_(0), ptrel_(0),ptratio_(0),passpogid_(false), passpogiso_(false), isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
-
       template <class InputCoordSystem>
       Lepton(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inPdgid = 0, int inCharge = 0,

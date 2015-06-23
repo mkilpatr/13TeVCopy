@@ -60,6 +60,7 @@ namespace ucsbsusy {
       std::vector<float> * totiso0p3;
       std::vector<float> * totiso0p4;
       std::vector<float> * neartrkdr;
+      std::vector<float> * trackiso;
 
       PFCandidateFCollection pfcands;
       ExtendedPFCandidateCollection extpfcands;

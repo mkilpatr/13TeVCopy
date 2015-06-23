@@ -25,15 +25,18 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nSelLeptons       (0),
     nVetoedLeptons    (0),
     nVetoedTaus       (0),
+    nVetoedTracks       (0),
     nJets             (0),
     nBJets            (0),
     met               (0),
     genmet            (0),
+    goodvertex        (false),
     isMC_             (isMCTree),
     defaultJets       (0),
     config            (pars ? *pars : ConfigPars())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
+  //  std::cout<<"Random stuff "<<std::endl;
   setDefaultJets(config.defaultJetCollection);
 }
 
@@ -129,13 +132,13 @@ void BaseTreeAnalyzer::loadVariables()
 {
   load(EVTINFO);
   load(AK4JETS);
-  load(PICKYJETS);
-  load(CASUBJETS);
-  load(ELECTRONS);
-  load(MUONS);
-  load(PHOTONS);
-  load(PFCANDS);
-  load(CMSTOPS);
+  //  load(PICKYJETS);
+  //  load(CASUBJETS);
+ load(ELECTRONS);
+ load(MUONS);
+  //  load(PHOTONS);
+ load(PFCANDS);
+  //  load(CMSTOPS);
   if(isMC()) load(GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -143,12 +146,15 @@ void BaseTreeAnalyzer::processVariables()
 {
   isProcessed_ = true;
 
+  //  std::cout<<"Test "<<std::endl;
+
   if(evtInfoReader.isLoaded()) {
     run   = evtInfoReader.run;
     lumi  = evtInfoReader.lumi;
     event = evtInfoReader.event;
     nPV   = evtInfoReader.nPV;
     rho   = evtInfoReader.rho;
+    goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.weight;
@@ -168,7 +174,7 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
   }
 
-  selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,nSelLeptons,nVetoedLeptons,nVetoedTaus);
+  selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,vetoedTracks,nSelLeptons,nVetoedLeptons,nVetoedTaus,nVetoedTracks);
 
   if(photonReader.isLoaded()){
     selectedPhotons.clear();
@@ -194,18 +200,27 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
+  //  std::cout<<"End"<<std::endl;
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 {
   clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
   loadVariables();
+  //  std::cout<<"Did we make it"<<std::endl;
   isLoaded_ = true;
+  
+  //  std::cout<<reader.nextEvent(reportFrequency)<<std::endl;
+
+
 
   while(reader.nextEvent(reportFrequency)){
+    //    std::cout<<"Woohoo "<<std::endl;
 	isProcessed_ = false;
     if(numEvents >= 0 && getEventNumber() >= numEvents) return;
+    //    std::cout<<"Let's process"<<std::endl;
     processVariables();
+    //    std::cout<<"Let's run"<<std::endl;
     runEvent();
   }
 }
@@ -277,8 +292,13 @@ bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
-  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && (tau.*config.vetoedTau)());
+  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA  && (tau.*config.vetoedTau)());
 }
+bool BaseTreeAnalyzer::isVetoTrack(const PFCandidateF& track) const {
+  return (track.pt() > config.minVetoTrackPt);
+}
+
+
 //--------------------------------------------------------------------------------------------------
 bool ucsbsusy::BaseTreeAnalyzer::isGoodPhoton(const PhotonF& pho) const {
   return (pho.pt() > config.minSelPhoPt && fabs(pho.eta()) < config.maxSelPhoETA && (pho.*config.selectedPhoton)());
@@ -289,16 +309,18 @@ void BaseTreeAnalyzer::selectLeptons(
                    std::vector<LeptonF*>& selectedLeptons,
                    std::vector<LeptonF*>& vetoedLeptons,
                    std::vector<PFCandidateF*>& vetoedTaus,
+                   std::vector<PFCandidateF*>& vetoedTracks,
                    int& nSelLeptons,
                    int& nVetoedLeptons,
-                   int& nVetoedTaus
+                   int& nVetoedTaus,
+		   int &nVetoedTracks
                    ){
   allLeptons.clear();
   allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
   for(auto& electron : electronReader.electrons)
     allLeptons.push_back(&electron);
   for(auto& muon : muonReader.muons)
-    allLeptons.push_back(&muon);
+   allLeptons.push_back(&muon);
   std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
   selectedLeptons.clear();
@@ -323,8 +345,7 @@ void BaseTreeAnalyzer::selectLeptons(
     if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton)) { 
       selectedLeptons.push_back(lepton); 
     }
-
-    if(lepton->ismuon() ? isVetoMuon(*(MuonF*)lepton) : isVetoElectron(*(ElectronF*)lepton) ){
+    else if(lepton->ismuon() ? isVetoMuon(*(MuonF*)lepton): isVetoElectron(*(ElectronF*)lepton)){
       vetoedLeptons.push_back(lepton);
     }
 
@@ -339,6 +360,15 @@ void BaseTreeAnalyzer::selectLeptons(
       vetoedTaus.push_back(&pfc);
   }
   nVetoedTaus = vetoedTaus.size();
+  vetoedTracks.clear();
+  for(auto& pfc : pfcandReader.pfcands) {
+    if(isVetoTrack(pfc))
+      vetoedTracks.push_back(&pfc);
+  }
+  nVetoedTracks = vetoedTracks.size();
+
+
+
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {
@@ -351,6 +381,15 @@ void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jet
 	vector<bool> vetoJet(reader->recoJets.size(),false);
 	if(config.cleanJetsvSelectedLeptons_) {
 	  for(const auto* glep : selectedLeptons) {
+	    double nearDR = 0;
+	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR,config.cleanJetsMaxDR,30);
+	    if(near >= 0){
+	      vetoJet[near] = true;
+	      //	      std::cout<<"We get rid of jet "<<near<<std::endl;
+	    }
+	  }
+
+          for(const auto* glep : vetoedLeptons) {
 	    double nearDR = 0;
 	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR,config.cleanJetsMaxDR);
 	    if(near >= 0) vetoJet[near] = true;

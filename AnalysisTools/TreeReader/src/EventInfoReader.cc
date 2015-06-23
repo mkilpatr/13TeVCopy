@@ -30,7 +30,7 @@ EventInfoReader::EventInfoReader()
   metsumEt = 0;
   genmet_pt = 0;
   genmet_phi = 0;
-  goodvertex = kFALSE;
+  goodvertex = false;
   proc = 0;
   weight = 1;
   process = defaults::NUMPROCESSES;
