@@ -26,6 +26,7 @@ JetReader::JetReader() : BaseReader(){
   jetptraw_    = new vector<float>;
   jetpuId_     = new vector<float>;
   jetlooseId_  = new vector<bool >;
+  jettightId_  = new vector<bool >;
   jetcsv_      = new vector<float>;
   jetarea_     = new vector<float>;
   jetgenindex_ = new vector<int16  >;
@@ -68,6 +69,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_ptraw"   , &jetptraw_ );
     treeReader->setBranchAddress(branchName_, "jet_puId"    , &jetpuId_  );
     treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_  );
+    treeReader->setBranchAddress(branchName_, "jet_tightId" , &jettightId_  );
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
   }

@@ -97,6 +97,7 @@ public:
       size ijetptraw_    ;
       size ijetpuId_     ;
       size ijetlooseId_  ;
+      size ijettightId_  ;
       size ijetcsv_      ;
       size ijetarea_     ;
       size ijetgenindex_ ;
