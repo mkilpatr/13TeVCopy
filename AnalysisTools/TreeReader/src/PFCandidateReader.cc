@@ -66,10 +66,10 @@ void PFCandidateReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
     treeReader->setBranchAddress(branchName , "mttrkplusphoton", &mt       , true);
     treeReader->setBranchAddress(branchName , "dphimet"     , &dphimet       , true);
-    //   if(options_ & LOADTAUVETOMT)
-    //      treeReader->setBranchAddress(branchName , "taudisc_mtpresel", &taudisc , true);
-    //    else if(options_ & LOADTAUVETODPHI)
-    //      treeReader->setBranchAddress(branchName , "taudisc_dphipresel", &taudisc , true);
+    if(options_ & LOADTAUVETOMT)
+      treeReader->setBranchAddress(branchName , "taudisc_mtpresel", &taudisc , true);
+    else if(options_ & LOADTAUVETODPHI)
+      treeReader->setBranchAddress(branchName , "taudisc_dphipresel", &taudisc , true);
     treeReader->setBranchAddress(branchName , "fromPV"      , &fromPV      , true);
     treeReader->setBranchAddress(branchName , "contJetIndex", &jetIndex    , true);
     treeReader->setBranchAddress(branchName , "contTauIndex", &tauIndex    , true);
@@ -107,16 +107,15 @@ void PFCandidateReader::refresh(){
       pfcands.back().setDz(dz->at(iL));
       pfcands.back().setMt(mt->at(iL));
       pfcands.back().setDphiMet(dphimet->at(iL));
-      //      pfcands.back().setTauDisc(taudisc->at(iL));
+      pfcands.back().setTauDisc(taudisc->at(iL));
       pfcands.back().setFromPV(fromPV->at(iL));
       pfcands.back().setJetIndex(jetIndex->at(iL));
       pfcands.back().setTauIndex(tauIndex->at(iL));
       pfcands.back().setTrackIso(trackiso->at(iL));
-
-//      if(options_ & LOADTAUVETOMT)
-	 //        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
-	 //      else if(options_ & LOADTAUVETODPHI)
-	 //        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
+      if(options_ & LOADTAUVETOMT)
+        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+      else if(options_ & LOADTAUVETODPHI)
+        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
     }
   }
   if(options_ & LOADEXTRECO){
@@ -132,14 +131,14 @@ void PFCandidateReader::refresh(){
       cand.setDz(dz->at(iL));
       cand.setMt(mt->at(iL));
       cand.setDphiMet(dphimet->at(iL));
-      //      cand.setTauDisc(taudisc->at(iL));
+      cand.setTauDisc(taudisc->at(iL));
       cand.setFromPV(fromPV->at(iL));
       cand.setJetIndex(jetIndex->at(iL));
       cand.setTauIndex(tauIndex->at(iL));
-      //      if(options_ & LOADTAUVETOMT)
-      //        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
-      //      else if(options_ & LOADTAUVETODPHI)
-      //        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
+      if(options_ & LOADTAUVETOMT)
+        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+      else if(options_ & LOADTAUVETODPHI)
+        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
       cand.setChIso0p1(chiso0p1->at(iL));
       cand.setChIso0p2(chiso0p2->at(iL));
       cand.setChIso0p3(chiso0p3->at(iL));
