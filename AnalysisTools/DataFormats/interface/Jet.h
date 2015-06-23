@@ -80,20 +80,23 @@ public :
 
   template <class InputCoordSystem>
   RecoJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
-      const float inCSV = -10, GenJet<CoordSystem>* inGenJet = 0)
-      :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), genJet_(inGenJet) {}
+      const float inCSV = -10, const bool inLooseId = false, GenJet<CoordSystem>* inGenJet = 0)
+      :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), looseid_(inLooseId), genJet_(inGenJet) {}
   ~RecoJet(){}
 
 
   float csv()         const { return csv_;   }
+  bool  looseid()     const { return looseid_;   }
   const GenJet<CoordSystem>*  genJet()        const { return genJet_;  }
   GenJet<CoordSystem>*        genJet()        { return genJet_;  }
 
   void  setPtr(GenJet<CoordSystem>* inGenJet = 0) { genJet_ = inGenJet;       }
   void  setCsv(const float inCsv)               {csv_ = inCsv; }
+  void  setLooseId(const float inLooseId)       {looseid_ = inLooseId; }
 
 protected :
   float csv_;     //pointer to csv information
+  bool  looseid_;     //passes loose jet id or not
   GenJet<CoordSystem>*  genJet_;  //Matched genJet
 
 };

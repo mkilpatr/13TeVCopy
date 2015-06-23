@@ -25,6 +25,7 @@ JetReader::JetReader() : BaseReader(){
   jetmass_     = new vector<float>;
   jetptraw_    = new vector<float>;
   jetpuId_     = new vector<float>;
+  jetlooseId_  = new vector<bool >;
   jetcsv_      = new vector<float>;
   jetarea_     = new vector<float>;
   jetgenindex_ = new vector<int16  >;
@@ -66,6 +67,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_mass"    , &jetmass_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_ptraw"   , &jetptraw_ );
     treeReader->setBranchAddress(branchName_, "jet_puId"    , &jetpuId_  );
+    treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_  );
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
   }
@@ -122,7 +124,7 @@ void JetReader::refresh(){
     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
      GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
       recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ),jeteta_->at(iJ),jetphi_->at(iJ),jetmass_->at(iJ)),iJ,
-          (*jetcsv_)[iJ], matchedGen);
+          (*jetcsv_)[iJ], (*jetlooseId_)[iJ], matchedGen);
     }
     std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
