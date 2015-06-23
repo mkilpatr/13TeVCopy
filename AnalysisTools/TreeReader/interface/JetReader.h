@@ -46,6 +46,7 @@ public:
   std::vector<float>* jetptraw_;
   std::vector<float>* jetpuId_;
   std::vector<bool>*  jetlooseId_;
+  std::vector<bool>*  jettightId_;
   std::vector<float>* jetcsv_;
   std::vector<float>* jetarea_;
   std::vector<int16>* jetgenindex_;
