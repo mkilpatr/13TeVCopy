@@ -57,6 +57,7 @@ public:
 
     float minVetoTauPt;
     float maxVetoTauETA;
+    float maxVetoTauDz;
     bool (PFCandidateF::*vetoedTau)() const;
 
     float minSelPhoPt;
@@ -99,6 +100,7 @@ public:
 
       minVetoTauPt (10),
       maxVetoTauETA(2.4),
+      maxVetoTauDz(0.2),
       vetoedTau(&PFCandidateF::ismvavetotau),
 
       minSelPhoPt (10),
