@@ -35,6 +35,7 @@ public:
     , nJ20              (-1)
     , ntBtag            (-1)
     , nmBtag            (-1)
+    , J0pt              (-1)
     , dPhiMET12         (-1)
     , dPhiMET3          (-1)
     , dPhiB0MET         (-1)
@@ -108,9 +109,14 @@ public:
     //, MT2tp1_150        (-1)
     //, MT2tp1_200        (-1)
     //, MT2tp1_250        (-1)
-    , NCTT              (-1)
-    , NCTTstd           (-1)
-    //, DphiTopMET        (-1)
+    , NCTT               (-1)
+    , NCTTstd            (-1)
+    , DphiTopMET0        (-1)
+    , DphiTopMET1        (-1)
+    , DphiTopMET2        (-1)
+    , dPhiHtJ12MET       (-1)
+    , dPhiHtJ123MET      (-1)
+    , dPhiHtJMET         (-1)
   {}
 
   void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
@@ -127,9 +133,6 @@ public:
   		             ) {
     a::analyzer = analyzer;
 
-    // preselection so that variable initializations that follow make sense
-    if (inJets.size()<5) return;
-
     //passPresel      =  0;
     ptMet             =  0;
     npv               =  0;
@@ -137,6 +140,7 @@ public:
     nJ20              =  0;
     ntBtag            =  0;
     nmBtag            =  0;
+    J0pt              = -1;
     dPhiMET12         = -1;
     dPhiMET3          = -1;
     dPhiB0MET         = -1;
@@ -212,7 +216,12 @@ public:
     //MT2tp1_250        = -1;
     NCTT              = -1;
     NCTTstd           = -1;
-    //DphiTopMET        =
+    DphiTopMET0       = -9;
+    DphiTopMET1       = -9;
+    DphiTopMET2       = -9;
+    dPhiHtJ12MET      = -9;
+    dPhiHtJ123MET     = -9;
+    dPhiHtJMET        = -9;
 
     ptMet = inMet->pt();
     npv   = analyzer->nPV;
@@ -283,6 +292,7 @@ public:
     // can be ak4, picky
     for(unsigned int iJ = 0; iJ < inJets.size(); ++iJ){
       auto& j = *inJets[iJ];
+      if (iJ==0) J0pt = j.pt();
       ++nJ20;
       if(analyzer->isTightBJet(j)) ++ntBtag;
       if(analyzer->isMediumBJet(j)){
@@ -333,11 +343,14 @@ public:
 
     htJ12 = inJets[0]->pt() + inJets[1]->pt();
     MomentumF vHt;
+    MomentumF vHtJ12;
+    MomentumF vHtJ123;
     MomentumF vHtnoB;
     double htAlong    = 0;
     double htAway     = 0;
     double htAlongNoB = 0;
     double htAwayNoB  = 0;
+    int n     = 0;
     int nNonB = 0;
     for(unsigned int nJ = 0; nJ < inJets.size(); ++nJ){
       auto& j = *inJets[nJ];
@@ -348,11 +361,14 @@ public:
       double dPhi = PhysicsUtilities::absDeltaPhi(j,*inMet);
       if (dPhi < TMath::PiOver2()) htAlong += fabs(j.pt() * cos(dPhi));
       else                         htAway  += fabs(j.pt() * cos(dPhi));
+      ++n;
+      if (n==2) vHtJ12  = vHt;
+      if (n==3) vHtJ123 = vHt;
 
       // past this, only want to use non-B jets
       if(analyzer->isMediumBJet(j)) continue;
       htnoB += j.pt();
-      vHtnoB = vHt.p4() + j.p4();
+      vHtnoB = vHtnoB.p4() + j.p4();
       if(nNonB<2) htJ12noB += j.pt();
       // dotted HTalongOaway
       if (dPhi < TMath::PiOver2()) htAlongNoB += abs(j.pt() * cos(dPhi));
@@ -368,6 +384,9 @@ public:
     dPhivHtMETnoB = PhysicsUtilities::absDeltaPhi(vHtnoB,*inMet);
     if(htAway   >0) dotHtAlongAway    = htAlong    / htAway   ;
     if(htAwayNoB>0) dotHtAlongAwayNoB = htAlongNoB / htAwayNoB;
+    if (vHtJ12 .pt()>0 ) dPhiHtJ12MET  = PhysicsUtilities::absDeltaPhi(vHtJ12 ,*inMet);
+    if (vHtJ123.pt()>0 ) dPhiHtJ123MET = PhysicsUtilities::absDeltaPhi(vHtJ123,*inMet);
+    if (vHt    .pt()>0 ) dPhiHtJMET    = PhysicsUtilities::absDeltaPhi(vHt    ,*inMet);
 
     // ===== MT2 stuff =====
 
@@ -376,8 +395,8 @@ public:
 
     MomentumF pseudoJet1a; MomentumF pseudoJet2a;
     MomentumF pseudoJet1b; MomentumF pseudoJet2b;
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1a,pseudoJet2a,0);
-    pseudoJets.makePseudoJets(inAK4Jets,pseudoJet1b,pseudoJet2b,1);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1a,pseudoJet2a,0);
+    pseudoJets.makePseudoJets(inJets,pseudoJet1b,pseudoJet2b,1);
     double mEachInvisible_000 =   0.; // in GeV
     //double mEachInvisible_100 = 100.; // in GeV
     //double mEachInvisible_150 = 150.; // in GeV
@@ -400,11 +419,10 @@ public:
 
     NCTT    = inTops.size();
     NCTTstd = 0; // "standard" tops passing the below selection
-    for (UInt_t i=0; i<inTops.size(); ++i) {
-        if( ApplyCTTSelection(inTops.at(i)) ) ++NCTTstd;
-        DphiTopMET[i] = PhysicsUtilities::deltaPhi(inTops.at(i)->p4(),*inMet);
-    }
-
+    for (UInt_t i=0; i<inTops.size(); ++i) if( ApplyCTTSelection(inTops.at(i)) ) ++NCTTstd;
+    if(inTops.size()>=1) DphiTopMET0 = PhysicsUtilities::deltaPhi(inTops.at(0)->p4(),*inMet);
+    if(inTops.size()>=2) DphiTopMET1 = PhysicsUtilities::deltaPhi(inTops.at(1)->p4(),*inMet);
+    if(inTops.size()>=3) DphiTopMET2 = PhysicsUtilities::deltaPhi(inTops.at(2)->p4(),*inMet);
 
 
   } // processVariables()
@@ -416,6 +434,7 @@ public:
   int   nJ20;
   int   ntBtag;
   int   nmBtag;
+  float J0pt;
   float dPhiMET12;
   float dPhiMET3;
   float dPhiB0MET;     // new
@@ -491,7 +510,12 @@ public:
   //float MT2tp1_250;    // mt2
   int   NCTT;           // top
   int   NCTTstd;        // top
-  float DphiTopMET[50]; // top
+  float DphiTopMET0;    // top
+  float DphiTopMET1;    // top
+  float DphiTopMET2;    // top
+  float dPhiHtJ12MET;
+  float dPhiHtJ123MET;
+  float dPhiHtJMET;
 }; // VariableCalculator0L
 
 

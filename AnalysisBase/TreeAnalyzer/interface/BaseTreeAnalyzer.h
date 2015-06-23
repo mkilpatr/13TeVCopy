@@ -115,7 +115,7 @@ public:
       minBJetPt         (30.0),
       maxJetEta         (2.4 ),
       maxBJetEta        (2.4 ),
-      cleanJetsvSelectedLeptons_(true),
+      cleanJetsvSelectedLeptons_(false),
       cleanJetsMaxDR    (0.4),
       correctPickyPT    (true),
       applyMuIPCuts     (true),

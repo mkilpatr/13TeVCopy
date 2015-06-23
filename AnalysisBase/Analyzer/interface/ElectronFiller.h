@@ -73,6 +73,7 @@ namespace ucsbsusy {
       float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
       double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Electron ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only);
       double getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton);
+      double getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton);
       double LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets);
 
     private :
@@ -145,6 +146,17 @@ namespace ucsbsusy {
       size iLSF4IsoDR_;
       size iminiiso_;
       size iptrel_;
+      size iptratio_;
+      size isip3d_;
+      // pat matched gen lepton info
+      size igenpt_;
+      size igeneta_;
+      size igenphi_;
+      size igenmass_;
+      size igenstatus_;
+      size igenpdgid_;
+      size igenmotherstatus_;
+      size igenmotherpdgid_;
 
       // cut-based id - put by hand
       //      size iPassTriggerLID_;
@@ -155,18 +167,18 @@ namespace ucsbsusy {
 
     public :
       // Data members
-      edm::Handle<pat::ElectronCollection> electrons_;
-      edm::Handle<edm::ValueMap<bool> > veto_id_decisions_;
-      edm::Handle<edm::ValueMap<bool> > loose_id_decisions_;
-      edm::Handle<edm::ValueMap<bool> > medium_id_decisions_;
-      edm::Handle<edm::ValueMap<bool> > tight_id_decisions_;
-      edm::Handle<reco::PFJetCollection> ca8jets;
-      edm::Handle<LorentzVectorCollection> lsfSubJets2;
-      edm::Handle<LorentzVectorCollection> lsfSubJets3;
-      edm::Handle<LorentzVectorCollection> lsfSubJets4;
-      edm::Handle<double>                 rho_;
+      edm::Handle<pat::ElectronCollection>        electrons_;
+      edm::Handle<edm::ValueMap<bool> >           veto_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> >           loose_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> >           medium_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> >           tight_id_decisions_;
+      edm::Handle<reco::PFJetCollection>          ca8jets;
+      edm::Handle<LorentzVectorCollection>        lsfSubJets2;
+      edm::Handle<LorentzVectorCollection>        lsfSubJets3;
+      edm::Handle<LorentzVectorCollection>        lsfSubJets4;
+      edm::Handle<double>                         rho_;
       edm::Handle<pat::PackedCandidateCollection> pfcands;
-      edm::Handle<pat::JetCollection>         ak4jets_;
+      edm::Handle<pat::JetCollection>             ak4jets_;
 
   };
 

@@ -43,6 +43,7 @@ namespace ucsbsusy {
       std::vector<int>   *	q     ;
       std::vector<float> *	d0    ;
       std::vector<float> *	dz    ;
+      std::vector<float> *	sip3d;
       std::vector<float> *	pfdbetaiso;
       std::vector<float> *	mvaiso;
       std::vector<bool>  *	isloose;
@@ -54,7 +55,7 @@ namespace ucsbsusy {
       std::vector<bool>  *	isstandalone;
       std::vector<float> *	miniiso;
       std::vector<float> *	ptrel;
-
+      std::vector<float> *	ptratio;
 
       MuonFCollection muons;
 

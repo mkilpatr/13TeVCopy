@@ -57,6 +57,7 @@ namespace ucsbsusy {
       float getDRNearestTrack(const pat::PackedCandidate* particle, const float minTrackPt=1.0);
       float computeMT(const pat::PackedCandidate* pfc);
       float computePFIsolation(const pat::PackedCandidate* particle, const float minDR, const float maxDR, const unsigned int isotype=0, const float minNeutralPt=0.5, const float minPUPt=0.5, const float dBeta=0.5);
+      float TrackIso(const pat::PackedCandidate* particle, const float maxDR=0.3, const float deltaZCut=0.1);
 
     private :
       const EventInfoFiller * evtInfoFiller_;
@@ -95,7 +96,7 @@ namespace ucsbsusy {
       size icontTauIndex_;
       size itaudisc_mtpresel_;
       size itaudisc_dphipresel_;
-
+      size itrackiso_;
     public :
       edm::Handle<pat::PackedCandidateCollection> pfcands_;
       edm::Handle<pat::JetCollection> jets_;

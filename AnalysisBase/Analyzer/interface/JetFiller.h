@@ -15,6 +15,7 @@
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
 namespace ucsbsusy {
@@ -32,6 +33,7 @@ public:
                           , LOADBTAG        = (1 <<  2)   ///< load btag info for non-standard jets
                           , SAVETOPASSOC    = (1 <<  3)   ///< save the association to top decays
                           , SAVEQGL         = (1 <<  4)   ///< save the quark-gluon likelihood (for AK4 jets)
+                          , LOADSUPER       = (1 <<  5)   ///< load links to super jets
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
@@ -48,6 +50,9 @@ public:
           , const edm::InputTag flvAssocTag
           , const bool fillReGenJets
           , const double jptMin
+          , const edm::InputTag superJetTag = edm::InputTag()
+          , const edm::InputTag superJetAssocTag = edm::InputTag()
+          , const edm::InputTag superJetNsubTag = edm::InputTag()
           );
       ~JetFiller() {}
 
@@ -77,6 +82,9 @@ public:
       const edm::InputTag qgTagQGL_;
       const double        jptMin_;
       const bool          fillReGenJets_;
+      const edm::InputTag superJetTag_;
+      const edm::InputTag superJetAssocTag_;
+      const edm::InputTag superJetNsubTag_;
 
     protected:
       // Members to hold index of most recently filled tree data
@@ -92,12 +100,19 @@ public:
       size ijetcsv_      ;
       size ijetarea_     ;
       size ijetgenindex_ ;
+      size ijetsuperindex_ ;
       // For genjets matched to reco jets
       size igenjetpt_    ;
       size igenjeteta_   ;
       size igenjetphi_   ;
       size igenjetmass_  ;
       size igenjetflavor_;
+      // For superjets corresponding to (reco) subjets
+      size isuperjetpt_    ;
+      size isuperjeteta_   ;
+      size isuperjetphi_   ;
+      size isuperjetmass_  ;
+      size isuperjetnsubjets_;
       // For jetShape info
       size ijetbetaStar_;
       size ijetqgl_     ;
@@ -129,6 +144,9 @@ public:
       edm::Handle<reco::GenJetCollection> stdGenJets_;
       edm::Handle<std::vector<size8   > > flvAssoc_;
       edm::Handle<edm::ValueMap<float>>   qgHandleQGL_;
+      edm::Handle<reco::PFJetCollection>  superJets_;
+      edm::Handle<std::vector<int     > > superJetAssoc_;
+      edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
   };
 

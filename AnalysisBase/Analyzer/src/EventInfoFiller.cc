@@ -68,7 +68,6 @@ void EventInfoFiller::fill()
   bool isgood=kFALSE;
   if (  !(*vertices_)[primaryVertexIndex_].isFake() && (*vertices_)[primaryVertexIndex_].ndof()>4. && (*vertices_)[primaryVertexIndex_].position().Rho()<=2.0 && fabs((*vertices_)[primaryVertexIndex_].position().Z())<=24.0 ) isgood=kTRUE;
 
-  //  std::cout<<"Lumi "<<eventCoords.lumi<<" event "<< eventCoords.event<<std::endl;
   data.fill<unsigned int>(irun_       ,eventCoords.run);
   data.fill<unsigned int>(ilumi_      ,eventCoords.lumi);
   data.fill<unsigned int>(ievent_     ,eventCoords.event);

@@ -49,8 +49,10 @@ ElectronFiller::ElectronFiller(const int options,
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iMVAiso_     = data.addMulti<float>(branchName_,"MVAiso",0);
-  iminiiso_       = data.addMulti<float>(branchName_,"miniiso",0);
-  iptrel_       = data.addMulti<float>(branchName_,"ptrel",0);
+  iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
+  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
+  iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
+  isip3d_      = data.addMulti<float>(branchName_,"sip3d",0);
 
   if(options_ & FILLIDVARS) {
     iecalE_              = data.addMulti<float>(branchName_,"ecalE",0);
@@ -103,6 +105,17 @@ ElectronFiller::ElectronFiller(const int options,
   iPassLooseIDOnly_ = data.addMulti<bool>(branchName_,"passLooseIDOnly",0);
 
   //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
+
+  if(options_ & LOADGEN) {
+    igenpt_           = data.addMulti<float>(branchName_, "gen_pt", 0);
+    igeneta_          = data.addMulti<float>(branchName_, "gen_eta", 0);
+    igenphi_          = data.addMulti<float>(branchName_, "gen_phi", 0);
+    igenmass_         = data.addMulti<float>(branchName_, "gen_mass", 0);
+    igenstatus_       = data.addMulti<int  >(branchName_, "gen_status", 0);
+    igenpdgid_        = data.addMulti<int  >(branchName_, "gen_pdgid", 0);
+    igenmotherstatus_ = data.addMulti<int  >(branchName_, "genmother_status", 0);
+    igenmotherpdgid_  = data.addMulti<int  >(branchName_, "genmother_pdgid", 0);
+  }
 
 }
 
@@ -282,17 +295,8 @@ void ElectronFiller::fill()
     
     else if ((fabs(el->superCluster()->eta()) > 1.479) && fabs(el->superCluster()->eta())<2.5 ) {
 
-      //      std::cout<<"Electron Pt "<<el->p4().pt()<<std::endl;
-      //      std::cout<<fabs(el->deltaEtaSuperClusterTrackAtVtx())<<" "<<0.007429<<std::endl;
-      //      std::cout<<fabs(el->deltaPhiSuperClusterTrackAtVtx())<<" "<<0.067879<<std::endl;
-//      std::cout<<fabs(el->full5x5_sigmaIetaIeta())<<" "<<0.030135<<std::endl;
-      //      std::cout<< el->hadronicOverEm() <<" "<<0.086782<<std::endl;
-      //      std::cout<<fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))<<" "<<0.036719<<std::endl;
-      //      std::cout<<fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex()))) <<" "<<0.138142<<std::endl;
-      //      std::cout<< fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())<<" "<<0.100683<<std::endl;
-      //      std::cout<<el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS)<<" "<<1<<std::endl;
-
-      if (fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.007429  &&
+      if (
+	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.007429  &&
 	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.067879  &&
 	  el->full5x5_sigmaIetaIeta()                                                         <  0.030135  &&
 	  el->hadronicOverEm()                                                                <  0.086782   &&
@@ -327,6 +331,7 @@ void ElectronFiller::fill()
     data.fillMulti<bool>(iPassLooseIDOnly_,tmp_iPassLooseIDOnly_);
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, *elPtr, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, *elPtr));
+    data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, *elPtr ));
 
     //    float lsf2Iso = 9.; float lsf2IsoDR = 9.;
     //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
@@ -371,6 +376,38 @@ void ElectronFiller::fill()
     double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
     data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), LSF(el_,ca8jets) , sip3d, rhoiso));
+    data.fillMulti<float>(isip3d_, sip3d);
+
+    if(options_ & LOADGEN) {
+      const reco::GenParticle* genEle = el->genParticle();
+      if(genEle) {
+        data.fillMulti<float>(igenpt_, genEle->pt());
+        data.fillMulti<float>(igeneta_, genEle->eta());
+        data.fillMulti<float>(igenphi_, genEle->phi());
+        data.fillMulti<float>(igenmass_, genEle->mass());
+        data.fillMulti<int  >(igenstatus_, genEle->status());
+        data.fillMulti<int  >(igenpdgid_, genEle->pdgId());
+        if(genEle->numberOfMothers()) {
+          const auto* mother = genEle->mother(0);
+          data.fillMulti<int  >(igenmotherstatus_, mother->status());
+          data.fillMulti<int  >(igenmotherpdgid_, mother->pdgId());
+        } else {
+          data.fillMulti<int  >(igenmotherstatus_, -1);
+          data.fillMulti<int  >(igenmotherpdgid_, -1);
+        }
+      }
+      else {
+        data.fillMulti<float>(igenpt_, -1);
+        data.fillMulti<float>(igeneta_, -1);
+        data.fillMulti<float>(igenphi_, -1);
+        data.fillMulti<float>(igenmass_, -1);
+        data.fillMulti<int  >(igenstatus_, -1);
+        data.fillMulti<int  >(igenpdgid_, -1);
+        data.fillMulti<int  >(igenmotherstatus_, -1);
+        data.fillMulti<int  >(igenmotherpdgid_, -1);
+      }
+    }
+
   }
   isFilled_ = true;
 
@@ -413,11 +450,6 @@ double ElectronFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection
    //   if(ptcl.isElectron()) {
    if (fabs(ptcl.superCluster()->eta())>1.479) {
       deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;}
-     //} else if(ptcl.isMuon()) {
-     //     deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;
-     //   } else {
-     //deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01; // maybe use muon cones??
-     //   }
    double iso_nh(0.); double iso_ch(0.);
    double iso_ph(0.); double iso_pu(0.);
    double ptThresh(0.5);
@@ -520,6 +552,28 @@ double ElectronFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, cons
   return lepFourVector.Perp(closestJetFourVector.Vect());
 }
 
+
+double ElectronFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 10) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+
+  TLorentzVector closestJetP4(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  TLorentzVector lepP4(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  double lepOvJetPt = lepP4.Pt()/closestJetP4.Pt();
+
+  return lepOvJetPt;
+}
 
 double ElectronFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
   double ptmin = 5.0;

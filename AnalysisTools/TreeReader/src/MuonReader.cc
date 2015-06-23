@@ -25,6 +25,7 @@ MuonReader::MuonReader() : BaseReader(){
   q            = new vector<int>   ;
   d0           = new vector<float>;
   dz           = new vector<float>;
+  sip3d        = new vector<float>;
   pfdbetaiso   = new vector<float>;
   mvaiso       = new vector<float>;
   isloose      = new vector<bool>;
@@ -37,6 +38,7 @@ MuonReader::MuonReader() : BaseReader(){
   ptrel        = new vector<float>;
   miniiso      = new vector<float>;
   muonId       = new LeptonId();
+  ptratio      = new vector<float>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -57,6 +59,7 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"q", &q                      , true);
     treeReader->setBranchAddress(branchName ,"d0", &d0                    , true);
     treeReader->setBranchAddress(branchName ,"dz", &dz                    , true);
+    treeReader->setBranchAddress(branchName ,"sip3d", &sip3d              , true);
     treeReader->setBranchAddress(branchName ,"pfdbetaiso", &pfdbetaiso    , true);
     treeReader->setBranchAddress(branchName ,"MVAiso", &mvaiso            , true);
     treeReader->setBranchAddress(branchName ,"isLoose", &isloose          , true);
@@ -68,6 +71,7 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
     treeReader->setBranchAddress(branchName ,"miniiso", &miniiso          , true);
     treeReader->setBranchAddress(branchName ,"ptrel", &ptrel              , true);
+    treeReader->setBranchAddress(branchName ,"ptratio", &ptratio          , true);
 
   }
   if(options_ & FILLOBJ)
@@ -87,6 +91,7 @@ void MuonReader::refresh(){
       muons.back().setCharge(q->at(iL));
       muons.back().setD0(d0->at(iL));
       muons.back().setDz(dz->at(iL));
+      muons.back().setSip3d(sip3d->at(iL));
       muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       muons.back().setMVAIso(mvaiso->at(iL));
       muons.back().setIsLoose(isloose->at(iL));
@@ -100,6 +105,12 @@ void MuonReader::refresh(){
       muons.back().setMiniIso(miniiso->at(iL));
       muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
       muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
+      muons.back().setIsMVAVetoMuon(muonId->passMuonId((&muons.back()), muonId->MVAVeto));
+      muons.back().setPtRel(ptrel->at(iL));
+      muons.back().setMiniIso(miniiso->at(iL));
+      muons.back().setPtRatio(ptratio->at(iL));
+      muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
+      muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
     }
   }
 }

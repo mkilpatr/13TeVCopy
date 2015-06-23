@@ -66,7 +66,7 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
 
     if(options_ & FILLOBJ)
-      cout << "+Objects";
+      clog << "+Objects";
     clog << endl;
 }
 

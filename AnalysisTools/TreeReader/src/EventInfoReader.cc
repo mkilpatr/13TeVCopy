@@ -56,7 +56,6 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
-  if(goodvertex) std::cout<<"Good "<<std::endl;
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"wgtXSec", &weight);
   clog << endl;

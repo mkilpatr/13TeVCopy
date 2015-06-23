@@ -35,29 +35,29 @@ namespace ucsbsusy {
     void refresh();
 
     public :
-      std::vector<float> *		pt;
-      std::vector<float> *		eta;
-      std::vector<float> *		phi;
-      std::vector<float> *		mass;
-      std::vector<int>   *		q;
-      std::vector<float> *		scEta;
-      std::vector<float> *		r9;
-      std::vector<float> *		d0;
-      std::vector<float> *		dz;
-      std::vector<float> *		pfdbetaiso;
-      std::vector<float> *		mvaiso;
-      std::vector<float> *              miniiso;
-      std::vector<float> *              ptrel;
-      std::vector<float> *		mvaidnontrig;
-      std::vector<float> *		mvaidtrig;
-      std::vector<bool>  *		isveto;
-      std::vector<bool>  *		isloose;
-      std::vector<bool>  *		ismedium;
-      std::vector<bool>  *              ismediumid;
-      std::vector<bool>  *              islooseid;
-      std::vector<bool>  *		istight;
-
-      //      std::vector<bool>  *              passCutBaseMediumID;
+      std::vector<float> *	pt;
+      std::vector<float> *	eta;
+      std::vector<float> *	phi;
+      std::vector<float> *	mass;
+      std::vector<int>   *	q;
+      std::vector<float> *	scEta;
+      std::vector<float> *	r9;
+      std::vector<float> *	d0;
+      std::vector<float> *	dz;
+      std::vector<float> *	sip3d;
+      std::vector<float> *	pfdbetaiso;
+      std::vector<float> *	mvaiso;
+      std::vector<float> *	mvaidnontrig;
+      std::vector<float> *	mvaidtrig;
+      std::vector<bool>  *	isveto;
+      std::vector<bool>  *	isloose;
+      std::vector<bool>  *	ismedium;
+      std::vector<bool>  *      ismediumid;
+      std::vector<bool>  *      islooseid;
+      std::vector<bool>  *	istight;
+      std::vector<float> *      miniiso;
+      std::vector<float> *      ptrel;
+      std::vector<float> *      ptratio;
 
       ElectronFCollection electrons;
 

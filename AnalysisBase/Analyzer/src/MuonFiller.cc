@@ -43,7 +43,9 @@ MuonFiller::MuonFiller(const int options,
   iMVAiso_       = data.addMulti<float>(branchName_,"MVAiso",0);
   iismedium_     = data.addMulti<bool >(branchName_,"isMedium",false);
   iminiiso_      = data.addMulti<float>(branchName_,"miniiso",0);
-  iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
+  iptrel_        = data.addMulti<float>(branchName_,"ptrel",0);
+  iptratio_      = data.addMulti<float>(branchName_,"ptratio",0);
+  isip3d_        = data.addMulti<float>(branchName_,"sip3d",0);
 
   if(options_ & FILLIDVARS) {
     inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
@@ -68,6 +70,17 @@ MuonFiller::MuonFiller(const int options,
   muMVAiso = new LeptonMVA();
   muMVAiso->initialize(muonisomva);
  
+  if(options_ & LOADGEN) {
+    igenpt_           = data.addMulti<float>(branchName_, "gen_pt", 0);
+    igeneta_          = data.addMulti<float>(branchName_, "gen_eta", 0);
+    igenphi_          = data.addMulti<float>(branchName_, "gen_phi", 0);
+    igenmass_         = data.addMulti<float>(branchName_, "gen_mass", 0);
+    igenstatus_       = data.addMulti<int  >(branchName_, "gen_status", 0);
+    igenpdgid_        = data.addMulti<int  >(branchName_, "gen_pdgid", 0);
+    igenmotherstatus_ = data.addMulti<int  >(branchName_, "genmother_status", 0);
+    igenmotherpdgid_  = data.addMulti<int  >(branchName_, "genmother_pdgid", 0);
+  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -146,6 +159,39 @@ void MuonFiller::fill()
     data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0 , mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0 ,mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
     data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, mu, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, mu ));
+    data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, mu ));
+    data.fillMulti<float>(isip3d_, sip3d);
+
+    if(options_ & LOADGEN) {
+      const reco::GenParticle* genMu = mu.genParticle();
+      if(genMu) {
+        data.fillMulti<float>(igenpt_, genMu->pt());
+        data.fillMulti<float>(igeneta_, genMu->eta());
+        data.fillMulti<float>(igenphi_, genMu->phi());
+        data.fillMulti<float>(igenmass_, genMu->mass());
+        data.fillMulti<int  >(igenstatus_, genMu->status());
+        data.fillMulti<int  >(igenpdgid_, genMu->pdgId());
+        if(genMu->numberOfMothers()) {
+          const auto* mother = genMu->mother(0);
+          data.fillMulti<int  >(igenmotherstatus_, mother->status());
+          data.fillMulti<int  >(igenmotherpdgid_, mother->pdgId());
+        } else {
+          data.fillMulti<int  >(igenmotherstatus_, -1);
+          data.fillMulti<int  >(igenmotherpdgid_, -1);
+        }
+      }
+      else {
+        data.fillMulti<float>(igenpt_, -1);
+        data.fillMulti<float>(igeneta_, -1);
+        data.fillMulti<float>(igenphi_, -1);
+        data.fillMulti<float>(igenmass_, -1);
+        data.fillMulti<int  >(igenstatus_, -1);
+        data.fillMulti<int  >(igenpdgid_, -1);
+        data.fillMulti<int  >(igenmotherstatus_, -1);
+        data.fillMulti<int  >(igenmotherpdgid_, -1);
+      }
+    }
+
   }
   isFilled_ = true;
 
@@ -304,6 +350,30 @@ double MuonFiller::getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pa
   TLorentzVector lepFourVector(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
   return lepFourVector.Perp(closestJetFourVector.Vect());
 }
+
+
+double MuonFiller::getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton) {
+  const pat::Jet *closestJet = 0;
+  double minDR = 9999;
+  for (const pat::Jet &j : *jets) {
+    if (j.pt() < 10) continue;
+    double tmpDR = deltaR(j.eta(),j.phi(),lepton.eta(),lepton.phi());
+    if (tmpDR < minDR) {
+      minDR = tmpDR;
+      closestJet = &j;
+    }
+  }
+
+  //if no jet was found nearby, return some large default value
+  if (!closestJet) return 9999;
+
+  TLorentzVector closestJetP4(closestJet->px(),closestJet->py(),closestJet->pz(),closestJet->energy());
+  TLorentzVector lepP4(lepton.px(),lepton.py(),lepton.pz(),lepton.energy());
+  double lepOvJetPt = lepP4.Pt()/closestJetP4.Pt();
+
+  return lepOvJetPt;
+}
+
 
 double MuonFiller::LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets) {
   double ptmin = 5.0;
