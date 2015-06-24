@@ -7,6 +7,7 @@
 
 #include "AnalysisTools/TreeReader/interface/PhotonReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -70,6 +71,7 @@ void PhotonReader::refresh(){
       photons.back().setIsMedium(ismedium->at(iL));
       photons.back().setIsTight(istight->at(iL));
     }
+    std::sort(photons.begin(), photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
   }
 
 }
