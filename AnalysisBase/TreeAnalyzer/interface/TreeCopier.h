@@ -23,7 +23,7 @@ namespace ucsbsusy {
   class TreeCopier : public BaseTreeAnalyzer {
   public:
 
-    TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0);
+    TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0);
     virtual ~TreeCopier();
 
     virtual void setupTree() = 0; //Used by the child classes
@@ -43,7 +43,7 @@ namespace ucsbsusy {
 
   class TreeCopierAllBranches : public TreeCopier {
   public:
-    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false,ConfigPars * pars = 0) :
+    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false,cfgSet::ConfigSet * pars = 0) :
       TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
 
     virtual void setupTree() {
@@ -56,7 +56,7 @@ namespace ucsbsusy {
 
   class TreeCopierLoadedBranches : public TreeCopier {
   public:
-    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0) :
+    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0) :
       TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
 
     virtual void setupTree() {
@@ -68,7 +68,7 @@ namespace ucsbsusy {
 
   class TreeCopierManualBranches : public TreeCopier {
   public:
-    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0) :
+    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0) :
       TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
   public:
     virtual void setupTree() {
@@ -169,7 +169,7 @@ namespace ucsbsusy {
 
   class TreeFlattenCopier : public BaseTreeAnalyzer {
   public:
-    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, ConfigPars * pars = 0);
+    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0);
     virtual ~TreeFlattenCopier();
 
     template<typename Type>

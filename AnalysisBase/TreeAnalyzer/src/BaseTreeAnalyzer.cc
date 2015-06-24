@@ -9,12 +9,13 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,ConfigPars * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
     run               (0),
     lumi              (0),
     event             (0),
@@ -24,8 +25,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     rho               (0),
     nSelLeptons       (0),
     nVetoedLeptons    (0),
-    nVetoedTaus       (0),
-    nVetoedTracks       (0),
+    nVetoedTracks     (0),
     nJets             (0),
     nBJets            (0),
     met               (0),
@@ -33,89 +33,120 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     goodvertex        (false),
     isMC_             (isMCTree),
     defaultJets       (0),
-    config            (pars ? *pars : ConfigPars())
+    configSet         (pars ? *pars : cfgSet::ConfigSet())
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
-  //  std::cout<<"Random stuff "<<std::endl;
-  setDefaultJets(config.defaultJetCollection);
+
+  clog <<"Loaded configurations: ";
+  if(configSet.jets           .isConfig()) clog << configSet.jets           .getName() <<" ";
+  if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons.getName() <<" ";
+  if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons  .getName() <<" ";
+  if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks   .getName() <<" ";
+  if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons.getName() <<" ";
+  if(configSet.met            .isConfig()) clog << configSet.met            .getName() <<" ";
+  clog << endl;
+
+  if(configSet.jets.isConfig()){
+    clog << "With default jet type: "  ;
+    switch (configSet.jets.jetCollection) {
+       case cfgSet::AK4JETS : {
+         defaultJets  = &ak4Reader;
+         clog << "ak4"  <<endl;
+         break;
+       }
+       case cfgSet::PUPPIJETS : {
+         defaultJets  = &puppiJetsReader;
+         clog << "puppi"  <<endl;
+         break;
+       }
+       case cfgSet::PICKYJETS : {
+         defaultJets  = &pickyJetReader;
+         clog << "picky"  <<endl;
+         break;
+       }
+       case cfgSet::CASUBJETS : {
+         defaultJets  = &caSubJetReader;
+         clog << "subjetsca"  <<endl;
+         break;
+       }
+       default : {
+         cout << endl << "No valid jet for type: " << configSet.jets.jetCollection << " found!" << endl;
+         break;
+       }
+     }
+  } else {
+    clog << "With no default jet type" << endl  ;
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
+void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName)
 {
   switch (type) {
-    case EVTINFO : {
+    case cfgSet::EVTINFO : {
       reader.load(&evtInfoReader, 0, "");
       break;
     }
-    case AK4JETS : {
+    case cfgSet::AK4JETS : {
       int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
       reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName);
       break;
     }
-    case PUPPIJETS : {
+    case cfgSet::PUPPIJETS : {
       int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
       reader.load(&puppiJetsReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName);
       break;
     }
-    case PICKYJETS : {
+    case cfgSet::PICKYJETS : {
       int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
       reader.load(&pickyJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PICKYJETS : branchName);
       break;
     }
-    case CASUBJETS : {
+    case cfgSet::CASUBJETS : {
       int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
       reader.load(&caSubJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CASUBJETS : branchName);
       break;
     }
-    case ELECTRONS : {
+    case cfgSet::ELECTRONS : {
       int defaultOptions = ElectronReader::defaultOptions;
       reader.load(&electronReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_ELECTRONS : branchName );
       break;
     }
-    case MUONS : {
+    case cfgSet::MUONS : {
       int defaultOptions = MuonReader::defaultOptions;
       reader.load(&muonReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_MUONS : branchName );
       break;
     }
-    case TAUS : {
+    case cfgSet::TAUS : {
       int defaultOptions = TauReader::defaultOptions;
       reader.load(&tauReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TAUS : branchName );
       break;
     }
-    case PHOTONS : {
+    case cfgSet::PHOTONS : {
       int defaultOptions = PhotonReader::defaultOptions;
       reader.load(&photonReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PHOTONS : branchName );
       break;
     }
-    case PFCANDS : {
-      int defaultOptions;
-      switch (config.tauVetoPreselection) {
-        case MT :
-          defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETOMT;
-        case DPHI :
-          defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETODPHI;
-        default : {
-          defaultOptions = PFCandidateReader::defaultOptions;
-          break;
-        }
-      }
+    case cfgSet::PFCANDS : {
+      int defaultOptions = PFCandidateReader::defaultOptions;
+      if(configSet.vetoedTracks.isConfig() && !configSet.vetoedTracks.mtPresel )
+        defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETODPHI;
       reader.load(&pfcandReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PFCANDS : branchName );
       break;
     }
-    case GENPARTICLES : {
+    case cfgSet::GENPARTICLES : {
       int defaultOptions = GenParticleReader::defaultOptions;
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
       break;
     }
       
-    case CMSTOPS : { 
+    case cfgSet::CMSTOPS : {
       int defaultOptions = CMSTopReader::defaultOptions;
       reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
       break;
     }
 
-    case CORRAL : {
+    case cfgSet::CORRAL : {
       int defaultOptions = CORRALReader::defaultOptions;
       reader.load(&corralReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CORRAL : branchName );
       break;
@@ -130,23 +161,22 @@ void BaseTreeAnalyzer::load(VarType type, int options, string branchName)
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::loadVariables()
 {
-  load(EVTINFO);
-  load(AK4JETS);
-  //  load(PICKYJETS);
-  //  load(CASUBJETS);
- load(ELECTRONS);
- load(MUONS);
-  //  load(PHOTONS);
- load(PFCANDS);
-  //  load(CMSTOPS);
-  if(isMC()) load(GENPARTICLES);
+  load(cfgSet::EVTINFO);
+  load(cfgSet::AK4JETS);
+  load(cfgSet::PICKYJETS);
+  load(cfgSet::CASUBJETS);
+  load(cfgSet::ELECTRONS);
+  load(cfgSet::MUONS);
+  load(cfgSet::PHOTONS);
+  load(cfgSet::PFCANDS);
+  load(cfgSet::CMSTOPS);
+  if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
 {
   isProcessed_ = true;
 
-  //  std::cout<<"Test "<<std::endl;
 
   if(evtInfoReader.isLoaded()) {
     run   = evtInfoReader.run;
@@ -161,6 +191,7 @@ void BaseTreeAnalyzer::processVariables()
     process =  evtInfoReader.process;
   }
 
+
   if(genParticleReader.isLoaded()){
     genParts.clear();
     genParts.reserve(genParticleReader.genParticles.size());
@@ -174,256 +205,61 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
   }
 
-  selectLeptons(allLeptons,selectedLeptons,vetoedLeptons,vetoedTaus,vetoedTracks,nSelLeptons,nVetoedLeptons,nVetoedTaus,nVetoedTracks);
 
-  if(photonReader.isLoaded()){
-    selectedPhotons.clear();
-    selectedPhotons.reserve(photonReader.photons.size());
-    std::sort(photonReader.photons.begin(), photonReader.photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
-    for(auto& p : photonReader.photons)
-      if(isGoodPhoton(p)) selectedPhotons.push_back(&p);
-  }
+  allLeptons.clear();
+  selectedLeptons.clear();
+  vetoedLeptons.clear();
+  if(muonReader.isLoaded() || electronReader.isLoaded()){
+    allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
+    if(electronReader.isLoaded())
+      for(auto& electron : electronReader.electrons)
+        allLeptons.push_back(&electron);
+    if(muonReader.isLoaded())
+      for(auto& muon : muonReader.muons)
+       allLeptons.push_back(&muon);
+    std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
-  //Picky jet corrections
-  if(pickyJetReader.isLoaded() && config.correctPickyPT){
-    if(!evtInfoReader.isLoaded())
-      throw std::invalid_argument("BaseTreeAnalyzer::processVariables(): EventInfo must be loaded if you want to correct picky jets pt!");
-    for(auto& j : pickyJetReader.recoJets)
-      j.setP4(CylLorentzVectorF(correctedPickyPT(j.pt(),j.eta(),pickyJetReader.jetarea_->at(j.index()),rho),
-          j.eta(),j.phi(),j.mass()) );
-    std::sort(pickyJetReader.recoJets.begin(), pickyJetReader.recoJets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
+    if(configSet.selectedLeptons.isConfig())
+      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.selectedLeptons);
+
+    if(configSet.vetoedLeptons.isConfig())
+      cfgSet::selectLeptons(vetoedLeptons, allLeptons, configSet.vetoedLeptons);
   }
+  nSelLeptons = selectedLeptons.size();
+  nVetoedLeptons = vetoedLeptons.size();
+
+  vetoedTracks.clear();
+  if(pfcandReader.isLoaded() && configSet.vetoedTracks.isConfig())
+    cfgSet::selectTracks(vetoedTracks,pfcandReader.pfcands, configSet.vetoedTracks);
+  nVetoedTracks = vetoedTracks.size();
+
+  if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
+    cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.selectedPhotons);
+
 
   jets.clear(); bJets.clear(); nonBJets.clear();
-  if(defaultJets && defaultJets->isLoaded()){
-    cleanJets(defaultJets,jets,&bJets,&nonBJets);
+  if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
+    if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
+    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&selectedPhotons,configSet.jets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
-  //  std::cout<<"End"<<std::endl;
+
+  if(evtInfoReader.isLoaded() && configSet.met.isConfig()){
+    cfgSet::processMET(*met,&selectedLeptons,&selectedPhotons,configSet.met);
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 {
   clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
   loadVariables();
-  //  std::cout<<"Did we make it"<<std::endl;
   isLoaded_ = true;
-  
-  //  std::cout<<reader.nextEvent(reportFrequency)<<std::endl;
-
-
 
   while(reader.nextEvent(reportFrequency)){
-    //    std::cout<<"Woohoo "<<std::endl;
-	isProcessed_ = false;
+    isProcessed_ = false;
     if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-    //    std::cout<<"Let's process"<<std::endl;
     processVariables();
-    //    std::cout<<"Let's run"<<std::endl;
     runEvent();
   }
-}
-//--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::setDefaultJets(VarType type) {
-  clog << "With default jet type: "  ;
-  switch (type) {
-     case AK4JETS : {
-       setDefaultJets(&ak4Reader);
-       clog << "ak4"  <<endl;
-       break;
-     }
-     case PUPPIJETS : {
-       setDefaultJets(&puppiJetsReader);
-       clog << "puppi"  <<endl;
-       break;
-     }
-     case PICKYJETS : {
-       setDefaultJets(&pickyJetReader);
-       clog << "picky"  <<endl;
-       break;
-     }
-     case CASUBJETS : {
-       setDefaultJets(&caSubJetReader);
-       clog << "subjetsca"  <<endl;
-       break;
-     }
-     default : {
-       cout << endl << "No valid jet for type: " << type << " found!" << endl;
-       break;
-     }
-   }
-
-
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isMediumBJet(const RecoJetF& jet) const {
-  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_MEDIUM );
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isTightBJet(const RecoJetF& jet) const {
-  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_TIGHT );
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isLooseBJet(const RecoJetF& jet) const {
-  return (jet.pt() > config.minJetPt && fabs(jet.eta()) < config.maxBJetEta  && jet.csv() > defaults::CSV_LOOSE );
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isSelElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minSelEPt && fabs(electron.eta()) < config.maxSelEETA && (electron.*config.selectedElectron)());
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isVetoElectron(const ElectronF& electron) const {
-  return (electron.pt() > config.minVetoEPt && fabs(electron.eta()) < config.maxVetoEETA && (electron.*config.vetoedElectron)());
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isSelMuon(const MuonF& muon) const {
-  if(config.applyMuIPCuts)
-    return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && fabs(muon.d0()) < config.maxSelMuD0 && fabs(muon.dz()) < config.maxSelMuDz && (muon.*config.selectedMuon)());
-  else
-    return (muon.pt() > config.minSelMuPt && fabs(muon.eta()) < config.maxSelMuETA && (muon.*config.selectedMuon)());
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
-  if(config.applyMuIPCuts)
-    return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && fabs(muon.d0()) < config.maxVetoMuD0 && fabs(muon.dz()) < config.maxVetoMuDz && (muon.*config.vetoedMuon)());
-  else
-    return (muon.pt() > config.minVetoMuPt && fabs(muon.eta()) < config.maxVetoMuETA && (muon.*config.vetoedMuon)());
-}
-//--------------------------------------------------------------------------------------------------
-bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
-  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && fabs(tau.dz()) < config.maxVetoTauDz && (tau.*config.vetoedTau)());
-}
-bool BaseTreeAnalyzer::isVetoTrack(const PFCandidateF& track) const {
-  return (track.pt() > config.minVetoTrackPt);
-}
-
-
-//--------------------------------------------------------------------------------------------------
-bool ucsbsusy::BaseTreeAnalyzer::isGoodPhoton(const PhotonF& pho) const {
-  return (pho.pt() > config.minSelPhoPt && fabs(pho.eta()) < config.maxSelPhoETA && (pho.*config.selectedPhoton)());
-}
-//--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::selectLeptons(
-                   std::vector<LeptonF*>& allLeptons,
-                   std::vector<LeptonF*>& selectedLeptons,
-                   std::vector<LeptonF*>& vetoedLeptons,
-                   std::vector<PFCandidateF*>& vetoedTaus,
-                   std::vector<PFCandidateF*>& vetoedTracks,
-                   int& nSelLeptons,
-                   int& nVetoedLeptons,
-                   int& nVetoedTaus,
-		   int &nVetoedTracks
-                   ){
-  allLeptons.clear();
-  allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
-  for(auto& electron : electronReader.electrons)
-    allLeptons.push_back(&electron);
-  for(auto& muon : muonReader.muons)
-   allLeptons.push_back(&muon);
-  std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
-
-  selectedLeptons.clear();
-  vetoedLeptons.clear();
-  for(auto* lepton : allLeptons){
-    /*
-    bool shouldSelect = false;
-    if(config.leptonSelection != SEL_0_LEP && (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton))){
-      if(config.leptonSelection == SEL_ALL_LEP) shouldSelect = true;
-      else if( selectedLeptons.size() == 0){
-        if(config.leptonSelection == SEL_1_LEP) shouldSelect = true;
-        else if(config.leptonSelection == SEL_1_MU && lepton->ismuon())shouldSelect = true;
-        else if(config.leptonSelection == SEL_1_E  && !lepton->ismuon())shouldSelect = true;
-      }
-    }
-    if(shouldSelect){
-      selectedLeptons.push_back(lepton);
-      continue;
-    }
-    */
-
-    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton): isSelElectron(*(ElectronF*)lepton)) { 
-      selectedLeptons.push_back(lepton); 
-    }
-    else if(lepton->ismuon() ? isVetoMuon(*(MuonF*)lepton): isVetoElectron(*(ElectronF*)lepton)){
-      vetoedLeptons.push_back(lepton);
-    }
-
-  }
-
-  nSelLeptons = selectedLeptons.size();
-  nVetoedLeptons = vetoedLeptons.size();
-
-  vetoedTaus.clear();
-  for(auto& pfc : pfcandReader.pfcands) {
-    if(isVetoTau(pfc))
-      vetoedTaus.push_back(&pfc);
-  }
-  nVetoedTaus = vetoedTaus.size();
-  vetoedTracks.clear();
-  for(auto& pfc : pfcandReader.pfcands) {
-    if(isVetoTrack(pfc))
-      vetoedTracks.push_back(&pfc);
-  }
-  nVetoedTracks = vetoedTracks.size();
-
-
-
-}
-//--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::cleanJets(JetReader * reader, std::vector<RecoJetF*>& jets, std::vector<RecoJetF*>* bJets, std::vector<RecoJetF*>* nonBJets) const {
-	if((config.cleanJetsvSelectedLeptons_) && !isProcessed_)
-		throw std::invalid_argument("BaseTreeAnalyzer::cleanJets(): You want to do jet cleaning but have not yet processed variables!");
-	jets.clear(); jets.reserve(reader->recoJets.size());
-	if(bJets){bJets->clear();}
-	if(nonBJets){nonBJets->clear(); nonBJets->reserve( std::max(2,int(jets.size())) -2);}
-
-	vector<bool> vetoJet(reader->recoJets.size(),false);
-	if(config.cleanJetsvSelectedLeptons_) {
-	  for(const auto* glep : selectedLeptons) {
-	    double nearDR = 0;
-	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR,config.cleanJetsMaxDR,30);
-	    if(near >= 0){
-	      vetoJet[near] = true;
-	      //	      std::cout<<"We get rid of jet "<<near<<std::endl;
-	    }
-	  }
-
-          for(const auto* glep : vetoedLeptons) {
-	    double nearDR = 0;
-	    int near = PhysicsUtilities::findNearestDR(*glep,reader->recoJets,nearDR,config.cleanJetsMaxDR);
-	    if(near >= 0) vetoJet[near] = true;
-	  }
-	}
-
-	for(unsigned int iJ = 0; iJ < reader->recoJets.size(); ++iJ){
-	  auto& jet = reader->recoJets[iJ];
-	  if(vetoJet[iJ]) continue;
-	  if(!isGoodJet(jet)) continue;
-
-	  jets.push_back(&jet);
-
-    if(bJets || nonBJets){
-      if(isMediumBJet(jet)){
-        if(bJets)bJets->push_back(&jet);
-      }
-      else{
-        if(nonBJets)nonBJets->push_back(&jet);
-      }
-    }
-	}
-}
-//--------------------------------------------------------------------------------------------------
-double BaseTreeAnalyzer::correctedPickyPT(double pt,double eta,double area, double rho) const {
-  double constant = 1.08;
-  double correction = .35;
-  if(pt < 30){
-    if(TMath::Abs(eta) < 1.5){
-      constant = 1.05;
-      correction = .50;
-    } else {
-      constant = 1.10;
-    }
-  }
-  return max(0.,constant*(pt - rho*area*correction) );
 }
