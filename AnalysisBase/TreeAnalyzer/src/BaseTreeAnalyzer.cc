@@ -292,7 +292,7 @@ bool BaseTreeAnalyzer::isVetoMuon(const MuonF& muon) const {
 }
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::isVetoTau(const PFCandidateF& tau) const {
-  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA  && (tau.*config.vetoedTau)());
+  return (tau.pt() > config.minVetoTauPt && fabs(tau.eta()) < config.maxVetoTauETA && fabs(tau.dz()) < config.maxVetoTauDz && (tau.*config.vetoedTau)());
 }
 bool BaseTreeAnalyzer::isVetoTrack(const PFCandidateF& track) const {
   return (track.pt() > config.minVetoTrackPt);
