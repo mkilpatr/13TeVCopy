@@ -136,10 +136,6 @@ void ElectronFiller::initMVA()
     eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EB_BDT.weights.xml");
     eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_50ns_EE_BDT.weights.xml");
   } else {
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_5_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EB_10_25ns_BDT.weights.xml");
-    eleNonTrigIDMVAWeights.push_back(base+"/src/data/CSA14/EIDmva_EE_10_25ns_BDT.weights.xml");
     eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EB_BDT.weights.xml");
     eleTrigIDMVAWeights.push_back(base+"/src/data/CSA14/TrigIDMVA_25ns_EE_BDT.weights.xml");
     eleNonTrigIDMVAPhys14Weights.push_back(base+"/src/data/Phys14/EIDmva_EB1_5_oldscenario2phys14_BDT.weights.xml");
@@ -151,12 +147,6 @@ void ElectronFiller::initMVA()
   }
 
     
-  eleMVANonTrig = new EGammaMvaEleEstimatorCSA14();
-  eleMVANonTrig->initialize("BDT",
-                          EGammaMvaEleEstimatorCSA14::kNonTrig,
-                          true,
-                          eleNonTrigIDMVAWeights);
-
   eleMVATrig = new EGammaMvaEleEstimatorCSA14();
   eleMVATrig->initialize("BDT",
                           EGammaMvaEleEstimatorCSA14::kTrig,
