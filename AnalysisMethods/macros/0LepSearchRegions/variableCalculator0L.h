@@ -11,6 +11,7 @@ typedef   Paramatrix<Panvariate>  ParamatrixMVA;
 #include "math.h"
 #include "AnalysisTools/KinematicVariables/interface/Mt2Helper.h"
 #include "AnalysisTools/KinematicVariables/interface/CreatePseudoJets.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 
 using namespace std;
 
@@ -19,7 +20,13 @@ namespace ucsbsusy {
 struct a {
   static const BaseTreeAnalyzer * analyzer;
   static bool isMediumBJet(const RecoJetF& jet){
-    return analyzer->isMediumBJet(jet);
+    //return analyzer->isMediumBJet(jet);
+
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+	  return cfgSet::isSelBJet(jet,cfg.jets,defaults::CSV_MEDIUM);
+	   //defaults::CSV_MEDIUM
+	  // return true;
   };
 };
 const BaseTreeAnalyzer * a::analyzer = 0;
@@ -132,7 +139,8 @@ public:
   		                 , const vector<CMSTopF*>&     inTops
   		             ) {
     a::analyzer = analyzer;
-
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
     //passPresel      =  0;
     ptMet             =  0;
     npv               =  0;
@@ -255,7 +263,9 @@ public:
         ++nak4pt30;
       } // j.pt()>30
       // without bjets"
-      if(analyzer->isLooseBJet(j)) continue;
+      //if(analyzer->isLooseBJet(j)) continue;
+      if(cfgSet::isSelBJet(j,cfg.jets,defaults::CSV_LOOSE)) continue;
+
       qglprodnoB *= qgltrans;
       qglsumnoB  += qgl;
       if      (qgl > qgl0noB) { qgl1noB = qgl0noB; qgl0noB = qgl; }
@@ -294,8 +304,10 @@ public:
       auto& j = *inJets[iJ];
       if (iJ==0) J0pt = j.pt();
       ++nJ20;
-      if(analyzer->isTightBJet(j)) ++ntBtag;
-      if(analyzer->isMediumBJet(j)){
+      //if(analyzer->isTightBJet(j)) ++ntBtag;
+      if(cfgSet::isSelBJet(j,cfg.jets,defaults::CSV_TIGHT)) ++ntBtag;
+     // if(analyzer->isMediumBJet(j)){
+      if(cfgSet::isSelBJet(j,cfg.jets,defaults::CSV_MEDIUM)){
         ++nmBtag;
         if      (Bpt0 < 0) Bpt0 = j.pt();
         else if (Bpt1 < 0) Bpt1 = j.pt();
@@ -366,7 +378,9 @@ public:
       if (n==3) vHtJ123 = vHt;
 
       // past this, only want to use non-B jets
-      if(analyzer->isMediumBJet(j)) continue;
+      //if(analyzer->isMediumBJet(j)) continue;
+      if(cfgSet::isSelBJet(j,cfg.jets,defaults::CSV_MEDIUM)) continue;
+
       htnoB += j.pt();
       vHtnoB = vHtnoB.p4() + j.p4();
       if(nNonB<2) htJ12noB += j.pt();
