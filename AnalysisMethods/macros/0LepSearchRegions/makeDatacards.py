@@ -2,6 +2,8 @@
 import os
 import sys
 import re
+import time
+from shutil import copy  
 from ConfigParser import SafeConfigParser
 from collections import OrderedDict
 from ROOT import gROOT,TFile,TTree,TH1D
@@ -83,8 +85,14 @@ class DatacardConfig:
     # First the template card is made with all backgrounds,
     # then the signal points are looped to get the sig numbers.
     def produceDatacards(self):
-        if not os.path.exists(self.datacarddir) :
-            os.makedirs(self.datacarddir)
+        if os.path.exists(self.datacarddir) :
+            print 'WARNING!', self.datacarddir, 'already exists!'
+            t = time.localtime()
+            moveStr = '_moveTime'+str(t.tm_year)+'-'+str(t.tm_mon)+'-'+str(t.tm_mday)+'-'+str(t.tm_hour*10000+t.tm_min*100+t.tm_sec)
+            print 'renaming existing directory to', self.datacarddir+moveStr
+            os.rename(self.datacarddir,self.datacarddir+moveStr) 
+        os.makedirs(self.datacarddir)
+        copy(self.conf_file,self.datacarddir)
 
         # loop over all bins
         ibin = -1
