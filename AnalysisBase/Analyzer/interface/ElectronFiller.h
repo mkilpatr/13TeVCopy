@@ -89,7 +89,6 @@ namespace ucsbsusy {
       const double        eleptMin_;
 
       // Evaluate POG MVA ID
-      EGammaMvaEleEstimatorCSA14* eleMVANonTrig;
       EGammaMvaEleEstimatorCSA14* eleMVATrig;
       EGammaMvaEleEstimatorCSA14* eleMVANonTrigPhys14;
       LeptonId*                   eleIdCuts;
