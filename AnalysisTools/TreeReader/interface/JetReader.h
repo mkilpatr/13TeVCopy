@@ -63,10 +63,16 @@ public:
   std::vector<float>*  jetaxis1_    ;
   std::vector<float>*  jetaxis2_    ;
   std::vector<size16>* jetMult_     ;
+  std::vector<float>*  jetcharge_   ;
+  std::vector<float>*  jetpullrap_  ;
+  std::vector<float>*  jetpullphi_  ;
   std::vector<float>*  genjetptD_   ;
   std::vector<float>*  genjetaxis1_ ;
   std::vector<float>*  genjetaxis2_ ;
   std::vector<size16>* genjetMult_  ;
+  std::vector<float>*  genjetcharge_   ;
+  std::vector<float>*  genjetpullrap_  ;
+  std::vector<float>*  genjetpullphi_  ;
   //for top assoc
   std::vector<size16>* genAssocPrtIndex_;
   std::vector<size16>* genAssocJetIndex_;
