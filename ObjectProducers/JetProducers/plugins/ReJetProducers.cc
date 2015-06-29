@@ -1,16 +1,3 @@
-//#ifndef OBJECTPRODUCERS_JETPRODUCERS_PFREJETPRODUCER_H
-//#define OBJECTPRODUCERS_JETPRODUCERS_PFREJETPRODUCER_H
-
-//#ifndef OBJECTPRODUCERS_JETPRODUCERS_PACKEDREJETPRODUCER_H
-//#define OBJECTPRODUCERS_JETPRODUCERS_PACKEDREJETPRODUCER_H
-
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
@@ -169,5 +156,11 @@ protected:
 
 DEFINE_FWK_MODULE(PFReJetProducer);
 DEFINE_FWK_MODULE(PackedReJetProducer);
-//#endif
-//#endif
+
+
+
+
+
+
+
+
