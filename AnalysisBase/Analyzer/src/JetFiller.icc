@@ -88,11 +88,17 @@ JetFiller<Jet>::JetFiller(const int options, const string branchName, const Even
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
     ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
+    ijetcharge_  =data.addMulti<float>(branchName_,"jet_charge"    ,0);
+    ijetpullrap_ =data.addMulti<float>(branchName_,"jet_pullrap"    ,0);
+    ijetpullphi_ =data.addMulti<float>(branchName_,"jet_pullphi"    ,0);
     if(options_ & LOADGEN) {
       igenjetptD_  = data.addMulti<float>(branchName_,"genjet_ptD"    ,0);
       igenjetaxis1_= data.addMulti<float>(branchName_,"genjet_axis1"  ,0);
       igenjetaxis2_= data.addMulti<float>(branchName_,"genjet_axis2"  ,0);
       igenjetMult_ = data.addMulti<size16>(branchName_,"genjet_jetMult",0);
+      igenjetcharge_  =data.addMulti<float>(branchName_,"genjet_charge"    ,0);
+      igenjetpullrap_ =data.addMulti<float>(branchName_,"genjet_pullrap"    ,0);
+      igenjetpullphi_ =data.addMulti<float>(branchName_,"genjet_pullphi"    ,0);
     }
   }
 
@@ -152,6 +158,12 @@ void JetFiller<Jet>::fill()
         data.fillMulti<float>(igenjetaxis1_   ,qgTaggingVar_->getAxis1());
         data.fillMulti<float>(igenjetaxis2_   ,qgTaggingVar_->getAxis2());
         data.fillMulti<size16>(igenjetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::genJetMult"));
+        data.fillMulti<float>(igenjetcharge_   ,float(qgTaggingVar_->getJetCharge(&j)));
+        double jetPullRap = 0;
+        double jetPullPhi = 0;
+        qgTaggingVar_->getPull(&j,jetPullRap,jetPullPhi);
+        data.fillMulti<float>(igenjetpullrap_   ,float(jetPullRap));
+        data.fillMulti<float>(igenjetpullphi_   ,float(jetPullPhi));
       }
     }
 
@@ -233,6 +245,12 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
       data.fillMulti<float>(ijetaxis2_   ,qgTaggingVar_->getAxis2());
       data.fillMulti<size16>(ijetMult_   ,convertTo<size16>(qgTaggingVar_->getTotalMult(),"JetFiller::recoJetMult"));
+      data.fillMulti<float>(ijetcharge_   ,float(qgTaggingVar_->getJetCharge(&j)));
+      double jetPullRap = 0;
+      double jetPullPhi = 0;
+      qgTaggingVar_->getPull(&j,jetPullRap,jetPullPhi);
+      data.fillMulti<float>(ijetpullrap_   ,float(jetPullRap));
+      data.fillMulti<float>(ijetpullphi_   ,float(jetPullPhi));
       if(options_ & SAVEQGL) {
         float qgQGL = (*qgHandleQGL_ )[reco::CandidatePtr(jets_, iJ)];
         data.fillMulti<float>(ijetqgl_ , qgQGL );

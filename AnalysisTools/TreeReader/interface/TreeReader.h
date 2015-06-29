@@ -33,7 +33,7 @@ namespace ucsbsusy {
         }
         else {
           if(require) throw std::invalid_argument(( TString("TreeReader::setBranchAddress could not load variable: " ) + tBranchName).Data() );
-          if(verbose)std::cout << " -" <<tBranchName;
+          if(verbose)std::clog << " -" <<tBranchName;
         }
       }
 

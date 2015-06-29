@@ -8,28 +8,32 @@
  */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+
+
 using namespace std;
 using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars * pars) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree,pars) {
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree,pars) {
   };
   virtual ~Copier() {};
 
   virtual void loadVariables(){
-    load(EVTINFO);
-    load(AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-    load(PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-    load(ELECTRONS);
-    load(MUONS);
-    load(PFCANDS);
+    load(cfgSet::EVTINFO);
+    load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(cfgSet::PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+//    load(cfgSet::ELECTRONS);
+    load(cfgSet::MUONS);
+//    load(cfgSet::PFCANDS);
   }
 
   virtual bool fillEvent() {
 
     MomentumF cutMET = *met;
-    if(selectedLeptons.size()) cutMET.p4()  += selectedLeptons[0]->p4();
+
+    cfgSet::processMET(cutMET,&selectedLeptons,0,cfgSet::zl_lplus_met);
     if(cutMET.pt() < 200 && met->pt() < 200) return false;
 
     if(nJets < 5) return false;
@@ -55,13 +59,11 @@ public:
  */
 
 void ZeroPlusOneLeptonSkimmer(string fileName,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
-  BaseTreeAnalyzer::ConfigPars pars;
-  pars.cleanJetsvSelectedLeptons_ = false;
-  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
-  pars.minSelMuPt = 5;
-  pars.minSelEPt = 5;
-  pars.vetoedMuon = (&MuonF::ismultiisovetomuonl);
-  pars.vetoedElectron = (&ElectronF::ismultiisovetoelectronl);
+
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 
   //get the output name
   TString prefix(fileName);
@@ -69,7 +71,7 @@ void ZeroPlusOneLeptonSkimmer(string fileName,  string treeName = "TestAnalyzer/
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
   TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
 
-  Copier a(fileName,treeName,outName.Data(),true, &pars);
+  Copier a(fileName,treeName,outName.Data(),true, &cfg);
 
   a.analyze();
 }

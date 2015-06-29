@@ -121,10 +121,16 @@ public:
       size ijetaxis1_   ;
       size ijetaxis2_   ;
       size ijetMult_    ;
+      size ijetcharge_  ;
+      size ijetpullrap_  ;
+      size ijetpullphi_  ;
       size igenjetptD_   ;
       size igenjetaxis1_ ;
       size igenjetaxis2_ ;
       size igenjetMult_  ;
+      size igenjetcharge_  ;
+      size igenjetpullrap_  ;
+      size igenjetpullphi_  ;
       //for top assoc
       size iGenAssocPrtIndex_;
       size iGenAssocJetIndex_;
