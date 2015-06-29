@@ -9,6 +9,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/DataFormats/interface/GenParticle.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #endif
 
 using namespace ucsbsusy;
@@ -18,9 +19,8 @@ class Analyzer : public BaseTreeAnalyzer {
 
   public :
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, double xSec, TString sname, TString outputdir,ConfigPars* pars) : 
-    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
-    
+	 Analyzer(TString fileName, TString treeName, bool isMCTree, cfgSet::ConfigSet *pars, double xSec, TString sname, TString outputdir) :
+	    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars){
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
@@ -93,8 +93,6 @@ class Analyzer : public BaseTreeAnalyzer {
     fout->Close();
   }
 
-  const double xsec_;
-  const double lumi_         = 1000.0; // in /pb
   const double metcut_       = 150.0;
   const int    minNSelJets_  = 4;
   const int    minNSelBjets_ = 1;
@@ -166,15 +164,33 @@ class Analyzer : public BaseTreeAnalyzer {
   void findClosestJet2Lep(vector<RecoJetF*>& inJets,MomentumF* lep,RecoJetF* &closestJet);
   void findClosestJet2Top(vector<RecoJetF*>& inJets,CMSTopF* fatJet,RecoJetF* &closestJet);
   void runEvent();
+  void loadVariables();
+
 
 };
+
+//Load event variables:
+void Analyzer::loadVariables(){
+  load(cfgSet::EVTINFO);
+  load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+  load(cfgSet::PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+  load(cfgSet::ELECTRONS);
+  load(cfgSet::MUONS);
+  load(cfgSet::PFCANDS);
+  load(cfgSet::CMSTOPS);
+}
 
 // Analyze event and fill plots
 void Analyzer::runEvent()
 {
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
+	std::cout << "Processing an event" << std::endl;
   if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
+	std::cout << "An event has passed!!!" << std::endl;
+	std::cout << "An event has passed!!!" << std::endl;
+	std::cout << "An event has passed!!!" << std::endl;
+	std::cout << "An event has passed!!!" << std::endl;
 
   float wgt    = evtInfoReader.weight;
 
@@ -182,8 +198,8 @@ void Analyzer::runEvent()
   NPV          = nPV;
   NJets        = nJets;
   NBJets       = nBJets;
-  NRemovedJets = nRemovedJets;
-  NVetoedTau   = nVetoedTaus;
+  //NRemovedJets = nRemovedJets; (This seems to be missing from the current framework)
+  NVetoedTau   = nVetoedTracks;
 
   TRandom3 rnd(0);
   float maxLep = nSelLeptons;
@@ -230,8 +246,18 @@ void Analyzer::runEvent()
   
 
   // corected variables
+
+  /*
+   * Old met correction Scheme
   MomentumF* metn = new MomentumF(met->p4() + lep->p4());
   METn         = metn->pt();
+  */
+
+  //Cfg met correction
+  MomentumF* metn = new MomentumF(met->p4());
+  cfgSet::processMET(*metn,&selectedLeptons,0,cfgSet::zl_lplus_met);
+  METn = metn->pt();
+
   DphiJ3METn   = JetKinematics::absDPhiMETJ3(*metn,jets);   
   DphiJ12METn  = JetKinematics::absDPhiMETJ12(*metn,jets);
   
@@ -429,28 +455,14 @@ void processZeroLepton1lepCS(TString sname            = "test",         // sampl
     printf("Cross section: %5.2f pb\n", xsec);
   
   TString fullname = fileprefix+fname;
-
-  BaseTreeAnalyzer::ConfigPars pars;
-  pars.cleanJetsvSelectedLeptons_ = false; // was true
-  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS; //PICKYJETS AK4JETS
   
-  // selected leptons
-  pars.minSelEPt = 5; //40
-  pars.maxSelEETA = 2.4;
-  pars.selectedElectron = &ElectronF::ismultiisovetoelectronl;
-  pars.minSelMuPt = 5; //30
-  pars.maxSelMuETA = 2.1;
-  pars.selectedMuon = &MuonF::ismultiisovetomuonl;
-
-  // vetoed leptons
-  pars.minVetoEPt = 5;
-  pars.vetoedElectron = &ElectronF::ismultiisovetoelectronl;
-  pars.minVetoMuPt = 5;
-  pars.vetoedMuon = &MuonF::ismultiisovetomuonl;
-  
-  
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  //cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
-  Analyzer a(fullname, "Events", isMC, xsec, sname, outputdir,&pars);
+  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
   a.analyze(100000);
 
