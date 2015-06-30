@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 import os
 import sys
+import re
 import argparse
 import subprocess
+from ROOT import gROOT,TFile,TTree
+gROOT.SetBatch(True)
 
 # script to help with submission of ntupling jobs, either interactively or using a batch system (LSF on lxplus CERN or condor on cmslpc at FNAL)
 # use ./makejobs.py -h to explore the options and usage
@@ -31,6 +34,15 @@ parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF subm
 #parser.print_help()
 args = parser.parse_args()
 
+def get_num_events(filelist,prefix='',treename='TestAnalyzer/Events'):
+    totentries = 0
+    for filename in filelist :
+        filepath = '/'.join(['%s' % prefix,'%s' % filename])
+        file = TFile.Open(filepath)
+        tree = file.Get(treename)
+        totentries += tree.GetEntries()
+    return totentries
+
 processes = []
 samples = []
 xsecs = []
@@ -55,27 +67,20 @@ if args.postprocess :
     files = []
     prefix = ""
     for isam in range(len(samples)) :
-        files.append([])
-        listfile = open("{}_filelist.txt".format(samples[isam]),"w")
-        listfile.write("#\n")
-        listfile.close()
+        filelist = []
         if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
-            os.system("%s find -f %s | grep %s >> %s_filelist.txt" % (eos,args.outdir,samples[isam],samples[isam]))
+            cmd = ("%s find -f %s | grep %s | grep ntuple.root" % (eos,args.outdir,samples[isam]))
+            ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            result = ps.communicate()
+            filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            os.system("find %s | grep %s >> %s_filelist.txt" % (args.outdir,samples[isam],samples[isam]))
+            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s_' % samples[isam], f)]
             if args.outdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
-        with open("{}_filelist.txt".format(samples[isam]),"r") as f :
-            for line in f :
-                if line.startswith("#") :
-                    continue
-                files[isam].append(line.split()[0])
-
-        cmd = ("root -l -q -b GetNumOfEvents.C+\(\\\"%s_filelist.txt\\\",\\\"%s\\\"\)" % (samples[isam],prefix))
-        ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        result = ps.communicate()
-        totnevents.append(int(result[0].split('\n')[2]))
+        files.append(filelist)
+        nevents = get_num_events(filelist,prefix)
+        totnevents.append(nevents)
 
     print "Creating submission file: submit_addweight.sh"
     script = open("submit_addweight.sh","w")
