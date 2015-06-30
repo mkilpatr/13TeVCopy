@@ -25,8 +25,9 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
+  cfgSet::ConfigSet pars = pars0lep();
 
-  ZeroLeptonAnalyzer a(fullname, "Events", outfilename, isMC, pars0lep());
+  ZeroLeptonAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars);
 
   a.analyze(10000);
 
