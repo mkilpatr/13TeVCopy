@@ -6,7 +6,7 @@
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 
 namespace cfgSet{
-
+  bool isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf     );
   bool isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, const float minCSV = -10000       );
   bool isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf);
   bool isSelMuon(const ucsbsusy::MuonF& muon, const LeptonConfig& conf);

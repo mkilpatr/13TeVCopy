@@ -6,17 +6,31 @@
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 
 using namespace ucsbsusy;
 
 // Adjustments to default configuration
-BaseTreeAnalyzer::ConfigPars* pars0lep() {
-  BaseTreeAnalyzer::ConfigPars* pars = new BaseTreeAnalyzer::ConfigPars();
-  pars->defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
-  pars->vetoedElectron       = &ElectronF::isgoodpogelectron;
-  pars->vetoedMuon           = &MuonF::isgoodpogmuon;
-  return pars;
+cfgSet::ConfigSet pars0lep() {
+
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+	  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+
+  return cfg;
 }
+
+cfgSet::ConfigSet pars0LepPhoton() {
+
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+	  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+
+  return cfg;
+}
+
 
 struct TreeFiller {
 
@@ -132,7 +146,7 @@ struct TreeFiller {
     data->fill<float>(i_genmet, ana->genmet->pt());
     data->fill<float>(i_met, ana->met->pt());
     data->fill<int  >(i_npv, ana->nPV);
-    data->fill<int  >(i_nvetotau, ana->nVetoedTaus);
+    data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd = 0;
@@ -223,8 +237,7 @@ struct TreeFiller {
 class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-
-    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, ConfigPars * pars) :
+    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
       TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
     const double metcut_ = 200.0 ;
@@ -239,7 +252,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
       if(nVetoedLeptons > 0)  return false;
-      if(nVetoedTaus > 0)     return false;
+      if(nVetoedTracks > 0)     return false;
       if(met->pt() < metcut_) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);

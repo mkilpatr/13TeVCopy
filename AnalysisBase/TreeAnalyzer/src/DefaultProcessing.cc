@@ -6,6 +6,11 @@
 using namespace std;
 using namespace ucsbsusy;
 
+bool cfgSet::isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf){
+  return (jet.pt() > conf.minBJetPt && fabs(jet.eta()) < conf.maxBJetEta);
+}
+
+
 bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, const float minCSV ){
   if(jet.csv() <= (minCSV < -9999 ? conf.defaultCSV : minCSV  ) ) return false;
   return (jet.pt() > conf.minBJetPt && fabs(jet.eta()) < conf.maxBJetEta);
