@@ -8,7 +8,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, ConfigPars * pars) :
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
       ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), corrmet(new MomentumF()), passOneLepSel(false) {}
 
     MomentumF*   corrmet;
@@ -59,12 +59,19 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  BaseTreeAnalyzer::ConfigPars* pars1lepcr = pars0lep();
-  pars1lepcr->minSelMuPt = 5;
-  pars1lepcr->minSelEPt  = 5;
-  pars1lepcr->cleanJetsvSelectedLeptons_ = true;
 
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, pars1lepcr);
+  gSystem->mkdir(outputdir,true);
+  TString outfilename = outputdir+"/"+sname+"_tree.root";
+\
+  cfgSet::ConfigSet pars = cfgSet::zl_lepton_set;
+	pars.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	pars.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+	pars.jets.cleanJetsvSelectedLeptons = true;
+//  pars1lepcr->minSelMuPt = 5;
+ // pars1lepcr->minSelEPt  = 5;
+ // pars1lepcr->cleanJetsvSelectedLeptons_ = true;
+
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
   a.analyze(100000);
 
