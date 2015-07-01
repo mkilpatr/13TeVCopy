@@ -60,9 +60,6 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
 
-  gSystem->mkdir(outputdir,true);
-  TString outfilename = outputdir+"/"+sname+"_tree.root";
-\
   cfgSet::ConfigSet pars = cfgSet::zl_lepton_set;
 	pars.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
 	pars.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
