@@ -151,7 +151,7 @@ void  cfgSet::applyAdHocPUCorr(ucsbsusy::RecoJetFCollection& jets, const std::ve
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
 }
 
-
+/*
 void cfgSet::processMET(ucsbsusy::MomentumF& met, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons, const METConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::processMET(): You want to do processing but have not yet configured the processing!");
@@ -173,4 +173,4 @@ void cfgSet::processMET(ucsbsusy::MomentumF& met, const std::vector<ucsbsusy::Le
       met.p4() += glep->p4();
     }
   }
-}
+}*/

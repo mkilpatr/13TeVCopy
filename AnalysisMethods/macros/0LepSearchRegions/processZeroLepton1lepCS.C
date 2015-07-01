@@ -247,16 +247,8 @@ void Analyzer::runEvent()
 
   // corected variables
 
-  /*
-   * Old met correction Scheme
   MomentumF* metn = new MomentumF(met->p4() + lep->p4());
   METn         = metn->pt();
-  */
-
-  //Cfg met correction
-  MomentumF* metn = new MomentumF(met->p4());
-  cfgSet::processMET(*metn,&selectedLeptons,0,cfgSet::zl_lplus_met);
-  METn = metn->pt();
 
   DphiJ3METn   = JetKinematics::absDPhiMETJ3(*metn,jets);   
   DphiJ12METn  = JetKinematics::absDPhiMETJ12(*metn,jets);
@@ -462,7 +454,7 @@ void processZeroLepton1lepCS(TString sname            = "test",         // sampl
   cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
   //cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
+  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
   a.analyze(100000);
 

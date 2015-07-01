@@ -32,15 +32,15 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(isMC() && process == defaults::SINGLE_G)
         genmet->setP4(genmet->p4() + boson->p4());
 
-      // add photon to met (now done through cfgSet)
-      /*
+
+
       passPhotonSel = true;
       if(process == defaults::SINGLE_G) {
         if(!selectedPhotons.empty())
           met->setP4(met->p4() + selectedPhotons.front()->p4());
         else passPhotonSel = false;
-      }*/
-	  cfgSet::processMET(*met,0,&selectedPhotons,cfgSet::zl_pplus_met);
+      }
+
 
       // clean jets against boson
       jets.clear(); bJets.clear(); nonBJets.clear();

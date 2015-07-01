@@ -161,13 +161,10 @@ void Analyzer::loadVariables(){
 void Analyzer::runEvent() {
 
 
-	  MomentumF cutMET = *met;
-	  cfgSet::processMET(cutMET,&selectedLeptons,0,cfgSet::ol_search_met);
-
 	  if(selectedLeptons.size() != 0) return;
 	  if(nJets < minNJets_) return;
 	  if(nBJets < minNBjets_) return;
-	  if(cutMET.pt() < metcut_ && met->pt() < metcut_) return;
+	  if(met->pt() < metcut_) return;
 	  if(nVetoedTracks>0)       return;
 
 
