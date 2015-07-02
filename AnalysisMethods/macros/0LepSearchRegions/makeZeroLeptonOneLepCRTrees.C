@@ -61,8 +61,8 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
 
   cfgSet::ConfigSet pars = cfgSet::zl_lepton_set;
-	pars.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-	pars.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+	//pars.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	//pars.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 	pars.jets.cleanJetsvSelectedLeptons = true;
 //  pars1lepcr->minSelMuPt = 5;
  // pars1lepcr->minSelEPt  = 5;
