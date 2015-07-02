@@ -15,8 +15,8 @@ cfgSet::ConfigSet pars0lep() {
 
 	  cfgSet::loadDefaultConfigurations();
 	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
-	  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-	  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+	  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 
   return cfg;
 }
@@ -25,8 +25,8 @@ cfgSet::ConfigSet pars0LepPhoton() {
 
 	  cfgSet::loadDefaultConfigurations();
 	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
-	  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-	  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+	  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 
   return cfg;
 }
