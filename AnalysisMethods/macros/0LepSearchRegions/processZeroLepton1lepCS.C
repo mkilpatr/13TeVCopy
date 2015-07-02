@@ -185,12 +185,7 @@ void Analyzer::runEvent()
 {
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
-	std::cout << "Processing an event" << std::endl;
   if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
 
   float wgt    = evtInfoReader.weight;
 
