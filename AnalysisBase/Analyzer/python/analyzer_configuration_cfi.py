@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('PHYS14_25_V3::All'),                    
+                                      globalTag        = cms.string ('MCRUN2_74_V9::All'),                    
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('PHYS14_25_V3::All'),      #Global tag
+                                      globalTag        = cms.string ('MCRUN2_74_V9::All'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -83,7 +83,7 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   PickyJets = cms.untracked.PSet(
-                                      isFilled             = cms.untracked.bool(True),
+                                      isFilled             = cms.untracked.bool(False),
                                       jets                 = cms.InputTag('pickyJets',''),
                                       btags                = cms.InputTag('pickyCSVIV2'),
                                       reGenJets            = cms.InputTag('pickyJets','Gen'),
@@ -101,7 +101,7 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   CASubJets = cms.untracked.PSet(
-                                      isFilled             = cms.untracked.bool(True),
+                                      isFilled             = cms.untracked.bool(False),
                                       jets                 = cms.InputTag('subjetsca',''),
                                       btags                = cms.InputTag('subjetscaCSVIV2'),
                                       reGenJets            = cms.InputTag('subjetsca','Gen'),

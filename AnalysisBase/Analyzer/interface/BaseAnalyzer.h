@@ -98,7 +98,8 @@ namespace ucsbsusy {
       edm::RunNumber_t			runNumber()	  const	{ return runNumber_;	}
       edm::LuminosityBlockNumber_t	lumiBlock()	  const	{ return lumiBlock_;	}
       edm::EventNumber_t		eventNumber()	  const	{ return eventNumber_;	}
-      void 				printEventCoordinates(std::ostream& out = std::cout) const;
+      //void 				printEventCoordinates(std::ostream& out = std::cout) const;
+      void 				printEventCoordinates(std::ostream& out) const;
       TString				eventCoordinates() const { return TString::Format("%d:%d:%llu", runNumber(), lumiBlock(), eventNumber());	}
       TreeWriter*			treeWriter()		{ return treeWriter_;	}
 

@@ -19,7 +19,7 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
-options.inputFiles = '/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
+options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
 
 options.maxEvents = -1
 
@@ -125,8 +125,8 @@ process.p = cms.Path(#process.puppi*
                      process.lsfSubJets               *
                      process.egmGsfElectronIDSequence * 
                      process.egmPhotonIDSequence      *
-                     process.pickyJetSeq              *
-                     process.subjetscaJetSeq          *
+                     #process.pickyJetSeq              *
+                     #process.subjetscaJetSeq          *
                      process.QGTagger                 *
                      process.TestAnalyzer)
 

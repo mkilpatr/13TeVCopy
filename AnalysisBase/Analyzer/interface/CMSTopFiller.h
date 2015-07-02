@@ -22,7 +22,7 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "RecoJets/JetAlgorithms/interface/CATopJetHelper.h"
-#include "DataFormats/JetReco/interface/CATopJetTagInfo.h"
+#include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 
 typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
 typedef std::vector<LorentzVector> LorentzVectorCollection;
