@@ -1,10 +1,10 @@
 #ifndef cncVariables_H
 #define cncVariables_H
-
+/*
 class Panvariate;
 template<typename Object> class Paramatrix;
 typedef   Paramatrix<Panvariate>  ParamatrixMVA;
-
+*/
 
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
