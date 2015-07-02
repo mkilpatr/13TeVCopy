@@ -1,6 +1,6 @@
 #ifndef cncVariables_H
 #define cncVariables_H
-/*
+/* (Causing an error when compiling, due to Parang)
 class Panvariate;
 template<typename Object> class Paramatrix;
 typedef   Paramatrix<Panvariate>  ParamatrixMVA;
