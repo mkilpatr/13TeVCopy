@@ -28,7 +28,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_photon_jets.cleanJetsvSelectedPhotons = true;
 
   zl_lepton_jets = zl_search_jets;
-  zl_lepton_jets.cleanJetsvSelectedLeptons = true;
+  zl_lepton_jets.cleanJetsvSelectedLeptons = false;
 
   ol_search_jets = zl_search_jets;
   ol_search_jets.cleanJetsvSelectedLeptons = true;
