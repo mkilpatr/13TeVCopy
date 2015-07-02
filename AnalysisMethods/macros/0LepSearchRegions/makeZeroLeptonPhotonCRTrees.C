@@ -119,7 +119,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0LepPhoton();
-  PhotonCRAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars);
+  PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
   a.analyze(100000);
 
