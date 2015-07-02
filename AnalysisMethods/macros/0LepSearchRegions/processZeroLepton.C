@@ -140,8 +140,6 @@ class Analyzer : public BaseTreeAnalyzer {
 
   void loadVariables();
   void runEvent();
-  void loadPlots();
-  void out(TString outputName, TString outputPath);
   
 }; // Analyzer : BaseTreeAnalyzer
 
@@ -238,14 +236,14 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
   //Load up search configuration
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
-  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 
 
   //Create analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
-  a.analyze(1000,100000); // for testing
+  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
+  a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
