@@ -121,6 +121,8 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   cfgSet::ConfigSet pars = pars0LepPhoton();
   PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
-  a.analyze(100000);
+  a.analyze(1000,10000);
+  //a.analyze(100000);
+
 
 }
