@@ -83,12 +83,19 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     }
 
     bool fillEvent() {
+    	std::cout << "test a" << std::endl;
       if(nVetoedLeptons > 0)                return false;
+  	std::cout << "test b" << std::endl;
       if(nVetoedTracks > 0)                   return false;
+  	std::cout << "test c" << std::endl;
       if(met->pt() < metcut_)               return false;
+  	std::cout << "test d" << std::endl;
       if(boson && fabs(boson->eta()) > 2.4) return false;
+  	std::cout << "test e" << std::endl;
       if(!passPhotonSel)                    return false;
+  	std::cout << "test f" << std::endl;
       if(!goodvertex) return false;
+  	std::cout << "test g" << std::endl;
       filler.fillEventInfo(&data, this);
       filler.fillGenInfo(&data, boson, genJets);
       filler.fillJetInfo  (&data, jets, bJets, met);
