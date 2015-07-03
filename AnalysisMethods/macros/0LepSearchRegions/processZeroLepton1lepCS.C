@@ -444,13 +444,13 @@ void processZeroLepton1lepCS(TString sname            = "test",         // sampl
   TString fullname = fileprefix+fname;
   
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
   //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
  // cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
-  //  a.analyze(100000, 100000);
-  a.analyze(100000);
+    a.analyze(10000, 100000);
+ // a.analyze(100000);
 
 }
