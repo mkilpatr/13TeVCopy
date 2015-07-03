@@ -444,7 +444,7 @@ void processZeroLepton1lepCS(TString sname            = "test",         // sampl
   TString fullname = fileprefix+fname;
   
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
   //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
  // cfg.jets.cleanJetsvSelectedLeptons = true;
