@@ -347,6 +347,26 @@ void Analyzer::runEvent()
 
   outtree->Fill();
 }
+void Analyzer::cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float tau2,float tau3,
+		       vector<RecoJetF*> bJets,CMSTopF* fatJet,vector<bool>& cttDef) {
+
+  bool stddef     = false;
+  bool nsubjetdef = false;
+  bool btagdef    = false;
+
+  float dR1 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(0)->p4());-  float dR2 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(1)->p4());
+
+  // std definiton
+  if ( ((fjMass)>140.) && ((fjMass)<250.) && ((minMass)>50.) && ((nSubJets)>=3) ) { stddef     = true; }
+  if ( ((tau3/tau2)<0.7) && ((tau2/tau1)>0.1) )                                   { nsubjetdef = true; }
+  if ( (dR1<0.8) || (dR2<0.8) )                                                   { btagdef    = true; }
+
+
+  cttDef.push_back(stddef);
+  cttDef.push_back(stddef*nsubjetdef);
+  cttDef.push_back(stddef*nsubjetdef*btagdef);
+
+} // end of cttAlgo
 
 // sort jets by csv
 void Analyzer::rankedByCSV(vector<RecoJetF*>& inJets,vector<RecoJetF*>& outJets) {
