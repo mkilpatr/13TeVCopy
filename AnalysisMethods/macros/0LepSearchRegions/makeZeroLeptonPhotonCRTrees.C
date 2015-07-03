@@ -97,8 +97,12 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(!goodvertex) return false;
   	std::cout << "test g" << std::endl;
       filler.fillEventInfo(&data, this);
+    	std::cout << "test h" << std::endl;
       filler.fillGenInfo(&data, boson, genJets);
+    	std::cout << "test i" << std::endl;
       filler.fillJetInfo  (&data, jets, bJets, met);
+    	std::cout << "test j" << std::endl;
+
       return true;
     }
 
