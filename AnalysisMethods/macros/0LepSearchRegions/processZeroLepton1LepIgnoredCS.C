@@ -183,8 +183,8 @@ void Analyzer::loadVariables(){
 // Analyze event and fill plots
 void Analyzer::runEvent()
 {
-std::cout << "The number of leptons is " << nSelLeptons << std::endl;
-std::cout << "The number of vetoed leptons is " << nVetoedLeptons << std::endl;
+//std::cout << "The number of leptons is " << nSelLeptons << std::endl;
+//std::cout << "The number of vetoed leptons is " << nVetoedLeptons << std::endl;
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
   if ((nSelLeptons<1) || (nJets<=3))   return;
