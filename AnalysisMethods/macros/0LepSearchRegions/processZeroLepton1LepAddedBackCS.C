@@ -354,7 +354,8 @@ void Analyzer::cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float 
   bool nsubjetdef = false;
   bool btagdef    = false;
 
-  float dR1 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(0)->p4());-  float dR2 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(1)->p4());
+  float dR1 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(0)->p4());
+  float dR2 = PhysicsUtilities::deltaR(fatJet->p4(),bJets.at(1)->p4());
 
   // std definiton
   if ( ((fjMass)>140.) && ((fjMass)<250.) && ((minMass)>50.) && ((nSubJets)>=3) ) { stddef     = true; }
