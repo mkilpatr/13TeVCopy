@@ -74,7 +74,8 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
  // pars1lepcr->cleanJetsvSelectedLeptons_ = true;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  a.analyze(10000,100000);
 
-  a.analyze(100000);
+ // a.analyze(100000);
 
 }
