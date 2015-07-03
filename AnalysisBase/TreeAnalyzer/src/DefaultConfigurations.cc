@@ -54,6 +54,8 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.setConfig();
 
   zl_veto_leptons = zl_sel_leptons;
+  zl_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
+  zl_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
 
   ol_sel_leptons = zl_sel_leptons;
   ol_sel_leptons.minEPt            = 40;
