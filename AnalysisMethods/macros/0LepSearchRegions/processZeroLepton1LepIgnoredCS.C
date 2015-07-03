@@ -169,6 +169,185 @@ class Analyzer : public BaseTreeAnalyzer {
 
 };
 
+//Load event variables:
+void Analyzer::loadVariables(){
+  load(cfgSet::EVTINFO);
+  load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+  load(cfgSet::PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+  load(cfgSet::ELECTRONS);
+  load(cfgSet::MUONS);
+  load(cfgSet::PFCANDS);
+  load(cfgSet::CMSTOPS);
+}
+
+// Analyze event and fill plots
+void Analyzer::runEvent()
+{
+
+  //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
+  if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
+
+  float wgt    = evtInfoReader.weight;
+
+  ScaleFactor  = wgt;
+  NPV          = nPV;
+  NJets        = nJets;
+  NBJets       = nBJets;
+  //NRemovedJets = nRemovedJets; (This seems to be missing from the current framework)
+  NVetoedTau   = nVetoedTracks;
+
+  TRandom3 rnd(0);
+  float maxLep = nSelLeptons;
+  int whichLep = rnd.Uniform(0.,nSelLeptons);
+  MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
+
+
+  std::vector<RecoJetF*> jetsCSV;
+  rankedByCSV(jets,jetsCSV);
+
+  RecoJetF* closestJet2Lep;
+  findClosestJet2Lep(jets,lep,closestJet2Lep);
+  if (closestJet2Lep->csv()>0.423) { DRCSVLLep = PhysicsUtilities::deltaR(closestJet2Lep->p4(),lep->p4()); } else { DRCSVLLep = 99.; }
+  if (closestJet2Lep->csv()>0.814) { DRCSVMLep = PhysicsUtilities::deltaR(closestJet2Lep->p4(),lep->p4()); } else { DRCSVMLep = 99.; }
+  if (closestJet2Lep->csv()>0.941) { DRCSVTLep = PhysicsUtilities::deltaR(closestJet2Lep->p4(),lep->p4()); } else { DRCSVTLep = 99.; }
+
+  DRB1Lep   = PhysicsUtilities::deltaR(jetsCSV.at(0)->p4(),lep->p4());
+  PtLepOvB1 = lep->p4().pt()/jetsCSV.at(0)->p4().pt();
+  DRB2Lep   = PhysicsUtilities::deltaR(jetsCSV.at(1)->p4(),lep->p4());
+  PtLepOvB2 = lep->p4().pt()/jetsCSV.at(1)->p4().pt();
+
+
+  MomentumF* W = new MomentumF(lep->p4() + met->p4());
+  DphiLepW = PhysicsUtilities::deltaPhi(*lep, *W);
+
+
+  // uncoreected variables
+  MomentumF* metn = new MomentumF(met->p4() + lep->p4());
+
+  MET           = met->pt();
+  DphiJ3MET     = JetKinematics::absDPhiMETJ3(*met,jets);
+  DphiJ12MET    = JetKinematics::absDPhiMETJ12(*met,jets);
+  MLepCloseJet  = (closestJet2Lep->p4()+lep->p4()).M();
+  MTLepCloseJet = JetKinematics::transverseMass(closestJet2Lep->p4(),lep->p4());
+
+  float DphiB1MET = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*met);
+  float DphiB2MET = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*met);
+  if (DphiB1MET<=DphiB2MET) { MinDphiB1B2MET = DphiB1MET; }
+  else                      { MinDphiB1B2MET = DphiB2MET; }
+
+  float MTb1MET   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*met);
+  float MTb2MET   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*met);
+  if (MTb1MET<=MTb2MET) { MinMTB1B2MET = MTb1MET; }
+  else                  { MinMTB1B2MET = MTb2MET; }
+  // ===
+
+/*
+  // corected variables
+
+  MomentumF* metn = new MomentumF(met->p4() + lep->p4());
+  METn         = metn->pt();
+
+  DphiJ3METn   = JetKinematics::absDPhiMETJ3(*metn,jets);
+  DphiJ12METn  = JetKinematics::absDPhiMETJ12(*metn,jets);
+
+  float DphiB1METn = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*metn);
+  float DphiB2METn = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*metn);
+  if (DphiB1METn<=DphiB2METn) { MinDphiB1B2METn = DphiB1METn; }
+  else                        { MinDphiB1B2METn = DphiB2METn; }
+
+  float MTb1METn   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*metn);
+  float MTb2METn   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*metn);
+  if (MTb1METn<=MTb2METn) { MinMTB1B2METn = MTb1METn; }
+  else                    { MinMTB1B2METn = MTb2METn; }
+*/  // ===
+
+
+  // top tagging
+  DRTop1Lep = -9.; PtLepOvTop1 = -9.;
+  DRTop2Lep = -9.; PtLepOvTop2 = -9.;
+
+  NCTT     = cttTops.size();
+  NCTTb    = 0;
+  NCTTd    = 0;
+  NCTTstd  = 0;
+  NCTTstdb = 0;
+  NCTTstdc = 0;
+  NCTTstdd = 0;
+  NCTTstde = 0;
+  for (UInt_t i=0; i<cttTops.size(); ++i) {
+
+    //    RecoJetF* closestJet2Top; cout << removedJets.size() << "\n";
+    //    findClosestJet2Top(removedJets,cttTops.at(i),closestJet2Top);
+
+    float DRTopLep_      = PhysicsUtilities::deltaR(cttTops.at(i)->p4(),lep->p4());
+    float DphiTopLep_    = PhysicsUtilities::deltaPhi(cttTops.at(i)->p4(),lep->p4());
+    //    float DRRemJetTop_   = PhysicsUtilities::deltaR(cttTops.at(i)->p4(),closestJet2Top->p4());
+    //    float DphiRemJetTop_ = PhysicsUtilities::deltaPhi(cttTops.at(i)->p4(),closestJet2Top->p4());
+    float DphiTopMET_    = PhysicsUtilities::deltaPhi(cttTops.at(i)->p4(),*met);
+    float PtLepOvTop_    = (lep->p4().pt())/(cttTops.at(i)->p4().pt());
+    float METOvPtTop_    = (met->p4().pt())/(cttTops.at(i)->p4().pt());
+    //    float PtRemJetOvTop_ = (closestJet2Top->p4().pt())/(cttTops.at(i)->p4().pt());
+
+    if (DRTopLep_>0.8)    { ++NCTTb; }
+    //    if (DRRemJetTop_>0.8) { ++NCTTd; }
+
+
+    std::vector<bool> cttDef;
+    cttAlgo(cttTops.at(i)->fJMass(),cttTops.at(i)->minMass(),cttTops.at(i)->nSubJets(),
+	    cttTops.at(i)->fJTau1(),cttTops.at(i)->fJTau2(),cttTops.at(i)->fJTau3(),
+	    jetsCSV,cttTops.at(i),cttDef);
+
+    if (cttDef[0]) {
+
+    DRTopLep[NCTTstd]      = DRTopLep_;
+    DphiTopLep[NCTTstd]    = DphiTopLep_;
+    //    DRRemJetTop[NCTTstd]   = DRRemJetTop_;
+    //    DphiRemJetTop[NCTTstd] = DphiRemJetTop_;
+    DphiTopMET[NCTTstd]    = DphiTopMET_;
+    PtLepOvTop[NCTTstd]    = PtLepOvTop_;
+    METOvPtTop[NCTTstd]    = METOvPtTop_;
+    //    PtRemJetOvTop[NCTTstd] = PtRemJetOvTop_;
+    ++NCTTstd;
+
+     if (DRTopLep_>0.8)                                                              { ++NCTTstdb; }
+     //     if (DRRemJetTop_>0.8)                                                           { ++NCTTstdd; }
+     //     if (DRRemJetTop_>0.8 || ((DRRemJetTop_<0.8) && (cttTops.at(i)->nSubJets()>3)) ) { ++NCTTstde; }
+
+     if (i==0) {
+       DRTop1Lep   = PhysicsUtilities::deltaR(cttTops.at(i)->p4(),lep->p4());
+       PtLepOvTop1 = lep->p4().pt()/cttTops.at(i)->p4().pt(); }
+
+     if (i==1) {
+       DRTop2Lep   = PhysicsUtilities::deltaR(cttTops.at(i)->p4(),lep->p4());
+       PtLepOvTop2 = lep->p4().pt()/cttTops.at(i)->p4().pt(); }
+
+    }
+
+  }
+  // ====
+
+
+  int NGenLep_ = 0; int NGenEl_ = 0; int NGenMu_ = 0; int NGenTa_ = 0;
+  for (UInt_t i=0; i<genParts.size(); ++i) {
+
+    const GenParticleF * genPartMom = 0;
+    if (genParts.at(i)->numberOfMothers()>0) { genPartMom = genParts.at(i)->mother(0); } else { continue; }
+
+    if ( (abs(genParts.at(i)->pdgId()) == 11) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenEl_; }
+    if ( (abs(genParts.at(i)->pdgId()) == 13) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenMu_; }
+    if ( (abs(genParts.at(i)->pdgId()) == 15) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenTa_; }
+
+  }
+
+  NGenLep = NGenLep_;
+  NGenEl = NGenEl_;
+  NGenMu = NGenMu_;
+  NGenTa = NGenTa_;
+
+
+  outtree->Fill();
+}
+
 // sort jets by csv
 void Analyzer::rankedByCSV(vector<RecoJetF*>& inJets,vector<RecoJetF*>& outJets) {
 
