@@ -13,27 +13,27 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
     MomentumF*   corrmet;
     bool         passOneLepSel;
-    bool 		 passOneVeto;
+   // bool 		 passOneVeto;
     void processVariables() {
       BaseTreeAnalyzer::processVariables();
 
       // add lepton to corrected met
-      //passOneLepSel = selectedLeptons.size() == 1;
-      passOneVeto = vetoedLeptons.size() == 1;
+      passOneLepSel = selectedLeptons.size() == 1;
+      //passOneVeto = vetoedLeptons.size() == 1;
       corrmet->setP4(met->p4());
       if(vetoedLeptons.size())
-      //  corrmet->setP4(met->p4() + selectedLeptons[0]->p4());
-    	  corrmet->setP4(met->p4() + vetoedLeptons[0]->p4());
+        corrmet->setP4(met->p4() + selectedLeptons[0]->p4());
+    	  //corrmet->setP4(met->p4() + vetoedLeptons[0]->p4());
 
     }
 
     bool fillEvent() {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-     // if(!passOneLepSel)      return false;
-      if(!passOneVeto) return false;
-     // if(fabs(PhysicsUtilities::deltaPhi(*corrmet, *selectedLeptons[0])) > 1)
-      if(fabs(PhysicsUtilities::deltaPhi(*met, *vetoedLeptons[0])) > 1)
+      if(!passOneLepSel)      return false;
+      //if(!passOneVeto) return false;
+     if(fabs(PhysicsUtilities::deltaPhi(*corrmet, *selectedLeptons[0])) > 1)
+     // if(fabs(PhysicsUtilities::deltaPhi(*met, *vetoedLeptons[0])) > 1)
         return false;
 
       filler.fillEventInfo(&data, this);
@@ -66,9 +66,9 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
 
-  cfgSet::ConfigSet pars = cfgSet::zl_search_set;
-	pars.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-	pars.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  cfgSet::ConfigSet pars = cfgSet::zl_lepton_set;
+	pars.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+	pars.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 //  pars1lepcr->minSelMuPt = 5;
  // pars1lepcr->minSelEPt  = 5;
  // pars1lepcr->cleanJetsvSelectedLeptons_ = true;
