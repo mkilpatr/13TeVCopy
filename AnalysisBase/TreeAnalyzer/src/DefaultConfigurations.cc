@@ -31,6 +31,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_lepton_jets.cleanJetsvSelectedLeptons = false;
 
   ol_search_jets = zl_search_jets;
+  ol_search_jets.cleanJetsvSelectedLeptons = true;
   ol_search_jets.minPt                     = 30;
   ol_search_jets.minBJetPt                 = 30;
   ol_search_jets.applyJetID                = true;
