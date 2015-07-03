@@ -184,6 +184,8 @@ void Analyzer::loadVariables(){
 void Analyzer::runEvent()
 {
 std::cout << "The number of leptons is " << nSelLeptons << std::endl;
+std::cout << "The number of vetoed leptons is " << nVetoedLeptons << std::endl;
+
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
   if ((nSelLeptons<1) || (nJets<=3))   return;
   if(!goodvertex) return;
@@ -443,7 +445,7 @@ void processZeroLepton1LepIgnoredCS(TString sname            = "test",         /
   TString fullname = fileprefix+fname;
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
   cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
   cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
   cfg.selectedLeptons.minMuPt = 5;
