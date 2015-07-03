@@ -88,7 +88,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_)               return false;
       if(boson && fabs(boson->eta()) > 2.4) return false;
       if(!passPhotonSel)                    return false;
-
+      if(!goodvertex) return false;
       filler.fillEventInfo(&data, this);
       filler.fillGenInfo(&data, boson, genJets);
       filler.fillJetInfo  (&data, jets, bJets, met);

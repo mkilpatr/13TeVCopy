@@ -164,6 +164,7 @@ void Analyzer::runEvent() {
 	  if(nBJets < minNBjets_) return;
 	  if(met->pt() < metcut_) return;
 	  if(nVetoedTracks>0)       return;
+	  if(!goodvertex) return;
 
 
 	  scaleFactor = weight; // lumi_*xsec_/getEntries(); <- old procedure, now stored in files to handle split samples correctly

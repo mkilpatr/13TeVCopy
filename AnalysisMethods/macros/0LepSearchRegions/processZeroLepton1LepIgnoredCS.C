@@ -185,8 +185,8 @@ void Analyzer::runEvent()
 {
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
-  if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
-
+  if ((nSelLeptons<1) || (nJets<=3))   return;
+  if(!goodvertex) return;
   float wgt    = evtInfoReader.weight;
 
   ScaleFactor  = wgt;
@@ -422,11 +422,11 @@ void processZeroLepton1LepIgnoredCS(TString sname            = "test",         /
   TString fullname = fileprefix+fname;
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.jets.cleanJetsvSelectedLeptons = true;
-
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  cfg.selectedLeptons.minMuPt = 5;
+  cfg.selectedLeptons.minEPt = 5;
  // cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer

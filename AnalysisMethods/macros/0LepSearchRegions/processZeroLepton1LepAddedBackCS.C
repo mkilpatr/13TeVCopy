@@ -422,10 +422,10 @@ void processZeroLepton1LepAddedBackCS(TString sname            = "test",        
   TString fullname = fileprefix+fname;
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.jets.cleanJetsvSelectedLeptons = true;
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  //cfg.jets.cleanJetsvSelectedLeptons = true;
 
  // cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
