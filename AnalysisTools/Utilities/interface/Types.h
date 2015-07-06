@@ -118,6 +118,28 @@ namespace ucsbsusy {
     kTightMuMVA		= 1UL<<36
   };
 
+  enum TriggerBits {
+    kHLT_IsoMu24_eta2p1_v1 = 1UL<<0,
+    kHLT_IsoMu27_v1 = 1UL<<1,
+    kHLT_IsoTkMu24_eta2p1_v1 = 1UL<<2,
+    kHLT_IsoTkMu27_v1 = 1UL<<3,
+    kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 = 1UL<<4,
+    kHLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1 = 1UL<<5,
+    kHLT_PFHT350_PFMET120_NoiseCleaned_v1 = 1UL<<6,
+    kHLT_PFMET170_NoiseCleaned_v1 = 1UL<<7,
+    kHLT_PFMET120_NoiseCleaned_BTagCSV07_v1 = 1UL<<8,
+    kHLT_PFHT350_v1 = 1UL<<9,
+    kHLT_PFHT600_v1 = 1UL<<10,
+    kHLT_PFHT650_v1 = 1UL<<11,
+    kHLT_PFHT900_v1 = 1UL<<12
+  };
+
+  enum TriggerFilters {
+    kPFMET120 = 1UL<<0,
+    kDiCentralPFJet70 = 1UL<<1,
+    kSingleIsoMu = 1UL<<2,
+    kSingleEle = 1UL<<3
+  };
 
 }
 
