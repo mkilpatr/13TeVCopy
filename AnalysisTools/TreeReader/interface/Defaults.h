@@ -31,6 +31,7 @@ namespace defaults {
   const std::string BRANCH_CMSTOPS    = "ctt";
   const std::string BRANCH_CORRAL     = "corral";
   const std::string BRANCH_AK8FATJETS = "ak8";
+  const std::string BRANCH_TRIGGERS   = "trig";
 
   const double CSV_LOOSE      = 0.423;
   const double CSV_MEDIUM     = 0.814;

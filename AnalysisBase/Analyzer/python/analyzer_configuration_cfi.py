@@ -189,5 +189,12 @@ nominal_configuration = cms.PSet(
                                   AK8FatJets = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
-                                      )
+                                      ),
+
+                                  Triggers = cms.untracked.PSet(
+                                      isFilled  = cms.untracked.bool(True),
+                                      bits      = cms.InputTag('TriggerResults','','HLT'),
+                                      objects   = cms.InputTag('selectedPatTrigger'),
+                                      prescales = cms.InputTag('patTrigger'),
+                                      ),
                                 )
