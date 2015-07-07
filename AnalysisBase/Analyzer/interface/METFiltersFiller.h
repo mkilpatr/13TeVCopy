@@ -25,9 +25,7 @@ namespace ucsbsusy {
   class METFiltersFiller : public BaseFiller {
 
   public :
-    METFiltersFiller(const int options,
-                  const string branchName,
-		     const edm::InputTag triggerBitTag);
+    METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~METFiltersFiller() {}
 
     enum Options {
@@ -40,7 +38,7 @@ namespace ucsbsusy {
     void initTriggerNames();
 
   private :
-    const edm::InputTag triggerBitTag_;
+    edm::EDGetTokenT<edm::TriggerResults>                    triggerBitToken_;
     const edm::TriggerNames *triggerNames_;
     TrigIdMap trigIds_;
 

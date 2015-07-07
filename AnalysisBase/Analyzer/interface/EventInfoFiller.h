@@ -29,11 +29,7 @@ namespace ucsbsusy {
   class EventInfoFiller : public BaseFiller {
 
     public:
-      EventInfoFiller(
-          const edm::InputTag vtxTag,
-          const edm::InputTag rhoTag,
-          const edm::InputTag metTag
-          );
+      EventInfoFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc);
 
       ~EventInfoFiller() {};
 
@@ -45,9 +41,9 @@ namespace ucsbsusy {
 
     private:
       // Input from the config file
-      const edm::InputTag vtxTag_;
-      const edm::InputTag rhoTag_;
-      const edm::InputTag metTag_;
+      edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+      edm::EDGetTokenT<double>                 rhoToken_;
+      edm::EDGetTokenT<pat::METCollection>     metToken_;
 
       // Members to hold index of most recently filled tree data
       size irun_      ;

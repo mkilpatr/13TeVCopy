@@ -9,21 +9,14 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-PhotonFiller::PhotonFiller(const int options,
-		       const string branchName,
-		       const EventInfoFiller * evtInfoFiller,
-		       const edm::InputTag photonTag,
-	           const edm::InputTag looseIdTag,
-	           const edm::InputTag mediumIdTag,
-	           const edm::InputTag tightIdTag,
-		       const double phoptMin) :
+PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  evtInfoFiller_(evtInfoFiller),
-  photonTag_(photonTag),
-  looseIdTag_(looseIdTag),
-  mediumIdTag_(mediumIdTag),
-  tightIdTag_(tightIdTag),
-  phoptMin_(phoptMin)
+  photonToken_  (cc.consumes<pat::PhotonCollection>(cfg.getParameter<edm::InputTag>("photons"))),
+  looseIdToken_ (cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("looseId"))),
+  mediumIdToken_(cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("mediumId"))),
+  tightIdToken_ (cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("tightId"))),
+  rhoToken_     (cc.consumes<double>               (cfg.getParameter<edm::InputTag>("rho"))),
+  phoptMin_     (cfg.getUntrackedParameter<double> ("minPhotonPt"))
 {
 
 	  ipt_         = data.addMulti<float>(branchName_,"pt",0);
@@ -62,12 +55,11 @@ PhotonFiller::PhotonFiller(const int options,
 void PhotonFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, photonTag_,photons_,true);
-  FileUtilities::enforceGet(iEvent, looseIdTag_,loose_id_decisions_,true);
-  FileUtilities::enforceGet(iEvent, mediumIdTag_,medium_id_decisions_,true);
-  FileUtilities::enforceGet(iEvent, tightIdTag_,tight_id_decisions_,true);
-//  iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
-  FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
+  iEvent.getByToken(photonToken_,photons_);
+  iEvent.getByToken(looseIdToken_,loose_id_decisions_);
+  iEvent.getByToken(mediumIdToken_,medium_id_decisions_);
+  iEvent.getByToken(tightIdToken_,tight_id_decisions_);
+  iEvent.getByToken(rhoToken_,rho_);
   isLoaded_ = true;
 }
 
@@ -85,7 +77,6 @@ void PhotonFiller::fill()
     data.fillMulti<float>(imass_, pho->mass());
     data.fillMulti<float>(ir9_, pho->r9());
 
-    assert(evtInfoFiller_->isLoaded());
     float dbiso = pho->chargedHadronIso() + max(0.0 , pho->neutralHadronIso() + pho->photonIso() - 0.5 * pho->sumPUPt());
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
 
