@@ -122,8 +122,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
 
-  a.analyze(1000,10000);
-  //a.analyze(100000);
+  a.analyze(100000);
 
 
 
