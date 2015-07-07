@@ -49,7 +49,7 @@ namespace ucsbsusy {
     size ifj_prunedmass_;
     size ifj_softdropmass_;
     size ifj_filteredmass_;
-    size ifj_massdropfilteredmass_;
+    //size ifj_massdropfilteredmass_;
     size ifj_tau1_;
     size ifj_tau2_;
     size ifj_tau3_;

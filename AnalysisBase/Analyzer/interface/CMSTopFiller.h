@@ -51,7 +51,7 @@ namespace ucsbsusy {
     size ictt_fatjet_prunedmass_;
     size ictt_fatjet_softdropmass_;
     size ictt_fatjet_filteredmass_;
-    size ictt_fatjet_massdropfilteredmass_;
+    //size ictt_fatjet_massdropfilteredmass_;
     size ictt_fatjet_tau1_;
     size ictt_fatjet_tau2_;
     size ictt_fatjet_tau3_;
