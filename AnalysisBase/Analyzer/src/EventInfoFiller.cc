@@ -12,7 +12,6 @@
 
 using namespace ucsbsusy;
 using namespace std;
-using namespace edm;
 
 //--------------------------------------------------------------------------------------------------
 EventInfoFiller::EventInfoFiller(
