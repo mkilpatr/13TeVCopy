@@ -8,26 +8,18 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, ConfigPars * pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), corrmet(new MomentumF()), passOneLepSel(false) {}
-
-    MomentumF*   corrmet;
-    bool         passOneLepSel;
-
-    void processVariables() {
-      BaseTreeAnalyzer::processVariables();
-
-      // add lepton to corrected met
-      passOneLepSel = selectedLeptons.size() == 1;
-      corrmet->setP4(met->p4());
-      if(selectedLeptons.size())
-        corrmet->setP4(met->p4() + selectedLeptons[0]->p4());
-    }
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
 
     bool fillEvent() {
       if(met->pt() < metcut_) return false;
-      if(!passOneLepSel)      return false;
-      if(fabs(PhysicsUtilities::deltaPhi(*corrmet, *selectedLeptons[0])) > 1)
+      if(!goodvertex) return false;
+      if(nSelLeptons<1)      return false;
+      //if(!passOneVeto) return false;
+     if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)
+     	std::cout << "The delta phi is : " << fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) << std::endl;
+
+     // if(fabs(PhysicsUtilities::deltaPhi(*met, *vetoedLeptons[0])) > 1)
         return false;
 
       filler.fillEventInfo(&data, this);
@@ -59,12 +51,15 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  BaseTreeAnalyzer::ConfigPars* pars1lepcr = pars0lep();
-  pars1lepcr->minSelMuPt = 5;
-  pars1lepcr->minSelEPt  = 5;
-  pars1lepcr->cleanJetsvSelectedLeptons_ = true;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  cfg.selectedLeptons.minMuPt = 5;
+  cfg.selectedLeptons.minEPt = 5;
 
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, pars1lepcr);
+
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
   a.analyze(100000);
 

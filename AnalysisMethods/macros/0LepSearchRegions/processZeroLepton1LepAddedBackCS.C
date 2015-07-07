@@ -43,12 +43,12 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch("DRCSVLLep"      ,&DRCSVLLep,      "DRCSVLLep/F"      );
     outtree->Branch("DRCSVMLep"      ,&DRCSVMLep,      "DRCSVMLep/F"      );
     outtree->Branch("DRCSVTLep"      ,&DRCSVTLep,      "DRCSVTLep/F"      );
-    outtree->Branch("METn"           ,&METn,           "METn/F"           );
+    //outtree->Branch("METn"           ,&METn,           "METn/F"           );
     outtree->Branch("DphiLepW"       ,&DphiLepW,       "DphiLepW/F"       );
-    outtree->Branch("DphiJ3METn"     ,&DphiJ3METn,     "DphiJ3METn/F"     );
-    outtree->Branch("DphiJ12METn"    ,&DphiJ12METn,    "DphiJ12METn/F"    );
-    outtree->Branch("MinDphiB1B2METn",&MinDphiB1B2METn,"MinDphiB1B2METn/F");
-    outtree->Branch("MinMTB1B2METn"  ,&MinMTB1B2METn,  "MinMTB1B2METn/F"  );
+   // outtree->Branch("DphiJ3METn"     ,&DphiJ3METn,     "DphiJ3METn/F"     );
+   // outtree->Branch("DphiJ12METn"    ,&DphiJ12METn,    "DphiJ12METn/F"    );
+   // outtree->Branch("MinDphiB1B2METn",&MinDphiB1B2METn,"MinDphiB1B2METn/F");
+   // outtree->Branch("MinMTB1B2METn"  ,&MinMTB1B2METn,  "MinMTB1B2METn/F"  );
 
     // top variables
     outtree->Branch("NCTT"      ,&NCTT     ,"NCTT/I"    );
@@ -61,13 +61,13 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch("NCTTstde"  ,&NCTTstde ,"NCTTstde/I");
 
     // NCTTstd specific
-    outtree->Branch("DRTopLep"     ,DRTopLep     ,"DRTopLep[NCTTstd]/F"     ); 
+    outtree->Branch("DRTopLep"     ,DRTopLep     ,"DRTopLep[NCTTstd]/F"     );
     outtree->Branch("DphiTopMET"   ,DphiTopMET   ,"DphiTopMET[NCTTstd]/F"   );
     outtree->Branch("DphiTopLep"   ,DphiTopLep   ,"DphiTopLep[NCTTstd]/F"   );
     outtree->Branch("PtLepOvTop"   ,PtLepOvTop   ,"PtLepOvTop[NCTTstd]/F"   );
     outtree->Branch("METOvPtTop"   ,METOvPtTop   ,"METOvPtTop[NCTTstd]/F"   );
-    outtree->Branch("DRRemJetTop"  ,DRRemJetTop  ,"DRRemJetTop[NCTTstd]/F"  ); 
-    outtree->Branch("DphiRemJetTop",DphiRemJetTop,"DphiRemJetTop[NCTTstd]/F"); 
+    outtree->Branch("DRRemJetTop"  ,DRRemJetTop  ,"DRRemJetTop[NCTTstd]/F"  );
+    outtree->Branch("DphiRemJetTop",DphiRemJetTop,"DphiRemJetTop[NCTTstd]/F");
     outtree->Branch("PtRemJetOvTop",PtRemJetOvTop,"PtRemJetOvTop[NCTTstd]/F");
 
     outtree->Branch("DRTop1Lep"  ,&DRTop1Lep  ,"DRTop1Lep/F"  );
@@ -86,7 +86,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch("NGenTa" ,&NGenTa ,"NGenTa/I"   );
 
   }
-  
+
   virtual ~Analyzer() {
     fout->cd();
     outtree->Write();
@@ -99,8 +99,8 @@ class Analyzer : public BaseTreeAnalyzer {
   const int    maxNSelTaus_  = 0;
   const int    nSelLeptons_  = 1;
   const TString sname_       = "testLoukas.root";
-  const TString outputdir_   = "./plots/";  
- 
+  const TString outputdir_   = "./plots/";
+
 
   TFile              *fout;
   TTree              *outtree;
@@ -111,11 +111,11 @@ class Analyzer : public BaseTreeAnalyzer {
   int   NBJets;
   int   NRemovedJets;
   int   NVetoedTau;
-  float METn;
-  float DphiJ3METn;
-  float DphiJ12METn;
-  float MinDphiB1B2METn;
-  float MinMTB1B2METn;
+ // float METn;
+ // float DphiJ3METn;
+ //  float DphiJ12METn;
+ // float MinDphiB1B2METn;
+ // float MinMTB1B2METn;
   float MET;
   float DphiLepW;
   float DphiJ3MET;
@@ -185,12 +185,7 @@ void Analyzer::runEvent()
 {
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
-	std::cout << "Processing an event" << std::endl;
   if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
-	std::cout << "An event has passed!!!" << std::endl;
 
   float wgt    = evtInfoReader.weight;
 
@@ -227,53 +222,47 @@ void Analyzer::runEvent()
 
 
   // uncoreected variables
-  MET           = met->pt();
-  DphiJ3MET     = JetKinematics::absDPhiMETJ3(*met,jets);   
-  DphiJ12MET    = JetKinematics::absDPhiMETJ12(*met,jets);
+  MomentumF* metn = new MomentumF(met->p4() + lep->p4());
+
+  MET           = metn->pt();
+  DphiJ3MET     = JetKinematics::absDPhiMETJ3(*metn,jets);
+  DphiJ12MET    = JetKinematics::absDPhiMETJ12(*metn,jets);
   MLepCloseJet  = (closestJet2Lep->p4()+lep->p4()).M();
   MTLepCloseJet = JetKinematics::transverseMass(closestJet2Lep->p4(),lep->p4());
 
-  float DphiB1MET = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*met);
-  float DphiB2MET = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*met);
-  if (DphiB1MET<=DphiB2MET) { MinDphiB1B2MET = DphiB1MET; }                   
-  else                      { MinDphiB1B2MET = DphiB2MET; }                
+  float DphiB1MET = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*metn);
+  float DphiB2MET = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*metn);
+  if (DphiB1MET<=DphiB2MET) { MinDphiB1B2MET = DphiB1MET; }
+  else                      { MinDphiB1B2MET = DphiB2MET; }
 
-  float MTb1MET   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*met);
-  float MTb2MET   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*met);
+  float MTb1MET   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*metn);
+  float MTb2MET   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*metn);
   if (MTb1MET<=MTb2MET) { MinMTB1B2MET = MTb1MET; }
   else                  { MinMTB1B2MET = MTb2MET; }
   // ===
-  
 
+/*
   // corected variables
 
-  /*
-   * Old met correction Scheme
   MomentumF* metn = new MomentumF(met->p4() + lep->p4());
   METn         = metn->pt();
-  */
 
-  //Cfg met correction
-  MomentumF* metn = new MomentumF(met->p4());
-  cfgSet::processMET(*metn,&selectedLeptons,0,cfgSet::zl_lplus_met);
-  METn = metn->pt();
-
-  DphiJ3METn   = JetKinematics::absDPhiMETJ3(*metn,jets);   
+  DphiJ3METn   = JetKinematics::absDPhiMETJ3(*metn,jets);
   DphiJ12METn  = JetKinematics::absDPhiMETJ12(*metn,jets);
-  
+
   float DphiB1METn = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*metn);
   float DphiB2METn = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*metn);
-  if (DphiB1METn<=DphiB2METn) { MinDphiB1B2METn = DphiB1METn; }                   
-  else                        { MinDphiB1B2METn = DphiB2METn; }                
+  if (DphiB1METn<=DphiB2METn) { MinDphiB1B2METn = DphiB1METn; }
+  else                        { MinDphiB1B2METn = DphiB2METn; }
 
   float MTb1METn   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*metn);
   float MTb2METn   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*metn);
   if (MTb1METn<=MTb2METn) { MinMTB1B2METn = MTb1METn; }
   else                    { MinMTB1B2METn = MTb2METn; }
-  // ===
+*/  // ===
 
 
-  // top tagging 
+  // top tagging
   DRTop1Lep = -9.; PtLepOvTop1 = -9.;
   DRTop2Lep = -9.; PtLepOvTop2 = -9.;
 
@@ -298,18 +287,18 @@ void Analyzer::runEvent()
     float PtLepOvTop_    = (lep->p4().pt())/(cttTops.at(i)->p4().pt());
     float METOvPtTop_    = (met->p4().pt())/(cttTops.at(i)->p4().pt());
     //    float PtRemJetOvTop_ = (closestJet2Top->p4().pt())/(cttTops.at(i)->p4().pt());
-    
+
     if (DRTopLep_>0.8)    { ++NCTTb; }
     //    if (DRRemJetTop_>0.8) { ++NCTTd; }
-    
+
 
     std::vector<bool> cttDef;
     cttAlgo(cttTops.at(i)->fJMass(),cttTops.at(i)->minMass(),cttTops.at(i)->nSubJets(),
 	    cttTops.at(i)->fJTau1(),cttTops.at(i)->fJTau2(),cttTops.at(i)->fJTau3(),
 	    jetsCSV,cttTops.at(i),cttDef);
 
-    if (cttDef[0]) { 
-    
+    if (cttDef[0]) {
+
     DRTopLep[NCTTstd]      = DRTopLep_;
     DphiTopLep[NCTTstd]    = DphiTopLep_;
     //    DRRemJetTop[NCTTstd]   = DRRemJetTop_;
@@ -318,7 +307,7 @@ void Analyzer::runEvent()
     PtLepOvTop[NCTTstd]    = PtLepOvTop_;
     METOvPtTop[NCTTstd]    = METOvPtTop_;
     //    PtRemJetOvTop[NCTTstd] = PtRemJetOvTop_;
-    ++NCTTstd; 
+    ++NCTTstd;
 
      if (DRTopLep_>0.8)                                                              { ++NCTTstdb; }
      //     if (DRRemJetTop_>0.8)                                                           { ++NCTTstdd; }
@@ -330,24 +319,24 @@ void Analyzer::runEvent()
 
      if (i==1) {
        DRTop2Lep   = PhysicsUtilities::deltaR(cttTops.at(i)->p4(),lep->p4());
-       PtLepOvTop2 = lep->p4().pt()/cttTops.at(i)->p4().pt(); } 
+       PtLepOvTop2 = lep->p4().pt()/cttTops.at(i)->p4().pt(); }
 
-    } 
+    }
 
   }
   // ====
 
 
-  int NGenLep_ = 0; int NGenEl_ = 0; int NGenMu_ = 0; int NGenTa_ = 0; 
+  int NGenLep_ = 0; int NGenEl_ = 0; int NGenMu_ = 0; int NGenTa_ = 0;
   for (UInt_t i=0; i<genParts.size(); ++i) {
 
-    const GenParticleF * genPartMom = 0; 
+    const GenParticleF * genPartMom = 0;
     if (genParts.at(i)->numberOfMothers()>0) { genPartMom = genParts.at(i)->mother(0); } else { continue; }
-    
+
     if ( (abs(genParts.at(i)->pdgId()) == 11) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenEl_; }
     if ( (abs(genParts.at(i)->pdgId()) == 13) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenMu_; }
     if ( (abs(genParts.at(i)->pdgId()) == 15) && (abs(genPartMom->pdgId())==24) ) { ++NGenLep_; ++NGenTa_; }
-   
+
   }
 
   NGenLep = NGenLep_;
@@ -355,12 +344,9 @@ void Analyzer::runEvent()
   NGenMu = NGenMu_;
   NGenTa = NGenTa_;
 
- 
+
   outtree->Fill();
 }
-
-
-
 void Analyzer::cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float tau2,float tau3,
 		       vector<RecoJetF*> bJets,CMSTopF* fatJet,vector<bool>& cttDef) {
 
@@ -373,8 +359,8 @@ void Analyzer::cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float 
 
   // std definiton
   if ( ((fjMass)>140.) && ((fjMass)<250.) && ((minMass)>50.) && ((nSubJets)>=3) ) { stddef     = true; }
-  if ( ((tau3/tau2)<0.7) && ((tau2/tau1)>0.1) )                                   { nsubjetdef = true; } 
-  if ( (dR1<0.8) || (dR2<0.8) )                                                   { btagdef    = true; } 
+  if ( ((tau3/tau2)<0.7) && ((tau2/tau1)>0.1) )                                   { nsubjetdef = true; }
+  if ( (dR1<0.8) || (dR2<0.8) )                                                   { btagdef    = true; }
 
 
   cttDef.push_back(stddef);
@@ -382,7 +368,6 @@ void Analyzer::cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float 
   cttDef.push_back(stddef*nsubjetdef*btagdef);
 
 } // end of cttAlgo
-
 
 // sort jets by csv
 void Analyzer::rankedByCSV(vector<RecoJetF*>& inJets,vector<RecoJetF*>& outJets) {
@@ -409,12 +394,12 @@ void Analyzer::findClosestJet2Lep(vector<RecoJetF*>& inJets,MomentumF* lep,RecoJ
   for(unsigned int iJ =0; iJ < inJets.size(); ++iJ){
 
     float tmpDR_ = PhysicsUtilities::deltaR(lep->p4(),inJets[iJ]->p4());
-    if (tmpDR_<drmin_) { 
-      drmin_=tmpDR_; 
+    if (tmpDR_<drmin_) {
+      drmin_=tmpDR_;
       closestJet = inJets[iJ]; }
 
   }
-  
+
 }
 
 
@@ -424,19 +409,20 @@ void Analyzer::findClosestJet2Top(vector<RecoJetF*>& inJets,CMSTopF* fatJet,Reco
   for(unsigned int iJ =0; iJ < inJets.size(); ++iJ){
 
     float tmpDR_ = PhysicsUtilities::deltaR(fatJet->p4(),inJets[iJ]->p4());
-    if (tmpDR_<drmin_) { 
-      drmin_=tmpDR_; 
+    if (tmpDR_<drmin_) {
+      drmin_=tmpDR_;
       closestJet = inJets[iJ]; }
 
   }
-  
+
 }
 
 
 
 
 // Process file belonging to specified sample with a given cross section
-void processZeroLepton1lepCS(TString sname            = "test",         // sample name
+// Lepton is ignored in the event, this is the conceptually correct calculation
+void processZeroLepton1LepAddedBackCS(TString sname            = "test",         // sample name
 			     const int fileindex      = -1,             // index of file (-1 means there is only 1 file for this sample)
 			     const bool isMC          = true,           // data or MC
 			     const TString fname      = "evttree_numEvent500.root", // path of file to be processed
@@ -444,25 +430,27 @@ void processZeroLepton1lepCS(TString sname            = "test",         // sampl
 			     const TString outputdir  = "run/plots",    // directory to which files with histograms will be written
 			     const TString fileprefix = "file:/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_2_0/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
 {
-  
+
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
-  
+
   // Make sure the output has a unique name in case there are multiple files to process
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-  
+
   if(isMC)
     printf("Cross section: %5.2f pb\n", xsec);
-  
+
   TString fullname = fileprefix+fname;
-  
+
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
   //cfg.jets.cleanJetsvSelectedLeptons = true;
+
+ // cfg.jets.cleanJetsvSelectedLeptons = true;
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
+  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
   a.analyze(100000);
 

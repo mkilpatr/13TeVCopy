@@ -32,15 +32,15 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(isMC() && process == defaults::SINGLE_G)
         genmet->setP4(genmet->p4() + boson->p4());
 
-      // add photon to met (now done through cfgSet)
-      /*
+
+
       passPhotonSel = true;
       if(process == defaults::SINGLE_G) {
         if(!selectedPhotons.empty())
           met->setP4(met->p4() + selectedPhotons.front()->p4());
         else passPhotonSel = false;
-      }*/
-	  cfgSet::processMET(*met,0,&selectedPhotons,cfgSet::zl_pplus_met);
+      }
+
 
       // clean jets against boson
       jets.clear(); bJets.clear(); nonBJets.clear();
@@ -88,7 +88,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_)               return false;
       if(boson && fabs(boson->eta()) > 2.4) return false;
       if(!passPhotonSel)                    return false;
-
+      if(!goodvertex) return false;
       filler.fillEventInfo(&data, this);
       filler.fillGenInfo(&data, boson, genJets);
       filler.fillJetInfo  (&data, jets, bJets, met);
@@ -119,8 +119,12 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0LepPhoton();
-  PhotonCRAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars);
+  PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+
 
   a.analyze(100000);
+
+
+
 
 }

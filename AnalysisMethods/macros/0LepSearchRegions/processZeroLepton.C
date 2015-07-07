@@ -140,8 +140,6 @@ class Analyzer : public BaseTreeAnalyzer {
 
   void loadVariables();
   void runEvent();
-  void loadPlots();
-  void out(TString outputName, TString outputPath);
   
 }; // Analyzer : BaseTreeAnalyzer
 
@@ -161,14 +159,12 @@ void Analyzer::loadVariables(){
 void Analyzer::runEvent() {
 
 
-	  MomentumF cutMET = *met;
-	  cfgSet::processMET(cutMET,&selectedLeptons,0,cfgSet::ol_search_met);
-
 	  if(selectedLeptons.size() != 0) return;
 	  if(nJets < minNJets_) return;
 	  if(nBJets < minNBjets_) return;
-	  if(cutMET.pt() < metcut_ && met->pt() < metcut_) return;
+	  if(met->pt() < metcut_) return;
 	  if(nVetoedTracks>0)       return;
+	  if(!goodvertex) return;
 
 
 	  scaleFactor = weight; // lumi_*xsec_/getEntries(); <- old procedure, now stored in files to handle split samples correctly
@@ -246,9 +242,9 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
 
 
   //Create analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
-  //a.analyze(10000); // run: Argument is frequency of printout
-  a.analyze(1000,100000); // for testing
+  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
+  a.analyze(10000); // run: Argument is frequency of printout
+  //a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots
 
 } // processSingleLepton()
