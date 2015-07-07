@@ -244,10 +244,10 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
-
+/*
   if(evtInfoReader.isLoaded() && configSet.met.isConfig()){
     cfgSet::processMET(*met,&selectedLeptons,&selectedPhotons,configSet.met);
-  }
+  }*/
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)

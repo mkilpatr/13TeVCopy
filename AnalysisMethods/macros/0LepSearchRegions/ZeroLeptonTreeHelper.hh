@@ -254,6 +254,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       if(nVetoedLeptons > 0)  return false;
       if(nVetoedTracks > 0)     return false;
       if(met->pt() < metcut_) return false;
+      if(!goodvertex) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

@@ -28,9 +28,10 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_photon_jets.cleanJetsvSelectedPhotons = true;
 
   zl_lepton_jets = zl_search_jets;
-  zl_lepton_jets.cleanJetsvSelectedLeptons = true;
+  zl_lepton_jets.cleanJetsvSelectedLeptons = false;
 
   ol_search_jets = zl_search_jets;
+  ol_search_jets.cleanJetsvSelectedLeptons = true;
   ol_search_jets.minPt                     = 30;
   ol_search_jets.minBJetPt                 = 30;
   ol_search_jets.applyJetID                = true;
@@ -54,6 +55,8 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.setConfig();
 
   zl_veto_leptons = zl_sel_leptons;
+ // zl_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
+ // zl_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
 
   ol_sel_leptons = zl_sel_leptons;
   ol_sel_leptons.minEPt            = 40;
