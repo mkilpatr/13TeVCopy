@@ -29,6 +29,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , cmstops             (0)
 , ak8fatjets          (0)
 , triggers            (0)
+, metfilters          (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -318,17 +319,27 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
   }
     
-    case TRIGGERS : {
-      int defaultOptions = TriggerFiller::defaultOptions;
-      triggers = new TriggerFiller(options < 0 ? defaultOptions : options,
-                                   branchName == "" ? defaults::BRANCH_TRIGGERS : branchName,
-                                   cfg.getParameter<edm::InputTag>("bits"),
-                                   cfg.getParameter<edm::InputTag>("objects"),
-                                   cfg.getParameter<edm::InputTag>("prescales")
-                                  );
-      initializedFillers.push_back(triggers);
-      break;
-    }
+  case TRIGGERS : {
+    int defaultOptions = TriggerFiller::defaultOptions;
+    triggers = new TriggerFiller(options < 0 ? defaultOptions : options,
+				 branchName == "" ? defaults::BRANCH_TRIGGERS : branchName,
+				 cfg.getParameter<edm::InputTag>("bits"),
+				 cfg.getParameter<edm::InputTag>("objects"),
+				 cfg.getParameter<edm::InputTag>("prescales")
+				 );
+    initializedFillers.push_back(triggers);
+    break;
+  }
+    
+  case METFILTERS : {
+    int defaultOptions = METFiltersFiller::defaultOptions;
+    metfilters = new METFiltersFiller(options < 0 ? defaultOptions : options,
+				      branchName == "" ? defaults::BRANCH_METFILTERS : branchName,
+				      cfg.getParameter<edm::InputTag>("bits")
+				      );
+    initializedFillers.push_back(metfilters);
+    break;
+  }
 
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
