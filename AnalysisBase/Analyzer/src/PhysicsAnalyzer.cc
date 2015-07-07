@@ -274,10 +274,10 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
  
     case METFILTERS : {
       int defaultOptions = METFiltersFiller::defaultOptions;
-      metfilters = new METFiltersFiller(options < 0 ? defaultOptions : options,
-				      branchName == "" ? defaults::BRANCH_METFILTERS : branchName,
-				      cfg.getParameter<edm::InputTag>("bits")
-				      );
+      metfilters = new METFiltersFiller(cfg, consumesCollector(),
+                                        options < 0 ? defaultOptions : options,
+				        branchName == "" ? defaults::BRANCH_METFILTERS : branchName
+				        );
       initializedFillers.push_back(metfilters);
       break;
     }

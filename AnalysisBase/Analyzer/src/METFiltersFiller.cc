@@ -13,11 +13,9 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-METFiltersFiller::METFiltersFiller(const int options,
-				   const string branchName,
-				   const edm::InputTag triggerBitTag) :
+METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  triggerBitTag_(triggerBitTag),
+  triggerBitToken_     (cc.consumes<edm::TriggerResults>                   (cfg.getParameter<edm::InputTag>("bits"))),
   triggerNames_(0)
 {
 
@@ -50,7 +48,7 @@ void METFiltersFiller::initTriggerNames()
 void METFiltersFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, triggerBitTag_, triggerBits_, true);
+  iEvent.getByToken(triggerBitToken_, triggerBits_);
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 
