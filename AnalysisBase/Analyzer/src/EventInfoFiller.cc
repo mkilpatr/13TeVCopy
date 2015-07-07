@@ -12,30 +12,30 @@
 
 using namespace ucsbsusy;
 using namespace std;
+using namespace edm;
 
 //--------------------------------------------------------------------------------------------------
 EventInfoFiller::EventInfoFiller(
-    const edm::InputTag vtxTag,
-    const edm::InputTag rhoTag,
-    const edm::InputTag metTag
+    const edm::ParameterSet& cfg,
+    edm::ConsumesCollector && cc
 ) :
-  vtxTag_(vtxTag),
-  rhoTag_(rhoTag),
-  metTag_(metTag),
+  vtxToken_(cc.consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"))),
+  rhoToken_(cc.consumes<double>                (cfg.getParameter<edm::InputTag>("rho"))),
+  metToken_(cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("mets"))),
   primaryVertexIndex_(-1),
   met_(0)
 {
-  irun_      =  data.add<unsigned int>(branchName_,"run"      ,"i",0);
-  ilumi_     =  data.add<unsigned int>(branchName_,"lumi"     ,"i",0);
-  ievent_    =  data.add<unsigned int>(branchName_,"event"    ,"i",0);
-  inpv_      =  data.add<unsigned int>(branchName_,"npv"      ,"i",0);
-  irho_      =  data.add<float>       (branchName_,"rho"      ,"F",0);
-  ipvx_      =  data.add<float>       (branchName_,"pv_x"     ,"F",0);
-  ipvy_      =  data.add<float>       (branchName_,"pv_y"     ,"F",0);
-  ipvz_      =  data.add<float>       (branchName_,"pv_z"     ,"F",0);
-  imetpt_    =  data.add<float>       (branchName_,"met_pt"   ,"F",0);
-  imetphi_   =  data.add<float>       (branchName_,"met_phi"  ,"F",0);
-  imetsumEt_ =  data.add<float>       (branchName_,"met_sumEt","F",0);
+  irun_      =  data.add<unsigned int>(branchName_,"run"       ,"i",0);
+  ilumi_     =  data.add<unsigned int>(branchName_,"lumi"      ,"i",0);
+  ievent_    =  data.add<unsigned int>(branchName_,"event"     ,"i",0);
+  inpv_      =  data.add<unsigned int>(branchName_,"npv"       ,"i",0);
+  irho_      =  data.add<float>       (branchName_,"rho"       ,"F",0);
+  ipvx_      =  data.add<float>       (branchName_,"pv_x"      ,"F",0);
+  ipvy_      =  data.add<float>       (branchName_,"pv_y"      ,"F",0);
+  ipvz_      =  data.add<float>       (branchName_,"pv_z"      ,"F",0);
+  imetpt_    =  data.add<float>       (branchName_,"met_pt"    ,"F",0);
+  imetphi_   =  data.add<float>       (branchName_,"met_phi"   ,"F",0);
+  imetsumEt_ =  data.add<float>       (branchName_,"met_sumEt" ,"F",0);
   igenmetpt_ =  data.add<float>       (branchName_,"genmet_pt" ,"F",0);
   igenmetphi_=  data.add<float>       (branchName_,"genmet_phi","F",0);
   igoodvertex_= data.add<bool>        (branchName_,"goodvertex","O",false);
@@ -47,9 +47,9 @@ void EventInfoFiller::load(const edm::Event& iEvent)
 {
   reset();
 
-  FileUtilities::enforceGet(iEvent,vtxTag_,vertices_,true);
-  FileUtilities::enforceGet(iEvent,metTag_,mets_,true);
-  FileUtilities::enforceGet(iEvent,rhoTag_,rho_,true);
+  iEvent.getByToken(vtxToken_, vertices_);
+  iEvent.getByToken(rhoToken_, rho_);
+  iEvent.getByToken(metToken_, mets_);
 
   if(vertices_->size() > 0)
     primaryVertexIndex_ = 0;
@@ -64,9 +64,12 @@ void EventInfoFiller::load(const edm::Event& iEvent)
 //--------------------------------------------------------------------------------------------------
 void EventInfoFiller::fill()
 {
-
-  bool isgood=kFALSE;
-  if (  !(*vertices_)[primaryVertexIndex_].isFake() && (*vertices_)[primaryVertexIndex_].ndof()>4. && (*vertices_)[primaryVertexIndex_].position().Rho()<=2.0 && fabs((*vertices_)[primaryVertexIndex_].position().Z())<=24.0 ) isgood=kTRUE;
+  bool hasgoodvtx = false;
+  if(!(*vertices_)[primaryVertexIndex_].isFake() && 
+      (*vertices_)[primaryVertexIndex_].ndof() > 4. &&
+      (*vertices_)[primaryVertexIndex_].position().Rho() <= 2.0 &&
+      fabs((*vertices_)[primaryVertexIndex_].position().Z())<=24.0)
+    hasgoodvtx = true;
 
   data.fill<unsigned int>(irun_       ,eventCoords.run);
   data.fill<unsigned int>(ilumi_      ,eventCoords.lumi);
@@ -81,7 +84,7 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetsumEt_  ,met_->sumEt());
   data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
   data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
-  data.fill<bool>        (igoodvertex_, isgood );
+  data.fill<bool>        (igoodvertex_,hasgoodvtx );
 			  
   isFilled_ = true;
 }

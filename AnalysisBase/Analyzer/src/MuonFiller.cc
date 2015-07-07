@@ -13,17 +13,16 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-MuonFiller::MuonFiller(const int options,
-		       const string branchName,
-		       const EventInfoFiller * evtInfoFiller,
-		       const edm::InputTag muonTag,
-		       const bool requireLoose,
-		       const double muptMin) :
+MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
-  muonTag_(muonTag),
-  requireLoose_(requireLoose),
-  muptMin_(muptMin)
+  muonToken_    (cc.consumes<pat::MuonCollection>           (cfg.getParameter<edm::InputTag>("muons"))),
+  ca8jetToken_  (cc.consumes<reco::PFJetCollection>         (cfg.getParameter<edm::InputTag>("ca8jets"))),
+  rhoToken_     (cc.consumes<double>                        (cfg.getParameter<edm::InputTag>("rho"))),
+  jetToken_     (cc.consumes<pat::JetCollection>            (cfg.getParameter<edm::InputTag>("jets"))),
+  pfcandToken_  (cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("pfcands"))),
+  requireLoose_ (cfg.getUntrackedParameter<bool>            ("requireLooseMuon")),
+  muptMin_      (cfg.getUntrackedParameter<double>          ("minMuonPt"))
 {
 
   ipt_           = data.addMulti<float>(branchName_,"pt",0);
@@ -64,7 +63,7 @@ MuonFiller::MuonFiller(const int options,
     ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
-  iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
+  iLSFIso_   = data.addMulti<float>(branchName_,"lsfIso",0);
   string base = getenv("CMSSW_BASE");
   string muonisomva=base+"/src/data/Muons/muon_sefsip3drhoiso_training.root_BDTG.weights.xml";
   muMVAiso = new LeptonMVA();
@@ -87,12 +86,11 @@ MuonFiller::MuonFiller(const int options,
 void MuonFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);
-  iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
-  FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
-  FileUtilities::enforceGet(iEvent,"packedPFCandidates",pfcands,true);
-  FileUtilities::enforceGet(iEvent,"redCA8",ca8jets,true);
-  FileUtilities::enforceGet(iEvent,"slimmedJets",ak4jets_,true);
+  iEvent.getByToken(muonToken_,muons_);
+  iEvent.getByToken(ca8jetToken_,ca8jets_);
+  iEvent.getByToken(rhoToken_,rho_);
+  iEvent.getByToken(jetToken_,ak4jets_);
+  iEvent.getByToken(pfcandToken_,pfcands_);
   isLoaded_ = true;
 }
 
@@ -142,22 +140,14 @@ void MuonFiller::fill()
       data.fillMulti<float>(ipfpuiso_, mu.pfIsolationR04().sumPUPt);
     }
 
-    //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
     LorentzVector mu_;
     mu_ = mu.p4();
-    LorentzVectorCollection lsfSubJets3_;
-    for (LorentzVectorCollection::const_iterator jt = lsfSubJets3->begin(); jt != lsfSubJets3->end(); jt++) {
-      LorentzVector tmpVec;
-      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
-      lsfSubJets3_.push_back(tmpVec);
-    }
-    //    calculateLSFIso(mu_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
-    data.fillMulti<float>(iLSF3Iso_  ,LSF(mu_,ca8jets));
+    data.fillMulti<float>(iLSFIso_  ,LSF(mu_,ca8jets_));
     double rhoiso=calculateRhoIso(mu.eta(),mu.pfIsolationR04().sumChargedHadronPt,mu.pfIsolationR04().sumNeutralHadronEt,mu.pfIsolationR04().sumPhotonEt,*rho_);
     double sip3d=fabs(mu.dB(mu.PV3D) / mu.edB(mu.PV3D));
-    data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), LSF(mu_,ca8jets), sip3d, rhoiso));
+    data.fillMulti<float>(iMVAiso_,muMVAiso->evaluateMVA(mu.pt(), LSF(mu_,ca8jets_), sip3d, rhoiso));
     data.fillMulti<bool >(iismedium_,mediumID(mu.isLooseMuon(), mu.pt() ,dbiso ,mu.innerTrack().isNonnull() ? -1.*mu.innerTrack()->dxy(evtInfoFiller_->primaryVertex()):0 , mu.innerTrack().isNonnull() ? mu.innerTrack()->dz(evtInfoFiller_->primaryVertex()):0 ,mu.isGlobalMuon() ,mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0,  mu.combinedQuality().trkKink, mu.combinedQuality().chi2LocalPosition , mu.innerTrack().isNonnull() ? mu.innerTrack()->validFraction() : 0.0, mu.segmentCompatibility()));
-    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, mu, 0.05, 0.2, 10., false, false));
+    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands_, mu, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, mu ));
     data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, mu ));
     data.fillMulti<float>(isip3d_, sip3d);
@@ -242,18 +232,10 @@ bool MuonFiller::mediumID(bool isLoose, double pt , double pfdbetaiso, double d0
 double MuonFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Muon ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only) {
    if (ptcl.pt()<5.) return 99999.;
    double deadcone_nh(0.), deadcone_ch(0.), deadcone_ph(0.), deadcone_pu(0.);
-   //   if(ptcl.isElectron()) {                                                                                                                                                                                                             
-   //     if (fabs(ptcl.eta())>1.479) {deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;}
-     //} else if(ptcl.isMuon()) {                                                                                                                                                                                                           
-     deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;                                                                                                                                                 
-     //   } else {                                                                                                                                                                                                                          
-     //deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01; // maybe use muon cones??                                                                                                                           
-     //   }                                                                                          
-                                                                                                                                       
+   deadcone_ch = 0.0001; deadcone_pu = 0.01; deadcone_ph = 0.01;deadcone_nh = 0.01;
    double iso_nh(0.); double iso_ch(0.);
    double iso_ph(0.); double iso_pu(0.);
    double ptThresh(0.5);
-   //   if(ptcl.isElectron()) ptThresh = 0;
    double r_iso = max(r_iso_min,min(r_iso_max, kt_scale/ptcl.pt()));
    for (const pat::PackedCandidate &pfc : *pfcands) {
      if (abs(pfc.pdgId())<7) continue;

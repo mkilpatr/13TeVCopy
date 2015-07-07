@@ -25,11 +25,7 @@ namespace ucsbsusy {
   class TriggerFiller : public BaseFiller {
 
   public :
-    TriggerFiller(const int options,
-                  const string branchName,
-                  const edm::InputTag triggerBitTag,
-                  const edm::InputTag triggerObjTag,
-                  const edm::InputTag triggerPrescaleTag);
+    TriggerFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~TriggerFiller() {}
 
     enum Options {
@@ -42,12 +38,12 @@ namespace ucsbsusy {
     void initTriggerNames();
 
   private :
-    const edm::InputTag triggerBitTag_;
-    const edm::InputTag triggerObjTag_;
-    const edm::InputTag triggerPrescaleTag_;
-    const edm::TriggerNames *triggerNames_;
-    TrigIdMap trigIds_;
-    TrigIdMap trigFilterIds_;
+    edm::EDGetTokenT<edm::TriggerResults>                    triggerBitToken_;
+    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjToken_;
+    edm::EDGetTokenT<pat::PackedTriggerPrescales>            triggerPrescaleToken_;
+    const edm::TriggerNames * triggerNames_;
+    TrigIdMap                 trigIds_;
+    TrigIdMap                 trigFilterIds_;
 
     size itrig_bit_flag;
     size itrig_bit_pass;
@@ -60,9 +56,9 @@ namespace ucsbsusy {
     size itrig_obj_filterflags;
 
   public :
-    edm::Handle<edm::TriggerResults> triggerBits_;
+    edm::Handle<edm::TriggerResults>                    triggerBits_;
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects_;
-    edm::Handle<pat::PackedTriggerPrescales> triggerPrescales_;
+    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescales_;
 
   };
 

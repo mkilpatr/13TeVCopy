@@ -122,7 +122,7 @@ process.p = cms.Path(#process.puppi*
                      process.ak4PatAssocSeq           * 
                      #process.ak4PuppiJetSeq           * 
                      process.ca8JetsSeq               *
-                     process.lsfSubJets               *
+                     #process.lsfSubJets               *
                      process.egmGsfElectronIDSequence * 
                      process.egmPhotonIDSequence      *
                      #process.pickyJetSeq              *

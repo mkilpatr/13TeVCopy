@@ -23,11 +23,7 @@ namespace ucsbsusy {
   class TauFiller : public BaseFiller {
 
     public :
-      TauFiller(const int options,
-                const string branchName,
-                const EventInfoFiller * evtInfoFiller,
-                const edm::InputTag tauTag,
-                const double tauptMin);
+      TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller);
       ~TauFiller() {}
 
       enum Options {
@@ -44,7 +40,7 @@ namespace ucsbsusy {
     private :
       const EventInfoFiller * evtInfoFiller_;
       // Input from the config file
-      edm::InputTag tauTag_;
+      edm::EDGetTokenT<pat::TauCollection> tauToken_;
       double        tauptMin_;
       // Map of HPS discriminator names to flags
       TauIdMap      hpsIds_;

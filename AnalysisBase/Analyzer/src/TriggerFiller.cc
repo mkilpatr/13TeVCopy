@@ -13,16 +13,12 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-TriggerFiller::TriggerFiller(const int options,
-                             const string branchName,
-                             const edm::InputTag triggerBitTag,
-                             const edm::InputTag triggerObjTag,
-                             const edm::InputTag triggerPrescaleTag) :
+TriggerFiller::TriggerFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  triggerBitTag_(triggerBitTag),
-  triggerObjTag_(triggerObjTag),
-  triggerPrescaleTag_(triggerPrescaleTag),
-  triggerNames_(0)
+  triggerBitToken_     (cc.consumes<edm::TriggerResults>                   (cfg.getParameter<edm::InputTag>("bits"))),
+  triggerObjToken_     (cc.consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag>("objects"))),
+  triggerPrescaleToken_(cc.consumes<pat::PackedTriggerPrescales>           (cfg.getParameter<edm::InputTag>("prescales"))),
+  triggerNames_        (0)
 {
 
   initTriggerNames();
@@ -69,9 +65,9 @@ void TriggerFiller::initTriggerNames()
 void TriggerFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, triggerBitTag_, triggerBits_, true);
-  FileUtilities::enforceGet(iEvent, triggerObjTag_, triggerObjects_, true);
-  FileUtilities::enforceGet(iEvent, triggerPrescaleTag_, triggerPrescales_, true);
+  iEvent.getByToken(triggerBitToken_, triggerBits_);
+  iEvent.getByToken(triggerObjToken_, triggerObjects_);
+  iEvent.getByToken(triggerPrescaleToken_, triggerPrescales_);
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 

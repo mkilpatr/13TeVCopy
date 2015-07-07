@@ -13,14 +13,9 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-CMSTopFiller::CMSTopFiller(const int options,
-			   const string branchName,
-			   const EventInfoFiller * evtInfoFiller,
-			   const edm::InputTag fatJetTag) :
+CMSTopFiller::CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  evtInfoFiller_(evtInfoFiller),
-  fatJetTag_(fatJetTag)
-
+  fatJetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("fatJets")))
 {
 
   ictt_fatjet_mass_                 = data.addMulti<float>(branchName_,"fatjet_mass",0);
@@ -46,7 +41,7 @@ CMSTopFiller::CMSTopFiller(const int options,
 void CMSTopFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, fatJetTag_,fatJets_,true);
+  iEvent.getByToken(fatJetToken_,fatJets_);
   isLoaded_ = true;
 }
 
