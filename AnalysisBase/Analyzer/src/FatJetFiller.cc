@@ -23,7 +23,7 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_prunedmass_           = data.addMulti<float>(branchName_,"fatjet_prunedmass",0);
   ifj_softdropmass_         = data.addMulti<float>(branchName_,"fatjet_softdropmass",0);
   ifj_filteredmass_         = data.addMulti<float>(branchName_,"fatjet_filteredmass",0);
-  ifj_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
+  //ifj_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
   ifj_tau1_                 = data.addMulti<float>(branchName_,"fatjet_tau1",-1.);
   ifj_tau2_                 = data.addMulti<float>(branchName_,"fatjet_tau2",-1.);
   ifj_tau3_                 = data.addMulti<float>(branchName_,"fatjet_tau3",-1.);
@@ -48,11 +48,12 @@ void FatJetFiller::fill()
   for (const pat::Jet &fatjet : *fatJets_) {
 
     data.fillMulti<float>(ifj_mass_                , fatjet.mass());
-    data.fillMulti<float>(ifj_trimmedmass_         , fatjet.userFloat("ak8PFJetsCHSTrimmedLinks"));
-    data.fillMulti<float>(ifj_prunedmass_          , fatjet.userFloat("ak8PFJetsCHSPrunedLinks"));
-    data.fillMulti<float>(ifj_softdropmass_        , fatjet.userFloat("ak8PFJetsCHSSoftDropLinks"));
-    data.fillMulti<float>(ifj_filteredmass_        , fatjet.userFloat("ak8PFJetsCHSFilteredLinks"));
-    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
+
+    data.fillMulti<float>(ifj_trimmedmass_         , fatjet.userFloat("ak8PFJetsCHSTrimmedMass"));
+    data.fillMulti<float>(ifj_prunedmass_          , fatjet.userFloat("ak8PFJetsCHSPrunedMass"));
+    data.fillMulti<float>(ifj_softdropmass_        , fatjet.userFloat("ak8PFJetsCHSSoftDropMass"));
+    data.fillMulti<float>(ifj_filteredmass_        , fatjet.userFloat("ak8PFJetsCHSFilteredMass"));
+    //    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
     data.fillMulti<float>(ifj_tau1_                , fatjet.userFloat("NjettinessAK8:tau1"));
     data.fillMulti<float>(ifj_tau2_                , fatjet.userFloat("NjettinessAK8:tau2"));
     data.fillMulti<float>(ifj_tau3_                , fatjet.userFloat("NjettinessAK8:tau3"));

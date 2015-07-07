@@ -23,7 +23,7 @@ CMSTopFiller::CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ictt_fatjet_prunedmass_           = data.addMulti<float>(branchName_,"fatjet_prunedmass",0);
   ictt_fatjet_softdropmass_         = data.addMulti<float>(branchName_,"fatjet_softdropmass",0);
   ictt_fatjet_filteredmass_         = data.addMulti<float>(branchName_,"fatjet_filteredmass",0);
-  ictt_fatjet_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
+  //  ictt_fatjet_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
   ictt_fatjet_tau1_                 = data.addMulti<float>(branchName_,"fatjet_tau1",-1.);
   ictt_fatjet_tau2_                 = data.addMulti<float>(branchName_,"fatjet_tau2",-1.);
   ictt_fatjet_tau3_                 = data.addMulti<float>(branchName_,"fatjet_tau3",-1.);
@@ -55,11 +55,11 @@ void CMSTopFiller::fill()
     if (!catopTag) { continue; }
 
     data.fillMulti<float>(ictt_fatjet_mass_                , fatjet.mass());
-    data.fillMulti<float>(ictt_fatjet_trimmedmass_         , fatjet.userFloat("ak8PFJetsCHSTrimmedLinks"));
-    data.fillMulti<float>(ictt_fatjet_prunedmass_          , fatjet.userFloat("ak8PFJetsCHSPrunedLinks"));
-    data.fillMulti<float>(ictt_fatjet_softdropmass_        , fatjet.userFloat("ak8PFJetsCHSSoftDropLinks"));
-    data.fillMulti<float>(ictt_fatjet_filteredmass_        , fatjet.userFloat("ak8PFJetsCHSFilteredLinks"));
-    data.fillMulti<float>(ictt_fatjet_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
+    data.fillMulti<float>(ictt_fatjet_trimmedmass_         , fatjet.userFloat("ak8PFJetsCHSTrimmedMass"));
+    data.fillMulti<float>(ictt_fatjet_prunedmass_          , fatjet.userFloat("ak8PFJetsCHSPrunedMass"));
+    data.fillMulti<float>(ictt_fatjet_softdropmass_        , fatjet.userFloat("ak8PFJetsCHSSoftDropMass"));
+    data.fillMulti<float>(ictt_fatjet_filteredmass_        , fatjet.userFloat("ak8PFJetsCHSFilteredMass"));
+    //    data.fillMulti<float>(ictt_fatjet_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
     data.fillMulti<float>(ictt_fatjet_tau1_                , fatjet.userFloat("NjettinessAK8:tau1"));
     data.fillMulti<float>(ictt_fatjet_tau2_                , fatjet.userFloat("NjettinessAK8:tau2"));
     data.fillMulti<float>(ictt_fatjet_tau3_                , fatjet.userFloat("NjettinessAK8:tau3"));
@@ -72,7 +72,6 @@ void CMSTopFiller::fill()
     data.fillMulti<float>(ictt_top_nsubjets_               , catopTag->properties().nSubJets);
     
     isFilled_ = true;
-
   }
 
 }

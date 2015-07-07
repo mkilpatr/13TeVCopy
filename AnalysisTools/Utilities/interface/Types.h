@@ -141,6 +141,22 @@ namespace ucsbsusy {
     kSingleEle = 1UL<<3
   };
 
+  enum METFilterBits {
+    fFlag_trackingFailureFilter = 1UL<<0,
+    fFlag_goodVertices = 1UL<<1,
+    fFlag_CSCTightHaloFilter = 1UL<<2,
+    fFlag_trkPOGFilters = 1UL<<3,
+    fFlag_trkPOG_logErrorTooManyClusters = 1UL<<4,
+    fFlag_EcalDeadCellTriggerPrimitiveFilter = 1UL<<5,
+    fFlag_ecalLaserCorrFilter = 1UL<<6,
+    fFlag_trkPOG_manystripclus53X = 1UL<<7,
+    fFlag_eeBadScFilter = 1UL<<8,
+    fFlag_METFilters = 1UL<<9,
+    fFlag_HBHENoiseFilter = 1UL<<10,
+    fFlag_trkPOG_toomanystripclus53X = 1UL<<11,
+    fFlag_hcalLaserEventFilter = 1UL<<12
+  };
+
 }
 
 #endif
