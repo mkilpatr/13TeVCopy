@@ -38,7 +38,7 @@ GenParticleFiller::GenParticleFiller(
   ifirstdau    = data.addMulti<stor  >(branchName_,"firstDau" ,0);
   iassoc       = data.addMulti<stor  >(branchName_,"assocList",0);
   if(options_ & SAVEPARTONDECAY)
-  ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
+    ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -14,6 +14,7 @@
 #define PHYSICSANALYZER_H
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 //#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
@@ -47,11 +48,13 @@ namespace ucsbsusy {
       virtual ~PhysicsAnalyzer();
 
       virtual void beginJob() override;
+      virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       virtual void book();
       virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
       virtual void fill();
 
+      static const bool PRINTLHERUNINFO;  // print LHERunInfo: useful to determine which systematic weights are available
       //--------------------------------------------------------------------------------------------------
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------

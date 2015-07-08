@@ -43,10 +43,14 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   EventInfo = cms.untracked.PSet(
-                                      isFilled          = cms.untracked.bool(True),
-                                      vertices          = cms.InputTag('offlineSlimmedPrimaryVertices'),
-                                      rho               = cms.InputTag('fixedGridRhoFastjetAll'),
-                                      mets              = cms.InputTag('slimmedMETs'),  
+                                      isFilled               = cms.untracked.bool(True),
+                                      vertices               = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                      rho                    = cms.InputTag('fixedGridRhoFastjetAll'),
+                                      mets                   = cms.InputTag('slimmedMETs'),  
+                                      genEvtInfo             = cms.InputTag('generator'),
+                                      lheEvtInfo             = cms.InputTag('externalLHEProducer'),
+                                      saveSystematicWeights  = cms.untracked.bool(True),
+                                      whichSystematicWeights = cms.untracked.vuint32(),
                                   ),
                                     
                                   Jets = cms.untracked.PSet(  

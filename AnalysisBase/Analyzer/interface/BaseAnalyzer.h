@@ -37,6 +37,7 @@ namespace ucsbsusy {
 
       virtual void beginJob() override;
 
+      virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       // Event processing
 
       /**
