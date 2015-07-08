@@ -7,6 +7,8 @@
 using namespace ucsbsusy;
 using namespace std;
 
+const bool ucsbsusy::PhysicsAnalyzer::PRINTLHERUNINFO = false; // if you need to print out available LHE info for systematics
+
 
 //--------------------------------------------------------------------------------------------------
 PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
@@ -48,6 +50,28 @@ PhysicsAnalyzer::~PhysicsAnalyzer() {for(auto f : initializedFillers) delete f; 
 void PhysicsAnalyzer::beginJob() {}
 
 //--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
+{
+
+  if(!PRINTLHERUNINFO) return;
+
+  edm::Handle<LHERunInfoProduct> lheruninfo;
+  typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
+
+  run.getByLabel( "externalLHEProducer", lheruninfo );
+  LHERunInfoProduct myLHERunInfoProduct = *(lheruninfo.product());
+
+  for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){
+    std::cout << iter->tag() << std::endl;
+    std::vector<std::string> lines = iter->lines();
+    for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
+     std::cout << lines.at(iLine);
+    }
+  }
+
+}
+
+//--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   return BaseAnalyzer::filter(iEvent,iSetup);
@@ -83,7 +107,12 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
   switch (type) {
 
     case EVTINFO : {
-      eventInfo = new EventInfoFiller(cfg, consumesCollector());
+      int defaultOptions = EventInfoFiller::defaultOptions;
+      if(isMC()) defaultOptions |= EventInfoFiller::LOADGEN;
+      if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
+      eventInfo = new EventInfoFiller(cfg, consumesCollector(),
+                                      options < 0 ? defaultOptions : options
+                                      );
       initializedFillers.push_back(eventInfo);
       break;
     }

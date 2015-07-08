@@ -18,8 +18,10 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-#options.inputFiles = '/store/mc/Phys14DR/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/000D3972-D973-E411-B12E-001E67398142.root'
-options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
 
 options.maxEvents = -1
 
@@ -48,6 +50,12 @@ from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configurati
 process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
+
+# only look at LHEEventProduct info if it's available
+if 'madgraph' in options.inputFiles[0] or 'powheg' in options.inputFiles[0] or 'amcatnlo' in options.inputFiles[0]:
+   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
+else : 
+   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -113,7 +121,6 @@ process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPho
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
-
 
 process.load('Dummy.Puppi.Puppi_cff')
 process.puppi.PuppiName      = cms.untracked.string("")
