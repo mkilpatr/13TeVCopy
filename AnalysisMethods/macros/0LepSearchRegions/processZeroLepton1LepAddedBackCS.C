@@ -444,12 +444,7 @@ void processZeroLepton1LepAddedBackCS(TString sname            = "test",        
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
-  //cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  //cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  //cfg.jets.cleanJetsvSelectedLeptons = true;
 
- // cfg.jets.cleanJetsvSelectedLeptons = true;
-  // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
   a.analyze(100000);
