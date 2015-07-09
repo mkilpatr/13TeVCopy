@@ -15,16 +15,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       if(nSelLeptons<1)      return false;
-<<<<<<< HEAD
-     if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)
-=======
-      //if(!passOneVeto) return false;
-     if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)
-     	std::cout << "The delta phi is : " << fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) << std::endl;
-
-     // if(fabs(PhysicsUtilities::deltaPhi(*met, *vetoedLeptons[0])) > 1)
->>>>>>> 98913044f52b146dfd5006f89fdadf47b875da81
-        return false;
+     if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)        return false;
 
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo(&data, jets, bJets, met);
@@ -57,16 +48,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-<<<<<<< HEAD
 
-=======
-  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.selectedLeptons.minMuPt = 5;
-  cfg.selectedLeptons.minEPt = 5;
-
-
->>>>>>> 98913044f52b146dfd5006f89fdadf47b875da81
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
   a.analyze(100000);
