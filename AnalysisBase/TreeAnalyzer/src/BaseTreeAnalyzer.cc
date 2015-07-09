@@ -38,12 +38,12 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
   clog <<"Loaded configurations: ";
-  if(configSet.jets           .isConfig()) clog << configSet.jets           .getName() <<" ";
+  if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons.getName() <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons  .getName() <<" ";
   if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks   .getName() <<" ";
   if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons.getName() <<" ";
-  if(configSet.met            .isConfig()) clog << configSet.met            .getName() <<" ";
+
   clog << endl;
 
   if(configSet.jets.isConfig()){
@@ -244,10 +244,7 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
-/*
-  if(evtInfoReader.isLoaded() && configSet.met.isConfig()){
-    cfgSet::processMET(*met,&selectedLeptons,&selectedPhotons,configSet.met);
-  }*/
+
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
