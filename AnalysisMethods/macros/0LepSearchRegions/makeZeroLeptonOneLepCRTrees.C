@@ -15,7 +15,6 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       if(nSelLeptons<1)      return false;
-      //if(!passOneVeto) return false;
      if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)
         return false;
 
@@ -50,11 +49,6 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.selectedLeptons.minMuPt = 5;
-  cfg.selectedLeptons.minEPt = 5;
-
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
