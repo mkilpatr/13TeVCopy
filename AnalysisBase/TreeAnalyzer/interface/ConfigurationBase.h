@@ -6,7 +6,7 @@
 #include "AnalysisTools/DataFormats/interface/Muon.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
-
+#include <iostream>
 
 namespace cfgSet {
 
@@ -59,6 +59,16 @@ namespace cfgSet {
       cleanJetsMaxDR           (-1)
     {};
     virtual ~JetConfig() {};
+
+    friend ostream& operator<<(ostream& os, const JetConfig& a){
+      os << "Printing out jet selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "min jet Pt "<< a.minPt <<std::endl;
+      os << "jetCollection "<< a.maxEta <<std::endl;
+      os << "jetCollection "<< a.minBJetPt <<std::endl;
+      os << "jetCollection "<< a.maxBJetEta <<std::endl;
+      os << "jetCollection "<< a.defaultCSV <<std::endl;
+      return os;
+    };
   };
 
   class LeptonConfig : public BaseConfig {
@@ -122,16 +132,6 @@ namespace cfgSet {
   };
 
 
-  class METConfig : public BaseConfig {
-  public:
-    bool addSelectedLeptonsToMET;
-    bool addSelectedPhotonsToMET;
-    METConfig(TString inName = "NULL") :BaseConfig(inName),
-      addSelectedLeptonsToMET(false),
-      addSelectedPhotonsToMET(false)
-    {};
-    virtual ~METConfig() {};
-  };
 
 
   //The collection of default configs
@@ -141,15 +141,12 @@ namespace cfgSet {
     LeptonConfig vetoedLeptons  ;
     TrackConfig  vetoedTracks   ;
     PhotonConfig selectedPhotons;
-    METConfig    met            ;
     ConfigSet() :
       jets            (),
       selectedLeptons (),
       vetoedLeptons   (),
       vetoedTracks    (),
-      selectedPhotons (),
-      met             ()
-    {
+      selectedPhotons ()    {
     }
   };
 

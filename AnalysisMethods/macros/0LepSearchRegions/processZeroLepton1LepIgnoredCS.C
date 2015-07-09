@@ -49,7 +49,7 @@ class Analyzer : public BaseTreeAnalyzer {
    // outtree->Branch("DphiJ12METn"    ,&DphiJ12METn,    "DphiJ12METn/F"    );
    // outtree->Branch("MinDphiB1B2METn",&MinDphiB1B2METn,"MinDphiB1B2METn/F");
    // outtree->Branch("MinMTB1B2METn"  ,&MinMTB1B2METn,  "MinMTB1B2METn/F"  );
-
+    outtree->Branch("NJ60"  ,&nJ60pt  ,"nj60/F"  );
     // top variables
     outtree->Branch("NCTT"      ,&NCTT     ,"NCTT/I"    );
     outtree->Branch("NCTTb"     ,&NCTTb    ,"NCTTb/I"   );
@@ -156,7 +156,7 @@ class Analyzer : public BaseTreeAnalyzer {
   float PtLepOvB1;
   float DRB2Lep;
   float PtLepOvB2;
-
+  float nJ60pt;
 
   void cttAlgo(float fjMass,float minMass,int nSubJets,float tau1,float tau2,float tau3,
 	       vector<RecoJetF*> bJets,CMSTopF* fatJet,vector<bool>& cttDef);
@@ -183,10 +183,7 @@ void Analyzer::loadVariables(){
 // Analyze event and fill plots
 void Analyzer::runEvent()
 {
-//std::cout << "The number of leptons is " << nSelLeptons << std::endl;
-//std::cout << "The number of vetoed leptons is " << nVetoedLeptons << std::endl;
 
-  //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
   if ((nSelLeptons<1) || (nJets<=3))   return;
   if(!goodvertex) return;
   float wgt    = evtInfoReader.weight;
@@ -242,8 +239,11 @@ void Analyzer::runEvent()
   if (MTb1MET<=MTb2MET) { MinMTB1B2MET = MTb1MET; }
   else                  { MinMTB1B2MET = MTb2MET; }
   // ===
-
-/*
+  nJ60pt = 0;
+  for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+       const auto& j = *jets[iJ];
+       if(j.pt() >= 60 ) nJ60pt++;}
+       /*
   // corected variables
 
   MomentumF* metn = new MomentumF(met->p4() + lep->p4());
@@ -446,11 +446,7 @@ void processZeroLepton1LepIgnoredCS(TString sname            = "test",         /
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.selectedLeptons.minMuPt = 5;
-  cfg.selectedLeptons.minEPt = 5;
- // cfg.jets.cleanJetsvSelectedLeptons = true;
+
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
