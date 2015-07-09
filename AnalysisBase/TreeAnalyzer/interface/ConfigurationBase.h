@@ -62,7 +62,7 @@ namespace cfgSet {
 
     friend ostream& operator<<(ostream& os, const JetConfig& a){
       os << "Printing out jet selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "minPt "<< a.minPt <<std::endl;
+      os << "min jet Pt "<< a.minPt <<std::endl;
       os << "jetCollection "<< a.maxEta <<std::endl;
       os << "jetCollection "<< a.minBJetPt <<std::endl;
       os << "jetCollection "<< a.maxBJetEta <<std::endl;
