@@ -79,7 +79,7 @@ public:
  *
  */
 
-void lepSkimmer(string fileName, string outPostfix ="skimmed",const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") {
+void dileptonSkimmer(string fileName, string outPostfix ="skimmed",const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
