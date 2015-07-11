@@ -59,9 +59,11 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("lep1pt",&lep1pt);
       outtree->Branch("jetphi1",&jetphi1);
       outtree->Branch("jetphi2",&jetphi2);
-      outtree->Branch("nVetoTracks",&nVetoTracks);
+      outtree->Branch("nOldVetoTrackss",&nOldVetoTrackss);
+      outtree->Branch("nNewVetoTracks",&nNewVetoTracks);
       outtree->Branch("nVetoMVATaus",&nVetoMVATaus);
-      outtree->Branch("nVetoedLeptons",&nVetoedLeptons);
+      outtree->Branch("nVetoed5GeVLeptons",&nVetoed5GeVLeptons);
+      outtree->Branch("nVetoed10GeVLeptons",&nVetoed10GeVLeptons);
       outtree->Branch("nVetoCutTausISO1",&nVetoCutTausISO1);
       outtree->Branch("nVetoCutTausISO2",&nVetoCutTausISO2);
       outtree->Branch("nElectronsGenFromTops",&nElectronsGenFromTops);
@@ -128,10 +130,13 @@ class Analyzer : public BaseTreeAnalyzer {
   float MT;
   double mt2w;
   float hadronic_top_chi2;
-  int nVetoTracks;
+  int nOldVetoTrackss;
+  int nNewVetoTracks;
   int nVetoMVATaus;
   int nVetoCutTausISO1;
   int nVetoCutTausISO2;
+  int nVetoed5GeVLeptons;
+  int nVetoed10GeVLeptons;
   int nElectronsGenFromTops, nMuonsGenFromTops, nTausGenFromTops;
 
   void runEvent();
@@ -187,62 +192,116 @@ void Analyzer::runEvent()
 
   // always require exactly one selected lepton
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
+  //if(nVetoedLeptons > 1) return; // no more than 1 lep passing veto
 
   // the selected lepton object
   LeptonF* lep = selectedLeptons.at(0);
   LepPdgId = lep->pdgid();
   LepPt    = lep->pt();
 
-  // SECOND LEPTON VETO
+  // SECOND LEPTON VETO (5 GeV natural)
   // must not return. store nVetoedLeptons in tree.
-  //if(nVetoedLeptons > 1) return; // no more than 1 lep passing veto
+  nVetoed5GeVLeptons=nVetoedLeptons;
     
-  // TRACK VETO
-  // store nVetoTracks in tree.
-  nVetoTracks=0;
+  // SECOND LEPTON VETO (more restrictive 10 GeV)
+  // store nVetoed10GeVLeptons in tree.
+  nVetoed10GeVLeptons=0;
+  for(uint iT =0; iT < vetoedLeptons.size(); ++iT){  
+    if(vetoedLeptons.at(iT)->pt() > 10) nVetoed10GeVLeptons;
+  }
+
+
+  // OLD TRACK VETO
+  // store nOldVetoTrackss in tree.
+  nOldVetoTrackss=0;
   for(uint iT =0; iT < vetoedTracks.size(); ++iT){
     // all veto tracks are dz < 0.1, eta < 2.4, charge != 0
     if(fabs(vetoedTracks.at(iT)->dz())   > 0.1) continue; 
     if(fabs(vetoedTracks.at(iT)->eta())  > 2.4) continue;
     if(     vetoedTracks.at(iT)->charge() == 0) continue;
-    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.3) continue;
+    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.1) continue;
 
     // lepton track veto
     if ((fabs(vetoedTracks.at(iT)->pdgid())==11) || (fabs(vetoedTracks.at(iT)->pdgid())==13)) {
 	if ((vetoedTracks.at(iT)->pt() > 5) && 
 	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2))
-		nVetoTracks++;
+		nOldVetoTrackss++;
     }
     // charged hadron track veto
     if (fabs(vetoedTracks.at(iT)->pdgid())==211) {
-    	if ((vetoedTracks.at(iT)->charge()*lep->pdgid() < 0) && 
+    	if ((vetoedTracks.at(iT)->charge()*lep->q() < 0) && 
 	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1) && 
 	    (vetoedTracks.at(iT)->pt() > 10)) 
-		nVetoTracks++;
+		nOldVetoTrackss++;
     }
   }
+
+  // NEW TRACK VETO
+  // store nNewVetoTracks in tree.
+  nNewVetoTracks=0;
+  for(uint iT =0; iT < vetoedTracks.size(); ++iT){
+    if(fabs(vetoedTracks.at(iT)->dz())   > 0.1) continue; 
+    if(fabs(vetoedTracks.at(iT)->eta())  > 2.4) continue;
+    if(     vetoedTracks.at(iT)->charge() == 0) continue;
+    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.1) continue;
+
+    // electron
+    if (fabs(vetoedTracks.at(iT)->pdgid())==11) {
+	if (vetoedTracks.at(iT)->pt() < 5) continue;
+	if ((vetoedTracks.at(iT)->pt() < 60) && 
+	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1))
+		nNewVetoTracks++;
+ 	if ((vetoedTracks.at(iT)->pt() > 60) && 
+	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoTracks++;
+    }
+    // muon
+    if (fabs(vetoedTracks.at(iT)->pdgid())==13) {
+	if (vetoedTracks.at(iT)->pt() < 5) continue;
+	if ((vetoedTracks.at(iT)->pt() < 30) && 
+	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2))
+		nNewVetoTracks++;
+ 	if ((vetoedTracks.at(iT)->pt() > 30) && 
+	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoTracks++;
+    }
+    // charged hadron track veto
+    if (fabs(vetoedTracks.at(iT)->pdgid())==211) {
+	if (vetoedTracks.at(iT)->pt() < 10) continue;
+    	if (vetoedTracks.at(iT)->charge()*lep->q() >= 0) continue; // want < 0
+	if ((vetoedTracks.at(iT)->pt() < 60) && 
+	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1))
+		nNewVetoTracks++;
+	if ((vetoedTracks.at(iT)->pt() > 60) && 
+	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoTracks++;
+    }
+  }
+
 
   // MVA TAU VETO
   // store nVetoMVATaus in tree.
   nVetoMVATaus = 0;
   for(uint iT =0; iT < vetoedTracks.size(); ++iT){
+//    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.4) continue;
     if ((fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
              (vetoedTracks.at(iT)->pt() > 10) && 
 	     (vetoedTracks.at(iT)->ismvavetotau()) && 
-	(fabs(vetoedTracks.at(iT)->dz() < 0.2)) && 
+	     (vetoedTracks.at(iT)->dz() < 0.2) && 
 	(fabs(vetoedTracks.at(iT)->pdgid()) == 211))
 		nVetoMVATaus++;
   }
 
-  // TAU CUT
+  // TAU CUT VETO
   // not sure what yet, so try a few options for iso
   nVetoCutTausISO1 = 0;
   nVetoCutTausISO2 = 0;
   for(uint iT =0; iT < vetoedTracks.size(); ++iT){
+//    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.4) continue;
     if ((fabs(vetoedTracks.at(iT)->pdgid()) == 211) && 
-	(fabs(vetoedTracks.at(iT)->dz() < 0.2)) && 
+	     (vetoedTracks.at(iT)->dz() < 0.2) && 
 	     (vetoedTracks.at(iT)->pt() > 10) &&
-	(fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
+	     (fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
 	     (vetoedTracks.at(iT)->mt() < defaults::TAU_MTCUT_VETO)) {
 		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1) nVetoCutTausISO1++;
 		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2) nVetoCutTausISO2++;
