@@ -287,7 +287,7 @@ void Analyzer::runEvent()
     if ((fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
              (vetoedTracks.at(iT)->pt() > 10) && 
 	     (vetoedTracks.at(iT)->ismvavetotau()) && 
-	     (vetoedTracks.at(iT)->dz() < 0.2) && 
+	(fabs(vetoedTracks.at(iT)->dz()) < 0.2) && 
 	(fabs(vetoedTracks.at(iT)->pdgid()) == 211))
 		nVetoMVATaus++;
   }
@@ -299,7 +299,7 @@ void Analyzer::runEvent()
   for(uint iT =0; iT < vetoedTracks.size(); ++iT){
 //    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.4) continue;
     if ((fabs(vetoedTracks.at(iT)->pdgid()) == 211) && 
-	     (vetoedTracks.at(iT)->dz() < 0.2) && 
+	(fabs(vetoedTracks.at(iT)->dz()) < 0.2) && 
 	     (vetoedTracks.at(iT)->pt() > 10) &&
 	     (fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
 	     (vetoedTracks.at(iT)->mt() < defaults::TAU_MTCUT_VETO)) {
