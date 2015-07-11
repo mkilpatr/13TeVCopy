@@ -207,7 +207,7 @@ void Analyzer::runEvent()
   // store nVetoed10GeVLeptons in tree.
   nVetoed10GeVLeptons=0;
   for(uint iT =0; iT < vetoedLeptons.size(); ++iT){  
-    if(vetoedLeptons.at(iT)->pt() > 10) nVetoed10GeVLeptons;
+    if(vetoedLeptons.at(iT)->pt() > 10) nVetoed10GeVLeptons++;
   }
 
 
