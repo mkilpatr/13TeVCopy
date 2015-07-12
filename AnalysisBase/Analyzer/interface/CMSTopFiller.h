@@ -32,19 +32,19 @@ namespace ucsbsusy {
     edm::EDGetTokenT<pat::JetCollection> fatJetToken_;
 
     // Members to hold indices of tree data
-    size ictt_fatjet_mass_;
-    size ictt_fatjet_trimmedmass_;
-    size ictt_fatjet_prunedmass_;
-    size ictt_fatjet_softdropmass_;
-    size ictt_fatjet_filteredmass_;
-    //size ictt_fatjet_massdropfilteredmass_;
-    size ictt_fatjet_tau1_;
-    size ictt_fatjet_tau2_;
-    size ictt_fatjet_tau3_;
+    size ictt_rawmass_;
+    size ictt_trimmedmass_;
+    size ictt_prunedmass_;
+    size ictt_softdropmass_;
+    size ictt_filteredmass_;
+    size ictt_cmstoptagmass_;
+    //size ictt_massdropfilteredmass_;
+    size ictt_tau1_;
+    size ictt_tau2_;
+    size ictt_tau3_;
     size ictt_top_pt_;
     size ictt_top_eta_;
     size ictt_top_phi_;
-    size ictt_top_topmass_;
     size ictt_top_wmass_;
     size ictt_top_minmass_;
     size ictt_top_nsubjets_;
