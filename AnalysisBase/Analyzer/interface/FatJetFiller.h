@@ -12,7 +12,7 @@
 #define ANALYSISBASE_ANALYZER_FATJETFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-
+#include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 namespace ucsbsusy {
@@ -30,11 +30,12 @@ namespace ucsbsusy {
     edm::EDGetTokenT<pat::JetCollection> fatJetToken_;
 
     // Members to hold indices of tree data
-    size ifj_mass_;
+    size ifj_rawmass_;
     size ifj_trimmedmass_;
     size ifj_prunedmass_;
     size ifj_softdropmass_;
     size ifj_filteredmass_;
+    size ifj_cmstoptagmass_;
     //size ifj_massdropfilteredmass_;
     size ifj_tau1_;
     size ifj_tau2_;
