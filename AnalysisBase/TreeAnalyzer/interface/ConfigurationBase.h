@@ -67,8 +67,6 @@ namespace cfgSet {
       os << "jetCollection "<< a.minBJetPt <<std::endl;
       os << "jetCollection "<< a.maxBJetEta <<std::endl;
       os << "jetCollection "<< a.defaultCSV <<std::endl;
-
-      if (applyJetID)
       return os;
     };
   };

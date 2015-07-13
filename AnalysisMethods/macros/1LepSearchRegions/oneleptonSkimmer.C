@@ -1,11 +1,5 @@
 // derived from AnalysisMethods/macros/0LepSearchRegions/ZeroPlusOneLeptonSkimmer.C
 // skims for one or two leptons, with MET cut
-/* example submitall.sh script
-#!/bin/bash
-runmacro=DileptonSkimmer.C
-prefix=root://eoscms//eos/cms/
-root -l -q -b ../rootlogon.C ../$runmacro+\(\"/store/user/vdutta/13TeV/290615/merged/ttbar_1_ntuple_wgtxsec.root\",\"skimmed\",\"$prefix\"\)
-*/
 
 /*
  * Uses the tree copier to copy over a tree!
@@ -36,9 +30,9 @@ public:
   virtual void loadVariables(){
     load(cfgSet::EVTINFO);
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-    load(cfgSet::ELECTRONS);
-    load(cfgSet::MUONS);
-    load(cfgSet::PFCANDS);
+    //load(cfgSet::ELECTRONS);
+    //load(cfgSet::MUONS);
+    //load(cfgSet::PFCANDS);
     load(cfgSet::GENPARTICLES);
   }
 
@@ -54,7 +48,7 @@ public:
 		// leave taus in, and make sure mum is a W
 		if (( ((abs(genParts.at(i)->pdgId()) == 11) || (abs(genParts.at(i)->pdgId()) == 13) || (abs(genParts.at(i)->pdgId()) == 15)) && (abs(genPartMom->pdgId())==24))) genlepsfromtop++;
 	}
-	if (genlepsfromtop != 2) return false; // dilepton
+	if (genlepsfromtop != 1) return false; // one lepton
 
 // leave jets alone
 //    if(nJets < 4) return false;
@@ -79,7 +73,7 @@ public:
  *
  */
 
-void lepSkimmer(string fileName, string outPostfix ="skimmed",const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") {
+void oneleptonSkimmer(string fileName, string outPostfix ="skimmed",const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;

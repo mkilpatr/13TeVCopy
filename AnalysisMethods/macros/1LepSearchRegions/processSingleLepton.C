@@ -64,7 +64,9 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("nVetoedLeptons",&nVetoedLeptons);
       outtree->Branch("nVetoCutTausISO1",&nVetoCutTausISO1);
       outtree->Branch("nVetoCutTausISO2",&nVetoCutTausISO2);
-       
+      outtree->Branch("nElectronsGenFromTops",&nElectronsGenFromTops);
+      outtree->Branch("nMuonsGenFromTops",&nMuonsGenFromTops);
+      outtree->Branch("nTausGenFromTops",&nTausGenFromTops);       
   }
 
   virtual ~Analyzer() {
@@ -130,7 +132,7 @@ class Analyzer : public BaseTreeAnalyzer {
   int nVetoMVATaus;
   int nVetoCutTausISO1;
   int nVetoCutTausISO2;
-
+  int nElectronsGenFromTops, nMuonsGenFromTops, nTausGenFromTops;
 
   void runEvent();
   void loadPlots();
@@ -227,7 +229,7 @@ void Analyzer::runEvent()
     if ((fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
              (vetoedTracks.at(iT)->pt() > 10) && 
 	     (vetoedTracks.at(iT)->ismvavetotau()) && 
-	     (vetoedTracks.at(iT)->dz() < 0.2) && 
+	(fabs(vetoedTracks.at(iT)->dz() < 0.2)) && 
 	(fabs(vetoedTracks.at(iT)->pdgid()) == 211))
 		nVetoMVATaus++;
   }
@@ -238,14 +240,29 @@ void Analyzer::runEvent()
   nVetoCutTausISO2 = 0;
   for(uint iT =0; iT < vetoedTracks.size(); ++iT){
     if ((fabs(vetoedTracks.at(iT)->pdgid()) == 211) && 
-	     (vetoedTracks.at(iT)->dz() < 0.2) && 
+	(fabs(vetoedTracks.at(iT)->dz() < 0.2)) && 
 	     (vetoedTracks.at(iT)->pt() > 10) &&
-	     (fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
+	(fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
 	     (vetoedTracks.at(iT)->mt() < defaults::TAU_MTCUT_VETO)) {
 		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1) nVetoCutTausISO1++;
 		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2) nVetoCutTausISO2++;
     }
   }
+
+  // count gen level electrons, muons, taus coming from tops
+  nElectronsGenFromTops=0;
+  nMuonsGenFromTops=0;
+  nTausGenFromTops=0;
+         
+  for (UInt_t i=0; i<genParts.size(); ++i) {
+    const GenParticleF * genPartMom = 0;
+    if (genParts.at(i)->numberOfMothers()>0) { genPartMom = genParts.at(i)->mother(0); }
+    // make sure mum is a W
+    if ((abs(genParts.at(i)->pdgId()) == 11) && (abs(genPartMom->pdgId()) == 24)) nElectronsGenFromTops++;
+    if ((abs(genParts.at(i)->pdgId()) == 13) && (abs(genPartMom->pdgId()) == 24)) nMuonsGenFromTops++;
+    if ((abs(genParts.at(i)->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 24)) nTausGenFromTops++;
+  }
+
 
   lep1eta = selectedLeptons[0]->eta();
   lep1pt  = selectedLeptons[0]->pt();
