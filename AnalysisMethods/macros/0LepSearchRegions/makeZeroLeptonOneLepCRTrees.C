@@ -15,7 +15,10 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       if(nSelLeptons<1)      return false;
-
+      if(nBJets < 1) return false;
+      if(nJets < 5) return false;
+      if(nVetoedTracks > 0)     return false;
+      
       TRandom3 rnd(0);
       float maxLep = nSelLeptons;
       int whichLep = rnd.Uniform(0.,nSelLeptons);
