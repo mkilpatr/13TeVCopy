@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
 # b-tagging: not yet the final version
-from Configuration.StandardSequences.Geometry_cff import *
-from Configuration.StandardSequences.MagneticField_38T_cff import *
+#from Configuration.StandardSequences.Geometry_cff import *
+#from Configuration.StandardSequences.MagneticField_38T_cff import *
 from TrackingTools.TransientTrack.TransientTrackBuilder_cfi import *
 from RecoBTag.Configuration.RecoBTag_cff import *
 

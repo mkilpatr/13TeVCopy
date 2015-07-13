@@ -23,7 +23,7 @@ options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amca
 #options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
 
-options.maxEvents = -1
+options.maxEvents = 10
 
 options.register('skipEvents',
                  0,
@@ -57,10 +57,17 @@ if 'madgraph' in options.inputFiles[0] or 'powheg' in options.inputFiles[0] or '
 else : 
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
+# import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
+
+#==============================================================================================================================#
 
 # Electron ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2:
@@ -92,18 +99,25 @@ process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBas
 process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
 process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
 
+#==============================================================================================================================#
 
 # Photon ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
-from AnalysisTools.ObjectSelection.vid_id_tools_photon import *
+#from AnalysisTools.ObjectSelection.vid_id_tools_photon import *
 
-process.load('AnalysisTools.ObjectSelection.egmPhotonIDs_cfi')
+#process.load('AnalysisTools.ObjectSelection.egmPhotonIDs_cfi')
+process.load("RecoEgamma.PhotonIdentification.egmPhotonIDs_cfi")
+
+# Overwrite collection name
+process.egmPhotonIDs.physicsObjectSrc = cms.InputTag('slimmedPhotons')
 
 # Load the producer module to build full 5x5 cluster shapes and whatever 
 # else is needed for IDs
 process.load('AnalysisTools.ObjectSelection.PhotonIDValueMapProducer_cfi')
 
 process.egmPhotonIDSequence = cms.Sequence(process.photonIDValueMapProducer * process.egmPhotonIDs)
+
+#switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
 # Define which IDs we want to produce
 my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
@@ -117,6 +131,8 @@ if process.TestAnalyzer.Photons.isFilled:
 process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-loose")
 process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-medium")
 process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight")
+
+#==============================================================================================================================#
 
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
