@@ -195,13 +195,13 @@ nominal_configuration = cms.PSet(
                                       pfcands                   = cms.InputTag('packedPFCandidates'),
                                       jets                      = cms.InputTag('slimmedJets'),
                                       taus                      = cms.InputTag('slimmedTaus'),
-                                      minCandPt                 = cms.untracked.double(8.0),
+                                      minCandPt                 = cms.untracked.double(5.0),
                                       maxCandEta                = cms.untracked.double(3.0),
                                       minTauDisc                = cms.untracked.double(0.0),
                                       tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel.root'),
                                       tauMVAFileName_DphiPresel = cms.untracked.string('tauDisc_dphi1p34presel.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
-                                      saveAllCandidates         = cms.untracked.bool(False),
+                                      saveAllCandidates         = cms.untracked.bool(True),
                                   ),
 
                                   CMSTops = cms.untracked.PSet(
