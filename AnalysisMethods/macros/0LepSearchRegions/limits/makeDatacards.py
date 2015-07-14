@@ -82,10 +82,11 @@ class DatacardConfig:
             self.controlregions[cr] = ControlRegion(datafile,mcfile,label,selection)
 
         # load uncertainty files
-        self.uncvalfiles = [f for f in os.listdir(self.setupbase) if not f.find(self.uncfileprefix) == -1]
-        self.uncnames = []
-        self.uncertainties = {}
-        self.compileUncertainties()
+        if not self.usedummyuncs:
+            self.uncvalfiles = [f for f in os.listdir(self.setupbase) if not f.find(self.uncfileprefix) == -1]
+            self.uncnames = []
+            self.uncertainties = {}
+            self.compileUncertainties()
 
     # Make datacards, one for every bin combination.
     # First the template card is made with all backgrounds,
@@ -360,6 +361,9 @@ class DatacardConfig:
                     entries = re.split('\s+',line)
                     binnames = [entries[0]] if entries[0] == 'all' else self.compactbinlist[:] 
                     uncnames = [entries[1]] if entries[0] == 'all' else [ entries[1]+'_'+bin for bin in self.compactbinlist ]
+                    uncVal   = None
+                    if len(entries)>=4:
+                        uncVal = entries[3]
                     for i in range(len(binnames)):
                         binname = binnames[i]
                         uncname = uncnames[i]
@@ -386,11 +390,11 @@ class DatacardConfig:
                                     if not unc.cr_nevts.has_key(binname):
                                         unc.cr_nevts[binname] = {}
                                     unc.cr_nevts[binname]['data'] = max(crnevts,1)
-                                    unc.cr_nevts[binname]['mc']   = self.getNumEvents(cr.mcfile, self.binmap[binname], False, cr.selection)
+                                    unc.cr_nevts[binname]['mc']   = max( 1, self.getNumEvents(cr.mcfile, self.binmap[binname], False, cr.selection) )
                                     unc.vals[binname][samp] = -1
                                 else :
-                                    if binname=='all':
-                                        unc.vals[binname][samp] = float(entries[3])
+                                    if binname=='all' or uncVal:
+                                        unc.vals[binname][samp] = float(uncVal)
                                     else: 
                                       srfile = os.path.join( self.treebase, samp             +self.filesuffix )
                                       (srevts,srunc) = self.getNumEventsError(srfile   , self.binmap[binname], False )
