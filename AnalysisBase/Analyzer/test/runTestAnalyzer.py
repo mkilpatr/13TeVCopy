@@ -22,6 +22,7 @@ options.outputFile = 'evttree.root'
 options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
+#options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
 
 options.maxEvents = 10
 
@@ -56,6 +57,17 @@ if 'madgraph' in options.inputFiles[0] or 'powheg' in options.inputFiles[0] or '
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
 else : 
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
+
+ISDATA = False
+
+if '/store/data' in options.inputFiles[0] :
+    ISDATA = True
+    process.TestAnalyzer.isData = cms.int32(1)
+    process.TestAnalyzer.globalTag = cms.string('GR_P_V56')
+    process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
+    process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
+    process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
+    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -141,6 +153,10 @@ process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
 process.load('Dummy.Puppi.Puppi_cff')
 process.puppi.PuppiName      = cms.untracked.string("")
 
+if ISDATA :
+    process.redCA8.produceGen = cms.bool(False)
+    process.redCA8.producePartonJets = cms.bool(False)
+
 process.p = cms.Path(#process.puppi*
                      process.ak4PatAssocSeq           * 
                      #process.ak4PuppiJetSeq           * 
@@ -152,6 +168,9 @@ process.p = cms.Path(#process.puppi*
                      #process.subjetscaJetSeq          *
                      process.QGTagger                 *
                      process.TestAnalyzer)
+
+if ISDATA :
+    process.p.remove(process.ak4PatAssocSeq)
 
 if not process.TestAnalyzer.Electrons.isFilled :
     process.p.remove(process.egmGsfElectronIDSequence)

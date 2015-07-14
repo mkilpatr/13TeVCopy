@@ -96,8 +96,10 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_     ,met_->pt());
   data.fill<float>       (imetphi_    ,met_->phi());
   data.fill<float>       (imetsumEt_  ,met_->sumEt());
-  data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
-  data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
+  if(options_ & LOADGEN) {
+    data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
+    data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
+  }
   data.fill<bool>        (igoodvertex_,hasgoodvtx );
 
   if(options_ & LOADGEN) {

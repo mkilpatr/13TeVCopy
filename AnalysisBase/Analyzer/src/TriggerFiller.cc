@@ -43,21 +43,46 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_IsoMu27_v1"] = kHLT_IsoMu27_v1;
   trigIds_["HLT_IsoTkMu24_eta2p1_v1"] = kHLT_IsoTkMu24_eta2p1_v1;
   trigIds_["HLT_IsoTkMu27_v1"] = kHLT_IsoTkMu27_v1;
+  trigIds_["HLT_IsoMu24_eta2p1_v2"] = kHLT_IsoMu24_eta2p1_v2;
+  trigIds_["HLT_IsoMu27_v2"] = kHLT_IsoMu27_v2;
+  trigIds_["HLT_IsoTkMu24_eta2p1_v2"] = kHLT_IsoTkMu24_eta2p1_v2;
+  trigIds_["HLT_IsoTkMu27_v2"] = kHLT_IsoTkMu27_v2;
   trigIds_["HLT_Ele32_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele32_eta2p1_WPLoose_Gsf_v1;
+  trigIds_["HLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1;
   trigIds_["HLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1"] = kHLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1;
+  trigIds_["HLT_PFHT350_PFMET100_NoiseCleaned_v1"] = kHLT_PFHT350_PFMET100_NoiseCleaned_v1;
   trigIds_["HLT_PFHT350_PFMET120_NoiseCleaned_v1"] = kHLT_PFHT350_PFMET120_NoiseCleaned_v1;
   trigIds_["HLT_PFMET170_NoiseCleaned_v1"] = kHLT_PFMET170_NoiseCleaned_v1;
-  trigIds_["HLT_PFMET170_NoiseCleaned_v1"] = kHLT_PFMET170_NoiseCleaned_v1;
+  trigIds_["HLT_PFMET170_NoiseCleaned_v2"] = kHLT_PFMET170_NoiseCleaned_v2;
   trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV07_v1"] = kHLT_PFMET120_NoiseCleaned_BTagCSV07_v1;
+  trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV072_v1"] = kHLT_PFMET120_NoiseCleaned_BTagCSV072_v1;
+  trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV072_v2"] = kHLT_PFMET120_NoiseCleaned_BTagCSV072_v2;
+  trigIds_["HLT_PFHT300_v1"] = kHLT_PFHT300_v1;
   trigIds_["HLT_PFHT350_v1"] = kHLT_PFHT350_v1;
+  trigIds_["HLT_PFHT350_v2"] = kHLT_PFHT350_v2;
+  trigIds_["HLT_PFHT400_v1"] = kHLT_PFHT400_v1;
+  trigIds_["HLT_PFHT475_v1"] = kHLT_PFHT475_v1;
   trigIds_["HLT_PFHT600_v1"] = kHLT_PFHT600_v1;
+  trigIds_["HLT_PFHT600_v2"] = kHLT_PFHT600_v2;
   trigIds_["HLT_PFHT650_v1"] = kHLT_PFHT650_v1;
+  trigIds_["HLT_PFHT800_v1"] = kHLT_PFHT800_v1;
   trigIds_["HLT_PFHT900_v1"] = kHLT_PFHT900_v1;
+  trigIds_["HLT_Photon120_R9Id90_HE10_IsoM_v2"] = kHLT_Photon120_R9Id90_HE10_IsoM_v2;
+  trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v2"] = kHLT_Photon165_R9Id90_HE10_IsoM_v2;
+  trigIds_["HLT_Photon165_HE10_v2"] = kHLT_Photon165_HE10_v2;
+  trigIds_["HLT_Photon175_v2"] = kHLT_Photon175_v2;
 
+  trigFilterIds_["hltPFMET100Filter"] = kPFMET100;
+  trigFilterIds_["hltPFMET110Filter"] = kPFMET110;
   trigFilterIds_["hltPFMET120Filter"] = kPFMET120;
+  trigFilterIds_["hltPFHT350Filter"] = kPFHT350;
+  trigFilterIds_["hltDiCentralPFJet55"] = kDiCentralPFJet55;
   trigFilterIds_["hltDiCentralPFJet70"] = kDiCentralPFJet70;
-  trigFilterIds_["hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09"] = kSingleIsoMu;
-  trigFilterIds_["hltEle32WPLooseGsfTrackIsoFilter"] = kSingleEle;
+  trigFilterIds_["hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09"] = kSingleIsoMu24;
+  trigFilterIds_["hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09"] = kSingleIsoMu27;
+  trigFilterIds_["hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09"] = kSingleIsoTkMu24;
+  trigFilterIds_["hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09"] = kSingleIsoTkMu27;
+  trigFilterIds_["hltEle32WPLooseGsfTrackIsoFilter"] = kSingleEle32;
 
 }
 
