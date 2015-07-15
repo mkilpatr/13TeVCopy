@@ -62,11 +62,11 @@ namespace cfgSet {
 
     friend ostream& operator<<(ostream& os, const JetConfig& a){
       os << "Printing out jet selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "min jet Pt "<< a.minPt <<std::endl;
-      os << "jetCollection "<< a.maxEta <<std::endl;
-      os << "jetCollection "<< a.minBJetPt <<std::endl;
-      os << "jetCollection "<< a.maxBJetEta <<std::endl;
-      os << "jetCollection "<< a.defaultCSV <<std::endl;
+      os << "The min jet Pt is"<< a.minPt <<std::endl;
+      os << "The max jet eta is "<< a.maxEta <<std::endl;
+      os << "The min jet pt is "<< a.minBJetPt <<std::endl;
+      os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
+      os << "The default CSV is "<< a.defaultCSV <<std::endl;
       return os;
     };
   };
@@ -95,6 +95,17 @@ namespace cfgSet {
       selectedMuon(0)
     {};
     virtual ~LeptonConfig() {};
+
+    friend ostream& operator<<(ostream& os, const LeptonConfig& a){
+      os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min electron Pt is"<< a.minEPt <<std::endl;
+      os << "The max electron eta is "<< a.maxEEta <<std::endl;
+      os << "The min muon pt is "<< a.minMuPt <<std::endl;
+      os << "The max muon eta is "<< a.maxMuEta <<std::endl;
+      os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
+      os << "The muon max Dz "<< a.maxMuDz <<std::endl;
+      return os;
+    };
   };
 
   class TrackConfig : public BaseConfig {
@@ -114,6 +125,18 @@ namespace cfgSet {
       selected(0)
     {};
     virtual ~TrackConfig() {};
+
+    friend ostream& operator<<(ostream& os, const TrackConfig& a){
+      os << "Printing out track selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min track Pt is "<< a.minPt <<std::endl;
+      os << "The max track eta is "<< a.maxEta <<std::endl;
+      if(a.mtPresel == 1)
+      os << "The mt presel is is on " << std::endl;
+      else
+      os << "The mt presel is is off " << std::endl;
+      os << "The max track Dz is "<< a.maxDz <<std::endl;
+      return os;
+    };
   };
 
   class PhotonConfig : public BaseConfig {
@@ -129,6 +152,14 @@ namespace cfgSet {
       selected(0)
     {};
     virtual ~PhotonConfig() {};
+
+    friend ostream& operator<<(ostream& os, const PhotonConfig& a){
+      os << "Printing out photon selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min photon Pt is "<< a.minPt <<std::endl;
+      os << "The max photon eta is "<< a.maxEta <<std::endl;
+      return os;
+    };
+
   };
 
 
