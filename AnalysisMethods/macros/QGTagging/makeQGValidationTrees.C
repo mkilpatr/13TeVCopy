@@ -43,7 +43,7 @@ public:
     gSystem->mkdir(outputdir,true);
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
-    outtree = new TTree("events","analysis tree");
+    outtree = new TTree("Events","analysis tree");
     outtree->Branch( "weight"    , &scaleFactor ,    "weight/F" );
     outtree->Branch( "npv"       , &npv         ,       "npv/I" );
     outtree->Branch( "passDijet" , &passDijet   , "passDijet/O" );
@@ -201,7 +201,7 @@ void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
                   , const string  outputdir  = "trees/"  // directory to which files with histograms will be written
                   , const TString fileprefix = "root://eoscms//eos/cms" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
                   )
-{ //string fname = "evttree_lowStat_QCD_test.root", string fout = "out", string treeName = "TestAnalyzer/Events", bool isMCTree = true, bool usePuppi = true) {
+{
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
