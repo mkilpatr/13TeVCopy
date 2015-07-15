@@ -90,7 +90,7 @@ for isam in range(len(samples)) :
         elif args.submittype == "condor" :
             os.system("mkdir -p %s/logs" % args.outdir)
             jobscript = open("submit_{}_{}.sh".format(samples[isam],ifile),"w")
-            outputname = samples[isam]+"_plots.root" if findex == -1 else samples[isam]+"_{}".format(findex)+"_plots.root"
+            outputname = samples[isam]+"_tree.root" if findex == -1 else samples[isam]+"_{}".format(findex)+"_tree.root"
             jobscript.write("""
 cat > submit.cmd <<EOF
 universe                = vanilla
