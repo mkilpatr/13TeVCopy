@@ -39,10 +39,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
 
   clog <<"Loaded configurations: ";
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
-  if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons.getName() <<" ";
-  if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons  .getName() <<" ";
-  if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks   .getName() <<" ";
-  if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons.getName() <<" ";
+  if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
+  if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
+  if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks    <<" ";
+  if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons <<" ";
 
   clog << endl;
 
