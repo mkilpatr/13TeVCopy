@@ -197,6 +197,7 @@ void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
                   , const int     fileindex  = 4       // index of file (-1 means there is only 1 file for this sample)
                   , const bool    isMC       = true    // data or MC
                   , const TString fname      = "/store/user/vdutta/13TeV/290615/merged/gjets_ht600toinf_ntuple_wgtxsec.root" // path of file to be processed
+                  , const double xsec        = 1.0
                   , const string  outputdir  = "trees/"  // directory to which files with histograms will be written
                   , const TString fileprefix = "root://eoscms//eos/cms" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
                   )
@@ -231,6 +232,6 @@ void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
 
 
   Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
-  a.analyze(1000,10000);
+  a.analyze(10000);
 
 } // makeQGValidationTrees()
