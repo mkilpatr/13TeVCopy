@@ -96,7 +96,7 @@ namespace cfgSet {
     {};
     virtual ~LeptonConfig() {};
 
-    friend ostream& operator<<(ostream& os, const LeptonConfig& a){
+    /*friend ostream& operator<<(ostream& os, const LeptonConfig& a){
       os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min electron Pt is"<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
@@ -105,7 +105,7 @@ namespace cfgSet {
       os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
       os << "The muon max Dz "<< a.maxMuDz <<std::endl;
       return os;
-    };
+    };*/
   };
 
   class TrackConfig : public BaseConfig {
@@ -126,7 +126,7 @@ namespace cfgSet {
     {};
     virtual ~TrackConfig() {};
 
-    friend ostream& operator<<(ostream& os, const TrackConfig& a){
+    /*friend ostream& operator<<(ostream& os, const TrackConfig& a){
       os << "Printing out track selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min track Pt is "<< a.minPt <<std::endl;
       os << "The max track eta is "<< a.maxEta <<std::endl;
@@ -136,7 +136,7 @@ namespace cfgSet {
       os << "The mt presel is is off " << std::endl;
       os << "The max track Dz is "<< a.maxDz <<std::endl;
       return os;
-    };
+    };*/
   };
 
   class PhotonConfig : public BaseConfig {
@@ -153,12 +153,12 @@ namespace cfgSet {
     {};
     virtual ~PhotonConfig() {};
 
-    friend ostream& operator<<(ostream& os, const PhotonConfig& a){
+    /*friend ostream& operator<<(ostream& os, const PhotonConfig& a){
       os << "Printing out photon selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min photon Pt is "<< a.minPt <<std::endl;
       os << "The max photon eta is "<< a.maxEta <<std::endl;
       return os;
-    };
+    };*/
 
   };
 
