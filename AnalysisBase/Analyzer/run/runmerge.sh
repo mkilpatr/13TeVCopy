@@ -1,7 +1,7 @@
 #!/bin/bash
 
 eos='/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select'
-filedir=/eos/cms/store/user/vdutta/13TeV/060515
+filedir=/eos/uscms/store/user/vdutta/13TeV/150715
 conf=datasets.conf
 prefix=""
 
@@ -15,7 +15,7 @@ else
   fi
 fi
 
-for sname in `cat ${conf} | grep -v ^# | awk '{print $1}'` ; do
+for sname in `cat ${conf} | grep -v ^# | awk '{print $2}'` ; do
   echo ${prefix}${filedir}/merged/${sname}_ntuple.root > merge.txt
   file=""
   if [[ "$filedir" =~ ^/eos/cms/.* && "$HOSTNAME" =~ .*cern.ch ]]; then
