@@ -583,6 +583,10 @@ void processSingleLepton(TString sname = "test",               // sample name
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
+  // use the following for tau/track veto comparison
+  //cfg.vetoedLeptons.minEPt = 5;
+  //cfg.vetoedLeptons.minMuPt = 5;
+  
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
 
