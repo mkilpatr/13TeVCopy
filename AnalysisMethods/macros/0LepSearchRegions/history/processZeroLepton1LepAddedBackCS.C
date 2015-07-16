@@ -183,12 +183,10 @@ void Analyzer::loadVariables(){
 // Analyze event and fill plots
 void Analyzer::runEvent()
 {
-//std::cout << "The number of leptons is " << nSelLeptons << std::endl;
-//std::cout << "The number of vetoed leptons is " << nVetoedLeptons << std::endl;
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
-  if ((nSelLeptons<1) || (nJets<=3))   return;
-  if(!goodvertex) return;
+  if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
+
   float wgt    = evtInfoReader.weight;
 
   ScaleFactor  = wgt;
@@ -226,19 +224,19 @@ void Analyzer::runEvent()
   // uncoreected variables
   MomentumF* metn = new MomentumF(met->p4() + lep->p4());
 
-  MET           = met->pt();
-  DphiJ3MET     = JetKinematics::absDPhiMETJ3(*met,jets);
-  DphiJ12MET    = JetKinematics::absDPhiMETJ12(*met,jets);
+  MET           = metn->pt();
+  DphiJ3MET     = JetKinematics::absDPhiMETJ3(*metn,jets);
+  DphiJ12MET    = JetKinematics::absDPhiMETJ12(*metn,jets);
   MLepCloseJet  = (closestJet2Lep->p4()+lep->p4()).M();
   MTLepCloseJet = JetKinematics::transverseMass(closestJet2Lep->p4(),lep->p4());
 
-  float DphiB1MET = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*met);
-  float DphiB2MET = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*met);
+  float DphiB1MET = PhysicsUtilities::deltaPhi(jetsCSV.at(0)->p4(),*metn);
+  float DphiB2MET = PhysicsUtilities::deltaPhi(jetsCSV.at(1)->p4(),*metn);
   if (DphiB1MET<=DphiB2MET) { MinDphiB1B2MET = DphiB1MET; }
   else                      { MinDphiB1B2MET = DphiB2MET; }
 
-  float MTb1MET   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*met);
-  float MTb2MET   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*met);
+  float MTb1MET   = JetKinematics::transverseMass(jetsCSV.at(0)->p4(),*metn);
+  float MTb2MET   = JetKinematics::transverseMass(jetsCSV.at(1)->p4(),*metn);
   if (MTb1MET<=MTb2MET) { MinMTB1B2MET = MTb1MET; }
   else                  { MinMTB1B2MET = MTb2MET; }
   // ===
@@ -424,7 +422,7 @@ void Analyzer::findClosestJet2Top(vector<RecoJetF*>& inJets,CMSTopF* fatJet,Reco
 
 // Process file belonging to specified sample with a given cross section
 // Lepton is ignored in the event, this is the conceptually correct calculation
-void processZeroLepton1LepIgnoredCS(TString sname            = "test",         // sample name
+void processZeroLepton1LepAddedBackCS(TString sname            = "test",         // sample name
 			     const int fileindex      = -1,             // index of file (-1 means there is only 1 file for this sample)
 			     const bool isMC          = true,           // data or MC
 			     const TString fname      = "evttree_numEvent500.root", // path of file to be processed
@@ -445,13 +443,8 @@ void processZeroLepton1LepIgnoredCS(TString sname            = "test",         /
   TString fullname = fileprefix+fname;
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.selectedLeptons.minMuPt = 5;
-  cfg.selectedLeptons.minEPt = 5;
- // cfg.jets.cleanJetsvSelectedLeptons = true;
-  // Declare analyzer
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   //  a.analyze(100000, 100000);
   a.analyze(100000);

@@ -586,7 +586,7 @@ void processSingleLepton(TString sname = "test",               // sample name
   // use the following for tau/track veto comparison
   //cfg.vetoedLeptons.minEPt = 5;
   //cfg.vetoedLeptons.minMuPt = 5;
-  
+
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
 

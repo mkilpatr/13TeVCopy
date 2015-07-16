@@ -32,28 +32,13 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(isMC() && process == defaults::SINGLE_G)
         genmet->setP4(genmet->p4() + boson->p4());
 
-
-
+      // add reco photon to reco met
       passPhotonSel = true;
       if(process == defaults::SINGLE_G) {
         if(!selectedPhotons.empty())
           met->setP4(met->p4() + selectedPhotons.front()->p4());
         else passPhotonSel = false;
       }
-
-
-      // clean jets against boson
-      jets.clear(); bJets.clear(); nonBJets.clear();
-      for(auto &j : defaultJets->recoJets){
-
-        if(!cfgSet::isSelBJet(j,pars0lep().jets)) continue;
-        if(boson && PhysicsUtilities::deltaR2(j, *boson) < 0.16) continue;
-        jets.push_back(&j);
-        if(!cfgSet::isSelBJet(j,pars0lep().jets,defaults::CSV_MEDIUM)) bJets.push_back(&j);
-        else nonBJets.push_back(&j);
-      }
-      nJets    = jets.size();
-      nBJets   = bJets.size();
 
       // clean genjets
       genJets.clear();
@@ -63,19 +48,19 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
         genJets.push_back(&j);
       }
 
-      // clean vetoedLeptons
+      // clean vetoedLeptons vs recoPhoton
       vector<LeptonF*> tmpLeptons;
       for(auto* l : vetoedLeptons) {
-        if(boson && PhysicsUtilities::deltaR2(*l, *boson) < 0.16) continue;
+        if( selectedPhotons.size() && PhysicsUtilities::deltaR2(*l, * selectedPhotons.front()) < 0.16) continue;
         tmpLeptons.push_back(l);
       }
       vetoedLeptons = tmpLeptons;
       nVetoedLeptons = vetoedLeptons.size();
 
-      // clean vetoedTaus
+      // clean vetoedTaus vs recoPhoton
       vector<PFCandidateF*> tmpTaus;
       for(auto* t : vetoedTracks) {
-        if(boson && PhysicsUtilities::deltaR2(*t, *boson) < 0.16) continue;
+        if(selectedPhotons.size() && PhysicsUtilities::deltaR2(*t, * selectedPhotons.front()) < 0.16) continue;
         tmpTaus.push_back(t);
       }
       vetoedTracks = tmpTaus;
@@ -86,7 +71,6 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nVetoedLeptons > 0)                return false;
       if(nVetoedTracks > 0)                   return false;
       if(met->pt() < metcut_)               return false;
-      if(boson && fabs(boson->eta()) > 2.4) return false;
       if(!passPhotonSel)                    return false;
       if(!goodvertex) return false;
       filler.fillEventInfo(&data, this);
@@ -120,6 +104,10 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0LepPhoton();
   PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+
+
+
+ // a.analyze(1000,10000);
 
 
   a.analyze(100000);

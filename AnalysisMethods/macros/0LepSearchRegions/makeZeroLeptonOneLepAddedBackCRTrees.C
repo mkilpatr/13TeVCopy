@@ -7,34 +7,29 @@ using namespace ucsbsusy;
 class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
-    TRandom3 rnd;
+
     OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(0);}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
 
     bool fillEvent() {
-      if(met->pt() < metcut_) return false;
+      if(nSelLeptons!=1)      return false;
+      MomentumF* lep = new MomentumF(selectedLeptons.at(0)->p4());
+      MomentumF* metn = new MomentumF(met->p4() + lep->p4());
+      if(metn->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      if(nSelLeptons<1)      return false;
-      if(nBJets < 1) return false;
-      if(nJets < 5) return false;
       if(nVetoedTracks > 0)     return false;
-      
-      float maxLep = nSelLeptons;
-      int whichLep = rnd.Uniform(0.,nSelLeptons);
-
-      MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
-
-      if(fabs(PhysicsUtilities::deltaPhi(*met, *lep)) > 1)        return false;
-
+      if(nJets < 5) return false;
+      if(nBJets < 1) return false;
+      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
       filler.fillEventInfo(&data, this);
-      filler.fillJetInfo(&data, jets, bJets, met);
+      filler.fillJetInfo(&data, jets, bJets, metn);
       return true;
     }
 
 };
 
-void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
+void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
                                  const TString fname = "/store/user/vdutta/13TeV/080615/merged/ttbar_1_ntuple_wgtxsec.root",

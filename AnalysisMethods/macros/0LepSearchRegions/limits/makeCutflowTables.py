@@ -51,17 +51,27 @@ class cutflowConfig:
     latexFileStart += '\n'
     latexFileStart += '\\begin{document}\n'
     latexFileStart += '\\small\n'
-    latexFileStart += '\n'
-    latexFileStart += 'preselection: $MET>200, N_\\mathrm{j60} \\geq 2$\n'
-    latexFileStart += '\n'
+    
+    table200  = '\n'
+    table200 += '\\vspace{1in}\n'
+    table200 += 'preselection: $MET>200, N_\\mathrm{j60} \\geq 2, N_\\mathrm{j20} \\geq 5, N_\\mathrm{b} \\geq 1 $\n'
+    table200 += '\n'
+    table200 += self.makeTable('','ptMet>200 && nj60>=2 && nmBtag>=1 && nJ20>=5')
+    table200 += '\n'
+    
+    table500  = '\n'
+    table500 += '\\vspace{1in}\n'
+    table500 += 'preselection: $MET>500, N_\\mathrm{j60} \\geq 2, N_\\mathrm{j20} \\geq 5, N_\\mathrm{b} \\geq 1 $\n'
+    table500 += '\n'
+    table500 += self.makeTable('','ptMet>500 && nj60>=2 && nmBtag>=1 && nJ20>=5')
+    table500 += '\n'
     
     latexFileEnd  = '\n'
     latexFileEnd += '\\end{document}\n'
     latexFileEnd += '\n'
     
-    tableInclusive = self.makeTable('','nj60>=2')
-    
-    return latexFileStart + tableInclusive + latexFileEnd
+    #return latexFileStart + tableInclusive + latexFileEnd
+    return table200 + table500 
     
   def makeTable(self,binName='',baseCut=''):
     nCols = 1 + len(self.backgrounds) + 1 + len(self.signals)
@@ -101,20 +111,20 @@ class cutflowConfig:
     tableStr += endrow + hline
     
     # lepton veto
-    cutstr += ' && nVetoedLeptons<1'
-    tableStr += self.addCut('$e \\mu$ veto',cutstr,previousNums)
-    
-    # n jets
-    cutstr += ' && nJ20>=5'
-    tableStr += self.addCut('$N_\\mathrm{j20} \\geq 5$',cutstr,previousNums)
-    
-    # b jets
-    cutstr += ' && nmBtag>=1'
-    tableStr += self.addCut('$N_\\mathrm{b} \\geq 1$',cutstr,previousNums)
+    cutstr += ' && nSelLeptons==0' # nVetoedLeptons (multiIso);  nSelLeptons (pog)
+    tableStr += self.addCut('$e \\mu$ veto (pog)',cutstr,previousNums)
     
     # tau veto
     cutstr += ' && nVetoedTaus<1'
     tableStr += self.addCut('$\\tau$ veto',cutstr,previousNums)
+    
+    ## n jets
+    #cutstr += ' && nJ20>=5'
+    #tableStr += self.addCut('$N_\\mathrm{j20} \\geq 5$',cutstr,previousNums)
+    
+    ## b jets
+    #cutstr += ' && nmBtag>=1'
+    #tableStr += self.addCut('$N_\\mathrm{b} \\geq 1$',cutstr,previousNums)
     
     # delta phi cuts
     cutstr += ' && dPhiMET12>1&&dPhiMET3>0.5'
@@ -123,6 +133,14 @@ class cutflowConfig:
     # mtB01MET
     cutstr += ' && mtB01MET>175'
     tableStr += self.addCut('$\\mathrm{mtB01MET}>175$',cutstr,previousNums)
+    
+    ## dPhiB01MET
+    #cutstr += ' && dPhiB01MET>2.0'
+    #tableStr += self.addCut('$\\mathrm{dPhiB01MET}>2.0$',cutstr,previousNums)
+    
+    ## dPhiB0MET * dPhiB1MET
+    #cutstr += ' && (dPhiB0MET*dPhiB1MET)>2.0'
+    #tableStr += self.addCut('$\\mathrm{dPhiB0MET*dPhiB1MET}>2.0$',cutstr,previousNums)
      
     # ===== now look at bins ===== 
     tableStr += hline
@@ -134,6 +152,23 @@ class cutflowConfig:
     # mtB01MET
     cutstrTop1 = cutstr + ' && NCTTstd>=1'
     tableStr += self.addCut('$\\mathrm{NCTTstd}\\geq1$',cutstrTop1,previousNums,False)
+    
+    ## mtB01MET
+    #cutstrTop0 = cutstr + ' && NCTTstd==0 && mtB01MET<175'
+    #tableStr += self.addCut('$\\mathrm{NCTTstd}=0, \\mathrm{mtB01MET}<175$',cutstrTop0,previousNums,False)
+    #
+    ## mtB01MET
+    #cutstrTop1 = cutstr + ' && NCTTstd>=1 && mtB01MET<175'
+    #tableStr += self.addCut('$\\mathrm{NCTTstd}\\geq1, \\mathrm{mtB01MET}<175$',cutstrTop1,previousNums,False)
+    #tableStr += hline
+    #
+    ## mtB01MET
+    #cutstrTop0 = cutstr + ' && NCTTstd==0 && mtB01MET>175'
+    #tableStr += self.addCut('$\\mathrm{NCTTstd}=0, \\mathrm{mtB01MET}>175$',cutstrTop0,previousNums,False)
+    #
+    ## mtB01MET
+    #cutstrTop1 = cutstr + ' && NCTTstd>=1 && mtB01MET>175'
+    #tableStr += self.addCut('$\\mathrm{NCTTstd}\\geq1,\\mathrm{mtB01MET}>175$',cutstrTop1,previousNums,False)
     
     
     tableStr += '\\end{tabular}\n'
