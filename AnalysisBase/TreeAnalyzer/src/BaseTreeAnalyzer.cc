@@ -38,7 +38,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
   clog <<"Loaded configurations: ";
-  if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
+  if(configSet.jets           .isConfig()) clog << configSet.jets.getName()  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons.getName() <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons  .getName() <<" ";
   if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks   .getName() <<" ";

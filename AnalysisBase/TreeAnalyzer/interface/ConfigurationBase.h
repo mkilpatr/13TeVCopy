@@ -60,7 +60,7 @@ namespace cfgSet {
     {};
     virtual ~JetConfig() {};
 
-    friend ostream& operator<<(ostream& os, const JetConfig& a){
+    /*friend ostream& operator<<(ostream& os, const JetConfig& a){
       os << "Printing out jet selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "min jet Pt "<< a.minPt <<std::endl;
       os << "jetCollection "<< a.maxEta <<std::endl;
@@ -68,7 +68,7 @@ namespace cfgSet {
       os << "jetCollection "<< a.maxBJetEta <<std::endl;
       os << "jetCollection "<< a.defaultCSV <<std::endl;
       return os;
-    };
+    };*/
   };
 
   class LeptonConfig : public BaseConfig {
