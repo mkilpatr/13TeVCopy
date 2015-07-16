@@ -89,7 +89,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
 
     for(const auto* glep : *selectedLeptons) {
       double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR);
+      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
       if(near >= 0){
         vetoJet[near] = true;
       }
@@ -102,7 +102,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
 
     for(const auto* glep : *selectedPhotons) {
       double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR);
+      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
       if(near >= 0){
         vetoJet[near] = true;
       }
