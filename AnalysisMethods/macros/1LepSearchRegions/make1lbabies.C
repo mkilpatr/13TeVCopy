@@ -1,5 +1,3 @@
-// syncs with singleLeptonLeptonSync.C and with Hannsbjorg's event lists on the twiki
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TSystem.h>
 #include <TFile.h>

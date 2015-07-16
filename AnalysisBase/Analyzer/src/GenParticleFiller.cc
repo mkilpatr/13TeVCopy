@@ -16,10 +16,15 @@ using namespace ucsbsusy;
 const int GenParticleFiller::defaultOptions = GenParticleFiller::NULLOPT;
 
 //--------------------------------------------------------------------------------------------------
-GenParticleFiller::GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag, const edm::InputTag packedGenParticleTag) :
+GenParticleFiller::GenParticleFiller(
+    const edm::ParameterSet& cfg,
+    edm::ConsumesCollector && cc,
+    const int options,
+    const string branchName
+) :
   BaseFiller(options, branchName),
-  genParticleTag_(genParticleTag),
-  packedGenParticleTag_(packedGenParticleTag)
+  genParticleToken_      (cc.consumes<reco::GenParticleCollection>     (cfg.getParameter<edm::InputTag>("prunedGenParticles"))),
+  packedGenParticleToken_(cc.consumes<pat::PackedGenParticleCollection>(cfg.getParameter<edm::InputTag>("packedGenParticles")))
 {
   ipt          = data.addMulti<float >(branchName_,"pt"       ,0);
   ieta         = data.addMulti<float >(branchName_,"eta"      ,0);
@@ -33,7 +38,7 @@ GenParticleFiller::GenParticleFiller(const int options, const string branchName,
   ifirstdau    = data.addMulti<stor  >(branchName_,"firstDau" ,0);
   iassoc       = data.addMulti<stor  >(branchName_,"assocList",0);
   if(options_ & SAVEPARTONDECAY)
-  ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
+    ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -41,9 +46,10 @@ void GenParticleFiller::load(const edm::Event& iEvent)
 {
   reset();
 
-  FileUtilities::enforceGet(iEvent,genParticleTag_,genParticles_,true);
+  iEvent.getByToken(genParticleToken_, genParticles_);
+
   if((options_ & LOADPACKED) || (options_ & SAVEPARTONDECAY))
-    FileUtilities::enforceGet(iEvent,packedGenParticleTag_,packedGenParticles_,true);
+    iEvent.getByToken(packedGenParticleToken_, packedGenParticles_);
 
   //Now fill the stored genparticles
   if(options_ & SAVEALL){

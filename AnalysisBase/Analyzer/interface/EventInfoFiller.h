@@ -14,6 +14,8 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
@@ -29,13 +31,16 @@ namespace ucsbsusy {
   class EventInfoFiller : public BaseFiller {
 
     public:
-      EventInfoFiller(
-          const edm::InputTag vtxTag,
-          const edm::InputTag rhoTag,
-          const edm::InputTag metTag
-          );
+      EventInfoFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options);
 
       ~EventInfoFiller() {};
+
+      enum Options {
+        NULLOPT     = 0,
+        LOADGEN     = (1 << 0),
+        LOADLHE     = (1 << 1)
+      };
+      static const int defaultOptions = NULLOPT;
 
       void load(const edm::Event& iEvent);
       void fill();
@@ -45,25 +50,35 @@ namespace ucsbsusy {
 
     private:
       // Input from the config file
-      const edm::InputTag vtxTag_;
-      const edm::InputTag rhoTag_;
-      const edm::InputTag metTag_;
+      edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+      edm::EDGetTokenT<double>                 rhoToken_;
+      edm::EDGetTokenT<pat::METCollection>     metToken_;
+      edm::EDGetTokenT<GenEventInfoProduct>    genEvtInfoToken_;
+      edm::EDGetTokenT<LHEEventProduct>        lheEvtInfoToken_;
+      std::vector<unsigned int>                systWgtIndices_;
 
       // Members to hold index of most recently filled tree data
-      size irun_      ;
-      size ilumi_     ;
-      size ievent_    ;
-      size inpv_      ;
-      size irho_      ;
-      size ipvx_      ;
-      size ipvy_      ;
-      size ipvz_      ;
-      size imetpt_    ;
-      size imetphi_   ;
-      size imetsumEt_ ;
-      size igenmetpt_ ;
-      size igenmetphi_;
-      size igoodvertex_;
+      size irun_          ;
+      size ilumi_         ;
+      size ievent_        ;
+      size inpv_          ;
+      size irho_          ;
+      size ipvx_          ;
+      size ipvy_          ;
+      size ipvz_          ;
+      size imetpt_        ;
+      size imetphi_       ;
+      size imetsumEt_     ;
+      size igenmetpt_     ; 
+      size igenmetphi_    ;
+      size igoodvertex_   ;
+      size igenwgt_       ;
+      size igenqscale_    ;
+      size inmeparts_     ;
+      size inmefiltparts_ ;
+      size ilhecentralwgt_;
+      size isystwgts_     ;
+
     public:
       // Data members
       EventCoords    eventCoords;
@@ -72,6 +87,8 @@ namespace ucsbsusy {
       edm::Handle<reco::VertexCollection> vertices_;
       edm::Handle<double>                 rho_;
       edm::Handle<pat::METCollection>     mets_;
+      edm::Handle<GenEventInfoProduct>    genEvtInfo_;
+      edm::Handle<LHEEventProduct>        lheEvtInfo_;
 
   };
 

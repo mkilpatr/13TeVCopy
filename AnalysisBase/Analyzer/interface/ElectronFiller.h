@@ -36,7 +36,6 @@
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/ClusterSequenceArea.hh>
 
-//typedef math::XYZTLorentzVector LorentzVector;
 typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
 typedef std::vector<LorentzVector> LorentzVectorCollection;
 
@@ -45,16 +44,7 @@ namespace ucsbsusy {
   class ElectronFiller : public BaseFiller {
 
     public :
-      ElectronFiller(const int options,
-                     const string branchName,
-                     const EventInfoFiller * evtInfoFiller,
-                     const edm::InputTag electronTag,
-                     const edm::InputTag vetoIdTag,
-                     const edm::InputTag looseIdTag,
-                     const edm::InputTag mediumIdTag,
-                     const edm::InputTag tightIdTag,
-                     const int bunchSpacing,
-                     const double eleptMin);
+      ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller);
       ~ElectronFiller() {}
 
       enum Options {
@@ -79,12 +69,16 @@ namespace ucsbsusy {
     private :
       const EventInfoFiller * evtInfoFiller_;
       // Input from the config file
-      const edm::InputTag electronTag_;
+      edm::EDGetTokenT<pat::ElectronCollection>        electronToken_;
       // For cut-based ID decisions
-      const edm::InputTag vetoIdTag_;
-      const edm::InputTag looseIdTag_;
-      const edm::InputTag mediumIdTag_;
-      const edm::InputTag tightIdTag_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           vetoIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           looseIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           mediumIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           tightIdToken_;
+      edm::EDGetTokenT<reco::PFJetCollection>          ca8jetToken_;
+      edm::EDGetTokenT<double>                         rhoToken_;
+      edm::EDGetTokenT<pat::JetCollection>             jetToken_;
+      edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
       const int           bunchSpacing_;
       const double        eleptMin_;
 
@@ -137,12 +131,7 @@ namespace ucsbsusy {
       size ipfpuiso_;
       size iMVAiso_;
       // different isolations
-      size iLSF2Iso_;
-      size iLSF3Iso_;
-      size iLSF4Iso_;
-      size iLSF2IsoDR_;
-      size iLSF3IsoDR_;
-      size iLSF4IsoDR_;
+      size iLSFIso_;
       size iminiiso_;
       size iptrel_;
       size iptratio_;
@@ -158,11 +147,8 @@ namespace ucsbsusy {
       size igenmotherpdgid_;
 
       // cut-based id - put by hand
-      //      size iPassTriggerLID_;
       size iPassCutBaseNonIsoMID_;
       size iPassLooseIDOnly_;
-
-      //      size iPassCutBaseTID_;
 
     public :
       // Data members
@@ -171,12 +157,9 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> >           loose_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           medium_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           tight_id_decisions_;
-      edm::Handle<reco::PFJetCollection>          ca8jets;
-      edm::Handle<LorentzVectorCollection>        lsfSubJets2;
-      edm::Handle<LorentzVectorCollection>        lsfSubJets3;
-      edm::Handle<LorentzVectorCollection>        lsfSubJets4;
+      edm::Handle<reco::PFJetCollection>          ca8jets_;
       edm::Handle<double>                         rho_;
-      edm::Handle<pat::PackedCandidateCollection> pfcands;
+      edm::Handle<pat::PackedCandidateCollection> pfcands_;
       edm::Handle<pat::JetCollection>             ak4jets_;
 
   };

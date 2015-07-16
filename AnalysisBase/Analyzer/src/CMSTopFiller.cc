@@ -13,32 +13,27 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-CMSTopFiller::CMSTopFiller(const int options,
-			   const string branchName,
-			   const EventInfoFiller * evtInfoFiller,
-			   const edm::InputTag fatJetTag) :
+CMSTopFiller::CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  evtInfoFiller_(evtInfoFiller),
-  fatJetTag_(fatJetTag)
-
+  fatJetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("fatJets")))
 {
 
-  ictt_fatjet_mass_                 = data.addMulti<float>(branchName_,"fatjet_mass",0);
-  ictt_fatjet_trimmedmass_          = data.addMulti<float>(branchName_,"fatjet_trimmedmass",0);
-  ictt_fatjet_prunedmass_           = data.addMulti<float>(branchName_,"fatjet_prunedmass",0);
-  ictt_fatjet_softdropmass_         = data.addMulti<float>(branchName_,"fatjet_softdropmass",0);
-  ictt_fatjet_filteredmass_         = data.addMulti<float>(branchName_,"fatjet_filteredmass",0);
-  ictt_fatjet_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
-  ictt_fatjet_tau1_                 = data.addMulti<float>(branchName_,"fatjet_tau1",-1.);
-  ictt_fatjet_tau2_                 = data.addMulti<float>(branchName_,"fatjet_tau2",-1.);
-  ictt_fatjet_tau3_                 = data.addMulti<float>(branchName_,"fatjet_tau3",-1.);
-  ictt_top_pt_                      = data.addMulti<float>(branchName_,"top_pt",0);
-  ictt_top_eta_                     = data.addMulti<float>(branchName_,"top_eta",0);
-  ictt_top_phi_                     = data.addMulti<float>(branchName_,"top_phi",0);
-  ictt_top_topmass_                 = data.addMulti<float>(branchName_,"top_topmass",0);
-  ictt_top_wmass_                   = data.addMulti<float>(branchName_,"top_wmass",0);
-  ictt_top_minmass_                 = data.addMulti<float>(branchName_,"top_minmass",0);
-  ictt_top_nsubjets_                = data.addMulti<float>(branchName_,"top_nsubjets",0);
+  ictt_rawmass_       = data.addMulti<float>(branchName_,"top_rawmass",0);
+  ictt_trimmedmass_   = data.addMulti<float>(branchName_,"top_trimmedmass",0);
+  ictt_prunedmass_    = data.addMulti<float>(branchName_,"top_prunedmass",0);
+  ictt_softdropmass_  = data.addMulti<float>(branchName_,"top_softdropmass",0);
+  ictt_filteredmass_  = data.addMulti<float>(branchName_,"top_filteredmass",0);
+  ictt_cmstoptagmass_ = data.addMulti<float>(branchName_,"top_cmstoptagmass",0);
+  //  ictt_massdropfilteredmass_ = data.addMulti<float>(branchName_,"top_massdropfilteredmass",0);
+  ictt_tau1_          = data.addMulti<float>(branchName_,"top_tau1",-1.);
+  ictt_tau2_          = data.addMulti<float>(branchName_,"top_tau2",-1.);
+  ictt_tau3_          = data.addMulti<float>(branchName_,"top_tau3",-1.);
+  ictt_top_pt_        = data.addMulti<float>(branchName_,"top_pt",0);
+  ictt_top_eta_       = data.addMulti<float>(branchName_,"top_eta",0);
+  ictt_top_phi_       = data.addMulti<float>(branchName_,"top_phi",0);
+  ictt_top_wmass_     = data.addMulti<float>(branchName_,"top_wmass",0);
+  ictt_top_minmass_   = data.addMulti<float>(branchName_,"top_minmass",0);
+  ictt_top_nsubjets_  = data.addMulti<float>(branchName_,"top_nsubjets",0);
 
 }
 
@@ -46,7 +41,7 @@ CMSTopFiller::CMSTopFiller(const int options,
 void CMSTopFiller::load(const edm::Event& iEvent)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, fatJetTag_,fatJets_,true);
+  iEvent.getByToken(fatJetToken_,fatJets_);
   isLoaded_ = true;
 }
 
@@ -59,25 +54,24 @@ void CMSTopFiller::fill()
     const reco::CATopJetTagInfo * catopTag = dynamic_cast<reco::CATopJetTagInfo const *>(fatjet.tagInfo("caTop"));
     if (!catopTag) { continue; }
 
-    data.fillMulti<float>(ictt_fatjet_mass_                , fatjet.mass());
-    data.fillMulti<float>(ictt_fatjet_trimmedmass_         , fatjet.userFloat("ak8PFJetsCHSTrimmedLinks"));
-    data.fillMulti<float>(ictt_fatjet_prunedmass_          , fatjet.userFloat("ak8PFJetsCHSPrunedLinks"));
-    data.fillMulti<float>(ictt_fatjet_softdropmass_        , fatjet.userFloat("ak8PFJetsCHSSoftDropLinks"));
-    data.fillMulti<float>(ictt_fatjet_filteredmass_        , fatjet.userFloat("ak8PFJetsCHSFilteredLinks"));
-    data.fillMulti<float>(ictt_fatjet_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
-    data.fillMulti<float>(ictt_fatjet_tau1_                , fatjet.userFloat("NjettinessAK8:tau1"));
-    data.fillMulti<float>(ictt_fatjet_tau2_                , fatjet.userFloat("NjettinessAK8:tau2"));
-    data.fillMulti<float>(ictt_fatjet_tau3_                , fatjet.userFloat("NjettinessAK8:tau3"));
-    data.fillMulti<float>(ictt_top_pt_                     , fatjet.pt());
-    data.fillMulti<float>(ictt_top_eta_                    , fatjet.eta());
-    data.fillMulti<float>(ictt_top_phi_                    , fatjet.phi());
-    data.fillMulti<float>(ictt_top_topmass_                , catopTag->properties().topMass);
-    data.fillMulti<float>(ictt_top_wmass_                  , catopTag->properties().wMass);
-    data.fillMulti<float>(ictt_top_minmass_                , catopTag->properties().minMass);
-    data.fillMulti<float>(ictt_top_nsubjets_               , catopTag->properties().nSubJets);
+    data.fillMulti<float>(ictt_rawmass_      , fatjet.mass());
+    data.fillMulti<float>(ictt_trimmedmass_  , fatjet.userFloat("ak8PFJetsCHSTrimmedMass"));
+    data.fillMulti<float>(ictt_prunedmass_   , fatjet.userFloat("ak8PFJetsCHSPrunedMass"));
+    data.fillMulti<float>(ictt_softdropmass_ , fatjet.userFloat("ak8PFJetsCHSSoftDropMass"));
+    data.fillMulti<float>(ictt_filteredmass_ , fatjet.userFloat("ak8PFJetsCHSFilteredMass"));
+    data.fillMulti<float>(ictt_cmstoptagmass_, catopTag->properties().topMass);
+    //    data.fillMulti<float>(ictt_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
+    data.fillMulti<float>(ictt_tau1_         , fatjet.userFloat("NjettinessAK8:tau1"));
+    data.fillMulti<float>(ictt_tau2_         , fatjet.userFloat("NjettinessAK8:tau2"));
+    data.fillMulti<float>(ictt_tau3_         , fatjet.userFloat("NjettinessAK8:tau3"));
+    data.fillMulti<float>(ictt_top_pt_       , fatjet.pt());
+    data.fillMulti<float>(ictt_top_eta_      , fatjet.eta());
+    data.fillMulti<float>(ictt_top_phi_      , fatjet.phi());
+    data.fillMulti<float>(ictt_top_wmass_    , catopTag->properties().wMass);
+    data.fillMulti<float>(ictt_top_minmass_  , catopTag->properties().minMass);
+    data.fillMulti<float>(ictt_top_nsubjets_ , catopTag->properties().nSubJets);
     
     isFilled_ = true;
-
   }
 
 }

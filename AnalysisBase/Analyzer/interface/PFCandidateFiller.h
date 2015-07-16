@@ -29,18 +29,7 @@ namespace ucsbsusy {
   class PFCandidateFiller : public BaseFiller {
 
     public :
-      PFCandidateFiller(const int options,
-                        const string branchName,
-                        const EventInfoFiller * evtInfoFiller,
-                        const edm::InputTag pfCandTag,
-                        const edm::InputTag jetTag,
-                        const edm::InputTag tauTag,
-                        const double candptMin,
-                        const double candetaMax,
-                        const double taudiscMin,
-                        const string tauMVAFileName_MtPresel,
-                        const string tauMVAFileName_DphiPresel,
-                        const string tauMVAName);
+      PFCandidateFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller);
       ~PFCandidateFiller() {}
 
       enum Options {
@@ -61,9 +50,9 @@ namespace ucsbsusy {
 
     private :
       const EventInfoFiller * evtInfoFiller_;
-      const edm::InputTag pfCandTag_;
-      const edm::InputTag jetTag_;
-      const edm::InputTag tauTag_;
+      edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandToken_;
+      edm::EDGetTokenT<pat::JetCollection>             jetToken_;
+      edm::EDGetTokenT<pat::TauCollection>             tauToken_;
       const double        candptMin_;
       const double        candetaMax_;
       const double        taudiscMin_;
