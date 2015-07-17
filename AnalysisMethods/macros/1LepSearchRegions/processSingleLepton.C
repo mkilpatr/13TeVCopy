@@ -59,16 +59,24 @@ class Analyzer : public BaseTreeAnalyzer {
       outtree->Branch("lep1pt",&lep1pt);
       outtree->Branch("jetphi1",&jetphi1);
       outtree->Branch("jetphi2",&jetphi2);
-      outtree->Branch("nOldVetoTrackss",&nOldVetoTrackss);
+      outtree->Branch("nOldVetoTracks",&nOldVetoTracks);
+      outtree->Branch("nOldVetoElTracks",&nOldVetoElTracks);
+      outtree->Branch("nOldVetoMuTracks",&nOldVetoMuTracks);
+      outtree->Branch("nOldVetoCHTracks",&nOldVetoCHTracks);
       outtree->Branch("nNewVetoTracks",&nNewVetoTracks);
+      outtree->Branch("nNewVetoElTracks",&nNewVetoElTracks);
+      outtree->Branch("nNewVetoMuTracks",&nNewVetoMuTracks);
+      outtree->Branch("nNewVetoCHTracks",&nNewVetoCHTracks);
       outtree->Branch("nVetoMVATaus",&nVetoMVATaus);
       outtree->Branch("nVetoed5GeVLeptons",&nVetoed5GeVLeptons);
       outtree->Branch("nVetoed10GeVLeptons",&nVetoed10GeVLeptons);
       outtree->Branch("nVetoCutTausISO1",&nVetoCutTausISO1);
       outtree->Branch("nVetoCutTausISO2",&nVetoCutTausISO2);
+      outtree->Branch("nVetoFNALCutTaus",&nVetoFNALCutTaus);
       outtree->Branch("nElectronsGenFromTops",&nElectronsGenFromTops);
       outtree->Branch("nMuonsGenFromTops",&nMuonsGenFromTops);
       outtree->Branch("nTausGenFromTops",&nTausGenFromTops);       
+      outtree->Branch("nLepsGenFromTops",&nLepsGenFromTops);
   }
 
   virtual ~Analyzer() {
@@ -130,15 +138,25 @@ class Analyzer : public BaseTreeAnalyzer {
   float MT;
   double mt2w;
   float hadronic_top_chi2;
-  int nOldVetoTrackss;
+  int nOldVetoTracks;
+  int nOldVetoElTracks;
+  int nOldVetoMuTracks;
+  int nOldVeto10GeVElMuTracks;
+  int nOldVetoCHTracks;
   int nNewVetoTracks;
+  int nNewVetoElTracks;
+  int nNewVetoMuTracks;
+  int nNewVeto10GeVElMuTracks;
+  int nNewVetoCHTracks;
   int nVetoMVATaus;
   int nVetoCutTausISO1;
   int nVetoCutTausISO2;
+  int nVetoFNALCutTaus;
   int nVetoed5GeVLeptons;
   int nVetoed10GeVLeptons;
   int nElectronsGenFromTops, nMuonsGenFromTops, nTausGenFromTops;
-
+  int nLepsGenFromTops;
+  void loadVariables();
   void runEvent();
   void loadPlots();
   void out(TString outputName, TString outputPath);
@@ -147,13 +165,29 @@ class Analyzer : public BaseTreeAnalyzer {
 
 };
 
+void Analyzer::loadVariables()
+{
+load(cfgSet::PFCANDS); // load pfcands for track vetoes
+load(cfgSet::TAUS); // for tau vetoes
+load(cfgSet::EVTINFO);
+load(cfgSet::AK4JETS);
+load(cfgSet::PICKYJETS);
+load(cfgSet::CASUBJETS);
+load(cfgSet::ELECTRONS);
+load(cfgSet::MUONS);
+load(cfgSet::PHOTONS);
+load(cfgSet::PFCANDS);
+load(cfgSet::CMSTOPS);
+if(isMC()) load(cfgSet::GENPARTICLES);
+}
+
 // Define plots, names, and binning
 void Analyzer::loadPlots()
 {
 
   TString txt_passjets = "N_{jets} >= 4, N_{bjets} >=1";
-  TString txt_passmet = "MET > 150";
-  TString txt_passpresel = "MET > 150, N_{jets} >= 4, N_{bjets} >=1";
+  TString txt_passmet = "pass met cut";
+  TString txt_passpresel = "pass preselection";
   TString txt_ytitle = "Events";
   // TString txt_passsel = "presel && |#Delta#phi(l,#slash{E}_{T})|>1";
   // TString txt_passtopsel = "presel and minTopness>7";
@@ -183,7 +217,7 @@ void Analyzer::loadPlots()
 // Analyze event and fill plots
 void Analyzer::runEvent()
 {
-  // primary vertex requirement
+  // good vertex requirement
   if(!goodvertex) return;
 
   // double wgt = lumi_*xsec_/getEntries();  // old way
@@ -200,113 +234,154 @@ void Analyzer::runEvent()
   LepPt    = lep->pt();
 
   // SECOND LEPTON VETO (5 GeV natural)
-  // must not return. store nVetoedLeptons in tree.
+  // need framework to have lepton pt veto lowered to 5 GeV, otherwise
+  // we would need to remake the vetoedLeptons vector from allLeptons by hand here
   nVetoed5GeVLeptons=nVetoedLeptons;
     
   // SECOND LEPTON VETO (more restrictive 10 GeV)
-  // store nVetoed10GeVLeptons in tree.
   nVetoed10GeVLeptons=0;
   for(uint iT =0; iT < vetoedLeptons.size(); ++iT){  
     if(vetoedLeptons.at(iT)->pt() > 10) nVetoed10GeVLeptons++;
   }
 
-
   // OLD TRACK VETO
-  // store nOldVetoTrackss in tree.
-  nOldVetoTrackss=0;
-  for(uint iT =0; iT < vetoedTracks.size(); ++iT){
+  // use pf candidates instead of tracks to avoid framework config issues (per Valentina)
+  nOldVetoTracks=0;
+  nOldVetoElTracks=0;
+  nOldVetoMuTracks=0;
+  nOldVeto10GeVElMuTracks=0;
+  nOldVetoCHTracks=0;
+  for(uint iT =0; iT < pfcandReader.pfcands.size(); ++iT){
     // all veto tracks are dz < 0.1, eta < 2.4, charge != 0
-    if(fabs(vetoedTracks.at(iT)->dz())   > 0.1) continue; 
-    if(fabs(vetoedTracks.at(iT)->eta())  > 2.4) continue;
-    if(     vetoedTracks.at(iT)->charge() == 0) continue;
-    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.1) continue;
+    if(fabs(pfcandReader.pfcands.at(iT).dz())   > 0.1) continue; 
+    if(fabs(pfcandReader.pfcands.at(iT).eta())  > 2.4) continue;
+    if(     pfcandReader.pfcands.at(iT).charge() == 0) continue;
+    if(PhysicsUtilities::deltaR(pfcandReader.pfcands.at(iT).p4(),lep->p4())<0.1) continue;
 
     // lepton track veto
-    if ((fabs(vetoedTracks.at(iT)->pdgid())==11) || (fabs(vetoedTracks.at(iT)->pdgid())==13)) {
-	if ((vetoedTracks.at(iT)->pt() > 5) && 
-	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2))
-		nOldVetoTrackss++;
+    if ((fabs(pfcandReader.pfcands.at(iT).pdgid())==11) || (fabs(pfcandReader.pfcands.at(iT).pdgid())==13)) {
+	if ((pfcandReader.pfcands.at(iT).pt() > 5) && 
+	    (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.2)) {
+		nOldVetoTracks++;
+		if (fabs(pfcandReader.pfcands.at(iT).pdgid())==11) nOldVetoElTracks++;
+		if (fabs(pfcandReader.pfcands.at(iT).pdgid())==13) nOldVetoMuTracks++;
+ 	}
     }
     // charged hadron track veto
-    if (fabs(vetoedTracks.at(iT)->pdgid())==211) {
-    	if ((vetoedTracks.at(iT)->charge()*lep->q() < 0) && 
-	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1) && 
-	    (vetoedTracks.at(iT)->pt() > 10)) 
-		nOldVetoTrackss++;
+    if (fabs(pfcandReader.pfcands.at(iT).pdgid())==211) {
+    	if ((pfcandReader.pfcands.at(iT).charge()*lep->q() < 0) && 
+	    (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.1) && 
+	    (pfcandReader.pfcands.at(iT).pt() > 10)) {
+		nOldVetoTracks++;
+		nOldVetoCHTracks++;
+	}
     }
   }
 
   // NEW TRACK VETO
-  // store nNewVetoTracks in tree.
   nNewVetoTracks=0;
-  for(uint iT =0; iT < vetoedTracks.size(); ++iT){
-    if(fabs(vetoedTracks.at(iT)->dz())   > 0.1) continue; 
-    if(fabs(vetoedTracks.at(iT)->eta())  > 2.4) continue;
-    if(     vetoedTracks.at(iT)->charge() == 0) continue;
-    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.1) continue;
+  nNewVetoElTracks=0;
+  nNewVetoMuTracks=0;
+  nNewVeto10GeVElMuTracks = 0;
+  nNewVetoCHTracks=0;
+  for(uint iT =0; iT < pfcandReader.pfcands.size(); ++iT){
+    if(fabs(pfcandReader.pfcands.at(iT).dz())   > 0.1) continue; 
+    if(fabs(pfcandReader.pfcands.at(iT).eta())  > 2.4) continue;
+    if(     pfcandReader.pfcands.at(iT).charge() == 0) continue;
+    if(PhysicsUtilities::deltaR(pfcandReader.pfcands.at(iT).p4(),lep->p4())<0.1) continue;
 
     // electron
-    if (fabs(vetoedTracks.at(iT)->pdgid())==11) {
-	if (vetoedTracks.at(iT)->pt() < 5) continue;
-	if ((vetoedTracks.at(iT)->pt() < 60) && 
-	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1))
+    if (fabs(pfcandReader.pfcands.at(iT).pdgid())==11) {
+	if (pfcandReader.pfcands.at(iT).pt() < 5) continue;
+	if ((pfcandReader.pfcands.at(iT).pt() < 60) && 
+	    (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.1)) {
 		nNewVetoTracks++;
- 	if ((vetoedTracks.at(iT)->pt() > 60) && 
-	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoElTracks++;
+	}
+ 	if ((pfcandReader.pfcands.at(iT).pt() > 60) && 
+	    (pfcandReader.pfcands.at(iT).trackiso() < 6.0)) {
 		nNewVetoTracks++;
+		nNewVetoElTracks++;
+	}
     }
     // muon
-    if (fabs(vetoedTracks.at(iT)->pdgid())==13) {
-	if (vetoedTracks.at(iT)->pt() < 5) continue;
-	if ((vetoedTracks.at(iT)->pt() < 30) && 
-	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2))
+    if (fabs(pfcandReader.pfcands.at(iT).pdgid())==13) {
+	if (pfcandReader.pfcands.at(iT).pt() < 5) continue;
+	if ((pfcandReader.pfcands.at(iT).pt() < 30) && 
+	    (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.2)) {
 		nNewVetoTracks++;
- 	if ((vetoedTracks.at(iT)->pt() > 30) && 
-	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoMuTracks++;
+
+	}
+ 	if ((pfcandReader.pfcands.at(iT).pt() > 30) && 
+	    (pfcandReader.pfcands.at(iT).trackiso() < 6.0)) {
 		nNewVetoTracks++;
+		nNewVetoMuTracks++;
+	}
     }
     // charged hadron track veto
-    if (fabs(vetoedTracks.at(iT)->pdgid())==211) {
-	if (vetoedTracks.at(iT)->pt() < 10) continue;
-    	if (vetoedTracks.at(iT)->charge()*lep->q() >= 0) continue; // want < 0
-	if ((vetoedTracks.at(iT)->pt() < 60) && 
-	    (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1))
+    if (fabs(pfcandReader.pfcands.at(iT).pdgid())==211) {
+	if (pfcandReader.pfcands.at(iT).pt() < 10) continue;
+    	if (pfcandReader.pfcands.at(iT).charge()*lep->q() >= 0) continue; // want < 0
+	if ((pfcandReader.pfcands.at(iT).pt() < 60) && 
+	    (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.1)) {
 		nNewVetoTracks++;
-	if ((vetoedTracks.at(iT)->pt() > 60) && 
-	    (vetoedTracks.at(iT)->trackiso() < 6.0))
+		nNewVetoCHTracks++;
+	}
+	if ((pfcandReader.pfcands.at(iT).pt() > 60) && 
+	    (pfcandReader.pfcands.at(iT).trackiso() < 6.0)) {
 		nNewVetoTracks++;
+		nNewVetoCHTracks++;
+	}
     }
   }
 
 
   // MVA TAU VETO
-  // store nVetoMVATaus in tree.
   nVetoMVATaus = 0;
-  for(uint iT =0; iT < vetoedTracks.size(); ++iT){
-//    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.4) continue;
-    if ((fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
-             (vetoedTracks.at(iT)->pt() > 10) && 
-	     (vetoedTracks.at(iT)->ismvavetotau()) && 
-	(fabs(vetoedTracks.at(iT)->dz()) < 0.2) && 
-	(fabs(vetoedTracks.at(iT)->pdgid()) == 211))
-		nVetoMVATaus++;
+  for(uint iT =0; iT < pfcandReader.pfcands.size(); ++iT){
+//    if(PhysicsUtilities::deltaR(pfcandReader.pfcands.at(iT).p4(),lep.p4())<0.4) continue;
+    if ((fabs(pfcandReader.pfcands.at(iT).eta()) < 2.4) &&
+             (pfcandReader.pfcands.at(iT).pt() > 10) && 
+	     (pfcandReader.pfcands.at(iT).ismvavetotau()) && 
+	(fabs(pfcandReader.pfcands.at(iT).dz()) < 0.2) && 
+	(fabs(pfcandReader.pfcands.at(iT).pdgid()) == 211))
+		nVetoMVATaus++;  
   }
 
   // TAU CUT VETO
   // not sure what yet, so try a few options for iso
   nVetoCutTausISO1 = 0;
   nVetoCutTausISO2 = 0;
-  for(uint iT =0; iT < vetoedTracks.size(); ++iT){
-//    if(PhysicsUtilities::deltaR(vetoedTracks.at(iT)->p4(),lep->p4())<0.4) continue;
-    if ((fabs(vetoedTracks.at(iT)->pdgid()) == 211) && 
-	(fabs(vetoedTracks.at(iT)->dz()) < 0.2) && 
-	     (vetoedTracks.at(iT)->pt() > 10) &&
-	     (fabs(vetoedTracks.at(iT)->eta()) < 2.4) &&
-	     (vetoedTracks.at(iT)->mt() < defaults::TAU_MTCUT_VETO)) {
-		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.1) nVetoCutTausISO1++;
-		if (vetoedTracks.at(iT)->trackiso()/vetoedTracks.at(iT)->pt() < 0.2) nVetoCutTausISO2++;
+  for(uint iT =0; iT < pfcandReader.pfcands.size(); ++iT){
+//    if(PhysicsUtilities::deltaR(pfcandReader.pfcands.at(iT).p4(),lep.p4())<0.4) continue;
+    if ((fabs(pfcandReader.pfcands.at(iT).pdgid()) == 211) && 
+	(fabs(pfcandReader.pfcands.at(iT).dz()) < 0.2) && 
+	     (pfcandReader.pfcands.at(iT).pt() > 10) &&
+	     (fabs(pfcandReader.pfcands.at(iT).eta()) < 2.4) &&
+	     (pfcandReader.pfcands.at(iT).mt() < defaults::TAU_MTCUT_VETO)) {
+		if (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.1) nVetoCutTausISO1++;
+		if (pfcandReader.pfcands.at(iT).trackiso()/pfcandReader.pfcands.at(iT).pt() < 0.2) nVetoCutTausISO2++;
     }
   }
+
+// HPS tau veto ("FNAL cut-based veto")
+  vector<TauF*> taus;
+  if(tauReader.isLoaded()){
+    taus.clear();
+    taus.reserve(tauReader.taus.size());
+    for(auto& tau : tauReader.taus) {
+      if (tau.pt() > 20 && fabs(tau.eta())<2.4 && (tau.hpsid() & kMediumIsoMVALT) > 0) taus.push_back(&tau);
+      }
+  }
+
+ nVetoFNALCutTaus=0;
+ for(uint iT =0; iT < taus.size(); ++iT){
+    if(PhysicsUtilities::deltaR(taus.at(iT)->p4(),lep->p4())<0.4) continue;
+    if(taus.at(iT)->q()*lep->q()<0) nVetoFNALCutTaus++;
+  }
+
+
 
   // count gen level electrons, muons, taus coming from tops
   nElectronsGenFromTops=0;
@@ -321,6 +396,7 @@ void Analyzer::runEvent()
     if ((abs(genParts.at(i)->pdgId()) == 13) && (abs(genPartMom->pdgId()) == 24)) nMuonsGenFromTops++;
     if ((abs(genParts.at(i)->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 24)) nTausGenFromTops++;
   }
+  nLepsGenFromTops = nElectronsGenFromTops+nMuonsGenFromTops+nTausGenFromTops;
 
 
   lep1eta = selectedLeptons[0]->eta();
@@ -364,7 +440,6 @@ void Analyzer::runEvent()
   LorentzVector templz;
   lepvec=lep->p4();
 
-
   // calculate csv and jets conversions, sigma (jet resolution), btag vector
   for(unsigned int i = 0; i < jets.size(); i++ ) {
     csvvec.push_back(jets.at(i)->csv());
@@ -380,15 +455,15 @@ void Analyzer::runEvent()
   
   hadronic_top_chi2= calculateChi2(lzjets, sigma, btag);
 
-  // delta phis from two hardest jets to met
+  // delta phis from two hardest jets to met, for QCD killer
   jetphi1 = fabs(PhysicsUtilities::deltaPhi(*jets[0],*met));
   jetphi2 = fabs(PhysicsUtilities::deltaPhi(*jets[1],*met));
 
-  // always want to pass jets (array-length errors in rankedByCSV follow if not)
+  // always want to pass jets (array-length errors in rankedByCSV follow if not done)
   bool passjets   = nJets >= minNJets_ && nBJets >= minNBjets_;
   if (!passjets) return;
 
-  // preselection baseline
+  // preselection and selection cuts if desired
   bool passmet    = met->pt() > metcut_;
   bool passdphi   = fabs(DphiLepW) > dphicut_;
   bool passmt     = mtlepmet > mtcut_;
@@ -404,7 +479,7 @@ void Analyzer::runEvent()
   // enforce preselection
 //  if(!passpreselection) return;
 
-  // calculate selection variables only after preselection
+  // calculate selection variables only after preselection (we might not have enough jets etc)
   mt2w = calculateMT2w(lzjets, csvvec, lepvec, met->pt(), met->phi());
 
   // sort the jets in decreasing csv, useful for higher level variables
@@ -421,6 +496,22 @@ void Analyzer::runEvent()
 
   plots["mt2w_passpresel"]      ->Fill(mt2w,wgt);
   plots["minTopness_passpresel"]       ->Fill(minTopness,wgt);
+
+// event list used to sync with Pieter (NOT the twiki sync)
+//  int genlepsfromtop = nElectronsGenFromTops+nMuonsGenFromTops+nTausGenFromTops;
+//  if (NBJets>=1 && NJets>=4 &&   genlepsfromtop==2 && MET>200 && nSelLeptons==1)
+//    std::cout << lumi << " " << event << endl;
+
+// lepton printouts to sync with the twiki
+// electron list
+//   if(fabs(lep->pdgid())==11 && NBJets>0 && NJets>3 && MET>80) std::cout<<run<<" "<<lumi<<" "<<event<<" "<<fixed<<setprecision(4)<<lep->pt()<<" "<<lep->pdgid()<<" "<<MET<<" "<<MT<<" "<< 0. <<" "<<NJets<<" "<<NBJets<<" "<< nLepsGenFromTops<<" "<<DphiLepW<<" "<<0.<<" "<<0.<<" "<<0.<<" "<<mt2w<<" "<<minTopness<<" "<<hadronic_top_chi2<<std::endl;
+// muon list
+//   if(fabs(lep->pdgid())==13 && NBJets>0 && NJets>3 && MET>80) std::cout<<run<<" "<<lumi<<" "<<event<<" "<<fixed<<setprecision(4)<<lep->pt()<<" "<<lep->pdgid()<<" "<<MET<<" "<<MT<<" "<< 0. <<" "<<NJets<<" "<<NBJets<<" "<< nLepsGenFromTops<<" "<<DphiLepW<<" "<<0.<<" "<<0.<<" "<<0.<<" "<<mt2w<<" "<<minTopness<<" "<<hadronic_top_chi2<<std::endl;
+
+// Pieter's printouts (from make1lbabies.C) to see which variables are skipped here
+// if(fabs(lep1_pdgid)==11 && ngoodbtags>0 && ngoodjets>3 && pfmet>80) std::cout<<run<<" "<<ls<<" "<<event<<" "<<fixed<<setprecision(4)<<lep1_pt<<" "<<lep1_pdgid<<" "<<pfmet<<" "<<mt_met_lep<<" "<<lep1_passVeto<<" "<<ngoodjets<<" "<<ngoodbtags<<" "<<genlepsfromtop<<" "<<dphi_Wlep<<" "<<ak4_htssm<<" "<<Mlb_closestb<<" "<<Mjjj<<" "<<MT2W<<" "<<topness<<" "<<hadronic_top_chi2<<std::endl;
+// muon list
+// if(fabs(lep1_pdgid)==13 && ngoodbtags>0 && ngoodjets>3 && pfmet>80) std::cout<<run<<" "<<ls<<" "<<event<<" "<<fixed<<setprecision(4)<<lep1_pt<<" "<<lep1_pdgid<<" "<<pfmet<<" "<<mt_met_lep<<" "<<PassTrackVeto<<" "<<ngoodjets<<" "<<ngoodbtags<<" "<<genlepsfromtop<<" "<<dphi_Wlep<<" "<<ak4_htssm<<" "<<Mlb_closestb<<" "<< 0. <<" "<<MT2W<<" "<<topness<<" "<<hadronic_top_chi2<<"\n";
 
 // fill _tree.root
   outtree->Fill();
@@ -492,11 +583,15 @@ void processSingleLepton(TString sname = "test",               // sample name
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
+  // use the following for tau/track veto comparison
+  //cfg.vetoedLeptons.minEPt = 5;
+  //cfg.vetoedLeptons.minMuPt = 5;
+
   // Declare analyzer
   Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
-  a.analyze(200000);
+  a.analyze(200000000);
 
   // Write outputfile with plots
   a.out(sname, outputdir);

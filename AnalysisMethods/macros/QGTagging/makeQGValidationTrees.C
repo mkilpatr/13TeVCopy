@@ -43,7 +43,7 @@ public:
     gSystem->mkdir(outputdir,true);
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
-    outtree = new TTree("events","analysis tree");
+    outtree = new TTree("Events","analysis tree");
     outtree->Branch( "weight"    , &scaleFactor ,    "weight/F" );
     outtree->Branch( "npv"       , &npv         ,       "npv/I" );
     outtree->Branch( "passDijet" , &passDijet   , "passDijet/O" );
@@ -96,24 +96,26 @@ public:
 
     // Z jet event selection
     passZjet = true;
-    int Nmu = 0;
-    LeptonF* mu0;
-    LeptonF* mu1;
-    for (unsigned int i=0; i<selectedLeptons.size();++i) {
-      if (selectedLeptons[i]->ismuon()) {
-        if      (Nmu==0) mu0 = selectedLeptons[i];
-        else if (Nmu==1) mu1 = selectedLeptons[i];
-        ++Nmu;
-      } // ismuon()
-    } // selectedLeptons.size()
-    if (Nmu<2) passZjet = false;
-    else {
-      if      (mu0->pt()<20) passZjet = false;
-      else if (mu1->pt()<10) passZjet = false;
-      else if (mu0->q()==mu1->q()) passZjet = false;
-      double invMass = (mu0->p4() + mu1->p4()).mass();
-      if (invMass<70 || invMass>110) passZjet = false;
-    } // Nmu>=2
+    if (selectedLeptons.size()>=2) {
+      int Nmu = 0;
+      LeptonF* mu0 = selectedLeptons[0];
+      LeptonF* mu1 = selectedLeptons[1];
+      for (unsigned int i=0; i<selectedLeptons.size();++i) {
+        if (selectedLeptons[i]->ismuon()) {
+          if      (Nmu==0) mu0 = selectedLeptons[i];
+          else if (Nmu==1) mu1 = selectedLeptons[i];
+          ++Nmu;
+        } // ismuon()
+      } // selectedLeptons.size()
+      if (Nmu<2) passZjet = false;
+      else {
+        if      (mu0->pt()<20) passZjet = false;
+        else if (mu1->pt()<10) passZjet = false;
+        else if (mu0->q()==mu1->q()) passZjet = false;
+        double invMass = (mu0->p4() + mu1->p4()).mass();
+        if (invMass<70 || invMass>110) passZjet = false;
+      } // Nmu>=2
+    } // selectedLeptons.size>=2
 
     // Gamma jet event selection
     passGmjet = true;
@@ -186,19 +188,20 @@ public:
 #endif
 
 
-//root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/processQGValidation.C+()"
+//root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 //     ttbar_1_ntuple_wgtxsec.root
 //     dyjetstoll_ntuple_wgtxsec.root
 //     gjets_ht600toinf_ntuple_wgtxsec.root
 //     qcd_ht1000toinf_ntuple_wgtxsec.root
-void processQGValidation( TString sname      = "qcd1000" // sample name
+void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
                   , const int     fileindex  = 4       // index of file (-1 means there is only 1 file for this sample)
                   , const bool    isMC       = true    // data or MC
-                  , const TString fname      = "qcd_ht1000toinf_ntuple_wgtxsec.root" // path of file to be processed
-                  , const string  outputdir  = "trees/testing/"  // directory to which files with histograms will be written
-                  , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
+                  , const TString fname      = "/store/user/vdutta/13TeV/290615/merged/gjets_ht600toinf_ntuple_wgtxsec.root" // path of file to be processed
+                  , const double xsec        = 1.0
+                  , const string  outputdir  = "trees/"  // directory to which files with histograms will be written
+                  , const TString fileprefix = "root://eoscms//eos/cms" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
                   )
-{ //string fname = "evttree_lowStat_QCD_test.root", string fout = "out", string treeName = "TestAnalyzer/Events", bool isMCTree = true, bool usePuppi = true) {
+{
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
@@ -229,6 +232,6 @@ void processQGValidation( TString sname      = "qcd1000" // sample name
 
 
   Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
-  a.analyze(1000,1000000);
+  a.analyze(10000);
 
-} // processQGValidation()
+} // makeQGValidationTrees()
