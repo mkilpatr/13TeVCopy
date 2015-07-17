@@ -163,8 +163,6 @@ void BaseTreeAnalyzer::loadVariables()
 {
   load(cfgSet::EVTINFO);
   load(cfgSet::AK4JETS);
-  load(cfgSet::PICKYJETS);
-  load(cfgSet::CASUBJETS);
   load(cfgSet::ELECTRONS);
   load(cfgSet::MUONS);
   load(cfgSet::PHOTONS);
@@ -189,6 +187,7 @@ void BaseTreeAnalyzer::processVariables()
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
+    triggerflag =  evtInfoReader.triggerflag;
   }
 
 

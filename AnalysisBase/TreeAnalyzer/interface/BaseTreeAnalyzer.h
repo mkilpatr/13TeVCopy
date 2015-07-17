@@ -107,6 +107,7 @@ public:
     unsigned int  event;
     float         weight;
     defaults::Process process;
+    unsigned long triggerflag;
 
     int   nPV;
     float rho;
