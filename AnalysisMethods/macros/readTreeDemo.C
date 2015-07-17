@@ -1,12 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <vector>
-#include <assert.h>
-#include "TFile.h"
-#include "TTree.h"
-#include "TString.h"
-#include "TH1F.h"
-#include "TCanvas.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
+#endif
 
 using namespace std;
 using namespace ucsbsusy;
@@ -16,7 +10,7 @@ using namespace ucsbsusy;
 // no matter what, you have to define a runEvent function....to do what you want to do
 class Analyze : public BaseTreeAnalyzer{
 public:
-  Analyze(TString fname, string treeName, bool isMCTree, ConfigPars * pars) : BaseTreeAnalyzer(fname,treeName, isMCTree, pars)
+  Analyze(TString fname, string treeName, bool isMCTree, cfgSet::ConfigSet * cfg) : BaseTreeAnalyzer(fname,treeName, isMCTree, cfg)
   {}
 
 //  Override this function to change the way the analyzer loads default variable types
@@ -51,16 +45,11 @@ public:
 };
 
 
-#endif
-
-
-
 // This part is just a wrapper, you just need to construct your class and
 // call the analyze() function
 void readTreeDemo(string fname = "$CMSSW_BASE/src/AnalysisBase/Analyzer/test/evttree_numEvent1000.root", string treeName = "TestAnalyzer/Events", bool isMCTree = false) {
-  BaseTreeAnalyzer::ConfigPars pars;
-  pars.minJetPt = 30;
-  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
-  Analyze a(fname, treeName, isMCTree,&pars);
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  Analyze a(fname, treeName, isMCTree,&cfg);
   a.analyze();
 }
