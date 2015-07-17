@@ -31,8 +31,12 @@ EventInfoReader::EventInfoReader()
   genmet_pt = 0;
   genmet_phi = 0;
   goodvertex = false;
+  genweight = 1;
+  genqscale = 0;
+  xsecweight = 1;
+  genevtweight = 1;
+  evtweight = 1;
   proc = 0;
-  weight = 1;
   process = defaults::NUMPROCESSES;
 
 }
@@ -56,8 +60,11 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
+  treeReader->setBranchAddress(branchName,"genweight", &genweight);
+  treeReader->setBranchAddress(branchName,"genqscale", &genqscale);
   treeReader->setBranchAddress(branchName,"process", &proc);
-  treeReader->setBranchAddress(branchName,"wgtXSec", &weight);
+  treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
+  treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
   clog << endl;
 }
 
@@ -66,4 +73,5 @@ void EventInfoReader::refresh()
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
+  evtweight = xsecweight * genevtweight;
 }

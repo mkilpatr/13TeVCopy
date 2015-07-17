@@ -187,7 +187,7 @@ void BaseTreeAnalyzer::processVariables()
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
     genmet= &evtInfoReader.genmet;
-    weight=  evtInfoReader.weight;
+    weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
   }
 
