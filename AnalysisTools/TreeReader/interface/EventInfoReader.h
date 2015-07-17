@@ -47,6 +47,11 @@ namespace ucsbsusy {
       float         evtweight;
       size8             proc;
       defaults::Process process;
+      std::vector<unsigned long> * trigbitflags;
+      std::vector<bool>          * trigbitpass;
+      std::vector<unsigned int>  * trigbitprescale;
+
+      unsigned long triggerflag;
 
       MomentumF    met;
       MomentumF    genmet;
