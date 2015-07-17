@@ -63,8 +63,8 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
   ol_sel_leptons.minMuPt           = 30;
   ol_sel_leptons.maxMuEta          = 2.1;
-  ol_sel_leptons.maxMuD0           = 0.02;
-  ol_sel_leptons.maxMuDz           = 0.1;
+  ol_sel_leptons.maxMuD0           = .5;//0.02;
+  ol_sel_leptons.maxMuDz           = .5;//0.1;
   ol_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
 
   ol_veto_leptons = zl_sel_leptons;
