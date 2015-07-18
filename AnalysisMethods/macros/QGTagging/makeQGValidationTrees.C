@@ -25,19 +25,20 @@ public:
   {
     //loadPlots(); // initialize plots
 
-    scaleFactor = -9 ;
-    npv         = -9 ;
-    passDijet   = true;
-    passZjet    = true;
-    passGmjet   = true;
-    j0eta       = -9 ;
-    j0pt        = -9 ;
-    j0flavor    = -9 ;
-    j0mult      = -9 ;
-    j0ptd       = -9 ;
-    j0axis1     = -9 ;
-    j0axis2     = -9 ;
-    j0qgl       = -9 ;
+    weight_   = -9 ;
+    npv       = -9 ;
+    rho_      = -9 ;
+    passDijet = true;
+    passZjet  = true;
+    passGmjet = true;
+    j0eta     = -9 ;
+    j0pt      = -9 ;
+    j0flavor  = -9 ;
+    j0mult    = -9 ;
+    j0ptd     = -9 ;
+    j0axis1   = -9 ;
+    j0axis2   = -9 ;
+    j0qgl     = -9 ;
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
@@ -135,8 +136,8 @@ public:
     j0pt     = jet0->pt();
     j0mult   = ak4Reader.jetMult_ ->at(0);
     j0ptd    = ak4Reader.jetptD_  ->at(0);
-    j0axis1  = ak4Reader.jetaxis1_->at(0);
-    j0axis2  = ak4Reader.jetaxis2_->at(0);
+    j0axis1  = -log(ak4Reader.jetaxis1_->at(0));
+    j0axis2  = -log(ak4Reader.jetaxis2_->at(0));
     j0qgl    = ak4Reader.jetqgl_  ->at(0);
 
     // flavor matching
