@@ -463,7 +463,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         }
 
         if(isData(sname)) {
-          plot->addHist(hists[isam], sample->label, "E", 0, 0, 1, 1, config_.plotoverflow);
+          plot->addHist(hists[isam], sample->label, "E", 1, 0, 1, 1, config_.plotoverflow);
         } else if(isSignal(sname)) {
           if(config_.sigscale < 0) {
             plot->addHistScaled(hists[isam], bkgtot, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 1, config_.plotoverflow);
