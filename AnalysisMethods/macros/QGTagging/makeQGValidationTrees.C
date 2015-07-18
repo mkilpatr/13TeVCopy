@@ -44,19 +44,20 @@ public:
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("Events","analysis tree");
-    outtree->Branch( "weight"    , &scaleFactor ,    "weight/F" );
-    outtree->Branch( "npv"       , &npv         ,       "npv/I" );
-    outtree->Branch( "passDijet" , &passDijet   , "passDijet/O" );
-    outtree->Branch( "passZjet"  , &passZjet    ,  "passZjet/O" );
-    outtree->Branch( "passGmjet" , &passGmjet   , "passGmjet/O" );
-    outtree->Branch( "j0eta"     , &j0eta       ,     "j0eta/F" );
-    outtree->Branch( "j0pt"      , &j0pt        ,      "j0pt/F" );
-    outtree->Branch( "j0flavor"  , &j0flavor    ,  "j0flavor/I" );
-    outtree->Branch( "j0mult"    , &j0mult      ,    "j0mult/I" );
-    outtree->Branch( "j0ptd"     , &j0ptd       ,     "j0ptd/F" );
-    outtree->Branch( "j0axis1"   , &j0axis1     ,   "j0axis1/F" );
-    outtree->Branch( "j0axis2"   , &j0axis2     ,   "j0axis2/F" );
-    outtree->Branch( "j0qgl"     , &j0qgl       ,     "j0qgl/F" );
+    outtree->Branch( "weight"    , &weight_   ,    "weight/F" );
+    outtree->Branch( "npv"       , &npv       ,       "npv/I" );
+    outtree->Branch( "rho"       , &rho_      ,       "rho/F" );
+    outtree->Branch( "passDijet" , &passDijet , "passDijet/O" );
+    outtree->Branch( "passZjet"  , &passZjet  ,  "passZjet/O" );
+    outtree->Branch( "passGmjet" , &passGmjet , "passGmjet/O" );
+    outtree->Branch( "j0eta"     , &j0eta     ,     "j0eta/F" );
+    outtree->Branch( "j0pt"      , &j0pt      ,      "j0pt/F" );
+    outtree->Branch( "j0flavor"  , &j0flavor  ,  "j0flavor/I" );
+    outtree->Branch( "j0mult"    , &j0mult    ,    "j0mult/I" );
+    outtree->Branch( "j0ptd"     , &j0ptd     ,     "j0ptd/F" );
+    outtree->Branch( "j0axis1"   , &j0axis1   ,   "j0axis1/F" );
+    outtree->Branch( "j0axis2"   , &j0axis2   ,   "j0axis2/F" );
+    outtree->Branch( "j0qgl"     , &j0qgl     ,     "j0qgl/F" );
 
   }; // Analyze()
 
@@ -126,8 +127,9 @@ public:
     if ( !passDijet && !passZjet && !passGmjet ) return;
 
     // fill tree variables [assmune lumi = 1 fb^(-1)]
-    scaleFactor = weight;
-    npv         = nPV;
+    weight_ = weight;
+    npv     = nPV;
+    rho_    = rho;
 
     j0eta    = jet0->eta();
     j0pt     = jet0->pt();
@@ -146,8 +148,8 @@ public:
         int pdgId = TMath::Abs(genParts[foundPart]->pdgId());
         if(pdgId >= 1 && pdgId < 4) type = 1; // quark
         if(pdgId == 21) type = 2; // gluon
-        //if(pdgId == 4) type = 3; // C
-        //if(pdgId == 5) type = 4; // B
+        if(pdgId ==  4) type = 3; // C
+        if(pdgId ==  5) type = 4; // B
       }
       const GenJetF* matchGen = jet0->genJet_;
       if (type==0 && matchGen==0) type = -1; // pile-up
@@ -167,8 +169,9 @@ public:
   TTree *outtree ;
 
   // variables for trees
-  float scaleFactor ;
+  float weight_     ;
   int   npv         ;
+  float rho_        ;
   bool  passDijet   ;
   bool  passZjet    ;
   bool  passGmjet   ;
