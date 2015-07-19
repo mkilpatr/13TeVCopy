@@ -252,6 +252,8 @@ class PlotStuff {
     void     setPlotSource(PlotSource source) {config_.source = source; }
     // Format to save plots in (e.g., png, pdf)
     void     setFormat(TString format) { config_.format = format; }
+    // Name of the data file
+    void     setDataname(TString dataname) { config_.dataname = dataname; }
     // Whether or not to scale histograms to 1 for comparisons
     void     setUnitScale() { config_.scalecompto1 = true; }
     // Whether or not to write histograms to output file
