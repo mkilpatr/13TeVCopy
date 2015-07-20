@@ -73,9 +73,10 @@ if args.postprocess :
     for isam in range(len(samples)) :
         filelist = []
         if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
-            cmd = ("%s find -f %s | grep -E %s(_[0-9]+|)_ntuple.root" % (eos,args.outdir,samples[isam]))
+            cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
+            print result
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
