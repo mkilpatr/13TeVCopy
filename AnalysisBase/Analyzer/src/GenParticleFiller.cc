@@ -42,7 +42,7 @@ GenParticleFiller::GenParticleFiller(
 }
 
 //--------------------------------------------------------------------------------------------------
-void GenParticleFiller::load(const edm::Event& iEvent)
+void GenParticleFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
 

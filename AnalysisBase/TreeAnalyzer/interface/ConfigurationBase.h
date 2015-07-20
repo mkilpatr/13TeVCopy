@@ -45,6 +45,7 @@ namespace cfgSet {
     bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
     float cleanJetsMaxDR           ;
+    std::string JES                ;
 
 
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
