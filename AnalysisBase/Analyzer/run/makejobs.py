@@ -76,7 +76,6 @@ if args.postprocess :
             cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
-            print result
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
