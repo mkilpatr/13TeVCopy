@@ -41,6 +41,7 @@ namespace cfgSet {
     bool  applyJetID               ;
     bool  applyAdHocPUCorr         ;
     bool  cleanJetsvSelectedLeptons;
+    bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
     float cleanJetsMaxDR           ;
 
@@ -55,6 +56,7 @@ namespace cfgSet {
       applyJetID    (false),
       applyAdHocPUCorr         (false),
       cleanJetsvSelectedLeptons(false),
+      cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
       cleanJetsMaxDR           (-1)
     {};
