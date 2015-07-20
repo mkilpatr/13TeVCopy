@@ -39,7 +39,7 @@ FatJetFiller::FatJetFiller(const int options,
 }
 
 //--------------------------------------------------------------------------------------------------
-void FatJetFiller::load(const edm::Event& iEvent)
+void FatJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   FileUtilities::enforceGet(iEvent, fatJetTag_,fatJets_,true);

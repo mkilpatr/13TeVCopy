@@ -38,7 +38,7 @@ namespace ucsbsusy {
 	       const edm::InputTag fatJetTag);
     ~CMSTopFiller() {}
 
-    void load(const edm::Event& iEvent);
+    void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 
   private :
