@@ -16,8 +16,8 @@
 #define BASEFILLER_H_
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 #include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
@@ -43,7 +43,7 @@ namespace ucsbsusy {
     // Default loading function
     // This guy needs to be defined for each implementation and is run once per event
     // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
-    virtual void load(const edm::Event& iEvent) = 0;
+    virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup = _dummySetup) = 0;
 
     // Tree filling function
     virtual void fill() = 0;
@@ -57,6 +57,7 @@ namespace ucsbsusy {
     TreeWriterData data;
     bool isLoaded_;
     bool isFilled_;
+    static edm::EventSetup _dummySetup;
 
   };
 

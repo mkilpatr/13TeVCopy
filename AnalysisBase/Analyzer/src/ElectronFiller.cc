@@ -164,7 +164,7 @@ void ElectronFiller::initMVA()
 }
 
 //--------------------------------------------------------------------------------------------------
-void ElectronFiller::load(const edm::Event& iEvent)
+void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);

@@ -18,6 +18,11 @@
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+
 namespace ucsbsusy {
 class EventInfoFiller;
 class GenParticleFiller;
@@ -54,9 +59,9 @@ public:
           , const edm::InputTag superJetAssocTag = edm::InputTag()
           , const edm::InputTag superJetNsubTag = edm::InputTag()
           );
-      ~JetFiller() {}
+      ~JetFiller() { delete jecUnc;}
 
-      virtual void load(const edm::Event& iEvent);
+      virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       virtual void fill();
 
       virtual reco::GenJetRef getReGenJet(const Jet& jet,const int index = -1, const bool enforce = false) const  = 0;
@@ -102,6 +107,7 @@ public:
       size ijetarea_     ;
       size ijetgenindex_ ;
       size ijetsuperindex_ ;
+      size ijetuncertainty_;
       // For genjets matched to reco jets
       size igenjetpt_    ;
       size igenjeteta_   ;
@@ -154,6 +160,11 @@ public:
       edm::Handle<reco::PFJetCollection>  superJets_;
       edm::Handle<std::vector<int     > > superJetAssoc_;
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
+
+     // JEC uncertainty variable
+      JetCorrectionUncertainty *jecUnc;
+
+
 
   };
 

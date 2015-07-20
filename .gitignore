@@ -1,0 +1,5 @@
+# Sublime Text Project Files
+*.sublime-*
+
+#Data Folder
+data

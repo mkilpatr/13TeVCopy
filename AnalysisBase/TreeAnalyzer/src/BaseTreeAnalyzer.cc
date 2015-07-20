@@ -10,6 +10,7 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -77,6 +78,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   } else {
     clog << "With no default jet type" << endl  ;
   }
+    jetCorrector.setJES(configSet.jets.JES);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -236,7 +238,7 @@ void BaseTreeAnalyzer::processVariables()
   if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
     cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.selectedPhotons);
 
-
+  jetCorrector.shiftJES(defaultJets->recoJets, met);
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);

@@ -50,6 +50,7 @@ public:
   std::vector<float>* jetcsv_;
   std::vector<float>* jetarea_;
   std::vector<int16>* jetgenindex_;
+  std::vector<float> *jetuncertainty_;
   // For genjets matched to reco jets
   std::vector<float>* genjetpt_;
   std::vector<float>* genjeteta_;
