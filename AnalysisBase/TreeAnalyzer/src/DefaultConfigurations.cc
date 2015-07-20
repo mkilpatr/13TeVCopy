@@ -50,8 +50,8 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismultiisovetoelectronl;
   zl_sel_leptons.minMuPt           = 5;
   zl_sel_leptons.maxMuEta          = 2.4;
-  zl_sel_leptons.maxMuD0           = 0.02;
-  zl_sel_leptons.maxMuDz           = 0.1;
+  zl_sel_leptons.maxMuD0           = .1;//0.02;
+  zl_sel_leptons.maxMuDz           = .5;//0.1;
   zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismultiisovetomuonl;
   zl_sel_leptons.setConfig();
 
