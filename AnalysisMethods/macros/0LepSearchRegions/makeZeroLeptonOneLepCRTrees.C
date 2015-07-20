@@ -3,13 +3,14 @@
 #endif
 
 using namespace ucsbsusy;
+TRandom3 rnd;
 
 class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
-    TRandom3 rnd;
+
     OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(0);}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(1);}// TRandom3 rnd(0);}
 
     bool fillEvent() {
       if(met->pt() < metcut_) return false;
@@ -17,11 +18,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nSelLeptons<1)      return false;
       if(nBJets < 1) return false;
       if(nJets < 5) return false;
-      if(nVetoedTracks > 0)     return false;
-      
+//      if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
       int whichLep = rnd.Uniform(0.,nSelLeptons);
-
       MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
 
       if(fabs(PhysicsUtilities::deltaPhi(*met, *lep)) > 1)        return false;
