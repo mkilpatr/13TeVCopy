@@ -41,14 +41,20 @@ class JetCorrector
 public:
     JetCorrector();
     ~JetCorrector();
-    void setJES(const std::string s) {jet_scale = s;}
-    std::string JES() { return jet_scale;}
+    void setJES(const signed int s) {jet_scale = s;}
+    signed int JES() { return jet_scale;}
 
-    void shiftJES(std::vector<RecoJetF>jets, MomentumF *met);
+    void shiftJES(std::vector<RecoJetF>& jets, MomentumF *met);
 protected:
-    std::string jet_scale;
-    std::string interpolation;
-    static std::map <std::string, double> JESValues;
+    enum {
+        NOMINAL = 0,
+        JES_UP,
+        JES_DOWN
+    } jet_scale_types;
+
+    signed int jet_scale;
+    static const float JESValues[];
+    //static std::vector<float> JESValues;
 
 };
 }

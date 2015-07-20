@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisMethods/macros/0LepSearchRegions/ZeroLeptonTreeHelper.hh"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 #endif
 
 using namespace ucsbsusy;
@@ -24,7 +25,7 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
     TString outfilename = outputdir + "/" + sname + "_tree.root";
     cfgSet::ConfigSet pars = pars0lep();
     /********** JETCORRECTION TEST **********/
-    pars.jets.JES = "JES_UP";
+    pars.jets.JES = JetCorrector::JES_UP;
     /**************************/
     ZeroLeptonAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
     a.analyze(1);
