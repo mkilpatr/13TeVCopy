@@ -19,6 +19,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.applyJetID                = false;
   zl_search_jets.applyAdHocPUCorr          = false;
   zl_search_jets.cleanJetsvSelectedLeptons = false;
+  zl_search_jets.cleanJetsvVetoedLeptons   = false;
   zl_search_jets.cleanJetsvSelectedPhotons = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
   zl_search_jets.setConfig();
@@ -31,6 +32,7 @@ void cfgSet::loadDefaultJetConfigurations() {
 
   ol_search_jets = zl_search_jets;
   ol_search_jets.cleanJetsvSelectedLeptons = true;
+  ol_search_jets.cleanJetsvVetoedLeptons   = false;
   ol_search_jets.minPt                     = 30;
   ol_search_jets.minBJetPt                 = 30;
   ol_search_jets.applyJetID                = true;
@@ -68,10 +70,10 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
 
   ol_veto_leptons = zl_sel_leptons;
-  ol_veto_leptons.minEPt            = 10;
+  ol_veto_leptons.minEPt            = 5;
   ol_veto_leptons.maxEEta           = 2.4;
   ol_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
-  ol_veto_leptons.minMuPt           = 10;
+  ol_veto_leptons.minMuPt           = 5;
   ol_veto_leptons.maxMuEta          = 2.4;
   ol_veto_leptons.maxMuD0           = 0.1;
   ol_veto_leptons.maxMuDz           = 0.5;
@@ -133,6 +135,16 @@ void cfgSet::loadDefaultConfigurations() {
   ol_search_set.vetoedTracks    = ol_veto_tracks;
 }
 
+void cfgSet::setJSONFile(const TString jsonfile) {
+  zl_search_set.jsonFile = jsonfile;
+  zl_search_set.jsonProcessing = new JSONProcessing(jsonfile);
+  zl_lepton_set.jsonFile = jsonfile;
+  zl_lepton_set.jsonProcessing = new JSONProcessing(jsonfile);
+  zl_photon_set.jsonFile = jsonfile;
+  zl_photon_set.jsonProcessing = new JSONProcessing(jsonfile);
+  ol_search_set.jsonFile = jsonfile;
+  ol_search_set.jsonProcessing = new JSONProcessing(jsonfile);
+}
 
 
 

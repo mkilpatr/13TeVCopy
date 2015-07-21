@@ -152,6 +152,12 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::TRIGOBJS : {
+      int defaultOptions = TriggerObjectReader::defaultOptions;
+      reader.load(&trigObjReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TRIGGERS : branchName);
+      break;
+    }
+
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
     break;
@@ -204,6 +210,12 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
   }
 
+  if(trigObjReader.isLoaded()){
+    triggerObjects.clear();
+    triggerObjects.reserve(trigObjReader.trigobjs.size());
+    for(auto& to : trigObjReader.trigobjs)
+      triggerObjects.push_back(&to);
+  }
 
   allLeptons.clear();
   selectedLeptons.clear();
@@ -239,7 +251,7 @@ void BaseTreeAnalyzer::processVariables()
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
-    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&selectedPhotons,configSet.jets);
+    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,configSet.jets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();

@@ -6,11 +6,12 @@
 #include "AnalysisTools/DataFormats/interface/Muon.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include <iostream>
 
 namespace cfgSet {
 
-  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
+  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL, TRIGOBJS};
 
   //base used for all future ConfigSets
   class BaseConfig {
@@ -41,6 +42,7 @@ namespace cfgSet {
     bool  applyJetID               ;
     bool  applyAdHocPUCorr         ;
     bool  cleanJetsvSelectedLeptons;
+    bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
     float cleanJetsMaxDR           ;
 
@@ -55,6 +57,7 @@ namespace cfgSet {
       applyJetID    (false),
       applyAdHocPUCorr         (false),
       cleanJetsvSelectedLeptons(false),
+      cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
       cleanJetsMaxDR           (-1)
     {};
@@ -167,18 +170,22 @@ namespace cfgSet {
 
   //The collection of default configs
   struct ConfigSet{
-    JetConfig    jets           ;
-    LeptonConfig selectedLeptons;
-    LeptonConfig vetoedLeptons  ;
-    TrackConfig  vetoedTracks   ;
-    PhotonConfig selectedPhotons;
+    JetConfig       jets           ;
+    LeptonConfig    selectedLeptons;
+    LeptonConfig    vetoedLeptons  ;
+    TrackConfig     vetoedTracks   ;
+    PhotonConfig    selectedPhotons;
+    TString         jsonFile       ;
+    JSONProcessing* jsonProcessing ;
     ConfigSet() :
       jets            (),
       selectedLeptons (),
       vetoedLeptons   (),
       vetoedTracks    (),
-      selectedPhotons ()    {
-    }
+      selectedPhotons (),
+      jsonFile(""),
+      jsonProcessing(0)
+    {}
   };
 
 
