@@ -72,6 +72,7 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
   //get the output name
   TString outName(fileName);
   outName.ReplaceAll(".root", "_"+outPostfix+".root");
+  outName.Remove(0,outName.Last('/')+1);
 
   //get the process
   defaults::Process process = defaults::NUMPROCESSES;
