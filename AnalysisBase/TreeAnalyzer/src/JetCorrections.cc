@@ -28,11 +28,8 @@ using namespace std;
 using namespace ucsbsusy;
 
 /***********************    VARIABLE INITIALIZATIONS    ************************/
-map <std::string, double> JetCorrector::JESValues = {
-    {"NOMINAL", 0.0f},
-    {"JES_UP", 1.0f},
-    {"JES_DOWN", -1.0f}
-};
+
+const float JetCorrector::JESValues[]={0.0f,1.0f,-1.0f};
 
 /*******************    METHOD IMPLEMENTATIONS    ********************/
 
@@ -40,8 +37,9 @@ map <std::string, double> JetCorrector::JESValues = {
  * Function :   JetCorrector::JetCorrector()
  * Purpose  :   Default constructor
  ************************************************************************/
-JetCorrector::JetCorrector() : jet_scale("NOMINAL"), interpolation("NONE")
+JetCorrector::JetCorrector() : jet_scale(NOMINAL)
 {
+   // vector<float> JetCorrector::JESValues={0.0f, 1.0f, -1.0f};
 }
 
 /*************************************************************************
@@ -61,7 +59,7 @@ JetCorrector::~JetCorrector()
  *              MomentumF *met               - Pointer to MET vector
  * Returns  :   void
  *************************************************************************/
-void JetCorrector::shiftJES(std::vector<RecoJetF> jets, MomentumF *const met)
+void JetCorrector::shiftJES(std::vector<RecoJetF>& jets, MomentumF *const met)
 {
     float JEC_scale_factor;
 #if DEBUG
@@ -73,9 +71,12 @@ RAW REL ADJ" << endl;
     if (JESValues[jet_scale]) {
         for ( RecoJetF i : jets) {
             /*  Loop over all jets in vector and scale PT by scale factor.  */
-            if (!(i.uncertainty())) {continue;}
+           #if !DEBUG 
+                if (!(i.uncertainty())) {continue;}
+            #endif
             if (i.uncertainty() < 0) {
-                cout << "JetCorrector::shiftJEC(): Possible bad data. Uncertainty value of " <<  i.uncertainty() << " in jet " << i.index() << "failed sanity check." << endl;
+                cout << "JetCorrector::shiftJEC(): Possible bad data. Uncertainty value of " <<
+                     i.uncertainty() << " in jet " << i << "failed sanity check." << endl;
             }
 #if DEBUG
             pt_raw_old = i.pt_raw(); pt_cor_old = i.pt();
@@ -92,7 +93,7 @@ RAW REL ADJ" << endl;
             cout << i.index() << "\t\t\t" << pt_raw_old  << "\t\t\t"
                  << pt_cor_old << "\t\t\t" << i.pt_raw() << "\t\t\t"
                  << i.pt()    << "\t\t\t" << i.eta()    << "\t\t"
-                 << ((i.uncertainty()) ? i.uncertainty() : 0) << "\t\t\t"
+                 << ((i.uncertainty()) ? i.uncertainty() : JESValues[jet_scale]) << "\t\t\t"
                  << (int)(0.5f + (100.0f * ((i.pt_raw() - pt_raw_old) / pt_raw_old )))
                  << "%"  << endl;
 #endif
