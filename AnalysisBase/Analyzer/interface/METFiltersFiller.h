@@ -20,7 +20,7 @@
 
 namespace ucsbsusy {
 
-  typedef std::map<std::string, unsigned int>	TrigIdMap;
+  typedef std::map<std::string, unsigned long>	TrigIdMap;
 
   class METFiltersFiller : public BaseFiller {
 
