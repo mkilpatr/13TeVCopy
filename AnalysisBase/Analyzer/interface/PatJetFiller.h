@@ -7,14 +7,7 @@
 namespace ucsbsusy {
   class PatJetFiller : public JetFiller<pat::Jet> {
     public:
-    PatJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
-          , const edm::InputTag jetTag
-          , const edm::InputTag reGenJetTag
-          , const edm::InputTag stdGenJetTag
-          , const edm::InputTag flvAssocTag
-          , const bool fillReGenJets
-          , const double jptMin
-          );
+    PatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
       ~PatJetFiller() {}
 
       reco::GenJetRef getReGenJet(const pat::Jet& jet,const int index = -1, const bool enforce = false)  const;

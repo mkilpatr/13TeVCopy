@@ -14,6 +14,7 @@
 #define PHYSICSANALYZER_H
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 //#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
@@ -30,6 +31,8 @@
 #include "AnalysisBase/Analyzer/interface/PFCandidateFiller.h"
 #include "AnalysisBase/Analyzer/interface/CMSTopFiller.h"
 #include "AnalysisBase/Analyzer/interface/FatJetFiller.h"
+#include "AnalysisBase/Analyzer/interface/TriggerFiller.h"
+#include "AnalysisBase/Analyzer/interface/METFiltersFiller.h"
 
 namespace ucsbsusy {
 
@@ -45,16 +48,18 @@ namespace ucsbsusy {
       virtual ~PhysicsAnalyzer();
 
       virtual void beginJob() override;
+      virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       virtual void book();
       virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
       virtual void fill();
 
+      static const bool PRINTLHERUNINFO;  // print LHERunInfo: useful to determine which systematic weights are available
       //--------------------------------------------------------------------------------------------------
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, TRIGGERS, METFILTERS};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -91,6 +96,8 @@ namespace ucsbsusy {
       GenParticleFiller * genparticles;
       CMSTopFiller      * cmstops;
       FatJetFiller      * ak8fatjets;
+      TriggerFiller     * triggers;
+      METFiltersFiller  * metfilters;
     protected:
       //vector of initialized fillers for automatic processing
       std::vector<BaseFiller*> initializedFillers;

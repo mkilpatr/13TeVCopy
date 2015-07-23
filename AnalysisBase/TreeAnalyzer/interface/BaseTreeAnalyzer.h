@@ -26,6 +26,7 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
+#include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 
 
 namespace ucsbsusy {
@@ -73,6 +74,10 @@ public:
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
     bool isLoaded()       const { return isLoaded_;           }
+    bool hasJSONFile()    const { return configSet.jsonFile != ""; }
+    bool passesLumiMask() const {
+      return configSet.jsonProcessing->hasRunLumi(run, lumi);
+    }
 
 
     //--------------------------------------------------------------------------------------------------
@@ -95,7 +100,8 @@ public:
     PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
     CMSTopReader      cmsTopReader          ;
-    CORRALReader      corralReader     ;
+    CORRALReader        corralReader        ;
+    TriggerObjectReader trigObjReader       ;
 
 
   public:
@@ -107,6 +113,7 @@ public:
     unsigned int  event;
     float         weight;
     defaults::Process process;
+    unsigned long triggerflag;
 
     int   nPV;
     float rho;
@@ -132,6 +139,7 @@ public:
     std::vector<RecoJetF*>     nonBJets;
     std::vector<GenParticleF*> genParts;
     std::vector<CMSTopF*>      cttTops;
+    std::vector<TriggerObjectF*> triggerObjects;
 
   protected:
     //--------------------------------------------------------------------------------------------------

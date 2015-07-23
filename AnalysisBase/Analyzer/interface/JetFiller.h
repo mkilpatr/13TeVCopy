@@ -43,17 +43,7 @@ public:
   template<typename Jet>
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
-      JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
-          , const edm::InputTag jetTag
-          , const edm::InputTag reGenJetTag
-          , const edm::InputTag stdGenJetTag
-          , const edm::InputTag flvAssocTag
-          , const bool fillReGenJets
-          , const double jptMin
-          , const edm::InputTag superJetTag = edm::InputTag()
-          , const edm::InputTag superJetAssocTag = edm::InputTag()
-          , const edm::InputTag superJetNsubTag = edm::InputTag()
-          );
+      JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
       ~JetFiller() {}
 
       virtual void load(const edm::Event& iEvent);
@@ -70,21 +60,17 @@ public:
       virtual float getBetaStar(const Jet& jet) const = 0;
 
     protected:
+      // Input from the config file
+      edm::EDGetTokenT<std::vector<Jet> >          jetToken_;
+      edm::EDGetTokenT<reco::GenJetCollection>     reGenJetToken_;
+      edm::EDGetTokenT<reco::GenJetCollection>     stdGenJetToken_;
+      edm::EDGetTokenT<std::vector<size8> >        flvAssocToken_;
+      edm::EDGetTokenT<edm::ValueMap<float> >      qglToken_;
+      edm::EDGetTokenT<reco::PFJetCollection>      superJetToken_;
+      edm::EDGetTokenT<std::vector<int> >          superJetAssocToken_;
+      edm::EDGetTokenT<std::vector<unsigned int> > superJetNsubToken_;
       const EventInfoFiller   * evtInfofiller_;
       const GenParticleFiller * genParticleFiller_;
-
-    public:
-      // Input from the config file
-      const edm::InputTag jetTag_;
-      const edm::InputTag reGenJetTag_;
-      const edm::InputTag stdGenJetTag_;
-      const edm::InputTag flvAssocTag_;
-      const edm::InputTag qgTagQGL_;
-      const double        jptMin_;
-      const bool          fillReGenJets_;
-      const edm::InputTag superJetTag_;
-      const edm::InputTag superJetAssocTag_;
-      const edm::InputTag superJetNsubTag_;
 
     protected:
       // Members to hold index of most recently filled tree data
@@ -146,13 +132,15 @@ public:
 
     public:
       // Data members
-      edm::Handle<std::vector<Jet>>       jets_;
-      edm::Handle<reco::GenJetCollection> reGenJets_;
-      edm::Handle<reco::GenJetCollection> stdGenJets_;
-      edm::Handle<std::vector<size8   > > flvAssoc_;
-      edm::Handle<edm::ValueMap<float>>   qgHandleQGL_;
-      edm::Handle<reco::PFJetCollection>  superJets_;
-      edm::Handle<std::vector<int     > > superJetAssoc_;
+      const bool                              fillReGenJets_;
+      const double                            jptMin_;
+      edm::Handle<std::vector<Jet>>           jets_;
+      edm::Handle<reco::GenJetCollection>     reGenJets_;
+      edm::Handle<reco::GenJetCollection>     stdGenJets_;
+      edm::Handle<std::vector<size8   > >     flvAssoc_;
+      edm::Handle<edm::ValueMap<float>>       qgHandleQGL_;
+      edm::Handle<reco::PFJetCollection>      superJets_;
+      edm::Handle<std::vector<int     > >     superJetAssoc_;
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
   };

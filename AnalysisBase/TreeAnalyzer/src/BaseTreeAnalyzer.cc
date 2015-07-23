@@ -152,6 +152,12 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::TRIGOBJS : {
+      int defaultOptions = TriggerObjectReader::defaultOptions;
+      reader.load(&trigObjReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TRIGGERS : branchName);
+      break;
+    }
+
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
     break;
@@ -163,8 +169,6 @@ void BaseTreeAnalyzer::loadVariables()
 {
   load(cfgSet::EVTINFO);
   load(cfgSet::AK4JETS);
-  load(cfgSet::PICKYJETS);
-  load(cfgSet::CASUBJETS);
   load(cfgSet::ELECTRONS);
   load(cfgSet::MUONS);
   load(cfgSet::PHOTONS);
@@ -187,8 +191,9 @@ void BaseTreeAnalyzer::processVariables()
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
     genmet= &evtInfoReader.genmet;
-    weight=  evtInfoReader.weight;
+    weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
+    triggerflag =  evtInfoReader.triggerflag;
   }
 
 
@@ -205,6 +210,12 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
   }
 
+  if(trigObjReader.isLoaded()){
+    triggerObjects.clear();
+    triggerObjects.reserve(trigObjReader.trigobjs.size());
+    for(auto& to : trigObjReader.trigobjs)
+      triggerObjects.push_back(&to);
+  }
 
   allLeptons.clear();
   selectedLeptons.clear();
