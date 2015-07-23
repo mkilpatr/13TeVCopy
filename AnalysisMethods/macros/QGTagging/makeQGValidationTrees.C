@@ -90,11 +90,13 @@ public:
 
     // dijet event selection
     passDijet = true;
-    if (jets.size()<3) passDijet = false;
+    if (jets.size()<2) passDijet = false;
     else if ( jets[0]->pt()<40 ) passDijet = false;
     else if ( jets[1]->pt()<20 ) passDijet = false;
     else if ( PhysicsUtilities::absDeltaPhi(*jets[0],*jets[1])<2.5 )  passDijet = false;
-    else if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet = false;
+    if (jets.size()>=3){
+      if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet = false;
+    } // jets.size()>=3
 
     // Z jet event selection
     passZjet = true;
@@ -116,8 +118,12 @@ public:
         else if (mu0->q()==mu1->q()) passZjet = false;
         double invMass = (mu0->p4() + mu1->p4()).mass();
         if (invMass<70 || invMass>110) passZjet = false;
+        if (jets.size()>=2) {
+          if ( jets[1]->pt() > 0.3*(mu0->pt()+mu1->pt()) ) passZjet = false;
+        } // jets.size()>=2
       } // Nmu>=2
     } // selectedLeptons.size>=2
+    else passZjet = false;
 
     // Gamma jet event selection
     passGmjet = true;
@@ -223,6 +229,9 @@ void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
   pars.jets.minBJetPt  = 20.0;
   pars.jets.maxBJetEta =  5.0;
   pars.jets.defaultCSV = defaults::CSV_LOOSE;
+  pars.jets.applyJetID = true;
+  pars.jets.cleanJetsvSelectedPhotons = true;
+  pars.jets.cleanJetsvSelectedLeptons = true;
 
   pars.selectedLeptons.selectedMuon = (&MuonF::isgoodpogmuon);
   pars.selectedLeptons.minMuPt  = 10.0;
