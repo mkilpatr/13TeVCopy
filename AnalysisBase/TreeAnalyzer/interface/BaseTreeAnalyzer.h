@@ -124,6 +124,7 @@ public:
     int   nVetoedTracks;
     int   nJets;
     int   nBJets;
+    int   nVetoHPSTaus;
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -142,7 +143,8 @@ public:
     std::vector<GenParticleF*> genParts;
     std::vector<CMSTopF*>      cttTops;
     std::vector<TriggerObjectF*> triggerObjects;
-
+    std::vector<TauF*>         HPSTaus;
+    
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
