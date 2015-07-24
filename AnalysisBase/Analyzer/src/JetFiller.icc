@@ -122,7 +122,7 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
   if(options_ & LOADJETSHAPE) {
     iEvent.getByToken(qglToken_,qgHandleQGL_);
   }
-    // Fill JEC uncertainty variables
+  // Fill JEC uncertainty variables
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK4PF", JetCorParColl);
   JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
@@ -221,12 +221,20 @@ void JetFiller<Jet>::fill()
     data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
     data.fillMulti<bool>(ijettightId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.9 && j.neutralHadronEnergyFraction()<0.9 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)));
 //    if(j.pt()>30) std::cout<<j.pt()<<" "<<j.eta()<<" "<<j.chargedMultiplicity()<<" "<<j.neutralMultiplicity()<<" "<<j.neutralEmEnergyFraction()<<" "<<j.neutralHadronEnergyFraction()<<" "<< j.chargedEmEnergyFraction()<<" "<<j.chargedHadronEnergyFraction()<<std::endl;
+<<<<<<< HEAD
        
+=======
+    
+>>>>>>> origin/master
     /* Fill RecoJet JEC Uncertainties */
     jecUnc->setJetEta(j.eta());
     jecUnc->setJetPt(j.pt());
     data.fillMulti<float>(ijetuncertainty_, jecUnc->getUncertainty(true));
+<<<<<<< HEAD
    
+=======
+        
+>>>>>>> origin/master
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {

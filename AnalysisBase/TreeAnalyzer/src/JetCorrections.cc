@@ -39,6 +39,7 @@ const float JetCorrector::JESValues[]={0.0f,1.0f,-1.0f};
  ************************************************************************/
 JetCorrector::JetCorrector() : jet_scale(NOMINAL)
 {
+   // vector<float> JetCorrector::JESValues={0.0f, 1.0f, -1.0f};
 }
 
 /*************************************************************************
@@ -75,11 +76,19 @@ RAW REL ADJ" << endl;
             #endif
             if (i.uncertainty() < 0) {
                 cout << "JetCorrector::shiftJEC(): Possible bad data. Uncertainty value of " <<
-                     i.uncertainty() << " in jet " << i.index() << "failed sanity check." << endl;
+                     i.uncertainty() << " in jet " << i << "failed sanity check." << endl;
             }
 #if DEBUG
             pt_raw_old = i.pt_raw(); pt_cor_old = i.pt();
 #endif
+            /* Remove unshifted jet PT from MET vector */
+            met->setP4((i.p4()) + (met->p4()));
+            /* Calculate JEC scaling factor and shift by JEC uncertainty */
+            JEC_scale_factor = JESValues[jet_scale] * (1 + (i.uncertainty() / i.pt()));
+            /* Apply shifted correction factor to jet PT  */
+            i.setP4(JEC_scale_factor * (i.p4()));
+            /* Update MET with scaled and corrected PT */
+            met->setP4((met->p4()) - (i.p4()));
 #if DEBUG
             cout << i.index() << "\t\t\t" << pt_raw_old  << "\t\t\t"
                  << pt_cor_old << "\t\t\t" << i.pt_raw() << "\t\t\t"

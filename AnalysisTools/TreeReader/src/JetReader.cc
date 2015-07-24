@@ -139,8 +139,9 @@ void JetReader::refresh(){
     recoJets.reserve(jetpt_->size());
     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
      GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
-      recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), 
-        iJ,(*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,(*jetlooseId_)[iJ], matchedGen);
+      recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
+                                  (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
+                                  (*jetlooseId_)[iJ], matchedGen);
     }
     std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
