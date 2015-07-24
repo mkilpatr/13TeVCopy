@@ -49,7 +49,7 @@ public:
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
       JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
-      ~JetFiller() {delete jecUnc;}
+      ~JetFiller() { delete jecUnc;}
 
       virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       virtual void fill();
@@ -149,7 +149,7 @@ public:
       edm::Handle<std::vector<int     > >     superJetAssoc_;
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
-      // JEC Uncertainty variable
+     // JEC uncertainty variable
       JetCorrectionUncertainty *jecUnc;
 
   };

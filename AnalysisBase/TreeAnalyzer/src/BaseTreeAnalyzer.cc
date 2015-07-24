@@ -78,7 +78,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   } else {
     clog << "With no default jet type" << endl  ;
   }
-  jetCorrector.setJES(configSet.jets.JES);
+    jetCorrector.setJES(configSet.jets.JES);
 }
 
 //--------------------------------------------------------------------------------------------------
