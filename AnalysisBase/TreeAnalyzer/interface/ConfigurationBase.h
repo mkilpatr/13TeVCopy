@@ -45,9 +45,8 @@ namespace cfgSet {
     bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
     float cleanJetsMaxDR           ;
-    signed int JES                ;
+    signed int JES                 ;
 
-    signed int JES;
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
       minPt         (-1),

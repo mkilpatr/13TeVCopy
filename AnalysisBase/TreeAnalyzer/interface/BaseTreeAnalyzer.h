@@ -26,10 +26,7 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
-<<<<<<< HEAD
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
-=======
->>>>>>> origin/master
 #include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 
 

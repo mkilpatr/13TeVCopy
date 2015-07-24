@@ -149,17 +149,9 @@ public:
       edm::Handle<std::vector<int     > >     superJetAssoc_;
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
-<<<<<<< HEAD
-      // JEC Uncertainty variable
-      JetCorrectionUncertainty *jecUnc;
-
-=======
      // JEC uncertainty variable
       JetCorrectionUncertainty *jecUnc;
 
-
-
->>>>>>> origin/master
   };
 
 }
