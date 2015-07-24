@@ -28,6 +28,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nVetoedTracks     (0),
     nJets             (0),
     nBJets            (0),
+    nVetoHPSTaus      (0),
     met               (0),
     genmet            (0),
     goodvertex        (false),
@@ -247,6 +248,23 @@ void BaseTreeAnalyzer::processVariables()
   if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
     cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.selectedPhotons);
 
+  if(tauReader.isLoaded()){
+    HPSTaus.clear();
+    HPSTaus.reserve(tauReader.taus.size());
+    for(auto& tau : tauReader.taus){
+      if(tau.pt() > 20 && fabs(tau.eta())<2.4 && (tau.hpsid() & kMediumIsoMVALT) > 0)
+        HPSTaus.push_back(&tau);
+    }
+
+    nVetoHPSTaus=0;
+    if(selectedLeptons.size()==1){
+      for(uint iT=0; iT<HPSTaus.size(); ++iT){
+        if(PhysicsUtilities::deltaR(HPSTaus.at(iT)->p4(),selectedLeptons.at(0)->p4())<0.4) continue;
+        if(HPSTaus.at(iT)->q()*selectedLeptons.at(0)->q()<0)
+          nVetoHPSTaus++;
+      }
+    }
+  }
 
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
