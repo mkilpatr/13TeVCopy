@@ -80,22 +80,28 @@ public :
 
   template <class InputCoordSystem>
   RecoJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
-      const float inCSV = -10, const bool inLooseId = false, GenJet<CoordSystem>* inGenJet = 0)
-      :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), looseid_(inLooseId), genJet_(inGenJet) {}
+      const float inCSV = -10, const float inPtRaw = 0, const float inUncert = 0, const bool inLooseId = false, GenJet<CoordSystem>* inGenJet = 0)
+      :Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), pt_raw_(inPtRaw), uncertainty_(inUncert), looseid_(inLooseId), genJet_(inGenJet) {}
   ~RecoJet(){}
 
 
   float csv()         const { return csv_;   }
   bool  looseid()     const { return looseid_;   }
+  float pt_raw()      const { return pt_raw_; }
+  float uncertainty() const { return uncertainty_;}
   const GenJet<CoordSystem>*  genJet()        const { return genJet_;  }
   GenJet<CoordSystem>*        genJet()        { return genJet_;  }
 
   void  setPtr(GenJet<CoordSystem>* inGenJet = 0) { genJet_ = inGenJet;       }
   void  setCsv(const float inCsv)               {csv_ = inCsv; }
   void  setLooseId(const float inLooseId)       {looseid_ = inLooseId; }
+  void  setPtRaw(const float inPtRaw )          {pt_raw_      = inPtRaw;  }
+  void  setUncertainty(const float inUncert)    {uncertainty_ = inUncert; }
 
 protected :
   float csv_;     //pointer to csv information
+  float pt_raw_;      //magnitude of uncorrected transverse momentum
+  float uncertainty_;             //JEC error magnitude
   bool  looseid_;     //passes loose jet id or not
   GenJet<CoordSystem>*  genJet_;  //Matched genJet
 

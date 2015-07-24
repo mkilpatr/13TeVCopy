@@ -27,6 +27,7 @@
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 
 
 namespace ucsbsusy {
@@ -102,6 +103,7 @@ public:
     CMSTopReader      cmsTopReader          ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
+    JetCorrector      jetCorrector          ;
 
 
   public:
