@@ -250,7 +250,7 @@ void BaseTreeAnalyzer::processVariables()
     nVetoHPSTaus=0;
     if(selectedLeptons.size()==1){
       for(uint iT=0; iT<HPSTaus.size(); ++iT){
-        if(PhysicsUtilities::deltaR(HPSTaus.at(iT)->p4(),selectedLeptons.at(0)->p4())<0.4) conti$
+        if(PhysicsUtilities::deltaR(HPSTaus.at(iT)->p4(),selectedLeptons.at(0)->p4())<0.4) continue;
         if(HPSTaus.at(iT)->q()*selectedLeptons.at(0)->q()<0)
           nVetoHPSTaus++;
       }
