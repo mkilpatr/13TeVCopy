@@ -70,14 +70,20 @@ public:
 
   virtual void loadVariables(){
     load(cfgSet::EVTINFO);
-    load(cfgSet::AK4JETS,  JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    if (isMC()) load(cfgSet::AK4JETS,  JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    else        load(cfgSet::AK4JETS,  JetReader::LOADRECO |                      JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     load(cfgSet::ELECTRONS);
     load(cfgSet::MUONS);
     load(cfgSet::PHOTONS);
     if(isMC()) load(cfgSet::GENPARTICLES);
+    else       load(cfgSet::TRIGOBJS);
   } // loadVariables()
 
   void runEvent(){
+
+    //cout << event << endl;
+
+    bool passTrigger = false;
 
     // event selection (both samples)
     if (nPV<1)         return;
@@ -97,6 +103,19 @@ public:
     if (jets.size()>=3){
       if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet = false;
     } // jets.size()>=3
+    // for now, check all mu triggers
+    passTrigger = false;
+    if((triggerflag & kHLT_PFHT300_v1) > 0) { /*cout << "   passing kHLT_PFHT300" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT350_v1) > 0) { /*cout << "   passing kHLT_PFHT350" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT350_v2) > 0) { /*cout << "   passing kHLT_PFHT350" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT400_v1) > 0) { /*cout << "   passing kHLT_PFHT400" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT475_v1) > 0) { /*cout << "   passing kHLT_PFHT475" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT600_v1) > 0) { /*cout << "   passing kHLT_PFHT600" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT600_v2) > 0) { /*cout << "   passing kHLT_PFHT600" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT650_v1) > 0) { /*cout << "   passing kHLT_PFHT650" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT800_v1) > 0) { /*cout << "   passing kHLT_PFHT800" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT900_v1) > 0) { /*cout << "   passing kHLT_PFHT900" << endl;*/ passTrigger = true; }
+    if (!passTrigger) passDijet = false;
 
     // Z jet event selection
     passZjet = true;
@@ -124,10 +143,28 @@ public:
       } // Nmu>=2
     } // selectedLeptons.size>=2
     else passZjet = false;
+    // for now, check all mu triggers
+    passTrigger = false;
+    if((triggerflag & kHLT_IsoMu24_eta2p1_v1  ) > 0) { /*cout << "   passing kHLT_IsoMu24_eta2p1_v1  " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoMu27_v1         ) > 0) { /*cout << "   passing kHLT_IsoMu27_v1         " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v1) > 0) { /*cout << "   passing kHLT_IsoTkMu24_eta2p1_v1" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoTkMu27_v1       ) > 0) { /*cout << "   passing kHLT_IsoTkMu27_v1       " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoMu24_eta2p1_v2  ) > 0) { /*cout << "   passing kHLT_IsoMu24_eta2p1_v2  " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoMu27_v2         ) > 0) { /*cout << "   passing kHLT_IsoMu27_v2         " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v2) > 0) { /*cout << "   passing kHLT_IsoTkMu24_eta2p1_v2" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoTkMu27_v2       ) > 0) { /*cout << "   passing kHLT_IsoTkMu27_v2       " << endl;*/ passTrigger = true; }
+    if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
     passGmjet = true;
     if (selectedPhotons.size()<1) passGmjet = false;
+    // for now, check all photon triggers
+    passTrigger = false;
+    if((triggerflag & kHLT_Photon120_R9Id90_HE10_IsoM_v2) > 0) { /*cout << "   passing kHLT_Photon120_R9Id90_HE10_IsoM_v2" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_Photon165_R9Id90_HE10_IsoM_v2) > 0) { /*cout << "   passing kHLT_Photon165_R9Id90_HE10_IsoM_v2" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_Photon165_HE10_v2            ) > 0) { /*cout << "   passing kHLT_Photon165_HE10_v2            " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_Photon175_v2                 ) > 0) { /*cout << "   passing kHLT_Photon175_v2                 " << endl;*/ passTrigger = true; }
+    if (!passTrigger) passGmjet = false;
 
 
     // skip events that don't pass either selection
@@ -158,7 +195,7 @@ public:
         if(pdgId ==  4) type = 3; // C
         if(pdgId ==  5) type = 4; // B
       }
-      const GenJetF* matchGen = jet0->genJet_;
+      const GenJetF* matchGen = jet0->genJet();
       if (type==0 && matchGen==0) type = -1; // pile-up
       j0flavor = type;
     } // isMC
@@ -199,17 +236,21 @@ public:
 
 
 //root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
+//root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 //     ttbar_1_ntuple_wgtxsec.root
 //     dyjetstoll_ntuple_wgtxsec.root
 //     gjets_ht600toinf_ntuple_wgtxsec.root
 //     qcd_ht1000toinf_ntuple_wgtxsec.root
-void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
-                  , const int     fileindex  = 4       // index of file (-1 means there is only 1 file for this sample)
-                  , const bool    isMC       = true    // data or MC
-                  , const TString fname      = "/store/user/vdutta/13TeV/290615/merged/gjets_ht600toinf_ntuple_wgtxsec.root" // path of file to be processed
+// 74X
+//     singlemu-2015b-pr_ntuple.root
+//     singlepho-2015b-pr_ntuple.root
+void makeQGValidationTrees( TString sname      = "singlegm" // sample name
+                  , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
+                  , const bool    isMC       = false    // data or MC
+                  , const TString fname      = "singlepho-2015b-pr_ntuple.root" // path of file to be processed
                   , const double xsec        = 1.0
-                  , const string  outputdir  = "trees/"  // directory to which files with histograms will be written
-                  , const TString fileprefix = "root://eoscms//eos/cms" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
+                  , const string  outputdir  = "trees/test/"  // directory to which files with histograms will be written
+                  , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/150715/merged/" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
                   )
 {
 
@@ -244,7 +285,8 @@ void makeQGValidationTrees( TString sname      = "qcd1000" // sample name
   pars.selectedPhotons.maxEta = 5.0;
 
 
-  Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
+  Analyze a(fullname, "TestAnalyzer/Events", isMC, &pars, sname, outputdir);
   a.analyze(10000);
+  //a.analyze(10,1000);
 
 } // makeQGValidationTrees()

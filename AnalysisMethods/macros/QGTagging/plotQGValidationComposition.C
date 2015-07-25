@@ -11,7 +11,7 @@ void plotQGValidationComposition( const TString inputdir="trees/150722_73X_mcOnl
   const double  sigscale = 1;
   gSystem->mkdir(outputdir, true);
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet.conf", inputdir, outputdir);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet74X.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::NORMCOMP);
   zjetPlots->setTree("Events");

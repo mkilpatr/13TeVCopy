@@ -11,48 +11,48 @@ void plotQGValidation( const TString inputdir="trees/150722_73X_mcOnly_cleanJets
   const double  sigscale = 1;
   gSystem->mkdir(outputdir, true);
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet.conf", inputdir, outputdir);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet74X.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::DATAMC);
   zjetPlots->setTree("Events");
   zjetPlots->setSigScale(sigscale);
   zjetPlots->setAddSigScaleTxt(false);
   zjetPlots->setFormat(format);
-  zjetPlots->setWgtVar("weight");
-  zjetPlots->setDataname("dyjetstoll");
+  zjetPlots->setWgtVar("0.02*weight");
+  zjetPlots->setDataname("singlemu");
   zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
 
-  PlotStuff* dijetPlots = new PlotStuff("plotQGValidationDijet.conf", inputdir, outputdir);
+  PlotStuff* dijetPlots = new PlotStuff("plotQGValidationDijet74X.conf", inputdir, outputdir);
   dijetPlots->setPlotSource(PlotStuff::TREES);
   dijetPlots->setPlotType(PlotStuff::DATAMC);
   dijetPlots->setTree("Events");
   dijetPlots->setSigScale(sigscale);
   dijetPlots->setAddSigScaleTxt(false);
   dijetPlots->setFormat(format);
-  dijetPlots->setWgtVar("weight");
+  dijetPlots->setWgtVar("0.02*weight");
   dijetPlots->setDataname("qcd");
   dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
 
-  PlotStuff* dijetHTPlots = new PlotStuff("plotQGValidationDijetHT.conf", inputdir, outputdir);
+  PlotStuff* dijetHTPlots = new PlotStuff("plotQGValidationDijetHT74X.conf", inputdir, outputdir);
   dijetHTPlots->setPlotSource(PlotStuff::TREES);
   dijetHTPlots->setPlotType(PlotStuff::DATAMC);
   dijetHTPlots->setTree("Events");
   dijetHTPlots->setSigScale(sigscale);
   dijetHTPlots->setAddSigScaleTxt(false);
   dijetHTPlots->setFormat(format);
-  dijetHTPlots->setWgtVar("weight");
+  dijetHTPlots->setWgtVar("0.02*weight");
   dijetHTPlots->setDataname("qcdHT"); // QCD fix?
   dijetHTPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
 
-  PlotStuff* gjetPlots = new PlotStuff("plotQGValidationMCgjet.conf", inputdir, outputdir);
+  PlotStuff* gjetPlots = new PlotStuff("plotQGValidationGjet74X.conf", inputdir, outputdir);
   gjetPlots->setPlotSource(PlotStuff::TREES);
   gjetPlots->setPlotType(PlotStuff::DATAMC);
   gjetPlots->setTree("Events");
   gjetPlots->setSigScale(sigscale);
   gjetPlots->setAddSigScaleTxt(false);
   gjetPlots->setFormat(format);
-  gjetPlots->setWgtVar("weight");
-  gjetPlots->setDataname("gjets");
+  gjetPlots->setWgtVar("0.005*weight");
+  gjetPlots->setDataname("singlegm");
   gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
 
   zjetPlots->setColor("dyjetstoll_pu"    ,12);
@@ -148,6 +148,7 @@ void plotQGValidation( const TString inputdir="trees/150722_73X_mcOnly_cleanJets
   zjetPlots->addTreeVar("zjets_forward120_j0qgl", "j0qgl", "passZjet"+forward+pt120, "QGL", 25, 0, 1 );
   zjetPlots->addTreeVar("zjets_forward200_j0qgl", "j0qgl", "passZjet"+forward+pt200, "QGL", 25, 0, 1 );
 
+  /*
   dijetPlots->addTreeVar("dijets_j0pt" , "j0pt" , "passDijet", "pt_{T} [GeV]", 25,  0, 500 );
   dijetPlots->addTreeVar("dijets_j0eta", "j0eta", "passDijet", "#eta"        , 25, -5,   5 );
   dijetPlots->addTreeVar("dijets_rho"  , "rho"  , "passDijet", "#rho"        , 25,  0,  50 );
@@ -265,6 +266,7 @@ void plotQGValidation( const TString inputdir="trees/150722_73X_mcOnly_cleanJets
   dijetHTPlots->addTreeVar("dijetsHT_forward080_j0qgl", "j0qgl", "passDijet"+forward+pt080, "QGL", 25, 0, 1 );
   dijetHTPlots->addTreeVar("dijetsHT_forward120_j0qgl", "j0qgl", "passDijet"+forward+pt120, "QGL", 25, 0, 1 );
   dijetHTPlots->addTreeVar("dijetsHT_forward200_j0qgl", "j0qgl", "passDijet"+forward+pt200, "QGL", 25, 0, 1 );
+  */
 
   gjetPlots->addTreeVar("gjets_j0pt" , "j0pt" , "passGmjet", "pt_{T} [GeV]", 25,  0, 500 );
   gjetPlots->addTreeVar("gjets_j0eta", "j0eta", "passGmjet", "#eta"        , 25, -5,   5 );
@@ -326,8 +328,8 @@ void plotQGValidation( const TString inputdir="trees/150722_73X_mcOnly_cleanJets
   gjetPlots->addTreeVar("gjets_forward200_j0qgl", "j0qgl", "passGmjet"+forward+pt200, "QGL", 25, 0, 1 );
 
   zjetPlots   ->plot();
-  dijetPlots  ->plot();
-  dijetHTPlots->plot();
+  //dijetPlots  ->plot();
+  //dijetHTPlots->plot();
   gjetPlots   ->plot();
 
   delete zjetPlots;
