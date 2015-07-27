@@ -52,7 +52,7 @@ PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhotonFiller::load(const edm::Event& iEvent)
+void PhotonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(photonToken_,photons_);

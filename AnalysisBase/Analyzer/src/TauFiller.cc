@@ -101,7 +101,7 @@ void TauFiller::initTauIdNames()
 }
 
 //--------------------------------------------------------------------------------------------------
-void TauFiller::load(const edm::Event& iEvent)
+void TauFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(tauToken_,taus_);

@@ -48,6 +48,7 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_IsoTkMu24_eta2p1_v2"] = kHLT_IsoTkMu24_eta2p1_v2;
   trigIds_["HLT_IsoTkMu27_v2"] = kHLT_IsoTkMu27_v2;
   trigIds_["HLT_Ele32_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele32_eta2p1_WPLoose_Gsf_v1;
+  trigIds_["HLT_Ele32_eta2p1_WP75_Gsf_v1"] = kHLT_Ele32_eta2p1_WP75_Gsf_v1;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1;
   trigIds_["HLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1"] = kHLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1;
   trigIds_["HLT_PFHT350_PFMET100_NoiseCleaned_v1"] = kHLT_PFHT350_PFMET100_NoiseCleaned_v1;
@@ -83,11 +84,12 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09"] = kSingleIsoTkMu24;
   trigFilterIds_["hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09"] = kSingleIsoTkMu27;
   trigFilterIds_["hltEle32WPLooseGsfTrackIsoFilter"] = kSingleEle32;
+  trigFilterIds_["hltEle32WP75GsfTrackIsoFilter"] = kSingleEle32;
 
 }
 
 //--------------------------------------------------------------------------------------------------
-void TriggerFiller::load(const edm::Event& iEvent)
+void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
