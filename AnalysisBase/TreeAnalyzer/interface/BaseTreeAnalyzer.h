@@ -26,6 +26,7 @@
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 
 
 namespace ucsbsusy {
@@ -96,6 +97,7 @@ public:
     GenParticleReader genParticleReader     ;
     CMSTopReader      cmsTopReader          ;
     CORRALReader      corralReader     ;
+    JetCorrector      jetCorrector          ;
 
 
   public:
@@ -115,6 +117,7 @@ public:
     int   nVetoedTracks;
     int   nJets;
     int   nBJets;
+    int   nVetoHPSTaus;
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -132,6 +135,7 @@ public:
     std::vector<RecoJetF*>     nonBJets;
     std::vector<GenParticleF*> genParts;
     std::vector<CMSTopF*>      cttTops;
+    std::vector<TauF*>         HPSTaus;
 
   protected:
     //--------------------------------------------------------------------------------------------------

@@ -59,7 +59,7 @@ PhotonFiller::PhotonFiller(const int options,
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhotonFiller::load(const edm::Event& iEvent)
+void PhotonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   FileUtilities::enforceGet(iEvent, photonTag_,photons_,true);

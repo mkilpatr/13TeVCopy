@@ -46,7 +46,7 @@ namespace ucsbsusy {
     };
     static const int defaultOptions = NULLOPT;
 
-    void load(const edm::Event& iEvent);
+    void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 //    void calculateLSFIso(LorentzVector mu, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
 
