@@ -3,7 +3,7 @@
 #endif
 
 // root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/plotQGValidationComposition.C+"
-void plotQGValidationComposition( const TString inputdir="trees/150722_73X_mcOnly_cleanJets"
+void plotQGValidationComposition( const TString inputdir="trees/150727_fixedCleaning_dilepmass"
                                 , const TString outputdir="plots"
                                 , const TString format = "png"
                                 )
@@ -65,14 +65,14 @@ void plotQGValidationComposition( const TString inputdir="trees/150722_73X_mcOnl
   TString centralSel = " && j0pt>20 && j0eta<2.4";
   TString forwardSel = " && j0pt>20 && j0eta>3.0";
 
-  zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet" +centralSel, "pt_{T} [GeV]", 25, 0, 2000 );
-  zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet" +forwardSel, "pt_{T} [GeV]", 25, 0,  500 );
-  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 2500 );
-  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0,  500 );
-  dijetHTPlots->addTreeVar("dijetsHT_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 2500 );
-  dijetHTPlots->addTreeVar("dijetsHT_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0,  500 );
-  gjetPlots   ->addTreeVar(  "gjets_central" , "j0pt", "passGmjet"+centralSel, "pt_{T} [GeV]", 25, 0, 2000 );
-  gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 25, 0,  500 );
+  zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet && passZmass" +centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet && passZmass" +forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
+  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
+  dijetHTPlots->addTreeVar("dijetsHT_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  dijetHTPlots->addTreeVar("dijetsHT_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
+  gjetPlots   ->addTreeVar(  "gjets_central" , "j0pt", "passGmjet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
 
   zjetPlots   ->plot();
   dijetPlots  ->plot();
