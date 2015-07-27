@@ -144,7 +144,7 @@ public:
     std::vector<CMSTopF*>      cttTops;
     std::vector<TriggerObjectF*> triggerObjects;
     std::vector<TauF*>         HPSTaus;
-    
+
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
