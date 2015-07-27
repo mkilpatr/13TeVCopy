@@ -69,6 +69,12 @@ namespace cfgSet {
       os << "The min jet pt is "<< a.minBJetPt <<std::endl;
       os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
       os << "The default CSV is "<< a.defaultCSV <<std::endl;
+      if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
+      if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
+      if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
+      if(a.cleanJetsvVetoedLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
+      if(a.cleanJetsvSelectedPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
+      if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
       return os;
     };
   };
@@ -100,7 +106,7 @@ namespace cfgSet {
 
     friend ostream& operator<<(ostream& os, const LeptonConfig& a){
       os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "The min electron Pt is"<< a.minEPt <<std::endl;
+      os << "The min electron Pt is "<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
       os << "The min muon pt is "<< a.minMuPt <<std::endl;
       os << "The max muon eta is "<< a.maxMuEta <<std::endl;
