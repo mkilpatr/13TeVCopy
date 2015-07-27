@@ -11,18 +11,20 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
     OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
       ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
 
+
+
     bool fillEvent() {
       if(nSelLeptons!=1)      return false;
       MomentumF* lep = new MomentumF(selectedLeptons.at(0)->p4());
       MomentumF* metn = new MomentumF(met->p4() + lep->p4());
       if(metn->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      if(nVetoedTracks > 0)     return false;
+     // if(nVetoedTracks > 0)     return false;
       if(nJets < 5) return false;
       if(nBJets < 1) return false;
       if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
-      filler.fillEventInfo(&data, this);
+      filler.fillEventInfo(&data, this,0,true,metn);
       filler.fillJetInfo(&data, jets, bJets, metn);
       return true;
     }
@@ -52,7 +54,7 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
