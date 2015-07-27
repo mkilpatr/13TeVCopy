@@ -55,6 +55,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfg.cleanJetsvSelectedLeptons = true;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
