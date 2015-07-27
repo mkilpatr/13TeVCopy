@@ -59,6 +59,6 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
-  a.analyze(10000,100000);
+  a.analyze(10000);
 
 }
