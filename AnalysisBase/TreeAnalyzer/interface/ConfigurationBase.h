@@ -99,8 +99,8 @@ namespace cfgSet {
     virtual ~LeptonConfig() {};
 
     friend ostream& operator<<(ostream& os, const LeptonConfig& a){
-      os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "The min electron Pt is"<< a.minEPt <<std::endl;
+      os << "Printing out lepton selection information (selected leptons displayed first, vetoed leptons second)" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min electron Pt is "<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
       os << "The min muon pt is "<< a.minMuPt <<std::endl;
       os << "The max muon eta is "<< a.maxMuEta <<std::endl;
