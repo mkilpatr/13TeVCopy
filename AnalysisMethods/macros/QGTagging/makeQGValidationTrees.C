@@ -30,7 +30,9 @@ public:
     rho_      = -9 ;
     passDijet = true;
     passZjet  = true;
+    passZmass = true;
     passGmjet = true;
+    dilepmass = -1 ;
     j0eta     = -9 ;
     j0pt      = -9 ;
     j0flavor  = -9 ;
@@ -45,20 +47,22 @@ public:
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("Events","analysis tree");
-    outtree->Branch( "weight"    , &weight_   ,    "weight/F" );
-    outtree->Branch( "npv"       , &npv       ,       "npv/I" );
-    outtree->Branch( "rho"       , &rho_      ,       "rho/F" );
-    outtree->Branch( "passDijet" , &passDijet , "passDijet/O" );
-    outtree->Branch( "passZjet"  , &passZjet  ,  "passZjet/O" );
-    outtree->Branch( "passGmjet" , &passGmjet , "passGmjet/O" );
-    outtree->Branch( "j0eta"     , &j0eta     ,     "j0eta/F" );
-    outtree->Branch( "j0pt"      , &j0pt      ,      "j0pt/F" );
-    outtree->Branch( "j0flavor"  , &j0flavor  ,  "j0flavor/I" );
-    outtree->Branch( "j0mult"    , &j0mult    ,    "j0mult/I" );
-    outtree->Branch( "j0ptd"     , &j0ptd     ,     "j0ptd/F" );
-    outtree->Branch( "j0axis1"   , &j0axis1   ,   "j0axis1/F" );
-    outtree->Branch( "j0axis2"   , &j0axis2   ,   "j0axis2/F" );
-    outtree->Branch( "j0qgl"     , &j0qgl     ,     "j0qgl/F" );
+    outtree->Branch( "weight"    , &weight_   ,     "weight/F" );
+    outtree->Branch( "npv"       , &npv       ,        "npv/I" );
+    outtree->Branch( "rho"       , &rho_      ,        "rho/F" );
+    outtree->Branch( "passDijet" , &passDijet ,  "passDijet/O" );
+    outtree->Branch( "passZjet"  , &passZjet  ,   "passZjet/O" );
+    outtree->Branch( "passZmass" , &passZmass ,  "passZmass/O" );
+    outtree->Branch( "passGmjet" , &passGmjet ,  "passGmjet/O" );
+    outtree->Branch( "dilepmass" , &dilepmass ,  "dilepmass/F" );
+    outtree->Branch( "j0eta"     , &j0eta     ,      "j0eta/F" );
+    outtree->Branch( "j0pt"      , &j0pt      ,       "j0pt/F" );
+    outtree->Branch( "j0flavor"  , &j0flavor  ,   "j0flavor/I" );
+    outtree->Branch( "j0mult"    , &j0mult    ,     "j0mult/I" );
+    outtree->Branch( "j0ptd"     , &j0ptd     ,      "j0ptd/F" );
+    outtree->Branch( "j0axis1"   , &j0axis1   ,    "j0axis1/F" );
+    outtree->Branch( "j0axis2"   , &j0axis2   ,    "j0axis2/F" );
+    outtree->Branch( "j0qgl"     , &j0qgl     ,      "j0qgl/F" );
 
   }; // Analyze()
 
@@ -89,10 +93,9 @@ public:
     if (nPV<1)         return;
     if (jets.size()<1) return;
     auto& jet0 = jets[0];
-    // for jets 1,2 also?
-    //if (isLooseBJet(*jet0)) return;
-    if (cfgSet::isSelBJet(*jet0,cfgSet::ol_search_jets)) return;
-    if (jet0->eta()<2.4 && ak4Reader.jetbetaStar_->at(0) > 0.2*log(nPV-0.67)) return; // only jets in tracker region
+    if ( !ak4Reader.jettightId_->at(jet0->index()) ) return;
+    if (cfgSet::isSelBJet(*jet0,cfgSet::zl_search_jets)) return;
+    if (abs(jet0->eta())<2.4 && ak4Reader.jetbetaStar_->at(jet0->index()) > 0.2*log(nPV-0.67)) return; // only jets in tracker region
 
     // dijet event selection
     passDijet = true;
@@ -118,7 +121,8 @@ public:
     if (!passTrigger) passDijet = false;
 
     // Z jet event selection
-    passZjet = true;
+    passZjet  = true;
+    passZmass = true;
     if (selectedLeptons.size()>=2) {
       int Nmu = 0;
       LeptonF* mu0 = selectedLeptons[0];
@@ -132,11 +136,11 @@ public:
       } // selectedLeptons.size()
       if (Nmu<2) passZjet = false;
       else {
-        if      (mu0->pt()<20) passZjet = false;
+        if      (mu0->pt()<30) passZjet = false; // was 20
         else if (mu1->pt()<10) passZjet = false;
         else if (mu0->q()==mu1->q()) passZjet = false;
-        double invMass = (mu0->p4() + mu1->p4()).mass();
-        if (invMass<70 || invMass>110) passZjet = false;
+        dilepmass = (mu0->p4() + mu1->p4()).mass();
+        if (dilepmass<70 || dilepmass>110) passZmass = false;
         if (jets.size()>=2) {
           if ( jets[1]->pt() > 0.3*(mu0->pt()+mu1->pt()) ) passZjet = false;
         } // jets.size()>=2
@@ -157,7 +161,10 @@ public:
 
     // Gamma jet event selection
     passGmjet = true;
-    if (selectedPhotons.size()<1) passGmjet = false;
+    if (selectedPhotons.size()>=1) {
+      if (selectedPhotons[0]->pt()<150) passGmjet = false;
+    } // selectedPhotons.size()<1
+    else passGmjet = false;
     // for now, check all photon triggers
     passTrigger = false;
     if((triggerflag & kHLT_Photon120_R9Id90_HE10_IsoM_v2) > 0) { /*cout << "   passing kHLT_Photon120_R9Id90_HE10_IsoM_v2" << endl;*/ passTrigger = true; }
@@ -177,11 +184,11 @@ public:
 
     j0eta    = jet0->eta();
     j0pt     = jet0->pt();
-    j0mult   = ak4Reader.jetMult_ ->at(0);
-    j0ptd    = ak4Reader.jetptD_  ->at(0);
-    j0axis1  = -log(ak4Reader.jetaxis1_->at(0));
-    j0axis2  = -log(ak4Reader.jetaxis2_->at(0));
-    j0qgl    = ak4Reader.jetqgl_  ->at(0);
+    j0mult   =      ak4Reader.jetMult_ ->at(jet0->index()) ;
+    j0ptd    =      ak4Reader.jetptD_  ->at(jet0->index()) ;
+    j0axis1  = -log(ak4Reader.jetaxis1_->at(jet0->index()));
+    j0axis2  = -log(ak4Reader.jetaxis2_->at(jet0->index()));
+    j0qgl    =      ak4Reader.jetqgl_  ->at(jet0->index()) ;
 
     // flavor matching
     if (isMC()) {
@@ -218,7 +225,9 @@ public:
   float rho_        ;
   bool  passDijet   ;
   bool  passZjet    ;
+  bool  passZmass   ;
   bool  passGmjet   ;
+  float dilepmass   ;
 
   float j0eta       ;
   float j0pt        ;
@@ -254,7 +263,7 @@ void makeQGValidationTrees( TString sname      = "singlegm" // sample name
                   )
 {
 
-  printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
+  printf("Processing file %d of %s sample\n with xsec %f", (fileindex > -1 ? fileindex : 0), sname.Data(), xsec);
 
   // Make sure the output has a unique name in case there are multiple files to process
   if(fileindex > -1) sname += TString::Format("_%d",fileindex);
@@ -263,14 +272,17 @@ void makeQGValidationTrees( TString sname      = "singlegm" // sample name
 
   // Adjustments to default configuration
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet pars = cfgSet::ol_search_set;
+  cfgSet::ConfigSet qgv_search_set;
+  qgv_search_set.jets            = cfgSet::zl_search_jets;
+  qgv_search_set.selectedLeptons = cfgSet::zl_sel_leptons;
+  qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
+
+  cfgSet::ConfigSet pars = qgv_search_set;
 
   pars.jets.minPt  = 20.0;
   pars.jets.maxEta =  5.0;
   pars.jets.minBJetPt  = 20.0;
   pars.jets.maxBJetEta =  5.0;
-  pars.jets.defaultCSV = defaults::CSV_LOOSE;
-  pars.jets.applyJetID = true;
   pars.jets.cleanJetsvSelectedPhotons = true;
   pars.jets.cleanJetsvSelectedLeptons = true;
 
@@ -282,7 +294,8 @@ void makeQGValidationTrees( TString sname      = "singlegm" // sample name
   pars.selectedLeptons.maxEEta =  5.0;
 
   pars.selectedPhotons = cfgSet::zl_sel_photons;
-  pars.selectedPhotons.maxEta = 5.0;
+  pars.selectedPhotons.minPt  = 10.0;
+  pars.selectedPhotons.maxEta =  5.0;
 
 
   Analyze a(fullname, "TestAnalyzer/Events", isMC, &pars, sname, outputdir);
