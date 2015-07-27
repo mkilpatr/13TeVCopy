@@ -29,8 +29,8 @@ RecoJetFiller::RecoJetFiller(const int options, const string branchName, const E
 
 
 //--------------------------------------------------------------------------------------------------
-void RecoJetFiller::load(const edm::Event& iEvent){
-  JetFiller<reco::PFJet>::load(iEvent);
+void RecoJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup){
+  JetFiller<reco::PFJet>::load(iEvent, iSetup);
   if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetAssocTag_,genJetPtr_,true);
   if(options_ & LOADBTAG) FileUtilities::enforceGet(iEvent,bTagsTag_,btags_,true);
 }

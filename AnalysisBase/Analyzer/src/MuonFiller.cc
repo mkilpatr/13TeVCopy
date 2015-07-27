@@ -84,7 +84,7 @@ MuonFiller::MuonFiller(const int options,
 }
 
 //--------------------------------------------------------------------------------------------------
-void MuonFiller::load(const edm::Event& iEvent)
+void MuonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   FileUtilities::enforceGet(iEvent, muonTag_,muons_,true);

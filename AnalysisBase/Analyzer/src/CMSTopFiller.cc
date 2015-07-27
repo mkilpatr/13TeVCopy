@@ -43,7 +43,7 @@ CMSTopFiller::CMSTopFiller(const int options,
 }
 
 //--------------------------------------------------------------------------------------------------
-void CMSTopFiller::load(const edm::Event& iEvent)
+void CMSTopFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   FileUtilities::enforceGet(iEvent, fatJetTag_,fatJets_,true);
