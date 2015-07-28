@@ -12,16 +12,14 @@ using namespace ucsbsusy;
 
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
 
@@ -99,17 +97,17 @@ struct TreeFiller {
     i_bosonpt    = data->add<float>("","bosonpt","F",0);
     i_bosoneta   = data->add<float>("","bosoneta","F",0);
     i_met        = data->add<float>("","met","F",0);
-    i_npv        = data->add<int>("","npv","I",0);
-    i_nvetotau   = data->add<int>("","nvetotau","I",0);
-    i_nvetolep   = data->add<int>("","nvetolep","I",0);
-    i_nctt       = data->add<int>("","nctt","I",0);
-    i_ncttstd    = data->add<int>("","ncttstd","I",0);
-    i_ngenjets   = data->add<int>("","ngenjets","I",0);
-    i_ngenbjets  = data->add<int>("","ngenbjets","I",0);
-    i_njets      = data->add<int>("","njets","I",0);
-    i_njets60    = data->add<int>("","njets60","I",0);
-    i_nbjets     = data->add<int>("","nbjets","I",0);
-    i_ntbjets    = data->add<int>("","ntbjets","I",0);
+    i_npv        = data->add<int  >("","npv","I",0);
+    i_nvetotau   = data->add<int  >("","nvetotau","I",0);
+    i_nvetolep   = data->add<int  >("","nvetolep","I",0);
+    i_nctt       = data->add<int  >("","nctt","I",0);
+    i_ncttstd    = data->add<int  >("","ncttstd","I",0);
+    i_ngenjets   = data->add<int  >("","ngenjets","I",0);
+    i_ngenbjets  = data->add<int  >("","ngenbjets","I",0);
+    i_njets      = data->add<int  >("","njets","I",0);
+    i_njets60    = data->add<int  >("","njets60","I",0);
+    i_nbjets     = data->add<int  >("","nbjets","I",0);
+    i_ntbjets    = data->add<int  >("","ntbjets","I",0);
     i_ht         = data->add<float>("","ht","F",0);
     i_j1pt       = data->add<float>("","j1pt","F",0);
     i_j1eta      = data->add<float>("","j1eta","F",0);
@@ -172,10 +170,10 @@ struct TreeFiller {
     for(auto* b : bjets) {
       if(b->csv() > defaults::CSV_TIGHT) ntbjets++;
     }
-    data->fill<int>(i_njets, int(jets.size()));
-    data->fill<int>(i_njets60, njets60);
-    data->fill<int>(i_nbjets, int(bjets.size()));
-    data->fill<int>(i_ntbjets, ntbjets);
+    data->fill<int  >(i_njets, int(jets.size()));
+    data->fill<int  >(i_njets60, njets60);
+    data->fill<int  >(i_nbjets, int(bjets.size()));
+    data->fill<int  >(i_ntbjets, ntbjets);
     data->fill<float>(i_ht, JetKinematics::ht(jets, 20.0, 2.4));
 
     float dphij1met = 0.0, dphij2met = 0.0;
@@ -246,9 +244,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
       if(nVetoedLeptons > 0)  return false;
-      if(nVetoedTracks > 0)     return false;
+      if(nVetoedTracks > 0)   return false;
       if(met->pt() < metcut_) return false;
-      if(!goodvertex) return false;
+      if(!goodvertex)         return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
