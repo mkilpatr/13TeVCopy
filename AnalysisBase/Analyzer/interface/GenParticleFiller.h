@@ -23,7 +23,7 @@ namespace ucsbsusy {
 
   class GenParticleFiller : public BaseFiller {
     public :
-      GenParticleFiller(const int options, const string branchName, const edm::InputTag genParticleTag, const edm::InputTag packedGenParticleTag);
+      GenParticleFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
       ~GenParticleFiller() {}
 
       enum  Options           {
@@ -66,8 +66,8 @@ namespace ucsbsusy {
 
 
     private :
-      const edm::InputTag genParticleTag_;
-      const edm::InputTag packedGenParticleTag_;
+      edm::EDGetTokenT<reco::GenParticleCollection>      genParticleToken_;
+      edm::EDGetTokenT<pat::PackedGenParticleCollection> packedGenParticleToken_;
 
       // For reco jets
       size ipt       ;

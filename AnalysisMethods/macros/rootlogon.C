@@ -7,6 +7,6 @@
   // temporary fix ... suppress warnings from Parang for now
   TString makeshared(gSystem->GetMakeSharedLib());
   TString dummy = makeshared.ReplaceAll("-W ", "");
-  TString dummy = makeshared.ReplaceAll("-Wshadow ", " ");
+  dummy = makeshared.ReplaceAll("-Wshadow ", " ");
   gSystem->SetMakeSharedLib(makeshared);
 }

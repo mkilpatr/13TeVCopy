@@ -17,35 +17,28 @@ namespace ucsbsusy{
 
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
-JetFiller<Jet>::JetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
-  , const edm::InputTag jetTag
-  , const edm::InputTag reGenJetTag
-  , const edm::InputTag stdGenJetTag
-  , const edm::InputTag flvAssocTag
-  , const bool   fillReGenJets
-  , const double jptMin
-  , const edm::InputTag superJetTag
-  , const edm::InputTag superJetAssocTag
-  , const edm::InputTag superJetNsubTag
-) : BaseFiller(options, branchName), evtInfofiller_   (evtInfoFiller), genParticleFiller_(genParticleFiller)
-  , jetTag_          (jetTag)
-  , reGenJetTag_     (reGenJetTag)
-  , stdGenJetTag_    (stdGenJetTag)
-  , flvAssocTag_     (flvAssocTag)
-  , qgTagQGL_        ("QGTagger", "qgLikelihood")
-  , jptMin_          (jptMin)
-  , fillReGenJets_   (fillReGenJets)
-  , superJetTag_     (superJetTag)
-  , superJetAssocTag_(superJetAssocTag)
-  , superJetNsubTag_ (superJetNsubTag)
-  , qglInterface_    (new QuarkGluonTagInterface)
-  , qgTaggingVar_    (new QuarkGluonTaggingVariables)
-  , jets_            (0)
-  , reGenJets_       (0)
-  , stdGenJets_      (0)
-  , superJets_       (0)
-  , superJetAssoc_   (0)
-  , superJetNsub_    (0)
+JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
+  BaseFiller(options, branchName),
+  jetToken_          (cc.consumes<std::vector<Jet> >         (cfg.getParameter<edm::InputTag>("jets"))),
+  reGenJetToken_     (cc.consumes<reco::GenJetCollection>    (cfg.getParameter<edm::InputTag>("reGenJets"))),
+  stdGenJetToken_    (cc.consumes<reco::GenJetCollection>    (cfg.getParameter<edm::InputTag>("stdGenJets"))),
+  flvAssocToken_     (cc.consumes<std::vector<size8> >       (cfg.getParameter<edm::InputTag>("flvAssoc"))),
+  qglToken_          (cc.consumes<edm::ValueMap<float> >     (cfg.getUntrackedParameter<edm::InputTag>("qgLikelihood"))),
+  superJetToken_     (cc.consumes<reco::PFJetCollection>     (cfg.getUntrackedParameter<edm::InputTag>("superJets"))),
+  superJetAssocToken_(cc.consumes<std::vector<int> >         (cfg.getUntrackedParameter<edm::InputTag>("superJetAssoc"))),
+  superJetNsubToken_ (cc.consumes<std::vector<unsigned int> >(cfg.getUntrackedParameter<edm::InputTag>("superJetNsub"))),
+  evtInfofiller_     (evtInfoFiller),
+  genParticleFiller_ (genParticleFiller),
+  qglInterface_      (new QuarkGluonTagInterface),
+  qgTaggingVar_      (new QuarkGluonTaggingVariables),
+  fillReGenJets_     (cfg.getUntrackedParameter<bool>        ("fillReGenJets")),
+  jptMin_            (cfg.getUntrackedParameter<double>      ("minJetPt")),
+  jets_              (0),
+  reGenJets_         (0),
+  stdGenJets_        (0),
+  superJets_         (0),
+  superJetAssoc_     (0),
+  superJetNsub_      (0)
 {
   if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
     throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
@@ -114,20 +107,20 @@ template<typename Jet>
 void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
-  FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
+  iEvent.getByToken(jetToken_,jets_);
 
   if(options_ & LOADGEN) {
-    if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetTag_,reGenJets_,true);
-    else FileUtilities::enforceGet(iEvent,stdGenJetTag_,stdGenJets_,true);
-    FileUtilities::enforceGet(iEvent,flvAssocTag_,flvAssoc_,true);
+    if(fillReGenJets_) iEvent.getByToken(reGenJetToken_,reGenJets_);
+    else               iEvent.getByToken(reGenJetToken_,reGenJets_);
+    iEvent.getByToken(flvAssocToken_,flvAssoc_);
   }
   if(options_ & LOADSUPER) {
-    FileUtilities::enforceGet(iEvent,superJetTag_,superJets_,true);
-    FileUtilities::enforceGet(iEvent,superJetAssocTag_,superJetAssoc_,true);
-    FileUtilities::enforceGet(iEvent,superJetNsubTag_,superJetNsub_,true);
+    iEvent.getByToken(superJetToken_,superJets_);
+    iEvent.getByToken(superJetAssocToken_,superJetAssoc_);
+    iEvent.getByToken(superJetNsubToken_,superJetNsub_);
   }
   if(options_ & LOADJETSHAPE) {
-	  FileUtilities::enforceGet(iEvent,qgTagQGL_, qgHandleQGL_, true);
+    iEvent.getByToken(qglToken_,qgHandleQGL_);
   }
   // Fill JEC uncertainty variables
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;

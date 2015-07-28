@@ -18,6 +18,8 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 #include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"

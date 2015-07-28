@@ -38,12 +38,7 @@ namespace ucsbsusy {
   class MuonFiller : public BaseFiller {
 
   public :
-    MuonFiller(const int options,
-	       const string branchName,
-	       const EventInfoFiller * evtInfoFiller,
-	       const edm::InputTag muonTag,
-	       const bool requireLoose,
-	       const double muptMin);
+    MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller);
     ~MuonFiller() {}
 
     enum Options {
@@ -68,9 +63,13 @@ namespace ucsbsusy {
   private :
     const EventInfoFiller * evtInfoFiller_;
     // Input from the config file
-    const edm::InputTag muonTag_;
-    const bool          requireLoose_;    // only store muons which pass "Loose" ID
-    const double        muptMin_;
+    edm::EDGetTokenT<pat::MuonCollection>            muonToken_;
+    edm::EDGetTokenT<reco::PFJetCollection>          ca8jetToken_;
+    edm::EDGetTokenT<double>                         rhoToken_;
+    edm::EDGetTokenT<pat::JetCollection>             jetToken_;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
+    const bool              requireLoose_;    // only store muons which pass "Loose" ID
+    const double            muptMin_;
 
     // Members to hold indices of tree data
     size ipt_;
@@ -103,7 +102,7 @@ namespace ucsbsusy {
     size iMVAiso_;
     size iminiiso_;
     size iptrel_;
-    size iLSF3Iso_;
+    size iLSFIso_;
     size iptratio_;
     size isip3d_;
     // pat matched gen lepton info
@@ -119,10 +118,10 @@ namespace ucsbsusy {
   public :
     // Data members
     edm::Handle<pat::MuonCollection>            muons_;
-    edm::Handle<LorentzVectorCollection>        lsfSubJets3;
+    edm::Handle<LorentzVectorCollection>        lsfSubJets;
     edm::Handle<double>                         rho_;
-    edm::Handle<pat::PackedCandidateCollection> pfcands;
-    edm::Handle<std::vector<reco::PFJet>>       ca8jets;
+    edm::Handle<pat::PackedCandidateCollection> pfcands_;
+    edm::Handle<std::vector<reco::PFJet>>       ca8jets_;
     edm::Handle<pat::JetCollection>             ak4jets_;
   };
 

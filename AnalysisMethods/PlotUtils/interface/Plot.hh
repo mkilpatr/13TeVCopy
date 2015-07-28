@@ -73,6 +73,8 @@ class Plot {
     void drawRatio(TCanvas *c, TH1F *h1, TH1F *h2, bool doSave=false, TString format="png");
 
     // Draw ratio of data/MC, with MC constituents stacked
+    void drawRatioStack(TCanvas *c, bool doSave=false, TString format="png");
+    // Draw ratio of data/MC, with MC constituents stacked
     void drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave=false, TString format="png");
 
     // Draw the plot to a given canvas

@@ -8,19 +8,7 @@
 namespace ucsbsusy {
   class RecoJetFiller : public JetFiller<reco::PFJet> {
     public:
-    RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
-          , const edm::InputTag jetTag
-          , const edm::InputTag bTagsTag
-          , const edm::InputTag reGenJetTag
-          , const edm::InputTag stdGenJetTag
-          , const edm::InputTag flvAssocTag
-          , const edm::InputTag reGenJetAssocTag
-          , const bool fillReGenJets
-          , const double jptMin
-          , const edm::InputTag superJetTag = edm::InputTag()
-          , const edm::InputTag superJetAssocTag = edm::InputTag()
-          , const edm::InputTag superJetNsubTag = edm::InputTag()
-          );
+      RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
       virtual ~RecoJetFiller() {}
 
       virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
@@ -37,8 +25,8 @@ namespace ucsbsusy {
       float getBetaStar(const reco::PFJet& jet) const{  return qgTaggingVar_->getBetaStar(&jet,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_);}
 
     protected:
-      const edm::InputTag bTagsTag_;
-      const edm::InputTag reGenJetAssocTag_;
+      edm::EDGetTokenT<reco::JetTagCollection>             bTagsToken_;
+      edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr> > reGenJetAssocToken_;
 
     private:
       edm::Handle<reco::JetTagCollection>             btags_;

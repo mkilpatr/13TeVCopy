@@ -37,7 +37,7 @@ namespace cfgSet {
 
   void loadDefaultConfigurations();
 
-
+  void setJSONFile(const TString jsonfile);
 
 }
 
