@@ -21,8 +21,10 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
       int whichLep = rnd.Uniform(0.,nSelLeptons);
-    MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
-    if(fabs(PhysicsUtilities::deltaPhi(*met, *lep)) > 1)        return false;
+      MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
+      MomentumF* W = new MomentumF(lep->p4() + met->p4());
+
+      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
       filler.fillEventInfo(&data, this, whichLep);
       filler.fillJetInfo(&data, jets, bJets, met);
