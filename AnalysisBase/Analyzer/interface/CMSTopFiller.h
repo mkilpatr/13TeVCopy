@@ -25,7 +25,7 @@ namespace ucsbsusy {
     CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~CMSTopFiller() {}
 
-    void load(const edm::Event& iEvent);
+    void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 
   private :

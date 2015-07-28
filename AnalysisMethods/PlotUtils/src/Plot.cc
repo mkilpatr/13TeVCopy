@@ -661,7 +661,7 @@ void Plot::integrateHists(bool reversecutdir)
 	}
 }
 
-void Plot::drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave, TString format)
+void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TString format)
 {
   c->cd();
 
@@ -745,6 +745,134 @@ void Plot::drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave, TStri
   h3->Add(hMC, -1.);
   h3->Divide(hMC);
   h3->GetYaxis()->SetRangeUser(-0.4,0.4);
+
+  h3->DrawCopy("P");  
+  h3->Draw("Psame");
+  l->Draw("same");
+
+  c->cd();
+
+  if(doSave) {
+    gSystem->mkdir(outputdir,true);
+    TString outname = outputdir+TString("/")+fName+TString(".");
+    if(format.CompareTo("all",TString::kIgnoreCase)==0) {
+      c->SaveAs(outname+TString("png"));
+      c->SaveAs(outname+TString("C"));
+    } else {
+      c->SaveAs(outname+format);
+    }
+  }
+
+}
+
+void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
+{
+  c->cd();
+
+  TH1F* hData = 0;
+  TH1F* hMC   = 0;
+
+  TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
+  p1->SetLeftMargin  (0.18);
+  p1->SetTopMargin   (0.10);
+  p1->SetRightMargin (0.07);
+  p1->SetBottomMargin(0.03);  
+  p1->Draw();
+  if(fLogy) p1->SetLogy();
+  p1->cd();
+
+  if(fHists1D.size()>0) {   
+    for(uint i=0; i<fHists1D.size(); i++) {
+      if(fStack && fStack->GetHists()->Contains(fHists1D[i]->member)) continue;
+      if(hData) break;
+      
+      TString hname = fName;
+      hname += "_h_";
+      hname += TString(to_string(i));
+    
+      hData = (TH1F*)fHists1D[i]->member->Clone(hname);
+    }
+  
+    if(fStack) {
+      hMC = (TH1F*)fStack->GetStack()->Last();
+    }
+  }
+
+  assert(hData);
+  assert(hMC);
+  
+  double ymax = hData->GetMaximum();
+  if(hMC->GetMaximum()>ymax) ymax=hMC->GetMaximum();
+  hData->SetMarkerSize(1.3);
+  hData->SetMarkerStyle(20);
+  hData->SetLineWidth(3);
+
+  TH1F *h00 = (TH1F*)hData->Clone("data0");
+
+  if(fStack) {
+    if(!fLogy) {
+      if(fYmin < fYmax) {
+        fStack->SetMaximum(fYmax);
+        fStack->SetMinimum(fYmin);
+      } else {
+        fStack->SetMaximum(1.1*ymax);
+        fStack->SetMinimum(0);
+      }
+    }
+    fStack->SetTitle(fTitle);
+    fStack->Draw("hist");
+    fStack->GetXaxis()->SetLabelOffset(0.20);
+    fStack->GetYaxis()->SetTitle(fYTitle);
+    if(fYmin < fYmax) fStack->GetYaxis()->SetRangeUser(fYmin,fYmax);
+    else fStack->GetYaxis()->SetRangeUser(0,1.1*ymax);
+    fStack->GetYaxis()->SetTitleSize(0.055);
+    fStack->Draw("histsame");
+  } 
+
+  h00->Draw("same");
+
+
+  if(fLeg) {
+    fLeg->SetFillStyle(0);
+    fLeg->SetBorderSize(0);
+    fLeg->Draw();
+  }
+
+  c->cd();
+  TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
+  p2->SetLeftMargin  (0.18);
+  p2->SetTopMargin   (0.00);
+  p2->SetRightMargin (0.07);
+  p2->SetBottomMargin(0.30);
+  p2->SetGridy(1);
+  p2->Draw();
+  p2->cd();
+
+  TH1F *h3 = (TH1F*)hData->Clone("data3"); 
+
+  h3->SetTitleSize  (0.12,"Y");
+  h3->SetTitleOffset(0.60,"Y");
+  h3->SetTitleSize  (0.12,"X");
+  h3->SetLabelSize  (0.10,"X");
+  h3->SetLabelSize  (0.08,"Y");
+  h3->GetYaxis()->SetTitleFont(62);
+  h3->GetYaxis()->CenterTitle(kTRUE);
+  h3->GetXaxis()->SetTitleFont(62);
+  h3->GetYaxis()->SetRangeUser(-0.5,0.5);
+  h3->GetYaxis()->SetNdivisions(305);
+  h3->GetXaxis()->SetTitle(fXTitle);
+  //h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}} - 1");
+  h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}}");
+
+  double xmin = hData->GetXaxis()->GetXmin();
+  double xmax = hData->GetXaxis()->GetXmax();
+  TLine *l = new TLine(xmin,0,xmax,0);
+  l->SetLineWidth(3);
+  l->SetLineColor(kBlack);
+
+  //h3->Add(hMC, -1.);
+  h3->Divide(hMC);
+  h3->GetYaxis()->SetRangeUser(0.0,2.0);
 
   h3->DrawCopy("P");  
   h3->Draw("Psame");

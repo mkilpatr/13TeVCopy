@@ -34,7 +34,7 @@ namespace ucsbsusy {
       static const int defaultOptions = NULLOPT;
 
       void initTauIdNames();
-      void load(const edm::Event& iEvent);
+      void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
 
     private :
