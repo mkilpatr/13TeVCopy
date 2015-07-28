@@ -47,19 +47,19 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    treeReader->setBranchAddress(branchName_, "fatjet_mass"                , &fjmass_          ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_trimmedmass"         , &fjtrimmedmass_   ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_prunedmass"          , &fjprunedmass_    ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_softdropmass"        , &fjsoftdropmass_  ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_filteredmass"        , &fjfilteredmass_  ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_massdropfilteredmass", &fjmdfilteredmass_,true);    
-    treeReader->setBranchAddress(branchName_, "fatjet_tau1"                , &fjtau1_          ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_tau2"                , &fjtau2_          ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_tau3"                , &fjtau3_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_rawmass"                , &fjmass_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_trimmedmass"            , &fjtrimmedmass_   ,true);
+    treeReader->setBranchAddress(branchName_, "top_prunedmass"             , &fjprunedmass_    ,true);
+    treeReader->setBranchAddress(branchName_, "top_softdropmass"           , &fjsoftdropmass_  ,true);
+    treeReader->setBranchAddress(branchName_, "top_filteredmass"           , &fjfilteredmass_  ,true);
+    treeReader->setBranchAddress(branchName_, "top_cmstoptagmass"          , &topmass_         ,true);
+//    treeReader->setBranchAddress(branchName_, "fatjet_massdropfilteredmass", &fjmdfilteredmass_,true);
+    treeReader->setBranchAddress(branchName_, "top_tau1"                   , &fjtau1_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_tau2"                   , &fjtau2_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_tau3"                   , &fjtau3_          ,true);
     treeReader->setBranchAddress(branchName_, "top_pt"                     , &toppt_           ,true);
     treeReader->setBranchAddress(branchName_, "top_eta"                    , &topeta_          ,true);
     treeReader->setBranchAddress(branchName_, "top_phi"                    , &topphi_          ,true);
-    treeReader->setBranchAddress(branchName_, "top_topmass"                , &topmass_         ,true);
     treeReader->setBranchAddress(branchName_, "top_wmass"                  , &wmass_           ,true);
     treeReader->setBranchAddress(branchName_, "top_minmass"                , &minmass_         ,true);
     treeReader->setBranchAddress(branchName_, "top_nsubjets"               , &nsubjets_        ,true);
@@ -84,7 +84,7 @@ void CMSTopReader::refresh(){
     cmsTops.back().setFJPrunedMass(fjprunedmass_->at(iJ));
     cmsTops.back().setFJSoftDropMass(fjsoftdropmass_->at(iJ));
     cmsTops.back().setFJFilteredMass(fjfilteredmass_->at(iJ));
-    cmsTops.back().setFJMDFilteredMass(fjmdfilteredmass_->at(iJ));
+//    cmsTops.back().setFJMDFilteredMass(fjmdfilteredmass_->at(iJ));
     cmsTops.back().setFJTau1(fjtau1_->at(iJ));
     cmsTops.back().setFJTau2(fjtau2_->at(iJ));
     cmsTops.back().setFJTau3(fjtau3_->at(iJ));
