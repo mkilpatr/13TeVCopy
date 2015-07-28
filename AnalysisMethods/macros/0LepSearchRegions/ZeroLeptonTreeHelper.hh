@@ -158,7 +158,7 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
-    if(ana->nSelLeptons > 0) {
+    if(ana->nSelLeptons > randomLepton) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
