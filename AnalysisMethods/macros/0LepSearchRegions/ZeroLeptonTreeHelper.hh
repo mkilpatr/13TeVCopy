@@ -160,9 +160,9 @@ struct TreeFiller {
     data->fill<int  >(i_ncttstd, ncttstd);
     if(ana->nSelLeptons > randomLepton) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-      MomentumF* W = new MomentumF(lep->p4() + met->p4());
+      MomentumF* W = new MomentumF(lep->p4() + ana->met->p4());
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
-      data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *met));
+      data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
 
   }
