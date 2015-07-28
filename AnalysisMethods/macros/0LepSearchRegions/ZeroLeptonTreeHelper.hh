@@ -68,7 +68,8 @@ struct TreeFiller {
   size i_mtcsv1met ;
   size i_mtcsv2met ;
   size i_mtb12met  ;
-  size i_absdphilepw  ;
+  size i_absdphilepw;
+  size i_mtlepmet   ;
 
 
   bool passCTTSelection(CMSTopF* ctt) {
@@ -133,6 +134,7 @@ struct TreeFiller {
     i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
     i_mtb12met   = data->add<float>("","mtb12met","F",0);
     i_absdphilepw = data->add<float>("","absdphilepw","F",0);
+    i_mtlepmet    = data->add<float>("","mtlepmet","F",0);
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
@@ -142,9 +144,9 @@ struct TreeFiller {
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_genmet, ana->genmet->pt());
     if (!lepAddedBack)
-    data->fill<float>(i_met, ana->met->pt());
+      data->fill<float>(i_met, ana->met->pt());
     else
-    data->fill<float>(i_met, metn->pt());
+      data->fill<float>(i_met, metn->pt());
 
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
@@ -156,10 +158,11 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
-    if(ana->nSelLeptons > 0)
-    {
-    MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*ana->met, *lep)) );
+    if(ana->nSelLeptons > 0) {
+      MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
+      MomentumF* W = new MomentumF(lep->p4() + met->p4());
+      data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
+      data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *met));
     }
 
   }
