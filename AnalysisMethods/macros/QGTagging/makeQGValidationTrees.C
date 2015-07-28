@@ -79,13 +79,13 @@ public:
     load(cfgSet::ELECTRONS);
     load(cfgSet::MUONS);
     load(cfgSet::PHOTONS);
+    load(cfgSet::TRIGOBJS);
     if(isMC()) load(cfgSet::GENPARTICLES);
-    else       load(cfgSet::TRIGOBJS);
   } // loadVariables()
 
   void runEvent(){
 
-    //cout << event << endl;
+    if(!isMC() && hasJSONFile() && !passesLumiMask()) return;
 
     bool passTrigger = false;
 
@@ -108,29 +108,31 @@ public:
     } // jets.size()>=3
     // for now, check all mu triggers
     passTrigger = false;
-    if((triggerflag & kHLT_PFHT300_v1) > 0) { /*cout << "   passing kHLT_PFHT300" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT350_v1) > 0) { /*cout << "   passing kHLT_PFHT350" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT350_v2) > 0) { /*cout << "   passing kHLT_PFHT350" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT400_v1) > 0) { /*cout << "   passing kHLT_PFHT400" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT475_v1) > 0) { /*cout << "   passing kHLT_PFHT475" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT600_v1) > 0) { /*cout << "   passing kHLT_PFHT600" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT600_v2) > 0) { /*cout << "   passing kHLT_PFHT600" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT650_v1) > 0) { /*cout << "   passing kHLT_PFHT650" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT800_v1) > 0) { /*cout << "   passing kHLT_PFHT800" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_PFHT900_v1) > 0) { /*cout << "   passing kHLT_PFHT900" << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_PFHT300_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT350_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT350_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT400_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT475_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT600_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT600_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT650_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT800_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT900_v1) > 0) passTrigger = true;
     if (!passTrigger) passDijet = false;
 
     // Z jet event selection
     passZjet  = true;
     passZmass = true;
+    int selMu0 = 0;
+    int selMu1 = 0;
     if (selectedLeptons.size()>=2) {
       int Nmu = 0;
-      LeptonF* mu0 = selectedLeptons[0];
-      LeptonF* mu1 = selectedLeptons[1];
+      auto mu0 = selectedLeptons[0];
+      auto mu1 = selectedLeptons[1];
       for (unsigned int i=0; i<selectedLeptons.size();++i) {
         if (selectedLeptons[i]->ismuon()) {
-          if      (Nmu==0) mu0 = selectedLeptons[i];
-          else if (Nmu==1) mu1 = selectedLeptons[i];
+          if      (Nmu==0) { mu0 = selectedLeptons[i]; selMu0 = i; }
+          else if (Nmu==1) { mu1 = selectedLeptons[i]; selMu1 = i; }
           ++Nmu;
         } // ismuon()
       } // selectedLeptons.size()
@@ -149,14 +151,14 @@ public:
     else passZjet = false;
     // for now, check all mu triggers
     passTrigger = false;
-    if((triggerflag & kHLT_IsoMu24_eta2p1_v1  ) > 0) { /*cout << "   passing kHLT_IsoMu24_eta2p1_v1  " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoMu27_v1         ) > 0) { /*cout << "   passing kHLT_IsoMu27_v1         " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v1) > 0) { /*cout << "   passing kHLT_IsoTkMu24_eta2p1_v1" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoTkMu27_v1       ) > 0) { /*cout << "   passing kHLT_IsoTkMu27_v1       " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoMu24_eta2p1_v2  ) > 0) { /*cout << "   passing kHLT_IsoMu24_eta2p1_v2  " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoMu27_v2         ) > 0) { /*cout << "   passing kHLT_IsoMu27_v2         " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v2) > 0) { /*cout << "   passing kHLT_IsoTkMu24_eta2p1_v2" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_IsoTkMu27_v2       ) > 0) { /*cout << "   passing kHLT_IsoTkMu27_v2       " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_IsoMu24_eta2p1_v1  ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoMu27_v1         ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu27_v1       ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoMu24_eta2p1_v2  ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoMu27_v2         ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu27_v2       ) > 0) passTrigger = true;
     if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
@@ -167,15 +169,48 @@ public:
     else passGmjet = false;
     // for now, check all photon triggers
     passTrigger = false;
-    if((triggerflag & kHLT_Photon120_R9Id90_HE10_IsoM_v2) > 0) { /*cout << "   passing kHLT_Photon120_R9Id90_HE10_IsoM_v2" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_Photon165_R9Id90_HE10_IsoM_v2) > 0) { /*cout << "   passing kHLT_Photon165_R9Id90_HE10_IsoM_v2" << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_Photon165_HE10_v2            ) > 0) { /*cout << "   passing kHLT_Photon165_HE10_v2            " << endl;*/ passTrigger = true; }
-    if((triggerflag & kHLT_Photon175_v2                 ) > 0) { /*cout << "   passing kHLT_Photon175_v2                 " << endl;*/ passTrigger = true; }
+    if((triggerflag & kHLT_Photon120_R9Id90_HE10_IsoM_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Photon165_R9Id90_HE10_IsoM_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Photon165_HE10_v2            ) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Photon175_v2                 ) > 0) passTrigger = true;
     if (!passTrigger) passGmjet = false;
 
-
-    // skip events that don't pass either selection
+    // skip events that don't pass any selection
     if ( !passDijet && !passZjet && !passGmjet ) return;
+
+    // check trigger objects
+    bool foundTrigMu = false;
+    bool foundTrigGm = false;
+    for(auto* to : triggerObjects) {
+      if(passZjet) {
+        bool matchedTrigObj = false;
+        if((to->filterflags() & kSingleIsoMu24  ) && (to->pathflags() & kHLT_IsoMu24_eta2p1_v1  )) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoMu27  ) && (to->pathflags() & kHLT_IsoMu27_v1         )) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v1)) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu27) && (to->pathflags() & kHLT_IsoTkMu27_v1       )) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoMu24  ) && (to->pathflags() & kHLT_IsoMu24_eta2p1_v2  )) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoMu27  ) && (to->pathflags() & kHLT_IsoMu27_v2         )) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v2)) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu27) && (to->pathflags() & kHLT_IsoTkMu27_v2       )) matchedTrigObj = true;
+        if(matchedTrigObj) {
+          auto mu0 = selectedLeptons[selMu0];
+          auto mu1 = selectedLeptons[selMu1];
+          if      (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
+          else if (PhysicsUtilities::deltaR(*to,*mu1)<0.4 ) foundTrigMu = true;
+        } // matchedTrigObj
+      } // passZjet
+      if(passGmjet) {
+        bool matchedTrigObj = false;
+        if((to->pathflags() & kHLT_Photon120_R9Id90_HE10_IsoM_v2)) matchedTrigObj = true;
+        if((to->pathflags() & kHLT_Photon165_R9Id90_HE10_IsoM_v2)) matchedTrigObj = true;
+        if((to->pathflags() & kHLT_Photon165_HE10_v2            )) matchedTrigObj = true;
+        if((to->pathflags() & kHLT_Photon175_v2                 )) matchedTrigObj = true;
+        if( matchedTrigObj && PhysicsUtilities::deltaR(*to,*selectedPhotons[0])<0.4) foundTrigGm = true;
+      } // passGmjet
+    } // triggerObjects
+    if (!foundTrigMu) passZjet  = false;
+    if (!foundTrigGm) passGmjet = false;
+    if (!passDijet && !passZjet && !passGmjet) return;
 
     // fill tree variables [assmune lumi = 1 fb^(-1)]
     weight_ = weight;
@@ -251,16 +286,17 @@ public:
 //     gjets_ht600toinf_ntuple_wgtxsec.root
 //     qcd_ht1000toinf_ntuple_wgtxsec.root
 // 74X
-//     singlemu-2015b-pr_ntuple.root
-//     singlepho-2015b-pr_ntuple.root
-void makeQGValidationTrees( TString sname      = "singlegm" // sample name
-                  , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
-                  , const bool    isMC       = false    // data or MC
-                  , const TString fname      = "singlepho-2015b-pr_ntuple.root" // path of file to be processed
-                  , const double xsec        = 1.0
-                  , const string  outputdir  = "trees/test/"  // directory to which files with histograms will be written
-                  , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/150715/merged/" //"/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
-                  )
+//     singlemu-2015b-pr_ntuple.root    (data)     singlemu
+//     singlepho-2015b-pr_ntuple.root   (data)
+//     dyjetstoll_1_ntuple_wgtxsec.root (MC)
+void makeQGValidationTrees( TString sname            = "dyjetstoll" // sample name
+                          , const int     fileindex  = 9       // index of file (-1 means there is only 1 file for this sample)
+                          , const bool    isMC       = true    // data or MC
+                          , const TString fname      = "dyjetstoll_10_ntuple_wgtxsec.root" // path of file to be processed
+                          , const double xsec        = 1.0
+                          , const string  outputdir  = "trees/"  // directory to which files will be written
+                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/150715/merged/"
+                          )
 {
 
   printf("Processing file %d of %s sample\n with xsec %f", (fileindex > -1 ? fileindex : 0), sname.Data(), xsec);
@@ -272,6 +308,7 @@ void makeQGValidationTrees( TString sname      = "singlegm" // sample name
 
   // Adjustments to default configuration
   cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251252_13TeV_PromptReco_Collisions15_JSON.txt");
   cfgSet::ConfigSet qgv_search_set;
   qgv_search_set.jets            = cfgSet::zl_search_jets;
   qgv_search_set.selectedLeptons = cfgSet::zl_sel_leptons;
@@ -297,9 +334,11 @@ void makeQGValidationTrees( TString sname      = "singlegm" // sample name
   pars.selectedPhotons.minPt  = 10.0;
   pars.selectedPhotons.maxEta =  5.0;
 
-
-  Analyze a(fullname, "TestAnalyzer/Events", isMC, &pars, sname, outputdir);
+  string    treeName = "";
+  if (isMC) treeName = "Events";
+  else      treeName = "TestAnalyzer/Events";
+  Analyze a(fullname, treeName, isMC, &pars, sname, outputdir);
   a.analyze(10000);
-  //a.analyze(10,1000);
+  //a.analyze(1000,10000);
 
 } // makeQGValidationTrees()

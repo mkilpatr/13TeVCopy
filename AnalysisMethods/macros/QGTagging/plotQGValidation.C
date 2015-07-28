@@ -19,7 +19,7 @@ void plotQGValidation( const TString inputdir="trees/150727_fixedCleaning_dilepm
   zjetPlots->setAddSigScaleTxt(false);
   zjetPlots->setFormat(format);
   zjetPlots->setWgtVar("0.02*weight");
-  zjetPlots->setDataname("singlemu");
+  zjetPlots->setDataName("singlemu");
   zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   zjetPlots->setPlotOverflow(true);
 
@@ -31,7 +31,7 @@ void plotQGValidation( const TString inputdir="trees/150727_fixedCleaning_dilepm
   dijetPlots->setAddSigScaleTxt(false);
   dijetPlots->setFormat(format);
   dijetPlots->setWgtVar("0.02*weight");
-  dijetPlots->setDataname("qcd");
+  dijetPlots->setDataName("qcd");
   dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   dijetPlots->setPlotOverflow(true);
 
@@ -43,7 +43,7 @@ void plotQGValidation( const TString inputdir="trees/150727_fixedCleaning_dilepm
   dijetHTPlots->setAddSigScaleTxt(false);
   dijetHTPlots->setFormat(format);
   dijetHTPlots->setWgtVar("0.02*weight");
-  dijetHTPlots->setDataname("qcdHT"); // QCD fix?
+  dijetHTPlots->setDataName("qcdHT"); // QCD fix?
   dijetHTPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   dijetHTPlots->setPlotOverflow(true);
 
@@ -55,7 +55,7 @@ void plotQGValidation( const TString inputdir="trees/150727_fixedCleaning_dilepm
   gjetPlots->setAddSigScaleTxt(false);
   gjetPlots->setFormat(format);
   gjetPlots->setWgtVar("0.005*weight");
-  gjetPlots->setDataname("singlegm");
+  gjetPlots->setDataName("singlegm");
   gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   gjetPlots->setPlotOverflow(true);
 
