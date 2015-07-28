@@ -129,6 +129,7 @@ public:
   void rankedByCSV(vector<RecoJetF*> inJets,vector<RecoJetF*>& outJets);
   bool ApplyCTTSelection(CMSTopF* fj);
 
+
   // assumes that jets are inclusive in eta and pt!!!
   // also assumes that the jets are pt sorted!
   void processVariables( const BaseTreeAnalyzer*     analyzer
@@ -558,6 +559,7 @@ bool VariableCalculator0L::ApplyCTTSelection(CMSTopF* fj) {
       if ( ((fjMass)>140.) && ((fjMass)<250.) && ((minMass)>50.) && ((nSubJets)>=3) ) { tmpVal = true; }
       return tmpVal;
     }
+
 
 } // namespace ucsbsusy
 

@@ -41,6 +41,7 @@ struct TreeFiller {
   size i_npv       ;
   size i_nvetotau  ;
   size i_nvetolep  ;
+  size i_nselectedlep  ;
   size i_nctt      ;
   size i_ncttstd   ;
   size i_ngenjets  ;
@@ -69,6 +70,8 @@ struct TreeFiller {
   size i_mtcsv1met ;
   size i_mtcsv2met ;
   size i_mtb12met  ;
+  size i_absdphilepw  ;
+
 
   bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
@@ -102,6 +105,7 @@ struct TreeFiller {
     i_npv        = data->add<int>("","npv","I",0);
     i_nvetotau   = data->add<int>("","nvetotau","I",0);
     i_nvetolep   = data->add<int>("","nvetolep","I",0);
+    i_nselectedlep   = data->add<int>("","nselectedlep","I",0);
     i_nctt       = data->add<int>("","nctt","I",0);
     i_ncttstd    = data->add<int>("","ncttstd","I",0);
     i_ngenjets   = data->add<int>("","ngenjets","I",0);
@@ -130,24 +134,36 @@ struct TreeFiller {
     i_mtcsv1met  = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
     i_mtb12met   = data->add<float>("","mtb12met","F",0);
+    i_absdphilepw = data->add<float>("","absdphilepw","F",0);
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_genmet, ana->genmet->pt());
+    if (!lepAddedBack)
     data->fill<float>(i_met, ana->met->pt());
+    else
+    data->fill<float>(i_met, metn->pt());
+
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nselectedlep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd = 0;
     for(auto* ctt : ana->cttTops) {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
+    if(ana->nSelLeptons > 0)
+    {
+    MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
+    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*ana->met, *lep)) );
+    }
+
   }
 
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {

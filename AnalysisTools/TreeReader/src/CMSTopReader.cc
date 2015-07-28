@@ -46,6 +46,7 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
+
     treeReader->setBranchAddress(branchName_, "top_rawmass"      , &toprawmass_      ,true);
     treeReader->setBranchAddress(branchName_, "top_trimmedmass"  , &toptrimmedmass_  ,true);
     treeReader->setBranchAddress(branchName_, "top_prunedmass"   , &topprunedmass_   ,true);
@@ -76,6 +77,7 @@ void CMSTopReader::refresh(){
   cmsTops.clear();
   cmsTops.reserve(toppt_->size()); 
   for(unsigned int iJ = 0; iJ < toppt_->size(); ++iJ){
+
     cmsTops.emplace_back(CylLorentzVectorF(toppt_->at(iJ),topeta_->at(iJ),topphi_->at(iJ),topcmstoptagmass_->at(iJ)),iJ);
     cmsTops.back().setTopRawMass(toprawmass_->at(iJ));
     cmsTops.back().setTopTrimmedMass(toptrimmedmass_->at(iJ));
