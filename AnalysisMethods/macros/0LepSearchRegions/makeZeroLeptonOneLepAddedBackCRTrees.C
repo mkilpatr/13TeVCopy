@@ -19,8 +19,6 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF* metn = new MomentumF(met->p4() + lep->p4());
       if(metn->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      if(abs(selectedLeptons.at(0)->pdgid()) == 11 and lep->pt() < 40) return false;
-      if(abs(selectedLeptons.at(0)->pdgid()) == 13 and lep->pt() < 30) return false; 
    // if(nVetoedTracks > 0)     return false;
       if(nJets < 5) return false;
       if(nBJets < 1) return false;
@@ -58,6 +56,8 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
   cfg.jets.cleanJetsvSelectedLeptons = true;
+  cfg.selectedLeptons.minEPt = 40;
+  cfg.selectedLeptons.minMuPt = 30;
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
   a.analyze(100000);
