@@ -604,7 +604,8 @@ void processSingleLepton(TString sname = "test",               // sample name
 
   // Declare analyzer
   //Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &cfg, xsec, sname, outputdir);
+  TString treename = isMC ? "TestAnalyzer/Events" : "Events";
+  Analyzer a(fullname, treename, isMC, &cfg, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(200000000);
