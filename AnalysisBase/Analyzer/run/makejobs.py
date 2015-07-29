@@ -291,6 +291,7 @@ rm submit.cmd""".format(
                 runscript=args.script, stype=args.submittype, pathtocfg=args.path, cfg=args.config, infile=jobfile, workdir="${CMSSW_BASE}", sname=samples[isam], num=ijob, jobdir=args.jobdir, outputdir=args.outdir, outputname=outfile, maxevents=maxevts, skipevents=skipevts, evttag=suffix
                 ))
                 jobscript.close()
+                cpinput = ""
                 if args.splittype == "file" or (args.splittype == "event" and ijob == 0) :
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
