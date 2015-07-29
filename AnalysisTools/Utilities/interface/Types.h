@@ -151,7 +151,31 @@ namespace ucsbsusy {
     kHLT_Photon120_R9Id90_HE10_IsoM_v2 = 1UL<<29,
     kHLT_Photon165_R9Id90_HE10_IsoM_v2 = 1UL<<30,
     kHLT_Photon165_HE10_v2 = 1UL<<31,
-    kHLT_Photon175_v2 = 1UL<<32
+    kHLT_Photon175_v2 = 1UL<<32,
+    kHLT_Photon120_R9Id90_HE10_IsoM_v1 = 1UL<<33,
+    kHLT_Photon165_R9Id90_HE10_IsoM_v1 = 1UL<<34,
+    kHLT_Photon165_HE10_v1 = 1UL<<35,
+    kHLT_Photon175_v1 = 1UL<<36,
+    kHLT_DiPFJetAve100_HFJEC_v1 = 1UL<<37,
+    kHLT_DiPFJetAve100_HFJEC_v2 = 1UL<<38,
+    kHLT_DiPFJetAve140_v1 = 1UL<<39,
+    kHLT_DiPFJetAve160_HFJEC_v1 = 1UL<<40,
+    kHLT_DiPFJetAve160_HFJEC_v2 = 1UL<<41,
+    kHLT_DiPFJetAve200_v1 = 1UL<<42,
+    kHLT_DiPFJetAve220_HFJEC_v1 = 1UL<<43,
+    kHLT_DiPFJetAve220_HFJEC_v2 = 1UL<<44,
+    kHLT_DiPFJetAve260_v1 = 1UL<<45,
+    kHLT_DiPFJetAve300_HFJEC_v1 = 1UL<<46,
+    kHLT_DiPFJetAve300_HFJEC_v2 = 1UL<<47,
+    kHLT_DiPFJetAve320_v1 = 1UL<<48,
+    kHLT_DiPFJetAve400_v1 = 1UL<<49,
+    kHLT_DiPFJetAve500_v1 = 1UL<<50,
+    kHLT_DiPFJetAve60_HFJEC_v1 = 1UL<<51,
+    kHLT_DiPFJetAve60_HFJEC_v2 = 1UL<<52,
+    kHLT_DiPFJetAve60_v1 = 1UL<<53,
+    kHLT_DiPFJetAve80_HFJEC_v1 = 1UL<<54,
+    kHLT_DiPFJetAve80_HFJEC_v2 = 1UL<<55,
+    kHLT_DiPFJetAve80_v1 = 1UL<<56
   };
 
   enum TriggerFilters {

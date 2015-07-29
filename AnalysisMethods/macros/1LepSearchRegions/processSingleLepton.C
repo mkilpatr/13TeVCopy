@@ -221,8 +221,8 @@ void Analyzer::runEvent()
   if(!goodvertex) return;
 
   // double wgt = lumi_*xsec_/getEntries();  // old way
-  float wgt = evtInfoReader.weight;
-  ScaleFactor = wgt;
+  //float wgt = evtInfoReader.weight;
+  ScaleFactor = weight;
 
   // always require exactly one selected lepton
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
