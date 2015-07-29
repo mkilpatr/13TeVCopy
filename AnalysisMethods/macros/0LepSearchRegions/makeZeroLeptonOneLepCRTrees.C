@@ -18,7 +18,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nBJets < 1) return false;
       if(nJets < 5) return false;
       if(nSelLeptons<1)      return false;
-      if(nVetoedTracks > 0)     return false;
+      //if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
       int whichLep = rnd.Uniform(0.,nSelLeptons);
       MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
@@ -57,7 +57,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.cleanJetsvSelectedLeptons = true;
+//  cfg.jets.cleanJetsvSelectedLeptons = true;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
