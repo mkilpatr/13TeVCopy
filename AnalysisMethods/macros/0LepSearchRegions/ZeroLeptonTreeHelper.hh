@@ -38,9 +38,11 @@ struct TreeFiller {
   size i_bosonpt   ;
   size i_bosoneta  ;
   size i_met       ;
+  size i_metphi    ;
   size i_npv       ;
   size i_nvetotau  ;
   size i_nvetolep  ;
+  size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
   size i_ngenjets  ;
@@ -56,24 +58,34 @@ struct TreeFiller {
   size i_j2eta     ;
   size i_j3pt      ;
   size i_j3eta     ;
-  size i_b1pt      ;
-  size i_b1eta     ;
-  size i_b2pt      ;
-  size i_b2eta     ;
+  size i_csvj1pt   ;
+  size i_csvj1eta  ;
+  size i_csvj2pt   ;
+  size i_csvj2eta  ;
   size i_dphij1met ;
   size i_dphij2met ;
   size i_dphij12met;
   size i_dphij3met ;
-  size i_mtb1met   ;
-  size i_mtb2met   ;
   size i_mtcsv1met ;
   size i_mtcsv2met ;
-  size i_mtb12met  ;
+  size i_mtcsv12met;
+  size i_dphicsv1met;
+  size i_dphicsv2met;
+  size i_dphicsv12met;
+  size i_absdphilepw;
+  size i_leptonpt  ;
+  size i_leptoneta ;
+  size i_mtlepmet  ;
 
-  bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-  }
+ bool passCTTSelection(CMSTopF* ctt) {
+    return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
+  } 
 
+
+/*     bool passCTTSelection(CMSTopF* ctt) {
+      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
+    }73X functions */
+    
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
     outJets.resize(inJets.size());
@@ -99,9 +111,11 @@ struct TreeFiller {
     i_bosonpt    = data->add<float>("","bosonpt","F",0);
     i_bosoneta   = data->add<float>("","bosoneta","F",0);
     i_met        = data->add<float>("","met","F",0);
+    i_metphi     = data->add<float>("","metphi","F",0);
     i_npv        = data->add<int>("","npv","I",0);
     i_nvetotau   = data->add<int>("","nvetotau","I",0);
     i_nvetolep   = data->add<int>("","nvetolep","I",0);
+    i_nsellep   = data->add<int>("","nsellep","I",0);
     i_nctt       = data->add<int>("","nctt","I",0);
     i_ncttstd    = data->add<int>("","ncttstd","I",0);
     i_ngenjets   = data->add<int>("","ngenjets","I",0);
@@ -117,37 +131,63 @@ struct TreeFiller {
     i_j2eta      = data->add<float>("","j2eta","F",0);
     i_j3pt       = data->add<float>("","j3pt","F",0);
     i_j3eta      = data->add<float>("","j3eta","F",0);
-    i_b1pt       = data->add<float>("","b1pt","F",0);
-    i_b1eta      = data->add<float>("","b1eta","F",0);
-    i_b2pt       = data->add<float>("","b2pt","F",0);
-    i_b2eta      = data->add<float>("","b2eta","F",0);
+    i_csvj1pt    = data->add<float>("","csvj1pt","F",0);
+    i_csvj1eta   = data->add<float>("","csvj1eta","F",0);
+    i_csvj2pt    = data->add<float>("","csvj2pt","F",0);
+    i_csvj2eta   = data->add<float>("","csvj2eta","F",0);
     i_dphij1met  = data->add<float>("","dphij1met","F",0);
     i_dphij2met  = data->add<float>("","dphij2met","F",0);
     i_dphij12met = data->add<float>("","dphij12met","F",0);
     i_dphij3met  = data->add<float>("","dphij3met","F",0);
-    i_mtb1met    = data->add<float>("","mtb1met","F",0);
-    i_mtb2met    = data->add<float>("","mtb2met","F",0);
     i_mtcsv1met  = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
-    i_mtb12met   = data->add<float>("","mtb12met","F",0);
+    i_mtcsv12met   = data->add<float>("","mtcsv12met","F",0);
+    i_dphicsv1met   = data->add<float>("","dphicsv1met","F",0);
+    i_dphicsv2met   = data->add<float>("","dphicsv2met","F",0);
+    i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
+    i_leptonpt   = data->add<float>("","leptonpt","F",0);
+    i_leptoneta  = data->add<float>("","leptoneta","F",0);
+    i_mtlepmet   = data->add<float>("","mtlepmet","F",0);
+    i_absdphilepw = data->add<float>("","absdphilepw","F",0);
+
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_genmet, ana->genmet->pt());
+    if(!lepAddedBack)
+    {
     data->fill<float>(i_met, ana->met->pt());
+    data->fill<float>(i_metphi, ana->met->phi());
+    }
+    else
+    {
+    data->fill<float>(i_met, metn->pt());
+    data->fill<float>(i_metphi, metn->phi());
+    }
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd = 0;
     for(auto* ctt : ana->cttTops) {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
+    if(ana->nSelLeptons > 0)
+    {
+    MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
+    MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
+    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
+    data->fill<float>(i_leptonpt, lep->pt());
+    data->fill<float>(i_leptoneta, lep->eta());
+    data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
+    }
+
   }
 
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
@@ -199,31 +239,35 @@ struct TreeFiller {
       data->fill<float>(i_j3eta, jets[2]->eta());
       data->fill<float>(i_dphij3met, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
     }
-    if(bjets.size() > 0) {
-      data->fill<float>(i_b1pt, bjets[0]->pt());
-      data->fill<float>(i_b1eta, bjets[0]->eta());
-      data->fill<float>(i_mtb1met, JetKinematics::transverseMass(*bjets[0], *met));
-    }
-    if(bjets.size() > 1) {
-      data->fill<float>(i_b2pt, bjets[1]->pt());
-      data->fill<float>(i_b2eta, bjets[1]->eta());
-      data->fill<float>(i_mtb2met, JetKinematics::transverseMass(*bjets[1], *met));
-    }
 
     vector<RecoJetF*> jetsCSVranked;
     rankedByCSV(jets,jetsCSVranked);
-    float mtcsv1met = 0.0, mtcsv2met = 0.0;
+
+    float mtcsv1met = 0.0, mtcsv2met = 0.0,dphicsv1met = 0.0,dphicsv2met = 0.0;
     if(jetsCSVranked.size() > 0) {
       mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
+      dphicsv1met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[0], *met));
       data->fill<float>(i_mtcsv1met, mtcsv1met);
-      if(jetsCSVranked.size() == 1)
-        data->fill<float>(i_mtb12met, mtcsv1met);
+      data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
+      data->fill<float>(i_csvj1eta, jetsCSVranked[0]->eta());
+      data->fill<float>(i_dphicsv1met, dphicsv1met);
+      if(jetsCSVranked.size() == 1) {
+        data->fill<float>(i_mtcsv12met, mtcsv1met);
+        data->fill<float>(i_dphicsv12met, dphicsv1met);
+      }
     }
+
     if(jetsCSVranked.size() > 1) {
       mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
+      dphicsv2met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[1], *met));
+      data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
+      data->fill<float>(i_csvj2eta, jetsCSVranked[1]->eta());
       data->fill<float>(i_mtcsv2met, mtcsv2met);
-      data->fill<float>(i_mtb12met, min(mtcsv1met,mtcsv2met));
+      data->fill<float>(i_mtcsv12met, min(mtcsv1met,mtcsv2met));
+      data->fill<float>(i_dphicsv2met, dphicsv2met);
+      data->fill<float>(i_dphicsv12met,min(dphicsv1met,dphicsv2met));
     }
+
   }
 
 };
