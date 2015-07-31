@@ -12,16 +12,14 @@ using namespace ucsbsusy;
 
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
 
@@ -29,7 +27,6 @@ cfgSet::ConfigSet pars0LepPhoton() {
 struct TreeFiller {
 
   TreeFiller() {}
-
   size i_run          ;
   size i_lumi         ;
   size i_event        ;
@@ -79,14 +76,9 @@ struct TreeFiller {
   size i_leptoneta    ;
   size i_mtlepmet     ;
 
-/*  bool passCTTSelection(CMSTopF* ctt) {
+  bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
-  } 74X functions */
-
-
-    bool passCTTSelection(CMSTopF* ctt) {
-      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-    }
+  } 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
     outJets.resize(inJets.size());
@@ -136,8 +128,8 @@ struct TreeFiller {
     i_csvj1eta       = data->add<float>("","csvj1eta","F",0);
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_csvj2eta       = data->add<float>("","csvj2eta","F",0);
-    i_csv1           = data->add<float>("","csvj1pt","F",0);
-    i_csv2           = data->add<float>("","csvj1pt","F",0);
+    i_csv1           = data->add<float>("","csv1","F",0);
+    i_csv2           = data->add<float>("","csv1","F",0);
     i_dphij1met      = data->add<float>("","dphij1met","F",0);
     i_dphij2met      = data->add<float>("","dphij2met","F",0);
     i_dphij12met     = data->add<float>("","dphij12met","F",0);
@@ -154,8 +146,7 @@ struct TreeFiller {
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
-
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
@@ -181,16 +172,16 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
+
     if(ana->nSelLeptons > 0)
     {
     MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-    MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
-    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
+    MomentumF* w = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
+    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*w, *lep)) );
     data->fill<float>(i_leptonpt, lep->pt());
     data->fill<float>(i_leptoneta, lep->eta());
     data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
-
   }
 
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
@@ -215,10 +206,10 @@ struct TreeFiller {
     for(auto* b : bjets) {
       if(b->csv() > defaults::CSV_TIGHT) ntbjets++;
     }
-    data->fill<int>(i_njets, int(jets.size()));
-    data->fill<int>(i_njets60, njets60);
-    data->fill<int>(i_nbjets, int(bjets.size()));
-    data->fill<int>(i_ntbjets, ntbjets);
+    data->fill<int  >(i_njets, int(jets.size()));
+    data->fill<int  >(i_njets60, njets60);
+    data->fill<int  >(i_nbjets, int(bjets.size()));
+    data->fill<int  >(i_ntbjets, ntbjets);
     data->fill<float>(i_ht, JetKinematics::ht(jets, 20.0, 2.4));
 
     float dphij1met = 0.0, dphij2met = 0.0;
@@ -295,9 +286,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
       if(nVetoedLeptons > 0)  return false;
-      if(nVetoedTracks > 0)     return false;
+      if(nVetoedTracks > 0)   return false;
       if(met->pt() < metcut_) return false;
-      if(!goodvertex) return false;
+      if(!goodvertex)         return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

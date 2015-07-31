@@ -137,7 +137,7 @@ Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 request_memory          = 199
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefix}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -151,7 +151,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefix="${prefix}", workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir,name=samples[isam], j=ifile))
@@ -291,7 +291,10 @@ rm submit.cmd""".format(
                 runscript=args.script, stype=args.submittype, pathtocfg=args.path, cfg=args.config, infile=jobfile, workdir="${CMSSW_BASE}", sname=samples[isam], num=ijob, jobdir=args.jobdir, outputdir=args.outdir, outputname=outfile, maxevents=maxevts, skipevents=skipevts, evttag=suffix
                 ))
                 jobscript.close()
-                script.write("cp $jobdir/{infile} $workdir \n./$jobdir/submit_{name}_{j}.sh\n".format(infile=jobfile, name=samples[isam], j=ijob))
+                cpinput = ""
+                if args.splittype == "file" or (args.splittype == "event" and ijob == 0) :
+                    cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
+                script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" %(args.jobdir, samples[isam], ijob))
 
 

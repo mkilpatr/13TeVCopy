@@ -171,8 +171,8 @@ load(cfgSet::PFCANDS); // load pfcands for track vetoes
 load(cfgSet::TAUS); // for tau vetoes
 load(cfgSet::EVTINFO);
 load(cfgSet::AK4JETS);
-load(cfgSet::PICKYJETS);
-load(cfgSet::CASUBJETS);
+//load(cfgSet::PICKYJETS);
+//load(cfgSet::CASUBJETS);
 load(cfgSet::ELECTRONS);
 load(cfgSet::MUONS);
 load(cfgSet::PHOTONS);
@@ -221,8 +221,8 @@ void Analyzer::runEvent()
   if(!goodvertex) return;
 
   // double wgt = lumi_*xsec_/getEntries();  // old way
-  float wgt = evtInfoReader.weight;
-  ScaleFactor = wgt;
+  //float wgt = evtInfoReader.weight;
+  ScaleFactor = weight;
 
   // always require exactly one selected lepton
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
@@ -472,9 +472,13 @@ void Analyzer::runEvent()
   bool passpreselection = passmet && passmt && passchi2 && passjetphi;
 
   // fill histos for partial preselections
-  if(passjets) plots["met_passjets"]  ->Fill(met->pt(), wgt);
-  if(passmet)  plots["njets_passmet"] ->Fill(nJets, wgt);
-  if(passmet)  plots["nbjets_passmet"]->Fill(nBJets, wgt);
+  //if(passjets) plots["met_passjets"]  ->Fill(met->pt(), wgt);
+  //if(passmet)  plots["njets_passmet"] ->Fill(nJets, wgt);
+  //if(passmet)  plots["nbjets_passmet"]->Fill(nBJets, wgt);
+
+  if(passjets) plots["met_passjets"]  ->Fill(met->pt(), weight);
+  if(passmet)  plots["njets_passmet"] ->Fill(nJets, weight);
+  if(passmet)  plots["nbjets_passmet"]->Fill(nBJets, weight);
 
   // enforce preselection
 //  if(!passpreselection) return;
@@ -487,15 +491,26 @@ void Analyzer::runEvent()
   rankedByCSV(jets,jetsCSV);
 
   // plots after preselection
-  plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
-  plots["leppt_passpresel"]     ->Fill(lep->pt(), wgt);
-  plots["jet1pt_passpresel"]    ->Fill(jets.at(0)->pt(), wgt);
-  plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *met)), wgt);
-  plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *W)), wgt);
-  plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*lep, *met), wgt);
+  //plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
+  //plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), wgt);
+  //plots["leppt_passpresel"]     ->Fill(lep->pt(), wgt);
+  //plots["jet1pt_passpresel"]    ->Fill(jets.at(0)->pt(), wgt);
+  //plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *met)), wgt);
+  //plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *W)), wgt);
+  //plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*lep, *met), wgt);
 
-  plots["mt2w_passpresel"]      ->Fill(mt2w,wgt);
-  plots["minTopness_passpresel"]       ->Fill(minTopness,wgt);
+  //plots["mt2w_passpresel"]      ->Fill(mt2w,wgt);
+  //plots["minTopness_passpresel"]       ->Fill(minTopness,wgt);
+
+  plots["ht_passpresel"]        ->Fill(JetKinematics::ht(jets), weight);
+  plots["leppt_passpresel"]     ->Fill(lep->pt(), weight);
+  plots["jet1pt_passpresel"]    ->Fill(jets.at(0)->pt(), weight);
+  plots["dphilepmet_passpresel"]->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *met)), weight);
+  plots["dphilepw_passpresel"]  ->Fill(fabs(PhysicsUtilities::deltaPhi(*lep, *W)), weight);
+  plots["mtlepmet_passpresel"]  ->Fill(JetKinematics::transverseMass(*lep, *met), weight);
+
+  plots["mt2w_passpresel"]      ->Fill(mt2w,weight);
+  plots["minTopness_passpresel"]       ->Fill(minTopness,weight);
 
 // event list used to sync with Pieter (NOT the twiki sync)
 //  int genlepsfromtop = nElectronsGenFromTops+nMuonsGenFromTops+nTausGenFromTops;
@@ -588,7 +603,9 @@ void processSingleLepton(TString sname = "test",               // sample name
   //cfg.vetoedLeptons.minMuPt = 5;
 
   // Declare analyzer
-  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
+  //Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
+  TString treename = isMC ? "TestAnalyzer/Events" : "Events";
+  Analyzer a(fullname, treename, isMC, &cfg, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(200000000);

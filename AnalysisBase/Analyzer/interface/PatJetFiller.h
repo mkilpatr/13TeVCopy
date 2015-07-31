@@ -16,7 +16,7 @@ namespace ucsbsusy {
 
       float getJecUncorrection(const pat::Jet& jet) const { return jet.pt()*jet.jecFactor("Uncorrected");}
       float getPUJetId(const pat::Jet& jet) const {return jet.userFloat("pileupJetId:fullDiscriminant");}
-      float getbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");}
+      float getbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");}
       float getQGDisc(const pat::Jet& jet) const{ return qglInterface_->getDiscriminator(jet,*evtInfofiller_->rho_);}
       float getBetaStar(const pat::Jet& jet) const{ return qgTaggingVar_->getBetaStar(&jet,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_);}
   };

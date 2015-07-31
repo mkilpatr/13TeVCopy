@@ -8,17 +8,17 @@
 // 
 //--------------------------------------------------------------------------------------------------
 
-#ifndef ANALYSISTOOLS_TREEREADER_CMSTOPREADER_H
-#define ANALYSISTOOLS_TREEREADER_CMSTOPREADER_H
+#ifndef ANALYSISTOOLS_TREEREADER_AK8JETREADER_H
+#define ANALYSISTOOLS_TREEREADER_AK8JETREADER_H
 
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
-#include "AnalysisTools/DataFormats/interface/CMSTop.h"
+#include "AnalysisTools/DataFormats/interface/FatJet.h"
 #include <TRandom3.h>
 
 namespace ucsbsusy {
 
-  class CMSTopReader : public BaseReader {
+  class Ak8JetReader : public BaseReader {
   public :
     enum  Options {
                       NULLOPT     = 0
@@ -28,8 +28,8 @@ namespace ucsbsusy {
     };
     static const int defaultOptions;
     
-    CMSTopReader();
-    ~CMSTopReader() {}
+    Ak8JetReader();
+    ~Ak8JetReader() {}
     
     void load(TreeReader *treeReader, int options, std::string branchName);
     void refresh();
@@ -37,24 +37,21 @@ namespace ucsbsusy {
     void pushToTree(); //push changes made to the momentum back to the tree
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-    std::vector<float>* toprawmass_;
-    std::vector<float>* toptrimmedmass_;
-    std::vector<float>* topprunedmass_;
-    std::vector<float>* topsoftdropmass_;
-    std::vector<float>* topfilteredmass_;
-    std::vector<float>* topcmstoptagmass_;
-    std::vector<float>* toptau1_;
-    std::vector<float>* toptau2_;
-    std::vector<float>* toptau3_;
-    std::vector<float>* toppt_;
-    std::vector<float>* topeta_;
-    std::vector<float>* topphi_;
-    std::vector<float>* topwmass_;
-    std::vector<float>* topminmass_;
-    std::vector<int>*   topnsubjets_;
+    std::vector<float>* ak8rawmass_;
+    std::vector<float>* ak8trimmedmass_;
+    std::vector<float>* ak8prunedmass_;
+    std::vector<float>* ak8softdropmass_;
+    std::vector<float>* ak8filteredmass_;
+    std::vector<float>* ak8cmstoptagmass_;
+    std::vector<float>* ak8tau1_;
+    std::vector<float>* ak8tau2_;
+    std::vector<float>* ak8tau3_;
+    std::vector<float>* ak8pt_;
+    std::vector<float>* ak8eta_;
+    std::vector<float>* ak8phi_;
 
     //the actual jet collection
-    CMSTopFCollection cmsTops;
+    FatJetFCollection ak8Jets;
 
 };
 

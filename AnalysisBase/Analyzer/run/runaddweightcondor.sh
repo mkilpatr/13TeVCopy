@@ -36,4 +36,11 @@ root -l -b -q $runmacro+\(\"${filename}\",\"${process}\",$xsec,$lumi,$totposeven
 status=`echo $?`
 echo "Status = $status"
 
+if [[ "$outputdir" =~ ^/eos/uscms/.* ]]; then
+  xrdcp -np ${outputname} root://cmseos:1094/${outputdir}/
+  rm ${outputname}
+else
+  mv ${outputname} ${outputdir}/
+fi
+
 exit $status
