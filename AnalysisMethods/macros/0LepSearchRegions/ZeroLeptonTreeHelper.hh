@@ -77,10 +77,14 @@ struct TreeFiller {
   size i_leptoneta ;
   size i_mtlepmet  ;
 
-  bool passCTTSelection(CMSTopF* ctt) {
+/*  bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
-  }
+  } 74X functions */
 
+
+    bool passCTTSelection(CMSTopF* ctt) {
+      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
+    }
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
     outJets.resize(inJets.size());
@@ -147,14 +151,22 @@ struct TreeFiller {
 
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_genmet, ana->genmet->pt());
+    if(!lepAddedBack)
+    {
     data->fill<float>(i_met, ana->met->pt());
     data->fill<float>(i_metphi, ana->met->phi());
+    }
+    else
+    {
+    data->fill<float>(i_met, metn->pt());
+    data->fill<float>(i_metphi, metn->phi());
+    }
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
