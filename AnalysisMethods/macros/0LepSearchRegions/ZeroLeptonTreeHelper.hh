@@ -27,58 +27,65 @@ cfgSet::ConfigSet pars0LepPhoton() {
 struct TreeFiller {
 
   TreeFiller() {}
-  size i_run          ;
-  size i_lumi         ;
-  size i_event        ;
-  size i_weight       ;
-  size i_genmet       ;
-  size i_bosonpt      ;
-  size i_bosoneta     ;
-  size i_met          ;
-  size i_metphi       ;
-  size i_npv          ;
-  size i_nvetotau     ;
-  size i_nvetolep     ;
-  size i_nsellep      ;
-  size i_nctt         ;
-  size i_ncttstd      ;
-  size i_ngenjets     ;
-  size i_ngenbjets    ;
-  size i_njets        ;
-  size i_njets60      ;
-  size i_nbjets       ;
-  size i_ntbjets      ;
-  size i_ht           ;
-  size i_j1pt         ;
-  size i_j1eta        ;
-  size i_j2pt         ;
-  size i_j2eta        ;
-  size i_j3pt         ;
-  size i_j3eta        ;
-  size i_csvj1pt      ;
-  size i_csvj1eta     ;
-  size i_csvj2pt      ;
-  size i_csvj2eta     ;
-  size i_csv1         ;
-  size i_csv2         ;
-  size i_dphij1met    ;
-  size i_dphij2met    ;
-  size i_dphij12met   ;
-  size i_dphij3met    ;
-  size i_mtcsv1met    ;
-  size i_mtcsv2met    ;
-  size i_mtcsv12met   ;
-  size i_dphicsv1met  ;
-  size i_dphicsv2met  ;
-  size i_dphicsv12met ;
-  size i_absdphilepw  ;
-  size i_leptonpt     ;
-  size i_leptoneta    ;
-  size i_mtlepmet     ;
+  size i_run       ;
+  size i_lumi      ;
+  size i_event     ;
+  size i_weight    ;
+  size i_genmet    ;
+  size i_bosonpt   ;
+  size i_bosoneta  ;
+  size i_met       ;
+  size i_metphi    ;
+  size i_npv       ;
+  size i_nvetotau  ;
+  size i_nvetolep  ;
+  size i_nsellep   ;
+  size i_nctt      ;
+  size i_ncttstd   ;
+  size i_ngenjets  ;
+  size i_ngenbjets ;
+  size i_njets     ;
+  size i_njets60   ;
+  size i_nbjets    ;
+  size i_ntbjets   ;
+  size i_ht        ;
+  size i_j1pt      ;
+  size i_j1eta     ;
+  size i_j2pt      ;
+  size i_j2eta     ;
+  size i_j3pt      ;
+  size i_j3eta     ;
+  size i_csvj1pt   ;
+  size i_csvj1eta  ;
+  size i_csvj2pt   ;
+  size i_csvj2eta  ;
+  size i_csv1      ;
+  size i_csv2      ;
+  size i_dphij1met ;
+  size i_dphij2met ;
+  size i_dphij12met;
+  size i_dphij3met ;
+  size i_mtcsv1met ;
+  size i_mtcsv2met ;
+  size i_mtcsv12met;
+  size i_dphicsv1met;
+  size i_dphicsv2met;
+  size i_dphicsv12met;
+  size i_absdphilepw;
+  size i_leptonpt  ;
+  size i_leptoneta ;
+  size i_mtlepmet  ;
 
-  bool passCTTSelection(CMSTopF* ctt) {
+ bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   } 
+
+
+/*     bool passCTTSelection(CMSTopF* ctt) {
+      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
+    }73X functions */
+    
+
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
     outJets.resize(inJets.size());
@@ -129,7 +136,7 @@ struct TreeFiller {
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_csvj2eta       = data->add<float>("","csvj2eta","F",0);
     i_csv1           = data->add<float>("","csv1","F",0);
-    i_csv2           = data->add<float>("","csv1","F",0);
+    i_csv2           = data->add<float>("","csv2","F",0);
     i_dphij1met      = data->add<float>("","dphij1met","F",0);
     i_dphij2met      = data->add<float>("","dphij2met","F",0);
     i_dphij12met     = data->add<float>("","dphij12met","F",0);
@@ -146,7 +153,7 @@ struct TreeFiller {
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
@@ -172,16 +179,16 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
-
     if(ana->nSelLeptons > 0)
     {
     MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-    MomentumF* w = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
-    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*w, *lep)) );
+    MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
+    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
     data->fill<float>(i_leptonpt, lep->pt());
     data->fill<float>(i_leptoneta, lep->eta());
     data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
+
   }
 
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
