@@ -167,7 +167,7 @@ void PlotStuff::loadPlots()
           TString histname = var.name + "_" + sample->name;
           TString drawstr = var.varname + ">>" + histname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
-          if(isData(sample->name))
+          if( isData(sample->name) && !config_.dataismc )
             cutstr = "1.0*(" + var.selection + ")";
           if(var.varname.Contains(":")) {
             TH2F* hist2d = 0;
@@ -501,7 +501,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
           nbins = hists[isam]->GetNbinsX();
 
         if(hists[isam]->GetMaximum() > max) {
-          if(isData(sname) || isBackground(sname) || (isSignal(sname) && config_.sigscale == 1)) {
+          if(isData(sname) || (isBackground(sname) && !config_.scaletodata) || (isSignal(sname) && config_.sigscale == 1)) {
             max = hists[isam]->GetMaximum();
             maxbin = hists[isam]->GetMaximumBin();
           }
