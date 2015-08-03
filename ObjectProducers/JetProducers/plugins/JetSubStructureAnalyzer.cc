@@ -101,7 +101,7 @@ public:
   , genJetVars       ((options_ & LOADGEN) ? new JetVars(branchName + "_gen",&data) : new JetVars())
   {}
   virtual ~SubJetFiller() {delete recoJetVars; delete genJetVars;}
-  virtual void load(const edm::Event& iEvent) {
+  virtual void load(const edm::Event& iEvent, edm::EventSetup const &iSetup) {
     reset();
     FileUtilities::enforceGet(iEvent,jetTag_,jets_,true);
 

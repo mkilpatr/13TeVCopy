@@ -11,7 +11,7 @@ namespace ucsbsusy {
       RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
       virtual ~RecoJetFiller() {}
 
-      virtual void load(const edm::Event& iEvent);
+      virtual void load(const edm::Event& iEvent,edm::EventSetup const &isetup);
 
       reco::GenJetRef getReGenJet(const reco::PFJet& jet,const int index = -1, const bool enforce = false)  const;
       reco::GenJetRef getStdGenJet(const reco::PFJet& jet) const;

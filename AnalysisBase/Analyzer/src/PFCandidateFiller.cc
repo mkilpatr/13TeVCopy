@@ -60,6 +60,7 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   itaudisc_dphipresel_    = data.addMulti<float>(branchName_,"taudisc_dphipresel",-10.0);
 }
 
+
 int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
 {
 
@@ -213,7 +214,7 @@ float PFCandidateFiller::computePFIsolation(const pat::PackedCandidate* particle
 
 }
 
-void PFCandidateFiller::load(const edm::Event& iEvent)
+void PFCandidateFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   reset();
   iEvent.getByToken(pfCandToken_, pfcands_);

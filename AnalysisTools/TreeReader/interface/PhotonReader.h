@@ -12,6 +12,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 namespace ucsbsusy {
 
@@ -40,6 +41,7 @@ namespace ucsbsusy {
       std::vector<float> *    mass;
       std::vector<float> *    r9;
       std::vector<float> *    pfdbetaiso;
+      std::vector<bool>  *    isveto;
       std::vector<bool>  *    isloose;
       std::vector<bool>  *    ismedium;
       std::vector<bool>  *    istight;

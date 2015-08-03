@@ -35,6 +35,7 @@ TriggerFiller::TriggerFiller(const edm::ParameterSet& cfg, edm::ConsumesCollecto
 
 }
 
+
 //--------------------------------------------------------------------------------------------------
 void TriggerFiller::initTriggerNames()
 {
@@ -87,7 +88,7 @@ void TriggerFiller::initTriggerNames()
 }
 
 //--------------------------------------------------------------------------------------------------
-void TriggerFiller::load(const edm::Event& iEvent)
+void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);

@@ -46,7 +46,8 @@ public:
       JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
       ~JetFiller() {}
 
-      virtual void load(const edm::Event& iEvent);
+      //void beginRun(edm::Run const &run, edm::EventSetup const &iSetup);
+      virtual void load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       virtual void fill();
 
       virtual reco::GenJetRef getReGenJet(const Jet& jet,const int index = -1, const bool enforce = false) const  = 0;

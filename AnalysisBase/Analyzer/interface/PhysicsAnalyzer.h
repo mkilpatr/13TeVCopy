@@ -47,7 +47,7 @@ namespace ucsbsusy {
       PhysicsAnalyzer(const edm::ParameterSet& iConfig);
       virtual ~PhysicsAnalyzer();
 
-      virtual void beginJob() override;
+      virtual void beginJob(edm::Run const&, edm::EventSetup const&);
       virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       virtual void book();
       virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
@@ -60,7 +60,9 @@ namespace ucsbsusy {
       //--------------------------------------------------------------------------------------------------
     public:
       enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, TRIGGERS, METFILTERS};
+      //virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, edm::EventSetup const& es, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
+      //virtual void initialize(const edm::ParameterSet& cfg, edm::EventSetup const& es, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
 

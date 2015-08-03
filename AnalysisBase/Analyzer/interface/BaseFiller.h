@@ -38,13 +38,17 @@ namespace ucsbsusy {
     // Create branches needed in the tree
     virtual void book(TreeWriter& tW) {data.book(&tW);}
 
+    //virtual void beginJob(edm::Run const&, edm::EventSetup const&)=0;
+
+    //virtual void beginRun(edm::Run const &run, edm::EventSetup const &iSetup)=0;
+
     // Reset objects
     virtual void reset() {isLoaded_ = false; isFilled_ = false; data.reset();}
 
     // Default loading function
     // This guy needs to be defined for each implementation and is run once per event
     // If storeOnlyPtr is true object creation is cancelled and only the pointer is loaded
-    virtual void load(const edm::Event& iEvent) = 0;
+    virtual void load(const edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
 
     // Tree filling function
     virtual void fill() = 0;

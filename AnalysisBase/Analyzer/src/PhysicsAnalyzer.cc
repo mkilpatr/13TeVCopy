@@ -47,7 +47,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 PhysicsAnalyzer::~PhysicsAnalyzer() {for(auto f : initializedFillers) delete f; }
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::beginJob() {}
+void PhysicsAnalyzer::beginJob(edm::Run const &run, edm::EventSetup const &es) {}
 
 //--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
@@ -83,7 +83,7 @@ void PhysicsAnalyzer::book()
 //--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  for(auto f : initializedFillers) {f->load(iEvent); }
+  for(auto f : initializedFillers) {f->load(iEvent,iSetup); }
   return true;
 }
 //--------------------------------------------------------------------------------------------------
@@ -93,6 +93,14 @@ void PhysicsAnalyzer::fill()
   treeWriter()->fill();
 }
 
+//--------------------------------------------------------------------------------------------------
+/*void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, edm::EventSetup const &es, const VarType type, const int options, const std::string branchName){
+  if(cfg.existsAs<edm::ParameterSet>(pSetName, false)) {
+    edm::ParameterSet fcfg(cfg.getUntrackedParameter<edm::ParameterSet>(pSetName));   // parameter set for this filler
+    bool fill = fcfg.getUntrackedParameter<bool>("isFilled");                         // to fill or not to fill
+    if(fill) initialize(fcfg, es, type, options, branchName);
+  }
+  }*/
 //--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options, const std::string branchName){
   if(cfg.existsAs<edm::ParameterSet>(pSetName, false)) {
@@ -247,19 +255,6 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-    case PHOTONS : {
-      int defaultOptions = PhotonFiller::defaultOptions;
-      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
-      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
-
-      photons = new PhotonFiller(cfg, consumesCollector(),
-                                 options < 0 ? defaultOptions : options,
-                                 branchName == "" ? defaults::BRANCH_PHOTONS : branchName
-                                 );
-      initializedFillers.push_back(photons);
-      break;
-    }
-
     case PFCANDS : {
       int defaultOptions = PFCandidateFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("saveAllCandidates")) defaultOptions |= PFCandidateFiller::SAVEALLCANDS;
@@ -310,9 +305,21 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(metfilters);
       break;
     }
+    case PHOTONS : {
+      int defaultOptions = PhotonFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+    
+      photons = new PhotonFiller(cfg, consumesCollector(),
+			       options < 0 ? defaultOptions : options,
+			       branchName == "" ? defaults::BRANCH_PHOTONS : branchName
+			       );
+      initializedFillers.push_back(photons);
+      break;
+    }
 
     default : {
-      cout << endl << "No settings for type: " << type << " found!" << endl;
+      cout << endl << "No settings for type: " << type << " found, maybe you should use the initialization enabling the event setup!" << endl;
       break;
     }
   }

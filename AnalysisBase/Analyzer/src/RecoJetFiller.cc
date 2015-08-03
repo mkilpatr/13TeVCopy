@@ -6,10 +6,9 @@ RecoJetFiller::RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollecto
   reGenJetAssocToken_   (cc.consumes<edm::ValueMap<reco::CandidatePtr> >(cfg.getParameter<edm::InputTag>("reGenJetAssoc")))
 {}
 
-
 //--------------------------------------------------------------------------------------------------
-void RecoJetFiller::load(const edm::Event& iEvent){
-  JetFiller<reco::PFJet>::load(iEvent);
+void RecoJetFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+  JetFiller<reco::PFJet>::load(iEvent, iSetup);
   if(fillReGenJets_) iEvent.getByToken(reGenJetAssocToken_,genJetPtr_);
   if(options_ & LOADBTAG) iEvent.getByToken(bTagsToken_,btags_);
 }

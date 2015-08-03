@@ -45,7 +45,7 @@ void METFiltersFiller::initTriggerNames()
 }
 
 //--------------------------------------------------------------------------------------------------
-void METFiltersFiller::load(const edm::Event& iEvent)
+void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);

@@ -23,7 +23,8 @@ namespace ucsbsusy {
     FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~FatJetFiller() {}
 
-    void load(const edm::Event& iEvent);
+    void beginRun(edm::Run const &run, edm::EventSetup const &iSetup);
+    void load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
     void fill();
 
   private :
