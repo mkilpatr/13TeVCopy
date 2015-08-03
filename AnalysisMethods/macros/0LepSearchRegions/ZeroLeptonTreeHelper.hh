@@ -137,7 +137,7 @@ struct TreeFiller {
     i_dphij1met  = data->add<float>("","dphij1met","F",0);
     i_dphij2met  = data->add<float>("","dphij2met","F",0);
     i_dphij12met = data->add<float>("","dphij12met","F",0);
-    i_dphij3met  = data->add<float>("","dphij3met","F",0);
+    i_dphij3met  = data->add<float>("","dphij3met","F",3);
     i_mtcsv1met  = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
     i_mtcsv12met   = data->add<float>("","mtcsv12met","F",0);
@@ -277,7 +277,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
       TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
-    const double metcut_ = 200.0 ;
+    const double metcut_ = 175.0 ;
 
     TreeFiller filler;
 
@@ -298,5 +298,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
 };
+
 
 #endif
