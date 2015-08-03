@@ -14,11 +14,6 @@ double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, Lorentz
 
     // I am asumming that jets is sorted by Pt
     assert ( jets.size() == bvalue.size() );
-    // require at least 2 jets
-    if ( jets.size()<3 ) return 99999.; 
-
-
-    if(jets.size() < 3) return -99;
   
     vector<pair<double,int> > rankedJets(jets.size());
     for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
