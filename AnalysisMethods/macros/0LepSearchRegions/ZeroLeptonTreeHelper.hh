@@ -29,7 +29,6 @@ cfgSet::ConfigSet pars0LepPhoton() {
 struct TreeFiller {
 
   TreeFiller() {}
-
   size i_run       ;
   size i_lumi      ;
   size i_event     ;
@@ -77,10 +76,15 @@ struct TreeFiller {
   size i_leptoneta ;
   size i_mtlepmet  ;
 
-/*  bool passCTTSelection(CMSTopF* ctt) {
+ bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
-  } 74X functions */
+  } 
 
+
+/*     bool passCTTSelection(CMSTopF* ctt) {
+      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
+    }73X functions */
+    
 
     bool passCTTSelection(CMSTopF* ctt) {
       return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
@@ -102,55 +106,56 @@ struct TreeFiller {
   }
 
   void book(TreeWriterData* data) {
-    i_run        = data->add<unsigned int>("","run","i",0);
-    i_lumi       = data->add<unsigned int>("","lumi","i",0);
-    i_event      = data->add<unsigned int>("","event","i",0);
-    i_weight     = data->add<float>("","weight","F",0);
-    i_genmet     = data->add<float>("","genmet","F",0);
-    i_bosonpt    = data->add<float>("","bosonpt","F",0);
-    i_bosoneta   = data->add<float>("","bosoneta","F",0);
-    i_met        = data->add<float>("","met","F",0);
-    i_metphi     = data->add<float>("","metphi","F",0);
-    i_npv        = data->add<int>("","npv","I",0);
-    i_nvetotau   = data->add<int>("","nvetotau","I",0);
-    i_nvetolep   = data->add<int>("","nvetolep","I",0);
-    i_nsellep   = data->add<int>("","nsellep","I",0);
-    i_nctt       = data->add<int>("","nctt","I",0);
-    i_ncttstd    = data->add<int>("","ncttstd","I",0);
-    i_ngenjets   = data->add<int>("","ngenjets","I",0);
-    i_ngenbjets  = data->add<int>("","ngenbjets","I",0);
-    i_njets      = data->add<int>("","njets","I",0);
-    i_njets60    = data->add<int>("","njets60","I",0);
-    i_nbjets     = data->add<int>("","nbjets","I",0);
-    i_ntbjets    = data->add<int>("","ntbjets","I",0);
-    i_ht         = data->add<float>("","ht","F",0);
-    i_j1pt       = data->add<float>("","j1pt","F",0);
-    i_j1eta      = data->add<float>("","j1eta","F",0);
-    i_j2pt       = data->add<float>("","j2pt","F",0);
-    i_j2eta      = data->add<float>("","j2eta","F",0);
-    i_j3pt       = data->add<float>("","j3pt","F",0);
-    i_j3eta      = data->add<float>("","j3eta","F",0);
-    i_csvj1pt    = data->add<float>("","csvj1pt","F",0);
-    i_csvj1eta   = data->add<float>("","csvj1eta","F",0);
-    i_csvj2pt    = data->add<float>("","csvj2pt","F",0);
-    i_csvj2eta   = data->add<float>("","csvj2eta","F",0);
-    i_dphij1met  = data->add<float>("","dphij1met","F",0);
-    i_dphij2met  = data->add<float>("","dphij2met","F",0);
-    i_dphij12met = data->add<float>("","dphij12met","F",0);
-    i_dphij3met  = data->add<float>("","dphij3met","F",3);
-    i_mtcsv1met  = data->add<float>("","mtcsv1met","F",0);
-    i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
-    i_mtcsv12met   = data->add<float>("","mtcsv12met","F",0);
-    i_dphicsv1met   = data->add<float>("","dphicsv1met","F",0);
-    i_dphicsv2met   = data->add<float>("","dphicsv2met","F",0);
+    i_run            = data->add<unsigned int>("","run","i",0);
+    i_lumi           = data->add<unsigned int>("","lumi","i",0);
+    i_event          = data->add<unsigned int>("","event","i",0);
+    i_weight         = data->add<float>("","weight","F",0);
+    i_genmet         = data->add<float>("","genmet","F",0);
+    i_bosonpt        = data->add<float>("","bosonpt","F",0);
+    i_bosoneta       = data->add<float>("","bosoneta","F",0);
+    i_met            = data->add<float>("","met","F",0);
+    i_metphi         = data->add<float>("","metphi","F",0);
+    i_npv            = data->add<int>("","npv","I",0);
+    i_nvetotau       = data->add<int>("","nvetotau","I",0);
+    i_nvetolep       = data->add<int>("","nvetolep","I",0);
+    i_nsellep        = data->add<int>("","nsellep","I",0);
+    i_nctt           = data->add<int>("","nctt","I",0);
+    i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_ngenjets       = data->add<int>("","ngenjets","I",0);
+    i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
+    i_njets          = data->add<int>("","njets","I",0);
+    i_njets60        = data->add<int>("","njets60","I",0);
+    i_nbjets         = data->add<int>("","nbjets","I",0);
+    i_ntbjets        = data->add<int>("","ntbjets","I",0);
+    i_ht             = data->add<float>("","ht","F",0);
+    i_j1pt           = data->add<float>("","j1pt","F",0);
+    i_j1eta          = data->add<float>("","j1eta","F",0);
+    i_j2pt           = data->add<float>("","j2pt","F",0);
+    i_j2eta          = data->add<float>("","j2eta","F",0);
+    i_j3pt           = data->add<float>("","j3pt","F",0);
+    i_j3eta          = data->add<float>("","j3eta","F",0);
+    i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_csvj1eta       = data->add<float>("","csvj1eta","F",0);
+    i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
+    i_csvj2eta       = data->add<float>("","csvj2eta","F",0);
+    i_csv1           = data->add<float>("","csv1","F",0);
+    i_csv2           = data->add<float>("","csv2","F",0);
+    i_dphij1met      = data->add<float>("","dphij1met","F",0);
+    i_dphij2met      = data->add<float>("","dphij2met","F",0);
+    i_dphij12met     = data->add<float>("","dphij12met","F",0);
+    i_dphij3met      = data->add<float>("","dphij3met","F",3);
+    i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
+    i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
+    i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
+    i_dphicsv1met    = data->add<float>("","dphicsv1met","F",0);
+    i_dphicsv2met    = data->add<float>("","dphicsv2met","F",0);
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
-    i_leptonpt   = data->add<float>("","leptonpt","F",0);
-    i_leptoneta  = data->add<float>("","leptoneta","F",0);
-    i_mtlepmet   = data->add<float>("","mtlepmet","F",0);
-    i_absdphilepw = data->add<float>("","absdphilepw","F",0);
+    i_leptonpt       = data->add<float>("","leptonpt","F",0);
+    i_leptoneta      = data->add<float>("","leptoneta","F",0);
+    i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
+    i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
-
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
@@ -249,6 +254,7 @@ struct TreeFiller {
       data->fill<float>(i_mtcsv1met, mtcsv1met);
       data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
       data->fill<float>(i_csvj1eta, jetsCSVranked[0]->eta());
+      data->fill<float>(i_csv1, jetsCSVranked[0]->csv());
       data->fill<float>(i_dphicsv1met, dphicsv1met);
       if(jetsCSVranked.size() == 1) {
         data->fill<float>(i_mtcsv12met, mtcsv1met);
@@ -261,6 +267,7 @@ struct TreeFiller {
       dphicsv2met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[1], *met));
       data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
       data->fill<float>(i_csvj2eta, jetsCSVranked[1]->eta());
+      data->fill<float>(i_csv2, jetsCSVranked[1]->csv());
       data->fill<float>(i_mtcsv2met, mtcsv2met);
       data->fill<float>(i_mtcsv12met, min(mtcsv1met,mtcsv2met));
       data->fill<float>(i_dphicsv2met, dphicsv2met);

@@ -60,6 +60,12 @@ void BaseAnalyzer::beginJob()
   // do nothing here
 }
 
+//--------------------------------------------------------------------------------------------------
+void BaseAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
+{
+  // do nothing here
+}
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void BaseAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {

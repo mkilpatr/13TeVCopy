@@ -13,25 +13,20 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-ElectronFiller::ElectronFiller(const int options,
-  const string branchName,
-  const EventInfoFiller * evtInfoFiller,
-  const edm::InputTag electronTag,
-  const edm::InputTag vetoIdTag,
-  const edm::InputTag looseIdTag,
-  const edm::InputTag mediumIdTag,
-  const edm::InputTag tightIdTag,
-  const int bunchSpacing,
-  const double eleptMin) :
+ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
-  electronTag_(electronTag),
-  vetoIdTag_(vetoIdTag),
-  looseIdTag_(looseIdTag),
-  mediumIdTag_(mediumIdTag),
-  tightIdTag_(tightIdTag),
-  bunchSpacing_(bunchSpacing),
-  eleptMin_(eleptMin)
+  electronToken_(cc.consumes<pat::ElectronCollection>       (cfg.getParameter<edm::InputTag>("electrons"))),
+  vetoIdToken_  (cc.consumes<edm::ValueMap<bool> >          (cfg.getParameter<edm::InputTag>("vetoId"))),
+  looseIdToken_ (cc.consumes<edm::ValueMap<bool> >          (cfg.getParameter<edm::InputTag>("looseId"))),
+  mediumIdToken_(cc.consumes<edm::ValueMap<bool> >          (cfg.getParameter<edm::InputTag>("mediumId"))),
+  tightIdToken_ (cc.consumes<edm::ValueMap<bool> >          (cfg.getParameter<edm::InputTag>("tightId"))),
+  ca8jetToken_  (cc.consumes<reco::PFJetCollection>         (cfg.getParameter<edm::InputTag>("ca8jets"))),
+  rhoToken_     (cc.consumes<double>                        (cfg.getParameter<edm::InputTag>("rho"))),
+  jetToken_     (cc.consumes<pat::JetCollection>            (cfg.getParameter<edm::InputTag>("jets"))),
+  pfcandToken_  (cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("pfcands"))),
+  bunchSpacing_ (cfg.getUntrackedParameter<int>             ("bunchSpacing")),
+  eleptMin_     (cfg.getUntrackedParameter<double>          ("minElectronPt"))
 {
 
   ipt_         = data.addMulti<float>(branchName_,"pt",0);
@@ -88,23 +83,15 @@ ElectronFiller::ElectronFiller(const int options,
     eleIdCuts = new LeptonId();
   }
 
-  //  iLSF2Iso_   = data.addMulti<float>(branchName_,"lsf2Iso",0);
-   iLSF3Iso_   = data.addMulti<float>(branchName_,"lsf3Iso",0);
-   // iLSF4Iso_   = data.addMulti<float>(branchName_,"lsf4Iso",0);
-   //  iLSF2IsoDR_ = data.addMulti<float>(branchName_,"lsf2IsoDR",0);
-   //  iLSF3IsoDR_ = data.addMulti<float>(branchName_,"lsf3IsoDR",0);
-   //  iLSF4IsoDR_ = data.addMulti<float>(branchName_,"lsf4IsoDR",0);
+  iLSFIso_   = data.addMulti<float>(branchName_,"lsfIso",0);
 
   string base = getenv("CMSSW_BASE");
   string electronisomva=base+"/src/data/Electrons/electron_sefsip3drhoiso_training.root_BDTG.weights.xml";
   eleMVAiso = new LeptonMVA();
   eleMVAiso->initialize(electronisomva);
 
-  //  iPassTriggerLID_ = data.addMulti<bool>(branchName_,"passTriggerLID",0);
   iPassCutBaseNonIsoMID_ = data.addMulti<bool>(branchName_,"passCutBaseNonIsoMID",0);
   iPassLooseIDOnly_ = data.addMulti<bool>(branchName_,"passLooseIDOnly",0);
-
-  //  iPassCutBaseTID_ = data.addMulti<bool>(branchName_,"passCutBaseTID",0);
 
   if(options_ & LOADGEN) {
     igenpt_           = data.addMulti<float>(branchName_, "gen_pt", 0);
@@ -167,19 +154,15 @@ void ElectronFiller::initMVA()
 void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, electronTag_,electrons_,true);
-  FileUtilities::enforceGet(iEvent, vetoIdTag_,veto_id_decisions_,true);
-  FileUtilities::enforceGet(iEvent, looseIdTag_,loose_id_decisions_,true);
-  FileUtilities::enforceGet(iEvent, mediumIdTag_,medium_id_decisions_,true);
-  FileUtilities::enforceGet(iEvent, tightIdTag_,tight_id_decisions_,true);
-  //  FileUtilities::enforceGet(iEvent, "ak8PFJetsCHSTrimmedr0p1ptf0p03",trimmedJets,true);
-  FileUtilities::enforceGet(iEvent, "redCA8",ca8jets,true);
-  iEvent.getByLabel("lsfSubJets","LSFJets2",lsfSubJets2);
-  iEvent.getByLabel("lsfSubJets","LSFJets3",lsfSubJets3);
-  iEvent.getByLabel("lsfSubJets","LSFJets4",lsfSubJets4);
-  FileUtilities::enforceGet(iEvent,"fixedGridRhoFastjetAll",rho_,true);
-  FileUtilities::enforceGet(iEvent,"slimmedJets",ak4jets_,true);
-  FileUtilities::enforceGet(iEvent,"packedPFCandidates",pfcands,true);
+  iEvent.getByToken(electronToken_,electrons_);
+  iEvent.getByToken(vetoIdToken_,veto_id_decisions_);
+  iEvent.getByToken(looseIdToken_,loose_id_decisions_);
+  iEvent.getByToken(mediumIdToken_,medium_id_decisions_);
+  iEvent.getByToken(tightIdToken_,tight_id_decisions_);
+  iEvent.getByToken(ca8jetToken_,ca8jets_);
+  iEvent.getByToken(rhoToken_,rho_);
+  iEvent.getByToken(jetToken_,ak4jets_);
+  iEvent.getByToken(pfcandToken_,pfcands_);
   isLoaded_ = true;
 }
 
@@ -187,8 +170,6 @@ void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
 void ElectronFiller::fill()
 {
 
-  //  cout << "\n NEW EVENT ; Mel = " << electrons_->size() << "\n";
-  //  std::vector<reco::CandidatePtr> footprint_el;
   for (pat::ElectronCollection::const_iterator el = electrons_->begin(); el != electrons_->end(); el++) {
     if (el->pt() < eleptMin_) continue;
 
@@ -249,19 +230,18 @@ void ElectronFiller::fill()
 
     
     // calculate cut-based electrons ids
-    bool tmp_iPassCutBaseNonIsoMID_ = false; //cout << "eta: " << el->superCluster()->eta() << "\n";
+    bool tmp_iPassCutBaseNonIsoMID_ = false;
     bool tmp_iPassLooseIDOnly_ = false;
     if (fabs(el->superCluster()->eta()) <= 1.479) {
-      //      cout << "EB\n";      
       if (
 	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.008925  &&
-	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.035973 &&
+	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.035973  &&
 	  el->full5x5_sigmaIetaIeta()                                                         <  0.009996  &&
-	  el->hadronicOverEm()                                                                <  0.050537 &&
-	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.012235 &&
-	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.042020   &&	
-	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.091942 &&
-	  el->passConversionVeto()                                                                      &&
+	  el->hadronicOverEm()                                                                <  0.050537  &&
+	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.012235  &&
+	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.042020  &&	
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.091942  &&
+	  el->passConversionVeto()                                                                         &&
 	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
 	  ) { tmp_iPassCutBaseNonIsoMID_ = true; }
       
@@ -272,9 +252,9 @@ void ElectronFiller::fill()
 	el->full5x5_sigmaIetaIeta()                                                         <  0.011586  &&
 	el->hadronicOverEm()                                                                <  0.181130  &&
 	fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.094095  &&
-	fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.713070 &&
+	fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.713070  &&
 	fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.295751  &&
-	el->passConversionVeto()                                                                      &&
+	el->passConversionVeto()                                                                         &&
 	el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 2
 	) { tmp_iPassLooseIDOnly_ = true; }
 
@@ -289,14 +269,13 @@ void ElectronFiller::fill()
 	  fabs(el->deltaEtaSuperClusterTrackAtVtx())                                          <  0.007429  &&
 	  fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.067879  &&
 	  el->full5x5_sigmaIetaIeta()                                                         <  0.030135  &&
-	  el->hadronicOverEm()                                                                <  0.086782   &&
+	  el->hadronicOverEm()                                                                <  0.086782  &&
 	  fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.036719  &&
 	  fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.138142  &&	
-	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.100683 &&
-	  el->passConversionVeto()                                                                      &&
+	  fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.100683  &&
+	  el->passConversionVeto()                                                                         &&
 	  el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 1
 	  ) { 
-	//	std::cout<<"Electron passed"<<std::endl;
 	tmp_iPassCutBaseNonIsoMID_ = true; }
       else { tmp_iPassCutBaseNonIsoMID_ = false; }
       if(
@@ -304,10 +283,10 @@ void ElectronFiller::fill()
 	 fabs(el->deltaPhiSuperClusterTrackAtVtx())                                          <  0.255450   &&
 	 el->full5x5_sigmaIetaIeta()                                                         <  0.031849   &&
 	 el->hadronicOverEm()                                                                <  0.223870   &&
-	 fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.342293  &&
-	 fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.953461  &&
-	 fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.155501  &&
-	 el->passConversionVeto()                                                                      &&
+	 fabs(-1.*el->gsfTrack()->dxy(evtInfoFiller_->primaryVertex()))                      <  0.342293   &&
+	 fabs((el->gsfTrack()->dz(evtInfoFiller_->primaryVertex())))                         <  0.953461   &&
+	 fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy())              <  0.155501   &&
+	 el->passConversionVeto()                                                                          &&
 	 el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) <= 3
 	 ) { tmp_iPassLooseIDOnly_ = true; }
 
@@ -319,53 +298,18 @@ void ElectronFiller::fill()
     
     data.fillMulti<bool>(iPassCutBaseNonIsoMID_,tmp_iPassCutBaseNonIsoMID_);
     data.fillMulti<bool>(iPassLooseIDOnly_,tmp_iPassLooseIDOnly_);
-    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands, *elPtr, 0.05, 0.2, 10., false, false));
+    data.fillMulti<float>(iminiiso_,getPFIsolation(pfcands_, *elPtr, 0.05, 0.2, 10., false, false));
     data.fillMulti<float>(iptrel_,getLeptonPtRel( ak4jets_, *elPtr));
     data.fillMulti<float>(iptratio_,getLeptonPtRatio( ak4jets_, *elPtr ));
-
-    //    float lsf2Iso = 9.; float lsf2IsoDR = 9.;
-    //    float lsf3Iso = 9.; float lsf3IsoDR = 9.;
-    //    float lsf4Iso = 9.; float lsf4IsoDR = 9.;
 
     LorentzVector el_;
     el_ = el->p4();
 
-    LorentzVectorCollection lsfSubJets2_;
-    for (LorentzVectorCollection::const_iterator jt = lsfSubJets2->begin(); jt != lsfSubJets2->end(); jt++) {
-      LorentzVector tmpVec;
-      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
-      lsfSubJets2_.push_back(tmpVec);
-    }
-
-    LorentzVectorCollection lsfSubJets3_;
-    for (LorentzVectorCollection::const_iterator jt = lsfSubJets3->begin(); jt != lsfSubJets3->end(); jt++) {
-      LorentzVector tmpVec;
-      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
-      lsfSubJets3_.push_back(tmpVec);
-    }
-
-    LorentzVectorCollection lsfSubJets4_;
-    for (LorentzVectorCollection::const_iterator jt = lsfSubJets4->begin(); jt != lsfSubJets4->end(); jt++) {
-      LorentzVector tmpVec;
-      tmpVec.SetPxPyPzE(jt->px(),jt->py(),jt->pz(),jt->energy());
-      lsfSubJets4_.push_back(tmpVec);
-    }
-
-    //    calculateLSFIso(el_,lsfSubJets2_,&lsf2Iso,&lsf2IsoDR);
-    //    calculateLSFIso(el_,lsfSubJets3_,&lsf3Iso,&lsf3IsoDR);
-    //    calculateLSFIso(el_,lsfSubJets4_,&lsf4Iso,&lsf4IsoDR);
-    
-    //    data.fillMulti<float>(iLSF2Iso_  ,LSF(el_,ca8jets));
-    //    data.fillMulti<float>(iLSF2IsoDR_,lsf2IsoDR);
-    data.fillMulti<float>(iLSF3Iso_  ,LSF(el_,ca8jets));
-  //    data.fillMulti<float>(iLSF3IsoDR_,lsf3IsoDR);
-  //    data.fillMulti<float>(iLSF4Iso_  ,lsf4Iso);
-  //    data.fillMulti<float>(iLSF4IsoDR_,lsf4IsoDR);
-
+    data.fillMulti<float>(iLSFIso_  ,LSF(el_,ca8jets_));
 
     double rhoiso=calculateRhoIso(el->eta(),el->pfIsolationVariables().sumChargedHadronPt,el->pfIsolationVariables().sumNeutralHadronEt,el->pfIsolationVariables().sumPhotonEt,*rho_);
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
-    data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), LSF(el_,ca8jets) , sip3d, rhoiso));
+    data.fillMulti<float>(iMVAiso_,eleMVAiso->evaluateMVA(el->pt(), LSF(el_,ca8jets_) , sip3d, rhoiso));
     data.fillMulti<float>(isip3d_, sip3d);
 
     if(options_ & LOADGEN) {
@@ -437,13 +381,11 @@ float ElectronFiller::calculateRhoIso(double eta, double pfchargediso, double pf
 double ElectronFiller::getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Electron ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only) {
    if (ptcl.pt()<5.) return 99999.;
    double deadcone_nh(0.), deadcone_ch(0.), deadcone_ph(0.), deadcone_pu(0.);
-   //   if(ptcl.isElectron()) {
    if (fabs(ptcl.superCluster()->eta())>1.479) {
       deadcone_ch = 0.015; deadcone_pu = 0.015; deadcone_ph = 0.08;}
    double iso_nh(0.); double iso_ch(0.);
    double iso_ph(0.); double iso_pu(0.);
    double ptThresh(0.5);
-   //   if(ptcl.isElectron()) 
    ptThresh = 0;
    double r_iso = max(r_iso_min,min(r_iso_max, kt_scale/ptcl.pt()));
    for (const pat::PackedCandidate &pfc : *pfcands) {

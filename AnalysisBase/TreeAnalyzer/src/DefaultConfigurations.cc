@@ -135,6 +135,16 @@ void cfgSet::loadDefaultConfigurations() {
   ol_search_set.vetoedTracks    = ol_veto_tracks;
 }
 
+void cfgSet::setJSONFile(const TString jsonfile) {
+  zl_search_set.jsonFile = jsonfile;
+  zl_search_set.jsonProcessing = new JSONProcessing(jsonfile);
+  zl_lepton_set.jsonFile = jsonfile;
+  zl_lepton_set.jsonProcessing = new JSONProcessing(jsonfile);
+  zl_photon_set.jsonFile = jsonfile;
+  zl_photon_set.jsonProcessing = new JSONProcessing(jsonfile);
+  ol_search_set.jsonFile = jsonfile;
+  ol_search_set.jsonProcessing = new JSONProcessing(jsonfile);
+}
 
 
 
