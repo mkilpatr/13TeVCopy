@@ -22,40 +22,50 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       assert(process == defaults::SINGLE_Z);
 
       // selections: exactly two same flavor leptons, inv mass in (80, 100)
-      if(selectedLeptons.size() == 2){
-        auto lep0 = selectedLeptons.at(0);
-        auto lep1 = selectedLeptons.at(1);
+      passZtoLLSel = false;
+      if(selectedLeptons.size() > 0 && vetoedLeptons.size() == 2){
+        auto lep0 = vetoedLeptons.at(0);
+        auto lep1 = vetoedLeptons.at(1);
         if (lep0->iselectron() == lep1->iselectron()){
           auto z_p4 = lep0->p4() + lep1->p4();
           if (z_p4.mass()>80 && z_p4.mass()<100){
             passZtoLLSel = true;
             met->setP4(met->p4() + z_p4); // add leptons to met
-
-            // debug output
-//            cout << "#" << this->getEventNumber() << ": " << endl;
-//            cout << "lep0: " << lep0->p4() << endl;
-//            cout << "lep1: " << lep1->p4() << endl;
-//            cout << "z   : " << z_p4       << endl;
-//            cout << "met : " << met ->p4() << endl;
-//            cout << "nj  : " << jets.size()<< endl;
-//            cout << "nb  : " << bJets.size()<< endl;
-
           }
         }
       }
 
+      // clean vetoedTaus vs looseLeptons
+      vector<bool> isOverlapTrack(vetoedTracks.size(),false);
+      vector<PFCandidateF> allTracks(vetoedTracks.size());
+      std::transform(vetoedTracks.begin(), vetoedTracks.end(), allTracks.begin(), [](PFCandidateF* t) { return *t; });
+      for(const auto* lep : vetoedLeptons) {
+        double nearDR = 0;
+        int near = PhysicsUtilities::findNearestDR(*lep,allTracks,nearDR,0.4,configSet.vetoedTracks.minPt,0,allTracks.size());
+        if(near >= 0){
+          isOverlapTrack[near] = true;
+        }
+      }
+      vetoedTracks.clear();
+      for (unsigned int iT = 0; iT < allTracks.size(); ++iT){
+        if (!isOverlapTrack.at(iT))
+          vetoedTracks.push_back(&allTracks.at(iT));
+      }
+      nVetoedTracks = vetoedTracks.size();
+
     }
 
+
     bool fillEvent() {
-//      if(nVetoedLeptons > 0)                return false;
+      if(!passZtoLLSel)                     return false;
       if(nVetoedTracks > 0)                 return false;
       if(met->pt() < low_metcut_)           return false;
-      if(!passZtoLLSel)                     return false;
       if(!goodvertex)                       return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
     }
+
 
 };
 
@@ -82,6 +92,11 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
 
   cfgSet::ConfigSet pars = pars0lep();
   pars.selectedLeptons = cfgSet::ol_sel_leptons;
+  pars.vetoedLeptons.selectedElectron = &ucsbsusy::ElectronF::islooseelectron;
+  pars.vetoedLeptons.selectedMuon     = &ucsbsusy::MuonF::isloosemuon;
+  pars.jets.cleanJetsvVetoedLeptons   = true;
+  pars.jets.cleanJetsMaxDR            = 0.4;
+
 
   ZtoLLCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
   a.analyze(100000);
