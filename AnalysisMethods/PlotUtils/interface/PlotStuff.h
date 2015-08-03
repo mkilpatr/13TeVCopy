@@ -141,6 +141,7 @@ class PlotStuff {
         TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
+        bool                   dataismc;
         TString                treefilesuffix;
         TString                plotfilesuffix;
         TString                sqrts;
@@ -189,6 +190,7 @@ class PlotStuff {
           yieldfilename("yields.tex"),
           treename("events"),
           wgtvar("weight"),
+          dataismc(false),
           treefilesuffix("_tree.root"),
           plotfilesuffix("_plots.root"),
           sqrts("#sqrt{s} = 13 TeV"),
@@ -244,6 +246,7 @@ class PlotStuff {
           if(type == DATAMC) {
             if(sigscale < 0) printf("Signal histograms will be scaled to sum of backgrounds\n");
             else if(sigscale != 1) printf("Signal histograms will be scaled by a factor of %d\n",sigscale);
+            if(dataismc) printf("'Data' sample is scaled like MC.");
           }
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of in x%d\n",rebinx);
           if(rebiny != 1) printf("Histograms will be rebinned by a factor of in y%d\n",rebiny);
@@ -306,6 +309,8 @@ class PlotStuff {
     void     setTree(TString treename) { config_.treename = treename; }
     // Name of variable corresponding to weight to be applied for TTree plots
     void     setWgtVar(TString wgtvar) { config_.wgtvar = wgtvar; }
+    // Set to treat (i.e. scale) the 'data' sample as if it's MC
+    void     setDataIsMC(bool dataismc=true) { config_.dataismc = dataismc; }
     // Suffix to be added to sample name to get path to tree files
     void     setTreeFileSuffix(TString treefilesuffix) { config_.treefilesuffix = treefilesuffix; }
     // Suffix to be added to sample name to get path to plot files
