@@ -51,8 +51,7 @@ namespace ucsbsusy {
     };
     static const int defaultOptions = NULLOPT;
 
-    void load(const edm::Event& iEvent, edm::EventSetup const &isetup);
-    //void fill(const edm::EventSetup&);
+    void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 //--------------------------------------------------------------------------------------------------
     void beginJob(edm::Run const &run, edm::EventSetup const &isetup);
@@ -135,7 +134,6 @@ namespace ucsbsusy {
     edm::Handle<pat::ElectronCollection> electrons_;
     edm::Handle<pat::JetCollection> jets_;
     edm::Handle<pat::PackedCandidateCollection> pfcandidates_;
-    //SuperClusterFootprintRemoval remover;
   };
 
 }

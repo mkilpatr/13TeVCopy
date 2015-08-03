@@ -214,7 +214,7 @@ float PFCandidateFiller::computePFIsolation(const pat::PackedCandidate* particle
 
 }
 
-void PFCandidateFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void PFCandidateFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(pfCandToken_, pfcands_);

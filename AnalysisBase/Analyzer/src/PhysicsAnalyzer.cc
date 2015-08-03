@@ -83,7 +83,7 @@ void PhysicsAnalyzer::book()
 //--------------------------------------------------------------------------------------------------
 bool PhysicsAnalyzer::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  for(auto f : initializedFillers) {f->load(iEvent,iSetup); }
+  for(auto f : initializedFillers) {f->load(iEvent, iSetup); }
   return true;
 }
 //--------------------------------------------------------------------------------------------------

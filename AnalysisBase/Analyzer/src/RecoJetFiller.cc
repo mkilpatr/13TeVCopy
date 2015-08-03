@@ -7,7 +7,7 @@ RecoJetFiller::RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollecto
 {}
 
 //--------------------------------------------------------------------------------------------------
-void RecoJetFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+void RecoJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup){
   JetFiller<reco::PFJet>::load(iEvent, iSetup);
   if(fillReGenJets_) iEvent.getByToken(reGenJetAssocToken_,genJetPtr_);
   if(options_ & LOADBTAG) iEvent.getByToken(bTagsToken_,btags_);

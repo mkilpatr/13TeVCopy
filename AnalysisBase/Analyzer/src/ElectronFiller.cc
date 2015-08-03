@@ -151,7 +151,7 @@ void ElectronFiller::initMVA()
 }
 
 //--------------------------------------------------------------------------------------------------
-void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(electronToken_,electrons_);

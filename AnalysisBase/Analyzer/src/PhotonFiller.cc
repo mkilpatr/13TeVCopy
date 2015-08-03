@@ -66,7 +66,7 @@ PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
 }
 
 //--------------------------------------------------------------------------------------------------
-void PhotonFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void PhotonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(photonToken_,photons_);
@@ -202,8 +202,8 @@ float PhotonFiller::calculateRhoIso(double eta, double pfiso, double rho, ISO_TY
   else if (fabs(eta)<2.4)   bin=5;
   else                      bin=6;
 
-  return max(pfiso - rho*EA[isotype][bin], 0.);
-  //we apply an upper cut in the isolation considerations later
+  return (pfiso - rho*EA[isotype][bin]);
+  //we apply an upper cut in the isolation considerations later only, so negative values don't play any role
   //shape information on negative side important for template fits
 }
 

@@ -3,27 +3,31 @@
 #endif
 
 using namespace ucsbsusy;
+TRandom3 rnd;
 
 class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
     OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(1);}// TRandom3 rnd(0);}
 
     bool fillEvent() {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
+      if(nBJets < 1) return false;
+      if(nJets < 5) return false;
       if(nSelLeptons<1)      return false;
-      //if(!passOneVeto) return false;
-     if(fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) > 1)
-     	std::cout << "The delta phi is : " << fabs(PhysicsUtilities::deltaPhi(*met, *selectedLeptons[0])) << std::endl;
+      //if(nVetoedTracks > 0)     return false;
+      float maxLep = nSelLeptons;
+      int whichLep = rnd.Uniform(0.,nSelLeptons);
+      MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
+      MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
-     // if(fabs(PhysicsUtilities::deltaPhi(*met, *vetoedLeptons[0])) > 1)
-        return false;
+      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
-      filler.fillEventInfo(&data, this);
-      filler.fillJetInfo  (&data, jets, bJets, met);
+      filler.fillEventInfo(&data, this, whichLep);
+      filler.fillJetInfo(&data, jets, bJets, met);
       return true;
     }
 
@@ -53,14 +57,10 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-  cfg.selectedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.selectedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
-  cfg.selectedLeptons.minMuPt = 5;
-  cfg.selectedLeptons.minEPt = 5;
-
+//  cfg.jets.cleanJetsvSelectedLeptons = true;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
 
-  a.analyze(100000);
+  a.analyze(10000);
 
 }

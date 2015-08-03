@@ -38,7 +38,7 @@ CMSTopFiller::CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
 }
 
 //--------------------------------------------------------------------------------------------------
-void CMSTopFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void CMSTopFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(fatJetToken_,fatJets_);

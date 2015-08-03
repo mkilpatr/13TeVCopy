@@ -50,9 +50,11 @@ class PlotStuff {
         int     nbinsx;
         double  xmin;
         double  xmax;
+        double* xbins;
         int     nbinsy;
         double  ymin;
         double  ymax;
+        double* ybins;
 
         PlotTreeVar(TString inname, TString invarname, TString inselection, TString inlabel, int innbinsx, double inxmin, double inxmax, int innbinsy, double inymin, double inymax) :
           name(inname),
@@ -62,9 +64,41 @@ class PlotStuff {
           nbinsx(innbinsx),
           xmin(inxmin),
           xmax(inxmax),
+          xbins(0),
           nbinsy(innbinsy),
           ymin(inymin),
-          ymax(inymax)
+          ymax(inymax),
+          ybins(0)
+        {}
+
+        PlotTreeVar(TString inname, TString invarname, TString inselection, TString inlabel, int innbinsx, double* inxbins) :
+          name(inname),
+          varname(invarname),
+          selection(inselection),
+          label(inlabel),
+          nbinsx(innbinsx),
+          xmin(0),
+          xmax(0),
+          xbins(inxbins),
+          nbinsy(0),
+          ymin(0),
+          ymax(0),
+          ybins(0)
+        {}
+
+        PlotTreeVar(TString inname, TString invarname, TString inselection, TString inlabel, int innbinsx, double* inxbins, int innbinsy, double* inybins) :
+          name(inname),
+          varname(invarname),
+          selection(inselection),
+          label(inlabel),
+          nbinsx(innbinsx),
+          xmin(0),
+          xmax(0),
+          xbins(inxbins),
+          nbinsy(innbinsy),
+          ymin(0),
+          ymax(0),
+          ybins(inybins)
         {}
 
     };
@@ -107,6 +141,7 @@ class PlotStuff {
         TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
+        bool                   dataismc;
         TString                treefilesuffix;
         TString                plotfilesuffix;
         TString                sqrts;
@@ -126,6 +161,7 @@ class PlotStuff {
         int                    rebiny;
         int                    sigscale;
         bool                   addsigscaletxt;
+        bool                   scaletodata;
         double                 maxscale;
         double                 minlogscale;
         double                 maxlogscale;
@@ -141,6 +177,7 @@ class PlotStuff {
         unsigned int           plotoverflow;
         bool                   make_integral;
         bool                   reverse_integral_dir;
+        bool                   plotratio;
 
         PlotConfig() :
           type(DATAMC),
@@ -153,6 +190,7 @@ class PlotStuff {
           yieldfilename("yields.tex"),
           treename("events"),
           wgtvar("weight"),
+          dataismc(false),
           treefilesuffix("_tree.root"),
           plotfilesuffix("_plots.root"),
           sqrts("#sqrt{s} = 13 TeV"),
@@ -172,6 +210,7 @@ class PlotStuff {
           rebiny(1),
           sigscale(1),
           addsigscaletxt(true),
+          scaletodata(true),
           maxscale(1.3),
           minlogscale(0.2),
           maxlogscale(2000.),
@@ -180,7 +219,8 @@ class PlotStuff {
           colormap(DefaultColors()),
           plotoverflow(0),
           make_integral(false),
-          reverse_integral_dir(false)
+          reverse_integral_dir(false),
+          plotratio(false)
         {}
 
         void print() {
@@ -206,6 +246,7 @@ class PlotStuff {
           if(type == DATAMC) {
             if(sigscale < 0) printf("Signal histograms will be scaled to sum of backgrounds\n");
             else if(sigscale != 1) printf("Signal histograms will be scaled by a factor of %d\n",sigscale);
+            if(dataismc) printf("'Data' sample is scaled like MC.");
           }
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of in x%d\n",rebinx);
           if(rebiny != 1) printf("Histograms will be rebinned by a factor of in y%d\n",rebiny);
@@ -231,6 +272,10 @@ class PlotStuff {
 
     // Add a plot to be made from the provided TTrees: use with TREES
     void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0);
+    // Add a plot to be made from the provided TTrees: use with TREES and variable x binning
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins);
+    // Add a plot to be made from the provided TTrees: use with TREES and variable x/y binning
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins);
     // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
@@ -252,6 +297,8 @@ class PlotStuff {
     void     setPlotSource(PlotSource source) {config_.source = source; }
     // Format to save plots in (e.g., png, pdf)
     void     setFormat(TString format) { config_.format = format; }
+    // Name of the data file
+    void     setDataName(TString dataname) { config_.dataname = dataname; }
     // Whether or not to scale histograms to 1 for comparisons
     void     setUnitScale() { config_.scalecompto1 = true; }
     // Whether or not to write histograms to output file
@@ -262,6 +309,8 @@ class PlotStuff {
     void     setTree(TString treename) { config_.treename = treename; }
     // Name of variable corresponding to weight to be applied for TTree plots
     void     setWgtVar(TString wgtvar) { config_.wgtvar = wgtvar; }
+    // Set to treat (i.e. scale) the 'data' sample as if it's MC
+    void     setDataIsMC(bool dataismc=true) { config_.dataismc = dataismc; }
     // Suffix to be added to sample name to get path to tree files
     void     setTreeFileSuffix(TString treefilesuffix) { config_.treefilesuffix = treefilesuffix; }
     // Suffix to be added to sample name to get path to plot files
@@ -302,6 +351,10 @@ class PlotStuff {
     void     setPlotOverflow(unsigned int plotoverflow) { config_.plotoverflow = plotoverflow; }
     // Make integral plots. Default integral direction: (value > [cut]).
     void     setIntegral(bool reverse_integral_direction = false) {config_.make_integral = true; config_.reverse_integral_dir = reverse_integral_direction; }
+    // Make a ratio plot
+    void     setRatioPlot(bool plotratio = true) { config_.plotratio = plotratio; }
+    // Scale backgrounds to data (when plotting data vs MC)
+    void     setScaleToData(bool scaletodata = true) { config_.scaletodata = scaletodata; }
 
   // Helper functions
   private :

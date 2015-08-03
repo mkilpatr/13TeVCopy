@@ -49,6 +49,7 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_IsoTkMu24_eta2p1_v2"] = kHLT_IsoTkMu24_eta2p1_v2;
   trigIds_["HLT_IsoTkMu27_v2"] = kHLT_IsoTkMu27_v2;
   trigIds_["HLT_Ele32_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele32_eta2p1_WPLoose_Gsf_v1;
+  trigIds_["HLT_Ele32_eta2p1_WP75_Gsf_v1"] = kHLT_Ele32_eta2p1_WP75_Gsf_v1;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1;
   trigIds_["HLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1"] = kHLT_DiCentralPFJet70_PFMET120_NoiseCleaned_v1;
   trigIds_["HLT_PFHT350_PFMET100_NoiseCleaned_v1"] = kHLT_PFHT350_PFMET100_NoiseCleaned_v1;
@@ -72,6 +73,30 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v2"] = kHLT_Photon165_R9Id90_HE10_IsoM_v2;
   trigIds_["HLT_Photon165_HE10_v2"] = kHLT_Photon165_HE10_v2;
   trigIds_["HLT_Photon175_v2"] = kHLT_Photon175_v2;
+  trigIds_["HLT_Photon120_R9Id90_HE10_IsoM_v1"] = kHLT_Photon120_R9Id90_HE10_IsoM_v1;
+  trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v1"] = kHLT_Photon165_R9Id90_HE10_IsoM_v1;
+  trigIds_["HLT_Photon165_HE10_v1"] = kHLT_Photon165_HE10_v1;
+  trigIds_["HLT_Photon175_v1"] = kHLT_Photon175_v1;
+  trigIds_["HLT_DiPFJetAve100_HFJEC_v1"] = kHLT_DiPFJetAve100_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve100_HFJEC_v2"] = kHLT_DiPFJetAve100_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve140_v1"] = kHLT_DiPFJetAve140_v1;
+  trigIds_["HLT_DiPFJetAve160_HFJEC_v1"] = kHLT_DiPFJetAve160_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve160_HFJEC_v2"] = kHLT_DiPFJetAve160_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve200_v1"] = kHLT_DiPFJetAve200_v1;
+  trigIds_["HLT_DiPFJetAve220_HFJEC_v1"] = kHLT_DiPFJetAve220_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve220_HFJEC_v2"] = kHLT_DiPFJetAve220_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve260_v1"] = kHLT_DiPFJetAve260_v1;
+  trigIds_["HLT_DiPFJetAve300_HFJEC_v1"] = kHLT_DiPFJetAve300_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve300_HFJEC_v2"] = kHLT_DiPFJetAve300_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve320_v1"] = kHLT_DiPFJetAve320_v1;
+  trigIds_["HLT_DiPFJetAve400_v1"] = kHLT_DiPFJetAve400_v1;
+  trigIds_["HLT_DiPFJetAve500_v1"] = kHLT_DiPFJetAve500_v1;
+  trigIds_["HLT_DiPFJetAve60_HFJEC_v1"] = kHLT_DiPFJetAve60_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve60_HFJEC_v2"] = kHLT_DiPFJetAve60_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve60_v1"] = kHLT_DiPFJetAve60_v1;
+  trigIds_["HLT_DiPFJetAve80_HFJEC_v1"] = kHLT_DiPFJetAve80_HFJEC_v1;
+  trigIds_["HLT_DiPFJetAve80_HFJEC_v2"] = kHLT_DiPFJetAve80_HFJEC_v2;
+  trigIds_["HLT_DiPFJetAve80_v1"] = kHLT_DiPFJetAve80_v1;
 
   trigFilterIds_["hltPFMET100Filter"] = kPFMET100;
   trigFilterIds_["hltPFMET110Filter"] = kPFMET110;
@@ -84,11 +109,12 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09"] = kSingleIsoTkMu24;
   trigFilterIds_["hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09"] = kSingleIsoTkMu27;
   trigFilterIds_["hltEle32WPLooseGsfTrackIsoFilter"] = kSingleEle32;
+  trigFilterIds_["hltEle32WP75GsfTrackIsoFilter"] = kSingleEle32;
 
 }
 
 //--------------------------------------------------------------------------------------------------
-void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);

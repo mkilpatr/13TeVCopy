@@ -42,8 +42,7 @@ namespace ucsbsusy {
       };
       static const int defaultOptions = NULLOPT;
 
-      //void beginRun(edm::Run const &run, edm::EventSetup const &iSetup);
-      void load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+      void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
 
       reco::Vertex::Point primaryVertex() const { return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point(); }

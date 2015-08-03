@@ -41,7 +41,7 @@ GenParticleFiller::GenParticleFiller(
     ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
 }
 //--------------------------------------------------------------------------------------------------
-void GenParticleFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void GenParticleFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
 

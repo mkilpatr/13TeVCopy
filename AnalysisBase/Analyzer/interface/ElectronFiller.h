@@ -57,8 +57,7 @@ namespace ucsbsusy {
       static const int defaultOptions = NULLOPT;
 
       void initMVA();
-      //void beginRun(edm::Run const &run, edm::EventSetup const &iSetup);
-      void load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+      void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
       void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
       float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);

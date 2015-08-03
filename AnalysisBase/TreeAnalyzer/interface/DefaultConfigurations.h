@@ -13,7 +13,6 @@ namespace cfgSet {
 
   void loadDefaultJetConfigurations();
 
-
   extern LeptonConfig zl_sel_leptons ;
   extern LeptonConfig zl_veto_leptons;
   extern LeptonConfig ol_sel_leptons ;
@@ -30,12 +29,6 @@ namespace cfgSet {
 
   void loadDefaultPhotonConfigurations();
 
-  extern METConfig zl_search_met;
-  extern METConfig zl_lplus_met ;
-  extern METConfig zl_pplus_met ;
-  extern METConfig ol_search_met;
-
-  void loadDefaultMETConfigurations() ;
 
   extern ConfigSet zl_search_set;
   extern ConfigSet zl_lepton_set;
@@ -43,6 +36,8 @@ namespace cfgSet {
   extern ConfigSet ol_search_set;
 
   void loadDefaultConfigurations();
+
+  void setJSONFile(const TString jsonfile);
 
 }
 

@@ -83,7 +83,7 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
 }
 
 //--------------------------------------------------------------------------------------------------
-void MuonFiller::load(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void MuonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(muonToken_,muons_);
