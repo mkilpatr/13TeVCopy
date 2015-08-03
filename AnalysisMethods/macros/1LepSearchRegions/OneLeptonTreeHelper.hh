@@ -61,6 +61,10 @@ struct TreeFiller {
   size i_dphij1met ;
   size i_dphij2met ;
   size i_dphij12met;
+  size i_j1pt      ;
+  size i_j2pt      ;
+  size i_j1eta     ;
+  size i_j2eta     ;
 
   void book(TreeWriterData* data) {
     i_run        = data->add<unsigned int>("","run","i",0);
@@ -92,6 +96,10 @@ struct TreeFiller {
     i_dphij1met  = data->add<float>("","dphij1met","F",0);
     i_dphij2met  = data->add<float>("","dphij2met","F",0);
     i_dphij12met = data->add<float>("","dphij12met","F",0);
+    i_j1pt       = data->add<float>("","j1pt","F",0); 
+    i_j2pt       = data->add<float>("","j2pt","F",0); 
+    i_j1eta      = data->add<float>("","j1eta","F",0); 
+    i_j2eta      = data->add<float>("","j2eta","F",0); 
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, DataType type) {
@@ -105,12 +113,7 @@ struct TreeFiller {
     data->fill<float>(i_met,      ana->met->pt());
     data->fill<int  >(i_npv,      ana->nPV);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
-
-    int nvetotaus = 0;
-    for(auto& tau : ana->tauReader.taus) {
-      if(tau.pt() > 20 && fabs(tau.eta())<2.4 && (tau.hpsid() & kMediumIsoMVALT) > 0) nvetotaus++;
-    }
-    data->fill<int  >(i_nvetotau, nvetotaus);
+    data->fill<int  >(i_nvetotau, ana->nVetoHPSTaus);
   }
 
   void fillGenInfo(TreeWriterData* data, vector<GenParticleF*> genparts) {
@@ -178,16 +181,26 @@ struct TreeFiller {
     data->fill<float>(i_hadchi2, calculateChi2(lzjets, sigma, btag));
   
     float dphij1met = 0.0, dphij2met = 0.0;
+    float j1pt = 0.0, j1eta = 0.0;
+    float j2pt = 0.0, j2eta = 0.0;
     if(jets.size() > 0) {
       dphij1met = fabs(PhysicsUtilities::deltaPhi(*jets[0], *met));
-      data->fill<float>  (i_dphij1met,  dphij1met);
+      j1pt      = jets[0]->pt();
+      j1eta     = jets[0]->eta();      
+      data->fill<float>(i_dphij1met,  dphij1met);
+      data->fill<float>(i_j1pt,      j1pt);
+      data->fill<float>(i_j1eta,     j1eta);
       if(jets.size() == 1)
         data->fill<float>(i_dphij12met, dphij1met);
     }
     if(jets.size() > 1) {
       dphij2met = fabs(PhysicsUtilities::deltaPhi(*jets[1], *met));
+      j2pt      = jets[1]->pt();
+      j2eta     = jets[1]->eta();
       data->fill<float>(i_dphij2met,  dphij2met);
       data->fill<float>(i_dphij12met, min(dphij1met,dphij2met));
+      data->fill<float>(i_j2pt,     j2pt);
+      data->fill<float>(i_j2eta,    j2eta);
     }
 
   }
