@@ -17,8 +17,7 @@ double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, Lorentz
     assert ( jets.size() == bvalue.size() );
 
     // don't call without at least two jets!
-    mt2w = -9;
-    if(jets.size()<2) return;
+    if(jets.size()<2) return -9.;
   
     vector<pair<double,int> > rankedJets(jets.size());
     for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
