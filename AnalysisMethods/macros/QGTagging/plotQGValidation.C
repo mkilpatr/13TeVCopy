@@ -13,7 +13,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   TString wtVar = "purwt"; // weight purwt
   bool scaleToData = false;
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet74X.conf", inputdir, outputdir, 0, true);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet.conf", inputdir, outputdir, 0, true);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::DATAMC);
   zjetPlots->setTree("Events");
@@ -26,7 +26,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   zjetPlots->setPlotOverflow(true);
   zjetPlots->setRatioPlot(true);
 
-  PlotStuff* dijetPlots = new PlotStuff("plotQGValidationDijet74X.conf", inputdir, outputdir);
+  PlotStuff* dijetPlots = new PlotStuff("plotQGValidationDijet.conf", inputdir, outputdir);
   dijetPlots->setPlotSource(PlotStuff::TREES);
   dijetPlots->setPlotType(PlotStuff::DATAMC);
   dijetPlots->setTree("Events");
@@ -38,7 +38,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   dijetPlots->setPlotOverflow(true);
   dijetPlots->setRatioPlot(true);
 
-  PlotStuff* gjetPlots = new PlotStuff("plotQGValidationGjet74X.conf", inputdir, outputdir);
+  PlotStuff* gjetPlots = new PlotStuff("plotQGValidationGjet.conf", inputdir, outputdir);
   gjetPlots->setPlotSource(PlotStuff::TREES);
   gjetPlots->setPlotType(PlotStuff::DATAMC);
   gjetPlots->setTree("Events");

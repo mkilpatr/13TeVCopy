@@ -11,7 +11,7 @@ void plotQGValidationComposition( const TString inputdir="trees/150731_74X_purwt
   gSystem->mkdir(outputdir, true);
   TString wtVar = "purwt"; // weight purwt
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet74X.conf", inputdir, outputdir);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::NORMCOMP);
   zjetPlots->setTree("Events");
