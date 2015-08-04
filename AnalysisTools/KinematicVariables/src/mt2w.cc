@@ -13,9 +13,8 @@ return ceil( ( num * pow( 10,x ) ) - 0.5 ) / pow( 10,x );
 //--------------------------------------------------------------------
 double calculateMT2w(vector<LorentzVector>& jets, vector<int>& bjets, vector<int>& nonbjets, LorentzVector& lep, float met, float metphi){
 
-    // require 2+ jets of course, and check array sizes
+    // require 2+ jets of course
     if(jets.size()<2) return -9.;
-    assert( jets.size() == bjets.size()+nonbjets.size());
   
     // assume bjets is ordered by decreasing CSV and nonbjets is ordered by decreasing PT
 

@@ -1,5 +1,5 @@
-#ifndef ZEROLEPTONTREEHELPER_HH
-#define ZEROLEPTONTREEHELPER_HH
+#ifndef ONELEPTONTREEHELPER_HH
+#define ONELEPTONTREEHELPER_HH
 
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/DataFormats/interface/CMSTop.h"
@@ -10,6 +10,7 @@
 #include "AnalysisTools/KinematicVariables/interface/mt2w.h"
 #include "AnalysisTools/KinematicVariables/interface/chi2.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h" // CSV_MEDIUM
 #include "Math/VectorUtil.h"
 
 using namespace ucsbsusy;
@@ -164,19 +165,40 @@ struct TreeFiller {
     lepvec=lep->p4();
   
     // calculate csv and jets conversions, sigma (jet resolution), btag vector
-    for(auto* jet : jets) {
-      csvvec.push_back(jet->csv());
-      templz = jet->p4();         // convert from RecoJetF to LorentzVector
+    for(unsigned int n = 0; n < jets.size(); ++n){
+      csvvec.push_back(jets[n]->csv());
+      templz = jets[n]->p4();         // convert from RecoJetF to LorentzVector
       lzjets.push_back(templz);
   
       sigma.push_back(0.1);       // per twiki, use flat jet resolution of %10
   
       bool bjet=false;
-      if(jet->csv() > defaults::CSV_MEDIUM) bjet=true;
-      btag.push_back(bjet);
+      if(jets[n]->csv() > defaults::CSV_MEDIUM){
+        bjet=true;
+      }
+      btag.push_back(bjet);      
     }
     
-    data->fill<float>(i_mt2w,    calculateMT2w(lzjets, csvvec, lepvec, met->pt(), met->phi()));
+    // form ibjets and inonbjets, which are indices into jets (Pieter's code)
+    // ibjets is filled with indices of all the bjets
+    // whereas inonbjets is constrained in size: ibjets.size+inonbjets.size()<=3
+    vector<pair<double,int> > rankedJets(jets.size());
+    for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
+      rankedJets[iJ].first = btag[iJ];
+      rankedJets[iJ].second = iJ;
+    }
+    std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
+    vector<int> ibjets;
+    vector<int> inonbjets;
+    for(unsigned int iJ =0; iJ < rankedJets.size(); ++iJ){
+      if(rankedJets[iJ].first>defaults::CSV_MEDIUM) 
+        ibjets.push_back(rankedJets[iJ].second);
+      else {
+	if (ibjets.size()<2 && ibjets.size()+inonbjets.size()<3) inonbjets.push_back(rankedJets[iJ].second);
+      }
+    }
+
+    data->fill<float>(i_mt2w,    calculateMT2w(lzjets, ibjets, inonbjets, lepvec, met->pt(), met->phi()));
     data->fill<float>(i_topness, tNess->findMinTopnessConfiguration(leptons,jets,met,tNessInfo));
     data->fill<float>(i_hadchi2, calculateChi2(lzjets, sigma, btag));
   
