@@ -1,5 +1,6 @@
 #include "../interface/mt2w.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h" // CSV_MEDIUM
 
 using namespace std;
 
@@ -14,6 +15,10 @@ double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, Lorentz
 
     // I am asumming that jets is sorted by Pt
     assert ( jets.size() == bvalue.size() );
+
+    // don't call without at least two jets!
+    mt2w = -9;
+    if(jets.size()<2) return;
   
     vector<pair<double,int> > rankedJets(jets.size());
     for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
@@ -25,7 +30,7 @@ double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, Lorentz
     vector<int> addjets;
 
     for(unsigned int iJ =0; iJ < rankedJets.size(); ++iJ){
-      if(rankedJets[iJ].first>0.814) bjets.push_back(rankedJets[iJ].second);
+      if(rankedJets[iJ].first>defaults::CSV_MEDIUM) bjets.push_back(rankedJets[iJ].second);
       else {
 	if (bjets.size()<2 && bjets.size()+addjets.size()<3) addjets.push_back(rankedJets[iJ].second);
       }
