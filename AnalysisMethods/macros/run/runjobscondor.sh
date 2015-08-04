@@ -9,6 +9,7 @@ xsec=$6
 outputdir=$7
 prefix=$8
 scramdir=$9
+json=${10}
 
 workdir=`pwd`
 
@@ -27,6 +28,7 @@ cd $workdir
 
 cp $scramdir/rootlogon.C .
 cp $scramdir/$runmacro .
+cp src/data/JSON/$json .
 
 root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",$xsec,\"${outputdir}\",\"${prefix}\"\)
 

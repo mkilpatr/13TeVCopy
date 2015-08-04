@@ -34,20 +34,24 @@ parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF subm
 #parser.print_help()
 args = parser.parse_args()
 
-def get_num_events(filelist,prefix='',treename='TestAnalyzer/Events'):
+def get_num_events(filelist,prefix='',wgtsign=1,treename='TestAnalyzer/Events'):
     totentries = 0
     for filename in filelist :
         filepath = '/'.join(['%s' % prefix,'%s' % filename])
         file = TFile.Open(filepath)
         tree = file.Get(treename)
-        totentries += tree.GetEntries()
+        if wgtsign > 0 :
+            totentries += tree.GetEntries('genweight>0')
+        else :
+            totentries += tree.GetEntries('genweight<0')
     return totentries
 
 processes = []
 samples = []
 xsecs = []
 datasets = []
-totnevents = []
+totnposevents = []
+totnnegevents = []
 
 with open(args.input,"r") as f :
     for line in f :
@@ -69,18 +73,21 @@ if args.postprocess :
     for isam in range(len(samples)) :
         filelist = []
         if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
-            cmd = ("%s find -f %s | grep %s | grep ntuple.root" % (eos,args.outdir,samples[isam]))
+            cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s_' % samples[isam], f)]
+            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
             if args.outdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         files.append(filelist)
-        nevents = get_num_events(filelist,prefix)
-        totnevents.append(nevents)
+        nposevents = get_num_events(filelist,prefix)
+        nnegevents = get_num_events(filelist,prefix,-1)
+        totnposevents.append(nposevents)
+        totnnegevents.append(nnegevents)
+        print "Sample "+samples[isam]+" has "+str(nposevents)+" positive and "+str(nnegevents)+" negative weight events"
 
     print "Creating submission file: submit_addweight.sh"
     script = open("submit_addweight.sh","w")
@@ -113,11 +120,11 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root","_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nevts},\\"$treename\\",\\"$suffix\\"\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nevts=totnevents[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\"\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nevts} $treename $suffix {outname} {outdir} $workdir\n""".format(
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {outname} {outdir} $workdir\n""".format(
                 queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nevts=totnevents[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
@@ -130,7 +137,7 @@ Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 request_memory          = 199
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefix}{fname} {process} {xsec} {lumi} {nevts} {tname} {suffix} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -144,7 +151,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefix="${prefix}", workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nevts=totnevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir,name=samples[isam], j=ifile))
@@ -284,7 +291,10 @@ rm submit.cmd""".format(
                 runscript=args.script, stype=args.submittype, pathtocfg=args.path, cfg=args.config, infile=jobfile, workdir="${CMSSW_BASE}", sname=samples[isam], num=ijob, jobdir=args.jobdir, outputdir=args.outdir, outputname=outfile, maxevents=maxevts, skipevents=skipevts, evttag=suffix
                 ))
                 jobscript.close()
-                script.write("cp $jobdir/{infile} $workdir \n./$jobdir/submit_{name}_{j}.sh\n".format(infile=jobfile, name=samples[isam], j=ijob))
+                cpinput = ""
+                if args.splittype == "file" or (args.splittype == "event" and ijob == 0) :
+                    cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
+                script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" %(args.jobdir, samples[isam], ijob))
 
 

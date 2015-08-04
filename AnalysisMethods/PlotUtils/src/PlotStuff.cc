@@ -73,6 +73,30 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
 
 }
 
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins)
+{
+
+  PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins);
+  config_.treevars.push_back(treevar);
+  if(varname.Contains(":"))
+    hist2dplotnames_.push_back(plotname);
+  else
+    histplotnames_.push_back(plotname);
+
+}
+
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins)
+{
+
+  PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins, nbinsy, ybins);
+  config_.treevars.push_back(treevar);
+  if(varname.Contains(":"))
+    hist2dplotnames_.push_back(plotname);
+  else
+    histplotnames_.push_back(plotname);
+
+}
+
 void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax, PlotComp::CompPlotType compplottype)
 {
 
@@ -143,14 +167,24 @@ void PlotStuff::loadPlots()
           TString histname = var.name + "_" + sample->name;
           TString drawstr = var.varname + ">>" + histname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
+          if( isData(sample->name) && !config_.dataismc )
+            cutstr = "1.0*(" + var.selection + ")";
           if(var.varname.Contains(":")) {
-            TH2F* hist2d = new TH2F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax, var.nbinsy, var.ymin, var.ymax);
+            TH2F* hist2d = 0;
+            if(var.xmax > 0 && var.ymax > 0)
+              hist2d = new TH2F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax, var.nbinsy, var.ymin, var.ymax);
+            else if (var.xbins && var.ybins)
+              hist2d = new TH2F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xbins, var.nbinsy, var.ybins);
             hist2d->Sumw2();
             intree->Draw(drawstr.Data(), cutstr.Data());
             tmphists2dv.push_back(hist2d);
             tmphists2dv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
           } else {
-            TH1F* hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax);
+            TH1F* hist = 0;
+            if(var.xmax > 0)
+              hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xmin, var.xmax);
+            else if(var.xbins)
+              hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xbins);
             hist->Sumw2();
             intree->Draw(drawstr.Data(), cutstr.Data());
             tmphistsv.push_back(hist);
@@ -377,6 +411,8 @@ void PlotStuff::loadTables()
         for(auto sel : config_.tablesels) {
           TString drawstr = config_.wgtvar + ">>htmp";
           TString cutstr = config_.wgtvar + "*(" + sel + ")";
+          if(isData(sample->name))
+            cutstr = "1.0*(" + sel + ")";
           intree->Draw(drawstr.Data(), cutstr.Data(), "e");
           TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp");
           double tmperr = 0.0;
@@ -441,8 +477,17 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
     case DATAMC : {
 
       double bkgtot = 0.0;
+      double data   = 0.0;
 
       int isam = -1;
+
+      for(auto* sample : samples_) {
+        isam++;
+        if(!isData(sample->name) && !isSignal(sample->name))
+          bkgtot += hists[isam]->Integral(0, hists[isam]->GetNbinsX()+1);
+      }
+
+      isam = -1;
 
       for(auto* sample : samples_) {
         isam++;
@@ -456,19 +501,21 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
           nbins = hists[isam]->GetNbinsX();
 
         if(hists[isam]->GetMaximum() > max) {
-          if(isData(sname) || isBackground(sname) || (isSignal(sname) && config_.sigscale == 1)) {
+          if(isData(sname) || (isBackground(sname) && !config_.scaletodata) || (isSignal(sname) && config_.sigscale == 1)) {
             max = hists[isam]->GetMaximum();
             maxbin = hists[isam]->GetMaximumBin();
           }
         }
 
         if(isData(sname)) {
+          data += hists[isam]->Integral(0, hists[isam]->GetNbinsX()+1);
           plot->addHist(hists[isam], sample->label, "E", 1, 0, 1, 1, config_.plotoverflow);
         } else if(isSignal(sname)) {
           if(config_.sigscale < 0) {
-            plot->addHistScaled(hists[isam], bkgtot, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 1, config_.plotoverflow);
-            if(bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1) > max) {
-              max = bkgtot*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1);
+            double sigscale = config_.scaletodata ? data : bkgtot;
+            plot->addHistScaled(hists[isam], sigscale, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 1, config_.plotoverflow);
+            if(sigscale*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1) > max) {
+              max = sigscale*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1);
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else if (config_.sigscale != 1) {
@@ -481,7 +528,8 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
             plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 1, config_.plotoverflow);
           }
         } else {
-          bkgtot += hists[isam]->Integral(0, hists[isam]->GetNbinsX()+1);
+          if(config_.scaletodata)
+            hists[isam]->Scale(data/bkgtot);
           plot->addToStack(hists[isam], sample->label, config_.colormap[sname], 1001, 1, 1, 3);
         }
       }
@@ -636,7 +684,10 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
   if(legonleft && plot->getLegend()->GetX1() > 0.5)
     plot->moveLegend(0.2-plot->getLegend()->GetX1(), 0.0);
 
-  plot->draw(canvas_, true, config_.format);
+  if(config_.plotratio && config_.type == DATAMC)
+    plot->drawRatioStack(canvas_, true, config_.format);
+  else
+    plot->draw(canvas_, true, config_.format);
 
   delete plot;
 

@@ -13,29 +13,13 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
-
-//#include "DataFormats/JetReco/interface/PFJet.h"
-//#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
-
-typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
-typedef std::vector<LorentzVector> LorentzVectorCollection;
 
 namespace ucsbsusy {
 
   class PhotonFiller : public BaseFiller {
 
   public :
-    PhotonFiller(const int options,
-	       const string branchName,
-	       const EventInfoFiller * evtInfoFiller,
-	       const edm::InputTag photonTag,
-           const edm::InputTag looseIdTag,
-           const edm::InputTag mediumIdTag,
-           const edm::InputTag tightIdTag,
-	       const double phoptMin);
+    PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~PhotonFiller() {}
 
     enum Options {
@@ -48,18 +32,16 @@ namespace ucsbsusy {
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
-//    void calculateLSFIso(LorentzVector mu, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
 
   private :
-    const EventInfoFiller * evtInfoFiller_;
     // Input from the config file
-    const edm::InputTag photonTag_;
+    edm::EDGetTokenT<pat::PhotonCollection> photonToken_;
     // For cut-based ID decisions
-    const edm::InputTag looseIdTag_;
-    const edm::InputTag mediumIdTag_;
-    const edm::InputTag tightIdTag_;
-    const double        phoptMin_;
-
+    edm::EDGetTokenT<edm::ValueMap<bool> >  looseIdToken_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  mediumIdToken_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  tightIdToken_;
+    edm::EDGetTokenT<double>                rhoToken_;
+    const double                            phoptMin_;
 
     // Members to hold indices of tree data
     size ipt_;
@@ -102,7 +84,6 @@ namespace ucsbsusy {
     edm::Handle<edm::ValueMap<bool> >   loose_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   medium_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   tight_id_decisions_;
-//    edm::Handle<LorentzVectorCollection> lsfSubJets3;
     edm::Handle<double>                 rho_;
   };
 

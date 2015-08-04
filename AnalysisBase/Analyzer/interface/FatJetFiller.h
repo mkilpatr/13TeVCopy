@@ -11,45 +11,32 @@
 #ifndef ANALYSISBASE_ANALYZER_FATJETFILLER_H
 #define ANALYSISBASE_ANALYZER_FATJETFILLER_H
 
-#include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/ObjectSelection/interface/LeptonMVA.h"
-#include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
-
 #include "DataFormats/PatCandidates/interface/Jet.h"
-
-typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
-typedef std::vector<LorentzVector> LorentzVectorCollection;
+#include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
+#include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
 namespace ucsbsusy {
 
   class FatJetFiller : public BaseFiller {
 
   public :
-    FatJetFiller(const int options,
-	       const string branchName,
-	       const EventInfoFiller * evtInfoFiller,
-	       const edm::InputTag fatJetTag);
+    FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~FatJetFiller() {}
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 
   private :
-    const EventInfoFiller * evtInfoFiller_;
-    const edm::InputTag fatJetTag_;
+    edm::EDGetTokenT<pat::JetCollection> fatJetToken_;
 
     // Members to hold indices of tree data
-    size ifj_mass_;
+    size ifj_rawmass_;
     size ifj_trimmedmass_;
     size ifj_prunedmass_;
     size ifj_softdropmass_;
     size ifj_filteredmass_;
-    size ifj_massdropfilteredmass_;
+    size ifj_cmstoptagmass_;
+    //size ifj_massdropfilteredmass_;
     size ifj_tau1_;
     size ifj_tau2_;
     size ifj_tau3_;

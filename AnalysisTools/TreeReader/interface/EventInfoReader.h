@@ -40,9 +40,18 @@ namespace ucsbsusy {
       float         genmet_pt;
       float         genmet_phi;
       bool          goodvertex;
+      float         genweight;
+      float         genqscale;
+      float         xsecweight;
+      float         genevtweight;
+      float         evtweight;
       size8             proc;
       defaults::Process process;
-      float             weight;
+      std::vector<unsigned long> * trigbitflags;
+      std::vector<bool>          * trigbitpass;
+      std::vector<unsigned int>  * trigbitprescale;
+
+      unsigned long triggerflag;
 
       MomentumF    met;
       MomentumF    genmet;
