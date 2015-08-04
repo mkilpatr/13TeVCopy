@@ -3,24 +3,26 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
-void plotQGValidation( const TString inputdir="trees/150729_74X"
+void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
                      , const TString outputdir="plots"
                      , const TString format = "png"
                      )
 {
   gSystem->mkdir(outputdir, true);
+  TString lumi = "0.040*";
+  TString wtVar = "purwt"; // weight purwt
+  bool scaleToData = false;
 
   PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet74X.conf", inputdir, outputdir, 0, true);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::DATAMC);
   zjetPlots->setTree("Events");
-  zjetPlots->setAddSigScaleTxt(false);
   zjetPlots->setFormat(format);
-  zjetPlots->setWgtVar("weight");
+  zjetPlots->setWgtVar(lumi+wtVar);
   zjetPlots->setDataName("singlemu");
   //zjetPlots->setDataName("dyjetstoll"); zjetPlots->setDataIsMC();
   zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
-  zjetPlots->setScaleToData(true);
+  zjetPlots->setScaleToData(scaleToData);
   zjetPlots->setPlotOverflow(true);
   zjetPlots->setRatioPlot(true);
 
@@ -28,12 +30,11 @@ void plotQGValidation( const TString inputdir="trees/150729_74X"
   dijetPlots->setPlotSource(PlotStuff::TREES);
   dijetPlots->setPlotType(PlotStuff::DATAMC);
   dijetPlots->setTree("Events");
-  dijetPlots->setAddSigScaleTxt(false);
   dijetPlots->setFormat(format);
-  dijetPlots->setWgtVar("weight");
+  dijetPlots->setWgtVar(lumi+wtVar);
   dijetPlots->setDataName("dijetsht");
   dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
-  dijetPlots->setScaleToData(true);
+  dijetPlots->setScaleToData(scaleToData);
   dijetPlots->setPlotOverflow(true);
   dijetPlots->setRatioPlot(true);
 
@@ -41,13 +42,12 @@ void plotQGValidation( const TString inputdir="trees/150729_74X"
   gjetPlots->setPlotSource(PlotStuff::TREES);
   gjetPlots->setPlotType(PlotStuff::DATAMC);
   gjetPlots->setTree("Events");
-  gjetPlots->setAddSigScaleTxt(false);
   gjetPlots->setFormat(format);
-  gjetPlots->setWgtVar("weight");
+  gjetPlots->setWgtVar(lumi+wtVar);
   gjetPlots->setDataName("singlegm");
   //gjetPlots->setDataName("gjets"); gjetPlots->setDataIsMC();
   gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
-  gjetPlots->setScaleToData(true);
+  gjetPlots->setScaleToData(scaleToData);
   gjetPlots->setPlotOverflow(true);
   gjetPlots->setRatioPlot(true);
 
