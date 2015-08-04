@@ -23,8 +23,8 @@ public:
   virtual void loadVariables(){
     load(cfgSet::EVTINFO);
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-    load(cfgSet::PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
-//    load(cfgSet::ELECTRONS);
+//    load(cfgSet::PICKYJETS,JetReader::LOADRECO | JetReader::LOADJETSHAPE | JetReader::FILLOBJ);
+    load(cfgSet::ELECTRONS);
     load(cfgSet::MUONS);
 //    load(cfgSet::PFCANDS);
   }
@@ -33,7 +33,9 @@ public:
 
     MomentumF cutMET = *met;
 
-    cfgSet::processMET(cutMET,&selectedLeptons,0,cfgSet::zl_lplus_met);
+    if(vetoedLeptons.size())
+      met->p4() += vetoedLeptons[0]->p4();
+
     if(cutMET.pt() < 200 && met->pt() < 200) return false;
 
     if(nJets < 5) return false;
