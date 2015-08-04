@@ -122,8 +122,10 @@ void PhotonFiller::fill()
     float photonIsoFPRRandomConeEta     = -99;
     float photonIsoFPRRandomConePhi =-99;
     
+    bool passminiaodpresel=false;
 
     if(pho->r9()>0.8 || pho->chargedHadronIso()<20 || pho->chargedHadronIso()<(pho->pt()*0.3 )){
+      passminiaodpresel=true;
       PFIsolation_struct FPR_out = remover.PFIsolation(pho->superCluster(),  VtxPtr);
       //float photonIsoFPRChargedVtx0 = FPR_out.chargediso_primvtx;//remover.PFIsolation("charged",it->superCluster(),0);
       //float photonIsoFPRCharged = FPR_out.chargediso;//remover.PFIsolation("charged",it->superCluster(),0);
@@ -164,9 +166,15 @@ void PhotonFiller::fill()
       data.fillMulti<float>(irhoPFphotonIso_,        calculateRhoIso(pho->eta(), pho->photonIso(),        *rho_, PHOTON));
       data.fillMulti<float>(ietaRC_, photonIsoFPRRandomConeEta);
       data.fillMulti<float>(iphiRC_, photonIsoFPRRandomConePhi);
-      data.fillMulti<float>(irhoPFchargedHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeChargedVtx0, *rho_, CHARGED));
-      data.fillMulti<float>(irhoPFneutralHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeNeutral, *rho_, NEUTRAL));
-      data.fillMulti<float>(irhoPFphotonIsoRC_,        calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConePhoton, *rho_, PHOTON));
+      if(passminiaodpresel){
+	data.fillMulti<float>(irhoPFchargedHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeChargedVtx0, *rho_, CHARGED));
+	data.fillMulti<float>(irhoPFneutralHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeNeutral, *rho_, NEUTRAL));
+	data.fillMulti<float>(irhoPFphotonIsoRC_,        calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConePhoton, *rho_, PHOTON));
+      }else{//if miniaod info for photons not saved, not a real good photon for RC -> put then default values of -99 everywhere
+	data.fillMulti<float>(irhoPFchargedHadronIsoRC_, photonIsoFPRRandomConeEta);
+	data.fillMulti<float>(irhoPFneutralHadronIsoRC_, photonIsoFPRRandomConeEta);
+	data.fillMulti<float>(irhoPFphotonIsoRC_,        photonIsoFPRRandomConeEta);
+      }
     }
     
     if(options_ & FILLISOVARS) {
@@ -201,7 +209,6 @@ float PhotonFiller::calculateRhoIso(double eta, double pfiso, double rho, ISO_TY
   else if (fabs(eta)<2.3)   bin=4;
   else if (fabs(eta)<2.4)   bin=5;
   else                      bin=6;
-
   return (pfiso - rho*EA[isotype][bin]);
   //we apply an upper cut in the isolation considerations later only, so negative values don't play any role
   //shape information on negative side important for template fits

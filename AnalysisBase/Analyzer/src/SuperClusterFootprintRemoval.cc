@@ -480,7 +480,7 @@ void SuperClusterFootprintRemoval::RandomConeIsolation(edm::Ptr<reco::Vertex> ve
     count++;
   }
 
-  if (count==50){
+  if (count==75){
     std::cout << "It was not possible to find a suitable direction for the random cone in this event. This is not a problem."  << std::endl;
     return;
   };
