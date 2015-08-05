@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <iostream>
+#include "TMath.h"
 
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 
@@ -22,15 +23,15 @@ namespace ucsbsusy {
   {
 
     public :
-      Photon() : index_(-1), scEta_(0), r9_(0), pfdbetaiso_(0), isloose_(false), ismedium_(false), istight_(false) {}
+      Photon() : index_(-1), scEta_(0), r9_(0), pfdbetaiso_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false) {}
 
       template <class InputCoordSystem>
       Photon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
           int inIndex = -1, float inSCEta = 0, float inR9 = 0, float inPfdbetaiso = 0,
-          bool inIsLoose = false, bool inIsMedium = false, bool inIsTight = false) :
+	  bool inIsVeto = false, bool inIsLoose = false, bool inIsMedium = false, bool inIsTight = false) :
           Momentum<InputCoordSystem>(inMomentum),
           index_(inIndex), scEta_(inSCEta), r9_(inR9), pfdbetaiso_(inPfdbetaiso),
-          isloose_(inIsLoose), ismedium_(inIsMedium), istight_(inIsTight) {}
+	    isveto_(inIsVeto),isloose_(inIsLoose), ismedium_(inIsMedium), istight_(inIsTight) {}
 
       ~Photon() {}
 
@@ -38,6 +39,7 @@ namespace ucsbsusy {
       float scEta()           const { return scEta_; }
       float r9()              const { return r9_; }
       float pfdbetaiso()      const { return pfdbetaiso_; }
+      bool  isveto()           const { return isveto_; }
       bool  isloose()         const { return isloose_; }
       bool  ismedium()        const { return ismedium_; }
       bool  istight()         const { return istight_; }
@@ -46,6 +48,7 @@ namespace ucsbsusy {
       void  setSCEta(float newSCEta)      { scEta_ = newSCEta;    }
       void  setR9(float newR9)            { r9_    = newR9;       }
       void  setPFDBetaIso(float newIso)   { pfdbetaiso_ = newIso; }
+      void  setIsVeto(bool newType)       { isveto_ = newType;    }
       void  setIsLoose(bool newType)      { isloose_ = newType;   }
       void  setIsMedium(bool newType)     { ismedium_ = newType;  }
       void  setIsTight(bool newType)      { istight_ = newType;   }
@@ -55,6 +58,7 @@ namespace ucsbsusy {
       float scEta_;
       float r9_;
       float pfdbetaiso_;
+      bool  isveto_;
       bool  isloose_;
       bool  ismedium_;
       bool  istight_;
@@ -69,7 +73,7 @@ namespace ucsbsusy {
   class ExtendedPhoton : public PhotonF
   {
     public :
-      ExtendedPhoton() : sigietaieta_(0), passElectronVeto_(false), full5x5sigietaieta_(0), hOverE_(0), rhoPFchargedHadronIso_(0), rhoPFneutralHadronIso_(0), rhoPFphotonIso_(0), trackiso_(0), ecaliso_(0), hcaliso_(0), pfchargedHadronIso_(0), pfneutralHadronIso_(0), pfphotonIso_(0), pfpuiso_(0) {}
+      ExtendedPhoton() : sigietaieta_(0), passElectronVeto_(false), full5x5sigietaieta_(0), hOverE_(0), rhoPFchargedHadronIso_(0), rhoPFneutralHadronIso_(0), rhoPFphotonIso_(0), trackiso_(0), ecaliso_(0), hcaliso_(0), pfchargedHadronIso_(0), pfneutralHadronIso_(0), pfphotonIso_(0), pfpuiso_(0),phiRC_(-2*TMath::Pi()),etaRC_(-10.), rhoPFchargedHadronIsoRC_(0), rhoPFneutralHadronIsoRC_(0), rhoPFphotonIsoRC_(0) {}
 
       ~ExtendedPhoton() {}
 
@@ -87,6 +91,11 @@ namespace ucsbsusy {
       float pfNeutralHadronIso()      const { return pfneutralHadronIso_;   }
       float pfPhotonIso()             const { return pfphotonIso_;    }
       float pfPUIso()                 const { return pfpuiso_;    }
+      float phiRC()                   const { return phiRC_;  }
+      float etaRC()                   const { return etaRC_;  }
+      float rhoPFChargedHadronIsoRC() const { return rhoPFchargedHadronIsoRC_; }
+      float rhoPFNeutralHadronIsoRC() const { return rhoPFneutralHadronIsoRC_; }
+      float rhoPFphotonIsoRC()        const { return rhoPFphotonIsoRC_;}
 
       void  setSigIEtaIEta(float newVal)            { sigietaieta_ = newVal;  }
       void  setPassElectronVeto(bool newVal)        { passElectronVeto_ = newVal; }
@@ -102,6 +111,11 @@ namespace ucsbsusy {
       void  setPFNeutralHadronIso(float newVal)     { pfneutralHadronIso_ = newVal;      }
       void  setPFPhotonIso(float newVal)            { pfphotonIso_ = newVal;      }
       void  setPFPUIso(float newVal)                { pfpuiso_ = newVal;    }
+      void setPhiRC(float newVal)                   { phiRC_ = newVal;  }
+      void setEtaRC(float newVal)                   { etaRC_ = newVal;  }
+      void setRhoPFChargedHadronIsoRC(float newVal) { rhoPFchargedHadronIsoRC_ = newVal; }
+      void setRhoPFNeutralHadronIsoRC(float newVal) { rhoPFneutralHadronIsoRC_ = newVal; }
+      void setRhoPFphotonIsoRC(float newVal)        { rhoPFphotonIsoRC_ = newVal;}
 
     protected :
       // ID Vars
@@ -119,7 +133,12 @@ namespace ucsbsusy {
       float pfchargedHadronIso_;
       float pfneutralHadronIso_;
       float pfphotonIso_;
-      float pfpuiso_;
+      float pfpuiso_;     
+      float phiRC_;
+      float etaRC_;
+      float rhoPFchargedHadronIsoRC_;
+      float rhoPFneutralHadronIsoRC_;
+      float rhoPFphotonIsoRC_;
 
   };
 
