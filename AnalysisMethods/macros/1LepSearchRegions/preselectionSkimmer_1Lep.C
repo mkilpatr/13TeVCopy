@@ -8,42 +8,40 @@
  */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
-#include "AnalysisTools/TreeReader/interface/Defaults.h"
-#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "AnalysisTools/Parang/interface/Panvariate.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 
 
 using namespace std;
 using namespace ucsbsusy;
 
-class Copier : public TreeCopierAllBranches {
+class Copier : public TreeCopierLoadedBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, ConfigPars* pars) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree,pars) {
-
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierLoadedBranches(fileName,treeName,outFileName,isMCTree,pars) {
   };
   virtual ~Copier() {};
 
-  virtual bool fillEvent() {
-    if(nSelLeptons == 0) return false;
-    if(met->pt() < 150) return false;
+  virtual void loadVariables(){
+    load(cfgSet::EVTINFO);
+    if(isMC())load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADTOPASSOC | JetReader::FILLOBJ | JetReader::LOADGEN);
+    else load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADTOPASSOC | JetReader::FILLOBJ);
+    load(cfgSet::ELECTRONS);
+    load(cfgSet::MUONS);
+    load(cfgSet::TRIGOBJS);
+    load(cfgSet::TAUS);
+    if(isMC()) load(cfgSet::GENPARTICLES);
 
-    //we need to count picky jets
-    vector<RecoJetF*> pickyJets;
-    cleanJets(&pickyJetReader,pickyJets,0,0);
-    if(nJets < 3 && pickyJets.size() < 3) return false;
+  }
+
+  virtual bool fillEvent() {
+
+    if(nJets < 2) return false;
+    if(nSelLeptons == 0 || nVetoedLeptons > 2) return false;
     return true;
   }
 
   void book() {
-    iWeight      = data.add<float>       ("","weight"      ,"F",weight);
-    iProcess     = data.add<size8>       ("","process"     ,"b",process);
   }
-  size iWeight;
-  size iProcess;
 
-  defaults::Process process;
-  float weight;
 
 };
 
@@ -58,12 +56,13 @@ public:
  *
  */
 
-void preselectionSkimmer_1Lep(string fileName, string processName, double crossSection, double lumi = 4, double nEvents = -1,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
+void preselectionSkimmer_1Lep(string fileName,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", bool isMC = true) {
 
-  BaseTreeAnalyzer::ConfigPars pars;
-  pars.cleanJetsvSelectedLeptons_ = true;
-  pars.leptonSelection = BaseTreeAnalyzer::SEL_1_LEP;
-  pars.defaultJetCollection = BaseTreeAnalyzer::AK4JETS;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfg.jets.minPt = 20;
+  cfg.jets.minBJetPt = 20;
+  cfg.jets.cleanJetsvVetoedLeptons = true;
 
   //get the output name
   TString prefix(fileName);
@@ -71,16 +70,7 @@ void preselectionSkimmer_1Lep(string fileName, string processName, double crossS
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
   TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
 
-  //get the process
-  defaults::Process process = defaults::NUMPROCESSES;
-  for(unsigned int iP = 0; defaults::PROCESS_NAMES[iP][0]; ++iP) if(defaults::PROCESS_NAMES[iP] == processName) process = static_cast<defaults::Process>(iP);
-  if(process == defaults::NUMPROCESSES) throw std::invalid_argument("Did not provide a valid process name (see defaults::PROCESS_NAMES)");
+  Copier a(fileName,treeName,outName.Data(),isMC, &cfg);
 
-  Copier a(fileName,treeName,outName.Data(),process != defaults::DATA, &pars);
-  //set weight and process
-  a.weight = lumi * 1000*crossSection / ( nEvents > 0 ? min(nEvents,double(a.getEntries())) : double(a.getEntries())  );
-  a.process = process;
-
-  clog << "Skimming "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and weight "<< a.weight <<" into file "<< outName << endl;
-  a.analyze(100000,nEvents);
+  a.analyze();
 }

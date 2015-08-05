@@ -1,5 +1,6 @@
 #include "../interface/mt2w.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h" // CSV_MEDIUM
 
 using namespace std;
 
@@ -10,34 +11,17 @@ return ceil( ( num * pow( 10,x ) ) - 0.5 ) / pow( 10,x );
 
 // 
 //--------------------------------------------------------------------
-double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, LorentzVector& lep, float met, float metphi){
+double calculateMT2w(vector<LorentzVector>& jets, vector<int>& bjets, vector<int>& nonbjets, LorentzVector& lep, float met, float metphi){
 
-    // I am asumming that jets is sorted by Pt
-    assert ( jets.size() == bvalue.size() );
-    // require at least 2 jets
-    if ( jets.size()<3 ) return 99999.; 
-
-
-    if(jets.size() < 3) return -99;
+    // require 2+ jets of course
+    if(jets.size()<2) return -9.;
   
-    vector<pair<double,int> > rankedJets(jets.size());
-    for(unsigned int iJ =0; iJ < jets.size(); ++iJ){
-      rankedJets[iJ].first = bvalue[iJ];
-      rankedJets[iJ].second = iJ;
-    }
-    std::sort(rankedJets.begin(),rankedJets.end(),PhysicsUtilities::greaterFirst<double,int>());
-    vector<int> bjets;
-    vector<int> addjets;
+    // assume bjets is ordered by decreasing CSV and nonbjets is ordered by decreasing PT
 
-    for(unsigned int iJ =0; iJ < rankedJets.size(); ++iJ){
-      if(rankedJets[iJ].first>0.814) bjets.push_back(rankedJets[iJ].second);
-      else {
-	if (bjets.size()<2 && bjets.size()+addjets.size()<3) addjets.push_back(rankedJets[iJ].second);
-      }
-    }
     float min_mt2w = 9999;
 
     if(bjets.size()>0){
+    // all combinations of bjets with bjets, and bjets with nonbjets
       for(unsigned int n = 0; n<bjets.size(); ++n){
 	for(unsigned int m = n+1; m<bjets.size(); ++m){
 	  float c_mt2w = mt2wWrapper(lep, jets[bjets[n]], jets[bjets[m]], met, metphi);
@@ -45,19 +29,20 @@ double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, Lorentz
 	  c_mt2w = mt2wWrapper(lep, jets[bjets[m]], jets[bjets[n]], met, metphi);
           if (c_mt2w < min_mt2w) min_mt2w = c_mt2w;
 	}
-	for(unsigned int m = 0; m<addjets.size(); ++m){
-          float c_mt2w = mt2wWrapper(lep, jets[bjets[n]], jets[addjets[m]], met, metphi);
+	for(unsigned int m = 0; m<nonbjets.size(); ++m){
+          float c_mt2w = mt2wWrapper(lep, jets[bjets[n]], jets[nonbjets[m]], met, metphi);
           if (c_mt2w < min_mt2w) min_mt2w = c_mt2w;
-          c_mt2w = mt2wWrapper(lep, jets[addjets[m]], jets[bjets[n]], met, metphi);
+          c_mt2w = mt2wWrapper(lep, jets[nonbjets[m]], jets[bjets[n]], met, metphi);
           if (c_mt2w < min_mt2w) min_mt2w = c_mt2w;
 	}
       }
     }
     else{
-      for(unsigned int m = 1; m<addjets.size(); ++m){
-	float c_mt2w = mt2wWrapper(lep, jets[addjets[0]], jets[addjets[m]], met, metphi);
+    // all combinations of the hardest nonbjet with the other nonbjets
+      for(unsigned int m = 1; m<nonbjets.size(); ++m){
+	float c_mt2w = mt2wWrapper(lep, jets[nonbjets[0]], jets[nonbjets[m]], met, metphi);
 	if (c_mt2w < min_mt2w) min_mt2w = c_mt2w;
-	c_mt2w = mt2wWrapper(lep, jets[addjets[m]], jets[addjets[0]], met, metphi);
+	c_mt2w = mt2wWrapper(lep, jets[nonbjets[m]], jets[nonbjets[0]], met, metphi);
 	if (c_mt2w < min_mt2w) min_mt2w = c_mt2w;
       }
     }
