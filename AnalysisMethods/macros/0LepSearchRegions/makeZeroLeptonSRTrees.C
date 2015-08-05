@@ -4,10 +4,10 @@
 
 using namespace ucsbsusy;
 
-void makeZeroLeptonSRTrees(TString sname = "ttbar",
-                           const int fileindex = 1,
+void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
+                           const int fileindex = -1,
                            const bool isMC = true,
-                           const TString fname = "/store/user/vdutta/13TeV/290615/merged/T2tt_850_100_ntuple_wgtxsec.root",
+                           const TString fname = "/store/user/vdutta/13TeV/080615/merged/T2tt_850_100_ntuple_wgtxsec.root",
                            const double xsec = 1.0,
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://eoscms//eos/cms")
