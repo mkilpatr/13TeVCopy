@@ -1,4 +1,4 @@
-//#include "setTDRStyle.h"
+#include "setTDRStyle.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1D.h"
@@ -14,75 +14,81 @@
 #include <stdio.h>
 #include <locale>
 #include "TCanvas.h"
-#include "TH1"
-#include "TH1F"
-#include "TPad"
-
-// IMPORTANT NOTE: 1l and LowMET used interchangeably
-//                 0l and 2J used interchangeably
-//                 3l and 3J used interchangeably
-//                 4l and 4J used interchangeably
-//                 5l and 5J used interchangeably
 
 
-//void setTDRStyle();
+void setTDRStyle();
 void pretifyLabels(TH1F* hTemp);
 TCanvas *createCanvas(TString cName);
 TH1F *create1Dhisto(TTree *tree,TString intLumi,TString cuts,TString branch,int bins,float xmin,float xmax,bool useLog,int color, int style,bool norm);
 TH2D *create2Dhisto(TTree *tree,TString intLumi,TString cuts,
                     TString branchX,int binsX,float xmin,float xmax
                     TString branchY,int binsY,float ymin,float ymax);
+void getYandE(TTree *tree,TString intLumi,std::vector<TString> cuts,std::vector<float> &yields,std::vector<float> &errors);
+void getYandE(TTree *tree,TString intLumi,TString cuts,float &yields,float &errors);
+void calcTandE(std::vector<float> y_0l, std::vector<float> ye_0l, std::vector<float> y_1l, std::vector<float> ye_1l,
+	       std::vector<float> &tcs, std::vector<float> &tcse);
+TCanvas *decompBKGin1l(std::vector<float> y_1l_tt, std::vector<float> y_1l_w, std::vector<float> y_1l_ttW, std::vector<float> y_1l_ttZ, std::vector<float> y_1l_sm,
+		       std::vector<float> ye_1l_tt, std::vector<float> ye_1l_w, std::vector<float> ye_1l_ttW, std::vector<float> ye_1l_ttZ);
+TCanvas *expYin0and1l(std::vector<float> y_0l,std::vector<float> ye_0l,std::vector<float> y_1l,std::vector<float> ye_1l);
+TCanvas *relEffwrtPreSel(std::vector<float> y_0l,std::vector<float> ye_0l,std::vector<float> y_1l,std::vector<float> ye_1l,float y_presel_0l,float y_presel_1l);
+TCanvas *drawTcs(std::vector<float> y,std::vector<float> ye);
+
 TCanvas *createCanvas(TTree *t_0l,TTree *t_1l,TString intLumi,TString cut_0l,TString cut_1l,TString branch,int bins,float xmin,float xmax,bool norm,bool savePlots,bool useLog,TString stdLog,TString name);
 TCanvas *createCanvas(TTree *t_0l,TTree *t_0l_data,TH1F *h_0l_mc,TTree *t_1l,TString intLumi,TString cut_0l,TString cut_1l,TString branch,int bins,float xmin,float xmax,
 		      bool norm,bool savePlots,bool useLog,TString stdLog,TString name);
 TH1F *createSRhisto(TTree *tree,TString intLumi,std::vector<TString> cuts,int color, int style,bool norm,TString name);
 TH1F *calculateTcsInMC(TH1F* h_0l_mc,TH1F* h_1l_mc);
 TH1F *calcRelUnc(TH1F* hIn);
-void prediction(TH1F *h_1lCS_data,TH1F *hTcs_mc,TH1F *hTcs_mcstats,TH1F *hPred_Stat,TH1F *hPred_Syst,TH1F *hPred_r);
+void prediction(TH1F *h_1lCS_data,TH1F *hTcs_mc,TH1F *hTcs_mcstats,TH1F *hPred_Stat,TH1F *hPred_Syst);
 
+// paths 2 files
+//TString fname_1l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150610_1lCS_pTl5_ak4jt/ttbar_tree.root";
+//TString fname_1l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150615_1lCS_pTl5MultiIsoL_WithLepJetClean_ak4jt/ttbar_tree.root";
+//TString fname_1l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150618_1lCS_pTl5MultiIsoL_NoLepJetClean_JetReWgt_ak4jt/ttbar_tree.root";
+TString fname_1l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/ttbar_tree.root";
+TString fname_1l_mc_w      = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/wjets_tree.root";
+TString fname_1l_mc_ttW    = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/ttW_tree.root";
+//TString fname_1l_mc_ttall  = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150610_1lCS_pTl5_ak4jt/ttbar_tree.root";
+TString fname_1l_mc_ttall  = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/ttbar_tree.root";
+TString fname_1l_mc_znunu  = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/wjets_tree.root";
+TString fname_1l_mc_ttZ    = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/ttW_tree.root";
+TString fname_1l_mc_sm     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/sm_tree.root";
+TString fname_1l_mc_T2ttMM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/T2tt_650_325_tree.root";
+TString fname_1l_mc_T2ttHM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/T2tt_850_100_tree.root";
+TString fname_1l_mc_T14tMM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/T1tttt_1200_800_tree.root";
+TString fname_1l_mc_T14tHM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/T1tttt_1500_100_tree.root";
 
-// path 2 file
-TString fname_LowMET_mc_tt     = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttbar_tree.root";
-TString fname_LowMET_mc_w      = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/wjets_tree.root";
-TString fname_LowMET_mc_ttW    = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttW_tree.root";
-TString fname_LowMET_mc_ttall  = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttall_tree.root";
-TString fname_LowMET_mc_znunu  = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/znunu_tree.root";
-TString fname_LowMET_mc_ttZ    = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttZ_tree.root";
-TString fname_LowMET_mc_sm     = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/sm_tree.root";
-TString fname_LowMET_mc_T2ttMM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T2tt_650_325_tree.root";
-TString fname_LowMET_mc_T2ttHM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T2tt_850_100_tree.root";
-TString fname_LowMET_mc_T14tMM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T1tttt_1200_800_tree.root";
-TString fname_LowMET_mc_T14tHM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T1tttt_1500_100_tree.root";
+//TString fname_0l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150615_TopDecayGenStudies/ttbar_tree.root";
+//TString fname_0l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150610_multiisol_ak4jt/ttbar_tree.root";
+TString fname_0l_mc_tt     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/ttbar_tree.root";
+TString fname_0l_mc_w      = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/wjets_tree.root";
+TString fname_0l_mc_ttW    = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/ttW_tree.root";
+TString fname_0l_mc_ttall  = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/ttbar_tree.root";
+TString fname_0l_mc_znunu  = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/znunu_tree.root";
+TString fname_0l_mc_ttZ    = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/ttW_tree.root";
+TString fname_0l_mc_sm     = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/sm_tree.root";
+TString fname_0l_mc_T2ttMM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/T2tt_650_325_tree.root";
+TString fname_0l_mc_T2ttHM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/T2tt_850_100_tree.root";
+TString fname_0l_mc_T14tMM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/T1tttt_1200_800_tree.root";
+TString fname_0l_mc_T14tHM = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/T1tttt_1500_100_tree.root";
 
-TString fname_0l_mc_tt     = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttbar_tree.root";
-TString fname_0l_mc_w      = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/wjets_tree.root";
-TString fname_0l_mc_ttW    = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttW_tree.root";
-TString fname_0l_mc_ttall  = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttall_tree.root";
-TString fname_0l_mc_znunu  = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/znunu_tree.root";
-TString fname_0l_mc_ttZ    = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttZ_tree.root";
-TString fname_0l_mc_sm     = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/sm_tree.root";
-TString fname_0l_mc_T2ttMM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T2tt_650_325_tree.root";
-TString fname_0l_mc_T2ttHM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T2tt_850_100_tree.root";
-TString fname_0l_mc_T14tMM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T1tttt_1200_800_tree.root";
-TString fname_0l_mc_T14tHM = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/T1tttt_1500_100_tree.root";
+TString fname_1l_data = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_1lCS_pTl5MultiIsoL_NoLepJetClean_RndLep_ak4jt/ttbar_pythia_tree.root";
+TString fname_0l_data = "/afs/cern.ch/work/g/gouskos/private/UCSB_2015/CMSSW_7_3_1/src/AnalysisMethods/macros/run/trees_0l_20150622_MultiIsoL_ak4jt/ttbar_pythia_tree.root";
 
-TString fname_LowMET_data = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttbar_pythia_tree.root";
-TString fname_0l_data = "/afs/cern.ch/user/r/rdorst/CMSSW_7_3_1/src/AnalysisMethods/macros/run/makeZeroLeptonLowMETCRTrees/ttbar_pythia_tree.root";
-// =====
 
 
 // open files
-TFile *f_LowMET_mc_tt     = TFile::Open(fname_LowMET_mc_tt,"READONLY");
-TFile *f_LowMET_mc_w      = TFile::Open(fname_LowMET_mc_w,"READONLY");
-TFile *f_LowMET_mc_ttW    = TFile::Open(fname_LowMET_mc_ttW,"READONLY");
-TFile *f_LowMET_mc_ttall  = TFile::Open(fname_LowMET_mc_ttall,"READONLY");
-TFile *f_LowMET_mc_znunu  = TFile::Open(fname_LowMET_mc_znunu,"READONLY");
-TFile *f_LowMET_mc_ttZ    = TFile::Open(fname_LowMET_mc_ttZ,"READONLY");
-TFile *f_LowMET_mc_sm     = TFile::Open(fname_LowMET_mc_sm,"READONLY");
-TFile *f_LowMET_mc_T2ttMM = TFile::Open(fname_LowMET_mc_T2ttMM,"READONLY");
-TFile *f_LowMET_mc_T2ttHM = TFile::Open(fname_LowMET_mc_T2ttHM,"READONLY");
-TFile *f_LowMET_mc_T14tMM = TFile::Open(fname_LowMET_mc_T14tMM,"READONLY");
-TFile *f_LowMET_mc_T14tHM = TFile::Open(fname_LowMET_mc_T14tHM,"READONLY");
+TFile *f_1l_mc_tt     = TFile::Open(fname_1l_mc_tt,"READONLY");
+TFile *f_1l_mc_w      = TFile::Open(fname_1l_mc_w,"READONLY");
+TFile *f_1l_mc_ttW    = TFile::Open(fname_1l_mc_ttW,"READONLY");
+TFile *f_1l_mc_ttall  = TFile::Open(fname_1l_mc_ttall,"READONLY");
+TFile *f_1l_mc_znunu  = TFile::Open(fname_1l_mc_znunu,"READONLY");
+TFile *f_1l_mc_ttZ    = TFile::Open(fname_1l_mc_ttZ,"READONLY");
+TFile *f_1l_mc_sm     = TFile::Open(fname_1l_mc_sm,"READONLY");
+TFile *f_1l_mc_T2ttMM = TFile::Open(fname_1l_mc_T2ttMM,"READONLY");
+TFile *f_1l_mc_T2ttHM = TFile::Open(fname_1l_mc_T2ttHM,"READONLY");
+TFile *f_1l_mc_T14tMM = TFile::Open(fname_1l_mc_T14tMM,"READONLY");
+TFile *f_1l_mc_T14tHM = TFile::Open(fname_1l_mc_T14tHM,"READONLY");
 
 TFile *f_0l_mc_tt     = TFile::Open(fname_0l_mc_tt,"READONLY");
 TFile *f_0l_mc_w      = TFile::Open(fname_0l_mc_w,"READONLY");
@@ -96,14 +102,13 @@ TFile *f_0l_mc_T2ttHM = TFile::Open(fname_0l_mc_T2ttHM,"READONLY");
 TFile *f_0l_mc_T14tMM = TFile::Open(fname_0l_mc_T14tMM,"READONLY");
 TFile *f_0l_mc_T14tHM = TFile::Open(fname_0l_mc_T14tHM,"READONLY");
 
-TFile *f_LowMET_data   = TFile::Open(fname_LowMET_data,"READONLY");
+TFile *f_1l_data   = TFile::Open(fname_1l_data,"READONLY");
 TFile *f_0l_data   = TFile::Open(fname_0l_data,"READONLY");
-// ======
 
 
 void mainfunction() {
 
-  //setTDRStyle();
+  setTDRStyle();
   gROOT->SetBatch(false);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1);
@@ -123,759 +128,141 @@ void mainfunction() {
   tmpLumi << intLumi;
   TString lumi = tmpLumi.str();
   // ====
-
   
   // get trees
-  TTree *t_1l_mc_tt     = (TTree*)f_LowMET_mc_tt->Get("Events");
-  TTree *t_1l_mc_w      = (TTree*)f_LowMET_mc_w->Get("Events");
-  TTree *t_1l_mc_ttW    = (TTree*)f_LowMET_mc_ttW->Get("Events");
-  TTree *t_1l_mc_ttall  = (TTree*)f_LowMET_mc_ttall->Get("Events");
-  TTree *t_1l_mc_znunu  = (TTree*)f_LowMET_mc_znunu->Get("Events");
-  TTree *t_1l_mc_ttZ    = (TTree*)f_LowMET_mc_ttZ->Get("Events");
-  TTree *t_1l_mc_sm     = (TTree*)f_LowMET_mc_sm->Get("Events");
-  TTree *t_1l_mc_T2ttMM = (TTree*)f_LowMET_mc_T2ttMM->Get("Events");
-  TTree *t_1l_mc_T2ttHM = (TTree*)f_LowMET_mc_T2ttHM->Get("Events");
-  TTree *t_1l_mc_T14tMM = (TTree*)f_LowMET_mc_T14tMM->Get("Events");
-  TTree *t_1l_mc_T14tHM = (TTree*)f_LowMET_mc_T14tHM->Get("Events");
+  TTree *t_1l_mc_tt     = (TTree*)f_1l_mc_tt->Get("events");
+  TTree *t_1l_mc_w      = (TTree*)f_1l_mc_w->Get("events");
+  TTree *t_1l_mc_ttW    = (TTree*)f_1l_mc_ttW->Get("events");
+  TTree *t_1l_mc_ttall  = (TTree*)f_1l_mc_ttall->Get("events");
+  TTree *t_1l_mc_znunu  = (TTree*)f_1l_mc_znunu->Get("events");
+  TTree *t_1l_mc_ttZ    = (TTree*)f_1l_mc_ttZ->Get("events");
+  TTree *t_1l_mc_sm     = (TTree*)f_1l_mc_sm->Get("events");
+  TTree *t_1l_mc_T2ttMM = (TTree*)f_1l_mc_T2ttMM->Get("events");
+  TTree *t_1l_mc_T2ttHM = (TTree*)f_1l_mc_T2ttHM->Get("events");
+  TTree *t_1l_mc_T14tMM = (TTree*)f_1l_mc_T14tMM->Get("events");
+  TTree *t_1l_mc_T14tHM = (TTree*)f_1l_mc_T14tHM->Get("events");
 
-  TTree *t_0l_mc_tt     = (TTree*)f_0l_mc_tt->Get("Events");
-  TTree *t_0l_mc_w      = (TTree*)f_0l_mc_w->Get("Events");
-  TTree *t_0l_mc_ttW    = (TTree*)f_0l_mc_ttW->Get("Events");
-  TTree *t_0l_mc_ttall  = (TTree*)f_0l_mc_ttall->Get("Events");
-  TTree *t_0l_mc_znunu  = (TTree*)f_0l_mc_znunu->Get("Events");
-  TTree *t_0l_mc_ttZ    = (TTree*)f_0l_mc_ttZ->Get("Events");
-  TTree *t_0l_mc_sm     = (TTree*)f_0l_mc_sm->Get("Events");
-  TTree *t_0l_mc_T2ttMM = (TTree*)f_0l_mc_T2ttMM->Get("Events");
-  TTree *t_0l_mc_T2ttHM = (TTree*)f_0l_mc_T2ttHM->Get("Events");
-  TTree *t_0l_mc_T14tMM = (TTree*)f_0l_mc_T14tMM->Get("Events");
-  TTree *t_0l_mc_T14tHM = (TTree*)f_0l_mc_T14tHM->Get("Events");
+  TTree *t_0l_mc_tt     = (TTree*)f_0l_mc_tt->Get("events");
+  TTree *t_0l_mc_w      = (TTree*)f_0l_mc_w->Get("events");
+  TTree *t_0l_mc_ttW    = (TTree*)f_0l_mc_ttW->Get("events");
+  TTree *t_0l_mc_ttall  = (TTree*)f_0l_mc_ttall->Get("events");
+  TTree *t_0l_mc_znunu  = (TTree*)f_0l_mc_znunu->Get("events");
+  TTree *t_0l_mc_ttZ    = (TTree*)f_0l_mc_ttZ->Get("events");
+  TTree *t_0l_mc_sm     = (TTree*)f_0l_mc_sm->Get("events");
+  TTree *t_0l_mc_T2ttMM = (TTree*)f_0l_mc_T2ttMM->Get("events");
+  TTree *t_0l_mc_T2ttHM = (TTree*)f_0l_mc_T2ttHM->Get("events");
+  TTree *t_0l_mc_T14tMM = (TTree*)f_0l_mc_T14tMM->Get("events");
+  TTree *t_0l_mc_T14tHM = (TTree*)f_0l_mc_T14tHM->Get("events");
 
-  TTree *t_1l_data      = (TTree*)f_LowMET_data->Get("Events");
-  TTree *t_0l_data      = (TTree*)f_0l_data->Get("Events");
+  TTree *t_1l_data      = (TTree*)f_1l_data->Get("events");
+  TTree *t_0l_data      = (TTree*)f_0l_data->Get("events");
   // ====
 
 
   // definition of search regions
-  TString c_presel_1l = "((njets>=5) && (nbjets>=1) && (nvetotau==0) && (dphij12met>1) && (dphij3met>0.5) && (met>175) && (met<225) && (mtb12met>175))";
-  TString c_presel_2J = "((njets==2) && (nbjets>=1) && (nvetotau==0) && (dphij12met>1) && (dphij3met>0.5) && (met>200) && (mtb12met>175))";
-  TString c_presel_3J = "((njets==3) && (nbjets>=1) && (nvetotau==0) && (dphij12met>1) && (dphij3met>0.5) && (met>200) && (mtb12met>175))";
-  TString c_presel_4J = "((njets==4) && (nbjets>=1) && (nvetotau==0) && (dphij12met>1) && (dphij3met>0.5) && (met>200) && (mtb12met>175))";
-  TString c_presel_5J = "((njets>=5) && (nbjets>=1) && (nvetotau==0) && (dphij12met>1) && (dphij3met>0.5) && (met>200) && (mtb12met>175))";  
+  TString c_presel_0l = "((NJets>=5) && (NBJets>=1) && (NVetoedTau==0) && (DphiJ12MET>1) && (DphiJ3MET>0.5) && (MET>200) && (MinMTB1B2MET>175))";
+  TString c_presel_1l = "((NJets>=5) && (NBJets>=1) && (NVetoedTau>=0) && (DphiJ12MET>1) && (DphiJ3MET>0.5) && (MET>200) && (MinMTB1B2MET>175) && (abs(DphiLepW)<1))";
 
-  TString c_Nb1NCTT0_2J = c_presel_2J+" && (nbjets==1) && (ncttstd==0)";
-  TString c_Nb1NCTT1_2J = c_presel_2J+" && (nbjets==1) && (ncttstd>=1)";
-  TString c_Nb2NCTT0_2J = c_presel_2J+" && (nbjets>=2) && (ncttstd==0)";
-  TString c_Nb2NCTT1_2J = c_presel_2J+" && (nbjets>=2) && (ncttstd>=1)";
+  TString c_Nb1NCTT0_0l = c_presel_0l+" && (NBJets==1) && (NCTTstd==0)";
+  TString c_Nb1NCTT1_0l = c_presel_0l+" && (NBJets==1) && (NCTTstd>=1)";
+  TString c_Nb2NCTT0_0l = c_presel_0l+" && (NBJets>=2) && (NCTTstd==0)";
+  TString c_Nb2NCTT1_0l = c_presel_0l+" && (NBJets>=2) && (NCTTstd>=1)";
 
-  TString c_Nb1NCTT0_3J = c_presel_3J+" && (nbjets==1) && (ncttstd==0)";
-  TString c_Nb1NCTT1_3J = c_presel_3J+" && (nbjets==1) && (ncttstd>=1)";
-  TString c_Nb2NCTT0_3J = c_presel_3J+" && (nbjets>=2) && (ncttstd==0)";
-  TString c_Nb2NCTT1_3J = c_presel_3J+" && (nbjets>=2) && (ncttstd>=1)";
-
-  TString c_Nb1NCTT0_4J = c_presel_4J+" && (nbjets==1) && (ncttstd==0)";
-  TString c_Nb1NCTT1_4J = c_presel_4J+" && (nbjets==1) && (ncttstd>=1)";
-  TString c_Nb2NCTT0_4J = c_presel_4J+" && (nbjets>=2) && (ncttstd==0)";
-  TString c_Nb2NCTT1_4J = c_presel_4J+" && (nbjets>=2) && (ncttstd>=1)";
-
-  TString c_Nb1NCTT0_5J = c_presel_4J+" && (nbjets==1) && (ncttstd==0)";
-  TString c_Nb1NCTT1_5J = c_presel_4J+" && (nbjets==1) && (ncttstd>=1)";
-  TString c_Nb2NCTT0_5J = c_presel_4J+" && (nbjets>=2) && (ncttstd==0)";
-  TString c_Nb2NCTT1_5J = c_presel_4J+" && (nbjets>=2) && (ncttstd>=1)";
-
-  TString c_Nb1NCTT0_LowMET = c_presel_1l+" && (nbjets==1) && (ncttstd==0)";
-  TString c_Nb1NCTT1_LowMET = c_presel_1l+" && (nbjets==1) && (ncttstd>=1)";
-  TString c_Nb2NCTT0_LowMET = c_presel_1l+" && (nbjets>=2) && (ncttstd==0)";
-  TString c_Nb2NCTT1_LowMET = c_presel_1l+" && (nbjets>=2) && (ncttstd>=1)";
+  TString c_Nb1NCTT0_1l = c_presel_1l+" && (NBJets==1) && (NCTTstd==0)";
+  TString c_Nb1NCTT1_1l = c_presel_1l+" && (NBJets==1) && (NCTTstd>=1)";
+  TString c_Nb2NCTT0_1l = c_presel_1l+" && (NBJets>=2) && (NCTTstd==0)";
+  TString c_Nb2NCTT1_1l = c_presel_1l+" && (NBJets>=2) && (NCTTstd>=1)";
 
   std::vector<TString> c_MET; 
-  c_MET.push_back("(met>=200. && met<300.)" );  
-  c_MET.push_back("(met>=300. && met<400.)" );
-  c_MET.push_back("(met>=400. && met<500.)" );
-  c_MET.push_back("(met>=500. && met<600.)" );
-  c_MET.push_back("(met>=600. && met<7000.)");
+  c_MET.push_back("(MET>=200. && MET<300.)" );  
+  c_MET.push_back("(MET>=300. && MET<400.)" );
+  c_MET.push_back("(MET>=400. && MET<500.)" );
+  c_MET.push_back("(MET>=500. && MET<600.)" );
+  c_MET.push_back("(MET>=600. && MET<7000.)");
 
   std::vector<TString> c_CTTstd; 
-  c_CTTstd.push_back("(ncttstd==0)"); 
-  c_CTTstd.push_back("(ncttstd>=1)");
+  c_CTTstd.push_back("(NCTTstd==0)"); 
+  c_CTTstd.push_back("(NCTTstd>=1)");
 
   std::vector<TString> c_Nb; 
-  c_Nb.push_back("(nbjets==1)");
-  c_Nb.push_back("(nbjets>=2)");
+  c_Nb.push_back("(NBJets==1)");
+  c_Nb.push_back("(NBJets>=2)");
 
   std::vector<TString> c_SBins_0l;
-  std::vector<TString> c_SBins_3l;
-  std::vector<TString> c_SBins_4l;
-  std::vector<TString> c_SBins_5l;
   std::vector<TString> c_SBins_1l;
 
   for (unsigned int i0=0; i0<c_Nb.size(); ++i0) {
     for (unsigned int i1=0; i1<c_CTTstd.size(); ++i1) {
       for (unsigned int i2=0; i2<c_MET.size(); ++i2) {
-	TString tmpStr_0l = "("+c_presel_2J+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
-	TString tmpStr_3l = "("+c_presel_3J+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
-	TString tmpStr_4l = "("+c_presel_4J+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
-	TString tmpStr_5l = "("+c_presel_5J+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
+	TString tmpStr_0l = "("+c_presel_0l+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
 	TString tmpStr_1l = "("+c_presel_1l+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_MET[i2]+")";
 	//cout << " tot_0l " << tmpStr_0l << "\n";
 	//cout << " tot_1l " << tmpStr_1l << "\n";
 	c_SBins_0l.push_back(tmpStr_0l);
-	c_SBins_3l.push_back(tmpStr_3l);
-	c_SBins_4l.push_back(tmpStr_4l);
-	c_SBins_5l.push_back(tmpStr_5l);
 	c_SBins_1l.push_back(tmpStr_1l);
       } // end of looping over i2
     } // end of looping over i1
   } // end of looping over i0
   // ====
 
-      
+    
   // expected yields after preselection
   const int totSR = c_SBins_0l.size();
   float totSR_    = totSR;
-  TH1F *hPresel_0l_mc_ttall_abs = create1Dhisto(t_0l_mc_ttall,lumi,c_presel_2J,"presel",totSR,0.,totSR_,false,1,1,false); hPresel_0l_mc_ttall_abs->SetName("hPresel_0l_mc_ttall_abs");
-  TH1F *hPresel_3l_mc_ttall_abs = create1Dhisto(t_0l_mc_ttall,lumi,c_presel_3J,"presel",totSR,0.,totSR_,false,1,1,false); hPresel_3l_mc_ttall_abs->SetName("hPresel_3l_mc_ttall_abs");
-  TH1F *hPresel_4l_mc_ttall_abs = create1Dhisto(t_0l_mc_ttall,lumi,c_presel_4J,"presel",totSR,0.,totSR_,false,1,1,false); hPresel_4l_mc_ttall_abs->SetName("hPresel_4l_mc_ttall_abs");
-  TH1F *hPresel_5l_mc_ttall_abs = create1Dhisto(t_0l_mc_ttall,lumi,c_presel_5J,"presel",totSR,0.,totSR_,false,1,1,false); hPresel_5l_mc_ttall_abs->SetName("hPresel_5l_mc_ttall_abs");
-  TH1F *hPresel_1l_mc_ttall_abs = create1Dhisto(t_1l_mc_ttall,lumi,c_presel_1l,"presel",totSR,0.,totSR_,false,2,2,false); hPresel_1l_mc_ttall_abs->SetName("hPresel_1l_mc_ttall_abs");
+  TH1F *hPresel_0l_mc_tt_abs = create1Dhisto(t_0l_mc_tt,lumi,c_presel_0l,"presel",totSR,0.,totSR_,false,1,1,false); hPresel_0l_mc_tt_abs->SetName("hPresel_0l_mc_tt_abs");
+  TH1F *hPresel_1l_mc_tt_abs = create1Dhisto(t_1l_mc_tt,lumi,c_presel_1l,"presel",totSR,0.,totSR_,false,2,2,false); hPresel_1l_mc_tt_abs->SetName("hPresel_1l_mc_tt_abs");
 
-  // expected yields in LowMET J=2,3,4,>=5 control sample in MC and data
-  TH1F *hSR_0l_mc_ttall_abs = createSRhisto(t_0l_mc_ttall,lumi,c_SBins_0l,1,1,false,"0l_mc_ttall_abs"); hSR_0l_mc_ttall_abs->SetName("hSR_0l_mc_ttall_abs");
-  TH1F *hSR_3l_mc_ttall_abs = createSRhisto(t_0l_mc_ttall,lumi,c_SBins_3l,1,1,false,"0l_mc_ttall_abs"); hSR_3l_mc_ttall_abs->SetName("hSR_0l_mc_ttall_abs");
-  TH1F *hSR_4l_mc_ttall_abs = createSRhisto(t_0l_mc_ttall,lumi,c_SBins_4l,1,1,false,"0l_mc_ttall_abs"); hSR_4l_mc_ttall_abs->SetName("hSR_0l_mc_ttall_abs");
-  TH1F *hSR_5l_mc_ttall_abs = createSRhisto(t_0l_mc_ttall,lumi,c_SBins_5l,1,1,false,"0l_mc_ttall_abs"); hSR_5l_mc_ttall_abs->SetName("hSR_0l_mc_ttall_abs");
-  TH1F *hSR_1l_mc_ttall_abs = createSRhisto(t_1l_mc_ttall,lumi,c_SBins_1l,2,2,false,"1l_mc_ttall_abs"); hSR_1l_mc_ttall_abs->SetName("hSR_1l_mc_ttall_abs");
-  TH1F *hSR_1l_data_abs     = createSRhisto(t_1l_data,lumi,c_SBins_1l,1,1,false,"1l_data_abs");         hSR_1l_data_abs->SetName("hSR_1l_data_abs"); 
-  TH1F *hSR_0l_data_abs     = createSRhisto(t_0l_data,lumi,c_SBins_0l,1,1,false,"0l_data_abs");         hSR_0l_data_abs->SetName("hSR_0l_data_abs"); 
-  TH1F *hSR_3l_data_abs     = createSRhisto(t_0l_data,lumi,c_SBins_3l,1,1,false,"0l_data_abs");         hSR_3l_data_abs->SetName("hSR_0l_data_abs"); 
-  TH1F *hSR_4l_data_abs     = createSRhisto(t_0l_data,lumi,c_SBins_4l,1,1,false,"0l_data_abs");         hSR_4l_data_abs->SetName("hSR_0l_data_abs"); 
-  TH1F *hSR_5l_data_abs     = createSRhisto(t_0l_data,lumi,c_SBins_5l,1,1,false,"0l_data_abs");         hSR_5l_data_abs->SetName("hSR_0l_data_abs"); 
+  // expected yields in 0l and in 1l control sample in MC and data
+  TH1F *hSR_0l_mc_tt_abs = createSRhisto(t_0l_mc_tt,lumi,c_SBins_0l,1,1,false,"0l_mc_tt_abs"); hSR_0l_mc_tt_abs->SetName("hSR_0l_mc_tt_abs");
+  TH1F *hSR_1l_mc_tt_abs = createSRhisto(t_1l_mc_tt,lumi,c_SBins_1l,2,2,false,"1l_mc_tt_abs"); hSR_1l_mc_tt_abs->SetName("hSR_1l_mc_tt_abs");
+  TH1F *hSR_1l_data_abs  = createSRhisto(t_1l_data,lumi,c_SBins_1l,1,1,false,"1l_data_abs");   hSR_1l_data_abs->SetName("hSR_1l_data_abs"); 
+  TH1F *hSR_0l_data_abs  = createSRhisto(t_0l_data,lumi,c_SBins_0l,1,1,false,"0l_data_abs");   hSR_0l_data_abs->SetName("hSR_0l_data_abs"); 
 
-  // decomposition of backgrounds in LowMET
-  TH1F *hSR_1l_mc_sm_abs_  = createSRhisto(t_1l_mc_sm,lumi,c_SBins_1l,1,2,false,"1l_mc_sm_abs");             hSR_1l_mc_sm_abs_->SetName("hSR_1l_mc_sm_abs_");
-  TH1F *hSR_1l_mc_znunu_abs_  = createSRhisto(t_1l_mc_znunu,lumi,c_SBins_1l,2,2,false,"1l_mc_znunu_abs");    hSR_1l_mc_znunu_abs_->SetName("hSR_1l_mc_znunu_abs_");
-  TH1F *hSR_1l_mc_tt_abs_  = createSRhisto(t_1l_mc_tt,lumi,c_SBins_1l,2,2,false,"1l_mc_tt_abs");             hSR_1l_mc_tt_abs_->SetName("hSR_1l_mc_tt_abs_");
-  TH1F *hSR_1l_mc_w_abs_   = createSRhisto(t_1l_mc_w,lumi,c_SBins_1l,4,2,false,"1l_mc_w_abs");               hSR_1l_mc_w_abs_->SetName("hSR_1l_mc_w_abs_");
-  TH1F *hSR_1l_mc_ttW_abs_ = createSRhisto(t_1l_mc_ttW,lumi,c_SBins_1l,kMagenta+2,2,false,"1l_mc_ttW_abs");  hSR_1l_mc_ttW_abs->SetName("hSR_1l_mc_ttW_abs");
-  TH1F *hSR_1l_mc_ttZ_abs_ = createSRhisto(t_1l_mc_ttZ,lumi,c_SBins_1l,kGreen+2,2,false,"1l_mc_ttZ_abs");    hSR_1l_mc_ttZ_abs->SetName("hSR_1l_mc_ttZ_abs");
-  TH1F *hSR_1l_mc_T2ttMM_abs_ = createSRhisto(t_1l_mc_T2ttMM,lumi,c_SBins_1l,3,2,false,"1l_mc_T2ttMM_abs_"); hSR_1l_mc_T2ttMM_abs_->SetName("hSR_1l_mc_T2ttMM_abs_");
-  TH1F *hSR_1l_mc_T2ttHM_abs_ = createSRhisto(t_1l_mc_T2ttHM,lumi,c_SBins_1l,5,2,false,"1l_mc_T2ttHM_abs_"); hSR_1l_mc_T2ttHM_abs_->SetName("hSR_1l_mc_T2ttHM_abs_");
-  TH1F *hSR_1l_mc_T14tMM_abs_ = createSRhisto(t_1l_mc_T14tMM,lumi,c_SBins_1l,6,2,false,"1l_mc_T14tMM_abs_"); hSR_1l_mc_T14tMM_abs_->SetName("hSR_1l_mc_T14tMM_abs_");
-  TH1F *hSR_1l_mc_T14tHM_abs_ = createSRhisto(t_1l_mc_T14tHM,lumi,c_SBins_1l,7,2,false,"1l_mc_T14tHM_abs_"); hSR_1l_mc_T14tHM_abs_->SetName("hSR_1l_mc_T14tHM_abs_");
-
-  // decomposition of backgrounds in J=2
-  TH1F *hSR_0l_mc_sm_abs_  = createSRhisto(t_0l_mc_sm,lumi,c_SBins_0l,1,1,false,"0l_mc_sm_abs");             hSR_0l_mc_sm_abs_->SetName("hSR_0l_mc_sm_abs_");
-  TH1F *hSR_0l_mc_znunu_abs_  = createSRhisto(t_0l_mc_znunu,lumi,c_SBins_0l,2,2,false,"0l_mc_znunu_abs");    hSR_0l_mc_znunu_abs_->SetName("hSR_0l_mc_znunu_abs_");
-  TH1F *hSR_0l_mc_tt_abs_  = createSRhisto(t_0l_mc_tt,lumi,c_SBins_0l,2,1,false,"0l_mc_tt_abs");             hSR_0l_mc_tt_abs_->SetName("hSR_0l_mc_tt_abs_");
-  TH1F *hSR_0l_mc_w_abs_   = createSRhisto(t_0l_mc_w,lumi,c_SBins_0l,4,1,false,"0l_mc_w_abs");               hSR_0l_mc_w_abs_->SetName("hSR_0l_mc_w_abs_");
-  TH1F *hSR_0l_mc_ttW_abs_ = createSRhisto(t_0l_mc_ttW,lumi,c_SBins_0l,kMagenta+2,1,false,"0l_mc_ttW_abs");  hSR_0l_mc_ttW_abs_->SetName("hSR_0l_mc_ttW_abs");
-  TH1F *hSR_0l_mc_ttZ_abs_ = createSRhisto(t_0l_mc_ttZ,lumi,c_SBins_0l,kGreen+2,1,false,"0l_mc_ttZ_abs");    hSR_0l_mc_ttZ_abs_->SetName("hSR_0l_mc_ttZ_abs");
-  TH1F *hSR_0l_mc_T2ttMM_abs_ = createSRhisto(t_0l_mc_T2ttMM,lumi,c_SBins_0l,3,2,false,"0l_mc_T2ttMM_abs_"); hSR_0l_mc_T2ttMM_abs_->SetName("hSR_0l_mc_T2ttMM_abs_");
-  TH1F *hSR_0l_mc_T2ttHM_abs_ = createSRhisto(t_0l_mc_T2ttHM,lumi,c_SBins_0l,5,2,false,"0l_mc_T2ttHM_abs_"); hSR_0l_mc_T2ttHM_abs_->SetName("hSR_0l_mc_T2ttHM_abs_");
-  TH1F *hSR_0l_mc_T14tMM_abs_ = createSRhisto(t_0l_mc_T14tMM,lumi,c_SBins_0l,6,2,false,"0l_mc_T14tMM_abs_"); hSR_0l_mc_T14tMM_abs_->SetName("hSR_0l_mc_T14tMM_abs_");
-  TH1F *hSR_0l_mc_T14tHM_abs_ = createSRhisto(t_0l_mc_T14tHM,lumi,c_SBins_0l,7,2,false,"0l_mc_T14tHM_abs_"); hSR_0l_mc_T14tHM_abs_->SetName("hSR_0l_mc_T14tHM_abs_");
-
-  // decomposition of backgrounds in J=3
-  TH1F *hSR_3l_mc_sm_abs_  = createSRhisto(t_0l_mc_sm,lumi,c_SBins_3l,1,1,false,"0l_mc_sm_abs");             hSR_3l_mc_sm_abs_->SetName("hSR_3l_mc_sm_abs_");
-  TH1F *hSR_3l_mc_znunu_abs_  = createSRhisto(t_0l_mc_znunu,lumi,c_SBins_3l,2,2,false,"0l_mc_znunu_abs");    hSR_3l_mc_znunu_abs_->SetName("hSR_3l_mc_znunu_abs_");
-  TH1F *hSR_3l_mc_tt_abs_  = createSRhisto(t_0l_mc_tt,lumi,c_SBins_3l,2,1,false,"0l_mc_tt_abs");             hSR_3l_mc_tt_abs_->SetName("hSR_3l_mc_tt_abs_");
-  TH1F *hSR_3l_mc_w_abs_   = createSRhisto(t_0l_mc_w,lumi,c_SBins_3l,4,1,false,"0l_mc_w_abs");               hSR_3l_mc_w_abs_->SetName("hSR_3l_mc_w_abs_");
-  TH1F *hSR_3l_mc_ttW_abs_ = createSRhisto(t_0l_mc_ttW,lumi,c_SBins_3l,kMagenta+2,1,false,"0l_mc_ttW_abs");  hSR_3l_mc_ttW_abs_->SetName("hSR_3l_mc_ttW_abs");
-  TH1F *hSR_3l_mc_ttZ_abs_ = createSRhisto(t_0l_mc_ttZ,lumi,c_SBins_3l,kGreen+2,1,false,"0l_mc_ttZ_abs");    hSR_3l_mc_ttZ_abs_->SetName("hSR_3l_mc_ttZ_abs");
-  TH1F *hSR_3l_mc_T2ttMM_abs_ = createSRhisto(t_0l_mc_T2ttMM,lumi,c_SBins_3l,3,2,false,"0l_mc_T2ttMM_abs_"); hSR_3l_mc_T2ttMM_abs_->SetName("hSR_3l_mc_T2ttMM_abs_");
-  TH1F *hSR_3l_mc_T2ttHM_abs_ = createSRhisto(t_0l_mc_T2ttHM,lumi,c_SBins_3l,5,2,false,"0l_mc_T2ttHM_abs_"); hSR_3l_mc_T2ttHM_abs_->SetName("hSR_3l_mc_T2ttHM_abs_");
-  TH1F *hSR_3l_mc_T14tMM_abs_ = createSRhisto(t_0l_mc_T14tMM,lumi,c_SBins_3l,6,2,false,"0l_mc_T14tMM_abs_"); hSR_3l_mc_T14tMM_abs_->SetName("hSR_3l_mc_T14tMM_abs_");
-  TH1F *hSR_3l_mc_T14tHM_abs_ = createSRhisto(t_0l_mc_T14tHM,lumi,c_SBins_3l,7,2,false,"0l_mc_T14tHM_abs_"); hSR_3l_mc_T14tHM_abs_->SetName("hSR_3l_mc_T14tHM_abs_");
-
-  // decomposition of backgrounds in J=4
-  TH1F *hSR_4l_mc_sm_abs_  = createSRhisto(t_0l_mc_sm,lumi,c_SBins_4l,1,1,false,"0l_mc_sm_abs");             hSR_4l_mc_sm_abs_->SetName("hSR_4l_mc_sm_abs_");
-  TH1F *hSR_4l_mc_znunu_abs_  = createSRhisto(t_0l_mc_znunu,lumi,c_SBins_4l,2,2,false,"0l_mc_znunu_abs");    hSR_4l_mc_znunu_abs_->SetName("hSR_4l_mc_znunu_abs_");
-  TH1F *hSR_4l_mc_tt_abs_  = createSRhisto(t_0l_mc_tt,lumi,c_SBins_4l,2,1,false,"0l_mc_tt_abs");             hSR_4l_mc_tt_abs_->SetName("hSR_4l_mc_tt_abs_");
-  TH1F *hSR_4l_mc_w_abs_   = createSRhisto(t_0l_mc_w,lumi,c_SBins_4l,4,1,false,"0l_mc_w_abs");               hSR_4l_mc_w_abs_->SetName("hSR_4l_mc_w_abs_");
-  TH1F *hSR_4l_mc_ttW_abs_ = createSRhisto(t_0l_mc_ttW,lumi,c_SBins_4l,kMagenta+2,1,false,"0l_mc_ttW_abs");  hSR_4l_mc_ttW_abs_->SetName("hSR_4l_mc_ttW_abs");
-  TH1F *hSR_4l_mc_ttZ_abs_ = createSRhisto(t_0l_mc_ttZ,lumi,c_SBins_4l,kGreen+2,1,false,"0l_mc_ttZ_abs");    hSR_4l_mc_ttZ_abs_->SetName("hSR_4l_mc_ttZ_abs");
-  TH1F *hSR_4l_mc_T2ttMM_abs_ = createSRhisto(t_0l_mc_T2ttMM,lumi,c_SBins_4l,3,2,false,"0l_mc_T2ttMM_abs_"); hSR_4l_mc_T2ttMM_abs_->SetName("hSR_4l_mc_T2ttMM_abs_");
-  TH1F *hSR_4l_mc_T2ttHM_abs_ = createSRhisto(t_0l_mc_T2ttHM,lumi,c_SBins_4l,5,2,false,"0l_mc_T2ttHM_abs_"); hSR_4l_mc_T2ttHM_abs_->SetName("hSR_4l_mc_T2ttHM_abs_");
-  TH1F *hSR_4l_mc_T14tMM_abs_ = createSRhisto(t_0l_mc_T14tMM,lumi,c_SBins_4l,6,2,false,"0l_mc_T14tMM_abs_"); hSR_4l_mc_T14tMM_abs_->SetName("hSR_4l_mc_T14tMM_abs_");
-  TH1F *hSR_4l_mc_T14tHM_abs_ = createSRhisto(t_0l_mc_T14tHM,lumi,c_SBins_4l,7,2,false,"0l_mc_T14tHM_abs_"); hSR_4l_mc_T14tHM_abs_->SetName("hSR_4l_mc_T14tHM_abs_");
-
-  // decomposition of backgrounds in J>=5
-  TH1F *hSR_5l_mc_sm_abs_  = createSRhisto(t_0l_mc_sm,lumi,c_SBins_5l,1,1,false,"0l_mc_sm_abs");             hSR_5l_mc_sm_abs_->SetName("hSR_5l_mc_sm_abs_");
-  TH1F *hSR_5l_mc_znunu_abs_  = createSRhisto(t_0l_mc_znunu,lumi,c_SBins_5l,2,2,false,"0l_mc_znunu_abs");    hSR_5l_mc_znunu_abs_->SetName("hSR_5l_mc_znunu_abs_");
-  TH1F *hSR_5l_mc_tt_abs_  = createSRhisto(t_0l_mc_tt,lumi,c_SBins_5l,2,1,false,"0l_mc_tt_abs");             hSR_5l_mc_tt_abs_->SetName("hSR_5l_mc_tt_abs_");
-  TH1F *hSR_5l_mc_w_abs_   = createSRhisto(t_0l_mc_w,lumi,c_SBins_5l,4,1,false,"0l_mc_w_abs");               hSR_5l_mc_w_abs_->SetName("hSR_5l_mc_w_abs_");
-  TH1F *hSR_5l_mc_ttW_abs_ = createSRhisto(t_0l_mc_ttW,lumi,c_SBins_5l,kMagenta+2,1,false,"0l_mc_ttW_abs");  hSR_5l_mc_ttW_abs_->SetName("hSR_5l_mc_ttW_abs");
-  TH1F *hSR_5l_mc_ttZ_abs_ = createSRhisto(t_0l_mc_ttZ,lumi,c_SBins_5l,kGreen+2,1,false,"0l_mc_ttZ_abs");    hSR_5l_mc_ttZ_abs_->SetName("hSR_5l_mc_ttZ_abs");
-  TH1F *hSR_5l_mc_T2ttMM_abs_ = createSRhisto(t_0l_mc_T2ttMM,lumi,c_SBins_5l,3,2,false,"0l_mc_T2ttMM_abs_"); hSR_5l_mc_T2ttMM_abs_->SetName("hSR_5l_mc_T2ttMM_abs_");
-  TH1F *hSR_5l_mc_T2ttHM_abs_ = createSRhisto(t_0l_mc_T2ttHM,lumi,c_SBins_5l,5,2,false,"0l_mc_T2ttHM_abs_"); hSR_5l_mc_T2ttHM_abs_->SetName("hSR_5l_mc_T2ttHM_abs_");
-  TH1F *hSR_5l_mc_T14tMM_abs_ = createSRhisto(t_0l_mc_T14tMM,lumi,c_SBins_5l,6,2,false,"0l_mc_T14tMM_abs_"); hSR_5l_mc_T14tMM_abs_->SetName("hSR_5l_mc_T14tMM_abs_");
-  TH1F *hSR_5l_mc_T14tHM_abs_ = createSRhisto(t_0l_mc_T14tHM,lumi,c_SBins_5l,7,2,false,"0l_mc_T14tHM_abs_"); hSR_5l_mc_T14tHM_abs_->SetName("hSR_5l_mc_T14tHM_abs_");
-
+  // decomposition of backgrounds in 1-lep
+  TH1F *hSR_1l_mc_sm_abs_  = createSRhisto(t_1l_mc_sm,lumi,c_SBins_1l,1,2,false,"1l_mc_sm_abs");            hSR_1l_mc_sm_abs_->SetName("hSR_1l_mc_sm_abs_");
+  TH1F *hSR_1l_mc_tt_abs_  = (TH1F*)hSR_1l_mc_tt_abs->Clone("hSR_1l_mc_tt_abs_");                           hSR_1l_mc_tt_abs_->SetLineStyle(1); hSR_1l_mc_tt_abs_->SetLineColor(2);
+  TH1F *hSR_1l_mc_w_abs_   = createSRhisto(t_1l_mc_w,lumi,c_SBins_1l,4,2,false,"1l_mc_w_abs");              hSR_1l_mc_w_abs_->SetName("hSR_1l_mc_w_abs_");
+  TH1F *hSR_1l_mc_ttW_abs_ = createSRhisto(t_1l_mc_ttW,lumi,c_SBins_1l,kMagenta+2,2,false,"1l_mc_ttW_abs"); hSR_1l_mc_ttW_abs->SetName("hSR_1l_mc_ttW_abs");
+  TH1F *hSR_1l_mc_ttZ_abs_ = createSRhisto(t_1l_mc_ttZ,lumi,c_SBins_1l,kGreen+2,2,false,"1l_mc_ttZ_abs");   hSR_1l_mc_ttZ_abs->SetName("hSR_1l_mc_ttZ_abs");
 
   // estimate transfer factor
-  TH1F *hTcs         = calculateTcsInMC(hSR_0l_mc_ttall_abs,hSR_1l_mc_ttall_abs); hTcs->SetName("hTcs");
-  TH1F *hTcs_mcstats = calcRelUnc(hTcs);                                          hTcs_mcstats->SetName("hTcs_mcstats");
+  TH1F *hTcs         = calculateTcsInMC(hSR_0l_mc_tt_abs,hSR_1l_mc_tt_abs); hTcs->SetName("hTcs");
+  TH1F *hTcs_mcstats = calcRelUnc(hTcs);                                    hTcs_mcstats->SetName("hTcs_mcstats");
 
   // make prediction
   TH1F *hPred_Stat = (TH1F*)hTcs->Clone("hPred_Stat");
   TH1F *hPred_Syst = (TH1F*)hTcs->Clone("hPred_Syst");
-  TH1F *hPred_r    = (TH1F*)hTcs->Clone("hPred_r");
-  prediction(hSR_1l_data_abs,hSR_0l_data_abs,hSR_0l_mc_ttall_abs,hTcs,hTcs_mcstats,hPred_Stat,hPred_Syst,hPred_r);
+  prediction(hSR_1l_data_abs,hSR_0l_data_abs,hSR_0l_mc_tt_abs,hTcs,hTcs_mcstats,hPred_Stat,hPred_Syst);
   
 
   
   // make plots
-  //TCanvas *cPresel_abs = new TCanvas("cPresel_abs","cPresel_abs",500,500);
-  //hPresel_1l_mc_ttall_abs->Draw("HIST");
-  //hPresel_0l_mc_ttall_abs->Draw("HIST sames");
-  //hPresel_1l_mc_ttall_abs->Draw("HIST sames");
+  TCanvas *cPresel_abs = new TCanvas("cPresel_abs","cPresel_abs",500,500);
+  hPresel_1l_mc_tt_abs->Draw("HIST");
+  hPresel_0l_mc_tt_abs->Draw("HIST sames");
+  hPresel_1l_mc_tt_abs->Draw("HIST sames");
 
-  //TCanvas *cSR_abs = new TCanvas("cSR_abs","cSR_abs",500,500);
-  //hSR_1l_mc_ttall_abs->Draw("HIST E0");
-  //hSR_0l_mc_ttall_abs->Draw("HIST E0 sames");
+  TCanvas *cSR_abs = new TCanvas("cSR_abs","cSR_abs",500,500);
+  hSR_1l_mc_tt_abs->Draw("HIST E0");
+  hSR_0l_mc_tt_abs->Draw("HIST E0 sames");
+  hSR_1l_mc_tt_abs->Draw("HIST E0 sames");
 
-  //Signal Contamination for 175<MET<225
-  TCanvas *cSR_1l_CS_Decomp_abs = new TCanvas("cSR_1l_CS_Decomp_abs","cSR_1l_CS_Decomp_abs",500,500);
-  cSR_1l_CS_Decomp_abs->SetLogy();
-  //hSR_1l_mc_tt_abs_->Draw("HIST E0");
-  //hSR_1l_mc_w_abs_->Draw("HIST E0 sames");
-  //hSR_1l_mc_ttW_abs_->Draw("HIST E0 sames");
-  //hSR_1l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_sm_abs_->GetYaxis()->SetRangeUser(.01,1000);
-  hSR_1l_mc_sm_abs_->SetTitle("Signal Contamination 175<MET<225");
-  hSR_1l_mc_sm_abs_->SetLineStyle(1);
-  hSR_1l_mc_T2ttMM_abs_->SetLineStyle(1);
-  hSR_1l_mc_T2ttHM_abs_->SetLineStyle(1);
-  hSR_1l_mc_T14tMM_abs_->SetLineStyle(1);
-  hSR_1l_mc_T14tHM_abs_->SetLineStyle(1);
-  hSR_1l_mc_sm_abs_->Draw("HIST E0");
-  hSR_1l_mc_T2ttMM_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_T14tHM_abs_->Draw("HIST E0 sames");
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_1l_mc_sm_abs_,"SM","f");
-  leg->AddEntry(hSR_1l_mc_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_1l_mc_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_1l_mc_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_1l_mc_T14tHM_abs_,"T14t 1500","f");
-  leg->Draw();
+  TCanvas *cTcs = new TCanvas("cTcs","cTcs",500,500);
+  hTcs->Draw("HIST E0"); 
 
-  //Ratio stuff for 175<MET<225
-  TCanvas *cSR_LowMET_SigCon = new TCanvas("cSR_LowMET_SigCon","cSR_LowMET_SigCon",500,500);
-  cSR_LowMET_SigCon->SetLogy();
-  TH1F *hSR_1l_T2ttMM_abs_ = (TH1F*)hSR_1l_mc_T2ttMM_abs_->Clone();
-  TH1F *hSR_1l_T2ttHM_abs_ = (TH1F*)hSR_1l_mc_T2ttHM_abs_->Clone();
-  TH1F *hSR_1l_T14tMM_abs_ = (TH1F*)hSR_1l_mc_T14tMM_abs_->Clone();
-  TH1F *hSR_1l_T14tHM_abs_ = (TH1F*)hSR_1l_mc_T14tHM_abs_->Clone();
-  hSR_1l_T2ttMM_abs_->Sumw2();
-  hSR_1l_T2ttMM_abs_->SetTitle("Signal Contamination Ratio 175<MET<225");
-  hSR_1l_T2ttMM_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_T2ttHM_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_T14tMM_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_T14tHM_abs_->Divide(hSR_1l_mc_sm_abs_);
-  TH1F *hSR_1l_SigTot_abs_ = (TH1F*)hSR_1l_T2ttMM_abs_->Clone();
-  hSR_1l_SigTot_abs_->Add(hSR_1l_T2ttHM_abs_);
-  hSR_1l_SigTot_abs_->Add(hSR_1l_T14tMM_abs_);
-  hSR_1l_SigTot_abs_->Add(hSR_1l_T14tHM_abs_);
-  hSR_1l_SigTot_abs_->SetLineColor(1);
-  hSR_1l_T2ttMM_abs_->SetLineColor(2);
-  hSR_1l_T2ttHM_abs_->SetLineColor(3);
-  hSR_1l_T14tMM_abs_->SetLineColor(4);
-  hSR_1l_T14tHM_abs_->SetLineColor(5);
-  hSR_1l_T2ttMM_abs_->SetLineStyle(1);
-  hSR_1l_T2ttHM_abs_->SetLineStyle(1);
-  hSR_1l_T14tMM_abs_->SetLineStyle(1);
-  hSR_1l_T14tHM_abs_->SetLineStyle(1);
-  hSR_1l_SigTot_abs_->SetLineStyle(1);
-  hSR_1l_T2ttMM_abs_->Draw("HIST E0");
-  hSR_1l_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_1l_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_1l_T14tHM_abs_->Draw("HIST E0 sames");
-  hSR_1l_SigTot_abs_->Draw("HIST E0 sames");
-  hSR_1l_T2ttMM_abs_->GetYaxis()->SetRangeUser(.0000001,10);
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_1l_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_1l_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_1l_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_1l_T14tHM_abs_,"T14t 1500","f");
-  leg->AddEntry(hSR_1l_SigTot_abs_,"Total Signal","f");
-  leg->Draw();
+  TCanvas *cTcs_mcstats = new TCanvas("cTcs_mcstats","cTcs_mcstats",500,500);
+  hTcs_mcstats->Draw("P");
 
-  //Signal Contamination for NJets=2
-  TCanvas *cSR_0l_Decomp_abs = new TCanvas("cSR_0l_Decomp_abs","cSR_0l_Decomp_abs",500,500);
-  cSR_0l_Decomp_abs->SetLogy();
-  //hSR_0l_mc_tt_abs_->Draw("HIST E0");
-  //hSR_0l_mc_w_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttW_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_sm_abs_->GetYaxis()->SetRangeUser(.01,1000);
-  hSR_0l_mc_sm_abs_->SetTitle("Signal Contamination NJets=2");
-  hSR_0l_mc_sm_abs_->Draw("HIST E0");
-  hSR_0l_mc_T2ttMM_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_T14tHM_abs_->Draw("HIST E0 sames");
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_0l_mc_sm_abs_,"SM","f");
-  leg->AddEntry(hSR_0l_mc_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_0l_mc_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_0l_mc_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_0l_mc_T14tHM_abs_,"T14t 1500","f");
-  leg->Draw();
-
-  //Ratio stuff for NJets=2
-  TCanvas *cSR_2J_SigCon = new TCanvas("cSR_2J_SigCon","cSR_2J_SigCon",500,500);
-  cSR_2J_SigCon->SetLogy();
-  TH1F *hSR_2J_T2ttMM_abs_ = (TH1F*)hSR_0l_mc_T2ttMM_abs_->Clone();
-  TH1F *hSR_2J_T2ttHM_abs_ = (TH1F*)hSR_0l_mc_T2ttHM_abs_->Clone();
-  TH1F *hSR_2J_T14tMM_abs_ = (TH1F*)hSR_0l_mc_T14tMM_abs_->Clone();
-  TH1F *hSR_2J_T14tHM_abs_ = (TH1F*)hSR_0l_mc_T14tHM_abs_->Clone();
-  hSR_2J_T2ttMM_abs_->Sumw2();
-  hSR_2J_T2ttMM_abs_->SetTitle("Signal Contamination Ratio NJets=2");
-  hSR_2J_T2ttMM_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_2J_T2ttHM_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_2J_T14tMM_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_2J_T14tHM_abs_->Divide(hSR_0l_mc_sm_abs_);
-  TH1F *hSR_2J_SigTot_abs_ = (TH1F*)hSR_2J_T2ttMM_abs_->Clone();
-  hSR_2J_SigTot_abs_->Add(hSR_2J_T2ttHM_abs_);
-  hSR_2J_SigTot_abs_->Add(hSR_2J_T14tMM_abs_);
-  hSR_2J_SigTot_abs_->Add(hSR_2J_T14tHM_abs_);
-  hSR_2J_SigTot_abs_->SetLineColor(1);
-  hSR_2J_T2ttMM_abs_->SetLineColor(2);
-  hSR_2J_T2ttHM_abs_->SetLineColor(3);
-  hSR_2J_T14tMM_abs_->SetLineColor(4);
-  hSR_2J_T14tHM_abs_->SetLineColor(5);
-  hSR_2J_T2ttMM_abs_->SetLineStyle(1);
-  hSR_2J_T2ttHM_abs_->SetLineStyle(1);
-  hSR_2J_T14tMM_abs_->SetLineStyle(1);
-  hSR_2J_T14tHM_abs_->SetLineStyle(1);
-  hSR_2J_SigTot_abs_->SetLineStyle(1);
-  hSR_2J_T2ttMM_abs_->Draw("HIST E0");
-  hSR_2J_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_2J_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_2J_T14tHM_abs_->Draw("HIST E0 sames");
-  hSR_2J_SigTot_abs_->Draw("HIST E0 sames");
-  hSR_2J_T2ttMM_abs_->GetYaxis()->SetRangeUser(.0000001,10);
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_2J_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_2J_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_2J_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_2J_T14tHM_abs_,"T14t 1500","f");
-  leg->AddEntry(hSR_2J_SigTot_abs_,"Total Signal","f");
-  leg->Draw();
-
-  //Signal Contamination for NJets=3
-  TCanvas *cSR_3l_Decomp_abs = new TCanvas("cSR_3l_Decomp_abs","cSR_3l_Decomp_abs",500,500);
-  cSR_3l_Decomp_abs->SetLogy();
-  //hSR_0l_mc_tt_abs_->Draw("HIST E0");
-  //hSR_0l_mc_w_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttW_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_sm_abs_->GetYaxis()->SetRangeUser(.01,1000);
-  hSR_3l_mc_sm_abs_->SetTitle("Signal Contamination NJets=3");
-  hSR_3l_mc_sm_abs_->Draw("HIST E0");
-  hSR_3l_mc_T2ttMM_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_T14tHM_abs_->Draw("HIST E0 sames");
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_3l_mc_sm_abs_,"SM","f");
-  leg->AddEntry(hSR_3l_mc_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_3l_mc_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_3l_mc_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_3l_mc_T14tHM_abs_,"T14t 1500","f");
-  leg->Draw();
-
-  //Ratio stuff for NJets=3
-  TCanvas *cSR_3J_SigCon = new TCanvas("cSR_3J_SigCon","cSR_3J_SigCon",500,500);
-  cSR_3J_SigCon->SetLogy();
-  TH1F *hSR_3J_T2ttMM_abs_ = (TH1F*)hSR_3l_mc_T2ttMM_abs_->Clone();
-  TH1F *hSR_3J_T2ttHM_abs_ = (TH1F*)hSR_3l_mc_T2ttHM_abs_->Clone();
-  TH1F *hSR_3J_T14tMM_abs_ = (TH1F*)hSR_3l_mc_T14tMM_abs_->Clone();
-  TH1F *hSR_3J_T14tHM_abs_ = (TH1F*)hSR_3l_mc_T14tHM_abs_->Clone();
-  hSR_3J_T2ttMM_abs_->Sumw2();
-  hSR_3J_T2ttMM_abs_->SetTitle("Signal Contamination Ratio NJets=3");
-  hSR_3J_T2ttMM_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3J_T2ttHM_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3J_T14tMM_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3J_T14tHM_abs_->Divide(hSR_3l_mc_sm_abs_);
-  TH1F *hSR_3J_SigTot_abs_ = (TH1F*)hSR_3J_T2ttMM_abs_->Clone();
-  hSR_3J_SigTot_abs_->Add(hSR_3J_T2ttHM_abs_);
-  hSR_3J_SigTot_abs_->Add(hSR_3J_T14tMM_abs_);
-  hSR_3J_SigTot_abs_->Add(hSR_3J_T14tHM_abs_);
-  hSR_3J_SigTot_abs_->SetLineColor(1);
-  hSR_3J_T2ttMM_abs_->SetLineColor(2);
-  hSR_3J_T2ttHM_abs_->SetLineColor(3);
-  hSR_3J_T14tMM_abs_->SetLineColor(4);
-  hSR_3J_T14tHM_abs_->SetLineColor(5);
-  hSR_3J_T2ttMM_abs_->SetLineStyle(1);
-  hSR_3J_T2ttHM_abs_->SetLineStyle(1);
-  hSR_3J_T14tMM_abs_->SetLineStyle(1);
-  hSR_3J_T14tHM_abs_->SetLineStyle(1);
-  hSR_3J_SigTot_abs_->SetLineStyle(1);
-  hSR_3J_T2ttMM_abs_->Draw("HIST E0");
-  hSR_3J_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_3J_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_3J_T14tHM_abs_->Draw("HIST E0 sames");
-  hSR_3J_SigTot_abs_->Draw("HIST E0 sames");
-  hSR_3J_T2ttMM_abs_->GetYaxis()->SetRangeUser(.0000001,10);
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_3J_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_3J_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_3J_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_3J_T14tHM_abs_,"T14t 1500","f");
-  leg->AddEntry(hSR_3J_SigTot_abs_,"Total Signal","f");
-  leg->Draw();
-
-  //Signal Contamination for NJets=4
-  TCanvas *cSR_4l_Decomp_abs = new TCanvas("cSR_4l_Decomp_abs","cSR_4l_Decomp_abs",500,500);
-  cSR_4l_Decomp_abs->SetLogy();
-  //hSR_0l_mc_tt_abs_->Draw("HIST E0");
-  //hSR_0l_mc_w_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttW_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_sm_abs_->GetYaxis()->SetRangeUser(.01,1000);
-  hSR_4l_mc_sm_abs_->SetTitle("Signal Contamination NJets=4");
-  hSR_4l_mc_sm_abs_->Draw("HIST E0");
-  hSR_4l_mc_T2ttMM_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_T14tHM_abs_->Draw("HIST E0 sames");
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_4l_mc_sm_abs_,"SM","f");
-  leg->AddEntry(hSR_4l_mc_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_4l_mc_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_4l_mc_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_4l_mc_T14tHM_abs_,"T14t 1500","f");
-  leg->Draw();
-
-  //Ratio stuff for NJets=4
-  TCanvas *cSR_4J_SigCon = new TCanvas("cSR_4J_SigCon","cSR_4J_SigCon",500,500);
-  cSR_4J_SigCon->SetLogy();
-  TH1F *hSR_4J_T2ttMM_abs_ = (TH1F*)hSR_4l_mc_T2ttMM_abs_->Clone();
-  TH1F *hSR_4J_T2ttHM_abs_ = (TH1F*)hSR_4l_mc_T2ttHM_abs_->Clone();
-  TH1F *hSR_4J_T14tMM_abs_ = (TH1F*)hSR_4l_mc_T14tMM_abs_->Clone();
-  TH1F *hSR_4J_T14tHM_abs_ = (TH1F*)hSR_4l_mc_T14tHM_abs_->Clone();
-  hSR_4J_T2ttMM_abs_->Sumw2();
-  hSR_4J_T2ttMM_abs_->SetTitle("Signal Contamination Ratio NJets=4");
-  hSR_4J_T2ttMM_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4J_T2ttHM_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4J_T14tMM_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4J_T14tHM_abs_->Divide(hSR_4l_mc_sm_abs_);
-  TH1F *hSR_4J_SigTot_abs_ = (TH1F*)hSR_4J_T2ttMM_abs_->Clone();
-  hSR_4J_SigTot_abs_->Add(hSR_4J_T2ttHM_abs_);
-  hSR_4J_SigTot_abs_->Add(hSR_4J_T14tMM_abs_);
-  hSR_4J_SigTot_abs_->Add(hSR_4J_T14tHM_abs_);
-  hSR_4J_SigTot_abs_->SetLineColor(1);
-  hSR_4J_T2ttMM_abs_->SetLineColor(2);
-  hSR_4J_T2ttHM_abs_->SetLineColor(3);
-  hSR_4J_T14tMM_abs_->SetLineColor(4);
-  hSR_4J_T14tHM_abs_->SetLineColor(5);
-  hSR_4J_T2ttMM_abs_->SetLineStyle(1);
-  hSR_4J_T2ttHM_abs_->SetLineStyle(1);
-  hSR_4J_T14tMM_abs_->SetLineStyle(1);
-  hSR_4J_T14tHM_abs_->SetLineStyle(1);
-  hSR_4J_SigTot_abs_->SetLineStyle(1);
-  hSR_4J_T2ttMM_abs_->Draw("HIST E0");
-  hSR_4J_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_4J_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_4J_T14tHM_abs_->Draw("HIST E0 sames");
-  hSR_4J_SigTot_abs_->Draw("HIST E0 sames");
-  hSR_4J_T2ttMM_abs_->GetYaxis()->SetRangeUser(.0000001,10);
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_4J_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_4J_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_4J_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_4J_T14tHM_abs_,"T14t 1500","f");
-  leg->AddEntry(hSR_4J_SigTot_abs_,"Total Signal","f");
-  leg->Draw();
-
-  //Signal Contamination for NJets>=5
-  TCanvas *cSR_5l_Decomp_abs = new TCanvas("cSR_5l_Decomp_abs","cSR_5l_Decomp_abs",500,500);
-  cSR_5l_Decomp_abs->SetLogy();
-  //hSR_0l_mc_tt_abs_->Draw("HIST E0");
-  //hSR_0l_mc_w_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttW_abs_->Draw("HIST E0 sames");
-  //hSR_0l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_sm_abs_->GetYaxis()->SetRangeUser(.01,1000);
-  hSR_5l_mc_sm_abs_->SetTitle("Signal Contamination NJets>=5");
-  hSR_5l_mc_sm_abs_->Draw("HIST E0");
-  hSR_5l_mc_T2ttMM_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_T14tHM_abs_->Draw("HIST E0 sames");
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_5l_mc_sm_abs_,"SM","f");
-  leg->AddEntry(hSR_5l_mc_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_5l_mc_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_5l_mc_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_5l_mc_T14tHM_abs_,"T14t 1500","f");
-  leg->Draw();
-
-  //Ratio stuff for NJets>=5
-  TCanvas *cSR_5J_SigCon = new TCanvas("cSR_5J_SigCon","cSR_5J_SigCon",500,500);
-  cSR_5J_SigCon->SetLogy();
-  TH1F *hSR_5J_T2ttMM_abs_ = (TH1F*)hSR_5l_mc_T2ttMM_abs_->Clone();
-  TH1F *hSR_5J_T2ttHM_abs_ = (TH1F*)hSR_5l_mc_T2ttHM_abs_->Clone();
-  TH1F *hSR_5J_T14tMM_abs_ = (TH1F*)hSR_5l_mc_T14tMM_abs_->Clone();
-  TH1F *hSR_5J_T14tHM_abs_ = (TH1F*)hSR_5l_mc_T14tHM_abs_->Clone();
-  hSR_5J_T2ttMM_abs_->Sumw2();
-  hSR_5J_T2ttMM_abs_->SetTitle("Signal Contamination Ratio NJets>=5");
-  hSR_5J_T2ttMM_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5J_T2ttHM_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5J_T14tMM_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5J_T14tHM_abs_->Divide(hSR_5l_mc_sm_abs_);
-  TH1F *hSR_5J_SigTot_abs_ = (TH1F*)hSR_5J_T2ttMM_abs_->Clone();
-  hSR_5J_SigTot_abs_->Add(hSR_5J_T2ttHM_abs_);
-  hSR_5J_SigTot_abs_->Add(hSR_5J_T14tMM_abs_);
-  hSR_5J_SigTot_abs_->Add(hSR_5J_T14tHM_abs_);
-  hSR_5J_SigTot_abs_->SetLineColor(1);
-  hSR_5J_T2ttMM_abs_->SetLineColor(2);
-  hSR_5J_T2ttHM_abs_->SetLineColor(3);
-  hSR_5J_T14tMM_abs_->SetLineColor(4);
-  hSR_5J_T14tHM_abs_->SetLineColor(5);
-  hSR_5J_T2ttMM_abs_->SetLineStyle(1);
-  hSR_5J_T2ttHM_abs_->SetLineStyle(1);
-  hSR_5J_T14tMM_abs_->SetLineStyle(1);
-  hSR_5J_T14tHM_abs_->SetLineStyle(1);
-  hSR_5J_SigTot_abs_->SetLineStyle(1);
-  hSR_5J_T2ttMM_abs_->Draw("HIST E0");
-  hSR_5J_T2ttHM_abs_->Draw("HIST E0 sames");
-  hSR_5J_T14tMM_abs_->Draw("HIST E0 sames");
-  hSR_5J_T14tHM_abs_->Draw("HIST E0 sames");
-  hSR_5J_SigTot_abs_->Draw("HIST E0 sames");
-  hSR_5J_T2ttMM_abs_->GetYaxis()->SetRangeUser(.0000001,10);
-  leg = new TLegend(0.65,0.7,0.9,0.9);
-  leg->SetHeader("The Legend");
-  leg->AddEntry(hSR_5J_T2ttMM_abs_,"T2tt 650","f");
-  leg->AddEntry(hSR_5J_T2ttHM_abs_,"T2tt 850","f");
-  leg->AddEntry(hSR_5J_T14tMM_abs_,"T14t 1200","f");
-  leg->AddEntry(hSR_5J_T14tHM_abs_,"T14t 1500","f");
-  leg->AddEntry(hSR_5J_SigTot_abs_,"Total Signal","f");
-  leg->Draw();
-
-  //SM Processes for 175<MET<225
-  TCanvas *cSR_1l_Decomp_sm = new TCanvas("cSR_1l_Decomp_sm","cSR_1l_Decomp_sm",500,500);
-  cSR_1l_Decomp_sm->SetLogy();
-  hSR_1l_mc_tt_abs_->Sumw2();
-  hSR_1l_mc_tt_abs_->SetTitle("SM Processes 175<MET<225");
-  hSR_1l_mc_tt_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_mc_ttZ_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_mc_ttW_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_mc_znunu_abs_->Divide(hSR_1l_mc_sm_abs_);
-  hSR_1l_mc_w_abs_->Divide(hSR_1l_mc_sm_abs_);
-  TH1F *hSR_1l_mc_smCheck_abs_ = (TH1F*)hSR_1l_mc_tt_abs_->Clone();
-  hSR_1l_mc_smCheck_abs_->Add(hSR_1l_mc_ttZ_abs_);
-  hSR_1l_mc_smCheck_abs_->Add(hSR_1l_mc_ttW_abs_);
-  hSR_1l_mc_smCheck_abs_->Add(hSR_1l_mc_w_abs_);
-  hSR_1l_mc_smCheck_abs_->Add(hSR_1l_mc_znunu_abs_);
-  double maxSMCheck1l = hSR_1l_mc_smCheck_abs_->GetMaximum(2);
-  double minSMCheck1l = hSR_1l_mc_smCheck_abs_->GetMinimum(0.5);
-  cout << maxSMCheck1l << endl;
-  cout << minSMCheck1l << endl;
-  hSR_1l_mc_tt_abs_->SetLineColor(1);
-  hSR_1l_mc_tt_abs_->SetLineStyle(1);
-  hSR_1l_mc_ttW_abs_->SetLineStyle(1);
-  hSR_1l_mc_ttZ_abs_->SetLineStyle(1);
-  hSR_1l_mc_w_abs_->SetLineStyle(1);
-  hSR_1l_mc_znunu_abs_->SetLineStyle(1);
-  hSR_1l_mc_tt_abs_->Draw("HIST E0");
-  hSR_1l_mc_w_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_ttW_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_1l_mc_znunu_abs_->Draw("HIST E0 sames");
-//  if(hSR_1l_mc_smCheck_abs_ == (hSR_1l_mc_sm_abs_->Divide(hSR_1l_mc_sm_abs_))) {
-//     hSR_1l_mc_smCheck_abs_->Draw("HIST E0 sames"); }
-  leg = new TLegend(0.75,0.7,0.9,0.9);
-  hSR_1l_mc_tt_abs_->GetYaxis()->SetRangeUser(.000001,2);
-  leg->AddEntry(hSR_1l_mc_tt_abs_,"tt","f");  
-  leg->AddEntry(hSR_1l_mc_w_abs_,"W","f");
-  leg->AddEntry(hSR_1l_mc_ttW_abs_,"ttW","f");
-  leg->AddEntry(hSR_1l_mc_ttZ_abs_,"ttZ","f");
-  leg->AddEntry(hSR_1l_mc_znunu_abs_,"Znunu","f");
-//  leg->AddEntry(hSR_1l_mc_smCheck_abs_,"SMCheck","f");
-  leg->Draw();
-
-  //SM Processes for NJets=2
-  TCanvas *cSR_0l_Decomp_sm = new TCanvas("cSR_0l_Decomp_sm","cSR_0l_Decomp_sm",500,500);
-  cSR_0l_Decomp_sm->SetLogy();
-  hSR_0l_mc_tt_abs_->Sumw2();
-  hSR_0l_mc_tt_abs_->SetTitle("SM Processes NJets=2");
-  hSR_0l_mc_tt_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_0l_mc_ttZ_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_0l_mc_ttW_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_0l_mc_znunu_abs_->Divide(hSR_0l_mc_sm_abs_);
-  hSR_0l_mc_w_abs_->Divide(hSR_0l_mc_sm_abs_);
-  TH1F *hSR_0l_mc_smCheck_abs_ = (TH1F*)hSR_0l_mc_tt_abs_->Clone();
-  hSR_0l_mc_smCheck_abs_->Add(hSR_0l_mc_ttZ_abs_);
-  hSR_0l_mc_smCheck_abs_->Add(hSR_0l_mc_ttW_abs_);
-  hSR_0l_mc_smCheck_abs_->Add(hSR_0l_mc_w_abs_);
-  hSR_0l_mc_smCheck_abs_->Add(hSR_0l_mc_znunu_abs_);
-  double maxSMCheck0l = hSR_0l_mc_smCheck_abs_->GetMaximum(2);
-  double minSMCheck0l = hSR_0l_mc_smCheck_abs_->GetMinimum(0.5);
-  cout << maxSMCheck0l << endl;
-  cout << minSMCheck0l << endl;
-//  hSR_0l_mc_smCheck_abs_->SetColor(1);
-  hSR_0l_mc_tt_abs_->Draw("HIST E0");
-  hSR_0l_mc_w_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_ttW_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_0l_mc_znunu_abs_->Draw("HIST E0 sames");
-//  if(hSR_0l_mc_smCheck_abs_ == (hSR_0l_mc_sm_abs_->Divide(hSR_0l_mc_sm_abs_))) {
-//     hSR_0l_mc_smCheck_abs_->Draw("HIST E0 sames"); }
-  leg = new TLegend(0.75,0.7,0.9,0.9);
-  hSR_0l_mc_tt_abs_->GetYaxis()->SetRangeUser(.000001,2);
-  leg->AddEntry(hSR_0l_mc_tt_abs_,"tt","f");  
-  leg->AddEntry(hSR_0l_mc_w_abs_,"W","f");
-  leg->AddEntry(hSR_0l_mc_ttW_abs_,"ttW","f");
-  leg->AddEntry(hSR_0l_mc_ttZ_abs_,"ttZ","f");
-  leg->AddEntry(hSR_0l_mc_znunu_abs_,"Znunu","f");
-//  leg->AddEntry(hSR_1l_mc_smCheck_abs_,"SMCheck","f");
-  leg->Draw();
-
-  //SM Processes for NJets=3
-  TCanvas *cSR_3l_Decomp_sm = new TCanvas("cSR_3l_Decomp_sm","cSR_3l_Decomp_sm",500,500);
-  cSR_3l_Decomp_sm->SetLogy();
-  hSR_3l_mc_tt_abs_->Sumw2();
-  hSR_3l_mc_tt_abs_->SetTitle("SM Processes NJets=3");
-  hSR_3l_mc_tt_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3l_mc_ttZ_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3l_mc_ttW_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3l_mc_znunu_abs_->Divide(hSR_3l_mc_sm_abs_);
-  hSR_3l_mc_w_abs_->Divide(hSR_3l_mc_sm_abs_);
-  TH1F *hSR_3l_mc_smCheck_abs_ = (TH1F*)hSR_3l_mc_tt_abs_->Clone();
-  hSR_3l_mc_smCheck_abs_->Add(hSR_3l_mc_ttZ_abs_);
-  hSR_3l_mc_smCheck_abs_->Add(hSR_3l_mc_ttW_abs_);
-  hSR_3l_mc_smCheck_abs_->Add(hSR_3l_mc_w_abs_);
-  hSR_3l_mc_smCheck_abs_->Add(hSR_3l_mc_znunu_abs_);
-  double maxSMCheck3l = hSR_3l_mc_smCheck_abs_->GetMaximum(2);
-  double minSMCheck3l = hSR_3l_mc_smCheck_abs_->GetMinimum(0.5);
-  cout << maxSMCheck3l << endl;
-  cout << minSMCheck3l << endl;
-//  hSR_0l_mc_smCheck_abs_->SetColor(1);
-  hSR_3l_mc_tt_abs_->Draw("HIST E0");
-  hSR_3l_mc_w_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_ttW_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_3l_mc_znunu_abs_->Draw("HIST E0 sames");
-//  if(hSR_0l_mc_smCheck_abs_ == (hSR_0l_mc_sm_abs_->Divide(hSR_0l_mc_sm_abs_))) {
-//     hSR_0l_mc_smCheck_abs_->Draw("HIST E0 sames"); }
-  leg = new TLegend(0.75,0.7,0.9,0.9);
-  hSR_3l_mc_tt_abs_->GetYaxis()->SetRangeUser(.000001,2);
-  leg->AddEntry(hSR_3l_mc_tt_abs_,"tt","f");  
-  leg->AddEntry(hSR_3l_mc_w_abs_,"W","f");
-  leg->AddEntry(hSR_3l_mc_ttW_abs_,"ttW","f");
-  leg->AddEntry(hSR_3l_mc_ttZ_abs_,"ttZ","f");
-  leg->AddEntry(hSR_3l_mc_znunu_abs_,"Znunu","f");
-//  leg->AddEntry(hSR_1l_mc_smCheck_abs_,"SMCheck","f");
-  leg->Draw();
-
-  //SM Processes for NJets=4
-  TCanvas *cSR_4l_Decomp_sm = new TCanvas("cSR_4l_Decomp_sm","cSR_4l_Decomp_sm",500,500);
-  cSR_4l_Decomp_sm->SetLogy();
-  hSR_4l_mc_tt_abs_->Sumw2();
-  hSR_4l_mc_tt_abs_->SetTitle("SM Processes NJets=4");
-  hSR_4l_mc_tt_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4l_mc_ttZ_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4l_mc_ttW_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4l_mc_znunu_abs_->Divide(hSR_4l_mc_sm_abs_);
-  hSR_4l_mc_w_abs_->Divide(hSR_4l_mc_sm_abs_);
-  TH1F *hSR_4l_mc_smCheck_abs_ = (TH1F*)hSR_4l_mc_tt_abs_->Clone();
-  hSR_4l_mc_smCheck_abs_->Add(hSR_4l_mc_ttZ_abs_);
-  hSR_4l_mc_smCheck_abs_->Add(hSR_4l_mc_ttW_abs_);
-  hSR_4l_mc_smCheck_abs_->Add(hSR_4l_mc_w_abs_);
-  hSR_4l_mc_smCheck_abs_->Add(hSR_4l_mc_znunu_abs_);
-  double maxSMCheck4l = hSR_4l_mc_smCheck_abs_->GetMaximum(2);
-  double minSMCheck4l = hSR_4l_mc_smCheck_abs_->GetMinimum(0.5);
-  cout << maxSMCheck4l << endl;
-  cout << minSMCheck4l << endl;
-//  hSR_0l_mc_smCheck_abs_->SetColor(1);
-  hSR_4l_mc_tt_abs_->Draw("HIST E0");
-  hSR_4l_mc_w_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_ttW_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_4l_mc_znunu_abs_->Draw("HIST E0 sames");
-//  if(hSR_0l_mc_smCheck_abs_ == (hSR_0l_mc_sm_abs_->Divide(hSR_0l_mc_sm_abs_))) {
-//     hSR_0l_mc_smCheck_abs_->Draw("HIST E0 sames"); }
-  leg = new TLegend(0.75,0.7,0.9,0.9);
-  hSR_4l_mc_tt_abs_->GetYaxis()->SetRangeUser(.000001,2);
-  leg->AddEntry(hSR_4l_mc_tt_abs_,"tt","f");  
-  leg->AddEntry(hSR_4l_mc_w_abs_,"W","f");
-  leg->AddEntry(hSR_4l_mc_ttW_abs_,"ttW","f");
-  leg->AddEntry(hSR_4l_mc_ttZ_abs_,"ttZ","f");
-  leg->AddEntry(hSR_4l_mc_znunu_abs_,"Znunu","f");
-//  leg->AddEntry(hSR_1l_mc_smCheck_abs_,"SMCheck","f");
-  leg->Draw();
-
-  //SM Processes for NJets>=5
-  TCanvas *cSR_5l_Decomp_sm = new TCanvas("cSR_5l_Decomp_sm","cSR_5l_Decomp_sm",500,500);
-  cSR_5l_Decomp_sm->SetLogy();
-  hSR_5l_mc_tt_abs_->Sumw2();
-  hSR_5l_mc_tt_abs_->SetTitle("SM Processes NJets>=5");
-  hSR_5l_mc_tt_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5l_mc_ttZ_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5l_mc_ttW_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5l_mc_znunu_abs_->Divide(hSR_5l_mc_sm_abs_);
-  hSR_5l_mc_w_abs_->Divide(hSR_5l_mc_sm_abs_);
-  TH1F *hSR_5l_mc_smCheck_abs_ = (TH1F*)hSR_5l_mc_tt_abs_->Clone();
-  hSR_5l_mc_smCheck_abs_->Add(hSR_5l_mc_ttZ_abs_);
-  hSR_5l_mc_smCheck_abs_->Add(hSR_5l_mc_ttW_abs_);
-  hSR_5l_mc_smCheck_abs_->Add(hSR_5l_mc_w_abs_);
-  hSR_5l_mc_smCheck_abs_->Add(hSR_5l_mc_znunu_abs_);
-  double maxSMCheck5l = hSR_5l_mc_smCheck_abs_->GetMaximum(2);
-  double minSMCheck5l = hSR_5l_mc_smCheck_abs_->GetMinimum(0.5);
-  cout << maxSMCheck5l << endl;
-  cout << minSMCheck5l << endl;
-//  hSR_0l_mc_smCheck_abs_->SetColor(1);
-  hSR_5l_mc_tt_abs_->Draw("HIST E0");
-  hSR_5l_mc_w_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_ttW_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_ttZ_abs_->Draw("HIST E0 sames");
-  hSR_5l_mc_znunu_abs_->Draw("HIST E0 sames");
-//  if(hSR_0l_mc_smCheck_abs_ == (hSR_0l_mc_sm_abs_->Divide(hSR_0l_mc_sm_abs_))) {
-//     hSR_0l_mc_smCheck_abs_->Draw("HIST E0 sames"); }
-  leg = new TLegend(0.75,0.7,0.9,0.9);
-  hSR_5l_mc_tt_abs_->GetYaxis()->SetRangeUser(.000001,2);
-  leg->AddEntry(hSR_5l_mc_tt_abs_,"tt","f");  
-  leg->AddEntry(hSR_5l_mc_w_abs_,"W","f");
-  leg->AddEntry(hSR_5l_mc_ttW_abs_,"ttW","f");
-  leg->AddEntry(hSR_5l_mc_ttZ_abs_,"ttZ","f");
-  leg->AddEntry(hSR_5l_mc_znunu_abs_,"Znunu","f");
-//  leg->AddEntry(hSR_1l_mc_smCheck_abs_,"SMCheck","f");
-  leg->Draw();
-
-
-  //TCanvas *cTcs = new TCanvas("cTcs","cTcs",500,500);
-  //hTcs->Draw("HIST E0"); 
-
-  //TCanvas *cTcs_mcstats = new TCanvas("cTcs_mcstats","cTcs_mcstats",500,500);
-  //hTcs_mcstats->Draw("P");
-
-  //  TCanvas *cPrediction = new TCanvas("cPrediction","cPrediction",1500,500);
-  //TCanvas *cPrediction = createCanvas("cPrediction");
-  //pMain->cd();
-  //hPred_Syst->Draw("E2"); 
-  //hPred_Stat->Draw("E1 sames"); 
-  //hSR_0l_data_abs->SetLineColor(4); hSR_0l_data_abs->SetMarkerColor(4); hSR_0l_data_abs->SetMarkerColor(4); hSR_0l_data_abs->SetMarkerStyle(20); hSR_0l_data_abs->SetMarkerSize(1.5);
-  //hSR_0l_data_abs->Draw("P sames");
-  //pRatio->cd();
-  //hPred_r->Draw("P E0");
+  TCanvas *cPrediction = new TCanvas("cPrediction","cPrediction",1500,500);
+  hPred_Syst->Draw("E2"); 
+  hPred_Stat->Draw("E1 sames"); 
+  hSR_0l_data_abs->SetLineColor(4); hSR_0l_data_abs->SetMarkerColor(4);
+  hSR_0l_data_abs->Draw("P sames");
   
 
 
 
   // comparison plots after preselection
-  //  TCanvas *cMET_presel       = createCanvas(t_0l_mc_ttall,t_0l_data,lumi,c_presel_0l,c_presel_0l,"MET",20,100.,900.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-MET-tt");
-  //  TCanvas *cNJ_presel        = createCanvas(t_0l_mc_ttall,t_0l_data,lumi,c_presel_0l,c_presel_0l,"NJets",8,3.5,11.5,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-NJ-tt");
   //  TCanvas *cMET_presel       = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_presel_0l,c_presel_1l,"MET",20,100.,900.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-MET-tt");
   //  TCanvas *cNJ_presel        = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_presel_0l,c_presel_1l,"NJets",8,3.5,11.5,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-NJ-tt");
   //  TCanvas *cNB_presel        = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_presel_0l,c_presel_1l,"NBJets",6,-0.5,5.5,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-NB-tt");
@@ -889,18 +276,18 @@ void mainfunction() {
   //  TCanvas *cDRB2Lep_presel   = createCanvas(t_0l_ttall,t_1l_mc_ttall,lumi,c_presel_0l,c_presel_1l,"DRB2Lep",60,0.,6.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Presel-DRB2Lep-tt");
   // ====
 
-  
+
   // prediction in search bins
-/*  TCanvas *cMET_Nb1Ntop0 = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_Nb1NCTT0_2J,c_Nb1NCTT0_LowMET,"met",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb1Ntop0-MET-tt");
-  TCanvas *cMET_Nb1Ntop1 = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_Nb1NCTT1_2J,c_Nb1NCTT1_LowMET,"met",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb1Ntop1-MET-tt");
-  TCanvas *cMET_Nb2Ntop0 = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_Nb2NCTT0_2J,c_Nb2NCTT0_LowMET,"met",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb2Ntop0-MET-tt");
-  TCanvas *cMET_Nb2Ntop1 = createCanvas(t_0l_mc_ttall,t_1l_mc_ttall,lumi,c_Nb2NCTT1_2J,c_Nb2NCTT1_LowMET,"met",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb2Ntop1-MET-tt");*/
+  TCanvas *cMET_Nb1Ntop0 = createCanvas(t_0l_mc_ttall,t_0l_data,t_1l_mc_ttall,lumi,c_Nb1NCTT0_0l,c_Nb1NCTT0_1l,"MET",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb1Ntop0-MET-tt");
+  TCanvas *cMET_Nb1Ntop1 = createCanvas(t_0l_mc_ttall,t_0l_data,t_1l_mc_ttall,lumi,c_Nb1NCTT1_0l,c_Nb1NCTT1_1l,"MET",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb1Ntop1-MET-tt");
+  TCanvas *cMET_Nb2Ntop0 = createCanvas(t_0l_mc_ttall,t_0l_data,t_1l_mc_ttall,lumi,c_Nb2NCTT0_0l,c_Nb2NCTT0_1l,"MET",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb2Ntop0-MET-tt");
+  TCanvas *cMET_Nb2Ntop1 = createCanvas(t_0l_mc_ttall,t_0l_data,t_1l_mc_ttall,lumi,c_Nb2NCTT1_0l,c_Nb2NCTT1_1l,"MET",5,200.,700.,true,savePlots,useLog,strLog,"5GeVMultiIsoL-WithLepJetClean-Nb2Ntop1-MET-tt");
   // ====  
-  
+
 } // end of void mainfunction()
 
 
-void prediction(TH1F *h_1lCS_data,TH1F *h_0l_data,TH1F *h_0l_mc,TH1F *hTcs_mc,TH1F *hTcs_mcstats,TH1F *hPred_Stat,TH1F *hPred_Syst,TH1F *hPred_r) {
+void prediction(TH1F *h_1lCS_data,TH1F *h_0l_data,TH1F *h_0l_mc,TH1F *hTcs_mc,TH1F *hTcs_mcstats,TH1F *hPred_Stat,TH1F *hPred_Syst) {
   TH1::SetDefaultSumw2(kTRUE);
 
   hPred_Stat->Multiply(h_1lCS_data,hTcs_mc);
@@ -913,18 +300,11 @@ void prediction(TH1F *h_1lCS_data,TH1F *h_0l_data,TH1F *h_0l_mc,TH1F *hTcs_mc,TH
 
     float tcs_     = hTcs_mc->GetBinContent(i0+1);
     float pred_    = hPred_Stat->GetBinContent(i0+1);
-    float obs_     = h_0l_data->GetBinContent(i0+1); 
     float statUnc_ = sqrt(h_1lCS_data->GetBinContent(i0+1));
     float systUnc_ = hTcs_mcstats->GetBinContent(i0+1);
-    float totUnc_  = sqrt(pow(statUnc_,2)+pow(systUnc_,2));
-
     hPred_Stat->SetBinError(i0+1,(statUnc_*tcs_));
     hPred_Syst->SetBinError(i0+1,pred_*systUnc_);
-    hPred_r->SetBinContent(i0+1,pred_/obs_); 
-    hPred_r->SetBinError(i0+1,totUnc_/obs_); if (obs_==0) { hPred_r->SetBinContent(i0+1,0.); hPred_r->SetBinError(i0+1,0.); }
-    h_0l_data->SetBinError(i0+1,0.); // make it optional
-
- 
+    
     cout << " data(CR) tcs data(SR) mc(SR) pred +/- stat +/- syst : " 
 	 << h_1lCS_data->GetBinContent(i0+1) << " " 
 	 << hTcs_mc->GetBinContent(i0+1)     << " "
@@ -933,7 +313,7 @@ void prediction(TH1F *h_1lCS_data,TH1F *h_0l_data,TH1F *h_0l_mc,TH1F *hTcs_mc,TH
 	 << hPred_Stat->GetBinContent(i0+1)  << " +/- " << hPred_Stat->GetBinError(i0+1) << " +/- " << hPred_Syst->GetBinError(i0+1) << "\n";
   }
 
-} // end of prediction(..)
+ }
 
 
 TH1F *calcRelUnc(TH1F* hIn) {
@@ -983,6 +363,9 @@ TH1F *calculateTcsInMC(TH1F* h_0l_mc,TH1F* h_1l_mc) {
 }
 
 
+
+
+
 TH1F *createSRhisto(TTree *tree,TString intLumi,std::vector<TString> cuts,int color, int style,bool norm,TString name) {
   TH1::SetDefaultSumw2(kTRUE);
   
@@ -991,10 +374,9 @@ TH1F *createSRhisto(TTree *tree,TString intLumi,std::vector<TString> cuts,int co
 
   for (unsigned int i0=0; i0<cuts.size(); ++i0) {
     
-    TString cut ="(weight*"+intLumi+")*("+cuts[i0]+")";
+    TString cut ="(ScaleFactor*"+intLumi+")*("+cuts[i0]+")";
     TH1F *hTemp = new TH1F("hTemp","hTemp",2,0.,1000.);
-    if (tree) {
-    tree->Project("hTemp","met",cut);}
+    tree->Project("hTemp","MET",cut);
     double e = 0.; double y = hTemp->IntegralAndError(0,2+1,e);
     
     hSR->SetBinContent(i0+1,y);
@@ -1012,6 +394,8 @@ TH1F *createSRhisto(TTree *tree,TString intLumi,std::vector<TString> cuts,int co
   
   return hSR;
 } //~ end of createSRhisto
+
+
 
 
 TCanvas *createCanvas(TTree *t_0l,TTree *t_0l_data,TTree *t_1l,TString intLumi,TString cut_0l,TString cut_1l,TString branch,int bins,float xmin,float xmax,
@@ -1043,6 +427,7 @@ TCanvas *createCanvas(TTree *t_0l,TTree *t_0l_data,TTree *t_1l,TString intLumi,T
 }
 
 
+
 TCanvas *createCanvas(TTree *t_0l,TTree *t_1l,TString intLumi,TString cut_0l,TString cut_1l,TString branch,int bins,float xmin,float xmax,bool norm,bool savePlots,bool useLog,TString strLog,TString name) {
 
   TString b_0l; TString b_1l; 
@@ -1066,10 +451,172 @@ TCanvas *createCanvas(TTree *t_0l,TTree *t_1l,TString intLumi,TString cut_0l,TSt
 }
 
 
+TCanvas *relEffwrtPreSel(std::vector<float> y_0l,std::vector<float> ye_0l,std::vector<float> y_1l,std::vector<float> ye_1l,float y_presel_0l,float y_presel_1l) {
+
+  const int bins = y_0l.size()+1;
+
+  TH1F *h_0l_presel = new TH1F("h_0l_presel","h_0l_presel",bins,-0.5,y_0l.size()+0.5);
+  TH1F *h_1l_presel = new TH1F("h_1l_presel","h_1l_presel",bins,-0.5,y_1l.size()+0.5);
+
+  TH1F *h_0l_eff = new TH1F("h_0l_eff","h_0l_eff",bins,-0.5,y_0l.size()+0.5); h_0l_eff->SetLineWidth(3); h_0l_eff->SetLineColor(1); h_0l_eff->SetLineStyle(1); h_0l_eff->SetMarkerSize(0); 
+  TH1F *h_1l_eff = new TH1F("h_1l_eff","h_1l_eff",bins,-0.5,y_1l.size()+0.5); h_1l_eff->SetLineWidth(3); h_1l_eff->SetLineColor(2); h_1l_eff->SetLineStyle(1); h_1l_eff->SetMarkerSize(0); 
+
+  for (unsigned int i0=0; i0<y_0l.size(); ++i0) {
+
+    h_0l_eff->SetBinContent(i0+1,y_0l[i0]);
+    h_0l_eff->SetBinError(i0+1,ye_0l[i0]);
+    h_0l_presel->SetBinContent(i0+1,y_presel_0l);
+
+    h_1l_eff->SetBinContent(i0+1,y_1l[i0]);
+    h_1l_eff->SetBinError(i0+1,ye_1l[i0]);
+    h_1l_presel->SetBinContent(i0+1,y_presel_1l);
+
+  }
+
+  h_0l_eff->Divide(h_0l_eff,h_0l_presel,1.,1.,"B");
+  h_1l_eff->Divide(h_1l_eff,h_1l_presel,1.,1.,"B");
+
+  TCanvas *cRelEffwrtPreSel_ = new TCanvas("cRelEffwrtPreSel_","cRelEffwrtPreSel_",500,500);
+
+  h_1l_eff->Draw("HIST E0");
+  h_0l_eff->Draw("HIST E0 sames");
+
+
+  return cRelEffwrtPreSel_;
+} //~ end of create1Dhisto
+
+
+TCanvas *expYin0and1l(std::vector<float> y_0l,std::vector<float> ye_0l,std::vector<float> y_1l,std::vector<float> ye_1l) {
+
+  const int bins = y_0l.size()+1;
+
+  TH1F *h_0l = new TH1F("h_0l","h_0l",bins,-0.5,y_0l.size()+0.5); h_0l->SetLineWidth(3); h_0l->SetLineColor(1); h_0l->SetLineStyle(1); h_0l->SetMarkerSize(0);
+  TH1F *h_1l = new TH1F("h_1l","h_1l",bins,-0.5,y_1l.size()+0.5); h_1l->SetLineWidth(3); h_1l->SetLineColor(2); h_1l->SetLineStyle(1); h_1l->SetMarkerSize(0);
+
+  for (unsigned int i0=0; i0<y_0l.size(); ++i0) {
+
+    h_0l->SetBinContent(i0+1,y_0l[i0]);
+    h_0l->SetBinError(i0+1,ye_0l[i0]);
+
+    h_1l->SetBinContent(i0+1,y_1l[i0]);
+    h_1l->SetBinError(i0+1,ye_1l[i0]);
+
+  }
+
+  TCanvas *cExpYin0and1l_ = new TCanvas("cExpYin0and1l_","cExpYin0and1l_",500,500);
+  h_1l->Draw("HIST E0");
+  h_0l->Draw("HIST E0 sames");
+
+  return cExpYin0and1l_;
+} //~ end of create1Dhisto
+
+
+TCanvas *drawTcs(std::vector<float> y,std::vector<float> ye) {
+
+  const int bins = y.size()+1;
+
+  TH1F *hTcs = new TH1F("hTcs","hTcs",bins,-0.5,y.size()+0.5); hTcs->SetLineWidth(3); hTcs->SetLineColor(1); hTcs->SetLineStyle(1); hTcs->SetMarkerSize(0);
+
+  for (unsigned int i0=0; i0<y.size(); ++i0) {
+
+    hTcs->SetBinContent(i0+1,y[i0]);
+    hTcs->SetBinError(i0+1,ye[i0]);
+    cout << "bin " << i0 << " = " << y[i0] << " +/- " << ye[i0] << " ; " << 1.+ye[i0]/y[i0] << "\n";
+  }
+
+  TCanvas *cTcs_ = new TCanvas("cTcs_","cTcs_",500,500);
+  hTcs->Draw("P E0");
+
+  return cTcs_;
+} //~ end of create1Dhisto
+
+
+TCanvas *decompBKGin1l(std::vector<float> y_1l_tt, std::vector<float> y_1l_w, std::vector<float> y_1l_ttW, std::vector<float> y_1l_ttZ, std::vector<float> y_1l_sm,
+		       std::vector<float> ye_1l_tt, std::vector<float> ye_1l_w, std::vector<float> ye_1l_ttW, std::vector<float> ye_1l_ttZ) {
+
+  const int bins = y_1l_tt.size()+1;
+
+  TH1F *h_tt  = new TH1F("h_tt","h_tt",bins,-0.5,y_1l_tt.size()+0.5);    h_tt->SetLineWidth(3);  h_tt->SetLineColor(1);       h_tt->SetMarkerSize(0);
+  TH1F *h_w   = new TH1F("h_w","h_w",bins,-0.5,y_1l_w.size()+0.5);       h_w->SetLineWidth(3);   h_w->SetLineColor(kGreen+2); h_w->SetMarkerSize(0);
+  TH1F *h_ttW = new TH1F("h_ttW","h_ttW",bins,-0.5,y_1l_ttW.size()+0.5); h_ttW->SetLineWidth(3); h_ttW->SetLineColor(4);      h_ttW->SetMarkerSize(0);
+  TH1F *h_ttZ = new TH1F("h_ttZ","h_ttZ",bins,-0.5,y_1l_ttZ.size()+0.5); h_ttZ->SetLineWidth(3); h_ttZ->SetLineColor(2);      h_ttZ->SetMarkerSize(0);
+
+  for (unsigned int i0=0; i0<y_1l_tt.size(); ++i0) {
+
+    h_tt->SetBinContent(i0+1,y_1l_tt[i0]/y_1l_sm[i0]);
+    h_tt->SetBinError(i0+1,ye_1l_tt[i0]/y_1l_sm[i0]);
+    h_w->SetBinContent(i0+1,y_1l_w[i0]/y_1l_sm[i0]);
+    h_w->SetBinError(i0+1,ye_1l_w[i0]/y_1l_sm[i0]);
+    h_ttW->SetBinContent(i0+1,y_1l_ttW[i0]/y_1l_sm[i0]);
+    h_ttW->SetBinError(i0+1,ye_1l_ttW[i0]/y_1l_sm[i0]);
+    h_ttZ->SetBinContent(i0+1,y_1l_ttZ[i0]/y_1l_sm[i0]);
+    h_ttZ->SetBinError(i0+1,ye_1l_ttZ[i0]/y_1l_sm[i0]);
+
+  }
+
+  TCanvas *cTemp = new TCanvas("cTemp","cTemp",500,500);
+  h_tt->Draw("HIST E0");
+  h_w->Draw("HIST E0 sames");
+  h_ttW->Draw("HIST E0 sames");
+  h_ttZ->Draw("HIST E0 sames");
+
+  return cTemp;
+} //~ end of create1Dhisto
+
+
+void getYandE(TTree *tree,TString intLumi,std::vector<TString> cuts,std::vector<float> &yields,std::vector<float> &errors) {
+  TH1::SetDefaultSumw2(kTRUE);
+
+  for (unsigned int i0=0; i0<cuts.size(); ++i0) {
+
+    TString cut ="(ScaleFactor*"+intLumi+")*("+cuts[i0]+")";
+    TH1F *hTemp = new TH1F("hTemp","hTemp",2,0.,1000.);
+    tree->Project("hTemp","MET",cut);
+    double e = 0.; double y = hTemp->IntegralAndError(0,2+1,e);
+
+    yields.push_back(y);
+    errors.push_back(e);
+    hTemp->Delete();
+  }
+
+}
+
+
+void getYandE(TTree *tree,TString intLumi,TString cuts,float &yields,float &errors) {
+  TH1::SetDefaultSumw2(kTRUE);
+
+  TString cut ="(ScaleFactor*"+intLumi+")*("+cuts+")";
+  TH1F *hTemp = new TH1F("hTemp","hTemp",2,0.,1000.);
+  tree->Project("hTemp","MET",cut);
+  float e =0.; float y = hTemp->IntegralAndError(0,2+1,e);
+  hTemp->Delete();
+  yields = y;
+  errors = e;
+
+}
+
+
+void calcTandE(std::vector<float> y_0l, std::vector<float> ye_0l, std::vector<float> y_1l, std::vector<float> ye_1l,
+	       std::vector<float> &tcs, std::vector<float> &tcse) {
+  TH1::SetDefaultSumw2(kTRUE);
+
+  for (unsigned int i0=0; i0<y_0l.size(); ++i0) {
+
+    float tmpTcs  = y_0l[i0]/y_1l[i0];
+    float tmpTcse = sqrt( pow((ye_0l[i0]/y_1l[i0]),2) + pow(((y_0l[i0]*ye_0l[i0])/(y_1l[i0]*y_1l[i0])),2) );
+
+    tcs.push_back(tmpTcs);
+    tcse.push_back(tmpTcse);
+  }
+
+}
+
+
+
 TH1F *create1Dhisto(TTree *tree,TString intLumi,TString cuts,TString branch,int bins,float xmin,float xmax,bool useLog,int color, int style,bool norm) {
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString cut ="(weight*"+intLumi+")*("+cuts+")";
+  TString cut ="(ScaleFactor*"+intLumi+")*("+cuts+")";
 
 
   TH1F *hTemp = new TH1F("hTemp","hTemp",bins,xmin,xmax);
@@ -1093,19 +640,18 @@ TH1F *create1Dhisto(TTree *tree,TString intLumi,TString cuts,TString branch,int 
 
     for (unsigned int i0=0; i0<bins; ++i0) {
     
-      TString cut ="(weight*"+intLumi+")*("+cuts+")";
+      TString cut ="(ScaleFactor*"+intLumi+")*("+cuts+")";
       TH1F *h_ = new TH1F("h_","h_",2,0.,1000.);
-      if (tree) {
-      tree->Project("h_","met",cut);}
+      tree->Project("h_","MET",cut);
       double e = 0.; double y = h_->IntegralAndError(0,2+1,e);
       
       hTemp->SetBinContent(i0+1,y);
       hTemp->SetBinError(i0+1,e);
       h_->Delete();
     }
-
+    
   }
-
+  
   hTemp->SetLineWidth(7);
   hTemp->SetMarkerSize(0);
   hTemp->SetLineWidth(7);
@@ -1123,13 +669,14 @@ TH1F *create1Dhisto(TTree *tree,TString intLumi,TString cuts,TString branch,int 
 } //~ end of create1Dhisto
 
 
+
 TH2D *create2Dhisto(TTree *tree,TString intLumi,TString cuts,
                     TString branchX,int binsX,float xmin,float xmax,
                     TString branchY,int binsY,float ymin,float ymax) {
 
   TH1::SetDefaultSumw2(kTRUE);
 
-  TString cut ="(weight)*("+cuts+")";
+  TString cut ="(ScaleFactor)*("+cuts+")";
   
   TH2D *hTemp = new TH2D("hTemp","hTemp",binsX,xmin,xmax,binsY,ymin,ymax);
   tree->Project("hTemp",branchY+":"+branchX,cut);
