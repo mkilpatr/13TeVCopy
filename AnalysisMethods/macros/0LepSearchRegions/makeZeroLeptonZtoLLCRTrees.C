@@ -37,20 +37,19 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
       // clean vetoedTaus vs looseLeptons
       vector<bool> isOverlapTrack(vetoedTracks.size(),false);
-      vector<PFCandidateF> allTracks(vetoedTracks.size());
-      std::transform(vetoedTracks.begin(), vetoedTracks.end(), allTracks.begin(), [](PFCandidateF* t) { return *t; });
+      vector<PFCandidateF*> tmpTracks;
       for(const auto* lep : vetoedLeptons) {
         double nearDR = 0;
-        int near = PhysicsUtilities::findNearestDR(*lep,allTracks,nearDR,0.4,configSet.vetoedTracks.minPt,0,allTracks.size());
+        int near = PhysicsUtilities::findNearestDRDeref(*lep,vetoedTracks,nearDR,0.4,configSet.vetoedTracks.minPt,0,vetoedTracks.size());
         if(near >= 0){
           isOverlapTrack[near] = true;
         }
       }
-      vetoedTracks.clear();
-      for (unsigned int iT = 0; iT < allTracks.size(); ++iT){
+      for (unsigned int iT = 0; iT < vetoedTracks.size(); ++iT){
         if (!isOverlapTrack.at(iT))
-          vetoedTracks.push_back(&allTracks.at(iT));
+          tmpTracks.push_back(vetoedTracks.at(iT));
       }
+      vetoedTracks = tmpTracks;
       nVetoedTracks = vetoedTracks.size();
 
     }
