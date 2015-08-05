@@ -57,12 +57,12 @@ struct TreeFiller {
   size i_j2eta     ;
   size i_j3pt      ;
   size i_j3eta     ;
-  size i_csv1      ;
-  size i_csv2      ;
   size i_csvj1pt   ;
   size i_csvj1eta  ;
   size i_csvj2pt   ;
   size i_csvj2eta  ;
+  size i_csv1      ;
+  size i_csv2      ;
   size i_dphij1met ;
   size i_dphij2met ;
   size i_dphij12met;
@@ -81,16 +81,6 @@ struct TreeFiller {
  bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   } 
-
-
-/*     bool passCTTSelection(CMSTopF* ctt) {
-      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-    }73X functions 
-    
-
-    bool passCTTSelection(CMSTopF* ctt) {
-      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-    }*/
 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
@@ -159,7 +149,6 @@ struct TreeFiller {
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
-
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
@@ -309,6 +298,5 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
 };
-
 
 #endif
