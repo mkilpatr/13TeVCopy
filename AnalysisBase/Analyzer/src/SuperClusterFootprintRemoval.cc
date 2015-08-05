@@ -37,15 +37,6 @@ SuperClusterFootprintRemoval::SuperClusterFootprintRemoval(edm::Handle<pat::Elec
   global_isolation_cone_size = iConfig.getUntrackedParameter<double>("isolation_cone_size_forSCremoval",0.3);
   global_linkbyrechit_enlargement = iConfig.getUntrackedParameter<double>("rechit_link_enlargement_forSCremoval",0.25);
 
-  //edm::ESHandle<CaloGeometry> geometry ;
-  //iSetup.get<CaloGeometryRecord>().get(geometry);
-  //barrelGeometry = (CaloSubdetectorGeometry*)(geometry->getSubdetectorGeometry(DetId::Ecal, EcalBarrel));
-  //endcapGeometry = (CaloSubdetectorGeometry*)(geometry->getSubdetectorGeometry(DetId::Ecal, EcalEndcap));
-
-  //edm::ESHandle<MagneticField> magneticField;
-  //iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-  //magField = (MagneticField*)(magneticField.product());
-
   jetptMinRC=jetptMinRC_;
   photonptMinRC=photonptMinRC_;
   leptonptMinRC=leptonptMinRC_;
@@ -59,23 +50,6 @@ SuperClusterFootprintRemoval::SuperClusterFootprintRemoval(edm::Handle<pat::Elec
   photonHandle=photonsHandle;
   pfCandidates=pfCandidate;
   jetHandle=jetsHandle;
-  //PFcandidates
-  //edm::InputTag pfCandidateTag = iConfig.getUntrackedParameter<edm::InputTag>("tag_pfCandidates_forSCremoval",edm::InputTag("particleFlow"));
-  //edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandidateToken_(cc.consumes<pat::PackedCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("tag_pfCandidates_forSCremoval",edm::InputTag("packedPFCandidates"))));
-  //iEvent.getByToken(pfCandidateToken_, pfCandidates);
-  //pfCandidates=photonsHandle;
-
- //Photons
-  //edm::InputTag photonTag = iConfig.getUntrackedParameter<edm::InputTag>("tag_photons",edm::InputTag("slimmedPhotons"));
-  //edm::EDGetTokenT<pat::PhotonCollection> photonToken_(cc.consumes<pat::PhotonCollection>(iConfig.getUntrackedParameter<edm::InputTag>("tag_photons",edm::InputTag("slimmedPhotons"))));
-  //iEvent.getByToken(photonToken_, photonHandle);
-  //photonHandle=photonsHandle;
-
-  //Jets
-  //edm::InputTag jetTag = iConfig.getUntrackedParameter<edm::InputTag>("tag_jets",edm::InputTag("ak5PFJets"));
-  //edm::EDGetTokenT<pat::JetCollection> jetToken_(cc.consumes<pat::JetCollection>(iConfig.getUntrackedParameter<edm::InputTag>("tag_jets",edm::InputTag("slimmedJets"))));
-  //iEvent.getByToken(jetToken_, jetHandle);
-  //jetHandle=jetsHandle;
 
   randomgen = new TRandom3(0);
 
@@ -164,16 +138,6 @@ sc_xtal_information SuperClusterFootprintRemoval::GetSCXtalInfo(reco::SuperClust
     it = unique(cristal.begin(),cristal.end());
     cristal.resize(it-cristal.begin());
   }
-      
-  //for (reco::CaloCluster_iterator bc=sc->clustersBegin(); bc!=sc->clustersEnd(); ++bc){
-  //std::cout<<"why do i NOT get here at all"<<std::endl;
-  //const std::vector< std::pair<DetId, float> > & seedrechits = (*bc)->hitsAndFractions();
-  //for (unsigned int i=0; i<seedrechits.size(); i++) cristal.push_back(seedrechits[i].first);
-  //sort(cristal.begin(),cristal.end());
-  //std::vector<DetId>::iterator it;
-  //it = unique(cristal.begin(),cristal.end());
-  //cristal.resize(it-cristal.begin());
-  //}
   
   unsigned int i=0;
   for (i=0; i<cristal.size(); i++){
@@ -223,29 +187,10 @@ sc_xtal_information SuperClusterFootprintRemoval::GetSCXtalInfo(reco::SuperClust
 
 }
 
-/*
-bool SuperClusterFootprintRemoval::CheckMatchedPFCandidate(int i){
-
-  if ((*pfCandidates)[i].pdgId()==22) {
-    if ((*pfCandidates)[i].mva_nothing_gamma()>0){
-      if( (*pfCandidates)[i].superClusterRef()==sc) {
-	return true;
-      }
-    }
-  }
-  
-  return false;
-
-}
-*/
 
 bool SuperClusterFootprintRemoval::CheckPFCandInFootprint(int i, float rotation_phi){
 
   bool isbarrel = (fabs(sc->eta())<1.5);
-
-  //check BUT was done in R1 for footprint removal INSIDE true photon supercluster
-  //now with GED that step should be obsolete
-  //if (CheckMatchedPFCandidate(i)) return true;
 
   if (!((*pfCandidates)[i].pt()>0)) return false;
 

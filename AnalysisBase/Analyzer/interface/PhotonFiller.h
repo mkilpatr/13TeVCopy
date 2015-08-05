@@ -54,8 +54,6 @@ namespace ucsbsusy {
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
 //--------------------------------------------------------------------------------------------------
-    void beginJob(edm::Run const &run, edm::EventSetup const &isetup);
-    void beginRun(edm::Run const&, edm::EventSetup const&);
 
   private :
     // Input from the config file

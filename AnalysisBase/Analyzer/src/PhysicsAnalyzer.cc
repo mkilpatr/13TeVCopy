@@ -47,7 +47,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 PhysicsAnalyzer::~PhysicsAnalyzer() {for(auto f : initializedFillers) delete f; }
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::beginJob(edm::Run const &run, edm::EventSetup const &es) {}
+void PhysicsAnalyzer::beginJob() {}
 
 //--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
