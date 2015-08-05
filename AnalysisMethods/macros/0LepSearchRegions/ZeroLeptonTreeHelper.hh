@@ -12,14 +12,16 @@ using namespace ucsbsusy;
 
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+
+	  cfgSet::loadDefaultConfigurations();
+	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
 
@@ -79,12 +81,6 @@ struct TreeFiller {
  bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   } 
-
-
-/*     bool passCTTSelection(CMSTopF* ctt) {
-      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-    }73X functions */
-    
 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
@@ -213,10 +209,10 @@ struct TreeFiller {
     for(auto* b : bjets) {
       if(b->csv() > defaults::CSV_TIGHT) ntbjets++;
     }
-    data->fill<int  >(i_njets, int(jets.size()));
-    data->fill<int  >(i_njets60, njets60);
-    data->fill<int  >(i_nbjets, int(bjets.size()));
-    data->fill<int  >(i_ntbjets, ntbjets);
+    data->fill<int>(i_njets, int(jets.size()));
+    data->fill<int>(i_njets60, njets60);
+    data->fill<int>(i_nbjets, int(bjets.size()));
+    data->fill<int>(i_ntbjets, ntbjets);
     data->fill<float>(i_ht, JetKinematics::ht(jets, 20.0, 2.4));
 
     float dphij1met = 0.0, dphij2met = 0.0;
@@ -293,9 +289,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
       if(nVetoedLeptons > 0)  return false;
-      if(nVetoedTracks > 0)   return false;
+      if(nVetoedTracks > 0)     return false;
       if(met->pt() < metcut_) return false;
-      if(!goodvertex)         return false;
+      if(!goodvertex) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

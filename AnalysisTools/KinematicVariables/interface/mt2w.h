@@ -6,5 +6,5 @@ using namespace std;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > LorentzVector;
 
-double calculateMT2w(vector<LorentzVector>& jets, vector<float>& bvalue, LorentzVector& lep, float met, float metphi);
+double calculateMT2w(vector<LorentzVector>& jets, vector<int>& bjets, vector<int>& nonbjets, LorentzVector& lep, float met, float metphi);
 double mt2wWrapper(LorentzVector& lep, LorentzVector& jet_o, LorentzVector& jet_b, float met, float metphi);

@@ -9,8 +9,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(1);}// TRandom3 rnd(0);}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars,double randSeed) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
 
     bool fillEvent() {
       if(met->pt() < metcut_) return false;
@@ -59,8 +59,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
 //  cfg.jets.cleanJetsvSelectedLeptons = true;
 
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
+  double randSeed = fileindex + 2;
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg,randSeed);
 
   a.analyze(10000);
-
-}
