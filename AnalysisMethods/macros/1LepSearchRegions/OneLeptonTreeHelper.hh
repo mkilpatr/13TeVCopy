@@ -20,10 +20,11 @@ enum DataType {SINGLEMU, SINGLEEL, MC};
 // Adjustments to default configuration
 cfgSet::ConfigSet pars1lep() {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt");
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   //cfg.jets.cleanJetsvVetoedLeptons = true;
   return cfg;
+
 }
 
 struct TreeFiller {
@@ -39,6 +40,7 @@ struct TreeFiller {
   size i_weight    ;
   size i_passtrige ;
   size i_passtrigmu;
+  size i_passjson  ;
   size i_genmet    ;
   size i_ngenleps  ;
   size i_ngeneles  ;
@@ -74,6 +76,7 @@ struct TreeFiller {
     i_weight     = data->add<float>("","weight","F",0);
     i_passtrige  = data->add<bool >("","passtrige","O",0);
     i_passtrigmu = data->add<bool >("","passtrigmu","O",0);
+    i_passjson   = data->add<bool>("","passjson","O",0);
     i_genmet     = data->add<float>("","genmet","F",0);
     i_ngenleps   = data->add<int  >("","ngenleps","I",0);
     i_ngeneles   = data->add<int  >("","ngeneles","I",0);
@@ -110,6 +113,8 @@ struct TreeFiller {
     data->fill<float>(i_weight,     ana->weight);
     data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
+     bool hasJSON = ana->hasJSONFile(), MC = ana->isMC(), passesLumi = ana->passesLumiMask();
+    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());
     data->fill<float>(i_met,      ana->met->pt());
     data->fill<int  >(i_npv,      ana->nPV);
@@ -260,8 +265,6 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
-      if(!isMC() && hasJSONFile() && !passesLumiMask())
-        return false;
 
       if(nSelLeptons != 1)    return false;
       if(nVetoedLeptons > 1)  return false;

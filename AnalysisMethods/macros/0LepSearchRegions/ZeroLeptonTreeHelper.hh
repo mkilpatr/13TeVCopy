@@ -10,18 +10,20 @@
 
 using namespace ucsbsusy;
 
+enum DataType {MC, HTMHT, SINGLEMU, SINGLEEL};
+
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
 
@@ -33,6 +35,10 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_passtrige ;
+  size i_passtrigmu;
+  size i_passjson  ;
+  size i_passdijetmet;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -103,6 +109,10 @@ struct TreeFiller {
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
+    i_passtrige      = data->add<bool >("","passtrige","O",0);
+    i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
+    i_passjson       = data->add<bool>("","passjson","O",0);
+    i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -136,7 +146,7 @@ struct TreeFiller {
     i_dphij1met      = data->add<float>("","dphij1met","F",0);
     i_dphij2met      = data->add<float>("","dphij2met","F",0);
     i_dphij12met     = data->add<float>("","dphij12met","F",0);
-    i_dphij3met      = data->add<float>("","dphij3met","F",0);
+    i_dphij3met      = data->add<float>("","dphij3met","F",3);
     i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
     i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
@@ -149,11 +159,17 @@ struct TreeFiller {
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, DataType type, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
+    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
+    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
+    bool hasJSON = ana->hasJSONFile(), MC = ana->isMC(), passesLumi = ana->passesLumiMask();    
+    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
+    data->fill<bool>(i_passdijetmet, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
@@ -266,7 +282,7 @@ struct TreeFiller {
       data->fill<float>(i_dphicsv2met, dphicsv2met);
       data->fill<float>(i_dphicsv12met,min(dphicsv1met,dphicsv2met));
     }
-
+   
   }
 
 };
@@ -274,11 +290,13 @@ struct TreeFiller {
 class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
+    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
 
-    const double metcut_ = 200.0 ;
+    const double metcut_ = 175.0 ;
 
+    DataType   datatype_;
+    
     TreeFiller filler;
 
     virtual ~ZeroLeptonAnalyzer() {}
@@ -288,11 +306,12 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
+
       if(nVetoedLeptons > 0)  return false;
       if(nVetoedTracks > 0)     return false;
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      filler.fillEventInfo(&data, this);
+      filler.fillEventInfo(&data, this, datatype_);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
     }

@@ -210,7 +210,7 @@ class PlotStuff {
           rebiny(1),
           sigscale(1),
           addsigscaletxt(true),
-          scaletodata(true),
+          scaletodata(false),
           maxscale(1.3),
           minlogscale(0.2),
           maxlogscale(2000.),
