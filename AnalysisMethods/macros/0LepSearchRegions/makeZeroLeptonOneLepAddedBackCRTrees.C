@@ -63,8 +63,10 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
 */
   TString treename = isMC ? "Events" : "TestAnalyzer/Events";
   DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars, type);
+  OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, type);
 
   a.analyze(100000);
+
+  //a.analyze(10000,100000);
 
 }
