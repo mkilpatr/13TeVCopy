@@ -38,7 +38,7 @@ struct TreeFiller {
   size i_passtrige ;
   size i_passtrigmu;
   size i_passjson  ;
-  size i_hltdijet55met110;
+  size i_passdijetmet;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -112,7 +112,7 @@ struct TreeFiller {
     i_passtrige      = data->add<bool >("","passtrige","O",0);
     i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
-    i_hltdijet55met110 = data->add<bool>("","hltdijet55met110","O",0);
+    i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -169,7 +169,7 @@ struct TreeFiller {
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
     bool hasJSON = ana->hasJSONFile(), MC = ana->isMC(), passesLumi = ana->passesLumiMask();    
     data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
-    data->fill<bool>(i_hltdijet55met110, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
+    data->fill<bool>(i_passdijetmet, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
@@ -307,9 +307,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
 
-/*      if((!isMC()) && (hasJSONFile()) && (!passesLumiMask())) 
+      if((!isMC()) && (hasJSONFile()) && (!passesLumiMask())) 
          return false;
-*/
+
       if(nVetoedLeptons > 0)  return false;
       if(nVetoedTracks > 0)     return false;
       if(met->pt() < metcut_) return false;

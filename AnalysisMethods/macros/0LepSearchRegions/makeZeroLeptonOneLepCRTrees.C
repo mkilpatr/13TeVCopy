@@ -54,12 +54,15 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
+  cfgSet::ConfigSet pars = pars0lep();
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
 //  cfg.jets.cleanJetsvSelectedLeptons = true;
 
   double randSeed = fileindex + 2;
+  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+  DataType type = isMC ? MC : (fname.Contains("met") ? MET : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg,randSeed);
 
   a.analyze(10000);
