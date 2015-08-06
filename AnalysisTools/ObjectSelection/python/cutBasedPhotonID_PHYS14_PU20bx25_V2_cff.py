@@ -78,6 +78,35 @@ WP_Medium_EE = WorkingPoint_V1(
     0.0091       # absPFPhoIsoWithEACut_C2
     )
 
+# Medium working point Barrel and Endcap with shower inversion --> called veto ID now
+idName = "cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-veto"
+WP_Veto_EB = WorkingPoint_V2(
+    idName    ,  # idName
+    0.012     ,  # hOverECut
+    0.024     ,  # full5x5_SigmaIEtaIEtaCut
+    # Isolation cuts are generally absIso < C1 + pt*C2, except for barrel NeuHad is < C1 + exp(pt*C2+C3)
+    1.79      ,  # absPFChaHadIsoWithEACut_C1
+    0.00      ,  # absPFChaHadIsoWithEACut_C2
+    0.16      ,  # absPFNeuHadIsoWithEACut_C1
+    0.0028    ,  # absPFNeuHadIsoWithEACut_C2
+    0.5408    ,  # absPFNeuHadIsoWithEACut_C3
+    190       ,  # absPFPhoIsoWithEACut_C1 --> relax cuts so that we don't cut here more or less
+    1.5          # absPFPhoIsoWithEACut_C2 --> relax cuts so that we don't cut on this quantity
+    )
+
+WP_Veto_EE = WorkingPoint_V1(
+    idName    ,  #idName
+    0.023    ,  # hOverECut
+    0.034     ,  # full5x5_SigmaIEtaIEtaCut
+    # Isolation cuts are generally absIso < C1 + pt*C2
+    1.09     ,  # absPFChaHadIsoWithEACut_C1
+    0.00      ,  # absPFChaHadIsoWithEACut_C2
+    4.31      ,  # absPFNeuHadIsoWithEACut_C1
+    0.0172    ,  # absPFNeuHadIsoWithEACut_C2
+    190       ,  # absPFPhoIsoWithEACut_C1 --> put cuts which are far higher
+    1.5          # absPFPhoIsoWithEACut_C2 --> put really relaxed cuts here
+    )
+
 # Tight working point Barrel and Endcap
 idName = "cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight"
 WP_Tight_EB = WorkingPoint_V2(
@@ -128,6 +157,7 @@ isoInputs = IsolationCutInputs(
 #
 # Finally, set up VID configuration for all cuts
 #
+cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_veto   = configureVIDCutBasedPhoID_V2 ( WP_Veto_EB, WP_Veto_EE, isoInputs)
 cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_loose  = configureVIDCutBasedPhoID_V2 ( WP_Loose_EB, WP_Loose_EE, isoInputs)
 cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_medium = configureVIDCutBasedPhoID_V2 ( WP_Medium_EB, WP_Medium_EE, isoInputs)
 cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_tight  = configureVIDCutBasedPhoID_V2 ( WP_Tight_EB, WP_Tight_EE, isoInputs)
@@ -139,10 +169,11 @@ cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_tight  = configureVIDCutBasedPhoI
 # 2) run "calculateMD5 <this file name> <one of the VID config names just above>
 # 3) update the MD5 sum strings below and uncomment the lines again.
 #
-
+central_id_registry.register(cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_veto.idName,
+                             '37bbbf09db13ff81a0b9c6625c5e0197')
 central_id_registry.register(cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_loose.idName,
-                             '6f3169e50d62b99e2af34106a19e6321')
+                             '4eb5b9bc5fb82937036f0611a90220fb')
 central_id_registry.register(cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_medium.idName,
-                             'ffc5f3a5144a8024e5b74a195bbcfe73')
+                             '559f79d6d964f39119d5992e2e93df8f')
 central_id_registry.register(cutBasedPhotonID_PHYS14_PU20bx25_V2_standalone_tight.idName,
-                             'a2b9b998a751b1c721db67865f665af0')
+                             '25bf82fbf8f1d330b3c2e856e1043d01')

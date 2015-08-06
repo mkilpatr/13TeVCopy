@@ -27,7 +27,9 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep();
 
-  ZeroLeptonAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
+  ZeroLeptonAnalyzer a(fullname, treename, outfilename, isMC, &pars, type);
 
   a.analyze(10000);
 
