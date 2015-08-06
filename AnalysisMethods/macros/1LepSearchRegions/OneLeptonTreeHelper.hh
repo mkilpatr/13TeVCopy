@@ -76,7 +76,7 @@ struct TreeFiller {
     i_weight     = data->add<float>("","weight","F",0);
     i_passtrige  = data->add<bool >("","passtrige","O",0);
     i_passtrigmu = data->add<bool >("","passtrigmu","O",0);
-    i_passjson       = data->add<bool>("","passjson","O",0);
+    i_passjson   = data->add<bool>("","passjson","O",0);
     i_genmet     = data->add<float>("","genmet","F",0);
     i_ngenleps   = data->add<int  >("","ngenleps","I",0);
     i_ngeneles   = data->add<int  >("","ngeneles","I",0);
