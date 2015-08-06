@@ -8,8 +8,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type=MC) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
 
 
 
@@ -58,11 +58,10 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   cfg.jets.cleanJetsvSelectedLeptons = true;
   cfg.selectedLeptons.minEPt = 40;
   cfg.selectedLeptons.minMuPt = 30;
-  cfgSet::ConfigSet pars = pars0lep();
 
   TString treename = isMC ? "Events" : "TestAnalyzer/Events";
   DataType type = isMC ? MC : (fname.Contains("met") ? MET : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg);
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg, type);
 
   a.analyze(100000);
 
