@@ -9,7 +9,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
   public :
 
     OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type=MC) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars, type) {}
 
 
 

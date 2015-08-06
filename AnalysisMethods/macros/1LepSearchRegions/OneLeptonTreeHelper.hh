@@ -24,6 +24,12 @@ cfgSet::ConfigSet pars1lep() {
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   //cfg.jets.cleanJetsvVetoedLeptons = true;
   return cfg;
+
+cfgSet::ConfigSet pars1LepPhoton() {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::ol_photon_set;
+  return cfg;
 }
 
 struct TreeFiller {
@@ -233,7 +239,7 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars, type) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;
@@ -260,8 +266,6 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
-      if(!isMC() && hasJSONFile() && !passesLumiMask())
-        return false;
 
       if(nSelLeptons != 1)    return false;
       if(nVetoedLeptons > 1)  return false;

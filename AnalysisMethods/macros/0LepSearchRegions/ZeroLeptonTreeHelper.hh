@@ -291,7 +291,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars, type) {}
 
     const double metcut_ = 175.0 ;
 
@@ -306,9 +306,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
-
-      if((!isMC()) && (hasJSONFile()) && (!passesLumiMask())) 
-         return false;
 
       if(nVetoedLeptons > 0)  return false;
       if(nVetoedTracks > 0)     return false;
