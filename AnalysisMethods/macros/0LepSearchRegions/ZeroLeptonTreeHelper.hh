@@ -10,19 +10,19 @@
 
 using namespace ucsbsusy;
 
-enum DataType {MC, MET};
+enum DataType {MC, HTMHT, SINGLEMU, SINGLEEL};
 
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt");
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt");
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
   cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
@@ -35,7 +35,9 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
-  size i_applyjson ;
+  size i_passtrige ;
+  size i_passtrigmu;
+  size i_passjson  ;
   size i_hltdijet55met110;
   size i_genmet    ;
   size i_bosonpt   ;
@@ -107,7 +109,9 @@ struct TreeFiller {
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
-    i_applyjson      = data->add<bool>("","applyjson","O",0);
+    i_passtrige      = data->add<bool >("","passtrige","O",0);
+    i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
+    i_passjson       = data->add<bool>("","passjson","O",0);
     i_hltdijet55met110 = data->add<bool>("","hltdijet55met110","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
@@ -161,9 +165,11 @@ struct TreeFiller {
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
+    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
+    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
     bool hasJSON = ana->hasJSONFile(), MC = ana->isMC(), passesLumi = ana->passesLumiMask();    
-    data->fill<bool>(i_applyjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
-    data->fill<bool>(i_hltdijet55met110, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==MET ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
+    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
+    data->fill<bool>(i_hltdijet55met110, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
@@ -301,9 +307,8 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
 
-/*      if((!isMC()) && (hasJSONFile()) && (!passesLumiMask())) {
+/*      if((!isMC()) && (hasJSONFile()) && (!passesLumiMask())) 
          return false;
-      }
 */
       if(nVetoedLeptons > 0)  return false;
       if(nVetoedTracks > 0)     return false;
