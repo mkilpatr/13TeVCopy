@@ -219,6 +219,7 @@ nominal_configuration = cms.PSet(
                                       bits      = cms.InputTag('TriggerResults','','HLT'),
                                       objects   = cms.InputTag('selectedPatTrigger'),
                                       prescales = cms.InputTag('patTrigger'),
+                                      printTriggerNames = cms.untracked.bool(True)
                                       ),
 
                                   METFilters = cms.untracked.PSet(

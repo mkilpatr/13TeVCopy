@@ -293,6 +293,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     
     case TRIGGERS : {
       int defaultOptions = TriggerFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("printTriggerNames")) defaultOptions |= TriggerFiller::PRINTTRIGGERNAMES;
       triggers = new TriggerFiller(cfg, consumesCollector(),
                                    options < 0 ? defaultOptions : options,
                                    branchName == "" ? defaults::BRANCH_TRIGGERS : branchName
