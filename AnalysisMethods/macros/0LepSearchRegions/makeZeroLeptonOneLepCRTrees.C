@@ -61,7 +61,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   double randSeed = fileindex + 2;
   TString treename = isMC ? "Events" : "TestAnalyzer/Events";
-  DataType type = isMC ? MC : (fname.Contains("met") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
+  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
   OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg, type, randSeed);
 
   a.analyze(10000);
