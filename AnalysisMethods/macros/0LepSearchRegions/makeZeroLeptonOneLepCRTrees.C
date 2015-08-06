@@ -9,10 +9,12 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars,, DataType type=MC, double randSeed) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars, type) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type, double randSeed) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
 
-    bool fillEvent() {
+    DataType   datatype_;
+
+    bool fillEvent() { 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       if(nBJets < 1) return false;
@@ -25,9 +27,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
       if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
-
-      filler.fillEventInfo(&data, this, whichLep);
+      filler.fillEventInfo(&data, this, datatype_, whichLep);
       filler.fillJetInfo(&data, jets, bJets, met);
+
       return true;
     }
 
@@ -55,14 +57,12 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-//  cfg.jets.cleanJetsvSelectedLeptons = true;
+  cfgSet::ConfigSet pars = pars0lepCR();
 
   double randSeed = fileindex + 2;
-  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+//  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
   DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg, type, randSeed);
+  OneLepCRAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars, type, randSeed);
 
   a.analyze(10000);
 
