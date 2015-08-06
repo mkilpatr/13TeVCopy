@@ -29,7 +29,8 @@ namespace ucsbsusy {
     ~TriggerFiller() {}
 
     enum Options {
-      NULLOPT = 0
+      NULLOPT = 0,
+      PRINTTRIGGERNAMES = (1 << 0)
     };
     static const int defaultOptions = NULLOPT;
 
