@@ -107,6 +107,14 @@ void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.setConfig();
 }
 
+cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
+
+void cfgSet::loadDefaultCorrections() {
+  standardCorrections.ttbarCorrections    = ucsbsusy::TtbarCorrectionSet::NULLOPT;
+  standardCorrections.ttbarCorrectionFile = "";
+  standardCorrections.setConfig();
+}
+
 cfgSet::ConfigSet cfgSet::zl_search_set;
 cfgSet::ConfigSet cfgSet::zl_lepton_set;
 cfgSet::ConfigSet cfgSet::zl_photon_set;
@@ -118,21 +126,26 @@ void cfgSet::loadDefaultConfigurations() {
   loadDefaultLeptonConfigurations();
   loadDefaultTrackConfigurations();
   loadDefaultPhotonConfigurations();
+  loadDefaultCorrections();
 
   zl_search_set.jets          = zl_search_jets;
   zl_search_set.vetoedLeptons = zl_veto_leptons;
   zl_search_set.vetoedTracks  = zl_veto_tracks;
+  zl_search_set.corrections   = standardCorrections;
 
   zl_lepton_set.jets            = zl_lepton_jets;
   zl_lepton_set.selectedLeptons = zl_sel_leptons;
+  zl_lepton_set.corrections   = standardCorrections;
 
   zl_photon_set.jets            = zl_photon_jets;
   zl_photon_set.selectedPhotons = zl_sel_photons;
+  zl_photon_set.corrections   = standardCorrections;
 
   ol_search_set.jets            = ol_search_jets;
   ol_search_set.selectedLeptons = ol_sel_leptons;
   ol_search_set.vetoedLeptons   = ol_veto_leptons;
   ol_search_set.vetoedTracks    = ol_veto_tracks;
+  ol_search_set.corrections   = standardCorrections;
 }
 
 void cfgSet::setJSONFile(const TString jsonfile) {

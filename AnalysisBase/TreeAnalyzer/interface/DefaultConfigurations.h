@@ -29,6 +29,10 @@ namespace cfgSet {
 
   void loadDefaultPhotonConfigurations();
 
+  extern CorrectionConfig standardCorrections;
+
+  void loadDefaultCorrections();
+
 
   extern ConfigSet zl_search_set;
   extern ConfigSet zl_lepton_set;
