@@ -151,7 +151,9 @@ public:
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
     JetReader  * defaultJets;
-    cfgSet::ConfigSet    configSet;
+    cfgSet::ConfigSet   configSet;
+    TtbarCorrectionSet  ttbarCorrections;
+    std::vector<CorrectionSet*> corrections;
   };
 
 

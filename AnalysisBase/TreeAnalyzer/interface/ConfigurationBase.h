@@ -7,6 +7,8 @@
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
+
 #include <iostream>
 
 namespace cfgSet {
@@ -171,7 +173,24 @@ namespace cfgSet {
 
   };
 
+  class CorrectionConfig : public BaseConfig {
+  public:
+    int ttbarCorrections;
+    TString ttbarCorrectionFile;
+    CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
+        ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT)
+    {};
+    friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
+      if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
+        os << "Applying ttbar corrections from " << a.ttbarCorrectionFile.Data() <<" -> ";
+        if(a.ttbarCorrections & ucsbsusy::TtbarCorrectionSet::TOPPAIRPT)
+          os << "TOPPAIRPT " << std::endl;
+        os << std::endl;
 
+      }
+      return os;
+    }
+  };
 
 
   //The collection of default configs
@@ -181,6 +200,7 @@ namespace cfgSet {
     LeptonConfig    vetoedLeptons  ;
     TrackConfig     vetoedTracks   ;
     PhotonConfig    selectedPhotons;
+    CorrectionConfig corrections    ;
     TString         jsonFile       ;
     JSONProcessing* jsonProcessing ;
     ConfigSet() :
@@ -189,6 +209,7 @@ namespace cfgSet {
       vetoedLeptons   (),
       vetoedTracks    (),
       selectedPhotons (),
+      corrections     (),
       jsonFile(""),
       jsonProcessing(0)
     {}
