@@ -4,10 +4,13 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
+char * cfgSet::CMSSW_BASE = getenv ("CMSSW_BASE");
+
 cfgSet::JetConfig cfgSet::zl_search_jets("zl_search_jets");
 cfgSet::JetConfig cfgSet::zl_photon_jets("zl_photon_jets");
 cfgSet::JetConfig cfgSet::zl_lepton_jets("zl_lepton_jets");
 cfgSet::JetConfig cfgSet::ol_search_jets("ol_search_jets");
+
 
 void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.jetCollection = AK4JETS;
@@ -111,7 +114,7 @@ cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections    = ucsbsusy::TtbarCorrectionSet::NULLOPT;
-  standardCorrections.ttbarCorrectionFile = "";
+  standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/ttbarCorr.root",CMSSW_BASE);
   standardCorrections.setConfig();
 }
 

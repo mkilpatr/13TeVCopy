@@ -6,6 +6,8 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 namespace cfgSet {
+  extern char* CMSSW_BASE;
+
   extern JetConfig zl_search_jets;
   extern JetConfig zl_photon_jets;
   extern JetConfig zl_lepton_jets;
