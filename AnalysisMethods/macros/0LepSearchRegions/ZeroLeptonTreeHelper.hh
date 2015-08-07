@@ -178,7 +178,7 @@ struct TreeFiller {
     bool MC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();    
     data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
-    data->fill<bool>(i_passdijetmet, type==MC ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
+    data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
