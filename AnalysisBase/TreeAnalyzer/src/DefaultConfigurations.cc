@@ -114,7 +114,7 @@ cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections    = ucsbsusy::TtbarCorrectionSet::NULLOPT;
-  standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/ttbarCorr.root",CMSSW_BASE);
+  standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
   standardCorrections.setConfig();
 }
 
