@@ -71,6 +71,10 @@ if '/store/data' in options.inputFiles[0] :
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
 
+if "17Jul2015" in options.inputFiles[0] :
+   process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','PAT') 
+
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
