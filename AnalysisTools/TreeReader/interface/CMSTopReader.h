@@ -23,8 +23,9 @@ namespace ucsbsusy {
     enum  Options {
                       NULLOPT     = 0
                     , LOADRECO    = (1 << 0)
-                    , LOADEXTRECO = (1 <<  1)   ///< Load extra info
+                    , LOADEXTRECO = (1 << 1)   ///< Load extra info
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
+                    , LOADPHYS14  = (1 << 3)
     };
     static const int defaultOptions;
     
