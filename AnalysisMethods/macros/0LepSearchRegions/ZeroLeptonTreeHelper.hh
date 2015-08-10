@@ -7,8 +7,6 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
-#include <string>
-#include <iostream>
 
 using namespace ucsbsusy;
 
