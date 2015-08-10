@@ -16,9 +16,13 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
     bool fillEvent() { 
       if(met->pt() < metcut_) return false;
+
       if(!goodvertex) return false;
+
       if(nBJets < 1) return false;
+
       if(nJets < 5) return false;
+
       if(nSelLeptons<1)      return false;
       //if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
@@ -27,7 +31,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
       if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
+
       filler.fillEventInfo(&data, this, datatype_, whichLep);
+
       filler.fillJetInfo(&data, jets, bJets, met);
 
       return true;

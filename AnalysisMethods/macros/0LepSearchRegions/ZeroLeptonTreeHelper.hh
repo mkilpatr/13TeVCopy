@@ -7,6 +7,8 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include <string>
+#include <iostream>
 
 using namespace ucsbsusy;
 
@@ -175,9 +177,9 @@ struct TreeFiller {
     data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
     bool hasJSON = ana->hasJSONFile();
-    bool MC = ana->isMC();
-    bool passesLumi = ana->passesLumiMask();    
-    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
+    bool isMC = ana->isMC();
+    bool passesLumi = ana->passesLumiMask();
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
@@ -317,7 +319,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     bool fillEvent() {
 
       if(nVetoedLeptons > 0)  return false;
+
       if(nVetoedTracks > 0)     return false;
+
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       filler.fillEventInfo(&data, this, datatype_);
