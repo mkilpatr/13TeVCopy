@@ -46,22 +46,40 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-
-    treeReader->setBranchAddress(branchName_, "top_rawmass"      , &toprawmass_      ,true);
-    treeReader->setBranchAddress(branchName_, "top_trimmedmass"  , &toptrimmedmass_  ,true);
-    treeReader->setBranchAddress(branchName_, "top_prunedmass"   , &topprunedmass_   ,true);
-    treeReader->setBranchAddress(branchName_, "top_softdropmass" , &topsoftdropmass_ ,true);
-    treeReader->setBranchAddress(branchName_, "top_filteredmass" , &topfilteredmass_ ,true);
-    treeReader->setBranchAddress(branchName_, "top_cmstoptagmass", &topcmstoptagmass_,true);    
-    treeReader->setBranchAddress(branchName_, "top_tau1"         , &toptau1_         ,true);
-    treeReader->setBranchAddress(branchName_, "top_tau2"         , &toptau2_         ,true);
-    treeReader->setBranchAddress(branchName_, "top_tau3"         , &toptau3_         ,true);
-    treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
-    treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
-    treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
-    treeReader->setBranchAddress(branchName_, "top_wmass"        , &topwmass_        ,true);
-    treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
-    treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
+    if(options_ & LOADPHYS14) {
+      treeReader->setBranchAddress(branchName_, "fatjet_mass"      , &toprawmass_      ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_trimmedmass"  , &toptrimmedmass_  ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_prunedmass"   , &topprunedmass_   ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_softdropmass" , &topsoftdropmass_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_massdropfilteredmass" , &topfilteredmass_ ,true);
+      treeReader->setBranchAddress(branchName_, "top_topmass"         , &topcmstoptagmass_,true);    
+      treeReader->setBranchAddress(branchName_, "fatjet_tau1"         , &toptau1_         ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_tau2"         , &toptau2_         ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_tau3"         , &toptau3_         ,true);
+      treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
+      treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
+      treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
+      treeReader->setBranchAddress(branchName_, "top_wmass"        , &topwmass_        ,true);
+      treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
+      treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
+    }
+    else {
+      treeReader->setBranchAddress(branchName_, "top_rawmass"      , &toprawmass_      ,true);
+      treeReader->setBranchAddress(branchName_, "top_trimmedmass"  , &toptrimmedmass_  ,true);
+      treeReader->setBranchAddress(branchName_, "top_prunedmass"   , &topprunedmass_   ,true);
+      treeReader->setBranchAddress(branchName_, "top_softdropmass" , &topsoftdropmass_ ,true);
+      treeReader->setBranchAddress(branchName_, "top_filteredmass" , &topfilteredmass_ ,true);
+      treeReader->setBranchAddress(branchName_, "top_cmstoptagmass", &topcmstoptagmass_,true);    
+      treeReader->setBranchAddress(branchName_, "top_tau1"         , &toptau1_         ,true);
+      treeReader->setBranchAddress(branchName_, "top_tau2"         , &toptau2_         ,true);
+      treeReader->setBranchAddress(branchName_, "top_tau3"         , &toptau3_         ,true);
+      treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
+      treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
+      treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
+      treeReader->setBranchAddress(branchName_, "top_wmass"        , &topwmass_        ,true);
+      treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
+      treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
+    }
 
 
     if(options_ & FILLOBJ)

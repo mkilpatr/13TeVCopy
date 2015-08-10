@@ -18,7 +18,7 @@ echo "workdir: $workdir"
 echo "args: $*"
 
 cd $scramdir/src/
-SCRAM_ARCH=slc6_amd64_gcc481
+SCRAM_ARCH=slc6_amd64_gcc491
 eval `scramv1 runtime -sh`
 cd $workdir
 
