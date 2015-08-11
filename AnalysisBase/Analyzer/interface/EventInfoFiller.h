@@ -54,6 +54,7 @@ namespace ucsbsusy {
       edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
       edm::EDGetTokenT<double>                 rhoToken_;
       edm::EDGetTokenT<pat::METCollection>     metToken_;
+      edm::EDGetTokenT<pat::METCollection>     metOOBToken_;
       edm::EDGetTokenT<pat::METCollection>     metNoHFToken_;
       edm::EDGetTokenT<GenEventInfoProduct>    genEvtInfoToken_;
       edm::EDGetTokenT<LHEEventProduct>        lheEvtInfoToken_;
@@ -98,10 +99,12 @@ namespace ucsbsusy {
       EventCoords    eventCoords;
       int            primaryVertexIndex_;
       const pat::MET *met_;
+      const pat::MET *metOOB_;
       const pat::MET *metNoHF_;
       edm::Handle<reco::VertexCollection> vertices_;
       edm::Handle<double>                 rho_;
       edm::Handle<pat::METCollection>     mets_;
+      edm::Handle<pat::METCollection>     metsOOB_;
       edm::Handle<pat::METCollection>     metsNoHF_;
       edm::Handle<GenEventInfoProduct>    genEvtInfo_;
       edm::Handle<LHEEventProduct>        lheEvtInfo_;

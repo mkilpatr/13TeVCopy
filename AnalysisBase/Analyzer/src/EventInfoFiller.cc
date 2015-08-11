@@ -23,6 +23,7 @@ EventInfoFiller::EventInfoFiller(
   vtxToken_          (cc.consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"))),
   rhoToken_          (cc.consumes<double>                (cfg.getParameter<edm::InputTag>("rho"))),
   metToken_          (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("mets"))),
+  metOOBToken_       (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsOOB"))),
   metNoHFToken_      (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsNoHF"))),
   genEvtInfoToken_   (cc.consumes<GenEventInfoProduct>   (cfg.getParameter<edm::InputTag>("genEvtInfo"))),
   lheEvtInfoToken_   (cc.consumes<LHEEventProduct>       (cfg.getParameter<edm::InputTag>("lheEvtInfo"))),
@@ -73,6 +74,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
   iEvent.getByToken(vtxToken_, vertices_);
   iEvent.getByToken(rhoToken_, rho_);
   iEvent.getByToken(metToken_, mets_);
+  iEvent.getByToken(metOOBToken_, metsOOB_);
   iEvent.getByToken(metNoHFToken_, metsNoHF_);
   if(options_ & LOADGEN)
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
@@ -83,6 +85,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
     primaryVertexIndex_ = 0;
 
   met_ = &mets_->front();
+  metOOB_ = &metsOOB_->front();
   metNoHF_ = &metsNoHF_->front();
   eventCoords.run = iEvent.run();
   eventCoords.lumi = iEvent.luminosityBlock();
@@ -124,8 +127,8 @@ void EventInfoFiller::fill()
   data.fill<float>       (irawmetnohfphi_    ,metNoHF_->uncorrectedPhi());
   data.fill<float>       (irawmetnohfsumEt_  ,metNoHF_->uncorrectedSumEt());
   if(options_ & LOADGEN) {
-    data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
-    data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
+    data.fill<float>       (igenmetpt_  ,metOOB_->genMET()->pt());
+    data.fill<float>       (igenmetphi_ ,metOOB_->genMET()->phi());
   }
   data.fill<bool>        (igoodvertex_,hasgoodvtx );
 

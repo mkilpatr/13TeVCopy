@@ -46,7 +46,8 @@ nominal_configuration = cms.PSet(
                                       isFilled               = cms.untracked.bool(True),
                                       vertices               = cms.InputTag('offlineSlimmedPrimaryVertices'),
                                       rho                    = cms.InputTag('fixedGridRhoFastjetAll'),
-                                      mets                   = cms.InputTag('slimmedMETs','','PAT'),  
+                                      mets                   = cms.InputTag('slimmedMETs','','run'),  
+                                      metsOOB                = cms.InputTag('slimmedMETs','','PAT'),  
                                       metsNoHF               = cms.InputTag('slimmedMETsNoHF','','run'),  
                                       genEvtInfo             = cms.InputTag('generator'),
                                       lheEvtInfo             = cms.InputTag('externalLHEProducer'),
@@ -71,6 +72,10 @@ nominal_configuration = cms.PSet(
                                       superJets         = cms.untracked.InputTag(''),
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
+                                      loadJecUncFile    = cms.untracked.bool(True),
+                                      jetCorrInputFile  = cms.untracked.FileInPath('PhysicsTools/PatUtils/data/Summer15_50nsV2_DATA_UncertaintySources_AK4PFchs.txt'),
+                                      jecLabel          = cms.untracked.string('AK4PFchs'),
+                                      jetCorrUncertainty= cms.untracked.string('SubTotalMC'),
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
@@ -92,6 +97,7 @@ nominal_configuration = cms.PSet(
                                       superJets          = cms.untracked.InputTag(''),
                                       superJetAssoc      = cms.untracked.InputTag(''),
                                       superJetNsub       = cms.untracked.InputTag(''),
+                                      loadJecUncFile     = cms.untracked.bool(False),
                                   ),
 
                                   PickyJets = cms.untracked.PSet(
@@ -113,6 +119,7 @@ nominal_configuration = cms.PSet(
                                       superJets            = cms.untracked.InputTag(''),
                                       superJetAssoc        = cms.untracked.InputTag(''),
                                       superJetNsub         = cms.untracked.InputTag(''),
+                                      loadJecUncFile       = cms.untracked.bool(False),
                                   ),
 
                                   CASubJets = cms.untracked.PSet(
@@ -135,6 +142,7 @@ nominal_configuration = cms.PSet(
                                       superJets            = cms.untracked.InputTag('subjetsca','Super'),
                                       superJetAssoc        = cms.untracked.InputTag('subjetsca','SuperJetIndex'),
                                       superJetNsub         = cms.untracked.InputTag('subjetsca','NCASubjets'),
+                                      loadJecUncFile       = cms.untracked.bool(False),
                                   ),
 
                                   Muons = cms.untracked.PSet(
