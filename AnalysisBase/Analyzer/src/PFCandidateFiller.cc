@@ -41,7 +41,9 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   idz_     = data.addMulti<float>(branchName_,"dz",0);
   ifromPV_ = data.addMulti<int  >(branchName_,"fromPV",-1);
   imt_     = data.addMulti<float>(branchName_,"mttrkplusphoton",0);
+  imtnohf_ = data.addMulti<float>(branchName_,"mtnohftrkplusphoton",0);
   idphimet_      = data.addMulti<float>(branchName_,"dphimet",0);
+  idphimetnohf_  = data.addMulti<float>(branchName_,"dphimetnohf",0);
   ichiso0p1_     = data.addMulti<float>(branchName_,"chiso0p1",0);
   ichiso0p2_     = data.addMulti<float>(branchName_,"chiso0p2",0);
   ichiso0p3_     = data.addMulti<float>(branchName_,"chiso0p3",0);
@@ -123,7 +125,7 @@ float PFCandidateFiller::getDRNearestTrack(const pat::PackedCandidate* particle,
 
 }
 
-float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc)
+float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc, const pat::MET* met)
 {
   const double minPhotonPt = 0.5;
   const double maxPhotonDR = 0.2;
@@ -146,8 +148,6 @@ float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc)
   reco::Candidate::PolarLorentzVector candP4 = pfc->polarP4();
   if(photonInd > -1) candP4+=(*pfcands_)[photonInd].polarP4();
   MomentumF* cand = new MomentumF(candP4);
-
-  const pat::MET* met = evtInfoFiller_->met();
 
   return JetKinematics::transverseMass(*cand, *met);
 
@@ -261,8 +261,10 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(id0_, -1.*pfc->dxy());
     data.fillMulti<float>(idz_, pfc->dz());
     data.fillMulti<int  >(ifromPV_, pfc->fromPV());
-    data.fillMulti<float>(imt_, computeMT(pfc));
+    data.fillMulti<float>(imt_, computeMT(pfc, evtInfoFiller_->met()));
+    data.fillMulti<float>(imtnohf_, computeMT(pfc, evtInfoFiller_->metNoHF()));
     data.fillMulti<float>(idphimet_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->met())));
+    data.fillMulti<float>(idphimetnohf_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->metNoHF())));
     data.fillMulti<float>(ichiso0p1_, chiso0p1);
     data.fillMulti<float>(ichiso0p2_, chiso0p2);
     data.fillMulti<float>(ichiso0p3_, chiso0p3);

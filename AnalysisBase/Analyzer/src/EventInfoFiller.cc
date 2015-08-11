@@ -23,6 +23,7 @@ EventInfoFiller::EventInfoFiller(
   vtxToken_          (cc.consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"))),
   rhoToken_          (cc.consumes<double>                (cfg.getParameter<edm::InputTag>("rho"))),
   metToken_          (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("mets"))),
+  metNoHFToken_      (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsNoHF"))),
   genEvtInfoToken_   (cc.consumes<GenEventInfoProduct>   (cfg.getParameter<edm::InputTag>("genEvtInfo"))),
   lheEvtInfoToken_   (cc.consumes<LHEEventProduct>       (cfg.getParameter<edm::InputTag>("lheEvtInfo"))),
   systWgtIndices_    (cfg.getUntrackedParameter<std::vector<unsigned int> >              ("whichSystematicWeights")),
@@ -40,6 +41,18 @@ EventInfoFiller::EventInfoFiller(
   imetpt_         =  data.add<float>       (branchName_,"met_pt"    ,"F",0);
   imetphi_        =  data.add<float>       (branchName_,"met_phi"   ,"F",0);
   imetsumEt_      =  data.add<float>       (branchName_,"met_sumEt" ,"F",0);
+  irawmetpt_      =  data.add<float>       (branchName_,"rawmet_pt"    ,"F",0);
+  irawmetphi_     =  data.add<float>       (branchName_,"rawmet_phi"   ,"F",0);
+  irawmetsumEt_   =  data.add<float>       (branchName_,"rawmet_sumEt" ,"F",0);
+  icalometpt_     =  data.add<float>       (branchName_,"calomet_pt"    ,"F",0);
+  icalometphi_    =  data.add<float>       (branchName_,"calomet_phi"   ,"F",0);
+  icalometsumEt_  =  data.add<float>       (branchName_,"calomet_sumEt" ,"F",0);
+  imetnohfpt_     =  data.add<float>       (branchName_,"metnohf_pt"    ,"F",0);
+  imetnohfphi_    =  data.add<float>       (branchName_,"metnohf_phi"   ,"F",0);
+  imetnohfsumEt_  =  data.add<float>       (branchName_,"metnohf_sumEt" ,"F",0);
+  irawmetnohfpt_   =  data.add<float>       (branchName_,"rawmetnohf_pt"    ,"F",0);
+  irawmetnohfphi_  =  data.add<float>       (branchName_,"rawmetnohf_phi"   ,"F",0);
+  irawmetnohfsumEt_=  data.add<float>       (branchName_,"rawmetnohf_sumEt" ,"F",0);
   igenmetpt_      =  data.add<float>       (branchName_,"genmet_pt" ,"F",0);
   igenmetphi_     =  data.add<float>       (branchName_,"genmet_phi","F",0);
   igoodvertex_    =  data.add<bool>        (branchName_,"goodvertex","O",false);
@@ -60,6 +73,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
   iEvent.getByToken(vtxToken_, vertices_);
   iEvent.getByToken(rhoToken_, rho_);
   iEvent.getByToken(metToken_, mets_);
+  iEvent.getByToken(metNoHFToken_, metsNoHF_);
   if(options_ & LOADGEN)
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
   if(options_ & LOADLHE)
@@ -69,6 +83,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
     primaryVertexIndex_ = 0;
 
   met_ = &mets_->front();
+  metNoHF_ = &metsNoHF_->front();
   eventCoords.run = iEvent.run();
   eventCoords.lumi = iEvent.luminosityBlock();
   eventCoords.event = iEvent.id().event();
@@ -96,6 +111,18 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_     ,met_->pt());
   data.fill<float>       (imetphi_    ,met_->phi());
   data.fill<float>       (imetsumEt_  ,met_->sumEt());
+  data.fill<float>       (irawmetpt_     ,met_->uncorrectedPt());
+  data.fill<float>       (irawmetphi_    ,met_->uncorrectedPhi());
+  data.fill<float>       (irawmetsumEt_  ,met_->uncorrectedSumEt());
+  data.fill<float>       (icalometpt_     ,met_->caloMETPt());
+  data.fill<float>       (icalometphi_    ,met_->caloMETPhi());
+  data.fill<float>       (icalometsumEt_  ,met_->caloMETSumEt());
+  data.fill<float>       (imetnohfpt_     ,metNoHF_->pt());
+  data.fill<float>       (imetnohfphi_    ,metNoHF_->phi());
+  data.fill<float>       (imetnohfsumEt_  ,metNoHF_->sumEt());
+  data.fill<float>       (irawmetnohfpt_     ,metNoHF_->uncorrectedPt());
+  data.fill<float>       (irawmetnohfphi_    ,metNoHF_->uncorrectedPhi());
+  data.fill<float>       (irawmetnohfsumEt_  ,metNoHF_->uncorrectedSumEt());
   if(options_ & LOADGEN) {
     data.fill<float>       (igenmetpt_  ,met_->genMET()->pt());
     data.fill<float>       (igenmetphi_ ,met_->genMET()->phi());
