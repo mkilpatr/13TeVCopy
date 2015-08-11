@@ -10,7 +10,7 @@
 
 using namespace ucsbsusy;
 
-enum DataType {MC, HTMHT, SINGLEMU, SINGLEEL};
+enum DataType {MC, JETHT, HTMHT, SINGLEMU, SINGLEEL};
 
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
@@ -44,6 +44,16 @@ struct TreeFiller {
   size i_weight    ;
   size i_passtrige ;
   size i_passtrigmu;
+  size i_passtright300; 
+  size i_passtright350; 
+  size i_passtright350v2; 
+  size i_passtright400; 
+  size i_passtright475; 
+  size i_passtright600; 
+  size i_passtright600v2; 
+  size i_passtright650; 
+  size i_passtright800; 
+  size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
   size i_genmet    ;
@@ -118,6 +128,16 @@ struct TreeFiller {
     i_weight         = data->add<float>("","weight","F",0);
     i_passtrige      = data->add<bool >("","passtrige","O",0);
     i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
+    i_passtright300  = data->add<bool >("","passtright300","O",0); 
+    i_passtright350  = data->add<bool >("","passtright350","O",0); 
+    i_passtright350v2 = data->add<bool >("","passtright350v2","O",0);
+    i_passtright400  = data->add<bool >("","passtright400","O",0); 
+    i_passtright475  = data->add<bool >("","passtright475","O",0); 
+    i_passtright600  = data->add<bool >("","passtright600","O",0); 
+    i_passtright600v2 = data->add<bool >("","passtright600v2","O",0); 
+    i_passtright650  = data->add<bool >("","passtright650","O",0); 
+    i_passtright800  = data->add<bool >("","passtright800","O",0); 
+    i_passtright900  = data->add<bool >("","passtright900","O",0); 
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
@@ -174,10 +194,20 @@ struct TreeFiller {
     data->fill<float>(i_weight, ana->weight);
     data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
+    data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300_v1 : false)); 
+    data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v1 : false)); 
+    data->fill<bool >(i_passtright350v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v2 : false)); 
+    data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400_v1 : false)); 
+    data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475_v1 : false)); 
+    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v1 : false)); 
+    data->fill<bool >(i_passtright600v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v2 : false)); 
+    data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650_v1 : false)); 
+    data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800_v1 : false)); 
+    data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900_v1 : false)); 
     bool hasJSON = ana->hasJSONFile();
-    bool MC = ana->isMC();
-    bool passesLumi = ana->passesLumiMask();    
-    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
+    bool isMC = ana->isMC();
+    bool passesLumi = ana->passesLumiMask();
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
@@ -317,7 +347,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     bool fillEvent() {
 
       if(nVetoedLeptons > 0)  return false;
+
       if(nVetoedTracks > 0)     return false;
+
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
       filler.fillEventInfo(&data, this, datatype_);
