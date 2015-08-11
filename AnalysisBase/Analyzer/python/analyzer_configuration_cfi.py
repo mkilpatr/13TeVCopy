@@ -235,6 +235,7 @@ nominal_configuration = cms.PSet(
                                   METFilters = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       bits     = cms.InputTag('TriggerResults','','PAT'),
+                                      hbhe     = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
                                       ),
 
                                 )

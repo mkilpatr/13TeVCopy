@@ -22,12 +22,13 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
-options.inputFiles = '/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/10000/009D49A5-7314-E511-84EF-0025905A605E.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/10000/009D49A5-7314-E511-84EF-0025905A605E.root'
+#options.inputFiles = '/store/data/Run2015B/BTagCSV/MINIAOD/17Jul2015-v1/40000/C88E0BCD-972E-E511-B231-0025905B85F6.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/60087A61-9134-E511-B0C6-0025905B855E.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2AC9FDED-4319-E511-AAF9-02163E011C20.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
+options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
 #options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
 
 options.maxEvents = -1
@@ -69,11 +70,15 @@ ISDATA = False
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('GR_P_V56')
+    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v1')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
-    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
+    if '17Jul2015' in options.inputFiles[0] :
+        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','PAT')
+    else :
+        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
+        process.TestAnalyzer.EventInfo.metsOOB = cms.InputTag('slimmedMETs','','RECO')
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -143,6 +148,18 @@ process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPho
 process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-medium")
 process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight")
 
+
+#==============================================================================================================================#
+# ======================== HCAL_Noise_Filter ===================================
+process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
+
+process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
+   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+   reverseDecision = cms.bool(False)
+)
+# ================================ end of HCAL NOISE FILTER =====================
+
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
@@ -151,12 +168,16 @@ process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 if ISDATA :
     process.redCA8.produceGen = cms.bool(False)
     process.redCA8.producePartonJets = cms.bool(False)
+    process.ak4Jets.produceGen = cms.bool(False)
+    process.ak4Jets.producePartonJets = cms.bool(False)
+    delattr(process,'ak4FlvAssoc')
+    delattr(process,'redGenAssoc')
 
 #==============================================================================================================================#
 # Custom METs
 # Configurable options =======================================================================
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=False  #use external JECs (sqlite file)
+usePrivateSQlite=True   #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=False    #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 
@@ -173,6 +194,23 @@ if usePrivateSQlite:
     import os
     era="Summer15_50nsV2_MC"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/PhysicsTools/PatAlgos/test/"+era+".db")
+    process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+                               connect = cms.string( "sqlite_file://"+dBFile ),
+                               toGet =  cms.VPSet(
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PF"),
+                label= cms.untracked.string("AK4PF")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
+                label= cms.untracked.string("AK4PFchs")
+                ),
+            )
+                               )
+    process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
+'''
     process.GlobalTag.toGet =  cms.VPSet(
             cms.PSet(
                 record = cms.string("JetCorrectionsRecord"),
@@ -187,6 +225,7 @@ if usePrivateSQlite:
                 connect = cms.untracked.string( "sqlite_file://"+dBFile )
                 ),
             )
+'''
 
 # Jets are rebuilt from those candidates by the tools, no need to do anything else
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
@@ -225,9 +264,11 @@ process.p = cms.Path(process.ak4PatAssocSeq           *
                      process.ca8JetsSeq               *
                      process.egmGsfElectronIDSequence * 
                      process.egmPhotonIDSequence      *
-                     #process.pickyJetSeq              *
-                     #process.subjetscaJetSeq          *
+                    #process.pickyJetSeq              *
+                    #process.subjetscaJetSeq          *
                      process.QGTagger                 *
+                     process.HBHENoiseFilterResultProducer *
+                     #process.ApplyBaselineHBHENoiseFilter  * ## I have it out for now - we want to kill event at analysis level
                      process.TestAnalyzer)
 
 if ISDATA :
