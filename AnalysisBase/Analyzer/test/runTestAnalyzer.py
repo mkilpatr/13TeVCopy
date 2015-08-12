@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('run')
+
 process.options = cms.untracked.PSet( 
     allowUnscheduled = cms.untracked.bool(True),
     wantSummary = cms.untracked.bool(False) 
@@ -21,7 +22,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/10000/009D49A5-7314-E511-84EF-0025905A605E.root'
 #options.inputFiles = '/store/data/Run2015B/BTagCSV/MINIAOD/17Jul2015-v1/40000/C88E0BCD-972E-E511-B231-0025905B85F6.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
@@ -29,7 +30,7 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2AC9FDED-4319-E511-AAF9-02163E011C20.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
-options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
+#options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
 
 options.maxEvents = -1
 
@@ -106,7 +107,7 @@ from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
 
 # Define which IDs we want to produce
-my_id_modules = ['AnalysisTools.ObjectSelection.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff']
+my_id_modules = ['AnalysisTools.ObjectSelection.cutBasedElectronID_PHYS14_PU20bx25_V2_cff']
 
 # Add them to the VID producer
 if process.TestAnalyzer.Electrons.isFilled:
@@ -114,10 +115,10 @@ if process.TestAnalyzer.Electrons.isFilled:
         setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
 # Set ID tags
-process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto")
-process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose")
-process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium")
-process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")
+process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto")
+process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-loose")
+process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-medium")
+process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight")
 
 #==============================================================================================================================#
 # Photon ID, following prescription in
@@ -130,7 +131,7 @@ process.egmPhotonIDs.physicsObjectSrc = cms.InputTag('slimmedPhotons')
 
 # Load the producer module to build full 5x5 cluster shapes and whatever 
 # else is needed for IDs
-process.load('AnalysisTools.ObjectSelection.PhotonIDValueMapProducer_cfi')
+process.load('RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi')
 
 process.egmPhotonIDSequence = cms.Sequence(process.photonIDValueMapProducer * process.egmPhotonIDs)
 
@@ -244,16 +245,51 @@ if not applyResiduals:
           process.shiftedPatJetEnDownNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
           process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
 
-process.p = cms.Path(process.ak4PatAssocSeq           * 
-                     process.ca8JetsSeq               *
-                     process.egmGsfElectronIDSequence * 
-                     process.egmPhotonIDSequence      *
-                    #process.pickyJetSeq              *
-                    #process.subjetscaJetSeq          *
-                     process.QGTagger                 *
-                     process.HBHENoiseFilterResultProducer *
-                     #process.ApplyBaselineHBHENoiseFilter  * ## I have it out for now - we want to kill event at analysis level
-                     process.TestAnalyzer)
+#==============================================================================================================================#
+# Also update jets with different JECs
+updateJECs = True
+
+if updateJECs:
+    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
+    process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
+        src = cms.InputTag("slimmedJets"),
+        levels = ['L1FastJet', 
+                  'L2Relative', 
+                  'L3Absolute'],
+        payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
+
+    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+    process.patJetsReapplyJEC = patJetsUpdated.clone(
+        jetSource = cms.InputTag("slimmedJets"),
+        jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
+    )
+    process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.Electrons.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.Photons.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.PFCandidates.jets = cms.InputTag('patJetsReapplyJEC')
+    process.QGTagger.srcJets = cms.InputTag('patJetsReapplyJEC')
+    if not ISDATA :
+        process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
+
+    process.p = cms.Path(process.patJetCorrFactorsReapplyJEC *
+                         process.patJetsReapplyJEC        *
+                         process.ak4PatAssocSeq           * 
+                         process.ca8JetsSeq               *
+                         process.egmGsfElectronIDSequence * 
+                         process.egmPhotonIDSequence      *
+                         process.QGTagger                 *
+                         process.HBHENoiseFilterResultProducer *
+                         process.TestAnalyzer)
+
+else :
+    process.p = cms.Path(process.ak4PatAssocSeq           * 
+                         process.ca8JetsSeq               *
+                         process.egmGsfElectronIDSequence * 
+                         process.egmPhotonIDSequence      *
+                         process.QGTagger                 *
+                         process.HBHENoiseFilterResultProducer *
+                         process.TestAnalyzer)
 
 if ISDATA :
     process.p.remove(process.ak4PatAssocSeq)
