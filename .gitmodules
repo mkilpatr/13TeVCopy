@@ -1,3 +1,9 @@
 [submodule "AnalysisTools/Parang"]
 	path = AnalysisTools/Parang
 	url = git@github.com:UCSBSusy/Parang.git
+[submodule "AnalysisTools/QuickRefold"]
+	path = AnalysisTools/QuickRefold
+	url = git@github.com:UCSBSusy/QuickRefold.git
+[submodule "AnalysisTools/RooUnfold"]
+	path = AnalysisTools/RooUnfold
+	url = git@github.com:UCSBSusy/RooUnfold.git

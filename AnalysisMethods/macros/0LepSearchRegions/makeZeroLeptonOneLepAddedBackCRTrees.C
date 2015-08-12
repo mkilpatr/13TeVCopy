@@ -8,10 +8,10 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type=MC) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars, type) {}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
 
-
+    DataType    datatype_;
 
     bool fillEvent() {
       if(nSelLeptons!=1)      return false;
@@ -24,7 +24,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nBJets < 1) return false;
       if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
-      filler.fillEventInfo(&data, this,0,true,metn);
+      filler.fillEventInfo(&data, this, datatype_, 0, true, metn);
       filler.fillJetInfo(&data, jets, bJets, metn);
       return true;
     }
@@ -53,16 +53,20 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet pars = pars0lepCR();
+
+/*  cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
   cfg.jets.cleanJetsvSelectedLeptons = true;
   cfg.selectedLeptons.minEPt = 40;
   cfg.selectedLeptons.minMuPt = 30;
-
-  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+*/
+  TString treeName = isMC ? "Events" : "TestAnalyzer/Events";
   DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg, type);
+  OneLepCRAnalyzer a(fullname, treeName, outfilename, isMC, &pars, type);
 
   a.analyze(100000);
+
+  //a.analyze(10000,100000);
 
 }

@@ -36,6 +36,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     isMC_             (isMCTree),
     defaultJets       (0),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
+
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
@@ -45,6 +46,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
   if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks    <<" ";
   if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons <<" ";
+  if(configSet.corrections.isConfig())     clog << configSet.corrections <<" ";
 
   clog << endl;
 
@@ -79,6 +81,16 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   } else {
     clog << "With no default jet type" << endl  ;
   }
+
+
+  //load corrections
+  if(configSet.corrections.isConfig()){
+    if(configSet.corrections.ttbarCorrections != TtbarCorrectionSet::NULLOPT){
+      ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
+      corrections.push_back(&ttbarCorrections);
+    }
+  }
+
     jetCorrector.setJES(configSet.jets.JES);
 }
 
@@ -294,6 +306,14 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+  //apply corrections
+  for(auto * iC : corrections){
+    if(!iC->correctProcess(process)) continue;
+    iC->processVariables(this);
+    iC->setVariables();
+    weight *= iC->getTotalCorrection();
+  }
 
 }
 //--------------------------------------------------------------------------------------------------

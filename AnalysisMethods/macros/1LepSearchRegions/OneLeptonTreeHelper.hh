@@ -113,8 +113,8 @@ struct TreeFiller {
     data->fill<float>(i_weight,     ana->weight);
     data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
-     bool hasJSON = ana->hasJSONFile(), MC = ana->isMC(), passesLumi = ana->passesLumiMask();
-    data->fill<bool>(i_passjson, ((!MC) && (hasJSON) && (!passesLumi)) ? false : true);
+     bool hasJSON = ana->hasJSONFile(), isMC = ana->isMC(), passesLumi = ana->passesLumiMask();
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());
     data->fill<float>(i_met,      ana->met->pt());
     data->fill<int  >(i_npv,      ana->nPV);

@@ -38,15 +38,21 @@ namespace ucsbsusy {
     void initTriggerNames();
 
   private :
+
+
     edm::EDGetTokenT<edm::TriggerResults>                    triggerBitToken_;
     const edm::TriggerNames *triggerNames_;
     TrigIdMap trigIds_;
+    edm::EDGetTokenT<bool>                                   hNoiseResultToken_;
 
     size itrig_bit_flag;
     size itrig_bit_pass;
 
+    size hbheFilterFix_;
+
   public :
     edm::Handle<edm::TriggerResults> triggerBits_;
+    edm::Handle<bool> hNoiseResult_;
 
   };
 

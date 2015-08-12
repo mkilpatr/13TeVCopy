@@ -18,7 +18,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+options.inputFiles = '/store/data/Run2015B/BTagCSV/MINIAOD/17Jul2015-v1/40000/C88E0BCD-972E-E511-B231-0025905B85F6.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/60087A61-9134-E511-B0C6-0025905B855E.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2AC9FDED-4319-E511-AAF9-02163E011C20.root'
@@ -62,14 +63,24 @@ else :
 
 ISDATA = False
 
-if '/store/data' in options.inputFiles[0] :
-    ISDATA = True
-    process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('GR_P_V56')
-    process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
-    process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
-    process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
-    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
+if '/store/data' in options.inputFiles[0] and not "17Jul2015" in options.inputFiles[0] :
+   ISDATA = True
+   process.TestAnalyzer.isData = cms.int32(1)
+   process.TestAnalyzer.globalTag = cms.string('GR_P_V56')
+   process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
+
+if '/store/data' in options.inputFiles[0] and  "17Jul2015" in options.inputFiles[0] :
+   ISDATA = True
+   process.TestAnalyzer.isData = cms.int32(1)
+   process.TestAnalyzer.globalTag = cms.string('GR_P_V56')
+   process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
+   process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','PAT') 
+
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -149,6 +160,16 @@ process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPho
 
 #==============================================================================================================================#
 
+## ======================== HCAL_Noise_Filter ===================================
+process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
+
+process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
+   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+   reverseDecision = cms.bool(False)
+)
+## ================================ end of HCAL NOISE FILTER =====================
+
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 process.load('ObjectProducers.LSFJetProducer.CfiFile_cfi')
@@ -170,6 +191,8 @@ process.p = cms.Path(#process.puppi*
                      #process.pickyJetSeq              *
                      #process.subjetscaJetSeq          *
                      process.QGTagger                 *
+                     process.HBHENoiseFilterResultProducer *
+                     #process.ApplyBaselineHBHENoiseFilter  * ## I have it out for now - we want to kill event at analysis level
                      process.TestAnalyzer)
 
 if ISDATA :
