@@ -7,7 +7,7 @@ using namespace std;
 using namespace ucsbsusy;
 
 bool cfgSet::isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf){
-  return (jet.pt() > conf.minBJetPt && fabs(jet.eta()) < conf.maxBJetEta);
+  return (jet.pt() > conf.minPt && fabs(jet.eta()) < conf.maxEta);
 }
 
 
