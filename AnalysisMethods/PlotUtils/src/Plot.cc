@@ -380,7 +380,7 @@ void Plot::addToStack(TH1F *h, int color)
 
 }
 
-void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth)
+void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth, unsigned int plotoverflow)
 {
 
   if(!h)
@@ -388,6 +388,7 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
   
   TH1F* hist = (TH1F*)h->Clone();
 
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
   if(linecolor==0)
@@ -437,14 +438,14 @@ void Plot::addToStack(TFile *f, TString histname, int color)
 
 }
 
-void Plot::addToStack(TFile *f, TString histname, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth)
+void Plot::addToStack(TFile *f, TString histname, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth, unsigned int plotoverflow)
 {
 
   if(!f)
     return;
   
   TH1F *h = (TH1F*)f->FindObjectAny(histname);
-  addToStack(h,label,color,fillstyle,linecolor,linestyle,linewidth);
+  addToStack(h,label,color,fillstyle,linecolor,linestyle,linewidth,plotoverflow);
 
 }  
   
