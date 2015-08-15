@@ -3,22 +3,20 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidationComposition.C+"
-void plotQGValidationComposition( const TString inputdir="trees/150729_74X"
+void plotQGValidationComposition( const TString inputdir="trees/150731_74X_purwt"
                                 , const TString outputdir="plots"
                                 , const TString format = "png"
                                 )
 {
-  const double  sigscale = 1;
   gSystem->mkdir(outputdir, true);
+  TString wtVar = "purwt"; // weight purwt
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet74X.conf", inputdir, outputdir);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::NORMCOMP);
   zjetPlots->setTree("Events");
-  zjetPlots->setSigScale(sigscale);
-  zjetPlots->setAddSigScaleTxt(false);
   zjetPlots->setFormat(format);
-  zjetPlots->setWgtVar("weight");
+  zjetPlots->setWgtVar(wtVar);
   zjetPlots->setDataIsMC();
   zjetPlots->setDataName("dyjetstoll");
   zjetPlots->setYTitle("Fraction of Jets");
@@ -28,10 +26,8 @@ void plotQGValidationComposition( const TString inputdir="trees/150729_74X"
   dijetPlots->setPlotSource(PlotStuff::TREES);
   dijetPlots->setPlotType(PlotStuff::NORMCOMP);
   dijetPlots->setTree("Events");
-  dijetPlots->setSigScale(sigscale);
-  dijetPlots->setAddSigScaleTxt(false);
   dijetPlots->setFormat(format);
-  dijetPlots->setWgtVar("weight");
+  dijetPlots->setWgtVar(wtVar);
   dijetPlots->setDataIsMC();
   dijetPlots->setDataName("qcd");
   dijetPlots->setYTitle("Fraction of Jets");
@@ -41,10 +37,8 @@ void plotQGValidationComposition( const TString inputdir="trees/150729_74X"
   gjetPlots->setPlotSource(PlotStuff::TREES);
   gjetPlots->setPlotType(PlotStuff::NORMCOMP);
   gjetPlots->setTree("Events");
-  gjetPlots->setSigScale(sigscale);
-  gjetPlots->setAddSigScaleTxt(false);
   gjetPlots->setFormat(format);
-  gjetPlots->setWgtVar("weight");
+  gjetPlots->setWgtVar(wtVar);
   gjetPlots->setDataIsMC();
   gjetPlots->setDataName("gjets");
   gjetPlots->setYTitle("Fraction of Jets");
