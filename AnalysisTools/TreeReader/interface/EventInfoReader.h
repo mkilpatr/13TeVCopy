@@ -51,7 +51,15 @@ namespace ucsbsusy {
       std::vector<bool>          * trigbitpass;
       std::vector<unsigned int>  * trigbitprescale;
 
+      std::vector<unsigned long> * metfilterbitflags;
+      std::vector<bool>          * metfilterbitpass;
+
       unsigned long triggerflag;
+
+      bool hbheFltFix;
+      bool hbheFlt;
+      bool cscFlt;
+      bool eeBadSCFlt;
 
       MomentumF    met;
       MomentumF    genmet;
