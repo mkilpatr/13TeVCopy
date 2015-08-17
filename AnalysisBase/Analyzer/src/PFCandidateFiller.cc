@@ -12,29 +12,21 @@
 
 using namespace ucsbsusy;
 
-PFCandidateFiller::PFCandidateFiller(const int options,
-  const string branchName,
-  const EventInfoFiller * evtInfoFiller,
-  const edm::InputTag pfCandTag,
-  const edm::InputTag jetTag,
-  const edm::InputTag tauTag,
-  const double candptMin,
-  const double candetaMax,
-  const double taudiscMin,
-  const string tauMVAFileName_MtPresel,
-  const string tauMVAFileName_DphiPresel,
-  const string tauMVAName) :
+PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
-  pfCandTag_(pfCandTag),
-  jetTag_(jetTag),
-  tauTag_(tauTag),
-  candptMin_(candptMin),
-  candetaMax_(candetaMax),
-  taudiscMin_(taudiscMin)
+  pfCandToken_  (cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("pfcands"))),
+  jetToken_     (cc.consumes<pat::JetCollection>            (cfg.getParameter<edm::InputTag>("jets"))),
+  tauToken_     (cc.consumes<pat::TauCollection>            (cfg.getParameter<edm::InputTag>("taus"))),
+  candptMin_    (cfg.getUntrackedParameter<double>          ("minCandPt")),
+  candetaMax_   (cfg.getUntrackedParameter<double>          ("maxCandEta")),
+  taudiscMin_   (cfg.getUntrackedParameter<double>          ("minTauDisc"))
 {
 
   string base = getenv("CMSSW_BASE") + string("/src/data/Taus/");
+  string tauMVAFileName_MtPresel = cfg.getUntrackedParameter<string>("tauMVAFileName_MtPresel");
+  string tauMVAFileName_DphiPresel = cfg.getUntrackedParameter<string>("tauMVAFileName_DphiPresel");
+  string tauMVAName = cfg.getUntrackedParameter<string>("tauMVAName");
 
   tauMVA_MtPresel_   = new TauMVA(base+tauMVAFileName_MtPresel, tauMVAName);
   tauMVA_DphiPresel_ = new TauMVA(base+tauMVAFileName_DphiPresel, tauMVAName);
@@ -67,6 +59,7 @@ PFCandidateFiller::PFCandidateFiller(const int options,
   itaudisc_mtpresel_      = data.addMulti<float>(branchName_,"taudisc_mtpresel",-10.0);
   itaudisc_dphipresel_    = data.addMulti<float>(branchName_,"taudisc_dphipresel",-10.0);
 }
+
 
 int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
 {
@@ -224,9 +217,9 @@ float PFCandidateFiller::computePFIsolation(const pat::PackedCandidate* particle
 void PFCandidateFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, pfCandTag_, pfcands_, true);
-  FileUtilities::enforceGet(iEvent, jetTag_, jets_, true);
-  FileUtilities::enforceGet(iEvent, tauTag_, taus_, true);
+  iEvent.getByToken(pfCandToken_, pfcands_);
+  iEvent.getByToken(jetToken_, jets_);
+  iEvent.getByToken(tauToken_, taus_);
   isLoaded_ = true;
 }
 
@@ -258,8 +251,6 @@ void PFCandidateFiller::fill()
 
     float taumva_mtpresel   = tauMVA_MtPresel_  ->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
     float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
-
-  //    if(taumva_mtpresel < taudiscMin_ && taumva_dphipresel < taudiscMin_) continue;
 
     data.fillMulti<float>(ipt_, pfc->pt());
     data.fillMulti<float>(ieta_, pfc->eta());

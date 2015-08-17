@@ -10,7 +10,7 @@ class HadronicTTBarEventFilter : public PhysicsAnalyzer {
     FILTER_MODE
     HadronicTTBarEventFilter(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
     {
-      initialize(cfg, "Gen", GENPARTICLES);
+      initialize(cfg, "Gen",GENPARTICLES);
     }
 
     ~HadronicTTBarEventFilter() {}

@@ -1,38 +1,16 @@
 #include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-RecoJetFiller::RecoJetFiller(const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller
-  , const edm::InputTag jetTag
-  , const edm::InputTag bTagsTag
-  , const edm::InputTag reGenJetTag
-  , const edm::InputTag stdGenJetTag
-  , const edm::InputTag flvAssocTag
-  , const edm::InputTag reGenJetAssocTag
-  , const bool   fillReGenJets
-  , const double jptMin
-  , const edm::InputTag superJetTag
-  , const edm::InputTag superJetAssocTag
-  , const edm::InputTag superJetNsubTag
-) : JetFiller<reco::PFJet>(options, branchName, evtInfoFiller, genParticleFiller
-    , jetTag
-    , reGenJetTag
-    , stdGenJetTag
-    , flvAssocTag
-    , fillReGenJets
-    , jptMin
-    , superJetTag
-    , superJetAssocTag
-    , superJetNsubTag
-    )
-  , bTagsTag_(bTagsTag)
-  , reGenJetAssocTag_(reGenJetAssocTag)
+RecoJetFiller::RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
+  JetFiller<reco::PFJet>(cfg, static_cast<edm::ConsumesCollector&&>(cc), options, branchName, evtInfoFiller, genParticleFiller),
+  bTagsToken_           (cc.consumes<reco::JetTagCollection>(cfg.getParameter<edm::InputTag>("btags"))),
+  reGenJetAssocToken_   (cc.consumes<edm::ValueMap<reco::CandidatePtr> >(cfg.getParameter<edm::InputTag>("reGenJetAssoc")))
 {}
-
 
 //--------------------------------------------------------------------------------------------------
 void RecoJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup){
   JetFiller<reco::PFJet>::load(iEvent, iSetup);
-  if(fillReGenJets_) FileUtilities::enforceGet(iEvent,reGenJetAssocTag_,genJetPtr_,true);
-  if(options_ & LOADBTAG) FileUtilities::enforceGet(iEvent,bTagsTag_,btags_,true);
+  if(fillReGenJets_) iEvent.getByToken(reGenJetAssocToken_,genJetPtr_);
+  if(options_ & LOADBTAG) iEvent.getByToken(bTagsToken_,btags_);
 }
 
 //--------------------------------------------------------------------------------------------------

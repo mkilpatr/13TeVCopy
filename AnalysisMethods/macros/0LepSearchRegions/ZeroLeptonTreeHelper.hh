@@ -10,18 +10,27 @@
 
 using namespace ucsbsusy;
 
+enum DataType {MC, JETHT, HTMHT, SINGLEMU, SINGLEEL};
+
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  return cfg;
+}
 
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+cfgSet::ConfigSet pars0lepCR() {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
   return cfg;
 }
 
 cfgSet::ConfigSet pars0LepPhoton() {
-
-	  cfgSet::loadDefaultConfigurations();
-	  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }
 
@@ -29,11 +38,24 @@ cfgSet::ConfigSet pars0LepPhoton() {
 struct TreeFiller {
 
   TreeFiller() {}
-
   size i_run       ;
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_passtrige ;
+  size i_passtrigmu;
+  size i_passtright300; 
+  size i_passtright350; 
+  size i_passtright350v2; 
+  size i_passtright400; 
+  size i_passtright475; 
+  size i_passtright600; 
+  size i_passtright600v2; 
+  size i_passtright650; 
+  size i_passtright800; 
+  size i_passtright900; 
+  size i_passjson  ;
+  size i_passdijetmet;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -62,6 +84,8 @@ struct TreeFiller {
   size i_csvj1eta  ;
   size i_csvj2pt   ;
   size i_csvj2eta  ;
+  size i_csv1      ;
+  size i_csv2      ;
   size i_dphij1met ;
   size i_dphij2met ;
   size i_dphij12met;
@@ -77,14 +101,10 @@ struct TreeFiller {
   size i_leptoneta ;
   size i_mtlepmet  ;
 
-/*  bool passCTTSelection(CMSTopF* ctt) {
+ bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
-  } 74X functions */
+  } 
 
-
-    bool passCTTSelection(CMSTopF* ctt) {
-      return (ctt->fJMass() > 140.0 && ctt->fJMass() < 250.0 && ctt->minMass() > 50.0 && ctt->nSubJets() >= 3);
-    }
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
     outJets.resize(inJets.size());
@@ -102,60 +122,93 @@ struct TreeFiller {
   }
 
   void book(TreeWriterData* data) {
-    i_run        = data->add<unsigned int>("","run","i",0);
-    i_lumi       = data->add<unsigned int>("","lumi","i",0);
-    i_event      = data->add<unsigned int>("","event","i",0);
-    i_weight     = data->add<float>("","weight","F",0);
-    i_genmet     = data->add<float>("","genmet","F",0);
-    i_bosonpt    = data->add<float>("","bosonpt","F",0);
-    i_bosoneta   = data->add<float>("","bosoneta","F",0);
-    i_met        = data->add<float>("","met","F",0);
-    i_metphi     = data->add<float>("","metphi","F",0);
-    i_npv        = data->add<int>("","npv","I",0);
-    i_nvetotau   = data->add<int>("","nvetotau","I",0);
-    i_nvetolep   = data->add<int>("","nvetolep","I",0);
-    i_nsellep   = data->add<int>("","nsellep","I",0);
-    i_nctt       = data->add<int>("","nctt","I",0);
-    i_ncttstd    = data->add<int>("","ncttstd","I",0);
-    i_ngenjets   = data->add<int>("","ngenjets","I",0);
-    i_ngenbjets  = data->add<int>("","ngenbjets","I",0);
-    i_njets      = data->add<int>("","njets","I",0);
-    i_njets60    = data->add<int>("","njets60","I",0);
-    i_nbjets     = data->add<int>("","nbjets","I",0);
-    i_ntbjets    = data->add<int>("","ntbjets","I",0);
-    i_ht         = data->add<float>("","ht","F",0);
-    i_j1pt       = data->add<float>("","j1pt","F",0);
-    i_j1eta      = data->add<float>("","j1eta","F",0);
-    i_j2pt       = data->add<float>("","j2pt","F",0);
-    i_j2eta      = data->add<float>("","j2eta","F",0);
-    i_j3pt       = data->add<float>("","j3pt","F",0);
-    i_j3eta      = data->add<float>("","j3eta","F",0);
-    i_csvj1pt    = data->add<float>("","csvj1pt","F",0);
-    i_csvj1eta   = data->add<float>("","csvj1eta","F",0);
-    i_csvj2pt    = data->add<float>("","csvj2pt","F",0);
-    i_csvj2eta   = data->add<float>("","csvj2eta","F",0);
-    i_dphij1met  = data->add<float>("","dphij1met","F",0);
-    i_dphij2met  = data->add<float>("","dphij2met","F",0);
-    i_dphij12met = data->add<float>("","dphij12met","F",0);
-    i_dphij3met  = data->add<float>("","dphij3met","F",3);
-    i_mtcsv1met  = data->add<float>("","mtcsv1met","F",0);
-    i_mtcsv2met  = data->add<float>("","mtcsv2met","F",0);
-    i_mtcsv12met   = data->add<float>("","mtcsv12met","F",0);
-    i_dphicsv1met   = data->add<float>("","dphicsv1met","F",0);
-    i_dphicsv2met   = data->add<float>("","dphicsv2met","F",0);
+    i_run            = data->add<unsigned int>("","run","i",0);
+    i_lumi           = data->add<unsigned int>("","lumi","i",0);
+    i_event          = data->add<unsigned int>("","event","i",0);
+    i_weight         = data->add<float>("","weight","F",0);
+    i_passtrige      = data->add<bool >("","passtrige","O",0);
+    i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
+    i_passtright300  = data->add<bool >("","passtright300","O",0); 
+    i_passtright350  = data->add<bool >("","passtright350","O",0); 
+    i_passtright350v2 = data->add<bool >("","passtright350v2","O",0);
+    i_passtright400  = data->add<bool >("","passtright400","O",0); 
+    i_passtright475  = data->add<bool >("","passtright475","O",0); 
+    i_passtright600  = data->add<bool >("","passtright600","O",0); 
+    i_passtright600v2 = data->add<bool >("","passtright600v2","O",0); 
+    i_passtright650  = data->add<bool >("","passtright650","O",0); 
+    i_passtright800  = data->add<bool >("","passtright800","O",0); 
+    i_passtright900  = data->add<bool >("","passtright900","O",0); 
+    i_passjson       = data->add<bool>("","passjson","O",0);
+    i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
+    i_genmet         = data->add<float>("","genmet","F",0);
+    i_bosonpt        = data->add<float>("","bosonpt","F",0);
+    i_bosoneta       = data->add<float>("","bosoneta","F",0);
+    i_met            = data->add<float>("","met","F",0);
+    i_metphi         = data->add<float>("","metphi","F",0);
+    i_npv            = data->add<int>("","npv","I",0);
+    i_nvetotau       = data->add<int>("","nvetotau","I",0);
+    i_nvetolep       = data->add<int>("","nvetolep","I",0);
+    i_nsellep        = data->add<int>("","nsellep","I",0);
+    i_nctt           = data->add<int>("","nctt","I",0);
+    i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_ngenjets       = data->add<int>("","ngenjets","I",0);
+    i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
+    i_njets          = data->add<int>("","njets","I",0);
+    i_njets60        = data->add<int>("","njets60","I",0);
+    i_nbjets         = data->add<int>("","nbjets","I",0);
+    i_ntbjets        = data->add<int>("","ntbjets","I",0);
+    i_ht             = data->add<float>("","ht","F",0);
+    i_j1pt           = data->add<float>("","j1pt","F",0);
+    i_j1eta          = data->add<float>("","j1eta","F",0);
+    i_j2pt           = data->add<float>("","j2pt","F",0);
+    i_j2eta          = data->add<float>("","j2eta","F",0);
+    i_j3pt           = data->add<float>("","j3pt","F",0);
+    i_j3eta          = data->add<float>("","j3eta","F",0);
+    i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_csvj1eta       = data->add<float>("","csvj1eta","F",0);
+    i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
+    i_csvj2eta       = data->add<float>("","csvj2eta","F",0);
+    i_csv1           = data->add<float>("","csv1","F",0);
+    i_csv2           = data->add<float>("","csv2","F",0);
+    i_dphij1met      = data->add<float>("","dphij1met","F",0);
+    i_dphij2met      = data->add<float>("","dphij2met","F",0);
+    i_dphij12met     = data->add<float>("","dphij12met","F",0);
+    i_dphij3met      = data->add<float>("","dphij3met","F",3);
+    i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
+    i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
+    i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
+    i_dphicsv1met    = data->add<float>("","dphicsv1met","F",0);
+    i_dphicsv2met    = data->add<float>("","dphicsv2met","F",0);
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
-    i_leptonpt   = data->add<float>("","leptonpt","F",0);
-    i_leptoneta  = data->add<float>("","leptoneta","F",0);
-    i_mtlepmet   = data->add<float>("","mtlepmet","F",0);
-    i_absdphilepw = data->add<float>("","absdphilepw","F",0);
+    i_leptonpt       = data->add<float>("","leptonpt","F",0);
+    i_leptoneta      = data->add<float>("","leptoneta","F",0);
+    i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
+    i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
 
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,  int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, DataType type, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
+    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
+    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
+    data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300_v1 : false)); 
+    data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v1 : false)); 
+    data->fill<bool >(i_passtright350v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v2 : false)); 
+    data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400_v1 : false)); 
+    data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475_v1 : false)); 
+    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v1 : false)); 
+    data->fill<bool >(i_passtright600v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v2 : false)); 
+    data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650_v1 : false)); 
+    data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800_v1 : false)); 
+    data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900_v1 : false)); 
+    bool hasJSON = ana->hasJSONFile();
+    bool isMC = ana->isMC();
+    bool passesLumi = ana->passesLumiMask();
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
+    data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
@@ -249,6 +302,7 @@ struct TreeFiller {
       data->fill<float>(i_mtcsv1met, mtcsv1met);
       data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
       data->fill<float>(i_csvj1eta, jetsCSVranked[0]->eta());
+      data->fill<float>(i_csv1, jetsCSVranked[0]->csv());
       data->fill<float>(i_dphicsv1met, dphicsv1met);
       if(jetsCSVranked.size() == 1) {
         data->fill<float>(i_mtcsv12met, mtcsv1met);
@@ -261,12 +315,13 @@ struct TreeFiller {
       dphicsv2met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[1], *met));
       data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
       data->fill<float>(i_csvj2eta, jetsCSVranked[1]->eta());
+      data->fill<float>(i_csv2, jetsCSVranked[1]->csv());
       data->fill<float>(i_mtcsv2met, mtcsv2met);
       data->fill<float>(i_mtcsv12met, min(mtcsv1met,mtcsv2met));
       data->fill<float>(i_dphicsv2met, dphicsv2met);
       data->fill<float>(i_dphicsv12met,min(dphicsv1met,dphicsv2met));
     }
-
+   
   }
 
 };
@@ -274,11 +329,13 @@ struct TreeFiller {
 class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
+    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
 
     const double metcut_ = 175.0 ;
 
+    DataType   datatype_;
+    
     TreeFiller filler;
 
     virtual ~ZeroLeptonAnalyzer() {}
@@ -288,16 +345,18 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
+
       if(nVetoedLeptons > 0)  return false;
+
       if(nVetoedTracks > 0)     return false;
+
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      filler.fillEventInfo(&data, this);
+      filler.fillEventInfo(&data, this, datatype_);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
     }
 
 };
-
 
 #endif

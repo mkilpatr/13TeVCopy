@@ -23,8 +23,9 @@ namespace ucsbsusy {
     enum  Options {
                       NULLOPT     = 0
                     , LOADRECO    = (1 << 0)
-                    , LOADEXTRECO = (1 <<  1)   ///< Load extra info
+                    , LOADEXTRECO = (1 << 1)   ///< Load extra info
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
+                    , LOADPHYS14  = (1 << 3)
     };
     static const int defaultOptions;
     
@@ -37,22 +38,21 @@ namespace ucsbsusy {
     void pushToTree(); //push changes made to the momentum back to the tree
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
-    std::vector<float>* fjmass_;
-    std::vector<float>* fjtrimmedmass_;
-    std::vector<float>* fjprunedmass_;
-    std::vector<float>* fjsoftdropmass_;
-    std::vector<float>* fjfilteredmass_;
-    std::vector<float>* fjmdfilteredmass_;
-    std::vector<float>* fjtau1_;
-    std::vector<float>* fjtau2_;
-    std::vector<float>* fjtau3_;
+    std::vector<float>* toprawmass_;
+    std::vector<float>* toptrimmedmass_;
+    std::vector<float>* topprunedmass_;
+    std::vector<float>* topsoftdropmass_;
+    std::vector<float>* topfilteredmass_;
+    std::vector<float>* topcmstoptagmass_;
+    std::vector<float>* toptau1_;
+    std::vector<float>* toptau2_;
+    std::vector<float>* toptau3_;
     std::vector<float>* toppt_;
     std::vector<float>* topeta_;
     std::vector<float>* topphi_;
-    std::vector<float>* topmass_;
-    std::vector<float>* wmass_;
-    std::vector<float>* minmass_;
-    std::vector<int>*   nsubjets_;
+    std::vector<float>* topwmass_;
+    std::vector<float>* topminmass_;
+    std::vector<int>*   topnsubjets_;
 
     //the actual jet collection
     CMSTopFCollection cmsTops;

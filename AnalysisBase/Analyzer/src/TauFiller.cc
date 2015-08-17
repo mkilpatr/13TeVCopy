@@ -13,15 +13,11 @@
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-TauFiller::TauFiller(const int options,
-  const string branchName,
-  const EventInfoFiller * evtInfoFiller,
-  const edm::InputTag tauTag,
-  const double tauptMin) :
+TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, EventInfoFiller * evtInfoFiller) :
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
-  tauTag_(tauTag),
-  tauptMin_(tauptMin)
+  tauToken_     (cc.consumes<pat::TauCollection>(cfg.getParameter<edm::InputTag>("taus"))),
+  tauptMin_     (cfg.getUntrackedParameter<double>("minTauPt"))
 {
 
   initTauIdNames();
@@ -59,6 +55,7 @@ TauFiller::TauFiller(const int options,
   }
 
 }
+
 
 //--------------------------------------------------------------------------------------------------
 void TauFiller::initTauIdNames()
@@ -108,7 +105,7 @@ void TauFiller::initTauIdNames()
 void TauFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
-  FileUtilities::enforceGet(iEvent, tauTag_,taus_,true);
+  iEvent.getByToken(tauToken_,taus_);
   isLoaded_ = true;
 }
 

@@ -11,8 +11,8 @@
 #include <TH1F.h>
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-//#include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -25,22 +25,27 @@ public:
   {
     //loadPlots(); // initialize plots
 
-    weight_   = -9 ;
-    npv       = -9 ;
-    rho_      = -9 ;
-    passDijet = true;
-    passZjet  = true;
-    passZmass = true;
-    passGmjet = true;
-    dilepmass = -1 ;
-    j0eta     = -9 ;
-    j0pt      = -9 ;
-    j0flavor  = -9 ;
-    j0mult    = -9 ;
-    j0ptd     = -9 ;
-    j0axis1   = -9 ;
-    j0axis2   = -9 ;
-    j0qgl     = -9 ;
+    weight_     = -9 ;
+    npv         = -9 ;
+    rho_        = -9 ;
+    passDijet   = true;
+    passDijet3  = true;
+    passZjet    = true;
+    passZmass   = true;
+    passGmjet   = true;
+    dilepmass   = -1 ;
+    mu0pt       = -1 ;
+    mu1pt       = -1 ;
+    mu0eta      = -1 ;
+    mu1eta      = -1 ;
+    j0eta       = -9 ;
+    j0pt        = -9 ;
+    j0flavor    = -9 ;
+    j0mult      = -9 ;
+    j0ptd       = -9 ;
+    j0axis1     = -9 ;
+    j0axis2     = -9 ;
+    j0qgl       = -9 ;
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
@@ -51,10 +56,15 @@ public:
     outtree->Branch( "npv"       , &npv       ,        "npv/I" );
     outtree->Branch( "rho"       , &rho_      ,        "rho/F" );
     outtree->Branch( "passDijet" , &passDijet ,  "passDijet/O" );
+    outtree->Branch( "passDijet3", &passDijet3, "passDijet3/O" );
     outtree->Branch( "passZjet"  , &passZjet  ,   "passZjet/O" );
     outtree->Branch( "passZmass" , &passZmass ,  "passZmass/O" );
     outtree->Branch( "passGmjet" , &passGmjet ,  "passGmjet/O" );
     outtree->Branch( "dilepmass" , &dilepmass ,  "dilepmass/F" );
+    outtree->Branch( "mu0pt"     , &mu0pt     ,      "mu0pt/F" );
+    outtree->Branch( "mu1pt"     , &mu1pt     ,      "mu1pt/F" );
+    outtree->Branch( "mu0eta"    , &mu0eta    ,     "mu0eta/F" );
+    outtree->Branch( "mu1eta"    , &mu1eta    ,     "mu1eta/F" );
     outtree->Branch( "j0eta"     , &j0eta     ,      "j0eta/F" );
     outtree->Branch( "j0pt"      , &j0pt      ,       "j0pt/F" );
     outtree->Branch( "j0flavor"  , &j0flavor  ,   "j0flavor/I" );
@@ -74,14 +84,20 @@ public:
 
   virtual void loadVariables(){
     load(cfgSet::EVTINFO);
-    load(cfgSet::AK4JETS,  JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    if (isMC()) load(cfgSet::AK4JETS,  JetReader::LOADRECO | JetReader::LOADGEN | JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
+    else        load(cfgSet::AK4JETS,  JetReader::LOADRECO |                      JetReader::LOADJETSHAPE | JetReader::FILLOBJ );
     load(cfgSet::ELECTRONS);
     load(cfgSet::MUONS);
     load(cfgSet::PHOTONS);
+    load(cfgSet::TRIGOBJS);
     if(isMC()) load(cfgSet::GENPARTICLES);
   } // loadVariables()
 
   void runEvent(){
+
+    if(!isMC() && hasJSONFile() && !passesLumiMask()) return;
+
+    bool passTrigger = false;
 
     // event selection (both samples)
     if (nPV<1)         return;
@@ -92,33 +108,44 @@ public:
     if (abs(jet0->eta())<2.4 && ak4Reader.jetbetaStar_->at(jet0->index()) > 0.2*log(nPV-0.67)) return; // only jets in tracker region
 
     // dijet event selection
-    passDijet = true;
+    passDijet  = true;
+    passDijet3 = true;
     if (jets.size()<2) passDijet = false;
     else if ( jets[0]->pt()<40 ) passDijet = false;
     else if ( jets[1]->pt()<20 ) passDijet = false;
     else if ( PhysicsUtilities::absDeltaPhi(*jets[0],*jets[1])<2.5 )  passDijet = false;
+    else if (JetKinematics::ht(jets)<950) passDijet = false;
     if (jets.size()>=3){
-      if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet = false;
+      if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet3 = false;
     } // jets.size()>=3
+    passTrigger = false;
+    if((triggerflag & kHLT_PFHT800_v1) > 0) passTrigger = true;
+    if (!passTrigger && !isMC()) passDijet = false;
 
     // Z jet event selection
     passZjet  = true;
     passZmass = true;
+    int selMu0 = 0;
+    int selMu1 = 0;
     if (selectedLeptons.size()>=2) {
       int Nmu = 0;
-      LeptonF* mu0 = selectedLeptons[0];
-      LeptonF* mu1 = selectedLeptons[1];
+      auto mu0 = selectedLeptons[0];
+      auto mu1 = selectedLeptons[1];
       for (unsigned int i=0; i<selectedLeptons.size();++i) {
-        if (selectedLeptons[i]->ismuon()) {
-          if      (Nmu==0) mu0 = selectedLeptons[i];
-          else if (Nmu==1) mu1 = selectedLeptons[i];
+        if ( selectedLeptons[i]->ismuon() && selectedLeptons[i]->eta()<2.1 ) {
+          if      (Nmu==0) { mu0 = selectedLeptons[i]; selMu0 = i; }
+          else if (Nmu==1) { mu1 = selectedLeptons[i]; selMu1 = i; }
           ++Nmu;
         } // ismuon()
       } // selectedLeptons.size()
+      mu0pt  = mu0->pt();
+      mu1pt  = mu1->pt();
+      mu0eta = mu0->eta();
+      mu1eta = mu1->eta();
       if (Nmu<2) passZjet = false;
       else {
         if      (mu0->pt()<30) passZjet = false; // was 20
-        else if (mu1->pt()<10) passZjet = false;
+        else if (mu1->pt()<20) passZjet = false; // was 10
         else if (mu0->q()==mu1->q()) passZjet = false;
         dilepmass = (mu0->p4() + mu1->p4()).mass();
         if (dilepmass<70 || dilepmass>110) passZmass = false;
@@ -128,17 +155,39 @@ public:
       } // Nmu>=2
     } // selectedLeptons.size>=2
     else passZjet = false;
+    passTrigger = false;
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v2) > 0) passTrigger = true;
+    if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
     passGmjet = true;
     if (selectedPhotons.size()>=1) {
-      if (selectedPhotons[0]->pt()<150) passGmjet = false;
+      if (selectedPhotons[0]->pt()<180) passGmjet = false;
     } // selectedPhotons.size()<1
     else passGmjet = false;
+    passTrigger = false;
+    if((triggerflag & kHLT_Photon165_HE10_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Photon165_HE10_v1) > 0) passTrigger = true;
+    if (!passTrigger) passGmjet = false;
 
+    // check trigger objects
+    bool foundTrigMu = false;
+    for(auto* to : triggerObjects) {
+      if(passZjet) {
+        bool matchedTrigObj = false;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v1)) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v2)) matchedTrigObj = true;
+        if(matchedTrigObj) {
+          auto mu0 = selectedLeptons[selMu0];
+          if (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
+        } // matchedTrigObj
+      } // passZjet
+    } // triggerObjects
+    if (!foundTrigMu) passZjet  = false;
 
-    // skip events that don't pass either selection
-    if ( !passDijet && !passZjet && !passGmjet ) return;
+    // skip events that don't pass any selection
+    if (!passDijet && !passZjet && !passGmjet) return;
 
     // fill tree variables [assmune lumi = 1 fb^(-1)]
     weight_ = weight;
@@ -157,17 +206,19 @@ public:
     if (isMC()) {
       int type = 0; // undefined
       double nearDR = 0;
-      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.4,20);
+      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.3,20);
       if(foundPart >= 0){
         int pdgId = TMath::Abs(genParts[foundPart]->pdgId());
+        //genParts[foundPart]->isDoc (in ParticleInfo.h)
         if(pdgId >= 1 && pdgId < 4) type = 1; // quark
         if(pdgId == 21) type = 2; // gluon
         if(pdgId ==  4) type = 3; // C
         if(pdgId ==  5) type = 4; // B
       }
-    const GenJetF* matchGen = jet0->genJet_;
-    if (type==0 && matchGen==0) type = -1; // pile-up
-    j0flavor = type;
+      //const GenJetF* matchGen = jet0->genJet();
+      //if (type==0 && matchGen==0) type = -1; // pile-up
+      else type = -1; // pile-up
+      j0flavor = type;
     } // isMC
 
     outtree->Fill();
@@ -187,10 +238,16 @@ public:
   int   npv         ;
   float rho_        ;
   bool  passDijet   ;
+  bool  passDijet3  ;
   bool  passZjet    ;
   bool  passZmass   ;
   bool  passGmjet   ;
+
   float dilepmass   ;
+  float mu0pt       ;
+  float mu1pt       ;
+  float mu0eta      ;
+  float mu1eta      ;
 
   float j0eta       ;
   float j0pt        ;
@@ -208,17 +265,22 @@ public:
 
 
 //root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
+//root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 //     ttbar_1_ntuple_wgtxsec.root
 //     dyjetstoll_ntuple_wgtxsec.root
 //     gjets_ht600toinf_ntuple_wgtxsec.root
 //     qcd_ht1000toinf_ntuple_wgtxsec.root
-void makeQGValidationTrees( TString sname            = "gjets600_fixIndex_ge1gm" // sample name
-                          , const int     fileindex  = 4       // index of file (-1 means there is only 1 file for this sample)
-                          , const bool    isMC       = true    // data or MC
-                          , const TString fname      = "gjets_ht600toinf_ntuple_wgtxsec.root" // path of file to be processed
+// 74X
+//     singlemu-2015b-pr_ntuple.root    (data)     singlemu
+//     singlepho-2015b-pr_ntuple.root   (data)     singlegm
+//     dyjetstoll_1_ntuple_wgtxsec.root (MC)       dyjetstoll
+void makeQGValidationTrees( TString sname            = "singlemu" // sample name
+                          , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
+                          , const bool    isMC       = false    // data or MC
+                          , const TString fname      = "singlemu-2015b-pr_ntuple.root" // path of file to be processed
                           , const double xsec        = 1.0
-                          , const string  outputdir  = "trees/test/"  // directory to which files with histograms will be written
-                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/290615/merged/"
+                          , const string  outputdir  = "trees/test/"  // directory to which files will be written
+                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/150715/merged/"
                           )
 {
 
@@ -231,9 +293,11 @@ void makeQGValidationTrees( TString sname            = "gjets600_fixIndex_ge1gm"
 
   // Adjustments to default configuration
   cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile("Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  //cfgSet::setJSONFile("/uscms/home/mullin/nobackup/stuff2015/CMSSW_7_4_7/src/data/JSON/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
   cfgSet::ConfigSet qgv_search_set;
   qgv_search_set.jets            = cfgSet::zl_search_jets;
-  qgv_search_set.selectedLeptons = cfgSet::zl_sel_leptons;
+  qgv_search_set.selectedLeptons = cfgSet::ol_sel_leptons;
   qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
 
   cfgSet::ConfigSet pars = qgv_search_set;
@@ -256,9 +320,11 @@ void makeQGValidationTrees( TString sname            = "gjets600_fixIndex_ge1gm"
   pars.selectedPhotons.minPt  = 10.0;
   pars.selectedPhotons.maxEta =  5.0;
 
-
-  Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
+  string    treeName = "";
+  if (isMC) treeName = "Events";
+  else      treeName = "TestAnalyzer/Events";
+  Analyze a(fullname, treeName, isMC, &pars, sname, outputdir);
   a.analyze(10000);
-  //a.analyze(1000,100000);
+  //a.analyze(1000,10000);
 
 } // makeQGValidationTrees()

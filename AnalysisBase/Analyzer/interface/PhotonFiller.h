@@ -10,32 +10,37 @@
 #define ANALYSISBASE_ANALYZER_PHOTONFILLER_H
 
 #include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+#include "AnalysisBase/Analyzer/interface/SuperClusterFootprintRemoval.h"
 
-//#include "DataFormats/JetReco/interface/PFJet.h"
-//#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
-
-typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
-typedef std::vector<LorentzVector> LorentzVectorCollection;
+#include "TMath.h"
+#include "TRandom3.h"
+#include "TVector3.h"
+#include "TRotation.h"
 
 namespace ucsbsusy {
 
   class PhotonFiller : public BaseFiller {
 
   public :
-    PhotonFiller(const int options,
-	       const string branchName,
-	       const EventInfoFiller * evtInfoFiller,
-	       const edm::InputTag photonTag,
-           const edm::InputTag looseIdTag,
-           const edm::InputTag mediumIdTag,
-           const edm::InputTag tightIdTag,
-	       const double phoptMin);
+    PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~PhotonFiller() {}
 
     enum Options {
@@ -48,18 +53,30 @@ namespace ucsbsusy {
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
-//    void calculateLSFIso(LorentzVector mu, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
+//--------------------------------------------------------------------------------------------------
 
   private :
-    const EventInfoFiller * evtInfoFiller_;
     // Input from the config file
-    const edm::InputTag photonTag_;
+    edm::EDGetTokenT<pat::PhotonCollection> photonToken_;
     // For cut-based ID decisions
-    const edm::InputTag looseIdTag_;
-    const edm::InputTag mediumIdTag_;
-    const edm::InputTag tightIdTag_;
-    const double        phoptMin_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  vetoIdToken_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  looseIdToken_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  mediumIdToken_;
+    edm::EDGetTokenT<edm::ValueMap<bool> >  tightIdToken_;
+    edm::EDGetTokenT<double>                rhoToken_;
+    edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+    edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
+    edm::EDGetTokenT<pat::MuonCollection> muonToken_;
+    edm::EDGetTokenT<pat::JetCollection> jetToken_;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandidateToken_;
+    const double                            phoptMin_;
+    const double                            phoptMinRC_;
+    const double                            jetptMinRC_;
+    const double                            leptonptMinRC_;
 
+    CaloSubdetectorGeometry *barrelGeometry;
+    CaloSubdetectorGeometry *endcapGeometry;
+    MagneticField *magField;
 
     // Members to hold indices of tree data
     size ipt_;
@@ -69,6 +86,7 @@ namespace ucsbsusy {
     size imass_;
     size ir9_;
     // Id flags: cut-based electron ID flags
+    size ivetoid_;
     size ilooseid_;
     size imediumid_;
     size itightid_;
@@ -83,6 +101,11 @@ namespace ucsbsusy {
     size irhoPFchargedHadronIso_;
     size irhoPFneutralHadronIso_;
     size irhoPFphotonIso_;
+    size ietaRC_;
+    size iphiRC_;
+    size irhoPFchargedHadronIsoRC_;
+    size irhoPFneutralHadronIsoRC_;
+    size irhoPFphotonIsoRC_;
     // Isolation quantities
     size itrackiso_;
     size iecaliso_;
@@ -99,11 +122,16 @@ namespace ucsbsusy {
   public :
     // Data members
     edm::Handle<pat::PhotonCollection>  photons_;
-    edm::Handle<edm::ValueMap<bool> >   loose_id_decisions_;
+    edm::Handle<edm::ValueMap<bool> >   veto_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   medium_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   tight_id_decisions_;
-//    edm::Handle<LorentzVectorCollection> lsfSubJets3;
+    edm::Handle<edm::ValueMap<bool> >   loose_id_decisions_;
     edm::Handle<double>                 rho_;
+    edm::Handle<reco::VertexCollection>  vertices_;
+    edm::Handle<pat::MuonCollection> muons_;
+    edm::Handle<pat::ElectronCollection> electrons_;
+    edm::Handle<pat::JetCollection> jets_;
+    edm::Handle<pat::PackedCandidateCollection> pfcandidates_;
   };
 
 }

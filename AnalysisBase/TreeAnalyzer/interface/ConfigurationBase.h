@@ -6,11 +6,14 @@
 #include "AnalysisTools/DataFormats/interface/Muon.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
+
 #include <iostream>
 
 namespace cfgSet {
 
-  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL};
+  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL, TRIGOBJS};
 
   //base used for all future ConfigSets
   class BaseConfig {
@@ -44,8 +47,8 @@ namespace cfgSet {
     bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
     float cleanJetsMaxDR           ;
+    signed int JES                 ;
 
-    signed int JES;
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
       minPt         (-1),
@@ -62,7 +65,7 @@ namespace cfgSet {
     {};
     virtual ~JetConfig() {};
 
-    friend ostream& operator<<(ostream& os, const JetConfig& a){
+    friend std::ostream& operator<<(std::ostream& os, const JetConfig& a){
       os << "Printing out jet selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min jet Pt is"<< a.minPt <<std::endl;
       os << "The max jet eta is "<< a.maxEta <<std::endl;
@@ -104,7 +107,7 @@ namespace cfgSet {
     {};
     virtual ~LeptonConfig() {};
 
-    friend ostream& operator<<(ostream& os, const LeptonConfig& a){
+    friend std::ostream& operator<<(std::ostream& os, const LeptonConfig& a){
       os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min electron Pt is "<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
@@ -134,7 +137,7 @@ namespace cfgSet {
     {};
     virtual ~TrackConfig() {};
 
-    friend ostream& operator<<(ostream& os, const TrackConfig& a){
+    friend std::ostream& operator<<(std::ostream& os, const TrackConfig& a){
       os << "Printing out track selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min track Pt is "<< a.minPt <<std::endl;
       os << "The max track eta is "<< a.maxEta <<std::endl;
@@ -161,7 +164,7 @@ namespace cfgSet {
     {};
     virtual ~PhotonConfig() {};
 
-    friend ostream& operator<<(ostream& os, const PhotonConfig& a){
+    friend std::ostream& operator<<(std::ostream& os, const PhotonConfig& a){
       os << "Printing out photon selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min photon Pt is "<< a.minPt <<std::endl;
       os << "The max photon eta is "<< a.maxEta <<std::endl;
@@ -170,23 +173,46 @@ namespace cfgSet {
 
   };
 
+  class CorrectionConfig : public BaseConfig {
+  public:
+    int ttbarCorrections;
+    TString ttbarCorrectionFile;
+    CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
+        ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT)
+    {};
+    friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
+      if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
+        os << "Applying ttbar corrections from " << a.ttbarCorrectionFile.Data() <<" -> ";
+        if(a.ttbarCorrections & ucsbsusy::TtbarCorrectionSet::TOPPAIRPT)
+          os << "TOPPAIRPT " << std::endl;
+        os << std::endl;
 
+      }
+      return os;
+    }
+  };
 
 
   //The collection of default configs
   struct ConfigSet{
-    JetConfig    jets           ;
-    LeptonConfig selectedLeptons;
-    LeptonConfig vetoedLeptons  ;
-    TrackConfig  vetoedTracks   ;
-    PhotonConfig selectedPhotons;
+    JetConfig       jets           ;
+    LeptonConfig    selectedLeptons;
+    LeptonConfig    vetoedLeptons  ;
+    TrackConfig     vetoedTracks   ;
+    PhotonConfig    selectedPhotons;
+    CorrectionConfig corrections    ;
+    TString         jsonFile       ;
+    JSONProcessing* jsonProcessing ;
     ConfigSet() :
       jets            (),
       selectedLeptons (),
       vetoedLeptons   (),
       vetoedTracks    (),
-      selectedPhotons ()    {
-    }
+      selectedPhotons (),
+      corrections     (),
+      jsonFile(""),
+      jsonProcessing(0)
+    {}
   };
 
 

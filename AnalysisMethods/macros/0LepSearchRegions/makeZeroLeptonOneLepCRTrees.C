@@ -9,14 +9,20 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars,double randSeed) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type, double randSeed) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
 
-    bool fillEvent() {
+    DataType   datatype_;
+
+    bool fillEvent() { 
       if(met->pt() < metcut_) return false;
+
       if(!goodvertex) return false;
+
       if(nBJets < 1) return false;
+
       if(nJets < 5) return false;
+
       if(nSelLeptons<1)      return false;
       //if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
@@ -26,8 +32,10 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
-      filler.fillEventInfo(&data, this, whichLep);
+      filler.fillEventInfo(&data, this, datatype_, whichLep);
+
       filler.fillJetInfo(&data, jets, bJets, met);
+
       return true;
     }
 
@@ -55,13 +63,15 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
-//  cfg.jets.cleanJetsvSelectedLeptons = true;
+  cfgSet::ConfigSet pars = pars0lepCR();
 
   double randSeed = fileindex + 2;
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &cfg,randSeed);
+  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
+  OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, type, randSeed);
 
   a.analyze(10000);
+
+  //a.analyze(10000,100000);
 
 }
