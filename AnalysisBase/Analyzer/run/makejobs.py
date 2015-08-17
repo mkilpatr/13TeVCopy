@@ -25,6 +25,7 @@ parser.add_argument("-n", "--numperjob", dest="numperjob", type=int, default=5, 
 parser.add_argument("-m", "--maxevents", dest="maxevents", type=int, default=-1, help="Maximum number of events to run over. [Default: -1 (all)]")
 parser.add_argument("-p", "--pathtocfg", dest="path", default="../test", help="Path to directory with python configuration file to be run using cmsRun. [Default: \"../test/\"]")
 parser.add_argument("-c", "--config", dest="config", default="runTestAnalyzer.py", help="Configuration file to be run using cmsRun to run. [Default: runTestAnalyzer.py]")
+parser.add_argument("-d", "--dbsinstance", dest="dbsinstance", default="prod/global", help="DBS instance to query for dataset. [Default: prod/global]")
 parser.add_argument("-o", "--outdir", dest="outdir", default="/store/user/${USER}/13TeV/ntuples", help="Output directory for ntuples. [Default: \"/store/user/${USER}/13TeV/ntuples\"]")
 parser.add_argument("-j", "--jobdir", dest="jobdir", default="jobs", help="Directory for job files. [Default: jobs]")
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
@@ -201,9 +202,9 @@ echo "$cfgfile $runscript $workdir $outputdir"
         ))
 
     for isam in range(len(samples)) :
-        cmd = ("./das_client.py --query \"file dataset=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+        cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
         subprocess.call(cmd,shell=True)
-        cmd = ("./das_client.py --query \"dataset=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam]))
+        cmd = ("./das_client.py --query \"dataset=%s instance=%s| grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
         ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         numevents=int(ps.communicate()[0])
         if args.maxevents > -1  and args.maxevents < numevents :

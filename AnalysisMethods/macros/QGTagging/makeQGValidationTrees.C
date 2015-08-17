@@ -24,8 +24,11 @@ public:
          : BaseTreeAnalyzer(fname, treeName, isMCTree, pars)
   {
     //loadPlots(); // initialize plots
+    TObjArray *o = sname.Tokenize("_");
 
+    sample_     = ((TObjString *)(o->At(0)))->String();
     weight_     = -9 ;
+    purwt       = -9 ;
     npv         = -9 ;
     rho_        = -9 ;
     passDijet   = true;
@@ -53,6 +56,7 @@ public:
     fout->cd();
     outtree = new TTree("Events","analysis tree");
     outtree->Branch( "weight"    , &weight_   ,     "weight/F" );
+    outtree->Branch( "purwt"     , &purwt     ,      "purwt/F" );
     outtree->Branch( "npv"       , &npv       ,        "npv/I" );
     outtree->Branch( "rho"       , &rho_      ,        "rho/F" );
     outtree->Branch( "passDijet" , &passDijet ,  "passDijet/O" );
@@ -163,7 +167,8 @@ public:
     // Gamma jet event selection
     passGmjet = true;
     if (selectedPhotons.size()>=1) {
-      if (selectedPhotons[0]->pt()<180) passGmjet = false;
+      if (selectedPhotons[0]->pt() <180) passGmjet = false;
+      if (selectedPhotons[0]->eta()>2.5) passGmjet = false;
     } // selectedPhotons.size()<1
     else passGmjet = false;
     passTrigger = false;
@@ -221,20 +226,42 @@ public:
       j0flavor = type;
     } // isMC
 
+    // quick PU reweighting by npv
+    double rwtZjet[] = {0, 8.72541 , 4.54199 , 0.853572, 0.539271, 0.590481,    0.602232, 0.70575, 0.689348, 0.799847, 0.84226
+                         , 0.843986, 0.916837, 1.02284 , 1.05258 , 1.02993 ,    1.1635  , 1.22879, 1.1195  , 1.18014 , 1.25201
+                         , 1.14572 , 1.1972  , 1.18144 , 1.15038 , 1.00678 ,    1.25408 , 1.18112, 0.848419, 1.36201 , 1.97805
+                         , 1.47935  };
+    double rwtDjet[] = {0, 697.591 , 4.24526 , 0.762199, 0.394076, 0.330613,    0.418513, 0.414527, 0.538188, 0.571216, 0.704519
+                         , 0.759045, 0.900076, 1.01713 , 1.00742 , 1.21182 ,    1.22338 , 1.40168 , 1.41092 , 1.34799 , 1.42774
+                         , 1.33582 , 1.35183 , 1.38252 , 1.34385 , 1.25685 ,    1.22773 , 1.39678 , 1.02986 , 1.22173 , 0.794478
+                         , 0.868953 };
+    double rwtGjet[] = {0, 457.067 , 7.09757 , 1.12134 , 0.392318, 0.270617,    0.44275 , 0.391132, 0.408531, 0.584548, 0.639067
+                         , 0.812284, 0.923726, 1.00071 , 1.05271 , 1.22904 ,    1.27838 , 1.30048 , 1.36448 , 1.36015 , 1.47939
+                         , 1.40911 , 1.4732  , 1.44616 , 0.983238, 1.3588  ,    0.996126, 1.59561 , 1.1468  , 1.41155 , 1.56843
+                         , 0.964321 };
+    int rwtNPV = min(npv,31);
+    if(isMC()){
+      cout << sample_ << endl;
+      if      (sample_ == "dyjetstoll") purwt = weight * rwtZjet[rwtNPV];
+      else if (sample_ == "qcd")        purwt = weight * rwtDjet[rwtNPV];
+      else if (sample_ == "gjets")      purwt = weight * rwtGjet[rwtNPV];
+      else purwt = -99;
+    } else purwt = weight;
+
     outtree->Fill();
 
   } // runEvent()
 
   //void out(TString outputPath){} // out()
 
-  const TString sample_    ;
-  const TString outputdir_ ;
+  TString sample_    ;
 
   TFile *fout    ;
   TTree *outtree ;
 
   // variables for trees
   float weight_     ;
+  float purwt       ;
   int   npv         ;
   float rho_        ;
   bool  passDijet   ;
@@ -264,7 +291,6 @@ public:
 #endif
 
 
-//root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 //     ttbar_1_ntuple_wgtxsec.root
 //     dyjetstoll_ntuple_wgtxsec.root
@@ -274,17 +300,17 @@ public:
 //     singlemu-2015b-pr_ntuple.root    (data)     singlemu
 //     singlepho-2015b-pr_ntuple.root   (data)     singlegm
 //     dyjetstoll_1_ntuple_wgtxsec.root (MC)       dyjetstoll
-void makeQGValidationTrees( TString sname            = "singlemu" // sample name
+void makeQGValidationTrees( TString sname            = "dyjetstoll_0" // sample name
                           , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
-                          , const bool    isMC       = false    // data or MC
-                          , const TString fname      = "singlemu-2015b-pr_ntuple.root" // path of file to be processed
+                          , const bool    isMC       = true    // data or MC
+                          , const TString fname      = "dyjetstoll_1_ntuple_wgtxsec.root" // path of file to be processed
                           , const double xsec        = 1.0
                           , const string  outputdir  = "trees/test/"  // directory to which files will be written
-                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/150715/merged/"
+                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/210715/merged/"
                           )
 {
 
-  printf("Processing file %d of %s sample\n with xsec %f", (fileindex > -1 ? fileindex : 0), sname.Data(), xsec);
+  printf("Processing file %d of %s sample with xsec %f\n", (fileindex > -1 ? fileindex : 0), sname.Data(), xsec);
 
   // Make sure the output has a unique name in case there are multiple files to process
   if(fileindex > -1) sname += TString::Format("_%d",fileindex);

@@ -44,7 +44,7 @@ namespace ucsbsusy {
       int getContainingJetIndex(const pat::PackedCandidate* pfc);
       int getHPSTauIndex(const unsigned int pfInd);
       float getDRNearestTrack(const pat::PackedCandidate* particle, const float minTrackPt=1.0);
-      float computeMT(const pat::PackedCandidate* pfc);
+      float computeMT(const pat::PackedCandidate* pfc, const pat::MET* met);
       float computePFIsolation(const pat::PackedCandidate* particle, const float minDR, const float maxDR, const unsigned int isotype=0, const float minNeutralPt=0.5, const float minPUPt=0.5, const float dBeta=0.5);
       float TrackIso(const pat::PackedCandidate* particle, const float maxDR=0.3, const float deltaZCut=0.1);
 
@@ -70,6 +70,8 @@ namespace ucsbsusy {
       size ifromPV_;
       size imt_;
       size idphimet_;
+      size imtnohf_;
+      size idphimetnohf_;
       size ichiso0p1_;
       size ichiso0p2_;
       size ichiso0p3_;

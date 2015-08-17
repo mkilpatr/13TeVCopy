@@ -38,7 +38,11 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   stdGenJets_        (0),
   superJets_         (0),
   superJetAssoc_     (0),
-  superJetNsub_      (0)
+  superJetNsub_      (0),
+  jetCorrInputFileName_ (cfg.getUntrackedParameter<edm::FileInPath>("jetCorrInputFile")),
+  jetCorrUncertaintyTag_(cfg.getUntrackedParameter<std::string>("jetCorrUncertainty")),
+  jecLabel_             (cfg.getUntrackedParameter<std::string>("jecLabel","AK4PFchs")),
+  jecUnc_            (0)
 {
   if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
     throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
@@ -123,10 +127,16 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     iEvent.getByToken(qglToken_,qgHandleQGL_);
   }
   // Fill JEC uncertainty variables
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get("AK4PF", JetCorParColl);
-  JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
-  jecUnc = new JetCorrectionUncertainty(JetCorPar);
+  if(options_ & LOADUNCFROMFILE) {
+    if ( jetCorrInputFileName_.location() == edm::FileInPath::Unknown) throw cms::Exception("JetFiller");
+    JetCorrectorParameters* JetCorPar = new JetCorrectorParameters(jetCorrInputFileName_.fullPath().data(), jetCorrUncertaintyTag_);
+    jecUnc_ = new JetCorrectionUncertainty(*JetCorPar);
+  } else {
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    iSetup.get<JetCorrectionsRecord>().get(jecLabel_, JetCorParColl);
+    JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
+    jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  }
 
   isLoaded_ = true;
 
@@ -223,9 +233,9 @@ void JetFiller<Jet>::fill()
 //    if(j.pt()>30) std::cout<<j.pt()<<" "<<j.eta()<<" "<<j.chargedMultiplicity()<<" "<<j.neutralMultiplicity()<<" "<<j.neutralEmEnergyFraction()<<" "<<j.neutralHadronEnergyFraction()<<" "<< j.chargedEmEnergyFraction()<<" "<<j.chargedHadronEnergyFraction()<<std::endl;
     
     /* Fill RecoJet JEC Uncertainties */
-    jecUnc->setJetEta(j.eta());
-    jecUnc->setJetPt(j.pt());
-    data.fillMulti<float>(ijetuncertainty_, jecUnc->getUncertainty(true));
+    jecUnc_->setJetEta(j.eta());
+    jecUnc_->setJetPt(j.pt());
+    data.fillMulti<float>(ijetuncertainty_, jecUnc_->getUncertainty(true));
         
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);

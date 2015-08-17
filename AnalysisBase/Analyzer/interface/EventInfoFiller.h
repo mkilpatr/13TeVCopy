@@ -47,12 +47,15 @@ namespace ucsbsusy {
 
       reco::Vertex::Point primaryVertex() const { return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point(); }
       const pat::MET*     met()           const { return met_; }
+      const pat::MET*     metNoHF()       const { return metNoHF_; }
 
     private:
       // Input from the config file
       edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
       edm::EDGetTokenT<double>                 rhoToken_;
       edm::EDGetTokenT<pat::METCollection>     metToken_;
+      edm::EDGetTokenT<pat::METCollection>     metOOBToken_;
+      edm::EDGetTokenT<pat::METCollection>     metNoHFToken_;
       edm::EDGetTokenT<GenEventInfoProduct>    genEvtInfoToken_;
       edm::EDGetTokenT<LHEEventProduct>        lheEvtInfoToken_;
       std::vector<unsigned int>                systWgtIndices_;
@@ -69,6 +72,18 @@ namespace ucsbsusy {
       size imetpt_        ;
       size imetphi_       ;
       size imetsumEt_     ;
+      size irawmetpt_     ;
+      size irawmetphi_    ;
+      size irawmetsumEt_  ;
+      size icalometpt_    ;
+      size icalometphi_   ;
+      size icalometsumEt_ ;
+      size imetnohfpt_    ;
+      size imetnohfphi_   ;
+      size imetnohfsumEt_ ;
+      size irawmetnohfpt_ ;
+      size irawmetnohfphi_;
+      size irawmetnohfsumEt_;
       size igenmetpt_     ; 
       size igenmetphi_    ;
       size igoodvertex_   ;
@@ -84,9 +99,13 @@ namespace ucsbsusy {
       EventCoords    eventCoords;
       int            primaryVertexIndex_;
       const pat::MET *met_;
+      const pat::MET *metOOB_;
+      const pat::MET *metNoHF_;
       edm::Handle<reco::VertexCollection> vertices_;
       edm::Handle<double>                 rho_;
       edm::Handle<pat::METCollection>     mets_;
+      edm::Handle<pat::METCollection>     metsOOB_;
+      edm::Handle<pat::METCollection>     metsNoHF_;
       edm::Handle<GenEventInfoProduct>    genEvtInfo_;
       edm::Handle<LHEEventProduct>        lheEvtInfo_;
 
