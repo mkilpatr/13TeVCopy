@@ -3,6 +3,8 @@
 #include "AnalysisMethods/macros/0LepSearchRegions/ZeroLeptonTreeHelper.hh"
 #endif
 
+//#define FILL_GEN_INFO
+
 using namespace ucsbsusy;
 
 class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
@@ -19,63 +21,79 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     void processVariables(){
       BaseTreeAnalyzer::processVariables();
 
-      // get boson
-      int PID = (process == defaults::SINGLE_G ? ParticleInfo::p_gamma : ParticleInfo::p_Z0);
-      if(isMC())
-        for(auto &p : genParts)
+#ifdef FILL_GEN_INFO
+      if(isMC()){
+        // get boson
+        int PID = (process == defaults::SINGLE_G ? ParticleInfo::p_gamma : ParticleInfo::p_Z0);
+        for(auto *p : genParts)
           if(p->pdgId() == PID) {
             boson = p;
             break;
           }
+        // fill genjets
+        genJets.clear();
+        for(auto &j : defaultJets->genJets){
+          if(cfgSet::isSelGenJet(j,configSet.jets))
+            genJets.push_back(&j);
+          // cleaning vs boson moved to TreeFiller::fillEventInfo
+        }
+        // add gen photon to gen met
+        if(process == defaults::SINGLE_G)
+          genmet->setP4(genmet->p4() + boson->p4());
+      }
+#endif
 
-      // add gen photon to gen met
-      if(isMC() && process == defaults::SINGLE_G)
-        genmet->setP4(genmet->p4() + boson->p4());
-
-      // add reco photon to reco met
       passPhotonSel = true;
-      if(process == defaults::SINGLE_G) {
-        if(!selectedPhotons.empty())
-          met->setP4(met->p4() + selectedPhotons.front()->p4());
-        else passPhotonSel = false;
+      if (process == defaults::SINGLE_Z)
+        return;
+      if (selectedPhotons.empty()){
+        passPhotonSel = false;
+        return;
       }
 
-      // clean genjets
-      genJets.clear();
-      for(auto &j : defaultJets->genJets){
-        if(!cfgSet::isSelGenJet(j,pars0lep().jets)) continue;
-        if(boson && PhysicsUtilities::deltaR2(j, *boson) < 0.16) continue;
-        genJets.push_back(&j);
-      }
+      PhotonF* pho = selectedPhotons.front();
+      met->setP4(met->p4() + pho->p4()); // add recoPhoton to met
 
       // clean vetoedLeptons vs recoPhoton
-      vector<LeptonF*> tmpLeptons;
-      for(auto* l : vetoedLeptons) {
-        if( selectedPhotons.size() && PhysicsUtilities::deltaR2(*l, * selectedPhotons.front()) < 0.16) continue;
-        tmpLeptons.push_back(l);
+      double nearDR = 0;
+      int near = PhysicsUtilities::findNearestDRDeref(*pho,vetoedLeptons,nearDR,0.4,-1,0,vetoedLeptons.size());
+      if(near >= 0){
+        vector<LeptonF*> tmpLeptons;
+        for (int iL = 0; iL < vetoedLeptons.size(); ++iL) {
+          if (iL != near) tmpLeptons.push_back(vetoedLeptons.at(iL));
+        }
+        vetoedLeptons = tmpLeptons;
+        nVetoedLeptons = vetoedLeptons.size();
       }
-      vetoedLeptons = tmpLeptons;
-      nVetoedLeptons = vetoedLeptons.size();
 
-      // clean vetoedTaus vs recoPhoton
-      vector<PFCandidateF*> tmpTaus;
-      for(auto* t : vetoedTracks) {
-        if(selectedPhotons.size() && PhysicsUtilities::deltaR2(*t, * selectedPhotons.front()) < 0.16) continue;
-        tmpTaus.push_back(t);
+      // clean vetoedTracks vs recoPhoton
+      nearDR = 0;
+      near = PhysicsUtilities::findNearestDRDeref(*pho,vetoedTracks,nearDR,0.4,-1,0,vetoedTracks.size());
+      if(near >= 0){
+        vector<PFCandidateF*> tmpTracks;
+        for (int iT = 0; iT < vetoedTracks.size(); ++iT) {
+          if (iT != near) tmpTracks.push_back(vetoedTracks.at(iT));
+        }
+        vetoedTracks = tmpTracks;
+        nVetoedTracks = vetoedTracks.size();
       }
-      vetoedTracks = tmpTaus;
-      nVetoedTracks = vetoedTracks.size();
+
+
+
     }
+
 
     bool fillEvent() {
       if(nVetoedLeptons > 0)                return false;
-      if(nVetoedTracks > 0)                   return false;
+      if(nVetoedTracks > 0)                 return false;
       if(met->pt() < metcut_)               return false;
       if(!passPhotonSel)                    return false;
-      if(!goodvertex) return false;
-      filler.fillEventInfo(&data, this);
-      filler.fillGenInfo(&data, boson, genJets);
+      if(!goodvertex)                       return false;
+      filler.fillEventInfo(&data, this, datatype_);
       filler.fillJetInfo  (&data, jets, bJets, met);
+#ifdef FILL_GEN_INFO
+      filler.fillGenInfo  (&data, boson, genJets);
+#endif
       return true;
     }
 
@@ -105,14 +123,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   cfgSet::ConfigSet pars = pars0LepPhoton();
   PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
-
-
  // a.analyze(1000,10000);
-
-
   a.analyze(100000);
-
-
-
 
 }
