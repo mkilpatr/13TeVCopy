@@ -530,7 +530,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         } else {
           if(config_.scaletodata)
             hists[isam]->Scale(data/bkgtot);
-          plot->addToStack(hists[isam], sample->label, config_.colormap[sname], 1001, 1, 1, 3);
+          plot->addToStack(hists[isam], sample->label, config_.colormap[sname], 1001, 1, 1, 3, config_.plotoverflow);
         }
       }
 

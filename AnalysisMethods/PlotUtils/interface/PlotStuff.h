@@ -188,7 +188,7 @@ class PlotStuff {
           writehists(false),
           outfilename("output_plots.root"),
           yieldfilename("yields.tex"),
-          treename("events"),
+          treename("Events"),
           wgtvar("weight"),
           dataismc(false),
           treefilesuffix("_tree.root"),

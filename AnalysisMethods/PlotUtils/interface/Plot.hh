@@ -92,9 +92,9 @@ class Plot {
 
     // Adding a 1D histogram to a histogram stack
     void addToStack(TH1F *h, int color);
-    void addToStack(TH1F *h, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0);
+    void addToStack(TH1F *h, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0, unsigned int plotoverflow=0);
     void addToStack(TFile *f, TString histname, int color);
-    void addToStack(TFile *f, TString histname, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0);
+    void addToStack(TFile *f, TString histname, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0, unsigned int plotoverflow=0);
 
     // Integrate all the 1D histograms. Default direction: (value > [cut])
     void integrateHists(bool reversecutdir = false);
