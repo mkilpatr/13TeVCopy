@@ -64,9 +64,7 @@ with open(args.input,"r") as f :
         samples.append(content[1])
         xsecs.append(content[2])
         datasets.append(content[3])
-        print "dataset: %s" % content[3]
-	print "samples: %s" % content[1]
-	print "jobdir: %s" % args.jobdir
+
 eos="/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
 os.system("mkdir -p %s" % args.jobdir)
@@ -209,7 +207,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
  	if args.arrangement == "das" :
 		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
 	elif args.arrangement == "local" and args.splittype == "file" :
-		cmd = ("find %s | grep .root > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+		cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
 	else :
 		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd,shell=True)
