@@ -17,12 +17,18 @@ using namespace std;
 //root -l -b -q "run8TeVbkgest.C( )"
 //root -b -q ../CMSSW_7_4_7/src/AnalysisMethods/macros/1LepSearchRegions/run8TeVbkgest.C
 
-TFile* f_eldata = TFile::Open("trees/150810_lepGenInfo/singlee_tree.root"  ,"READONLY");
-TFile* f_mudata = TFile::Open("trees/150810_lepGenInfo/singlemu_tree.root" ,"READONLY");
-TFile* f_lpdata = TFile::Open("trees/150810_lepGenInfo/singllep_tree.root" ,"READONLY");
-TFile* f_ttbar  = TFile::Open("trees/150810_lepGenInfo/ttbar_tree.root"    ,"READONLY");
-TFile* f_wjets  = TFile::Open("trees/150810_lepGenInfo/wjets_tree.root"    ,"READONLY");
+TFile* f_ttbar  = TFile::Open("trees/150813_pdgid/ttbar_tree.root"    ,"READONLY");
+TFile* f_wjets  = TFile::Open("trees/150813_pdgid/wjets_tree.root"    ,"READONLY");
 //TFile* f_qcd    = TFile::Open("trees/150806_v0/qcd_tree.root"      ,"READONLY");
+// data=data
+TFile* f_eldata = TFile::Open("trees/150813_pdgid/singlee_tree.root"  ,"READONLY");
+TFile* f_mudata = TFile::Open("trees/150813_pdgid/singlemu_tree.root" ,"READONLY");
+TFile* f_lpdata = TFile::Open("trees/150813_pdgid/singllep_tree.root" ,"READONLY");
+// data=ttbar_pythia
+//TFile* f_eldata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
+//TFile* f_mudata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
+//TFile* f_lpdata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
+
 
 TTree* t_eldata = (TTree*)f_eldata ->Get("Events");
 TTree* t_mudata = (TTree*)f_mudata ->Get("Events");
@@ -44,15 +50,18 @@ TString pstVeto5  = "( nbjets>=1 && njets>=4 && (nvetotau+nvetolep)>=2     && ns
 TString incBCuts  = "(              njets>=4 && nvetotau==0 && nvetolep==1 && nselelep==1 && dphij12met>0.4 ";
 TString srCuts    = "( nbjets>=1 && njets>=4 && nvetotau==0 && nvetolep==1 && nselelep==1 && dphij12met>0.4 ";
 
-TString dilepCut  = " && lep1pt>20 && lep2pt>20 && lep1eta<2.1 && lep2eta<2.1 && abs(dilepinvmass-91)>15 && opsignlep"; // && dilepinvmass>15
+TString dilepCut  = " && lep2pt>20 && abs(lep2eta)<2.1 && abs(dilepinvmass-91)>15 && opsignlep"; // && dilepinvmass>15
 TString lowMT     = " && mt>=50 && mt<80";
 TString hghMT     = " && mt>=150";
+// data=data
 TString elTrg     = " && passtrige && !passtrigmu )";
 TString muTrg     = " && passtrigmu )";
-//TString lpTrgD    = " && ((sampType==2 && passtrigmu) || (sampType==1 && passtrige && !passtrigmu)) )";
-//TString lpTrgD    = " && (passtrige || passtrigmu) )";
-//TString lpTrgM    = " && (passtrige || passtrigmu) )";
 TString lpTrg     = " && ((sampType==0 && (passtrige || passtrigmu)) || (sampType==2 && passtrigmu) || (sampType==1 && passtrige && !passtrigmu)) )";
+// data=ttbar_pythia
+//TString elTrg     = " && lep1pdgid==11)";
+//TString muTrg     = " && lep1pdgid==13)";
+//TString lpTrg     = " )";
+
 
 void plotMT(TString cuts, TString saveTag, TString saveSubdir,
             TH1F* &SF_el_wjets, TH1F* &SF_mu_wjets, TH1F* &SF_lp_wjets,
@@ -826,7 +835,7 @@ void run8TeVbkgest() {
   Rtop_el_opt->SetLineColor(1); Rtop_el_opt->SetLineWidth(3); Rtop_el_opt->SetTitle("electrons");
   Rtop_mu_opt->SetLineColor(1); Rtop_mu_opt->SetLineWidth(3); Rtop_mu_opt->SetTitle("muons");
   Rtop_lp_opt->SetLineColor(1); Rtop_lp_opt->SetLineWidth(3); Rtop_lp_opt->SetTitle("both");
-  TCanvas * c_Rtop_opt = new TCanvas( "c_Rtop_opt","c_Rtop_opt", 1000, 500 ); c_Rtop_opt->Divide(2,1);
+  TCanvas * c_Rtop_opt = new TCanvas( "c_Rtop_opt","c_Rtop_opt", 1500, 500 ); c_Rtop_opt->Divide(3,1);
   c_Rtop_opt->cd(1); Rtop_el_opt->Draw(); Rtop_el_opt->GetXaxis()->SetTitle("MET");
   c_Rtop_opt->cd(2); Rtop_mu_opt->Draw(); Rtop_mu_opt->GetXaxis()->SetTitle("MET");
   c_Rtop_opt->cd(3); Rtop_lp_opt->Draw(); Rtop_lp_opt->GetXaxis()->SetTitle("MET");
@@ -865,7 +874,7 @@ void run8TeVbkgest() {
   TH1F* SFtop_el = (TH1F*)Rtop_el->Clone("SFtop_el"); SFtop_el->Divide(Rmct_el); SFtop_el->SetTitle("electrons");
   TH1F* SFtop_mu = (TH1F*)Rtop_mu->Clone("SFtop_mu"); SFtop_mu->Divide(Rmct_mu); SFtop_mu->SetTitle("muons");
   TH1F* SFtop_lp = (TH1F*)Rtop_lp->Clone("SFtop_lp"); SFtop_lp->Divide(Rmct_lp); SFtop_lp->SetTitle("both");
-  TCanvas * c_SFtop = new TCanvas( "c_SFtop","c_SFtop", 1000, 500 ); c_SFtop->Divide(2,1);
+  TCanvas * c_SFtop = new TCanvas( "c_SFtop","c_SFtop", 1500, 500 ); c_SFtop->Divide(3,1);
   c_SFtop->cd(1); SFtop_el->Draw(); SFtop_el->GetXaxis()->SetTitle("MET");
   c_SFtop->cd(2); SFtop_mu->Draw(); SFtop_mu->GetXaxis()->SetTitle("MET");
   c_SFtop->cd(3); SFtop_lp->Draw(); SFtop_lp->GetXaxis()->SetTitle("MET");
