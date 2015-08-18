@@ -32,6 +32,7 @@ parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help=
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
+parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="das or local filepaths. If local, file-based splitting required, and sample name will be used to discover files. [Options: das, local. Default: das]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -63,7 +64,9 @@ with open(args.input,"r") as f :
         samples.append(content[1])
         xsecs.append(content[2])
         datasets.append(content[3])
-
+        print "dataset: %s" % content[3]
+	print "samples: %s" % content[1]
+	print "jobdir: %s" % args.jobdir
 eos="/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
 os.system("mkdir -p %s" % args.jobdir)
@@ -202,16 +205,23 @@ echo "$cfgfile $runscript $workdir $outputdir"
         ))
 
     for isam in range(len(samples)) :
-        cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
+
+ 	if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
+	elif args.arrangement == "local" and args.splittype == "file" :
+		cmd = ("find %s | grep .root > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+	else :
+		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd,shell=True)
-        cmd = ("./das_client.py --query \"dataset=%s instance=%s| grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
-        ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-        numevents=int(ps.communicate()[0])
-        if args.maxevents > -1  and args.maxevents < numevents :
-            numevents = args.maxevents
-        numlines = 0
+        if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"dataset=%s instance=%s| grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
+        	ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+        	numevents=int(ps.communicate()[0])
+        	if args.maxevents > -1  and args.maxevents < numevents :
+            		numevents = args.maxevents
         numperjob = args.numperjob
-        infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
+        numlines = 0
+	infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
         print "Creating jobs for %s" % samples[isam]
         with open(infilename,"r") as infile :
            numlines = len(infile.readlines())
@@ -267,7 +277,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
 
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
-                jobscript = open("{}/submit_{}_{}.sh".format(args.jobdir,samples[isam],ijob),"w")
+                jobscript = open("{0}/submit_{1}_{2}.sh".format(args.jobdir,samples[isam],ijob),"w")
                 jobscript.write("""
 cat > submit.cmd <<EOF
 universe                = vanilla
