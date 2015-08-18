@@ -30,7 +30,7 @@ public:
       iXSec      = data.add<float> ("","xsection" ,"F",xsec);
     }
     iProcess   = data.add<size8> ("","process"  ,"b",process);
-    iDataReco  = data.add<size8> ("","datareco"  ,"b",datareco);
+    if(!isMC()) iDataReco  = data.add<size8> ("","datareco"  ,"b",datareco);
   }
 
   void processVariables() {
