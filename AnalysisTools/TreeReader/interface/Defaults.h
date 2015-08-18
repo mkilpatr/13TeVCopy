@@ -17,9 +17,14 @@ namespace defaults {
   const std::string BRANCH_AK4JETS   = "ak4";
   const std::string BRANCH_PICKYJETS = "picky";
   const std::string BRANCH_CASUBJETS = "subjetsca";
-  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G,SINGLE_T, TTZ, TTW,DIBOSON,SIGNAL, NUMPROCESSES };
+  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G, SINGLE_T, TTZ, TTW, DIBOSON, SIGNAL, DATA_SINGLEEL, DATA_SINGLEMU, DATA_SINGLEPHO, DATA_DOUBLEEG, DATA_DOUBLEMU, DATA_MUEG, DATA_MET, DATA_JETHT, DATA_HTMHT, NUMPROCESSES };
 
-  const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal",""};
+  const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
+
+  enum DataReco {PROMPT_50NS, JUL17_2015_50NS, MC};
+
+  const std::string DATA_RECO_NAMES[] = {"2015b-pr","2015b-17jul15",""};
+
   const std::string BRANCH_PUPPIJETS  = "ak4puppi";
   const std::string BRANCH_CA8JETS    = "ca8";
   const std::string BRANCH_ELECTRONS  = "ele";

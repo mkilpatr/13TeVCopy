@@ -12,31 +12,31 @@ redCA8 = ak4Jets.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter  
 ca8JetsSeq = cms.Sequence(redCA8)
 
 
-ak4PuppiFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('ak4PuppiJets','Gen'),
-                                            recoJetSrc = cms.InputTag('ak4PuppiJets'),partonJetSrc = cms.InputTag('ak4PuppiJets','parton'),
-                                            recoToGenTag = cms.InputTag('ak4PuppiJets','GenPtr'),recoToPartonTag = cms.InputTag('ak4PuppiJets','partonPtr'))
-ak4PuppiIPTagInfos      = IPTagInfos.clone(jets = cms.InputTag("ak4PuppiJets"))
-ak4PuppiISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("ak4PuppiIPTagInfos"))
-ak4PuppiCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("ak4PuppiIPTagInfos"), cms.InputTag("ak4PuppiISVTagInfos")))
-ak4PuppiJetSeq = cms.Sequence(ak4PuppiJets * ak4PuppiFlvAssoc * ak4PuppiIPTagInfos *ak4PuppiISVTagInfos*ak4PuppiCSVIV2 )
-
-pickyJets            = ak4Jets.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True),outputSuperJets = cms.bool(True))
-pickyFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('pickyJets','Gen'),
-                                            recoJetSrc = cms.InputTag('pickyJets'),partonJetSrc = cms.InputTag('pickyJets','parton'),
-                                            recoToGenTag = cms.InputTag('pickyJets','GenPtr'),recoToPartonTag = cms.InputTag('pickyJets','partonPtr'))
-pickyIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("pickyJets"))
-pickyISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("pickyIPTagInfos"))
-pickyCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("pickyIPTagInfos"), cms.InputTag("pickyISVTagInfos")))
-pickyJetSeq          = cms.Sequence(pickyJets * pickyFlvAssoc * pickyIPTagInfos *pickyISVTagInfos*pickyCSVIV2 )
-
-subjetsca                = ak4Jets.clone(rParameter = cms.double(1.0), useSubjetCountingCA = cms.bool(True), outputSuperJets = cms.bool(True))
-subjetscaFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('subjetsca','Gen'),
-                                             recoJetSrc = cms.InputTag('subjetsca'),partonJetSrc = cms.InputTag('subjetsca','parton'),
-                                             recoToGenTag = cms.InputTag('subjetsca','GenPtr'),recoToPartonTag = cms.InputTag('subjetsca','partonPtr'))
-subjetscaIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("subjetsca"))
-subjetscaISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("subjetscaIPTagInfos"))
-subjetscaCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("subjetscaIPTagInfos"), cms.InputTag("subjetscaISVTagInfos")))
-subjetscaJetSeq          = cms.Sequence(subjetsca * subjetscaFlvAssoc * subjetscaIPTagInfos *subjetscaISVTagInfos*subjetscaCSVIV2 )
+#ak4PuppiFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('ak4PuppiJets','Gen'),
+#                                            recoJetSrc = cms.InputTag('ak4PuppiJets'),partonJetSrc = cms.InputTag('ak4PuppiJets','parton'),
+#                                            recoToGenTag = cms.InputTag('ak4PuppiJets','GenPtr'),recoToPartonTag = cms.InputTag('ak4PuppiJets','partonPtr'))
+#ak4PuppiIPTagInfos      = IPTagInfos.clone(jets = cms.InputTag("ak4PuppiJets"))
+#ak4PuppiISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("ak4PuppiIPTagInfos"))
+#ak4PuppiCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("ak4PuppiIPTagInfos"), cms.InputTag("ak4PuppiISVTagInfos")))
+#ak4PuppiJetSeq = cms.Sequence(ak4PuppiJets * ak4PuppiFlvAssoc * ak4PuppiIPTagInfos *ak4PuppiISVTagInfos*ak4PuppiCSVIV2 )
+#
+#pickyJets            = ak4Jets.clone(rParameter = cms.double(1), jetAlgorithm    = cms.string('CambridgeAachen'),doPickyJets = cms.bool(True),outputSuperJets = cms.bool(True))
+#pickyFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('pickyJets','Gen'),
+#                                            recoJetSrc = cms.InputTag('pickyJets'),partonJetSrc = cms.InputTag('pickyJets','parton'),
+#                                            recoToGenTag = cms.InputTag('pickyJets','GenPtr'),recoToPartonTag = cms.InputTag('pickyJets','partonPtr'))
+#pickyIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("pickyJets"))
+#pickyISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("pickyIPTagInfos"))
+#pickyCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("pickyIPTagInfos"), cms.InputTag("pickyISVTagInfos")))
+#pickyJetSeq          = cms.Sequence(pickyJets * pickyFlvAssoc * pickyIPTagInfos *pickyISVTagInfos*pickyCSVIV2 )
+#
+#subjetsca                = ak4Jets.clone(rParameter = cms.double(1.0), useSubjetCountingCA = cms.bool(True), outputSuperJets = cms.bool(True))
+#subjetscaFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('subjetsca','Gen'),
+#                                             recoJetSrc = cms.InputTag('subjetsca'),partonJetSrc = cms.InputTag('subjetsca','parton'),
+#                                             recoToGenTag = cms.InputTag('subjetsca','GenPtr'),recoToPartonTag = cms.InputTag('subjetsca','partonPtr'))
+#subjetscaIPTagInfos      = subjetIPTagInfos.clone(jets = cms.InputTag("subjetsca"))
+#subjetscaISVTagInfos     = ISVTagInfos.clone(trackIPTagInfos = cms.InputTag("subjetscaIPTagInfos"))
+#subjetscaCSVIV2          = CSVIV2.clone(tagInfos = cms.VInputTag(cms.InputTag("subjetscaIPTagInfos"), cms.InputTag("subjetscaISVTagInfos")))
+#subjetscaJetSeq          = cms.Sequence(subjetsca * subjetscaFlvAssoc * subjetscaIPTagInfos *subjetscaISVTagInfos*subjetscaCSVIV2 )
 
 # trimmedJetSeq = cms.Sequence(trimmedJets*trimmedJetFlvAssoc*trimmedJetIPTagInfos*trimmedJetISVFinderTagInfos*trimmedJetCSVIVF)
 
