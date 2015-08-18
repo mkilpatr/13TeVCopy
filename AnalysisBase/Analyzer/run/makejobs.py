@@ -12,6 +12,9 @@ gROOT.SetBatch(True)
 # edit datasets.conf to choose samples to submit
 # run ./makejobs.py with the appropriate options
 # then, submit jobs using ./submitall.sh
+# to run the merging after the ntupling is done, run ./makejobs.py --runmerge --inputdir </path/to/dir/with/unmerged/files> -o </path/to/dir/with/merged/files>
+# if you want to split the merged output into multiple files (for large samples), add the --splitmerge option, you'll be asked how many merged files you want and how many input files you want to merge per output file
+# a script called runmerge.sh will be produced which will contain the commands needed to run the merging
 # to run the postprocessing (adding cross section weights), run ./makejobs.py --postprocess -o </path/to/dir/with/merged/files> -c <conffile> -t <condor|lsf|interactive>
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
@@ -19,6 +22,9 @@ parser.add_argument("--postprocess", dest="postprocess", action='store_true', he
 parser.add_argument("--treename", dest="treename", default="TestAnalyzer/Events", help="Name of trees in merged input files, needed for postprocessing. [Default: TestAnalyzer/Events]")
 parser.add_argument("--lumi", dest="lumi", type=float, default=1., help="Integrated luminosity to be used for calculating cross section weights in postprocessing. [Default: 1.]")
 parser.add_argument("--postsuffix", dest="postsuffix", default="wgtxsec", help="Suffix to add to output files from postprocessing. [Default: wgtxsec]")
+parser.add_argument("--runmerge", dest="runmerge", action='store_true', help="Run file merging instead of job submission. [Default: False]")
+parser.add_argument("--splitmerge", dest="splitmerge", action='store_true', help="Split file merging into multiple output files. [Default: False]")
+parser.add_argument("--inputdir", dest="inputdir", default="/store/user/${USER}/13TeV/ntuples", help="Input directory with unmerged ntuples. [Default: \"/store/user/${USER}/13TeV/ntuples\"]")
 parser.add_argument("-i", "--input", dest="input", default="datasets.conf", help="Input configuration file with list of datasets. [Default: datasets.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
 parser.add_argument("-n", "--numperjob", dest="numperjob", type=int, default=5, help="Number of files or events per job. Splittype determines whether splitting is by number of files (default) or by number of events. [Default: 5]")
@@ -165,6 +171,61 @@ rm submit.cmd""".format(
 
     print "Done!"
     exit()
+
+elif args.runmerge :
+
+    if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
+        os.system("%s mkdir -p %s" % (eos,args.outdir))
+    else :
+        os.system("mkdir -p %s" % args.outdir)
+
+    prefix = ""
+    mergecommands = []
+    for isam in range(len(samples)) :
+        filelist = []
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
+            prefix = "root://eoscms/"
+            filelist.append
+            cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(_numEvent[0-9]+|).root'" % (eos,args.inputdir,samples[isam]))
+            ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            result = ps.communicate()
+            filelist = result[0].rstrip('\n').split('\n')
+            filelist = ["".join([prefix,file]) for file in filelist]
+            outname = "%s%s/%s_ntuple.root" % (prefix,args.outdir,samples[isam])
+            filelist.insert(0, outname)
+        else :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'output_[0-9]+_%s(_numEvent[0-9]+|).root' % samples[isam], f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
+                prefix = "root://cmseos:1094/"
+            filelist = ["".join([prefix,file]) for file in filelist]
+            outname = "%s%s/%s_ntuple.root" % (prefix,args.outdir,samples[isam])
+            filelist.insert(0, outname)
+        mergefile = "merge_%s.txt" % samples[isam]
+        with open(mergefile,"w") as f:
+            f.write('\n'.join(filelist))
+        print "There are %d files to merge for %s\n" % (len(filelist)-1, samples[isam])
+        if args.splitmerge :
+            nummergedfiles = int(input("How many merged files do you want? "))
+            numfilespermerge = int(input("How many input files per merge? "))
+            for imerge in range(1,nummergedfiles+1) :
+                start = ((imerge-1)*numfilespermerge) + 2
+                end   = (imerge*numfilespermerge) + 1
+                outfile = "merge_%s_%d.txt" % (samples[isam],imerge)
+                os.system("sed -n 1p %s | sed \"s/ntuple.root/%d_ntuple.root/\" > %s" % (mergefile,imerge,outfile))
+                os.system("sed -n %d,%dp %s >> %s" % (start,end,mergefile,outfile))
+                mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % outfile)
+            rem = len(filelist) - 1 - (nummergedfiles*numfilespermerge)
+            if rem > 0 :
+                print "Will add last %d files to last merged file" % rem
+                os.system("tail -n %d %s >> merge_%s_%d.txt" % (rem,mergefile,samples[isam],nummergedfiles))
+        else :
+            mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % mergefile)
+
+    with open("submitmerge.sh","w") as f :
+        f.write("#!/bin/bash\n")
+        f.write('\n'.join(mergecommands))
+        f.write("\n")
+    os.system("chmod +x submitmerge.sh")
 
 else :
 
