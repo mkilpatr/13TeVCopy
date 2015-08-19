@@ -302,7 +302,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
             skipevts = 0
             if args.splittype == "file" and args.arrangement == "local" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
-                os.system("sed -n %d,%dp %s | awk \'{print \"file:\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
+                os.system("sed -n %d,%dp %s | awk \'{print \"root://cmseos:1094/\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
  	    elif args.splittype == "file" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
                 os.system("sed -n %d,%dp %s > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
