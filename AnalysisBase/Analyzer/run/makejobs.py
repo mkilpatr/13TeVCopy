@@ -38,7 +38,7 @@ parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help=
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
-parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="das or local filepaths. If local, file-based splitting required, and sample name will be used to discover files. [Options: das, local. Default: das]")
+parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -262,7 +262,6 @@ echo "$cfgfile $runscript $workdir $outputdir"
 """.format(
         pathtocfg=args.path,runscript=args.script,stype=args.submittype
         ))
-
     for isam in range(len(samples)) :
 
  	if args.arrangement == "das" :
@@ -301,7 +300,10 @@ echo "$cfgfile $runscript $workdir $outputdir"
             end = numperjob*(ijob+1)
             jobfile = "filelist_%s.txt" % (samples[isam])
             skipevts = 0
-            if args.splittype == "file" :
+            if args.splittype == "file" and args.arrangement == "local" :
+                jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
+                os.system("sed -n %d,%dp %s | awk \'{print \"root://cmseos:1094/\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
+ 	    elif args.splittype == "file" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
                 os.system("sed -n %d,%dp %s > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
             elif args.splittype == "event" :
@@ -311,7 +313,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
             cmd = ""
             if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
                 cmd = ("%s ls %s | grep -c output_%d_%s%s.root" % (eos,args.outdir,ijob,samples[isam],suffix))
-            else :
+	    else :
                 cmd = "ls %s | grep -c output_%d_%s%s.root" % (args.outdir,ijob,samples[isam],suffix)
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             output = ps.communicate()[0][0]
