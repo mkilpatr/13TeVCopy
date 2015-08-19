@@ -38,7 +38,7 @@ parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help=
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
-parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) das or local filepaths. If local, file-based splitting required, sample name will be used to discover files, and the outdir, if it is local, must be cp-compatible. [Options: das, local. Default: das]")
+parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -236,10 +236,7 @@ else :
 
     maxevts = args.maxevents if args.splittype == "file" else args.numperjob
 
-    if args.arrangement == "das" :
-	print "Creating submission file: ",args.submit+".sh"
-    else :
-	print "Creating submission file: ",args.submit+"_local.sh"
+    print "Creating submission file: ",args.submit+".sh"
     script = open(args.submit+".sh","w")
     script.write("""#!/bin/bash
 outputdir={outdir}
@@ -265,15 +262,6 @@ echo "$cfgfile $runscript $workdir $outputdir"
 """.format(
         pathtocfg=args.path,runscript=args.script,stype=args.submittype
         ))
-#	# cmsStage doesn't accept local files (even with file:). Replace with cp in a new script eg runjobslsf_local.sh.
-#	if args.arrangement == "local" :
-#		runscriptname=args.script+args.submittype
-#                cmd = ("cp %s.sh %s_local.sh; sed -i 's|cmsStage -f ${outputname} ${outputdir}|cp ${outputname} ${outputdir}|g' %s_local.sh" % (runscriptname,runscriptname,runscriptname))
-#                subprocess.call(cmd,shell=True)
-#		cmd = ("sed -i 's|runscript={runscript}{stype}.sh|runscript={runscript}{stype}_local.sh|' %s" % (args.submit+".sh"))
-#		subprocess.call(cmd,shell=True)
-#		script.write("""runscript={runscript}{stype}_local.sh
-#""".format(runscript=args.script,stype=args.submittype))
     for isam in range(len(samples)) :
 
  	if args.arrangement == "das" :
@@ -312,9 +300,12 @@ echo "$cfgfile $runscript $workdir $outputdir"
             end = numperjob*(ijob+1)
             jobfile = "filelist_%s.txt" % (samples[isam])
             skipevts = 0
-            if args.splittype == "file" :
+            if args.splittype == "file" and args.arrangement == "local" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
                 os.system("sed -n %d,%dp %s | awk \'{print \"file:\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
+ 	    elif args.splittype == "file" :
+                jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
+                os.system("sed -n %d,%dp %s > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
             elif args.splittype == "event" :
                 skipevts = start-1
             outfile = "output_%d_%s.root" % (ijob,samples[isam])
@@ -380,16 +371,6 @@ rm submit.cmd""".format(
 
 
     script.close()
-
-    # for lsf jobs, cmsStage is used, but it doesn't accept local files (even with file:). If output is local, replace cmsStage with cp in a new script eg runjobslsf_local.sh, 
-    #   and tell eg submitall.sh to use it instead. condor jobs (runjobscondor.sh) have correct logic for local output, but sed them anyways. 
-    if args.arrangement == "local" and not (args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user")) :    
-        runscriptname=args.script+args.submittype
-        cmd = ("cp %s.sh %s_local.sh; sed -i 's|cmsStage -f ${outputname} ${outputdir}|cp ${outputname} ${outputdir}|g' %s_local.sh" % (runscriptname,runscriptname,runscriptname))
-        subprocess.call(cmd,shell=True)
-        cmd = ("sed -i 's|runscript=%s.sh|runscript=%s_local.sh|' %s" % (runscriptname,runscriptname,args.submit+".sh"))
-        subprocess.call(cmd,shell=True)
-    
     os.system("chmod +x %s.sh" % args.submit)
 
     print "Done!"
