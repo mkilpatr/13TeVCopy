@@ -42,6 +42,12 @@ EventInfoReader::EventInfoReader()
   trigbitpass = new vector<bool>;
   trigbitprescale = new vector<unsigned int>;
   triggerflag = 0;
+  metfilterbitflags = new vector<unsigned long>;
+  metfilterbitpass = new vector<bool>;
+  hbheFltFix = false;
+  hbheFlt    = false;
+  cscFlt     = false;
+  eeBadSCFlt = false;
 
 }
 
@@ -72,6 +78,10 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_flag", &metfilterbitflags);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterFix", &hbheFltFix);
+
   clog << endl;
 }
 
@@ -85,6 +95,18 @@ void EventInfoReader::refresh()
 
   for (unsigned int i = 0; i < trigbitflags->size(); ++i) {
     if(trigbitpass->at(i)) triggerflag |= trigbitflags->at(i);
+  }
+
+  cscFlt     = false;
+  eeBadSCFlt = false;
+  hbheFlt    = false;
+  hbheFltFix = hbheFltFix; 
+  for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
+
+    if (i==2)  { cscFlt     = metfilterbitpass->at(i); }
+    if (i==8)  { eeBadSCFlt = metfilterbitpass->at(i); }
+    if (i==10) { hbheFlt    = metfilterbitpass->at(i); }
+
   }
 
 }
