@@ -135,21 +135,21 @@ public:
     lep1pt_   = lep1->pt();
     lep1eta_  = lep1->eta();
 
-    passtrige_  = isMC() ? triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 ;
-    passtrigmu_ = isMC() ? triggerflag & kHLT_IsoTkMu24_eta2p1_v1      : triggerflag & kHLT_IsoTkMu24_eta2p1_v2         ;
+    passtrige_  = isMC() ? triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf ;
+    passtrigmu_ = triggerflag & kHLT_IsoTkMu24_eta2p1;
     //if(!passtrige_ && !passtrigmu_) return;
 
     // check for triggering objects
     bool foundTrgObj = false;
     for(auto* to : triggerObjects) {
       if(passtrige_) {
-        if( (to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf_v1)||(to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1)) ) {
+        if( (to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf)||(to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf)) ) {
           auto lep = selectedLeptons[0];
           if ( lep->iselectron() && PhysicsUtilities::deltaR(*to,*lep)<0.4 ) foundTrgObj = true;
         } // foundTrgObj
       } // passtrige
       if(passtrigmu_) {
-        if( (to->filterflags() & kSingleIsoTkMu24) && ((to->pathflags() & kHLT_IsoTkMu24_eta2p1_v1)||(to->pathflags() & kHLT_IsoTkMu24_eta2p1_v2)) ) {
+        if( (to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1) ) {
           auto lep = selectedLeptons[0];
           if ( lep->ismuon() && PhysicsUtilities::deltaR(*to,*lep)<0.4 ) foundTrgObj = true;
         } // foundTrgObj
