@@ -43,6 +43,10 @@ struct TreeFiller {
   size i_puWeight  ;
   size i_passtrige ;
   size i_passtrigmu;
+  size i_passtrige17e12;
+  size i_passtrigmu17mu8;
+  size i_passtrigmu17tkmu8;
+  size i_passtrigphoton165;
   size i_passtright300; 
   size i_passtright350; 
   size i_passtright400; 
@@ -130,6 +134,10 @@ struct TreeFiller {
     i_puWeight       = data->add<float>("","puWeight","F",0);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
+    i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
+    i_passtrigmu17mu8= data->add<bool >("","passtrigmu17mu8","O",0);
+    i_passtrigmu17tkmu8 = data->add<bool>("","passtrigmu17tkmu8", "O",0);
+    i_passtrigphoton165 = data->add<bool>("","passtrigphoton165", "O",0);
     i_passtright300  = data->add<bool>("","passtright300","O",0); 
     i_passtright350  = data->add<bool>("","passtright350","O",0); 
     i_passtright400  = data->add<bool>("","passtright400","O",0); 
@@ -199,6 +207,10 @@ struct TreeFiller {
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
+    data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
+    data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
+    data->fill<bool >(i_passtrigmu17tkmu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+    data->fill<bool >(i_passtrigphoton165, ana->triggerflag & kHLT_Photon165_HE10);
     data->fill<bool >(i_passtright300, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
     data->fill<bool >(i_passtright350, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
     data->fill<bool >(i_passtright400, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT400 : false)); 
