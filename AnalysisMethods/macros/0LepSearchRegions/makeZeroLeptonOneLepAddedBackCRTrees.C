@@ -8,10 +8,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
-
-    DataType    datatype_;
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
 
     bool fillEvent() {
       if(nSelLeptons!=1)      return false;
@@ -24,7 +22,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nBJets < 1) return false;
       if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
-      filler.fillEventInfo(&data, this, datatype_, 0, true, metn);
+      filler.fillEventInfo(&data, this, 0, true, metn);
       filler.fillJetInfo(&data, jets, bJets, metn);
       return true;
     }
@@ -34,7 +32,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
-                                 const TString fname = "/store/user/vdutta/13TeV/080615/merged/ttbar_1_ntuple_wgtxsec.root",
+                                 const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/ttbar-madgraphmlm-50ns_1_ntuple_postproc.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
                                  const TString fileprefix = "root://eoscms//eos/cms")
@@ -61,9 +59,8 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   cfg.selectedLeptons.minEPt = 40;
   cfg.selectedLeptons.minMuPt = 30;
 */
-  TString treeName = isMC ? "Events" : "TestAnalyzer/Events";
-  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, treeName, outfilename, isMC, &pars, type);
+  TString treeName = "Events";
+  OneLepCRAnalyzer a(fullname, treeName, outfilename, isMC, &pars);
 
   a.analyze(100000);
 

@@ -15,8 +15,6 @@
 
 using namespace ucsbsusy;
 
-enum DataType {SINGLEMU, SINGLEEL, MC};
-
 // Adjustments to default configuration
 cfgSet::ConfigSet pars1lep() {
   cfgSet::loadDefaultConfigurations();
@@ -108,14 +106,14 @@ struct TreeFiller {
     i_j2eta      = data->add<float>("","j2eta","F",0); 
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, DataType type) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
     data->fill<unsigned int>(i_run,   ana->run);
     data->fill<unsigned int>(i_lumi,  ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight,     ana->weight);
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
-    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
-    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
+    data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
      bool hasJSON = ana->hasJSONFile(), isMC = ana->isMC(), passesLumi = ana->passesLumiMask();
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());
@@ -240,14 +238,12 @@ struct TreeFiller {
 class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {isOneLeptonSample = true;}
+    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {isOneLeptonSample = true;}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;
     const int    minnbjets_ = 1;
-
-    DataType     datatype_;
 
     TreeFiller filler;
 
@@ -275,7 +271,20 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
       if(nJets < minnjets_)   return false;
       if(nBJets < minnbjets_) return false;
       if(!goodvertex)         return false;
-      filler.fillEventInfo    (&data, this, datatype_);
+
+      // skip events in PR with run number < 251584 - they are in the re-miniAOD
+      bool isData = false;
+      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
+	{ isData = true; }
+
+      bool isPR = false;
+      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
+      
+      bool skipPRevent = false;
+      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
+      if (skipPRevent) { return false; }
+      
+      filler.fillEventInfo    (&data, this);
       if (isMC())
         filler.fillGenInfo    (&data, genParts);
       filler.fillObjectInfo   (&data, jets, bJets, selectedLeptons, met);
