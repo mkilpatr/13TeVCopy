@@ -89,6 +89,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
     }
+    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.is25NSMC,configSet.corrections.eventCorrections);
+      corrections.push_back(&eventCorrections);
+    }
   }
 
     jetCorrector.setJES(configSet.jets.JES);

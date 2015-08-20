@@ -153,6 +153,7 @@ public:
     JetReader  * defaultJets;
     cfgSet::ConfigSet   configSet;
     TtbarCorrectionSet  ttbarCorrections;
+    EventCorrectionSet  eventCorrections;
     std::vector<CorrectionSet*> corrections;
   };
 
