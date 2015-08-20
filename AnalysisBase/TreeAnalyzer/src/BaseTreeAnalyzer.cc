@@ -89,6 +89,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
     }
+    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
+      corrections.push_back(&eventCorrections);
+    }
   }
 
     jetCorrector.setJES(configSet.jets.JES);
@@ -307,12 +311,9 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-  //apply corrections
+  //load corrections corrections
   for(auto * iC : corrections){
-    if(!iC->correctProcess(process)) continue;
-    iC->processVariables(this);
-    iC->setVariables();
-    weight *= iC->getTotalCorrection();
+    iC->processCorrection(this);
   }
 
 }

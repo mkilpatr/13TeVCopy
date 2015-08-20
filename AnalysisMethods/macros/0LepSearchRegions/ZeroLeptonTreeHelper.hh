@@ -42,6 +42,7 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_puWeight  ;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtright300; 
@@ -124,6 +125,7 @@ struct TreeFiller {
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
+    i_puWeight   = data->add<float>("","puWeight","F",0);
     i_passtrige      = data->add<bool >("","passtrige","O",0);
     i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
     i_passtright300  = data->add<bool >("","passtright300","O",0); 
