@@ -198,6 +198,7 @@ struct TreeFiller {
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
+    data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
