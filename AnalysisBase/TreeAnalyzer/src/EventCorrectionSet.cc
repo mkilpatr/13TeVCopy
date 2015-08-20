@@ -5,9 +5,8 @@
 namespace ucsbsusy {
 
 
-void EventCorrectionSet::load(TString fileName, bool is25NSMC, int correctionOptions)
+void EventCorrectionSet::load(TString fileName, int correctionOptions)
 {
-  inputIs25NS = is25NSMC;
   loadFile("PU",fileName,correctionOptions);
   if(options_ & PU){
     puCorr = new PUCorr(file);
@@ -15,23 +14,19 @@ void EventCorrectionSet::load(TString fileName, bool is25NSMC, int correctionOpt
   }
 }
 
-void EventCorrectionSet::processVariables(const BaseTreeAnalyzer * ana) {
-  npv = ana->nPV;
-}
+void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
+  if(!ana->isMC()){
+    puWeight =1;
+    return;
+  }
 
-void EventCorrectionSet::setVariables() {
   if(PU) {
-    puCorr->setAxis(PUCorr::NPV,npv);
-    puCorr->setAxis(PUCorr::INPUT_MC,inputIs25NS);
+    bool is25NSMC = ana->process == defaults::TTZ || ana->process == defaults::TTW;
+    puCorr->setAxis(PUCorr::NPV,ana->nPV);
+    puCorr->setAxis(PUCorr::INPUT_MC,is25NSMC);
+    puWeight = puCorr->get();
   }
 }
-
-bool EventCorrectionSet::correctProcess(defaults::Process proc) const{
-  if(proc == defaults::DATA) return false;
-  if(proc > defaults::SIGNAL) return false;
-  return true;
-}
-
 
 
 } /* namespace ucsbsusy */

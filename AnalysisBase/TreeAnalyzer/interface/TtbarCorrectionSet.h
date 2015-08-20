@@ -23,12 +23,12 @@ public:
                             NULLOPT         = 0
                           , TOPPAIRPT       = (1 <<  0)   ///< Correct ZPT
   };
-  TtbarCorrectionSet(): topPTCorr(0), topPT(0) {}
+  TtbarCorrectionSet(): topPTCorr(0), topPTWeight(1) {}
   virtual ~TtbarCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
-  virtual void processVariables(const BaseTreeAnalyzer * ana);
-  virtual void setVariables();
-  bool correctProcess(defaults::Process proc) const;
+  virtual void processCorrection(const BaseTreeAnalyzer * ana);
+
+  //individual axxessors
 
 
 private:
@@ -36,7 +36,7 @@ private:
   TOPPAIRPTCorr * topPTCorr;
 
   //stored variables
-  float topPT;
+  float topPTWeight;
 };
 
 

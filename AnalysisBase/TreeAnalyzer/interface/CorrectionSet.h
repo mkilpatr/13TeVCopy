@@ -40,13 +40,7 @@ public:
   CorrectionSet();
   virtual void loadFile(TString correctionSetName, TString fileName, int correctionOptions);
   virtual ~CorrectionSet();
-
-  virtual bool correctProcess(defaults::Process proc) const = 0;
-  virtual void processVariables(const BaseTreeAnalyzer * ana) = 0;
-  virtual void setVariables() = 0;
-  virtual float getTotalCorrection() const;
-
-
+  virtual void processCorrection(const BaseTreeAnalyzer * ana) = 0;
 protected:
   TString name;
   TFile * file;

@@ -23,21 +23,20 @@ public:
                             NULLOPT         = 0
                           , PU              = (1 <<  0)   ///< Correct PU
   };
-  EventCorrectionSet(): puCorr(0), npv(0), inputIs25NS(false) {}
+  EventCorrectionSet(): puCorr(0), puWeight(1){}
   virtual ~EventCorrectionSet() {};
-  virtual void load(TString fileName,bool is25NSMC = false, int correctionOptions = NULLOPT);
-  virtual void processVariables(const BaseTreeAnalyzer * ana);
-  virtual void setVariables();
-  bool correctProcess(defaults::Process proc) const;
+  virtual void load(TString fileName, int correctionOptions = NULLOPT);
+  virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
+  //individual accessors
+  float getPUWeight() const {return puWeight;}
 
 private:
   //Correction list
   PUCorr * puCorr;
 
-  //stored variables
-  float npv;
-  bool inputIs25NS;
+  //output values
+  float puWeight;
 };
 
 

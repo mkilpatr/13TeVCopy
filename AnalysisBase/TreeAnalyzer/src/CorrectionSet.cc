@@ -37,13 +37,4 @@ CorrectionSet::~CorrectionSet() {
   for(auto correction : corrections)
     delete correction;
 }
-
-
-float CorrectionSet::getTotalCorrection() const  {
-  float corr = 1;
-  for(auto correction : corrections)
-    corr *= correction->get();
-  return corr;
-}
-
 } /* namespace ucsbsusy */

@@ -180,11 +180,9 @@ namespace cfgSet {
     int eventCorrections;
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
-    bool is25NSMC;
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
-        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-        is25NSMC(false)
+        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -197,7 +195,7 @@ namespace cfgSet {
       if(a.eventCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
-          os << "PU" << (a.is25NSMC ? "(25NS) " : "(50NS) ") << std::endl;
+          os << "PU " << std::endl;
         os << std::endl;
 
       }

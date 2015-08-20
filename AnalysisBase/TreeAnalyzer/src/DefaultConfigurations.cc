@@ -126,7 +126,7 @@ cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections    = ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
-  standardCorrections.eventCorrections    = ucsbsusy::EventCorrectionSet::NULLOPT;
+  standardCorrections.eventCorrections    = ucsbsusy::EventCorrectionSet::PU;
   standardCorrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
   standardCorrections.setConfig();
 }
