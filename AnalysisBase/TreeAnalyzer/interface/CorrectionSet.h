@@ -19,14 +19,21 @@ class BaseTreeAnalyzer;
 //General class that holds a single correction
 class Correction {
 public:
-  Correction(TString corrName, TFile * file);
+  Correction(TString corrName);
   virtual ~Correction() {}
-  virtual float get() const { return corr->getValue(); }
+  virtual float get() const = 0;
 protected:
-  const QuickRefold::Refold * corr;
   const TString name;
 };
 
+class RefoldCorrection : public Correction {
+public:
+  RefoldCorrection(TString corrName, TFile * file);
+  virtual float get() const { return corr->getValue(); }
+  void setAxis(unsigned int a, float value) const {corr->setBin(a,value);}
+protected:
+  const QuickRefold::Refold * corr;
+};
 
 class CorrectionSet {
 public:
