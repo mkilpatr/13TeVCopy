@@ -36,7 +36,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     goodvertex        (false),
     isMC_             (isMCTree),
     defaultJets       (0),
-    configSet         (pars ? *pars : cfgSet::ConfigSet())
+    configSet         (pars ? *pars : cfgSet::ConfigSet()),
+    isOneLeptonSample (false)
 
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
