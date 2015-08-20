@@ -4,10 +4,10 @@
 
 using namespace ucsbsusy;
 
-void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
+void makeZeroLeptonSRTrees(TString sname = "htmht",
                            const int fileindex = -1,
-                           const bool isMC = true,
-                           const TString fname = "/store/user/vdutta/13TeV/080615/merged/T2tt_850_100_ntuple_wgtxsec.root",
+                           const bool isMC = false,
+                           const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
                            const double xsec = 1.0,
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://eoscms//eos/cms")
@@ -27,10 +27,8 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep();
 
-  //  TString treeName = isMC ? "Events" : "TestAnalyzer/Events";
   TString treeName = "Events";
-  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  ZeroLeptonAnalyzer a(fullname, treeName, outfilename, isMC, &pars, type);
+  ZeroLeptonAnalyzer a(fullname, treeName, outfilename, isMC, &pars);
 
   a.analyze(1000000);
 

@@ -9,10 +9,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, DataType type, double randSeed) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {rnd.SetSeed(randSeed);}// TRandom3 rnd(0);}
-
-    DataType   datatype_;
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, double randSeed) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(randSeed);}
 
     bool fillEvent() { 
       if(met->pt() < metcut_) return false;
@@ -25,12 +23,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       // skip events in PR with run number < 251584 - they are in the re-miniAOD
       bool isData = false;
-      if ( (process==defaults::DATA_SINGLEEL) || (process==defaults::DATA_SINGLEMU)  ||
-           (process==defaults::DATA_DOUBLEEG) || (process==defaults::DATA_DOUBLEMU)  ||
-           (process==defaults::DATA_MUEG)     || (process==defaults::DATA_SINGLEPHO) ||
-           (process==defaults::DATA_MET)      || (process==defaults::DATA_JETHT)     ||
-           (process==defaults::DATA_HTMHT)
-           )   { isData = true; }
+      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
+	{ isData = true; }
 
       bool isPR = false;
       if (datareco==defaults::PROMPT_50NS) { isPR = true; }
@@ -49,7 +43,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
-      filler.fillEventInfo(&data, this, datatype_, whichLep);
+      filler.fillEventInfo(&data, this, whichLep);
 
       filler.fillJetInfo(&data, jets, bJets, met);
 
@@ -61,7 +55,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
-                                 const TString fname = "/store/user/vdutta/13TeV/080615/merged/ttbar_1_ntuple_wgtxsec.root",
+                                 const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/ttbar-madgraphmlm-50ns_1_ntuple_postproc.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
                                  const TString fileprefix = "root://eoscms//eos/cms")
@@ -83,10 +77,8 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   cfgSet::ConfigSet pars = pars0lepCR();
 
   double randSeed = fileindex + 2;
-  //  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
   TString treename = "Events";
-  DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
-  OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, type, randSeed);
+  OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, randSeed);
 
   a.analyze(1000000);
 
