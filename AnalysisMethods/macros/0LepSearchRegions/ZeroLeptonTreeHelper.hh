@@ -42,15 +42,14 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_puWeight  ;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtright300; 
   size i_passtright350; 
-  size i_passtright350v2; 
   size i_passtright400; 
   size i_passtright475; 
   size i_passtright600; 
-  size i_passtright600v2; 
   size i_passtright650; 
   size i_passtright800; 
   size i_passtright900; 
@@ -130,15 +129,14 @@ struct TreeFiller {
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
+    i_puWeight   = data->add<float>("","puWeight","F",0);
     i_passtrige      = data->add<bool >("","passtrige","O",0);
     i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
     i_passtright300  = data->add<bool >("","passtright300","O",0); 
     i_passtright350  = data->add<bool >("","passtright350","O",0); 
-    i_passtright350v2 = data->add<bool >("","passtright350v2","O",0);
     i_passtright400  = data->add<bool >("","passtright400","O",0); 
     i_passtright475  = data->add<bool >("","passtright475","O",0); 
     i_passtright600  = data->add<bool >("","passtright600","O",0); 
-    i_passtright600v2 = data->add<bool >("","passtright600v2","O",0); 
     i_passtright650  = data->add<bool >("","passtright650","O",0); 
     i_passtright800  = data->add<bool >("","passtright800","O",0); 
     i_passtright900  = data->add<bool >("","passtright900","O",0); 
@@ -204,11 +202,11 @@ struct TreeFiller {
     data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
     data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
-    data->fill<bool >(i_passtright350v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
     data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400 : false)); 
     data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475 : false)); 
     data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
-    data->fill<bool >(i_passtright600v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
+    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
+
     data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650 : false)); 
     data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
     data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 

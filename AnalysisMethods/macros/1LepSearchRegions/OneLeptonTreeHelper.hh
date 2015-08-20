@@ -38,6 +38,7 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_puWeight  ;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passjson  ;
@@ -74,6 +75,7 @@ struct TreeFiller {
     i_lumi       = data->add<unsigned int>("","lumi","i",0);
     i_event      = data->add<unsigned int>("","event","i",0);
     i_weight     = data->add<float>("","weight","F",0);
+    i_puWeight   = data->add<float>("","puWeight","F",0);
     i_passtrige  = data->add<bool >("","passtrige","O",0);
     i_passtrigmu = data->add<bool >("","passtrigmu","O",0);
     i_passjson   = data->add<bool>("","passjson","O",0);
@@ -111,8 +113,9 @@ struct TreeFiller {
     data->fill<unsigned int>(i_lumi,  ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight,     ana->weight);
-    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
-    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
+    data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
+    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
      bool hasJSON = ana->hasJSONFile(), isMC = ana->isMC(), passesLumi = ana->passesLumiMask();
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());

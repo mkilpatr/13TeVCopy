@@ -146,6 +146,12 @@ public:
     std::vector<TriggerObjectF*> triggerObjects;
     std::vector<TauF*>         HPSTaus;
 
+    //--------------------------------------------------------------------------------------------------
+    // Correction sets
+    //--------------------------------------------------------------------------------------------------
+    TtbarCorrectionSet  ttbarCorrections;
+    EventCorrectionSet  eventCorrections;
+
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
@@ -153,7 +159,6 @@ public:
     const bool   isMC_;
     JetReader  * defaultJets;
     cfgSet::ConfigSet   configSet;
-    TtbarCorrectionSet  ttbarCorrections;
     std::vector<CorrectionSet*> corrections;
   };
 
