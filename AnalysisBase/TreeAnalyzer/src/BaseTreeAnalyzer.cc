@@ -22,6 +22,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     event             (0),
     weight            (1),
     process           (defaults::NUMPROCESSES),
+    datareco          (defaults::MC),
     nPV               (0),
     rho               (0),
     nSelLeptons       (0),
@@ -212,6 +213,7 @@ void BaseTreeAnalyzer::processVariables()
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
+    datareco =  evtInfoReader.datareco;
     triggerflag =  evtInfoReader.triggerflag;
   }
 

@@ -38,13 +38,15 @@ EventInfoReader::EventInfoReader()
   evtweight = 1;
   proc = 0;
   process = defaults::NUMPROCESSES;
+  datareco = defaults::MC;
   trigbitflags = new vector<unsigned long>;
   trigbitpass = new vector<bool>;
   trigbitprescale = new vector<unsigned int>;
   triggerflag = 0;
   metfilterbitflags = new vector<unsigned long>;
   metfilterbitpass = new vector<bool>;
-  hbheFltFix = false;
+  hbheHNFlt  = new vector<bool>;
+  hbheFixFlt = false;
   hbheFlt    = false;
   cscFlt     = false;
   eeBadSCFlt = false;
@@ -76,11 +78,12 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(defaults::BRANCH_TRIGGERS,"bit_pass", &trigbitpass);
   treeReader->setBranchAddress(defaults::BRANCH_TRIGGERS,"bit_prescale", &trigbitprescale);
   treeReader->setBranchAddress(branchName,"process", &proc);
+  treeReader->setBranchAddress(branchName,"datareco", &datrec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_flag", &metfilterbitflags);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterFix", &hbheFltFix);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterFix", &hbheHNFlt);
 
   clog << endl;
 }
@@ -91,6 +94,7 @@ void EventInfoReader::refresh()
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
+  datareco = static_cast<defaults::DataReco>(datrec);
   evtweight = xsecweight * genevtweight;
 
   for (unsigned int i = 0; i < trigbitflags->size(); ++i) {
@@ -100,7 +104,10 @@ void EventInfoReader::refresh()
   cscFlt     = false;
   eeBadSCFlt = false;
   hbheFlt    = false;
-  hbheFltFix = hbheFltFix; 
+  hbheFixFlt = false;
+
+  //  if (hbheHNFlt->size()>0)
+  hbheFixFlt = hbheHNFlt->at(0); 
   for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
 
     if (i==2)  { cscFlt     = metfilterbitpass->at(i); }

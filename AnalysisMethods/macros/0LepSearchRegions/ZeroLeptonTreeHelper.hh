@@ -55,6 +55,10 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
+  size i_passcscflt;
+  size i_passeebadscflt;
+  size i_passhbheflt;
+  size i_passhbhefixflt;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -138,6 +142,10 @@ struct TreeFiller {
     i_passtright900  = data->add<bool >("","passtright900","O",0); 
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
+    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
+    i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
+    i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
+    i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -235,6 +243,11 @@ struct TreeFiller {
     data->fill<float>(i_leptoneta, lep->eta());
     data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
+
+    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
+    data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
+    data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
+    data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
 
   }
 
@@ -348,6 +361,24 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
+
+      // skip events in PR with run number < 251584 - they are in the re-miniAOD
+      bool isData = false;
+      if ( (process==defaults::DATA_SINGLEEL) || (process==defaults::DATA_SINGLEMU)  || 
+	   (process==defaults::DATA_DOUBLEEG) || (process==defaults::DATA_DOUBLEMU)  || 
+	   (process==defaults::DATA_MUEG)     || (process==defaults::DATA_SINGLEPHO) || 
+	   (process==defaults::DATA_MET)      || (process==defaults::DATA_JETHT)     ||
+	   (process==defaults::DATA_HTMHT) 
+	   )   { isData = true; } 
+
+      bool isPR = false;
+      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
+      
+      bool skipPRevent = false;
+      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
+      if (skipPRevent) { return false; }
+      
+
       filler.fillEventInfo(&data, this, datatype_);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

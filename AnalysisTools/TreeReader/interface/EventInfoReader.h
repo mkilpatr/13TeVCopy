@@ -47,16 +47,19 @@ namespace ucsbsusy {
       float         evtweight;
       size8             proc;
       defaults::Process process;
+      size8             datrec;
+      defaults::DataReco datareco;
       std::vector<unsigned long> * trigbitflags;
       std::vector<bool>          * trigbitpass;
       std::vector<unsigned int>  * trigbitprescale;
 
       std::vector<unsigned long> * metfilterbitflags;
       std::vector<bool>          * metfilterbitpass;
+      std::vector<bool> * hbheHNFlt;
 
       unsigned long triggerflag;
 
-      bool hbheFltFix;
+      bool hbheFixFlt;
       bool hbheFlt;
       bool cscFlt;
       bool eeBadSCFlt;
