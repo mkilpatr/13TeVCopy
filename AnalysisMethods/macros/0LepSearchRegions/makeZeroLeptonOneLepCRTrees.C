@@ -21,7 +21,24 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(nBJets < 1) return false;
 
-      if(nJets < 5) return false;
+      if(nJets < 2) return false;
+
+      // skip events in PR with run number < 251584 - they are in the re-miniAOD
+      bool isData = false;
+      if ( (process==defaults::DATA_SINGLEEL) || (process==defaults::DATA_SINGLEMU)  ||
+           (process==defaults::DATA_DOUBLEEG) || (process==defaults::DATA_DOUBLEMU)  ||
+           (process==defaults::DATA_MUEG)     || (process==defaults::DATA_SINGLEPHO) ||
+           (process==defaults::DATA_MET)      || (process==defaults::DATA_JETHT)     ||
+           (process==defaults::DATA_HTMHT)
+           )   { isData = true; }
+
+      bool isPR = false;
+      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
+
+      bool skipPRevent = false;
+      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
+      if (skipPRevent) { return false; }
+
 
       if(nSelLeptons<1)      return false;
       //if(nVetoedTracks > 0)     return false;
@@ -66,11 +83,12 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   cfgSet::ConfigSet pars = pars0lepCR();
 
   double randSeed = fileindex + 2;
-  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+  //  TString treename = isMC ? "Events" : "TestAnalyzer/Events";
+  TString treename = "Events";
   DataType type = isMC ? MC : (fname.Contains("htmht") ? HTMHT : (fname.Contains("singlemu") ? SINGLEMU : (fname.Contains("singleel") ? SINGLEEL : MC)));
   OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, type, randSeed);
 
-  a.analyze(10000);
+  a.analyze(1000000);
 
   //a.analyze(10000,100000);
 

@@ -56,6 +56,10 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
+  size i_passcscflt;
+  size i_passeebadscflt;
+  size i_passhbheflt;
+  size i_passhbhefixflt;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -140,6 +144,10 @@ struct TreeFiller {
     i_passtright900  = data->add<bool >("","passtright900","O",0); 
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
+    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
+    i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
+    i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
+    i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -192,23 +200,23 @@ struct TreeFiller {
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
-    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf_v1 : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1 : false));
-    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1_v2 : false));
-    data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300_v1 : false)); 
-    data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v1 : false)); 
-    data->fill<bool >(i_passtright350v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350_v2 : false)); 
-    data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400_v1 : false)); 
-    data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475_v1 : false)); 
-    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v1 : false)); 
-    data->fill<bool >(i_passtright600v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600_v2 : false)); 
-    data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650_v1 : false)); 
-    data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800_v1 : false)); 
-    data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900_v1 : false)); 
+    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
+    data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
+    data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
+    data->fill<bool >(i_passtright350v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
+    data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400 : false)); 
+    data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475 : false)); 
+    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
+    data->fill<bool >(i_passtright600v2, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
+    data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650 : false)); 
+    data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
+    data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
-    data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1 : false));
+    data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack)
     {
@@ -239,6 +247,11 @@ struct TreeFiller {
     data->fill<float>(i_leptoneta, lep->eta());
     data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
+
+    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
+    data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
+    data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
+    data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
 
   }
 
@@ -352,6 +365,24 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
+
+      // skip events in PR with run number < 251584 - they are in the re-miniAOD
+      bool isData = false;
+      if ( (process==defaults::DATA_SINGLEEL) || (process==defaults::DATA_SINGLEMU)  || 
+	   (process==defaults::DATA_DOUBLEEG) || (process==defaults::DATA_DOUBLEMU)  || 
+	   (process==defaults::DATA_MUEG)     || (process==defaults::DATA_SINGLEPHO) || 
+	   (process==defaults::DATA_MET)      || (process==defaults::DATA_JETHT)     ||
+	   (process==defaults::DATA_HTMHT) 
+	   )   { isData = true; } 
+
+      bool isPR = false;
+      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
+      
+      bool skipPRevent = false;
+      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
+      if (skipPRevent) { return false; }
+      
+
       filler.fillEventInfo(&data, this, datatype_);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

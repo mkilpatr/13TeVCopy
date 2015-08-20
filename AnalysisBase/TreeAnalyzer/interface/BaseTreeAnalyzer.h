@@ -115,6 +115,7 @@ public:
     unsigned int  event;
     float         weight;
     defaults::Process process;
+    defaults::DataReco datareco;
     unsigned long triggerflag;
 
     int   nPV;
