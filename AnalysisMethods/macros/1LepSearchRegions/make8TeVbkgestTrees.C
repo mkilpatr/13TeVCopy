@@ -50,6 +50,7 @@ public:
     lep2pt_       = -9 ;
     lep1eta_      = -9 ;
     lep2eta_      = -9 ;
+    lep1pdgid_    = -9 ;
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
@@ -86,6 +87,7 @@ public:
     outtree->Branch( "lep2pt"       , &lep2pt_       ,       "lep2pt/F" );
     outtree->Branch( "lep1eta"      , &lep1eta_      ,      "lep1eta/F" );
     outtree->Branch( "lep2eta"      , &lep2eta_      ,      "lep2eta/F" );
+    outtree->Branch( "lep1pdgid"    , &lep1pdgid_    ,    "lep1pdgid/I" );
 
   }; // Analyze()
 
@@ -112,13 +114,13 @@ public:
     if(nPV<1)                    return;
     if(!goodvertex)              return;
     if(selectedLeptons.size()<1) return;
+    if(jets.size()<2)            return;
     // not applied event selections:
     //   - Veto events containing an additional electron or muon with pT > 20 GeV, abs(eta) < 2.4 passing the analysis lepton selection
     //   - Require at least one of the jets is b-tagged based on the CSVv2+IVF algorithm, medium working point
     //   - Require MET >  80 GeV
     //   - MT(lep,MET) > 100 GeV
-    //   - jets.size() < 4
-
+    //   - jets.size() >= 4
 
     weight_ = weight;
     npv_    = nPV;
@@ -205,18 +207,19 @@ public:
     } // ranked jets
     mt2w_    = calculateMT2w(lzjets, ibjets, inonbjets, lepvec, met->pt(), met->phi());
     hadchi2_ = calculateChi2(lzjets, sigma, btag);
-
     dphij1met_  = fabs(PhysicsUtilities::deltaPhi(*jets[0], *met));
     dphij2met_  = fabs(PhysicsUtilities::deltaPhi(*jets[1], *met));
     dphij12met_ = min(dphij1met_,dphij2met_);
 
     if(vetoedLeptons.size()>=2) {
-      auto lep2 = selectedLeptons[1];
+      auto lep2 = vetoedLeptons[1];
       lep2pt_   = lep2->pt();
       lep2eta_  = lep2->eta();
       dilepinvmass_ = (lep1->p4() + lep2->p4()).mass();
       if(lep1->q()!=lep2->q()) opsignlep_ = true;
     } // >=2 leps
+
+    lep1pdgid_ = lep1->pdgid();
 
     if(isMC()) {
       int ngenleps = 0, ngeneles = 0, ngenmus = 0, ngentaus = 0;
@@ -283,6 +286,7 @@ public:
   float lep2pt_      ;
   float lep1eta_     ;
   float lep2eta_     ;
+  int   lep1pdgid_   ;
 
 }; // BaseTreeAnalyzer
 
