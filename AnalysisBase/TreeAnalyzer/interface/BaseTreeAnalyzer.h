@@ -151,6 +151,9 @@ public:
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
 
+    //hack for DY PU
+    bool isOneLeptonSample;
+
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters

@@ -22,6 +22,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(PU) {
     bool is25NSMC = ana->process == defaults::TTZ || ana->process == defaults::TTW;
+    if(ana->isOneLeptonSample && ana->process == defaults::SINGLE_Z) is25NSMC = true;
     puCorr->setAxis(PUCorr::NPV,ana->nPV);
     puCorr->setAxis(PUCorr::INPUT_MC,is25NSMC);
     puWeight = puCorr->get();
