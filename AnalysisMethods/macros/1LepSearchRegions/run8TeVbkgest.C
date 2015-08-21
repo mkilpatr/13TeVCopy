@@ -75,7 +75,7 @@ void plotMT(TString cuts, TString saveTag, TString saveSubdir,
             TH1F* &SF_el_ttbar, TH1F* &SF_mu_ttbar, TH1F* &SF_lp_ttbar,
             TH1F* &SF_el_dilep, TH1F* &SF_mu_dilep, TH1F* &SF_lp_dilep
             ) {
-
+return;
   vector<TString> metBins(nBins+1,"");
   vector<TString> metName(nBins+1,"");
   vector<TString> metLabel(nBins+1,"");
@@ -303,8 +303,8 @@ void getSRnumbers(TString cuts, TString saveTag,
       t_ttbar ->Project("lp_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+lpTrg);
     } // getOOtB
 
-    double n_el_wjets = el_wjets->GetBinContent(1) * SF_el_wjets->GetBinContent(i);
     double n_el_ttbar = el_ttbar->GetBinContent(1) * SF_el_ttbar->GetBinContent(i);
+    double n_el_wjets = el_wjets->GetBinContent(1) * SF_el_wjets->GetBinContent(i);
     double n_el_dilep = el_dilep->GetBinContent(1) * SF_el_dilep->GetBinContent(i);
     double n_mu_wjets = mu_wjets->GetBinContent(1) * SF_mu_wjets->GetBinContent(i);
     double n_mu_ttbar = mu_ttbar->GetBinContent(1) * SF_mu_ttbar->GetBinContent(i);
@@ -319,22 +319,53 @@ void getSRnumbers(TString cuts, TString saveTag,
     double n_mu_data  = mu_data ->GetBinContent(1);
     double n_lp_data  = lp_data ->GetBinContent(1);
 
-    double n_error_el_wjets = n_el_wjets * getError(el_wjets->GetBinError(1)/el_wjets->GetBinContent(1),SF_el_wjets->GetBinError(i)/SF_el_wjets->GetBinContent(i));
-    double n_error_el_ttbar = n_el_ttbar * getError(el_ttbar->GetBinError(1)/el_ttbar->GetBinContent(1),SF_el_ttbar->GetBinError(i)/SF_el_ttbar->GetBinContent(i));
-    double n_error_el_dilep = n_el_dilep * getError(el_dilep->GetBinError(1)/el_dilep->GetBinContent(1),SF_el_dilep->GetBinError(i)/SF_el_dilep->GetBinContent(i));
-    double n_error_mu_wjets = n_mu_wjets * getError(mu_wjets->GetBinError(1)/mu_wjets->GetBinContent(1),SF_mu_wjets->GetBinError(i)/SF_mu_wjets->GetBinContent(i));
-    double n_error_mu_ttbar = n_mu_ttbar * getError(mu_ttbar->GetBinError(1)/mu_ttbar->GetBinContent(1),SF_mu_ttbar->GetBinError(i)/SF_mu_ttbar->GetBinContent(i));
-    double n_error_mu_dilep = n_mu_dilep * getError(mu_dilep->GetBinError(1)/mu_dilep->GetBinContent(1),SF_mu_dilep->GetBinError(i)/SF_mu_dilep->GetBinContent(i));
-    double n_error_lp_wjets = n_lp_wjets * getError(lp_wjets->GetBinError(1)/lp_wjets->GetBinContent(1),SF_lp_wjets->GetBinError(i)/SF_lp_wjets->GetBinContent(i));
-    double n_error_lp_ttbar = n_lp_ttbar * getError(lp_ttbar->GetBinError(1)/lp_ttbar->GetBinContent(1),SF_lp_ttbar->GetBinError(i)/SF_lp_ttbar->GetBinContent(i));
-    double n_error_lp_dilep = n_lp_dilep * getError(lp_dilep->GetBinError(1)/lp_dilep->GetBinContent(1),SF_lp_dilep->GetBinError(i)/SF_lp_dilep->GetBinContent(i));
+    double n_error_el_wjets = 0;
+    double n_error_el_ttbar = 0;
+    double n_error_el_dilep = 0;
+    double n_error_mu_wjets = 0;
+    double n_error_mu_ttbar = 0;
+    double n_error_mu_dilep = 0;
+    double n_error_lp_wjets = 0;
+    double n_error_lp_ttbar = 0;
+    double n_error_lp_dilep = 0;
+    double n_error_el_all   = 0;
+    double n_error_mu_all   = 0;
+    double n_error_lp_all   = 0;
+    double n_error_el_data  = 0;
+    double n_error_mu_data  = 0;
+    double n_error_lp_data  = 0;
 
-    double n_error_el_all   = n_el_all * getError(n_error_el_wjets/n_el_wjets, n_error_el_ttbar/n_el_ttbar, n_error_el_dilep/n_el_dilep );
-    double n_error_mu_all   = n_mu_all * getError(n_error_mu_wjets/n_mu_wjets, n_error_mu_ttbar/n_mu_ttbar, n_error_mu_dilep/n_mu_dilep );
-    double n_error_lp_all   = n_lp_all * getError(n_error_lp_wjets/n_lp_wjets, n_error_lp_ttbar/n_lp_ttbar, n_error_lp_dilep/n_lp_dilep );
-    double n_error_el_data  = el_data ->GetBinError(1);
-    double n_error_mu_data  = mu_data ->GetBinError(1);
-    double n_error_lp_data  = lp_data ->GetBinError(1);
+    if(getOOtB) {
+      n_error_el_wjets = el_wjets->GetBinError(1);
+      n_error_el_ttbar = el_ttbar->GetBinError(1);
+      n_error_el_dilep = el_dilep->GetBinError(1);
+      n_error_mu_wjets = mu_wjets->GetBinError(1);
+      n_error_mu_ttbar = mu_ttbar->GetBinError(1);
+      n_error_mu_dilep = mu_dilep->GetBinError(1);
+      n_error_lp_wjets = lp_wjets->GetBinError(1);
+      n_error_lp_ttbar = lp_ttbar->GetBinError(1);
+      n_error_lp_dilep = lp_dilep->GetBinError(1);
+    }else{
+      n_error_el_wjets = n_el_wjets * getError(el_wjets->GetBinError(1)/el_wjets->GetBinContent(1),SF_el_wjets->GetBinError(i)/SF_el_wjets->GetBinContent(i));
+      n_error_el_ttbar = n_el_ttbar * getError(el_ttbar->GetBinError(1)/el_ttbar->GetBinContent(1),SF_el_ttbar->GetBinError(i)/SF_el_ttbar->GetBinContent(i));
+      n_error_el_dilep = n_el_dilep * getError(el_dilep->GetBinError(1)/el_dilep->GetBinContent(1),SF_el_dilep->GetBinError(i)/SF_el_dilep->GetBinContent(i));
+      n_error_mu_wjets = n_mu_wjets * getError(mu_wjets->GetBinError(1)/mu_wjets->GetBinContent(1),SF_mu_wjets->GetBinError(i)/SF_mu_wjets->GetBinContent(i));
+      n_error_mu_ttbar = n_mu_ttbar * getError(mu_ttbar->GetBinError(1)/mu_ttbar->GetBinContent(1),SF_mu_ttbar->GetBinError(i)/SF_mu_ttbar->GetBinContent(i));
+      n_error_mu_dilep = n_mu_dilep * getError(mu_dilep->GetBinError(1)/mu_dilep->GetBinContent(1),SF_mu_dilep->GetBinError(i)/SF_mu_dilep->GetBinContent(i));
+      n_error_lp_wjets = n_lp_wjets * getError(lp_wjets->GetBinError(1)/lp_wjets->GetBinContent(1),SF_lp_wjets->GetBinError(i)/SF_lp_wjets->GetBinContent(i));
+      n_error_lp_ttbar = n_lp_ttbar * getError(lp_ttbar->GetBinError(1)/lp_ttbar->GetBinContent(1),SF_lp_ttbar->GetBinError(i)/SF_lp_ttbar->GetBinContent(i));
+      n_error_lp_dilep = n_lp_dilep * getError(lp_dilep->GetBinError(1)/lp_dilep->GetBinContent(1),SF_lp_dilep->GetBinError(i)/SF_lp_dilep->GetBinContent(i));
+    } // getOOtB
+    //double e = 0.00000000001;
+    //n_error_el_all   = n_el_all * getError(n_error_el_wjets/(n_el_wjets+e), n_error_el_ttbar/(n_el_ttbar+e), n_error_el_dilep/(n_el_dilep+e) );
+    //n_error_mu_all   = n_mu_all * getError(n_error_mu_wjets/(n_mu_wjets+e), n_error_mu_ttbar/(n_mu_ttbar+e), n_error_mu_dilep/(n_mu_dilep+e) );
+    //n_error_lp_all   = n_lp_all * getError(n_error_lp_wjets/(n_lp_wjets+e), n_error_lp_ttbar/(n_lp_ttbar+e), n_error_lp_dilep/(n_lp_dilep+e) );
+    n_error_el_all   = getError(n_error_el_wjets, n_error_el_ttbar, n_error_el_dilep );
+    n_error_mu_all   = getError(n_error_mu_wjets, n_error_mu_ttbar, n_error_mu_dilep );
+    n_error_lp_all   = getError(n_error_lp_wjets, n_error_lp_ttbar, n_error_lp_dilep );
+    n_error_el_data  = el_data ->GetBinError(1);
+    n_error_mu_data  = mu_data ->GetBinError(1);
+    n_error_lp_data  = lp_data ->GetBinError(1);
 
     cout << metLabel[i] << " & & & & & \\\\"<< endl
          << "electrons"
