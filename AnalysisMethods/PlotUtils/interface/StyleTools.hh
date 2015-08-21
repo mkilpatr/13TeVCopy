@@ -18,15 +18,15 @@
 namespace StyleTools {
 
   enum Colors {color_data=1,                 // kBlack
-               color_qcd=414,                // kGreen-2
+               color_qcd=811,                // kSpring-9
                color_ttbar=866,              // kAzure+6
                color_ttbar1l=866,            // kAzure+6
                color_ttbar2l=625,            // kRed-7
                color_ttW=606,                // kMagenta-10
                color_ttZ=797,                // kOrange-3
-               color_tW=391,                 // kYellow-9
-               color_wjets=433,              // kCyan+1
-               color_znunu=632,              // kRed
+               color_tW=876,                 // kViolet-4
+               color_wjets=391,              // kYellow-9
+               color_znunu=628,              // kRed-4
                color_other=391,              // kYellow-9
                color_T2tt=634,               // kRed+2
                color_T2tt_850_100=634,       // kRed+2
