@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -25,9 +26,9 @@ TFile* f_eldata = TFile::Open("trees/150813_pdgid/singlee_tree.root"  ,"READONLY
 TFile* f_mudata = TFile::Open("trees/150813_pdgid/singlemu_tree.root" ,"READONLY");
 TFile* f_lpdata = TFile::Open("trees/150813_pdgid/singllep_tree.root" ,"READONLY");
 // data=ttbar_pythia
-//TFile* f_eldata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
-//TFile* f_mudata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
-//TFile* f_lpdata = TFile::Open("trees/150813_pdgid/ttbarpythia_tree.root" ,"READONLY");
+//TFile* f_eldata = TFile::Open("trees/150813_pdgid/pythiaPlusWjet_tree.root" ,"READONLY");
+//TFile* f_mudata = TFile::Open("trees/150813_pdgid/pythiaPlusWjet_tree.root" ,"READONLY");
+//TFile* f_lpdata = TFile::Open("trees/150813_pdgid/pythiaPlusWjet_tree.root" ,"READONLY");
 
 
 TTree* t_eldata = (TTree*)f_eldata ->Get("Events");
@@ -37,60 +38,66 @@ TTree* t_ttbar  = (TTree*)f_ttbar  ->Get("Events");
 TTree* t_wjets  = (TTree*)f_wjets  ->Get("Events");
 
 const int nBins = 4;
-double edges[nBins+1] = {50, 75, 100, 150, 250};
+double edges[nBins+1] = {50, 75, 100, 150, 250}; // data
+//double edges[nBins+1] = {250, 300, 350, 400, 500}; // pythia
 TH1F* SF_unit = new TH1F("SF_unit", "SF_unit", nBins, edges );
 
 TString mcweight  = "(.040*weight)*";
 TString isDilep   = " && ngenlep>=2";
 TString ntDilep   = " && ngenlep<=1";
 TString baseCuts1 = "( nbjets==0 && njets>=4 && nvetotau==0 && nvetolep==1 && nselelep==1 && dphij12met>0.4 ";
-TString baseCuts4 = "( nbjets>=1 && njets>=4 && nvetotau==0 && nvetolep>=2 && nselelep>=1 && dphij12met>0.4 ";
+TString baseCuts4 = "( nbjets>=1 && njets>=4 && nvetotau==0 && nvetolep>=2 && nselelep>=1 && dphij12met>0.4  && lep2pt>20 && abs(lep2eta)<2.1 ";
 TString preVeto5  = "( nbjets>=1 && njets>=4                               && nselelep==1 && dphij12met>0.4 ";
 TString pstVeto5  = "( nbjets>=1 && njets>=4 && (nvetotau+nvetolep)>=2     && nselelep>=1 && dphij12met>0.4 ";
 TString incBCuts  = "(              njets>=4 && nvetotau==0 && nvetolep==1 && nselelep==1 && dphij12met>0.4 ";
 TString srCuts    = "( nbjets>=1 && njets>=4 && nvetotau==0 && nvetolep==1 && nselelep==1 && dphij12met>0.4 ";
 
-TString dilepCut  = " && lep2pt>20 && abs(lep2eta)<2.1 && abs(dilepinvmass-91)>15 && opsignlep"; // && dilepinvmass>15
+TString dilepCut  = " && abs(dilepinvmass-91)>15 && opsignlep"; // && dilepinvmass>15
 TString lowMT     = " && mt>=50 && mt<80";
 TString hghMT     = " && mt>=150";
 // data=data
+TString dtweight  = "";
 TString elTrg     = " && passtrige && !passtrigmu )";
 TString muTrg     = " && passtrigmu )";
 TString lpTrg     = " && ((sampType==0 && (passtrige || passtrigmu)) || (sampType==2 && passtrigmu) || (sampType==1 && passtrige && !passtrigmu)) )";
 // data=ttbar_pythia
+//TString dtweight  = mcweight;
 //TString elTrg     = " && lep1pdgid==11)";
 //TString muTrg     = " && lep1pdgid==13)";
 //TString lpTrg     = " )";
 
+double getError(double a, double b, double c=0) {
+  return sqrt(a*a+b*b+c*c);
+} // getError()
 
 void plotMT(TString cuts, TString saveTag, TString saveSubdir,
             TH1F* &SF_el_wjets, TH1F* &SF_mu_wjets, TH1F* &SF_lp_wjets,
             TH1F* &SF_el_ttbar, TH1F* &SF_mu_ttbar, TH1F* &SF_lp_ttbar,
-            TH1F* &SF_el_dilep, TH1F* &SF_mu_dilep, TH1F* &SF_lp_dilep,
-            bool tailOnly=false, bool isSR=false
+            TH1F* &SF_el_dilep, TH1F* &SF_mu_dilep, TH1F* &SF_lp_dilep
             ) {
-  //if(!isSR) return;
+
   vector<TString> metBins(nBins+1,"");
   vector<TString> metName(nBins+1,"");
   vector<TString> metLabel(nBins+1,"");
+
+  // data
   metBins[1] = " && met>= 50 && met< 75"; metName[1] = "met050"; metLabel[1] = ", MET (50-75)";
   metBins[2] = " && met>= 75 && met<100"; metName[2] = "met075"; metLabel[2] = ", MET (75-100)";
   metBins[3] = " && met>=100 && met<150"; metName[3] = "met100"; metLabel[3] = ", MET (100-150)";
   metBins[4] = " && met>=150";            metName[4] = "met150"; metLabel[4] = ", MET 150+";
+  // pythia
+  //metBins[1] = " && met>=250 && met<300"; metName[1] = "met050"; metLabel[1] = ", MET (250-300)";
+  //metBins[2] = " && met>=300 && met<350"; metName[2] = "met075"; metLabel[2] = ", MET (300-350)";
+  //metBins[3] = " && met>=350 && met<400"; metName[3] = "met100"; metLabel[3] = ", MET (350-400)";
+  //metBins[4] = " && met>=400";            metName[4] = "met150"; metLabel[4] = ", MET 400+";
+
   //metBins[1] = " && met>= 50"; metName[1] = "met050inc"; metLabel[1] = ", MET 50+";
   TString savePrefix = "plots/"+saveSubdir+"/inclusiveMT_"+saveTag;
 
   for(int i=1; i<=nBins; ++i) {
     // TODO: add ratio?
 
-    //int mtBins = 30;
-    //double mtBlow = 0;
-    //double mtBhgh = 300;
-    //if(tailOnly){
-    //  mtBins = 15;
-    //  mtBlow = 150;
-    //} // tailOnly
-    const int mtBins = 8;
+    const int mtBins = 8; // 13;
     double mtEdges[mtBins+1] = { 0, 20, 35, 50, 80, 100, 150, 300, 400};
 
     TH1F* el_data  = new TH1F("el_data",  "el_data",  mtBins, mtEdges); el_data ->SetLineWidth(3); el_data ->SetLineColor(1); // black
@@ -116,33 +123,18 @@ void plotMT(TString cuts, TString saveTag, TString saveSubdir,
     mu_dilep->SetFillColor(5); // yellow
     lp_dilep->SetFillColor(5); // yellow
 
-    if(isSR) {
-      t_eldata->Project("el_data" ,"met",         cuts+metBins[i]        +hghMT+elTrg);
-      t_mudata->Project("mu_data" ,"met",         cuts+metBins[i]        +hghMT+muTrg);
-      t_lpdata->Project("lp_data" ,"met",         cuts+metBins[i]        +hghMT+lpTrg);
-      t_wjets ->Project("el_wjets","met",mcweight+cuts+metBins[i]        +lowMT+elTrg);
-      t_wjets ->Project("mu_wjets","met",mcweight+cuts+metBins[i]        +lowMT+muTrg);
-      t_wjets ->Project("lp_wjets","met",mcweight+cuts+metBins[i]        +lowMT+lpTrg);
-      t_ttbar ->Project("el_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+elTrg);
-      t_ttbar ->Project("mu_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+muTrg);
-      t_ttbar ->Project("lp_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+lpTrg);
-      t_ttbar ->Project("el_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+elTrg);
-      t_ttbar ->Project("mu_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+muTrg);
-      t_ttbar ->Project("lp_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+lpTrg);
-    }else {
-      t_eldata->Project("el_data" ,"mt",         cuts+metBins[i]        +elTrg);
-      t_mudata->Project("mu_data" ,"mt",         cuts+metBins[i]        +muTrg);
-      t_lpdata->Project("lp_data" ,"mt",         cuts+metBins[i]        +lpTrg);
-      t_wjets ->Project("el_wjets","mt",mcweight+cuts+metBins[i]        +elTrg);
-      t_wjets ->Project("mu_wjets","mt",mcweight+cuts+metBins[i]        +muTrg);
-      t_wjets ->Project("lp_wjets","mt",mcweight+cuts+metBins[i]        +lpTrg);
-      t_ttbar ->Project("el_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+elTrg);
-      t_ttbar ->Project("mu_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+muTrg);
-      t_ttbar ->Project("lp_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+lpTrg);
-      t_ttbar ->Project("el_dilep","mt",mcweight+cuts+metBins[i]+isDilep+elTrg);
-      t_ttbar ->Project("mu_dilep","mt",mcweight+cuts+metBins[i]+isDilep+muTrg);
-      t_ttbar ->Project("lp_dilep","mt",mcweight+cuts+metBins[i]+isDilep+lpTrg);
-    } // isSR
+    t_eldata->Project("el_data" ,"mt",dtweight+cuts+metBins[i]        +elTrg);
+    t_mudata->Project("mu_data" ,"mt",dtweight+cuts+metBins[i]        +muTrg);
+    t_lpdata->Project("lp_data" ,"mt",dtweight+cuts+metBins[i]        +lpTrg);
+    t_wjets ->Project("el_wjets","mt",mcweight+cuts+metBins[i]        +elTrg);
+    t_wjets ->Project("mu_wjets","mt",mcweight+cuts+metBins[i]        +muTrg);
+    t_wjets ->Project("lp_wjets","mt",mcweight+cuts+metBins[i]        +lpTrg);
+    t_ttbar ->Project("el_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+elTrg);
+    t_ttbar ->Project("mu_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+muTrg);
+    t_ttbar ->Project("lp_ttbar","mt",mcweight+cuts+metBins[i]+ntDilep+lpTrg);
+    t_ttbar ->Project("el_dilep","mt",mcweight+cuts+metBins[i]+isDilep+elTrg);
+    t_ttbar ->Project("mu_dilep","mt",mcweight+cuts+metBins[i]+isDilep+muTrg);
+    t_ttbar ->Project("lp_dilep","mt",mcweight+cuts+metBins[i]+isDilep+lpTrg);
 
     el_data ->SetBinContent(mtBins, el_data ->GetBinContent(mtBins)+el_data ->GetBinContent(mtBins+1) );
     mu_data ->SetBinContent(mtBins, mu_data ->GetBinContent(mtBins)+mu_data ->GetBinContent(mtBins+1) );
@@ -156,6 +148,18 @@ void plotMT(TString cuts, TString saveTag, TString saveSubdir,
     el_dilep->SetBinContent(mtBins, el_dilep->GetBinContent(mtBins)+el_dilep->GetBinContent(mtBins+1) );
     mu_dilep->SetBinContent(mtBins, mu_dilep->GetBinContent(mtBins)+mu_dilep->GetBinContent(mtBins+1) );
     lp_dilep->SetBinContent(mtBins, lp_dilep->GetBinContent(mtBins)+lp_dilep->GetBinContent(mtBins+1) );
+    el_data ->SetBinError(mtBins, getError(el_data ->GetBinError(mtBins),el_data ->GetBinError(mtBins+1)) );
+    mu_data ->SetBinError(mtBins, getError(mu_data ->GetBinError(mtBins),mu_data ->GetBinError(mtBins+1)) );
+    lp_data ->SetBinError(mtBins, getError(lp_data ->GetBinError(mtBins),lp_data ->GetBinError(mtBins+1)) );
+    el_wjets->SetBinError(mtBins, getError(el_wjets->GetBinError(mtBins),el_wjets->GetBinError(mtBins+1)) );
+    mu_wjets->SetBinError(mtBins, getError(mu_wjets->GetBinError(mtBins),mu_wjets->GetBinError(mtBins+1)) );
+    lp_wjets->SetBinError(mtBins, getError(lp_wjets->GetBinError(mtBins),lp_wjets->GetBinError(mtBins+1)) );
+    el_ttbar->SetBinError(mtBins, getError(el_ttbar->GetBinError(mtBins),el_ttbar->GetBinError(mtBins+1)) );
+    mu_ttbar->SetBinError(mtBins, getError(mu_ttbar->GetBinError(mtBins),mu_ttbar->GetBinError(mtBins+1)) );
+    lp_ttbar->SetBinError(mtBins, getError(lp_ttbar->GetBinError(mtBins),lp_ttbar->GetBinError(mtBins+1)) );
+    el_dilep->SetBinError(mtBins, getError(el_dilep->GetBinError(mtBins),el_dilep->GetBinError(mtBins+1)) );
+    mu_dilep->SetBinError(mtBins, getError(mu_dilep->GetBinError(mtBins),mu_dilep->GetBinError(mtBins+1)) );
+    lp_dilep->SetBinError(mtBins, getError(lp_dilep->GetBinError(mtBins),lp_dilep->GetBinError(mtBins+1)) );
 
     el_wjets->Scale(SF_el_wjets->GetBinContent(i));
     mu_wjets->Scale(SF_mu_wjets->GetBinContent(i));
@@ -166,57 +170,6 @@ void plotMT(TString cuts, TString saveTag, TString saveSubdir,
     el_dilep->Scale(SF_el_dilep->GetBinContent(i));
     mu_dilep->Scale(SF_mu_dilep->GetBinContent(i));
     lp_dilep->Scale(SF_lp_dilep->GetBinContent(i));
-
-    if(isSR){
-      double n_el_wjets = el_wjets->Integral(0,mtBins);
-      double n_el_ttbar = el_ttbar->Integral(0,mtBins);
-      double n_el_dilep = el_dilep->Integral(0,mtBins);
-      double n_el_data  = el_data ->Integral(0,mtBins);
-      double n_mu_wjets = mu_wjets->Integral(0,mtBins);
-      double n_mu_ttbar = mu_ttbar->Integral(0,mtBins);
-      double n_mu_dilep = mu_dilep->Integral(0,mtBins);
-      double n_mu_data  = mu_data ->Integral(0,mtBins);
-      double n_lp_wjets = lp_wjets->Integral(0,mtBins);
-      double n_lp_ttbar = lp_ttbar->Integral(0,mtBins);
-      double n_lp_dilep = lp_dilep->Integral(0,mtBins);
-      double n_lp_data  = lp_data ->Integral(0,mtBins);
-      cout << metLabel[i] << " & & & & & \\\\"<< endl
-           << "electrons"
-           << " & " <<  n_el_wjets
-           << " & " <<  n_el_ttbar
-           << " & " <<  n_el_dilep
-           << " & " <<  n_el_wjets + n_el_ttbar +n_el_dilep
-           << " & " <<  n_el_data
-           << " \\\\ "<< endl
-           << "muons"
-           << " & " <<  n_mu_wjets
-           << " & " <<  n_mu_ttbar
-           << " & " <<  n_mu_dilep
-           << " & " <<  n_mu_wjets + n_mu_ttbar + n_mu_dilep
-           << " & " <<  n_mu_data
-           << " \\\\ "<< endl
-           << "both"
-           << " & " <<  n_lp_wjets
-           << " & " <<  n_lp_ttbar
-           << " & " <<  n_lp_dilep
-           << " & " <<  n_lp_wjets + n_lp_ttbar +n_lp_dilep
-           << " & " <<  n_lp_data
-           << " \\\\ "<< endl
-           << "\\hline" << endl;
-      delete el_data;
-      delete mu_data;
-      delete lp_data;
-      delete el_wjets;
-      delete mu_wjets;
-      delete lp_wjets;
-      delete el_ttbar;
-      delete mu_ttbar;
-      delete lp_ttbar;
-      delete el_dilep;
-      delete mu_dilep;
-      delete lp_dilep;
-      continue;
-    } // isSR
 
     THStack * stack_el  = new THStack("stack_el","electrons"+metLabel[i]);
     stack_el->Add(el_wjets);
@@ -275,10 +228,153 @@ void plotMT(TString cuts, TString saveTag, TString saveSubdir,
     delete c_el;
     delete c_mu;
     delete c_lp;
-    //break;
   } // nBins
   return;
 } // plotMT()
+
+void getSRnumbers(TString cuts, TString saveTag,
+                  TH1F* &SF_el_wjets, TH1F* &SF_mu_wjets, TH1F* &SF_lp_wjets,
+                  TH1F* &SF_el_ttbar, TH1F* &SF_mu_ttbar, TH1F* &SF_lp_ttbar,
+                  TH1F* &SF_el_dilep, TH1F* &SF_mu_dilep, TH1F* &SF_lp_dilep,
+                  bool getOOtB=false
+                  ) {
+
+  vector<TString> metBins(nBins+1,"");
+  vector<TString> metName(nBins+1,"");
+  vector<TString> metLabel(nBins+1,"");
+
+  // data
+  metBins[1] = " && met>= 50 && met< 75"; metName[1] = "met050"; metLabel[1] = ", MET (50-75)";
+  metBins[2] = " && met>= 75 && met<100"; metName[2] = "met075"; metLabel[2] = ", MET (75-100)";
+  metBins[3] = " && met>=100 && met<150"; metName[3] = "met100"; metLabel[3] = ", MET (100-150)";
+  metBins[4] = " && met>=150";            metName[4] = "met150"; metLabel[4] = ", MET 150+";
+  // pythia
+  //metBins[1] = " && met>=250 && met<300"; metName[1] = "met050"; metLabel[1] = ", MET (250-300)";
+  //metBins[2] = " && met>=300 && met<350"; metName[2] = "met075"; metLabel[2] = ", MET (300-350)";
+  //metBins[3] = " && met>=350 && met<400"; metName[3] = "met100"; metLabel[3] = ", MET (350-400)";
+  //metBins[4] = " && met>=400";            metName[4] = "met150"; metLabel[4] = ", MET 400+";
+
+  //metBins[1] = " && met>= 50"; metName[1] = "met050inc"; metLabel[1] = ", MET 50+";
+
+  for(int i=1; i<=nBins; ++i) {
+    // TODO: add ratio?
+
+    const int mtBins = 8; // 13;
+    double mtEdges[mtBins+1] = { 0, 20, 35, 50, 80, 100, 150, 300, 400};
+
+    TH1F* el_data  = new TH1F("el_data",  "el_data",  1, 0, 10000000000 );
+    TH1F* mu_data  = new TH1F("mu_data",  "mu_data",  1, 0, 10000000000 );
+    TH1F* lp_data  = new TH1F("lp_data",  "lp_data",  1, 0, 10000000000 );
+    TH1F* el_wjets = new TH1F("el_wjets", "el_wjets", 1, 0, 10000000000 );
+    TH1F* mu_wjets = new TH1F("mu_wjets", "mu_wjets", 1, 0, 10000000000 );
+    TH1F* lp_wjets = new TH1F("lp_wjets", "lp_wjets", 1, 0, 10000000000 );
+    TH1F* el_ttbar = new TH1F("el_ttbar", "el_ttbar", 1, 0, 10000000000 );
+    TH1F* mu_ttbar = new TH1F("mu_ttbar", "mu_ttbar", 1, 0, 10000000000 );
+    TH1F* lp_ttbar = new TH1F("lp_ttbar", "lp_ttbar", 1, 0, 10000000000 );
+    TH1F* el_dilep = new TH1F("el_dilep", "el_dilep", 1, 0, 10000000000 );
+    TH1F* mu_dilep = new TH1F("mu_dilep", "mu_dilep", 1, 0, 10000000000 );
+    TH1F* lp_dilep = new TH1F("lp_dilep", "lp_dilep", 1, 0, 10000000000 );
+
+    if (getOOtB) {
+      t_eldata->Project("el_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+elTrg);
+      t_mudata->Project("mu_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+muTrg);
+      t_lpdata->Project("lp_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+lpTrg);
+      t_wjets ->Project("el_wjets","met",mcweight+cuts+metBins[i]        +hghMT+elTrg);
+      t_wjets ->Project("mu_wjets","met",mcweight+cuts+metBins[i]        +hghMT+muTrg);
+      t_wjets ->Project("lp_wjets","met",mcweight+cuts+metBins[i]        +hghMT+lpTrg);
+      t_ttbar ->Project("el_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+hghMT+elTrg);
+      t_ttbar ->Project("mu_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+hghMT+muTrg);
+      t_ttbar ->Project("lp_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+hghMT+lpTrg);
+      t_ttbar ->Project("el_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+elTrg);
+      t_ttbar ->Project("mu_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+muTrg);
+      t_ttbar ->Project("lp_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+lpTrg);
+    }else {
+      t_eldata->Project("el_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+elTrg);
+      t_mudata->Project("mu_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+muTrg);
+      t_lpdata->Project("lp_data" ,"met",dtweight+cuts+metBins[i]        +hghMT+lpTrg);
+      t_wjets ->Project("el_wjets","met",mcweight+cuts+metBins[i]        +lowMT+elTrg);
+      t_wjets ->Project("mu_wjets","met",mcweight+cuts+metBins[i]        +lowMT+muTrg);
+      t_wjets ->Project("lp_wjets","met",mcweight+cuts+metBins[i]        +lowMT+lpTrg);
+      t_ttbar ->Project("el_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+elTrg);
+      t_ttbar ->Project("mu_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+muTrg);
+      t_ttbar ->Project("lp_ttbar","met",mcweight+cuts+metBins[i]+ntDilep+lowMT+lpTrg);
+      t_ttbar ->Project("el_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+elTrg);
+      t_ttbar ->Project("mu_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+muTrg);
+      t_ttbar ->Project("lp_dilep","met",mcweight+cuts+metBins[i]+isDilep+hghMT+lpTrg);
+    } // getOOtB
+
+    double n_el_wjets = el_wjets->GetBinContent(1) * SF_el_wjets->GetBinContent(i);
+    double n_el_ttbar = el_ttbar->GetBinContent(1) * SF_el_ttbar->GetBinContent(i);
+    double n_el_dilep = el_dilep->GetBinContent(1) * SF_el_dilep->GetBinContent(i);
+    double n_mu_wjets = mu_wjets->GetBinContent(1) * SF_mu_wjets->GetBinContent(i);
+    double n_mu_ttbar = mu_ttbar->GetBinContent(1) * SF_mu_ttbar->GetBinContent(i);
+    double n_mu_dilep = mu_dilep->GetBinContent(1) * SF_mu_dilep->GetBinContent(i);
+    double n_lp_wjets = lp_wjets->GetBinContent(1) * SF_lp_wjets->GetBinContent(i);
+    double n_lp_ttbar = lp_ttbar->GetBinContent(1) * SF_lp_ttbar->GetBinContent(i);
+    double n_lp_dilep = lp_dilep->GetBinContent(1) * SF_lp_dilep->GetBinContent(i);
+    double n_el_all   = n_el_wjets + n_el_ttbar + n_el_dilep;
+    double n_mu_all   = n_mu_wjets + n_mu_ttbar + n_mu_dilep;
+    double n_lp_all   = n_lp_wjets + n_lp_ttbar + n_lp_dilep;
+    double n_el_data  = el_data ->GetBinContent(1);
+    double n_mu_data  = mu_data ->GetBinContent(1);
+    double n_lp_data  = lp_data ->GetBinContent(1);
+
+    double n_error_el_wjets = n_el_wjets * getError(el_wjets->GetBinError(1)/el_wjets->GetBinContent(1),SF_el_wjets->GetBinError(i)/SF_el_wjets->GetBinContent(i));
+    double n_error_el_ttbar = n_el_ttbar * getError(el_ttbar->GetBinError(1)/el_ttbar->GetBinContent(1),SF_el_ttbar->GetBinError(i)/SF_el_ttbar->GetBinContent(i));
+    double n_error_el_dilep = n_el_dilep * getError(el_dilep->GetBinError(1)/el_dilep->GetBinContent(1),SF_el_dilep->GetBinError(i)/SF_el_dilep->GetBinContent(i));
+    double n_error_mu_wjets = n_mu_wjets * getError(mu_wjets->GetBinError(1)/mu_wjets->GetBinContent(1),SF_mu_wjets->GetBinError(i)/SF_mu_wjets->GetBinContent(i));
+    double n_error_mu_ttbar = n_mu_ttbar * getError(mu_ttbar->GetBinError(1)/mu_ttbar->GetBinContent(1),SF_mu_ttbar->GetBinError(i)/SF_mu_ttbar->GetBinContent(i));
+    double n_error_mu_dilep = n_mu_dilep * getError(mu_dilep->GetBinError(1)/mu_dilep->GetBinContent(1),SF_mu_dilep->GetBinError(i)/SF_mu_dilep->GetBinContent(i));
+    double n_error_lp_wjets = n_lp_wjets * getError(lp_wjets->GetBinError(1)/lp_wjets->GetBinContent(1),SF_lp_wjets->GetBinError(i)/SF_lp_wjets->GetBinContent(i));
+    double n_error_lp_ttbar = n_lp_ttbar * getError(lp_ttbar->GetBinError(1)/lp_ttbar->GetBinContent(1),SF_lp_ttbar->GetBinError(i)/SF_lp_ttbar->GetBinContent(i));
+    double n_error_lp_dilep = n_lp_dilep * getError(lp_dilep->GetBinError(1)/lp_dilep->GetBinContent(1),SF_lp_dilep->GetBinError(i)/SF_lp_dilep->GetBinContent(i));
+
+    double n_error_el_all   = n_el_all * getError(n_error_el_wjets/n_el_wjets, n_error_el_ttbar/n_el_ttbar, n_error_el_dilep/n_el_dilep );
+    double n_error_mu_all   = n_mu_all * getError(n_error_mu_wjets/n_mu_wjets, n_error_mu_ttbar/n_mu_ttbar, n_error_mu_dilep/n_mu_dilep );
+    double n_error_lp_all   = n_lp_all * getError(n_error_lp_wjets/n_lp_wjets, n_error_lp_ttbar/n_lp_ttbar, n_error_lp_dilep/n_lp_dilep );
+    double n_error_el_data  = el_data ->GetBinError(1);
+    double n_error_mu_data  = mu_data ->GetBinError(1);
+    double n_error_lp_data  = lp_data ->GetBinError(1);
+
+    cout << metLabel[i] << " & & & & & \\\\"<< endl
+         << "electrons"
+         << " & " << setprecision(3) <<  n_el_wjets << " $\\pm$ " << setprecision(2) << n_error_el_wjets
+         << " & " << setprecision(3) <<  n_el_ttbar << " $\\pm$ " << setprecision(2) << n_error_el_ttbar
+         << " & " << setprecision(3) <<  n_el_dilep << " $\\pm$ " << setprecision(2) << n_error_el_dilep
+         << " & " << setprecision(3) <<  n_el_all   << " $\\pm$ " << setprecision(2) << n_error_el_all
+         << " & " << setprecision(3) <<  n_el_data  << " $\\pm$ " << setprecision(2) << n_error_el_data
+         << " \\\\ "<< endl
+         << "muons"
+         << " & " << setprecision(3) <<  n_mu_wjets << " $\\pm$ " << setprecision(2) << n_error_mu_wjets
+         << " & " << setprecision(3) <<  n_mu_ttbar << " $\\pm$ " << setprecision(2) << n_error_mu_ttbar
+         << " & " << setprecision(3) <<  n_mu_dilep << " $\\pm$ " << setprecision(2) << n_error_mu_dilep
+         << " & " << setprecision(3) <<  n_mu_all   << " $\\pm$ " << setprecision(2) << n_error_mu_all
+         << " & " << setprecision(3) <<  n_mu_data  << " $\\pm$ " << setprecision(2) << n_error_mu_data
+         << " \\\\ "<< endl
+         << "both"
+         << " & " << setprecision(3) <<  n_lp_wjets << " $\\pm$ " << setprecision(2) << n_error_lp_wjets
+         << " & " << setprecision(3) <<  n_lp_ttbar << " $\\pm$ " << setprecision(2) << n_error_lp_ttbar
+         << " & " << setprecision(3) <<  n_lp_dilep << " $\\pm$ " << setprecision(2) << n_error_lp_dilep
+         << " & " << setprecision(3) <<  n_lp_all   << " $\\pm$ " << setprecision(2) << n_error_lp_all
+         << " & " << setprecision(3) <<  n_lp_data  << " $\\pm$ " << setprecision(2) << n_error_lp_data
+         << " \\\\ "<< endl
+         << "\\hline" << endl;
+    delete el_data;
+    delete mu_data;
+    delete lp_data;
+    delete el_wjets;
+    delete mu_wjets;
+    delete lp_wjets;
+    delete el_ttbar;
+    delete mu_ttbar;
+    delete lp_ttbar;
+    delete el_dilep;
+    delete mu_dilep;
+    delete lp_dilep;
+
+  } // nBins
+  return;
+} // getSRnumbers()
 
 void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
 
@@ -297,9 +393,9 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   TH1F* h_el_ttbar_lowmt = new TH1F("h_el_ttbar_lowmt", "h_el_ttbar_lowmt", nBins, edges );
   TH1F* h_mu_ttbar_lowmt = new TH1F("h_mu_ttbar_lowmt", "h_mu_ttbar_lowmt", nBins, edges );
   TH1F* h_lp_ttbar_lowmt = new TH1F("h_lp_ttbar_lowmt", "h_lp_ttbar_lowmt", nBins, edges );
-  t_eldata->Project("h_el_data_lowmt" ,"met",         baseCuts1+lowMT+elTrg);
-  t_mudata->Project("h_mu_data_lowmt" ,"met",         baseCuts1+lowMT+muTrg);
-  t_lpdata->Project("h_lp_data_lowmt" ,"met",         baseCuts1+lowMT+lpTrg);
+  t_eldata->Project("h_el_data_lowmt" ,"met",dtweight+baseCuts1+lowMT+elTrg);
+  t_mudata->Project("h_mu_data_lowmt" ,"met",dtweight+baseCuts1+lowMT+muTrg);
+  t_lpdata->Project("h_lp_data_lowmt" ,"met",dtweight+baseCuts1+lowMT+lpTrg);
   t_wjets ->Project("h_el_wjets_lowmt","met",mcweight+baseCuts1+lowMT+elTrg);
   t_wjets ->Project("h_mu_wjets_lowmt","met",mcweight+baseCuts1+lowMT+muTrg);
   t_wjets ->Project("h_lp_wjets_lowmt","met",mcweight+baseCuts1+lowMT+lpTrg);
@@ -315,6 +411,15 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   h_el_ttbar_lowmt->SetBinContent( nBins, h_el_ttbar_lowmt->GetBinContent(nBins) + h_el_ttbar_lowmt->GetBinContent(nBins+1) );
   h_mu_ttbar_lowmt->SetBinContent( nBins, h_mu_ttbar_lowmt->GetBinContent(nBins) + h_mu_ttbar_lowmt->GetBinContent(nBins+1) );
   h_lp_ttbar_lowmt->SetBinContent( nBins, h_lp_ttbar_lowmt->GetBinContent(nBins) + h_lp_ttbar_lowmt->GetBinContent(nBins+1) );
+  h_el_data_lowmt ->SetBinError( nBins, getError(h_el_data_lowmt ->GetBinError(nBins),h_el_data_lowmt ->GetBinError(nBins+1)) );
+  h_mu_data_lowmt ->SetBinError( nBins, getError(h_mu_data_lowmt ->GetBinError(nBins),h_mu_data_lowmt ->GetBinError(nBins+1)) );
+  h_lp_data_lowmt ->SetBinError( nBins, getError(h_lp_data_lowmt ->GetBinError(nBins),h_lp_data_lowmt ->GetBinError(nBins+1)) );
+  h_el_wjets_lowmt->SetBinError( nBins, getError(h_el_wjets_lowmt->GetBinError(nBins),h_el_wjets_lowmt->GetBinError(nBins+1)) );
+  h_mu_wjets_lowmt->SetBinError( nBins, getError(h_mu_wjets_lowmt->GetBinError(nBins),h_mu_wjets_lowmt->GetBinError(nBins+1)) );
+  h_lp_wjets_lowmt->SetBinError( nBins, getError(h_lp_wjets_lowmt->GetBinError(nBins),h_lp_wjets_lowmt->GetBinError(nBins+1)) );
+  h_el_ttbar_lowmt->SetBinError( nBins, getError(h_el_ttbar_lowmt->GetBinError(nBins),h_el_ttbar_lowmt->GetBinError(nBins+1)) );
+  h_mu_ttbar_lowmt->SetBinError( nBins, getError(h_mu_ttbar_lowmt->GetBinError(nBins),h_mu_ttbar_lowmt->GetBinError(nBins+1)) );
+  h_lp_ttbar_lowmt->SetBinError( nBins, getError(h_lp_ttbar_lowmt->GetBinError(nBins),h_lp_ttbar_lowmt->GetBinError(nBins+1)) );
 
   // ttbar-subtracted data
   h_el_data_lowmt->Add(h_el_ttbar_lowmt,-1);
@@ -335,8 +440,7 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   c_R->Update();
   c_R->SaveAs("plots/cr1/R.png");
 
-  plotMT(baseCuts1,"zerB_midMTWscaled"  ,"cr1",R_el,R_mu,R_lp,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit     );
-  //plotMT(baseCuts1,"zerB_midMTWscaledTO","cr1",R_el,R_mu,SF_unit,SF_unit,SF_unit,SF_unit,true);
+  plotMT(baseCuts1,"zerB_midMTWscaled"  ,"cr1",R_el,R_mu,R_lp,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit);
 
 
   // ===== extract SFWs from MT>150 tail =====
@@ -350,9 +454,9 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   TH1F* h_el_ttbar_hghmt = new TH1F("h_el_ttbar_hghmt", "h_el_ttbar_hghmt", nBins, edges );
   TH1F* h_mu_ttbar_hghmt = new TH1F("h_mu_ttbar_hghmt", "h_mu_ttbar_hghmt", nBins, edges );
   TH1F* h_lp_ttbar_hghmt = new TH1F("h_lp_ttbar_hghmt", "h_lp_ttbar_hghmt", nBins, edges );
-  t_eldata->Project("h_el_data_hghmt" ,"met",         baseCuts1+hghMT+elTrg);
-  t_mudata->Project("h_mu_data_hghmt" ,"met",         baseCuts1+hghMT+muTrg);
-  t_lpdata->Project("h_lp_data_hghmt" ,"met",         baseCuts1+hghMT+lpTrg);
+  t_eldata->Project("h_el_data_hghmt" ,"met",dtweight+baseCuts1+hghMT+elTrg);
+  t_mudata->Project("h_mu_data_hghmt" ,"met",dtweight+baseCuts1+hghMT+muTrg);
+  t_lpdata->Project("h_lp_data_hghmt" ,"met",dtweight+baseCuts1+hghMT+lpTrg);
   t_wjets ->Project("h_el_wjets_hghmt","met",mcweight+baseCuts1+hghMT+elTrg);
   t_wjets ->Project("h_mu_wjets_hghmt","met",mcweight+baseCuts1+hghMT+muTrg);
   t_wjets ->Project("h_lp_wjets_hghmt","met",mcweight+baseCuts1+hghMT+lpTrg);
@@ -368,15 +472,24 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   h_el_ttbar_hghmt->SetBinContent( nBins, h_el_ttbar_hghmt->GetBinContent(nBins) + h_el_ttbar_hghmt->GetBinContent(nBins+1) );
   h_mu_ttbar_hghmt->SetBinContent( nBins, h_mu_ttbar_hghmt->GetBinContent(nBins) + h_mu_ttbar_hghmt->GetBinContent(nBins+1) );
   h_lp_ttbar_hghmt->SetBinContent( nBins, h_lp_ttbar_hghmt->GetBinContent(nBins) + h_lp_ttbar_hghmt->GetBinContent(nBins+1) );
+  h_el_data_hghmt ->SetBinError( nBins, getError(h_el_data_hghmt ->GetBinError(nBins),h_el_data_hghmt ->GetBinError(nBins+1)) );
+  h_mu_data_hghmt ->SetBinError( nBins, getError(h_mu_data_hghmt ->GetBinError(nBins),h_mu_data_hghmt ->GetBinError(nBins+1)) );
+  h_lp_data_hghmt ->SetBinError( nBins, getError(h_lp_data_hghmt ->GetBinError(nBins),h_lp_data_hghmt ->GetBinError(nBins+1)) );
+  h_el_wjets_hghmt->SetBinError( nBins, getError(h_el_wjets_hghmt->GetBinError(nBins),h_el_wjets_hghmt->GetBinError(nBins+1)) );
+  h_mu_wjets_hghmt->SetBinError( nBins, getError(h_mu_wjets_hghmt->GetBinError(nBins),h_mu_wjets_hghmt->GetBinError(nBins+1)) );
+  h_lp_wjets_hghmt->SetBinError( nBins, getError(h_lp_wjets_hghmt->GetBinError(nBins),h_lp_wjets_hghmt->GetBinError(nBins+1)) );
+  h_el_ttbar_hghmt->SetBinError( nBins, getError(h_el_ttbar_hghmt->GetBinError(nBins),h_el_ttbar_hghmt->GetBinError(nBins+1)) );
+  h_mu_ttbar_hghmt->SetBinError( nBins, getError(h_mu_ttbar_hghmt->GetBinError(nBins),h_mu_ttbar_hghmt->GetBinError(nBins+1)) );
+  h_lp_ttbar_hghmt->SetBinError( nBins, getError(h_lp_ttbar_hghmt->GetBinError(nBins),h_lp_ttbar_hghmt->GetBinError(nBins+1)) );
 
   // scale W-component by R
   h_el_wjets_hghmt->Multiply(R_el);
   h_mu_wjets_hghmt->Multiply(R_mu);
   h_lp_wjets_hghmt->Multiply(R_lp);
 
-  TH1F* h_el_wjall_hghmt = (TH1F*)h_el_wjets_hghmt->Clone("h_el_wjets_hghmt"); h_el_wjall_hghmt->Add(h_el_ttbar_hghmt);
-  TH1F* h_mu_wjall_hghmt = (TH1F*)h_mu_wjets_hghmt->Clone("h_mu_wjets_hghmt"); h_mu_wjall_hghmt->Add(h_mu_ttbar_hghmt);
-  TH1F* h_lp_wjall_hghmt = (TH1F*)h_lp_wjets_hghmt->Clone("h_lp_wjets_hghmt"); h_lp_wjall_hghmt->Add(h_lp_ttbar_hghmt);
+  TH1F* h_el_wjall_hghmt = (TH1F*)h_el_wjets_hghmt->Clone("h_el_wjall_hghmt"); h_el_wjall_hghmt->Add(h_el_ttbar_hghmt);
+  TH1F* h_mu_wjall_hghmt = (TH1F*)h_mu_wjets_hghmt->Clone("h_mu_wjall_hghmt"); h_mu_wjall_hghmt->Add(h_mu_ttbar_hghmt);
+  TH1F* h_lp_wjall_hghmt = (TH1F*)h_lp_wjets_hghmt->Clone("h_lp_wjall_hghmt"); h_lp_wjall_hghmt->Add(h_lp_ttbar_hghmt);
 
   // find SFW_all by scaling all MC in the tail region
   TH1F* SFW_all_el = (TH1F*)h_el_data_hghmt->Clone("SFW_all_el"); SFW_all_el->Divide(h_el_wjall_hghmt);
@@ -397,7 +510,6 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   TH1F* SFWxR_all_el = (TH1F*)SFW_all_el->Clone("SFWxR_all_el"); SFWxR_all_el->Multiply(R_el);
   TH1F* SFWxR_all_mu = (TH1F*)SFW_all_mu->Clone("SFWxR_all_mu"); SFWxR_all_mu->Multiply(R_mu);
   TH1F* SFWxR_all_lp = (TH1F*)SFW_all_lp->Clone("SFWxR_all_lp"); SFWxR_all_lp->Multiply(R_lp);
-  //plotMT(baseCuts1,"zerB_tailScaledAll","cr1",SFWxR_all_el,SFWxR_all_mu,SFW_all_el,SFW_all_mu,SFW_all_el,SFW_all_mu,true);
 
   // === find SFW_wjt by scaling only W MC in the tail region
   // ttbar subtracted data
@@ -423,7 +535,6 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   TH1F* SFWxR_wjt_el = (TH1F*)SFW_wjt_el->Clone("SFWxR_wjt_el"); SFWxR_wjt_el->Multiply(R_el);
   TH1F* SFWxR_wjt_mu = (TH1F*)SFW_wjt_mu->Clone("SFWxR_wjt_mu"); SFWxR_wjt_mu->Multiply(R_mu);
   TH1F* SFWxR_wjt_lp = (TH1F*)SFW_wjt_lp->Clone("SFWxR_wjt_lp"); SFWxR_wjt_lp->Multiply(R_lp);
-  //plotMT(baseCuts1,"zerB_tailScaledWjt","cr1",SFWxR_wjt_el,SFWxR_wjt_mu,SF_unit,SF_unit,SF_unit,SF_unit,true);
 
   // average SFW_all and SFW_wjt to get SFW
   for(int i=1; i<=nBins; ++i){
@@ -454,6 +565,15 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   c_SFW->Update();
   c_SFW->SaveAs("plots/cr1/SFW.png");
 
+  delete h_el_data_hghmt  ;
+  delete h_mu_data_hghmt  ;
+  delete h_lp_data_hghmt  ;
+  delete h_el_wjets_hghmt ;
+  delete h_mu_wjets_hghmt ;
+  delete h_lp_wjets_hghmt ;
+  delete h_el_ttbar_hghmt ;
+  delete h_mu_ttbar_hghmt ;
+  delete h_lp_ttbar_hghmt ;
   delete h_el_data_lowmt  ;
   delete h_mu_data_lowmt  ;
   delete h_lp_data_lowmt  ;
@@ -471,7 +591,7 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   return;
 } // runWJets()
 
-void runDiLep(){
+void runDiLep(TH1F* &SF2L_el, TH1F* &SF2L_mu, TH1F* &SF2L_lp){
 
   // todo: K factors from p34-35
 
@@ -489,9 +609,9 @@ void runDiLep(){
   TH1F* h_el_ttbar_inc = new TH1F("h_el_ttbar_inc", "h_el_ttbar_inc", nBins, edges );
   TH1F* h_mu_ttbar_inc = new TH1F("h_mu_ttbar_inc", "h_mu_ttbar_inc", nBins, edges );
   TH1F* h_lp_ttbar_inc = new TH1F("h_lp_ttbar_inc", "h_lp_ttbar_inc", nBins, edges );
-  t_eldata->Project("h_el_data_inc" ,"met",         baseCuts4+dilepCut+elTrg);
-  t_mudata->Project("h_mu_data_inc" ,"met",         baseCuts4+dilepCut+muTrg);
-  t_lpdata->Project("h_lp_data_inc" ,"met",         baseCuts4+dilepCut+lpTrg);
+  t_eldata->Project("h_el_data_inc" ,"met",dtweight+baseCuts4+dilepCut+elTrg);
+  t_mudata->Project("h_mu_data_inc" ,"met",dtweight+baseCuts4+dilepCut+muTrg);
+  t_lpdata->Project("h_lp_data_inc" ,"met",dtweight+baseCuts4+dilepCut+lpTrg);
   t_wjets ->Project("h_el_wjets_inc","met",mcweight+baseCuts4+dilepCut+elTrg);
   t_wjets ->Project("h_mu_wjets_inc","met",mcweight+baseCuts4+dilepCut+muTrg);
   t_wjets ->Project("h_lp_wjets_inc","met",mcweight+baseCuts4+dilepCut+lpTrg);
@@ -507,6 +627,15 @@ void runDiLep(){
   h_el_ttbar_inc->SetBinContent( nBins, h_el_ttbar_inc->GetBinContent(nBins) + h_el_ttbar_inc->GetBinContent(nBins+1) );
   h_mu_ttbar_inc->SetBinContent( nBins, h_mu_ttbar_inc->GetBinContent(nBins) + h_mu_ttbar_inc->GetBinContent(nBins+1) );
   h_lp_ttbar_inc->SetBinContent( nBins, h_lp_ttbar_inc->GetBinContent(nBins) + h_lp_ttbar_inc->GetBinContent(nBins+1) );
+  h_el_data_inc ->SetBinError( nBins, getError(h_el_data_inc ->GetBinError(nBins),h_el_data_inc ->GetBinError(nBins+1)) );
+  h_mu_data_inc ->SetBinError( nBins, getError(h_mu_data_inc ->GetBinError(nBins),h_mu_data_inc ->GetBinError(nBins+1)) );
+  h_lp_data_inc ->SetBinError( nBins, getError(h_lp_data_inc ->GetBinError(nBins),h_lp_data_inc ->GetBinError(nBins+1)) );
+  h_el_wjets_inc->SetBinError( nBins, getError(h_el_wjets_inc->GetBinError(nBins),h_el_wjets_inc->GetBinError(nBins+1)) );
+  h_mu_wjets_inc->SetBinError( nBins, getError(h_mu_wjets_inc->GetBinError(nBins),h_mu_wjets_inc->GetBinError(nBins+1)) );
+  h_lp_wjets_inc->SetBinError( nBins, getError(h_lp_wjets_inc->GetBinError(nBins),h_lp_wjets_inc->GetBinError(nBins+1)) );
+  h_el_ttbar_inc->SetBinError( nBins, getError(h_el_ttbar_inc->GetBinError(nBins),h_el_ttbar_inc->GetBinError(nBins+1)) );
+  h_mu_ttbar_inc->SetBinError( nBins, getError(h_mu_ttbar_inc->GetBinError(nBins),h_mu_ttbar_inc->GetBinError(nBins+1)) );
+  h_lp_ttbar_inc->SetBinError( nBins, getError(h_lp_ttbar_inc->GetBinError(nBins),h_lp_ttbar_inc->GetBinError(nBins+1)) );
 
   // W-subtracted data
   h_el_data_inc->Add(h_el_wjets_inc,-1);
@@ -517,9 +646,9 @@ void runDiLep(){
   TH1F* R_mu = (TH1F*)h_mu_data_inc->Clone("R_mu"); R_mu->Divide(h_mu_ttbar_inc);
   TH1F* R_lp = (TH1F*)h_lp_data_inc->Clone("R_lp"); R_lp->Divide(h_lp_ttbar_inc);
   for(int i=1; i<=nBins; ++i) {
-    if(h_el_data_inc->GetBinContent(i)<0.5) { R_el->SetBinContent(i,1); R_el->SetBinError(i,1); }
-    if(h_mu_data_inc->GetBinContent(i)<0.5) { R_mu->SetBinContent(i,1); R_mu->SetBinError(i,1); }
-    if(h_lp_data_inc->GetBinContent(i)<0.5) { R_lp->SetBinContent(i,1); R_lp->SetBinError(i,1); }
+    if(h_el_data_inc->GetBinContent(i)<0.00001) { R_el->SetBinContent(i,1); R_el->SetBinError(i,1); }
+    if(h_mu_data_inc->GetBinContent(i)<0.00001) { R_mu->SetBinContent(i,1); R_mu->SetBinError(i,1); }
+    if(h_lp_data_inc->GetBinContent(i)<0.00001) { R_lp->SetBinContent(i,1); R_lp->SetBinError(i,1); }
   }
   R_el->SetLineColor(1); R_el->SetLineWidth(3); R_el->SetTitle("electrons");
   R_mu->SetLineColor(1); R_mu->SetLineWidth(3); R_mu->SetTitle("muons");
@@ -532,8 +661,72 @@ void runDiLep(){
   c_R->Update();
   c_R->SaveAs("plots/cr4/R.png");
 
-  plotMT(baseCuts4+dilepCut,"ttbarScaled","cr4"  ,SF_unit,SF_unit,SF_unit,R_el,R_mu,R_lp,R_el,R_mu,R_lp     );
-  //plotMT(baseCuts4+dilepCut,"ttbarScaledTO","cr4",SF_unit,SF_unit,R_el,R_mu,R_el,R_mu,true);
+  plotMT(baseCuts4+dilepCut,"ttbarScaled","cr4"  ,SF_unit,SF_unit,SF_unit,R_el,R_mu,R_lp,R_el,R_mu,R_lp);
+
+
+  // ===== extract SF2L from MT>150 tail =====
+
+  TH1F* h_el_data_hghmt  = new TH1F("h_el_data_hghmt" , "h_el_data_hghmt" , nBins, edges );
+  TH1F* h_mu_data_hghmt  = new TH1F("h_mu_data_hghmt" , "h_mu_data_hghmt" , nBins, edges );
+  TH1F* h_lp_data_hghmt  = new TH1F("h_lp_data_hghmt" , "h_lp_data_hghmt" , nBins, edges );
+  TH1F* h_el_wjets_hghmt = new TH1F("h_el_wjets_hghmt", "h_el_wjets_hghmt", nBins, edges );
+  TH1F* h_mu_wjets_hghmt = new TH1F("h_mu_wjets_hghmt", "h_mu_wjets_hghmt", nBins, edges );
+  TH1F* h_lp_wjets_hghmt = new TH1F("h_lp_wjets_hghmt", "h_lp_wjets_hghmt", nBins, edges );
+  TH1F* h_el_ttbar_hghmt = new TH1F("h_el_ttbar_hghmt", "h_el_ttbar_hghmt", nBins, edges );
+  TH1F* h_mu_ttbar_hghmt = new TH1F("h_mu_ttbar_hghmt", "h_mu_ttbar_hghmt", nBins, edges );
+  TH1F* h_lp_ttbar_hghmt = new TH1F("h_lp_ttbar_hghmt", "h_lp_ttbar_hghmt", nBins, edges );
+  t_eldata->Project("h_el_data_hghmt" ,"met",dtweight+baseCuts4+dilepCut+hghMT+elTrg);
+  t_mudata->Project("h_mu_data_hghmt" ,"met",dtweight+baseCuts4+dilepCut+hghMT+muTrg);
+  t_lpdata->Project("h_lp_data_hghmt" ,"met",dtweight+baseCuts4+dilepCut+hghMT+lpTrg);
+  t_wjets ->Project("h_el_wjets_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+elTrg);
+  t_wjets ->Project("h_mu_wjets_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+muTrg);
+  t_wjets ->Project("h_lp_wjets_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+lpTrg);
+  t_ttbar ->Project("h_el_ttbar_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+elTrg);
+  t_ttbar ->Project("h_mu_ttbar_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+muTrg);
+  t_ttbar ->Project("h_lp_ttbar_hghmt","met",mcweight+baseCuts4+dilepCut+hghMT+lpTrg);
+  h_el_data_hghmt ->SetBinContent( nBins, h_el_data_hghmt ->GetBinContent(nBins) + h_el_data_hghmt ->GetBinContent(nBins+1) );
+  h_mu_data_hghmt ->SetBinContent( nBins, h_mu_data_hghmt ->GetBinContent(nBins) + h_mu_data_hghmt ->GetBinContent(nBins+1) );
+  h_lp_data_hghmt ->SetBinContent( nBins, h_lp_data_hghmt ->GetBinContent(nBins) + h_lp_data_hghmt ->GetBinContent(nBins+1) );
+  h_el_wjets_hghmt->SetBinContent( nBins, h_el_wjets_hghmt->GetBinContent(nBins) + h_el_wjets_hghmt->GetBinContent(nBins+1) );
+  h_mu_wjets_hghmt->SetBinContent( nBins, h_mu_wjets_hghmt->GetBinContent(nBins) + h_mu_wjets_hghmt->GetBinContent(nBins+1) );
+  h_lp_wjets_hghmt->SetBinContent( nBins, h_lp_wjets_hghmt->GetBinContent(nBins) + h_lp_wjets_hghmt->GetBinContent(nBins+1) );
+  h_el_ttbar_hghmt->SetBinContent( nBins, h_el_ttbar_hghmt->GetBinContent(nBins) + h_el_ttbar_hghmt->GetBinContent(nBins+1) );
+  h_mu_ttbar_hghmt->SetBinContent( nBins, h_mu_ttbar_hghmt->GetBinContent(nBins) + h_mu_ttbar_hghmt->GetBinContent(nBins+1) );
+  h_lp_ttbar_hghmt->SetBinContent( nBins, h_lp_ttbar_hghmt->GetBinContent(nBins) + h_lp_ttbar_hghmt->GetBinContent(nBins+1) );
+  h_el_data_hghmt ->SetBinError( nBins, getError(h_el_data_hghmt ->GetBinError(nBins),h_el_data_hghmt ->GetBinError(nBins+1)) );
+  h_mu_data_hghmt ->SetBinError( nBins, getError(h_mu_data_hghmt ->GetBinError(nBins),h_mu_data_hghmt ->GetBinError(nBins+1)) );
+  h_lp_data_hghmt ->SetBinError( nBins, getError(h_lp_data_hghmt ->GetBinError(nBins),h_lp_data_hghmt ->GetBinError(nBins+1)) );
+  h_el_wjets_hghmt->SetBinError( nBins, getError(h_el_wjets_hghmt->GetBinError(nBins),h_el_wjets_hghmt->GetBinError(nBins+1)) );
+  h_mu_wjets_hghmt->SetBinError( nBins, getError(h_mu_wjets_hghmt->GetBinError(nBins),h_mu_wjets_hghmt->GetBinError(nBins+1)) );
+  h_lp_wjets_hghmt->SetBinError( nBins, getError(h_lp_wjets_hghmt->GetBinError(nBins),h_lp_wjets_hghmt->GetBinError(nBins+1)) );
+  h_el_ttbar_hghmt->SetBinError( nBins, getError(h_el_ttbar_hghmt->GetBinError(nBins),h_el_ttbar_hghmt->GetBinError(nBins+1)) );
+  h_mu_ttbar_hghmt->SetBinError( nBins, getError(h_mu_ttbar_hghmt->GetBinError(nBins),h_mu_ttbar_hghmt->GetBinError(nBins+1)) );
+  h_lp_ttbar_hghmt->SetBinError( nBins, getError(h_lp_ttbar_hghmt->GetBinError(nBins),h_lp_ttbar_hghmt->GetBinError(nBins+1)) );
+
+  // subtract off Wjet MC from data
+  h_el_data_hghmt->Add(h_el_wjets_hghmt,-1);
+  h_mu_data_hghmt->Add(h_mu_wjets_hghmt,-1);
+  h_lp_data_hghmt->Add(h_lp_wjets_hghmt,-1);
+
+  // scale ttbar-component by R
+  h_el_ttbar_hghmt->Multiply(R_el);
+  h_mu_ttbar_hghmt->Multiply(R_mu);
+  h_lp_ttbar_hghmt->Multiply(R_lp);
+
+  // find SF2L by scaling all ttbar MC to data in the tail region
+  SF2L_el = (TH1F*)h_el_data_hghmt->Clone("SF2L_el"); SF2L_el->Divide(h_el_ttbar_hghmt);
+  SF2L_mu = (TH1F*)h_mu_data_hghmt->Clone("SF2L_mu"); SF2L_mu->Divide(h_mu_ttbar_hghmt);
+  SF2L_lp = (TH1F*)h_lp_data_hghmt->Clone("SF2L_lp"); SF2L_lp->Divide(h_lp_ttbar_hghmt);
+  SF2L_el->SetLineColor(1); SF2L_el->SetLineWidth(3); SF2L_el->SetTitle("electrons");
+  SF2L_mu->SetLineColor(1); SF2L_mu->SetLineWidth(3); SF2L_mu->SetTitle("muons");
+  SF2L_lp->SetLineColor(1); SF2L_lp->SetLineWidth(3); SF2L_lp->SetTitle("both");
+
+  TCanvas * c_SF2L = new TCanvas( "c_SF2L","c_SF2L", 1500, 500 ); c_SF2L->Divide(3,1);
+  c_SF2L->cd(1); SF2L_el->Draw(); SF2L_el->GetXaxis()->SetTitle("MET");
+  c_SF2L->cd(2); SF2L_mu->Draw(); SF2L_mu->GetXaxis()->SetTitle("MET");
+  c_SF2L->cd(3); SF2L_lp->Draw(); SF2L_lp->GetXaxis()->SetTitle("MET");
+  c_SF2L->Update();
+  c_SF2L->SaveAs("plots/cr4/SF2L.png");
 
   delete h_el_data_inc  ;
   delete h_mu_data_inc  ;
@@ -544,7 +737,17 @@ void runDiLep(){
   delete h_el_ttbar_inc ;
   delete h_mu_ttbar_inc ;
   delete h_lp_ttbar_inc ;
-  delete c_R            ;
+  delete h_el_data_hghmt  ;
+  delete h_mu_data_hghmt  ;
+  delete h_lp_data_hghmt  ;
+  delete h_el_wjets_hghmt ;
+  delete h_mu_wjets_hghmt ;
+  delete h_lp_wjets_hghmt ;
+  delete h_el_ttbar_hghmt ;
+  delete h_mu_ttbar_hghmt ;
+  delete h_lp_ttbar_hghmt ;
+  delete c_R    ;
+  delete c_SF2L ;
 
   return;
 } // runDiLep()
@@ -568,9 +771,9 @@ void runIsoTrk(){
   TH1F* h_el_ttbar_lowMT_preVeto = new TH1F("h_el_ttbar_lowMT_preVeto", "h_el_ttbar_lowMT_preVeto", nBins, edges );
   TH1F* h_mu_ttbar_lowMT_preVeto = new TH1F("h_mu_ttbar_lowMT_preVeto", "h_mu_ttbar_lowMT_preVeto", nBins, edges );
   TH1F* h_lp_ttbar_lowMT_preVeto = new TH1F("h_lp_ttbar_lowMT_preVeto", "h_lp_ttbar_lowMT_preVeto", nBins, edges );
-  t_eldata->Project("h_el_data_lowMT_preVeto" ,"met",         preVeto5+lowMT+elTrg);
-  t_mudata->Project("h_mu_data_lowMT_preVeto" ,"met",         preVeto5+lowMT+muTrg);
-  t_lpdata->Project("h_lp_data_lowMT_preVeto" ,"met",         preVeto5+lowMT+lpTrg);
+  t_eldata->Project("h_el_data_lowMT_preVeto" ,"met",dtweight+preVeto5+lowMT+elTrg);
+  t_mudata->Project("h_mu_data_lowMT_preVeto" ,"met",dtweight+preVeto5+lowMT+muTrg);
+  t_lpdata->Project("h_lp_data_lowMT_preVeto" ,"met",dtweight+preVeto5+lowMT+lpTrg);
   t_wjets ->Project("h_el_wjets_lowMT_preVeto","met",mcweight+preVeto5+lowMT+elTrg);
   t_wjets ->Project("h_mu_wjets_lowMT_preVeto","met",mcweight+preVeto5+lowMT+muTrg);
   t_wjets ->Project("h_lp_wjets_lowMT_preVeto","met",mcweight+preVeto5+lowMT+lpTrg);
@@ -586,6 +789,15 @@ void runIsoTrk(){
   h_el_ttbar_lowMT_preVeto->SetBinContent( nBins, h_el_ttbar_lowMT_preVeto->GetBinContent(nBins) + h_el_ttbar_lowMT_preVeto->GetBinContent(nBins+1) );
   h_mu_ttbar_lowMT_preVeto->SetBinContent( nBins, h_mu_ttbar_lowMT_preVeto->GetBinContent(nBins) + h_mu_ttbar_lowMT_preVeto->GetBinContent(nBins+1) );
   h_lp_ttbar_lowMT_preVeto->SetBinContent( nBins, h_lp_ttbar_lowMT_preVeto->GetBinContent(nBins) + h_lp_ttbar_lowMT_preVeto->GetBinContent(nBins+1) );
+  h_el_data_lowMT_preVeto ->SetBinError( nBins, getError(h_el_data_lowMT_preVeto ->GetBinError(nBins),h_el_data_lowMT_preVeto ->GetBinError(nBins+1)) );
+  h_mu_data_lowMT_preVeto ->SetBinError( nBins, getError(h_mu_data_lowMT_preVeto ->GetBinError(nBins),h_mu_data_lowMT_preVeto ->GetBinError(nBins+1)) );
+  h_lp_data_lowMT_preVeto ->SetBinError( nBins, getError(h_lp_data_lowMT_preVeto ->GetBinError(nBins),h_lp_data_lowMT_preVeto ->GetBinError(nBins+1)) );
+  h_el_wjets_lowMT_preVeto->SetBinError( nBins, getError(h_el_wjets_lowMT_preVeto->GetBinError(nBins),h_el_wjets_lowMT_preVeto->GetBinError(nBins+1)) );
+  h_mu_wjets_lowMT_preVeto->SetBinError( nBins, getError(h_mu_wjets_lowMT_preVeto->GetBinError(nBins),h_mu_wjets_lowMT_preVeto->GetBinError(nBins+1)) );
+  h_lp_wjets_lowMT_preVeto->SetBinError( nBins, getError(h_lp_wjets_lowMT_preVeto->GetBinError(nBins),h_lp_wjets_lowMT_preVeto->GetBinError(nBins+1)) );
+  h_el_ttbar_lowMT_preVeto->SetBinError( nBins, getError(h_el_ttbar_lowMT_preVeto->GetBinError(nBins),h_el_ttbar_lowMT_preVeto->GetBinError(nBins+1)) );
+  h_mu_ttbar_lowMT_preVeto->SetBinError( nBins, getError(h_mu_ttbar_lowMT_preVeto->GetBinError(nBins),h_mu_ttbar_lowMT_preVeto->GetBinError(nBins+1)) );
+  h_lp_ttbar_lowMT_preVeto->SetBinError( nBins, getError(h_lp_ttbar_lowMT_preVeto->GetBinError(nBins),h_lp_ttbar_lowMT_preVeto->GetBinError(nBins+1)) );
 
   // W-subtracted data
   h_el_data_lowMT_preVeto->Add(h_el_wjets_lowMT_preVeto,-1);
@@ -606,8 +818,7 @@ void runIsoTrk(){
   c_R_preVeto->Update();
   c_R_preVeto->SaveAs("plots/cr5/R_preVeto.png");
 
-  plotMT(preVeto5,"preVeto_ttbarScaled"  ,"cr5",SF_unit,SF_unit,SF_unit,R_el_preVeto,R_mu_preVeto,R_lp_preVeto,R_el_preVeto,R_mu_preVeto,R_lp_preVeto);
-  //plotMT(preVeto5,"preVeto_ttbarScaledTO","cr5",SF_unit,SF_unit,R_el_preVeto,R_mu_preVeto,R_el_preVeto,R_mu_preVeto,true);
+  plotMT(preVeto5,"preVeto_ttbarScaled","cr5",SF_unit,SF_unit,SF_unit,R_el_preVeto,R_mu_preVeto,R_lp_preVeto,R_el_preVeto,R_mu_preVeto,R_lp_preVeto);
 
   // ===== post-veto region =====
 
@@ -629,9 +840,9 @@ void runIsoTrk(){
   TH1F* h_el_dilep_lowMT_pstVeto = new TH1F("h_el_dilep_lowMT_pstVeto", "h_el_ttbar_dilep_pstVeto", nBins, edges );
   TH1F* h_mu_dilep_lowMT_pstVeto = new TH1F("h_mu_dilep_lowMT_pstVeto", "h_mu_ttbar_dilep_pstVeto", nBins, edges );
   TH1F* h_lp_dilep_lowMT_pstVeto = new TH1F("h_lp_dilep_lowMT_pstVeto", "h_lp_ttbar_dilep_pstVeto", nBins, edges );
-  t_eldata->Project("h_el_data_lowMT_pstVeto" ,"met",         pstVeto5+lowMT        +elTrg);
-  t_mudata->Project("h_mu_data_lowMT_pstVeto" ,"met",         pstVeto5+lowMT        +muTrg);
-  t_lpdata->Project("h_lp_data_lowMT_pstVeto" ,"met",         pstVeto5+lowMT        +lpTrg);
+  t_eldata->Project("h_el_data_lowMT_pstVeto" ,"met",dtweight+pstVeto5+lowMT        +elTrg);
+  t_mudata->Project("h_mu_data_lowMT_pstVeto" ,"met",dtweight+pstVeto5+lowMT        +muTrg);
+  t_lpdata->Project("h_lp_data_lowMT_pstVeto" ,"met",dtweight+pstVeto5+lowMT        +lpTrg);
   t_wjets ->Project("h_el_wjets_lowMT_pstVeto","met",mcweight+pstVeto5+lowMT        +elTrg);
   t_wjets ->Project("h_mu_wjets_lowMT_pstVeto","met",mcweight+pstVeto5+lowMT        +muTrg);
   t_wjets ->Project("h_lp_wjets_lowMT_pstVeto","met",mcweight+pstVeto5+lowMT        +lpTrg);
@@ -653,6 +864,18 @@ void runIsoTrk(){
   h_el_dilep_lowMT_pstVeto->SetBinContent( nBins, h_el_dilep_lowMT_pstVeto->GetBinContent(nBins) + h_el_dilep_lowMT_pstVeto->GetBinContent(nBins+1) );
   h_mu_dilep_lowMT_pstVeto->SetBinContent( nBins, h_mu_dilep_lowMT_pstVeto->GetBinContent(nBins) + h_mu_dilep_lowMT_pstVeto->GetBinContent(nBins+1) );
   h_lp_dilep_lowMT_pstVeto->SetBinContent( nBins, h_lp_dilep_lowMT_pstVeto->GetBinContent(nBins) + h_lp_dilep_lowMT_pstVeto->GetBinContent(nBins+1) );
+  h_el_data_lowMT_pstVeto ->SetBinError( nBins, getError(h_el_data_lowMT_pstVeto ->GetBinError(nBins),h_el_data_lowMT_pstVeto ->GetBinError(nBins+1)) );
+  h_mu_data_lowMT_pstVeto ->SetBinError( nBins, getError(h_mu_data_lowMT_pstVeto ->GetBinError(nBins),h_mu_data_lowMT_pstVeto ->GetBinError(nBins+1)) );
+  h_lp_data_lowMT_pstVeto ->SetBinError( nBins, getError(h_lp_data_lowMT_pstVeto ->GetBinError(nBins),h_lp_data_lowMT_pstVeto ->GetBinError(nBins+1)) );
+  h_el_wjets_lowMT_pstVeto->SetBinError( nBins, getError(h_el_wjets_lowMT_pstVeto->GetBinError(nBins),h_el_wjets_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_mu_wjets_lowMT_pstVeto->SetBinError( nBins, getError(h_mu_wjets_lowMT_pstVeto->GetBinError(nBins),h_mu_wjets_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_lp_wjets_lowMT_pstVeto->SetBinError( nBins, getError(h_lp_wjets_lowMT_pstVeto->GetBinError(nBins),h_lp_wjets_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_el_ttbar_lowMT_pstVeto->SetBinError( nBins, getError(h_el_ttbar_lowMT_pstVeto->GetBinError(nBins),h_el_ttbar_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_mu_ttbar_lowMT_pstVeto->SetBinError( nBins, getError(h_mu_ttbar_lowMT_pstVeto->GetBinError(nBins),h_mu_ttbar_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_lp_ttbar_lowMT_pstVeto->SetBinError( nBins, getError(h_lp_ttbar_lowMT_pstVeto->GetBinError(nBins),h_lp_ttbar_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_el_dilep_lowMT_pstVeto->SetBinError( nBins, getError(h_el_dilep_lowMT_pstVeto->GetBinError(nBins),h_el_dilep_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_mu_dilep_lowMT_pstVeto->SetBinError( nBins, getError(h_mu_dilep_lowMT_pstVeto->GetBinError(nBins),h_mu_dilep_lowMT_pstVeto->GetBinError(nBins+1)) );
+  h_lp_dilep_lowMT_pstVeto->SetBinError( nBins, getError(h_lp_dilep_lowMT_pstVeto->GetBinError(nBins),h_lp_dilep_lowMT_pstVeto->GetBinError(nBins+1)) );
 
   // scale ttbar dilep by R_lep_preVeto
   h_el_dilep_lowMT_pstVeto->Multiply(R_el_preVeto);
@@ -677,8 +900,7 @@ void runIsoTrk(){
   c_R_pstVeto->Update();
   c_R_pstVeto->SaveAs("plots/cr5/R_pstVeto.png");
 
-  plotMT(pstVeto5,"pstVeto_ttbarScaled","cr5"  ,SF_unit,SF_unit,SF_unit,R_el_pstVeto,R_mu_pstVeto,R_lp_pstVeto,R_el_preVeto,R_mu_preVeto,R_lp_preVeto);
-  //plotMT(pstVeto5,"pstVeto_ttbarScaledTO","cr5",SF_unit,SF_unit,R_el_pstVeto,R_mu_pstVeto,R_el_preVeto,R_mu_preVeto,true);
+  plotMT(pstVeto5,"pstVeto_ttbarScaled","cr5",SF_unit,SF_unit,SF_unit,R_el_pstVeto,R_mu_pstVeto,R_lp_pstVeto,R_el_preVeto,R_mu_preVeto,R_lp_preVeto);
 
   delete h_el_data_lowMT_preVeto  ;
   delete h_mu_data_lowMT_preVeto  ;
@@ -706,24 +928,7 @@ void runIsoTrk(){
   return;
 } // runIsoTrk()
 
-#endif
-
-void run8TeVbkgest() {
-  for(int i=1; i<=nBins; ++i) SF_unit->SetBinContent(i,1);
-
-  TH1F* SFW_el = (TH1F*)SF_unit->Clone("SFW_avg_el");
-  TH1F* SFW_mu = (TH1F*)SF_unit->Clone("SFW_avg_mu");
-  TH1F* SFW_lp = (TH1F*)SF_unit->Clone("SFW_avg_lp");
-
-  gStyle->SetOptStat(0);
-  TH1::SetDefaultSumw2();
-
-  //plotMT(baseCuts4+dilepCut,"incMet","misc",SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit);
-  //return;
-
-  runWJets(SFW_el, SFW_mu, SFW_lp);
-  runDiLep();
-  runIsoTrk();
+void runPrediction(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp, TH1F* &SF2L_el, TH1F* &SF2L_mu, TH1F* &SF2L_lp) {
 
   // ===== Calc various scale factors (sec 11) =====
 
@@ -758,6 +963,15 @@ void run8TeVbkgest() {
   h_el_dilep_incB_lowMT->SetBinContent( nBins, h_el_dilep_incB_lowMT->GetBinContent(nBins) + h_el_dilep_incB_lowMT->GetBinContent(nBins+1) );
   h_mu_dilep_incB_lowMT->SetBinContent( nBins, h_mu_dilep_incB_lowMT->GetBinContent(nBins) + h_mu_dilep_incB_lowMT->GetBinContent(nBins+1) );
   h_lp_dilep_incB_lowMT->SetBinContent( nBins, h_lp_dilep_incB_lowMT->GetBinContent(nBins) + h_lp_dilep_incB_lowMT->GetBinContent(nBins+1) );
+  h_el_wjets_incB_lowMT->SetBinError( nBins, getError(h_el_wjets_incB_lowMT->GetBinError(nBins),h_el_wjets_incB_lowMT->GetBinError(nBins+1)) );
+  h_mu_wjets_incB_lowMT->SetBinError( nBins, getError(h_mu_wjets_incB_lowMT->GetBinError(nBins),h_mu_wjets_incB_lowMT->GetBinError(nBins+1)) );
+  h_lp_wjets_incB_lowMT->SetBinError( nBins, getError(h_lp_wjets_incB_lowMT->GetBinError(nBins),h_lp_wjets_incB_lowMT->GetBinError(nBins+1)) );
+  h_el_ttbar_incB_lowMT->SetBinError( nBins, getError(h_el_ttbar_incB_lowMT->GetBinError(nBins),h_el_ttbar_incB_lowMT->GetBinError(nBins+1)) );
+  h_mu_ttbar_incB_lowMT->SetBinError( nBins, getError(h_mu_ttbar_incB_lowMT->GetBinError(nBins),h_mu_ttbar_incB_lowMT->GetBinError(nBins+1)) );
+  h_lp_ttbar_incB_lowMT->SetBinError( nBins, getError(h_lp_ttbar_incB_lowMT->GetBinError(nBins),h_lp_ttbar_incB_lowMT->GetBinError(nBins+1)) );
+  h_el_dilep_incB_lowMT->SetBinError( nBins, getError(h_el_dilep_incB_lowMT->GetBinError(nBins),h_el_dilep_incB_lowMT->GetBinError(nBins+1)) );
+  h_mu_dilep_incB_lowMT->SetBinError( nBins, getError(h_mu_dilep_incB_lowMT->GetBinError(nBins),h_mu_dilep_incB_lowMT->GetBinError(nBins+1)) );
+  h_lp_dilep_incB_lowMT->SetBinError( nBins, getError(h_lp_dilep_incB_lowMT->GetBinError(nBins),h_lp_dilep_incB_lowMT->GetBinError(nBins+1)) );
 
   // fill high MT regions
   TH1F* h_el_wjets_incB_hghMT = new TH1F("h_el_wjets_incB_hghMT", "h_el_wjets_incB_hghMT", nBins, edges );
@@ -787,6 +1001,15 @@ void run8TeVbkgest() {
   h_el_dilep_incB_hghMT->SetBinContent( nBins, h_el_dilep_incB_hghMT->GetBinContent(nBins) + h_el_dilep_incB_hghMT->GetBinContent(nBins+1) );
   h_mu_dilep_incB_hghMT->SetBinContent( nBins, h_mu_dilep_incB_hghMT->GetBinContent(nBins) + h_mu_dilep_incB_hghMT->GetBinContent(nBins+1) );
   h_lp_dilep_incB_hghMT->SetBinContent( nBins, h_lp_dilep_incB_hghMT->GetBinContent(nBins) + h_lp_dilep_incB_hghMT->GetBinContent(nBins+1) );
+  h_el_wjets_incB_hghMT->SetBinError( nBins, getError(h_el_wjets_incB_hghMT->GetBinError(nBins),h_el_wjets_incB_hghMT->GetBinError(nBins+1)) );
+  h_mu_wjets_incB_hghMT->SetBinError( nBins, getError(h_mu_wjets_incB_hghMT->GetBinError(nBins),h_mu_wjets_incB_hghMT->GetBinError(nBins+1)) );
+  h_lp_wjets_incB_hghMT->SetBinError( nBins, getError(h_lp_wjets_incB_hghMT->GetBinError(nBins),h_lp_wjets_incB_hghMT->GetBinError(nBins+1)) );
+  h_el_ttbar_incB_hghMT->SetBinError( nBins, getError(h_el_ttbar_incB_hghMT->GetBinError(nBins),h_el_ttbar_incB_hghMT->GetBinError(nBins+1)) );
+  h_mu_ttbar_incB_hghMT->SetBinError( nBins, getError(h_mu_ttbar_incB_hghMT->GetBinError(nBins),h_mu_ttbar_incB_hghMT->GetBinError(nBins+1)) );
+  h_lp_ttbar_incB_hghMT->SetBinError( nBins, getError(h_lp_ttbar_incB_hghMT->GetBinError(nBins),h_lp_ttbar_incB_hghMT->GetBinError(nBins+1)) );
+  h_el_dilep_incB_hghMT->SetBinError( nBins, getError(h_el_dilep_incB_hghMT->GetBinError(nBins),h_el_dilep_incB_hghMT->GetBinError(nBins+1)) );
+  h_mu_dilep_incB_hghMT->SetBinError( nBins, getError(h_mu_dilep_incB_hghMT->GetBinError(nBins),h_mu_dilep_incB_hghMT->GetBinError(nBins+1)) );
+  h_lp_dilep_incB_hghMT->SetBinError( nBins, getError(h_lp_dilep_incB_hghMT->GetBinError(nBins),h_lp_dilep_incB_hghMT->GetBinError(nBins+1)) );
 
   // Rmcw, Rmct = (mt tail)/(mt peak) for w,ttbar1L
   TH1F* Rmcw_el = (TH1F*)h_el_wjets_incB_hghMT->Clone("Rmcw_el"); Rmcw_el->Divide(h_el_wjets_incB_lowMT);
@@ -897,9 +1120,9 @@ void run8TeVbkgest() {
   TH1F* h_el_ttbar_lowMT_preVeto_pred = new TH1F("h_el_ttbar_lowMT_preVeto_pred", "h_el_ttbar_lowMT_preVeto_pred", nBins, edges );
   TH1F* h_mu_ttbar_lowMT_preVeto_pred = new TH1F("h_mu_ttbar_lowMT_preVeto_pred", "h_mu_ttbar_lowMT_preVeto_pred", nBins, edges );
   TH1F* h_lp_ttbar_lowMT_preVeto_pred = new TH1F("h_lp_ttbar_lowMT_preVeto_pred", "h_lp_ttbar_lowMT_preVeto_pred", nBins, edges );
-  t_eldata->Project("h_el_data_lowMT_preVeto_pred" ,"met",         preVeto5+lowMT+elTrg);
-  t_mudata->Project("h_mu_data_lowMT_preVeto_pred" ,"met",         preVeto5+lowMT+muTrg);
-  t_lpdata->Project("h_lp_data_lowMT_preVeto_pred" ,"met",         preVeto5+lowMT+lpTrg);
+  t_eldata->Project("h_el_data_lowMT_preVeto_pred" ,"met",dtweight+preVeto5+lowMT+elTrg);
+  t_mudata->Project("h_mu_data_lowMT_preVeto_pred" ,"met",dtweight+preVeto5+lowMT+muTrg);
+  t_lpdata->Project("h_lp_data_lowMT_preVeto_pred" ,"met",dtweight+preVeto5+lowMT+lpTrg);
   t_wjets ->Project("h_el_wjets_lowMT_preVeto_pred","met",mcweight+preVeto5+lowMT+elTrg);
   t_wjets ->Project("h_mu_wjets_lowMT_preVeto_pred","met",mcweight+preVeto5+lowMT+muTrg);
   t_wjets ->Project("h_lp_wjets_lowMT_preVeto_pred","met",mcweight+preVeto5+lowMT+lpTrg);
@@ -915,6 +1138,15 @@ void run8TeVbkgest() {
   h_el_ttbar_lowMT_preVeto_pred->SetBinContent( nBins, h_el_ttbar_lowMT_preVeto_pred->GetBinContent(nBins) + h_el_ttbar_lowMT_preVeto_pred->GetBinContent(nBins+1) );
   h_mu_ttbar_lowMT_preVeto_pred->SetBinContent( nBins, h_mu_ttbar_lowMT_preVeto_pred->GetBinContent(nBins) + h_mu_ttbar_lowMT_preVeto_pred->GetBinContent(nBins+1) );
   h_lp_ttbar_lowMT_preVeto_pred->SetBinContent( nBins, h_lp_ttbar_lowMT_preVeto_pred->GetBinContent(nBins) + h_lp_ttbar_lowMT_preVeto_pred->GetBinContent(nBins+1) );
+  h_el_data_lowMT_preVeto_pred ->SetBinError( nBins, getError(h_el_data_lowMT_preVeto_pred ->GetBinError(nBins),h_el_data_lowMT_preVeto_pred ->GetBinError(nBins+1)) );
+  h_mu_data_lowMT_preVeto_pred ->SetBinError( nBins, getError(h_mu_data_lowMT_preVeto_pred ->GetBinError(nBins),h_mu_data_lowMT_preVeto_pred ->GetBinError(nBins+1)) );
+  h_lp_data_lowMT_preVeto_pred ->SetBinError( nBins, getError(h_lp_data_lowMT_preVeto_pred ->GetBinError(nBins),h_lp_data_lowMT_preVeto_pred ->GetBinError(nBins+1)) );
+  h_el_wjets_lowMT_preVeto_pred->SetBinError( nBins, getError(h_el_wjets_lowMT_preVeto_pred->GetBinError(nBins),h_el_wjets_lowMT_preVeto_pred->GetBinError(nBins+1)) );
+  h_mu_wjets_lowMT_preVeto_pred->SetBinError( nBins, getError(h_mu_wjets_lowMT_preVeto_pred->GetBinError(nBins),h_mu_wjets_lowMT_preVeto_pred->GetBinError(nBins+1)) );
+  h_lp_wjets_lowMT_preVeto_pred->SetBinError( nBins, getError(h_lp_wjets_lowMT_preVeto_pred->GetBinError(nBins),h_lp_wjets_lowMT_preVeto_pred->GetBinError(nBins+1)) );
+  h_el_ttbar_lowMT_preVeto_pred->SetBinError( nBins, getError(h_el_ttbar_lowMT_preVeto_pred->GetBinError(nBins),h_el_ttbar_lowMT_preVeto_pred->GetBinError(nBins+1)) );
+  h_mu_ttbar_lowMT_preVeto_pred->SetBinError( nBins, getError(h_mu_ttbar_lowMT_preVeto_pred->GetBinError(nBins),h_mu_ttbar_lowMT_preVeto_pred->GetBinError(nBins+1)) );
+  h_lp_ttbar_lowMT_preVeto_pred->SetBinError( nBins, getError(h_lp_ttbar_lowMT_preVeto_pred->GetBinError(nBins),h_lp_ttbar_lowMT_preVeto_pred->GetBinError(nBins+1)) );
   TH1F* h_el_wjttb_lowMT_preVeto_pred = (TH1F*)h_el_wjets_lowMT_preVeto_pred->Clone("h_el_wjttb_lowMT_preVeto_pred"); h_el_wjttb_lowMT_preVeto_pred->Add(h_el_ttbar_lowMT_preVeto_pred);
   TH1F* h_mu_wjttb_lowMT_preVeto_pred = (TH1F*)h_mu_wjets_lowMT_preVeto_pred->Clone("h_mu_wjttb_lowMT_preVeto_pred"); h_mu_wjttb_lowMT_preVeto_pred->Add(h_mu_ttbar_lowMT_preVeto_pred);
   TH1F* h_lp_wjttb_lowMT_preVeto_pred = (TH1F*)h_lp_wjets_lowMT_preVeto_pred->Clone("h_lp_wjttb_lowMT_preVeto_pred"); h_lp_wjttb_lowMT_preVeto_pred->Add(h_lp_ttbar_lowMT_preVeto_pred);
@@ -933,11 +1165,10 @@ void run8TeVbkgest() {
   c_SFpre->SaveAs("plots/SFpre.png");
 
   plotMT(preVeto5,"preVeto_wjttb_allScaled"  ,"",SFpre_el,SFpre_mu,SFpre_lp,SFpre_el,SFpre_mu,SFpre_lp,SFpre_el,SFpre_mu,SFpre_lp);
-  //plotMT(preVeto5,"preVeto_wjttb_allScaledTO","",SFpre_el,SFpre_mu,SFpre_el,SFpre_mu,SFpre_el,SFpre_mu,true);
 
   // === postVeto
 
-  plotMT(preVeto5,"postVeto_wjttb_OOtB","",SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit);
+  plotMT(srCuts,"postVeto_wjttb_OOtB","",SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit);
 
   // fill low MT regions
   TH1F* h2_el_data_lowMT_pstVeto_pred  = new TH1F("h2_el_data_lowMT_pstVeto_pred",  "h2_el_data_lowMT_pstVeto_pred",  nBins, edges );
@@ -952,9 +1183,9 @@ void run8TeVbkgest() {
   TH1F* h2_el_dilep_lowMT_pstVeto_pred = new TH1F("h2_el_dilep_lowMT_pstVeto_pred", "h2_el_dilep_lowMT_pstVeto_pred", nBins, edges );
   TH1F* h2_mu_dilep_lowMT_pstVeto_pred = new TH1F("h2_mu_dilep_lowMT_pstVeto_pred", "h2_mu_dilep_lowMT_pstVeto_pred", nBins, edges );
   TH1F* h2_lp_dilep_lowMT_pstVeto_pred = new TH1F("h2_lp_dilep_lowMT_pstVeto_pred", "h2_lp_dilep_lowMT_pstVeto_pred", nBins, edges );
-  t_eldata->Project("h2_el_data_lowMT_pstVeto_pred" ,"met",         srCuts+lowMT        +elTrg);
-  t_mudata->Project("h2_mu_data_lowMT_pstVeto_pred" ,"met",         srCuts+lowMT        +muTrg);
-  t_lpdata->Project("h2_lp_data_lowMT_pstVeto_pred" ,"met",         srCuts+lowMT        +lpTrg);
+  t_eldata->Project("h2_el_data_lowMT_pstVeto_pred" ,"met",dtweight+srCuts+lowMT        +elTrg);
+  t_mudata->Project("h2_mu_data_lowMT_pstVeto_pred" ,"met",dtweight+srCuts+lowMT        +muTrg);
+  t_lpdata->Project("h2_lp_data_lowMT_pstVeto_pred" ,"met",dtweight+srCuts+lowMT        +lpTrg);
   t_wjets ->Project("h2_el_wjets_lowMT_pstVeto_pred","met",mcweight+srCuts+lowMT        +elTrg);
   t_wjets ->Project("h2_mu_wjets_lowMT_pstVeto_pred","met",mcweight+srCuts+lowMT        +muTrg);
   t_wjets ->Project("h2_lp_wjets_lowMT_pstVeto_pred","met",mcweight+srCuts+lowMT        +lpTrg);
@@ -976,6 +1207,18 @@ void run8TeVbkgest() {
   h2_el_dilep_lowMT_pstVeto_pred->SetBinContent( nBins, h2_el_dilep_lowMT_pstVeto_pred->GetBinContent(nBins) + h2_el_dilep_lowMT_pstVeto_pred->GetBinContent(nBins+1) );
   h2_mu_dilep_lowMT_pstVeto_pred->SetBinContent( nBins, h2_mu_dilep_lowMT_pstVeto_pred->GetBinContent(nBins) + h2_mu_dilep_lowMT_pstVeto_pred->GetBinContent(nBins+1) );
   h2_lp_dilep_lowMT_pstVeto_pred->SetBinContent( nBins, h2_lp_dilep_lowMT_pstVeto_pred->GetBinContent(nBins) + h2_lp_dilep_lowMT_pstVeto_pred->GetBinContent(nBins+1) );
+  h2_el_data_lowMT_pstVeto_pred ->SetBinError( nBins, getError(h2_el_data_lowMT_pstVeto_pred ->GetBinError(nBins),h2_el_data_lowMT_pstVeto_pred ->GetBinError(nBins+1)) );
+  h2_mu_data_lowMT_pstVeto_pred ->SetBinError( nBins, getError(h2_mu_data_lowMT_pstVeto_pred ->GetBinError(nBins),h2_mu_data_lowMT_pstVeto_pred ->GetBinError(nBins+1)) );
+  h2_lp_data_lowMT_pstVeto_pred ->SetBinError( nBins, getError(h2_lp_data_lowMT_pstVeto_pred ->GetBinError(nBins),h2_lp_data_lowMT_pstVeto_pred ->GetBinError(nBins+1)) );
+  h2_el_wjets_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_el_wjets_lowMT_pstVeto_pred->GetBinError(nBins),h2_el_wjets_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_mu_wjets_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_mu_wjets_lowMT_pstVeto_pred->GetBinError(nBins),h2_mu_wjets_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_lp_wjets_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_lp_wjets_lowMT_pstVeto_pred->GetBinError(nBins),h2_lp_wjets_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_el_ttbar_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_el_ttbar_lowMT_pstVeto_pred->GetBinError(nBins),h2_el_ttbar_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_mu_ttbar_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_mu_ttbar_lowMT_pstVeto_pred->GetBinError(nBins),h2_mu_ttbar_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_lp_ttbar_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_lp_ttbar_lowMT_pstVeto_pred->GetBinError(nBins),h2_lp_ttbar_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_el_dilep_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_el_dilep_lowMT_pstVeto_pred->GetBinError(nBins),h2_el_dilep_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_mu_dilep_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_mu_dilep_lowMT_pstVeto_pred->GetBinError(nBins),h2_mu_dilep_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
+  h2_lp_dilep_lowMT_pstVeto_pred->SetBinError( nBins, getError(h2_lp_dilep_lowMT_pstVeto_pred->GetBinError(nBins),h2_lp_dilep_lowMT_pstVeto_pred->GetBinError(nBins+1)) );
   TH1F* h2_el_wjttbar_lowMT_pstVeto_pred = (TH1F*)h2_el_wjets_lowMT_pstVeto_pred->Clone("h2_el_wjttbar_lowMT_pstVeto_pred");
   TH1F* h2_mu_wjttbar_lowMT_pstVeto_pred = (TH1F*)h2_mu_wjets_lowMT_pstVeto_pred->Clone("h2_mu_wjttbar_lowMT_pstVeto_pred");
   TH1F* h2_lp_wjttbar_lowMT_pstVeto_pred = (TH1F*)h2_lp_wjets_lowMT_pstVeto_pred->Clone("h2_lp_wjttbar_lowMT_pstVeto_pred");
@@ -1007,21 +1250,62 @@ void run8TeVbkgest() {
   c_SFpst->SaveAs("plots/SFpst.png");
 
   plotMT(srCuts,"pstVeto_wjttb_ttbarScaled"  ,"",SF_unit,SF_unit,SF_unit,SFpst_el,SFpst_mu,SFpst_lp,SFpre_el,SFpre_mu,SFpre_lp);
-  //plotMT(srCuts,"pstVeto_wjttb_ttbarScaledTO","",SF_unit,SF_unit,SFpst_el,SFpst_mu,SF_unit,SF_unit,true);
 
-  // === final scale factors
+  // === final scale factors // SF2L_el
 
-  TH1F* SFpst_x_Rtop_el  = (TH1F*)SFpst_el->Clone("SFpst_x_Rtop_el" ); SFpst_x_Rtop_el ->Multiply(Rtop_el);
-  TH1F* SFpst_x_Rtop_mu  = (TH1F*)SFpst_mu->Clone("SFpst_x_Rtop_mu" ); SFpst_x_Rtop_mu ->Multiply(Rtop_mu);
-  TH1F* SFpst_x_Rtop_lp  = (TH1F*)SFpst_lp->Clone("SFpst_x_Rtop_lp" ); SFpst_x_Rtop_lp ->Multiply(Rtop_lp);
   TH1F* SFpst_x_Rwjet_el = (TH1F*)SFpst_el->Clone("SFpst_x_Rwjet_el"); SFpst_x_Rwjet_el->Multiply(Rwjet_el);
   TH1F* SFpst_x_Rwjet_mu = (TH1F*)SFpst_mu->Clone("SFpst_x_Rwjet_mu"); SFpst_x_Rwjet_mu->Multiply(Rwjet_mu);
   TH1F* SFpst_x_Rwjet_lp = (TH1F*)SFpst_lp->Clone("SFpst_x_Rwjet_lp"); SFpst_x_Rwjet_lp->Multiply(Rwjet_lp);
+  TH1F* SFpst_x_Rtop_el  = (TH1F*)SFpst_el->Clone("SFpst_x_Rtop_el" ); SFpst_x_Rtop_el ->Multiply(Rtop_el);
+  TH1F* SFpst_x_Rtop_mu  = (TH1F*)SFpst_mu->Clone("SFpst_x_Rtop_mu" ); SFpst_x_Rtop_mu ->Multiply(Rtop_mu);
+  TH1F* SFpst_x_Rtop_lp  = (TH1F*)SFpst_lp->Clone("SFpst_x_Rtop_lp" ); SFpst_x_Rtop_lp ->Multiply(Rtop_lp);
+  TH1F* SFpre_x_SF2L_el  = (TH1F*)SFpre_el->Clone("SFpre_x_SF2L_el" ); SFpre_x_SF2L_el ->Multiply(SF2L_el);
+  TH1F* SFpre_x_SF2L_mu  = (TH1F*)SFpre_mu->Clone("SFpre_x_SF2L_mu" ); SFpre_x_SF2L_mu ->Multiply(SF2L_mu);
+  TH1F* SFpre_x_SF2L_lp  = (TH1F*)SFpre_lp->Clone("SFpre_x_SF2L_lp" ); SFpre_x_SF2L_lp ->Multiply(SF2L_lp);
 
-  plotMT(srCuts,"prediction","",SFpst_x_Rwjet_el ,SFpst_x_Rwjet_mu,SFpst_x_Rwjet_lp,
-                                SFpst_x_Rtop_el  ,SFpst_x_Rtop_mu ,SFpst_x_Rtop_lp ,
-                                SFpre_el         ,SFpre_mu        ,SFpre_lp        ,
-                                false ,true);
+  cout << endl << endl << "printing prediction numbers:" << endl;
+
+  // pythia
+  //getSRnumbers(srCuts,"prediction", SFpst_x_Rwjet_el , SFpst_x_Rwjet_mu , SFpst_x_Rwjet_lp ,
+  //                                  SFpst_x_Rtop_el  , SFpst_x_Rtop_mu  , SFpst_x_Rtop_lp  ,
+  //                                  SFpre_x_SF2L_el  , SFpre_x_SF2L_mu  , SFpre_x_SF2L_lp  );
+  // data
+  getSRnumbers(srCuts,"prediction",SFpst_x_Rwjet_el ,SFpst_x_Rwjet_mu,SFpst_x_Rwjet_lp,
+                                   SFpst_x_Rtop_el  ,SFpst_x_Rtop_mu ,SFpst_x_Rtop_lp ,
+                                   SFpre_el         ,SFpre_mu        ,SFpre_lp        );
+
+  cout << endl << endl << "printing OOtB numbers:" << endl;
+  getSRnumbers(srCuts,"predictionOOtB", SF_unit , SF_unit , SF_unit ,
+                                        SF_unit , SF_unit , SF_unit ,
+                                        SF_unit , SF_unit , SF_unit ,
+                                        true );
+  cout << endl;
+
+} // runPrediction()
+
+#endif
+
+void run8TeVbkgest() {
+  for(int i=1; i<=nBins; ++i) { SF_unit->SetBinContent(i,1); SF_unit->SetBinError(i,0); }
+
+  TH1F* SFW_el = (TH1F*)SF_unit->Clone("SFW_avg_el");
+  TH1F* SFW_mu = (TH1F*)SF_unit->Clone("SFW_avg_mu");
+  TH1F* SFW_lp = (TH1F*)SF_unit->Clone("SFW_avg_lp");
+
+  TH1F* SF2L_el = (TH1F*)SF_unit->Clone("SF2L_el");
+  TH1F* SF2L_mu = (TH1F*)SF_unit->Clone("SF2L_mu");
+  TH1F* SF2L_lp = (TH1F*)SF_unit->Clone("SF2L_lp");
+
+  gStyle->SetOptStat(0);
+  TH1::SetDefaultSumw2();
+
+  //plotMT(baseCuts4+dilepCut,"incMet","misc",SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit,SF_unit);
+  //return;
+
+  runWJets(SFW_el, SFW_mu, SFW_lp);
+  runDiLep(SF2L_el, SF2L_mu, SF2L_lp);
+  //runIsoTrk();
+  runPrediction(SFW_el, SFW_mu, SFW_lp, SF2L_el, SF2L_mu, SF2L_lp);
 
 } // run8TeVbkgest()
 
