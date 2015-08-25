@@ -22,6 +22,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     event             (0),
     weight            (1),
     process           (defaults::NUMPROCESSES),
+    datareco          (defaults::MC),
     nPV               (0),
     rho               (0),
     nSelLeptons       (0),
@@ -33,6 +34,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     met               (0),
     genmet            (0),
     goodvertex        (false),
+    isOneLeptonSample (false),
     isMC_             (isMCTree),
     defaultJets       (0),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
@@ -88,6 +90,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     if(configSet.corrections.ttbarCorrections != TtbarCorrectionSet::NULLOPT){
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
+    }
+    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
+      corrections.push_back(&eventCorrections);
     }
   }
 
@@ -208,6 +214,7 @@ void BaseTreeAnalyzer::processVariables()
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
+    datareco =  evtInfoReader.datareco;
     triggerflag =  evtInfoReader.triggerflag;
   }
 
@@ -307,12 +314,9 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-  //apply corrections
+  //load corrections corrections
   for(auto * iC : corrections){
-    if(!iC->correctProcess(process)) continue;
-    iC->processVariables(this);
-    iC->setVariables();
-    weight *= iC->getTotalCorrection();
+    iC->processCorrection(this);
   }
 
 }

@@ -14,7 +14,12 @@ void TtbarCorrectionSet::load(TString fileName, int correctionOptions)
   }
 }
 
-void TtbarCorrectionSet::processVariables(const BaseTreeAnalyzer * ana) {
+void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
+  if(ana->process != defaults::TTBAR){
+    topPTWeight = 1;
+    return;
+  }
+
   const GenParticleF * top1 = 0;
   const GenParticleF * top2 = 0;
   for(const auto * g : ana->genParts){
@@ -23,17 +28,9 @@ void TtbarCorrectionSet::processVariables(const BaseTreeAnalyzer * ana) {
     else top1 = g;
   }
   if(!top1 || !top2)       throw "TtbarCorrectionSet::processVariables: two gen tops were not found!";
-  topPT = top1->pt() + top2->pt();
-}
+  float topPT = top1->pt() + top2->pt();
 
-void TtbarCorrectionSet::setVariables() {
   if(topPTCorr) topPTCorr->setAxis(TOPPAIRPTCorr::TopPairPT,topPT);
 }
-
-bool TtbarCorrectionSet::correctProcess(defaults::Process proc) const{
-  return proc == defaults::TTBAR ? true : false;
-}
-
-
 
 } /* namespace ucsbsusy */

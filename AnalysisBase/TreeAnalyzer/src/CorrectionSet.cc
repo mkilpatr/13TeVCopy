@@ -11,9 +11,11 @@
 
 namespace ucsbsusy {
 
-Correction::Correction(TString corrName, TFile * file) : corr(0), name(corrName) {
-  assert(file);
+Correction::Correction(TString corrName) : name(corrName) {
   std::clog << "Loading correction: "<< name <<std::endl;
+}
+RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(corrName),corr(0) {
+  assert(file);
   corr = (const QuickRefold::Refold*)(file->Get(name) );
   assert(corr);
 }
@@ -35,13 +37,4 @@ CorrectionSet::~CorrectionSet() {
   for(auto correction : corrections)
     delete correction;
 }
-
-
-float CorrectionSet::getTotalCorrection() const  {
-  float corr = 1;
-  for(auto correction : corrections)
-    corr *= correction->get();
-  return corr;
-}
-
 } /* namespace ucsbsusy */

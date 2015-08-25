@@ -61,6 +61,42 @@ bool PlotStuff::isSignal(TString sname)
 
 }
 
+void PlotStuff::assignColor(TString sname)
+{
+
+  if(sname.Contains("ttbar",TString::kIgnoreCase) && sname.Contains("1l",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["ttbar1l"];
+  else if(sname.Contains("ttbar",TString::kIgnoreCase) && sname.Contains("2l",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["ttbar2l"];
+  else if(sname.Contains("ttbar",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["ttbar"];
+  else if(sname.Contains("wjets",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["wjets"];
+  else if(sname.Contains("ttZ",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["ttZ"];
+  else if(sname.Contains("ttW",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["ttW"];
+  else if(sname.Contains("tW",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["tW"];
+  else if(sname.Contains("top",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["tW"];
+  else if(sname.Contains("st",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["tW"];
+  else if(sname.Contains("znunu",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["znunu"];
+  else if(sname.Contains("znn",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["znunu"];
+  else if(sname.Contains("dyjets",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["znunu"];
+  else if(sname.Contains("zll",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["znunu"];
+  else if(sname.Contains("qcd",TString::kIgnoreCase))
+    config_.colormap[sname] = config_.colormap["qcd"];
+  else 
+    config_.colormap[sname] = config_.colormap["other"];
+
+}
+
 void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax)
 {
 
@@ -153,7 +189,7 @@ void PlotStuff::loadPlots()
         TString filename = inputdir_ + "/" + sample->name + config_.treefilesuffix;
 
         if(sample->filenames.size() > 1 && gSystem->AccessPathName(filename.Data())) {
-          TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_*%s", inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data());
+          TString cmd = TString::Format("hadd -f %s/%s%s %s/%s_[0-9]*%s", inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data(), inputdir_.Data(), sample->name.Data(), config_.treefilesuffix.Data());
           gSystem->Exec(cmd.Data());
         }
 
@@ -530,6 +566,8 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         } else {
           if(config_.scaletodata)
             hists[isam]->Scale(data/bkgtot);
+          if(config_.colormap.find(sname) == config_.colormap.end())
+            assignColor(sname);
           plot->addToStack(hists[isam], sample->label, config_.colormap[sname], 1001, 1, 1, 3, config_.plotoverflow);
         }
       }

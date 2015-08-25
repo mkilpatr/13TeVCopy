@@ -377,11 +377,13 @@ class PlotStuff {
     // Make yields table
     void     makeTable(TString label, vector<double> yields, vector<double> yielderrs);
     // Check if a given name corresponds to a data sample
-    bool     isData(TString sname) { return config_.dataname == sname; }
+    bool     isData(TString sname) { return sname == config_.dataname; }
     // Check if a given name corresponds to a background sample
     bool     isBackground(TString sname);
     // Check if a given name corresponds to a signal sample
     bool     isSignal(TString sname);
+    // Assign colors to background samples if not already set
+    void     assignColor(TString sname);
 
   protected :
     PlotConfig               config_;

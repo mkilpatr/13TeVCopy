@@ -115,6 +115,7 @@ public:
     unsigned int  event;
     float         weight;
     defaults::Process process;
+    defaults::DataReco datareco;
     unsigned long triggerflag;
 
     int   nPV;
@@ -145,6 +146,15 @@ public:
     std::vector<TriggerObjectF*> triggerObjects;
     std::vector<TauF*>         HPSTaus;
 
+    //--------------------------------------------------------------------------------------------------
+    // Correction sets
+    //--------------------------------------------------------------------------------------------------
+    TtbarCorrectionSet  ttbarCorrections;
+    EventCorrectionSet  eventCorrections;
+
+    //hack for DY PU
+    bool isOneLeptonSample;
+
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
@@ -152,7 +162,6 @@ public:
     const bool   isMC_;
     JetReader  * defaultJets;
     cfgSet::ConfigSet   configSet;
-    TtbarCorrectionSet  ttbarCorrections;
     std::vector<CorrectionSet*> corrections;
   };
 

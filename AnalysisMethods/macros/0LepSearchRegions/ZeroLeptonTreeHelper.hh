@@ -10,8 +10,6 @@
 
 using namespace ucsbsusy;
 
-enum DataType {MC, JETHT, HTMHT, SINGLEMU, SINGLEEL};
-
 // Adjustments to default configuration
 cfgSet::ConfigSet pars0lep() {
   cfgSet::loadDefaultConfigurations();
@@ -42,8 +40,13 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_puWeight  ;
   size i_passtrige ;
   size i_passtrigmu;
+  size i_passtrige17e12;
+  size i_passtrigmu17mu8;
+  size i_passtrigmu17tkmu8;
+  size i_passtrigphoton165;
   size i_passtright300; 
   size i_passtright350; 
   size i_passtright400; 
@@ -54,6 +57,10 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
+  size i_passcscflt;
+  size i_passeebadscflt;
+  size i_passhbheflt;
+  size i_passhbhefixflt;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -124,18 +131,27 @@ struct TreeFiller {
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
-    i_passtrige      = data->add<bool >("","passtrige","O",0);
-    i_passtrigmu     = data->add<bool >("","passtrigmu","O",0);
-    i_passtright300  = data->add<bool >("","passtright300","O",0); 
-    i_passtright350  = data->add<bool >("","passtright350","O",0); 
-    i_passtright400  = data->add<bool >("","passtright400","O",0); 
-    i_passtright475  = data->add<bool >("","passtright475","O",0); 
-    i_passtright600  = data->add<bool >("","passtright600","O",0); 
-    i_passtright650  = data->add<bool >("","passtright650","O",0); 
-    i_passtright800  = data->add<bool >("","passtright800","O",0); 
-    i_passtright900  = data->add<bool >("","passtright900","O",0); 
-    i_passjson       = data->add<bool>("","passjson","O",0);
+    i_puWeight       = data->add<float>("","puWeight","F",0);
+    i_passtrige      = data->add<bool>("","passtrige","O",0);
+    i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
+    i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
+    i_passtrigmu17mu8= data->add<bool >("","passtrigmu17mu8","O",0);
+    i_passtrigmu17tkmu8 = data->add<bool>("","passtrigmu17tkmu8", "O",0);
+    i_passtrigphoton165 = data->add<bool>("","passtrigphoton165", "O",0);
+    i_passtright300  = data->add<bool>("","passtright300","O",0); 
+    i_passtright350  = data->add<bool>("","passtright350","O",0); 
+    i_passtright400  = data->add<bool>("","passtright400","O",0); 
+    i_passtright475  = data->add<bool>("","passtright475","O",0); 
+    i_passtright600  = data->add<bool>("","passtright600","O",0); 
+    i_passtright650  = data->add<bool>("","passtright650","O",0); 
+    i_passtright800  = data->add<bool>("","passtright800","O",0); 
+    i_passtright900  = data->add<bool>("","passtright900","O",0); 
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
+    i_passjson       = data->add<bool>("","passjson","O",0);
+    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
+    i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
+    i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
+    i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -183,36 +199,38 @@ struct TreeFiller {
 
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, DataType type, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
-    data->fill<bool >(i_passtrige,  type==MC ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (type==SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
-    data->fill<bool >(i_passtrigmu, type==MC ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (type==SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
-    data->fill<bool >(i_passtright300, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
-    data->fill<bool >(i_passtright350, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
-    data->fill<bool >(i_passtright400, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT400 : false)); 
-    data->fill<bool >(i_passtright475, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT475 : false)); 
-    data->fill<bool >(i_passtright600, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
-    data->fill<bool >(i_passtright650, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT650 : false)); 
-    data->fill<bool >(i_passtright800, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
-    data->fill<bool >(i_passtright900, type==MC ? true : (type==JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 
+    data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
+    data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
+    data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
+    data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
+    data->fill<bool >(i_passtrigmu17tkmu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+    data->fill<bool >(i_passtrigphoton165, ana->triggerflag & kHLT_Photon165_HE10);
+    data->fill<bool >(i_passtright300, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT300 : false)); 
+    data->fill<bool >(i_passtright350, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT350 : false)); 
+    data->fill<bool >(i_passtright400, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT400 : false)); 
+    data->fill<bool >(i_passtright475, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT475 : false)); 
+    data->fill<bool >(i_passtright600, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT600 : false)); 
+    data->fill<bool >(i_passtright650, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT650 : false)); 
+    data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
+    data->fill<bool >(i_passtright900, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 
+    data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
-    data->fill<bool>(i_passdijetmet, type==MC ? true : (type==HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     data->fill<float>(i_genmet, ana->genmet->pt());
-    if(!lepAddedBack)
-    {
-    data->fill<float>(i_met, ana->met->pt());
-    data->fill<float>(i_metphi, ana->met->phi());
-    }
-    else
-    {
-    data->fill<float>(i_met, metn->pt());
-    data->fill<float>(i_metphi, metn->phi());
+    if(!lepAddedBack) {
+      data->fill<float>(i_met, ana->met->pt());
+      data->fill<float>(i_metphi, ana->met->phi());
+    } else {
+      data->fill<float>(i_met, metn->pt());
+      data->fill<float>(i_metphi, metn->phi());
     }
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
@@ -224,15 +242,19 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
-    if(ana->nSelLeptons > 0)
-    {
-    MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-    MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
-    data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
-    data->fill<float>(i_leptonpt, lep->pt());
-    data->fill<float>(i_leptoneta, lep->eta());
-    data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
+    if(ana->nSelLeptons > 0) {
+      MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
+      MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
+      data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
+      data->fill<float>(i_leptonpt, lep->pt());
+      data->fill<float>(i_leptoneta, lep->eta());
+      data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
+
+    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
+    data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
+    data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
+    data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
 
   }
 
@@ -323,13 +345,11 @@ struct TreeFiller {
 class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars, DataType type=MC) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars), datatype_(type) {}
+    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
     const double metcut_ = 175.0 ;
 
-    DataType   datatype_;
-    
     TreeFiller filler;
 
     virtual ~ZeroLeptonAnalyzer() {}
@@ -342,11 +362,25 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(nVetoedLeptons > 0)  return false;
 
-      if(nVetoedTracks > 0)     return false;
+      if(nVetoedTracks > 0)   return false;
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-      filler.fillEventInfo(&data, this, datatype_);
+
+      // skip events in PR with run number < 251584 - they are in the re-miniAOD
+      bool isData = false;
+      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
+	{ isData = true; }
+
+      bool isPR = false;
+      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
+      
+      bool skipPRevent = false;
+      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
+      if (skipPRevent) { return false; }
+      
+
+      filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
     }

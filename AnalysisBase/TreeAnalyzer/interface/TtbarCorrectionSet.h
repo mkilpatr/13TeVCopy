@@ -11,15 +11,11 @@
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
 namespace ucsbsusy {
 
-
-
-class TOPPAIRPTCorr : public Correction {
+class TOPPAIRPTCorr : public RefoldCorrection {
 public:
   enum axes {TopPairPT};
-  TOPPAIRPTCorr(TFile * file) : Correction("TOPPAIRPT",file) {}
-  void setAxis(axes a, float value) const {corr->setBin(a,value);}
+  TOPPAIRPTCorr(TFile * file) : RefoldCorrection("TOPPAIRPT",file) {}
 };
-
 
 class TtbarCorrectionSet : public CorrectionSet {
 public:
@@ -27,12 +23,12 @@ public:
                             NULLOPT         = 0
                           , TOPPAIRPT       = (1 <<  0)   ///< Correct ZPT
   };
-  TtbarCorrectionSet(): topPTCorr(0), topPT(0) {}
+  TtbarCorrectionSet(): topPTCorr(0), topPTWeight(1) {}
   virtual ~TtbarCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
-  virtual void processVariables(const BaseTreeAnalyzer * ana);
-  virtual void setVariables();
-  bool correctProcess(defaults::Process proc) const;
+  virtual void processCorrection(const BaseTreeAnalyzer * ana);
+
+  //individual axxessors
 
 
 private:
@@ -40,9 +36,7 @@ private:
   TOPPAIRPTCorr * topPTCorr;
 
   //stored variables
-  float topPT;
-
-
+  float topPTWeight;
 };
 
 
