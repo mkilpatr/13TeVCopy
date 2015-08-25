@@ -592,7 +592,7 @@ void runWJets(TH1F* &SFW_el, TH1F* &SFW_mu, TH1F* &SFW_lp){
   TCanvas * c_SFW = new TCanvas( "c_SFW","c_SFW", 1500, 500 ); c_SFW->Divide(3,1);
   c_SFW->cd(1); SFW_el->Draw(); SFW_el->GetXaxis()->SetTitle("MET");
   c_SFW->cd(2); SFW_mu->Draw(); SFW_mu->GetXaxis()->SetTitle("MET");
-  c_SFW->cd(3); SFW_mu->Draw(); SFW_lp->GetXaxis()->SetTitle("MET");
+  c_SFW->cd(3); SFW_lp->Draw(); SFW_lp->GetXaxis()->SetTitle("MET");
   c_SFW->Update();
   c_SFW->SaveAs("plots/cr1/SFW.png");
 
