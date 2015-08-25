@@ -271,7 +271,7 @@ class DatacardConfig:
 
         if isdata :
             return int(rate)
-        return rate
+        return max([rate,0])
     
     def getNumEventsError(self,filename,bins,isdata=False,basestr=''):
         """Returns the error on the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
@@ -289,7 +289,7 @@ class DatacardConfig:
         error = Double()
         rate = htmp.IntegralAndError(0,2,error)
 
-        return (rate,error)
+        return ( max([rate,0]), abs(error) )
 
     def getDummyUncertainties(self,procname,bins):
       """Function to get dummy uncertanties. 
