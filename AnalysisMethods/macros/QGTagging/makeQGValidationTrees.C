@@ -28,7 +28,7 @@ public:
 
     sample_     = ((TObjString *)(o->At(0)))->String();
     weight_     = -9 ;
-    purwt       = -9 ;
+    puWeight_   = -9 ;
     npv         = -9 ;
     rho_        = -9 ;
     passDijet   = true;
@@ -56,7 +56,7 @@ public:
     fout->cd();
     outtree = new TTree("Events","analysis tree");
     outtree->Branch( "weight"    , &weight_   ,     "weight/F" );
-    outtree->Branch( "purwt"     , &purwt     ,      "purwt/F" );
+    outtree->Branch( "puWeight"  , &puWeight_ ,   "puWeight/F" );
     outtree->Branch( "npv"       , &npv       ,        "npv/I" );
     outtree->Branch( "rho"       , &rho_      ,        "rho/F" );
     outtree->Branch( "passDijet" , &passDijet ,  "passDijet/O" );
@@ -101,6 +101,9 @@ public:
 
     if(!isMC() && hasJSONFile() && !passesLumiMask()) return;
 
+    // skip events in PR with run number < 251584 - they are in the re-miniAOD
+    if(!isMC() && datareco==defaults::PROMPT_50NS && run<251584) return;
+
     bool passTrigger = false;
 
     // event selection (both samples)
@@ -123,7 +126,7 @@ public:
       if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet3 = false;
     } // jets.size()>=3
     passTrigger = false;
-    if((triggerflag & kHLT_PFHT800_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_PFHT800) > 0) passTrigger = true;
     if (!passTrigger && !isMC()) passDijet = false;
 
     // Z jet event selection
@@ -160,8 +163,7 @@ public:
     } // selectedLeptons.size>=2
     else passZjet = false;
     passTrigger = false;
-    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v1) > 0) passTrigger = true;
-    if((triggerflag & kHLT_IsoTkMu24_eta2p1_v2) > 0) passTrigger = true;
+    if((triggerflag & kHLT_IsoTkMu24_eta2p1) > 0) passTrigger = true;
     if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
@@ -172,8 +174,7 @@ public:
     } // selectedPhotons.size()<1
     else passGmjet = false;
     passTrigger = false;
-    if((triggerflag & kHLT_Photon165_HE10_v2) > 0) passTrigger = true;
-    if((triggerflag & kHLT_Photon165_HE10_v1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Photon165_HE10) > 0) passTrigger = true;
     if (!passTrigger) passGmjet = false;
 
     // check trigger objects
@@ -181,8 +182,7 @@ public:
     for(auto* to : triggerObjects) {
       if(passZjet) {
         bool matchedTrigObj = false;
-        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v1)) matchedTrigObj = true;
-        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v2)) matchedTrigObj = true;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) matchedTrigObj = true;
         if(matchedTrigObj) {
           auto mu0 = selectedLeptons[selMu0];
           if (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
@@ -241,12 +241,13 @@ public:
                          , 0.964321 };
     int rwtNPV = min(npv,31);
     if(isMC()){
-      cout << sample_ << endl;
-      if      (sample_ == "dyjetstoll") purwt = weight * rwtZjet[rwtNPV];
-      else if (sample_ == "qcd")        purwt = weight * rwtDjet[rwtNPV];
-      else if (sample_ == "gjets")      purwt = weight * rwtGjet[rwtNPV];
-      else purwt = -99;
-    } else purwt = weight;
+      //cout << sample_ << endl;
+      if      (sample_ == "dyjetstoll") puWeight_ = rwtZjet[rwtNPV];
+      else if (sample_ == "qcd")        puWeight_ = rwtDjet[rwtNPV];
+      else if (sample_ == "gjets")      puWeight_ = rwtGjet[rwtNPV];
+      else puWeight_ = -99;
+    } else puWeight_ = 1;
+    //puWeight_ = eventCorrections.getPUWeight();
 
     outtree->Fill();
 
@@ -261,7 +262,7 @@ public:
 
   // variables for trees
   float weight_     ;
-  float purwt       ;
+  float puWeight_   ;
   int   npv         ;
   float rho_        ;
   bool  passDijet   ;
@@ -292,21 +293,17 @@ public:
 
 
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
-//     ttbar_1_ntuple_wgtxsec.root
-//     dyjetstoll_ntuple_wgtxsec.root
-//     gjets_ht600toinf_ntuple_wgtxsec.root
-//     qcd_ht1000toinf_ntuple_wgtxsec.root
 // 74X
-//     singlemu-2015b-pr_ntuple.root    (data)     singlemu
-//     singlepho-2015b-pr_ntuple.root   (data)     singlegm
-//     dyjetstoll_1_ntuple_wgtxsec.root (MC)       dyjetstoll
-void makeQGValidationTrees( TString sname            = "dyjetstoll_0" // sample name
+//     singlemu-2015b-17jul15_ntuple_postproc.root    (data)     singlemu
+//     dyjetstoll_mll50_10_ntuple_postproc.root       (MC)       dyjetstoll
+void makeQGValidationTrees( TString sname            = "singlemu" // sample name
                           , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
-                          , const bool    isMC       = true    // data or MC
-                          , const TString fname      = "dyjetstoll_1_ntuple_wgtxsec.root" // path of file to be processed
+                          , const bool    isMC       = false    // data or MC
+                          , const TString fname      = "singlemu-2015b-17jul15_ntuple_postproc.root" // path of file to be processed
                           , const double xsec        = 1.0
                           , const string  outputdir  = "trees/test/"  // directory to which files will be written
-                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/210715/merged/"
+                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/130815/merged/"
+                          //, const TString fileprefix = "/eos/uscms/store/user/ocolegro/13TeV/130815/merged/"
                           )
 {
 
@@ -349,7 +346,7 @@ void makeQGValidationTrees( TString sname            = "dyjetstoll_0" // sample 
   string    treeName = "";
   if (isMC) treeName = "Events";
   else      treeName = "TestAnalyzer/Events";
-  Analyze a(fullname, treeName, isMC, &pars, sname, outputdir);
+  Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
   a.analyze(10000);
   //a.analyze(1000,10000);
 
