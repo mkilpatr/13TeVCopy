@@ -49,7 +49,7 @@ class DatacardConfig:
         self.has_data       = config_parser.getboolean('config','havedata')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
         self.backgrounds    = config_parser.get('backgrounds','samples').replace(' ','').split(',')
-        self.yieldwidth     = 18
+        self.yieldwidth     = 20
         self.colwidth       = 30
         self.evtwidth       =  7
         self.uncwidth       = 12
@@ -266,6 +266,7 @@ class DatacardConfig:
         file = TFile(filename)
         tree = file.Get(self.treename)
         htmp = TH1D('htmp','htmp',1,0,10000)
+        #print projectvar, cutstr
         tree.Project('htmp',projectvar,cutstr)
         rate = htmp.Integral(0,2)
 
