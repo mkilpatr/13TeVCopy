@@ -46,6 +46,7 @@ struct TreeFiller {
   size i_ngenmus   ;
   size i_ngentaus  ;
   size i_met       ;
+  size i_metnohf   ;
   size i_npv       ;
   size i_nvetotau  ;
   size i_nvetolep  ;
@@ -83,6 +84,7 @@ struct TreeFiller {
     i_ngenmus    = data->add<int  >("","ngenmus","I",0);
     i_ngentaus   = data->add<int  >("","ngentaus","I",0);
     i_met        = data->add<float>("","met","F",0);
+    i_metnohf    = data->add<float>("","metnohf","F",0);
     i_npv        = data->add<int  >("","npv","I",0);
     i_nvetotau   = data->add<int  >("","nvetotau","I",0);
     i_nvetolep   = data->add<int  >("","nvetolep","I",0);
@@ -118,6 +120,7 @@ struct TreeFiller {
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());
     data->fill<float>(i_met,      ana->met->pt());
+    data->fill<float>(i_metnohf,  ana->metNoHF->pt());
     data->fill<int  >(i_npv,      ana->nPV);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoHPSTaus);
