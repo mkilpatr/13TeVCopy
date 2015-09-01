@@ -352,7 +352,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {zIsInvisible = true;}
 
     const double metcut_ = 175.0 ;
 

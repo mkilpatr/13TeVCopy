@@ -154,7 +154,7 @@ public:
     EventCorrectionSet  eventCorrections;
 
     //hack for DY PU
-    bool isOneLeptonSample;
+    bool zIsInvisible;
 
   protected:
     //--------------------------------------------------------------------------------------------------

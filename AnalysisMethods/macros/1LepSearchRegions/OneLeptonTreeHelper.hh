@@ -242,7 +242,7 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {isOneLeptonSample = true;}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;

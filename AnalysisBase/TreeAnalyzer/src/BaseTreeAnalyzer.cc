@@ -35,7 +35,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     metNoHF           (0),
     genmet            (0),
     goodvertex        (false),
-    isOneLeptonSample (false),
+    zIsInvisible      (false),
     isMC_             (isMCTree),
     defaultJets       (0),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
