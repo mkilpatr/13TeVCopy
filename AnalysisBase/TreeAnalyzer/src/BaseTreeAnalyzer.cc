@@ -32,6 +32,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nBJets            (0),
     nVetoHPSTaus      (0),
     met               (0),
+    metNoHF           (0),
     genmet            (0),
     goodvertex        (false),
     isOneLeptonSample (false),
@@ -211,6 +212,7 @@ void BaseTreeAnalyzer::processVariables()
     rho   = evtInfoReader.rho;
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
+    metNoHF = &evtInfoReader.metNoHF;
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;

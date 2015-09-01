@@ -131,6 +131,7 @@ public:
     // Stored collections
     //--------------------------------------------------------------------------------------------------
     MomentumF*                 met     ;
+    MomentumF*                 metNoHF ;
     MomentumF*                 genmet  ;
     bool goodvertex;
     std::vector<LeptonF*>      allLeptons        ;

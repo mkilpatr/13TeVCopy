@@ -66,6 +66,8 @@ struct TreeFiller {
   size i_bosoneta  ;
   size i_met       ;
   size i_metphi    ;
+  size i_metnohf   ;
+  size i_metnohfphi;
   size i_npv       ;
   size i_nvetotau  ;
   size i_nvetolep  ;
@@ -157,6 +159,8 @@ struct TreeFiller {
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
     i_met            = data->add<float>("","met","F",0);
     i_metphi         = data->add<float>("","metphi","F",0);
+    i_metnohf        = data->add<float>("","metnohf","F",0);
+    i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
     i_npv            = data->add<int>("","npv","I",0);
     i_nvetotau       = data->add<int>("","nvetotau","I",0);
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
@@ -232,6 +236,8 @@ struct TreeFiller {
       data->fill<float>(i_met, metn->pt());
       data->fill<float>(i_metphi, metn->phi());
     }
+    data->fill<float>(i_metnohf, ana->metNoHF->pt());
+    data->fill<float>(i_metnohfphi, ana->metNoHF->phi());
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
