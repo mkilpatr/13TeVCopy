@@ -3,15 +3,15 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
-void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
+void plotQGValidation( const TString inputdir="trees/150826_newData"
                      , const TString outputdir="plots"
                      , const TString format = "png"
                      )
 {
   gSystem->mkdir(outputdir, true);
   TString lumi = "0.040*";
-  TString wtVar = "purwt"; // weight purwt
-  bool scaleToData = false;
+  TString wtVar = "weight*puWeight"; // weight purwt
+  bool scaleToData = true;
 
   PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet.conf", inputdir, outputdir, 0, true);
   zjetPlots->setPlotSource(PlotStuff::TREES);
@@ -19,7 +19,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   zjetPlots->setTree("Events");
   zjetPlots->setFormat(format);
   zjetPlots->setWgtVar(lumi+wtVar);
-  zjetPlots->setDataName("singlemu");
+  zjetPlots->setDataName("data_singlemu");
   //zjetPlots->setDataName("dyjetstoll"); zjetPlots->setDataIsMC();
   zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   zjetPlots->setScaleToData(scaleToData);
@@ -32,7 +32,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   dijetPlots->setTree("Events");
   dijetPlots->setFormat(format);
   dijetPlots->setWgtVar(lumi+wtVar);
-  dijetPlots->setDataName("dijetsht");
+  dijetPlots->setDataName("data_dijetsht");
   dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   dijetPlots->setScaleToData(scaleToData);
   dijetPlots->setPlotOverflow(true);
@@ -44,7 +44,7 @@ void plotQGValidation( const TString inputdir="trees/150731_74X_purwt"
   gjetPlots->setTree("Events");
   gjetPlots->setFormat(format);
   gjetPlots->setWgtVar(lumi+wtVar);
-  gjetPlots->setDataName("singlegm");
+  gjetPlots->setDataName("data_singlegm");
   //gjetPlots->setDataName("gjets"); gjetPlots->setDataIsMC();
   gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
   gjetPlots->setScaleToData(scaleToData);

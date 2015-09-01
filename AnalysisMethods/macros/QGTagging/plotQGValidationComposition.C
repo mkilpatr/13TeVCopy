@@ -3,13 +3,13 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidationComposition.C+"
-void plotQGValidationComposition( const TString inputdir="trees/150731_74X_purwt"
+void plotQGValidationComposition( const TString inputdir="trees/150826_newData"
                                 , const TString outputdir="plots"
                                 , const TString format = "png"
                                 )
 {
   gSystem->mkdir(outputdir, true);
-  TString wtVar = "purwt"; // weight purwt
+  TString wtVar = "weight*puWeight"; // weight purwt
 
   PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);

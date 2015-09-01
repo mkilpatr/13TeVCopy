@@ -49,7 +49,7 @@ class DatacardConfig:
         self.has_data       = config_parser.getboolean('config','havedata')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
         self.backgrounds    = config_parser.get('backgrounds','samples').replace(' ','').split(',')
-        self.yieldwidth     = 18
+        self.yieldwidth     = 20
         self.colwidth       = 30
         self.evtwidth       =  7
         self.uncwidth       = 12
@@ -266,12 +266,13 @@ class DatacardConfig:
         file = TFile(filename)
         tree = file.Get(self.treename)
         htmp = TH1D('htmp','htmp',1,0,10000)
+        #print projectvar, cutstr
         tree.Project('htmp',projectvar,cutstr)
         rate = htmp.Integral(0,2)
 
         if isdata :
             return int(rate)
-        return rate
+        return max([rate,0])
     
     def getNumEventsError(self,filename,bins,isdata=False,basestr=''):
         """Returns the error on the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
@@ -289,7 +290,7 @@ class DatacardConfig:
         error = Double()
         rate = htmp.IntegralAndError(0,2,error)
 
-        return (rate,error)
+        return ( max([rate,0]), abs(error) )
 
     def getDummyUncertainties(self,procname,bins):
       """Function to get dummy uncertanties. 
