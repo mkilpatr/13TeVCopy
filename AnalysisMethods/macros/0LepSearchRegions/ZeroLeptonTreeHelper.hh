@@ -373,19 +373,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
 
-      // skip events in PR with run number < 251584 - they are in the re-miniAOD
-      bool isData = false;
-      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
-	{ isData = true; }
-
-      bool isPR = false;
-      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
-      
-      bool skipPRevent = false;
-      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
-      if (skipPRevent) { return false; }
-      
-
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

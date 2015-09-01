@@ -68,6 +68,8 @@ public:
     virtual void processVariables();    //event processing
     virtual void runEvent() = 0;        //analysis code
 
+    virtual bool processData(); //process data sample
+
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
