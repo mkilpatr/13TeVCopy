@@ -684,11 +684,11 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
   TH1F *h00 = (TH1F*)hData->Clone("data0");
 
   if(fStack) {
-    if(!fLogy) {
-      if(fYmin < fYmax) {
-        fStack->SetMaximum(fYmax);
-        fStack->SetMinimum(fYmin);
-      } else {
+    if(fYmin < fYmax) {
+      fStack->SetMaximum(fYmax);
+      fStack->SetMinimum(fYmin);
+    } else {
+      if(!fLogy) {
         fStack->SetMaximum(1.1*ymax);
         fStack->SetMinimum(0);
       }
@@ -811,11 +811,11 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TH1F *h00 = (TH1F*)hData->Clone("data0");
 
   if(fStack) {
-    if(!fLogy) {
-      if(fYmin < fYmax) {
-        fStack->SetMaximum(fYmax);
-        fStack->SetMinimum(fYmin);
-      } else {
+    if(fYmin < fYmax) {
+      fStack->SetMaximum(fYmax);
+      fStack->SetMinimum(fYmin);
+    } else {
+      if(!fLogy) {
         fStack->SetMaximum(1.1*ymax);
         fStack->SetMinimum(0);
       }

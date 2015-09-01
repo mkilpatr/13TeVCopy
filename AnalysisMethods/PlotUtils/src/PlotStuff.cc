@@ -871,6 +871,7 @@ void PlotStuff::plot()
 
     assert(histvec.size() == samples_.size());
 
+    canvas_->Clear();
     makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
 
     if(config_.writehists) {
@@ -899,6 +900,7 @@ void PlotStuff::plot()
 
     assert(histvec.size() == samples_.size());
 
+    canvas_->Clear();
     makeHist2DPlot(hist2dplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
 
     if(config_.writehists) {
@@ -927,6 +929,7 @@ void PlotStuff::plot()
 
     assert(graphvec.size() == samples_.size());
 
+    canvas_->Clear();
     makeGraphPlot(graphplotnames_[igraph], graph0->GetTitle(), graph0->GetXaxis()->GetTitle(), graph0->GetYaxis()->GetTitle(), config_.compgraphplots.at(igraph).ymax, graphvec);
 
     if(config_.writehists) {
