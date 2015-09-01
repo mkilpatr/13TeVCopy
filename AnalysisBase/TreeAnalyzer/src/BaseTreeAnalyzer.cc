@@ -179,6 +179,12 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::TRIGINFO : {
+      int defaultOptions = TriggerInfoReader::defaultOptions;
+      reader.load(&trigInfoReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_TRIGGERS : branchName);
+      break;
+    }
+
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
     break;
@@ -237,6 +243,13 @@ void BaseTreeAnalyzer::processVariables()
     triggerObjects.reserve(trigObjReader.trigobjs.size());
     for(auto& to : trigObjReader.trigobjs)
       triggerObjects.push_back(&to);
+  }
+
+  if(trigInfoReader.isLoaded()){
+    triggerInfo.clear();
+    triggerInfo.reserve(trigInfoReader.triginfo.size());
+    for(auto& tI : trigInfoReader.triginfo)
+      triggerInfo.push_back(&tI);
   }
 
   allLeptons.clear();

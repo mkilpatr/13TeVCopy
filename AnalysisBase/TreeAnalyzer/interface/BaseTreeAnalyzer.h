@@ -101,8 +101,9 @@ public:
     PFCandidateReader pfcandReader          ;
     GenParticleReader genParticleReader     ;
     CMSTopReader      cmsTopReader          ;
-    CORRALReader        corralReader        ;
+    CORRALReader      corralReader          ;
     TriggerObjectReader trigObjReader       ;
+    TriggerInfoReader trigInfoReader        ;
     JetCorrector      jetCorrector          ;
 
 
@@ -144,6 +145,7 @@ public:
     std::vector<GenParticleF*> genParts;
     std::vector<CMSTopF*>      cttTops;
     std::vector<TriggerObjectF*> triggerObjects;
+    std::vector<TriggerInfo*>  triggerInfo;
     std::vector<TauF*>         HPSTaus;
 
     //--------------------------------------------------------------------------------------------------
