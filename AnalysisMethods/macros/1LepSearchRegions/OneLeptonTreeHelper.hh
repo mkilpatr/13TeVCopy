@@ -242,7 +242,7 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {isOneLeptonSample = true;}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;
@@ -274,18 +274,6 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
       if(nJets < minnjets_)   return false;
       if(nBJets < minnbjets_) return false;
       if(!goodvertex)         return false;
-
-      // skip events in PR with run number < 251584 - they are in the re-miniAOD
-      bool isData = false;
-      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
-	{ isData = true; }
-
-      bool isPR = false;
-      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
-      
-      bool skipPRevent = false;
-      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
-      if (skipPRevent) { return false; }
       
       filler.fillEventInfo    (&data, this);
       if (isMC())

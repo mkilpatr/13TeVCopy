@@ -35,7 +35,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     metNoHF           (0),
     genmet            (0),
     goodvertex        (false),
-    isOneLeptonSample (false),
+    zIsInvisible      (false),
     isMC_             (isMCTree),
     defaultJets       (0),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
@@ -323,6 +323,16 @@ void BaseTreeAnalyzer::processVariables()
 
 }
 //--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::processData(){
+  //only look at data
+  if(evtInfoReader.process == defaults::NUMPROCESSES || evtInfoReader.process <= defaults::SIGNAL ) return true;
+
+  // skip events in PR with run number < 251584 - they are in the re-miniAOD
+  if(evtInfoReader.datareco==defaults::PROMPT_50NS && evtInfoReader.run < 251584) return false;
+
+  return true;
+}
+//--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
 {
   clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
@@ -332,6 +342,7 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
   while(reader.nextEvent(reportFrequency)){
     isProcessed_ = false;
     if(numEvents >= 0 && getEventNumber() >= numEvents) return;
+    if(!processData()) continue;
     processVariables();
     runEvent();
   }
