@@ -18,9 +18,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(metn->pt() < metcut_) return false;
       if(!goodvertex) return false;
    // if(nVetoedTracks > 0)     return false;
-      if(nJets < 5) return false;
-      if(nBJets < 1) return false;
-      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
+      if(nJets < 2) return false;
+      if(nBJets < 0) return false;
+      //      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
       filler.fillEventInfo(&data, this, 0, true, metn);
       filler.fillJetInfo(&data, jets, bJets, metn);

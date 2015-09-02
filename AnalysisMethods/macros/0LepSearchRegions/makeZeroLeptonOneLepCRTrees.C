@@ -17,7 +17,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(!goodvertex) return false;
 
-      if(nBJets < 1) return false;
+      if(nBJets < 0) return false;
 
       if(nJets < 2) return false;
 
@@ -41,7 +41,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
-      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
+      //      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
       filler.fillEventInfo(&data, this, whichLep);
 
