@@ -23,6 +23,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(PU) {
     bool is25NSMC = 	ana->process == defaults::TTZ || 
 			ana->process == defaults::TTW || 
+			ana->process == defaults::SINGLE_G ||
 			ana->process == defaults::SIGNAL;
     if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
     puCorr->setAxis(PUCorr::NPV,ana->nPV);
