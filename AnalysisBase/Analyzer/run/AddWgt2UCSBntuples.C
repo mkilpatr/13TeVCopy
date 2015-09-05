@@ -92,7 +92,7 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
     TString recostr = outName;
     recostr.ReplaceAll("_ntuple_"+outPostfix+".root","");
     recostr.Remove(0, recostr.First('-')+1);
-    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP][0]; ++iP) if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);
+    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP] != "invalid"; ++iP) {if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);}
     if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
   }
 
