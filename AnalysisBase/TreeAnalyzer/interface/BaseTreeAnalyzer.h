@@ -132,22 +132,23 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Stored collections
     //--------------------------------------------------------------------------------------------------
-    MomentumF*                 met     ;
-    MomentumF*                 metNoHF ;
-    MomentumF*                 genmet  ;
-    bool goodvertex;
-    std::vector<LeptonF*>      allLeptons        ;
-    std::vector<LeptonF*>      selectedLeptons   ;
-    std::vector<LeptonF*>      vetoedLeptons     ;
-    std::vector<PFCandidateF*> vetoedTracks        ;
-    std::vector<PhotonF*>      selectedPhotons   ;
-    std::vector<RecoJetF*>     jets            ;
-    std::vector<RecoJetF*>     bJets   ;
-    std::vector<RecoJetF*>     nonBJets;
-    std::vector<GenParticleF*> genParts;
-    std::vector<CMSTopF*>      cttTops;
-    std::vector<TriggerObjectF*> triggerObjects;
-    std::vector<TauF*>         HPSTaus;
+    MomentumF* met        ;
+    MomentumF* metNoHF    ;
+    MomentumF* genmet     ;
+    bool       goodvertex ;
+    std::vector<LeptonF*>        allLeptons        ;
+    std::vector<LeptonF*>        selectedLeptons   ;
+    std::vector<LeptonF*>        vetoedLeptons     ;
+    std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<PhotonF*>        selectedPhotons   ;
+    std::vector<RecoJetF*>       jets              ;
+    std::vector<RecoJetF*>       bJets             ;
+    std::vector<RecoJetF*>       nonBJets          ;
+    std::vector<GenParticleF*>   genParts          ;
+    std::vector<CMSTopF*>        cttTops           ;
+    std::vector<TriggerObjectF*> triggerObjects    ;
+    std::vector<TriggerInfo*>    triggerInfo       ;
+    std::vector<TauF*>           HPSTaus           ;
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
