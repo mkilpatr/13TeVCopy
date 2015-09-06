@@ -46,6 +46,7 @@ struct TreeFiller {
   size i_ngenmus   ;
   size i_ngentaus  ;
   size i_met       ;
+  size i_metnohf   ;
   size i_npv       ;
   size i_nvetotau  ;
   size i_nvetolep  ;
@@ -83,6 +84,7 @@ struct TreeFiller {
     i_ngenmus    = data->add<int  >("","ngenmus","I",0);
     i_ngentaus   = data->add<int  >("","ngentaus","I",0);
     i_met        = data->add<float>("","met","F",0);
+    i_metnohf    = data->add<float>("","metnohf","F",0);
     i_npv        = data->add<int  >("","npv","I",0);
     i_nvetotau   = data->add<int  >("","nvetotau","I",0);
     i_nvetolep   = data->add<int  >("","nvetolep","I",0);
@@ -118,6 +120,7 @@ struct TreeFiller {
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet,   ana->genmet->pt());
     data->fill<float>(i_met,      ana->met->pt());
+    data->fill<float>(i_metnohf,  ana->metNoHF->pt());
     data->fill<int  >(i_npv,      ana->nPV);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoHPSTaus);
@@ -239,7 +242,7 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {isOneLeptonSample = true;}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;
@@ -271,18 +274,6 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
       if(nJets < minnjets_)   return false;
       if(nBJets < minnbjets_) return false;
       if(!goodvertex)         return false;
-
-      // skip events in PR with run number < 251584 - they are in the re-miniAOD
-      bool isData = false;
-      if (process > defaults::SIGNAL && process < defaults::NUMPROCESSES)
-	{ isData = true; }
-
-      bool isPR = false;
-      if (datareco==defaults::PROMPT_50NS) { isPR = true; }
-      
-      bool skipPRevent = false;
-      if ( (isData) && (isPR) && (run<251584) ) { skipPRevent = true; }
-      if (skipPRevent) { return false; }
       
       filler.fillEventInfo    (&data, this);
       if (isMC())

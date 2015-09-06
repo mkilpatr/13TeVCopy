@@ -68,6 +68,8 @@ public:
     virtual void processVariables();    //event processing
     virtual void runEvent() = 0;        //analysis code
 
+    virtual bool processData(); //process data sample
+
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
@@ -130,22 +132,22 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Stored collections
     //--------------------------------------------------------------------------------------------------
-    MomentumF*                   met               ;
-    MomentumF*                   genmet            ;
-    bool                         goodvertex        ;
-    std::vector<LeptonF*>        allLeptons        ;
-    std::vector<LeptonF*>        selectedLeptons   ;
-    std::vector<LeptonF*>        vetoedLeptons     ;
-    std::vector<PFCandidateF*>   vetoedTracks      ;
-    std::vector<PhotonF*>        selectedPhotons   ;
-    std::vector<RecoJetF*>       jets              ;
-    std::vector<RecoJetF*>       bJets             ;
-    std::vector<RecoJetF*>       nonBJets          ;
-    std::vector<GenParticleF*>   genParts          ;
-    std::vector<CMSTopF*>        cttTops           ;
-    std::vector<TriggerObjectF*> triggerObjects    ;
-    std::vector<TriggerInfo*>    triggerInfo       ;
-    std::vector<TauF*>           HPSTaus           ;
+    MomentumF*                 met     ;
+    MomentumF*                 metNoHF ;
+    MomentumF*                 genmet  ;
+    bool goodvertex;
+    std::vector<LeptonF*>      allLeptons        ;
+    std::vector<LeptonF*>      selectedLeptons   ;
+    std::vector<LeptonF*>      vetoedLeptons     ;
+    std::vector<PFCandidateF*> vetoedTracks        ;
+    std::vector<PhotonF*>      selectedPhotons   ;
+    std::vector<RecoJetF*>     jets            ;
+    std::vector<RecoJetF*>     bJets   ;
+    std::vector<RecoJetF*>     nonBJets;
+    std::vector<GenParticleF*> genParts;
+    std::vector<CMSTopF*>      cttTops;
+    std::vector<TriggerObjectF*> triggerObjects;
+    std::vector<TauF*>         HPSTaus;
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
@@ -154,7 +156,7 @@ public:
     EventCorrectionSet  eventCorrections;
 
     //hack for DY PU
-    bool isOneLeptonSample;
+    bool zIsInvisible;
 
   protected:
     //--------------------------------------------------------------------------------------------------
