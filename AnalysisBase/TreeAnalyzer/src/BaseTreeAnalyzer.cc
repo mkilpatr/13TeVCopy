@@ -195,6 +195,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
+  load(cfgSet::TRIGOBJS);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
