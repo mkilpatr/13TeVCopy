@@ -96,6 +96,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
       corrections.push_back(&eventCorrections);
     }
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      corrections.push_back(&jetAndMETCorrections);
+    }
   }
 
     jetCorrector.setJES(configSet.jets.JES);
@@ -220,6 +224,10 @@ void BaseTreeAnalyzer::processVariables()
     triggerflag =  evtInfoReader.triggerflag;
   }
 
+  if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+    jetAndMETCorrections.processMET(this);
+    (*met) = jetAndMETCorrections.getCorrectedMET();
+  }
 
   if(genParticleReader.isLoaded()){
     genParts.clear();
