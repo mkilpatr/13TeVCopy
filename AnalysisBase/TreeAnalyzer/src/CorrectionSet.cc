@@ -22,8 +22,16 @@ RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(
 
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
 
+void CorrectionSet::loadSimple(TString correctionSetName, int correctionOptions) {
+  options_ =correctionOptions;
+  std::clog << "Loading correctionSet: " << correctionSetName <<std::endl;
+  return;
+
+}
+
 void CorrectionSet::loadFile(TString correctionSetName, TString fileName, int correctionOptions) {
   options_ =correctionOptions;
+
   std::clog << "Loading file: "<< fileName <<" and correctionSet: " << correctionSetName <<std::endl;
   file = TFile::Open(fileName,"read");
   assert(file);
