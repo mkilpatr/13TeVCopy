@@ -173,7 +173,7 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
   if(metScale) {
     tempMETNoHF = metNoHFScale->getCorrectedMET(trueBosons,tempMETNoHF);
   }
-  correctedMET.setP4(tempMET);
+  correctedMETNoHF.setP4(tempMETNoHF);
 
 }
 
