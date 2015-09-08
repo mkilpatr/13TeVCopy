@@ -20,7 +20,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.minBJetPt                 = 20;
   zl_search_jets.maxBJetEta                = 2.4;
   zl_search_jets.defaultCSV                = defaults::CSV_MEDIUM;
-  zl_search_jets.applyJetID                = false;
+  zl_search_jets.applyJetID                = true;
   zl_search_jets.applyAdHocPUCorr          = false;
   zl_search_jets.cleanJetsvSelectedLeptons = false;
   zl_search_jets.cleanJetsvVetoedLeptons   = false;
@@ -116,7 +116,7 @@ cfgSet::PhotonConfig cfgSet::zl_sel_photons("zl_sel_photons");
 
 void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.minPt    = 180;
-  zl_sel_photons.maxEta   = 2.4;
+  zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
   zl_sel_photons.setConfig();
 }
