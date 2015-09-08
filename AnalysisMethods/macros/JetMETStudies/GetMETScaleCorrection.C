@@ -53,10 +53,10 @@ void makeComparisonPlots(TTree * mcTree, TTree * dataTree,TString prefix = ""){
 
 void getResponseValues(TTree * mcTree, TTree * dataTree){
 //  double binsX[] = {0,25,50,100,200,500};
-  double binsX[] = {20,30,40,50,80,130,500};
+  double binsX[] = {20,30,40,50,80,130,250,500};
   TString sel = "1.0";
 //  TString sel = "muon == 0";
-  int nBinsX = 6;
+  int nBinsX = 7;
   TString weight = "puWeight*weight";
   TProfile * prof = getProfile(mcTree,"mcTree","mc","zllpt","metPar/zllpt",nBinsX,binsX,sel,0,&weight);
   prof->SetTitle("MC");
@@ -106,7 +106,7 @@ void getResponseValues(TTree * mcTree, TTree * dataTree){
   f->Close();
 }
 
-void compareMETResolution(vector<TTree*> mcTrees, vector<TString> mcNames, TTree * dataTree,TString prefix = ""){
+void compareMETResolution(vector<TTree*> mcTrees, vector<TString> mcNames, TTree * dataTree, bool doSigma,TString prefix = ""){
   int MCProcColors[] = {StyleTools::color_znunu,StyleTools::color_ttbar, StyleTools::color_comp4, StyleTools::color_comp1,StyleTools::color_other};
 
   vector<PlotInfo*> vars;
@@ -116,9 +116,7 @@ void compareMETResolution(vector<TTree*> mcTrees, vector<TString> mcNames, TTree
 
   vars.push_back (new PlotInfo("njets"        ,"njets"        ,"N. jets"                                    ,6,-.5,5.5));
   vars.push_back (new PlotInfo("ht"           ,"ht"           ,"H_{T}"                                      ,6,0,300));
-  vars.push_back (new PlotInfo("zllpt"        ,"zllpt"      ,"p_{T}(Z)"                                     ,6,0,300));
-
-  bool doSigma = true;
+  vars.push_back (new PlotInfo("zllpt"        ,"zllpt"      ,"p_{T}(Z)"                                     ,5,0,300));
 
   TString weight = "weight*puWeight";
   TString sel[] = {"zllpt >= 20","","zllpt >= 20 && zllpt <50","zllpt >= 50 && zllpt <75","zllpt >= 75 && zllpt <100","zllpt >= 100",""};
@@ -136,7 +134,7 @@ void compareMETResolution(vector<TTree*> mcTrees, vector<TString> mcNames, TTree
 
   for(unsigned int iS = 0; sel[iS][0]; ++iS){
     for(unsigned int iV = 0; iV < vars.size(); ++iV){
-      if(iS > 0 &&iV > 1) continue;
+//      if(iS > 0 &&iV > 1) continue;
       TObjArray * o = new TObjArray;
       TObjArray * oo = new TObjArray;
 
@@ -179,17 +177,16 @@ void compareMETResolution(vector<TTree*> mcTrees, vector<TString> mcNames, TTree
 //          plot->draw(c,false);
 //          o->Add(c);
           TCanvas * c2 = new TCanvas;
-          if(iY > 1)
+          if(doSigma)
             plotC->setYRange(.75,1.25);
           else
-            plotC->setYRange(.75,1.25);
+            plotC->setYRange(-10,10);
           plotC->draw(c2,false);
           oo->Add(c2);
         }
       }
 
-//      drawAll(o,vars[iV]->name);
-      StyleTools::drawAll(oo,vars[iV]->name);
+      StyleTools::drawAll(oo,TString::Format("%s_%i",vars[iV]->name.Data(),vars[iV]->nH));
     }
   }
 }
@@ -212,7 +209,7 @@ void GetMETScaleCorrection(const TString treeName = "Events")
   mcFileNames.push_back("SM_DiLep_corr_metCorr.root");
 //  mcFileNames.push_back("SM_DiLep_corr_resp90_metCorr.root");
 //  mcFileNames.push_back("SM_DiLep_corr_resp75_metCorr.root");
-  mcFileNames.push_back("SM_DiLep_corr_resp50_metCorr.root");
+//  mcFileNames.push_back("SM_DiLep_corr_resp50_metCorr.root");
   mcFileNames.push_back("SM_DiLep_corr_scale_metCorr.root");
 
   vector<TTree*> mcTrees(mcFileNames.size(),0);
@@ -222,7 +219,7 @@ void GetMETScaleCorrection(const TString treeName = "Events")
   mcTreeNames.push_back("corr");
 //  mcTreeNames.push_back("corr res 0p90");
 //  mcTreeNames.push_back("corr res 0p75");
-  mcTreeNames.push_back("corr res 0p50");
+//  mcTreeNames.push_back("corr res 0p50");
   mcTreeNames.push_back("corr scale");
 
   for(unsigned int iT = 0; iT < mcFileNames.size(); ++iT){
@@ -232,11 +229,13 @@ void GetMETScaleCorrection(const TString treeName = "Events")
 
 //  makeComparisonPlots(mcTrees[0],dt);
 //  makeComparisonPlots(mcTrees[1],dt,"corr_");
-//  makeComparisonPlots(mcTrees[3],dt,"corr_scale_");
+//  makeComparisonPlots(mcTrees[2],dt,"corr_scale_");
 
-//  getResponseValues(mcTrees[0],dt);
 
-  compareMETResolution(mcTrees,mcTreeNames,dt,"respComp_");
+//      getResponseValues(mcTrees[0],dt);
+//  compareMETResolution(mcTrees,mcTreeNames,dt,false,"offsetComp_");
+
+//  compareMETResolution(mcTrees,mcTreeNames,dt,true,"resComp_");
 
 
 

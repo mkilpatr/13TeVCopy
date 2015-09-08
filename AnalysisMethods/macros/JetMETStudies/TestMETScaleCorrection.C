@@ -19,11 +19,11 @@ void makeComparisonTestPlots(TTree * mcTree, TTree * dataTree,TString prefix = "
 //  vars.push_back (new PlotInfo("njets"        ,"njets"        ,"N. jets"                                    ,10,-.5,9.5));
 //  vars.push_back (new PlotInfo("npv"        ,"npv"        ,"NPV"                                    ,50,-.5,49.5));
 //  vars.push_back (new PlotInfo("nbjets"       ,"nbjets"       ,"N. b-jets"                                  ,4,-.5,3.5));
-  vars.push_back (new PlotInfo("mtw"       ,"mtw"       ,"mtw"                                  ,10,0,300));
+  vars.push_back (new PlotInfo("mtw"       ,"mtw"       ,"mtw"                                  ,20,0,300));
   vars.push_back (new PlotInfo("ptw"       ,"ptw"       ,"ptw"                                  ,20,0,500));
 
   TString weight = "weight*puWeight";
-  TString sel[] = {"met >=200",""};
+  TString sel[] = {"met >=200 && muon >= 1",""};
 //  TString sel[] = {"zllpt >= 50 && zllpt <80",""};
 
   for(unsigned int iS = 0; sel[iS][0]; ++iS){
@@ -60,7 +60,7 @@ void TestMETScaleCorrection(const TString treeName = "Events")
 
   vector<TString> mcFileNames;
   mcFileNames.push_back("SM_zeroLep_metTestCorr.root");
-  mcFileNames.push_back("SM_zeroLep_corr_metTestCorr.root");
+//  mcFileNames.push_back("SM_zeroLep_corr_metTestCorr.root");
   //  mcFileNames.push_back("SM_DiLep_corr_resp90_metCorr.root");
   //  mcFileNames.push_back("SM_DiLep_corr_resp75_metCorr.root");
   //  mcFileNames.push_back("SM_DiLep_corr_resp50_metCorr.root");
@@ -70,7 +70,7 @@ void TestMETScaleCorrection(const TString treeName = "Events")
 
   vector<TString> mcTreeNames;
   mcTreeNames.push_back("std");
-  mcTreeNames.push_back("corr");
+//  mcTreeNames.push_back("corr");
   //  mcTreeNames.push_back("corr res 0p90");
   //  mcTreeNames.push_back("corr res 0p75");
   //  mcTreeNames.push_back("corr res 0p50");

@@ -83,19 +83,27 @@ public:
 //
     float htPar = 0;
     float ht    = 0;
+    float htInc = 0;
+
+    CylLorentzVectorF mhtVec;
+    CylLorentzVectorF mhtIncVec;
     nJets = 0;
     nBJets = 0;
     for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
       if(jets[iJ]->pt() < 20) continue;
+      htInc += jets[iJ]->pt();
+      mhtIncVec -= jets[iJ]->p4();
+      if(TMath::Abs(jets[iJ]->eta()) > 2.4) continue;
       nJets++;
       if(cfgSet::isSelBJet(*jets[iJ],configSet.jets))nBJets++;
       htPar += jets[iJ]->pt() * TMath::Cos( PhysicsUtilities::deltaPhi(jets[iJ]->p4(),zLL));
       ht += jets[iJ]->pt();
+      mhtVec -= jets[iJ]->p4();
     }
 
-
-
-
+    float mht    = mhtVec.pt();
+    float mhtInc = mhtIncVec.pt();
+    float soft   = (metCorr - mhtIncVec).pt();
 
 
     //variable processing
@@ -113,6 +121,10 @@ public:
     data.fill<int>(i_njets   ,nJets    );
     data.fill<int>(i_nbjets  ,nBJets   );
     data.fill<float>(i_ht      ,ht     );
+    data.fill<float>(i_htInc   ,htInc     );
+    data.fill<float>(i_mht      ,mht     );
+    data.fill<float>(i_mhtInc   ,mhtInc     );
+    data.fill<float>(i_soft    ,soft     );
     data.fill<float>(i_htAlong ,htPar);
     data.fill<float>(i_metPar  ,metPar );
     data.fill<float>(i_metPerp ,metPerp);
@@ -133,6 +145,10 @@ public:
     i_njets      = data.add<int  >("","njets","I",0);
     i_nbjets     = data.add<int  >("","nbjets","I",0);
     i_ht         = data.add<float>("","ht","F",0);
+    i_htInc      = data.add<float>("","htInc","F",0);
+    i_mht        = data.add<float>("","mht","F",0);
+    i_mhtInc     = data.add<float>("","mhtInc","F",0);
+    i_soft       = data.add<float>("","soft","F",0);
     i_htAlong    = data.add<float>("","htAlong","F",0);
     i_metPar     = data.add<float>("","metPar","F",0);
     i_metPerp    = data.add<float>("","metPerp","F",0);
@@ -155,6 +171,10 @@ public:
   size i_njets     ;
   size i_nbjets    ;
   size i_ht        ;
+  size i_htInc     ;
+  size i_mht       ;
+  size i_mhtInc    ;
+  size i_soft      ;
   size i_htAlong   ;
   size i_metPar    ;
   size i_metPerp   ;
@@ -179,6 +199,7 @@ void METCorrectionTree(string fileName,  string treeName = "Events", string outP
   cfg.selectedLeptons.minEPt  = 10;
   cfg.selectedLeptons.maxEEta = 2.4;
   cfg.jets.minPt = 20;
+  cfg.jets.maxEta= 5;
   cfg.jets.minBJetPt = 20;
 
   if(inApplyScale)
