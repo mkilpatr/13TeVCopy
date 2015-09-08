@@ -43,7 +43,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
-  clog <<"Loaded configurations: ";
+  clog <<"Loaded configurations: " << endl;
+  if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
