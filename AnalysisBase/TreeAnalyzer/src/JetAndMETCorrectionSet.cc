@@ -110,14 +110,21 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
 
   CylLorentzVectorF tempMET = correctedMET.p4();
 
-  if(metScale) {
-    tempMET = metScale->getCorrectedMET(trueBosons,tempMET);
-  }
   if(metResolution) {
     tempMET = metResolution->getCorrectedMET(trueBosons,trueMET,tempMET);
   }
+  if(metScale) {
+    tempMET = metScale->getCorrectedMET(trueBosons,tempMET);
+  }
+
 
   correctedMET.setP4(tempMET);
+}
+
+void JetAndMETCorrectionSet::setResCorr(float metPar, float metPerp) {
+    if(!metResolution) return;
+    metResolution->metParScale = metPar;
+    metResolution->metPerpScale = metPerp;
 }
 
 

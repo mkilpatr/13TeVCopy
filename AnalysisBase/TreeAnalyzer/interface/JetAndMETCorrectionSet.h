@@ -49,6 +49,8 @@ public:
   MomentumF getCorrectedMET() const {return correctedMET;}
   MomentumF getOriginalMET() const {return originalMET;}
 
+  void setResCorr(float metPar, float metPerp);
+
 private:
   //Correction list
   METScaleCorr * metScale;
