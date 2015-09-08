@@ -20,7 +20,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     return;
   }
 
-  if(PU) {
+  if(options_ & PU) {
     bool is25NSMC = 	ana->process == defaults::TTZ || 
 			ana->process == defaults::TTW || 
 			ana->process == defaults::SIGNAL;
