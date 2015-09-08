@@ -265,7 +265,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
     for isam in range(len(samples)) :
         cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
         subprocess.call(cmd,shell=True)
-        cmd = ("./das_client.py --query \"dataset=%s instance=%s| grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
+        cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
         ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         numevents=int(ps.communicate()[0])
         if args.maxevents > -1  and args.maxevents < numevents :
