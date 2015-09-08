@@ -42,12 +42,6 @@ namespace defaults {
   const double CSV_LOOSE        = 0.605;
   const double CSV_MEDIUM       = 0.890;
   const double CSV_TIGHT        = 0.970;
-  const double CSV_OLD_LOOSE    = 0.423;
-  const double CSV_OLD_MEDIUM   = 0.814;
-  const double CSV_OLD_TIGHT    = 0.941;
-  const double CSV_OLDER_LOOSE  = 0.244;
-  const double CSV_OLDER_MEDIUM = 0.679;
-  const double CSV_OLDER_TIGHT  = 0.898;
   const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.65;
   const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.56;
   const double TAU_MVA_VETO_MTPRESEL_TIGHT = 0.45;
