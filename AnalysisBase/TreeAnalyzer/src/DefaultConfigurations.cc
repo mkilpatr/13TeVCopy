@@ -10,6 +10,7 @@ cfgSet::JetConfig cfgSet::zl_search_jets("zl_search_jets");
 cfgSet::JetConfig cfgSet::zl_photon_jets("zl_photon_jets");
 cfgSet::JetConfig cfgSet::zl_lepton_jets("zl_lepton_jets");
 cfgSet::JetConfig cfgSet::zl_dilepton_jets("zl_dilepton_jets");
+cfgSet::JetConfig cfgSet::zl_ttbarcr_jets("zl_ttbarcr_jets");
 cfgSet::JetConfig cfgSet::ol_search_jets("ol_search_jets");
 
 
@@ -20,7 +21,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.minBJetPt                 = 20;
   zl_search_jets.maxBJetEta                = 2.4;
   zl_search_jets.defaultCSV                = defaults::CSV_MEDIUM;
-  zl_search_jets.applyJetID                = false;
+  zl_search_jets.applyJetID                = true;
   zl_search_jets.applyAdHocPUCorr          = false;
   zl_search_jets.cleanJetsvSelectedLeptons = false;
   zl_search_jets.cleanJetsvVetoedLeptons   = false;
@@ -37,6 +38,9 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_dilepton_jets = zl_search_jets;
   zl_dilepton_jets.cleanJetsvSelectedLeptons = true;
 
+  zl_ttbarcr_jets = zl_search_jets;
+  zl_ttbarcr_jets.cleanJetsvSelectedLeptons = true;
+
   ol_search_jets = zl_search_jets;
   ol_search_jets.cleanJetsvSelectedLeptons = true;
   ol_search_jets.cleanJetsvVetoedLeptons   = false;
@@ -51,6 +55,7 @@ cfgSet::LeptonConfig cfgSet::zl_veto_leptons("zl_veto_leptons");
 cfgSet::LeptonConfig cfgSet::zl_loose_leptons("zl_loose_leptons");
 cfgSet::LeptonConfig cfgSet::ol_sel_leptons ("ol_sel_leptons") ;
 cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
+cfgSet::LeptonConfig cfgSet::zl_cr_leptons ("zl_cr_leptons") ;
 
 void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.minEPt            = 5;
@@ -73,6 +78,16 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_loose_leptons.minMuPt            = 10;
   zl_loose_leptons.selectedMuon       = &ucsbsusy::MuonF::isloosemuon;
 
+  zl_cr_leptons = zl_sel_leptons;
+  zl_cr_leptons.minEPt            = 15;
+  zl_cr_leptons.maxEEta           = 2.5;
+  zl_cr_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
+  zl_cr_leptons.minMuPt           = 10;
+  zl_cr_leptons.maxMuEta          = 2.4;
+  zl_cr_leptons.maxMuD0           = 0.02;
+  zl_cr_leptons.maxMuDz           = 0.1;
+  zl_cr_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
+
   ol_sel_leptons = zl_sel_leptons;
   ol_sel_leptons.minEPt            = 40;
   ol_sel_leptons.maxEEta           = 2.1;
@@ -92,6 +107,7 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_veto_leptons.maxMuD0           = 0.1;
   ol_veto_leptons.maxMuDz           = 0.5;
   ol_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
+
 }
 
 cfgSet::TrackConfig cfgSet::zl_veto_tracks("zl_veto_tracks");
@@ -134,6 +150,7 @@ void cfgSet::loadDefaultCorrections() {
 cfgSet::ConfigSet cfgSet::zl_search_set;
 cfgSet::ConfigSet cfgSet::zl_lepton_set;
 cfgSet::ConfigSet cfgSet::zl_dilepton_set;
+cfgSet::ConfigSet cfgSet::zl_ttbarcr_set;
 cfgSet::ConfigSet cfgSet::zl_photon_set;
 cfgSet::ConfigSet cfgSet::ol_search_set;
 
@@ -159,6 +176,11 @@ void cfgSet::loadDefaultConfigurations() {
   zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
   zl_dilepton_set.corrections = standardCorrections;
 
+  zl_ttbarcr_set.jets            = zl_ttbarcr_jets;
+  zl_ttbarcr_set.selectedLeptons = zl_cr_leptons;
+  zl_ttbarcr_set.vetoedTracks    = zl_veto_tracks;
+  zl_ttbarcr_set.corrections = standardCorrections;
+
   zl_photon_set.jets            = zl_photon_jets;
   zl_photon_set.vetoedLeptons   = zl_veto_leptons;
   zl_photon_set.vetoedTracks    = zl_veto_tracks;
@@ -179,6 +201,8 @@ void cfgSet::setJSONFile(const TString jsonfile) {
   zl_lepton_set.jsonProcessing = new JSONProcessing(jsonfile);
   zl_dilepton_set.jsonFile = jsonfile;
   zl_dilepton_set.jsonProcessing = new JSONProcessing(jsonfile);
+  zl_ttbarcr_set.jsonFile = jsonfile;
+  zl_ttbarcr_set.jsonProcessing = new JSONProcessing(jsonfile);
   zl_photon_set.jsonFile = jsonfile;
   zl_photon_set.jsonProcessing = new JSONProcessing(jsonfile);
   ol_search_set.jsonFile = jsonfile;
