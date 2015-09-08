@@ -16,9 +16,9 @@
 using namespace ucsbsusy;
 
 // Adjustments to default configuration
-cfgSet::ConfigSet pars1lep() {
+cfgSet::ConfigSet pars1lep(TString json) {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   //cfg.jets.cleanJetsvVetoedLeptons = true;
   return cfg;
