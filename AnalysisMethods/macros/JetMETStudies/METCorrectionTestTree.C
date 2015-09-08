@@ -174,7 +174,6 @@ void METCorrectionTestTree(string fileName,  string treeName = "Events", string 
   TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
 
   Copier a(fileName,treeName,outName.Data(),isMC, &cfg,inResScale);
-  a.jetAndMETCorrections.setResCorr(inMetParScale > 0 ? inMetParScale : 1.0,inMetPerpScale > 0 ? inMetPerpScale : 1.0);
 
   a.analyze();
 }
