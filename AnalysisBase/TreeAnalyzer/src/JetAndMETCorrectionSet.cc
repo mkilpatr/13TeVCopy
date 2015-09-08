@@ -7,8 +7,8 @@
 namespace ucsbsusy {
 
 float METScaleCorr::scaleCorr(float trueMETPT) const {
-  double x = std::max(20.0,double(trueMETPT));
-  return ( (-0.0569193 -2.10679/x -52.8809/(x*x)) - (-0.00187469 -2.90383/x -33.1923/(x*x) ) );
+  double x = std::min(std::max(20.0,double(trueMETPT)),300.0);
+  return (-0.0402319 + 0.285912/x -64.209/(x*x)) - (0.015672 -0.163545/x -38.5237/(x*x));
 }
 CylLorentzVectorF METScaleCorr::getCorrectedMET(const CylLorentzVectorF& trueBosons, const CylLorentzVectorF& met) const {
   if(trueBosons.pt() <= 0)
@@ -16,7 +16,7 @@ CylLorentzVectorF METScaleCorr::getCorrectedMET(const CylLorentzVectorF& trueBos
   return met + CylLorentzVectorF(trueBosons.pt(),0,trueBosons.phi(),0)*scaleCorr(trueBosons.pt()) ;
 }
 
-METResCorr::METResCorr() : Correction("METRes"), metParScale(0.97),metPerpScale(0.94) {}
+METResCorr::METResCorr() : Correction("METRes"){}
 CylLorentzVectorF METResCorr::getCorrectedMET(const CylLorentzVectorF& trueBosons,const CylLorentzVectorF& trueMET, CylLorentzVectorF met) const {
   if(trueBosons.pt() <= 0)
     return met;
@@ -27,8 +27,48 @@ CylLorentzVectorF METResCorr::getCorrectedMET(const CylLorentzVectorF& trueBoson
   float metParTrue   = met.pt() * TMath::Cos( PhysicsUtilities::deltaPhi(trueBosons,met) );
   float metPerpTrue  = met.pt() * TMath::Sin( PhysicsUtilities::deltaPhi(trueBosons,met) );
 
-  CylLorentzVectorF truePar ( TMath::Abs(metParTrue) * metParScale, 0, metParTrue > 0 ? trueBosons.phi() : TVector2::Phi_mpi_pi(trueBosons.phi() - TMath::Pi()) , 0);
-  CylLorentzVectorF truePerp ( TMath::Abs(metPerpTrue) * metPerpScale, 0,
+  //variable scaling
+  double scalingPT = std::min(trueBosons.pt(),float(300.0));
+  double parScale = 0.857944 + 0.000750737*scalingPT;
+  double perpScale = 0.842937 + 0.000569862*scalingPT;
+
+  CylLorentzVectorF truePar ( TMath::Abs(metParTrue) * parScale, 0, metParTrue > 0 ? trueBosons.phi() : TVector2::Phi_mpi_pi(trueBosons.phi() - TMath::Pi()) , 0);
+  CylLorentzVectorF truePerp ( TMath::Abs(metPerpTrue) * perpScale, 0,
+      metPerpTrue > 0 ? TVector2::Phi_mpi_pi(trueBosons.phi() - TMath::PiOver2() ) : TVector2::Phi_mpi_pi(trueBosons.phi() + TMath::PiOver2() ) , 0 );
+
+
+  if(trueMET.pt() >= 0){
+    return trueMET + truePar + truePerp;
+  } else {
+    return truePar + truePerp;
+  }
+
+
+}
+
+float METNoHFScaleCorr::scaleCorr(float trueMETPT) const {
+  double x = std::min(std::max(20.0,double(trueMETPT)),300.0);
+  return ( (-0.0569193 -2.10679/x -52.8809/(x*x)) - (-0.00187469 -2.90383/x -33.1923/(x*x) ) );
+}
+CylLorentzVectorF METNoHFScaleCorr::getCorrectedMET(const CylLorentzVectorF& trueBosons, const CylLorentzVectorF& met) const {
+  if(trueBosons.pt() <= 0)
+    return met;
+  return met + CylLorentzVectorF(trueBosons.pt(),0,trueBosons.phi(),0)*scaleCorr(trueBosons.pt()) ;
+}
+
+METNoHFResCorr::METNoHFResCorr() : Correction("METNoHFResCorr"){}
+CylLorentzVectorF METNoHFResCorr::getCorrectedMET(const CylLorentzVectorF& trueBosons,const CylLorentzVectorF& trueMET, CylLorentzVectorF met) const {
+  if(trueBosons.pt() <= 0)
+    return met;
+  if(trueMET.pt() >= 0){
+    met -= trueMET;
+  }
+
+  float metParTrue   = met.pt() * TMath::Cos( PhysicsUtilities::deltaPhi(trueBosons,met) );
+  float metPerpTrue  = met.pt() * TMath::Sin( PhysicsUtilities::deltaPhi(trueBosons,met) );
+
+  CylLorentzVectorF truePar ( TMath::Abs(metParTrue) * 0.97, 0, metParTrue > 0 ? trueBosons.phi() : TVector2::Phi_mpi_pi(trueBosons.phi() - TMath::Pi()) , 0);
+  CylLorentzVectorF truePerp ( TMath::Abs(metPerpTrue) * 0.94, 0,
       metPerpTrue > 0 ? TVector2::Phi_mpi_pi(trueBosons.phi() - TMath::PiOver2() ) : TVector2::Phi_mpi_pi(trueBosons.phi() + TMath::PiOver2() ) , 0 );
 
 
@@ -47,10 +87,14 @@ void JetAndMETCorrectionSet::load(int correctionOptions)
   if(options_ & METSCALE){
     metScale = new METScaleCorr;
     corrections.push_back(metScale);
+    metNoHFScale = new METNoHFScaleCorr;
+    corrections.push_back(metNoHFScale);
   }
   if(options_ & METRESOLUTION){
     metResolution = new METResCorr;
     corrections.push_back(metResolution);
+    metNoHFResolution = new METNoHFResCorr;
+    corrections.push_back(metNoHFResolution);
   }
 }
 
@@ -61,6 +105,9 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
 
   originalMET =  *ana->met;
   correctedMET = *ana->met;
+
+  originalMETNoHF =  *ana->metNoHF;
+  correctedMETNoHF = *ana->metNoHF;
 
   if(options_ & NULLOPT) return;
 
@@ -116,15 +163,18 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
   if(metScale) {
     tempMET = metScale->getCorrectedMET(trueBosons,tempMET);
   }
-
-
   correctedMET.setP4(tempMET);
-}
 
-void JetAndMETCorrectionSet::setResCorr(float metPar, float metPerp) {
-    if(!metResolution) return;
-    metResolution->metParScale = metPar;
-    metResolution->metPerpScale = metPerp;
+  CylLorentzVectorF tempMETNoHF = correctedMETNoHF.p4();
+
+  if(metResolution) {
+    tempMETNoHF = metNoHFResolution->getCorrectedMET(trueBosons,trueMET,tempMETNoHF);
+  }
+  if(metScale) {
+    tempMETNoHF = metNoHFScale->getCorrectedMET(trueBosons,tempMETNoHF);
+  }
+  correctedMET.setP4(tempMET);
+
 }
 
 

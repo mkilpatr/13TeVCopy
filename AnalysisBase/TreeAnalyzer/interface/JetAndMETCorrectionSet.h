@@ -28,8 +28,21 @@ public:
   METResCorr();
   float get() const {return 1.0;}
   CylLorentzVectorF getCorrectedMET(const CylLorentzVectorF& trueBosons,const CylLorentzVectorF& trueMET, CylLorentzVectorF met) const;
-  float metParScale;
-  float metPerpScale;
+};
+
+class METNoHFScaleCorr : public Correction {
+public:
+  METNoHFScaleCorr() : Correction("METNoHFScale") {}
+  float get() const {return 1.0;}
+  float scaleCorr(float trueMETPT) const;
+  CylLorentzVectorF getCorrectedMET(const CylLorentzVectorF& trueBosons, const CylLorentzVectorF& met) const;
+};
+
+class METNoHFResCorr : public Correction {
+public:
+  METNoHFResCorr();
+  float get() const {return 1.0;}
+  CylLorentzVectorF getCorrectedMET(const CylLorentzVectorF& trueBosons,const CylLorentzVectorF& trueMET, CylLorentzVectorF met) const;
 };
 
 class JetAndMETCorrectionSet : public CorrectionSet {
@@ -39,7 +52,7 @@ public:
                           , METSCALE              = (1 <<  0)   ///< Correct MET Scale
                           , METRESOLUTION         = (1 <<  1)   ///< Correct MET Resolution
   };
-  JetAndMETCorrectionSet(): metScale(0),metResolution(0) {}
+  JetAndMETCorrectionSet(): metScale(0),metResolution(0), metNoHFScale(0), metNoHFResolution(0) {}
   virtual ~JetAndMETCorrectionSet() {};
   virtual void load(int correctionOptions = NULLOPT);
   virtual void processMET(const BaseTreeAnalyzer * ana);
@@ -49,15 +62,22 @@ public:
   MomentumF getCorrectedMET() const {return correctedMET;}
   MomentumF getOriginalMET() const {return originalMET;}
 
-  void setResCorr(float metPar, float metPerp);
+  MomentumF getCorrectedMETNoHF() const {return correctedMETNoHF;}
+  MomentumF getOriginalMETNoHF() const {return originalMETNoHF;}
 
 private:
   //Correction list
   METScaleCorr * metScale;
   METResCorr * metResolution;
 
+  METNoHFScaleCorr * metNoHFScale;
+  METNoHFResCorr * metNoHFResolution;
+
   MomentumF originalMET;
   MomentumF correctedMET;
+
+  MomentumF originalMETNoHF;
+  MomentumF correctedMETNoHF;
 
   CylLorentzVectorF trueBosons; //direction of the correction
   CylLorentzVectorF trueMET; //neutrinos from EWK bosons or LSPs

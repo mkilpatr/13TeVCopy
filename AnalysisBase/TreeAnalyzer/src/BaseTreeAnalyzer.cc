@@ -227,6 +227,7 @@ void BaseTreeAnalyzer::processVariables()
   if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
     jetAndMETCorrections.processMET(this);
     (*met) = jetAndMETCorrections.getCorrectedMET();
+    (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
   }
 
   if(genParticleReader.isLoaded()){
