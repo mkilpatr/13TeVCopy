@@ -75,6 +75,15 @@ bool isIncoming(const int status);
 bool isDoc(const int status);
 ParticleStatus getStatus(const int status);
 
+//check if the the last particle in the chain
+//Make sure the particle is of a certain status
+template<typename Particle>
+bool isLastInChain(const Particle* particle, bool (*selectID)(int) = 0);
+
+/// Traces particle down the chain of radiation vertices to the last instance of the same particle.
+template<typename ParticleRef>
+ParticleRef getFinal(ParticleRef particle, int maxNumDaughters = -1);
+
 //_____________________________________________________________________________
 // Check particle type from PDGID
 //_____________________________________________________________________________

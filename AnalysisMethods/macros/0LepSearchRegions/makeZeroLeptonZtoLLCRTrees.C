@@ -60,7 +60,7 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nVetoedTracks > 0)                 return false;
       if(met->pt() < low_metcut_)           return false;
       if(!goodvertex)                       return false;
-      filler.fillEventInfo(&data, this, datatype_);
+      filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
     }
@@ -74,7 +74,8 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
                                  const TString fname = "/store/user/vdutta/13TeV/150715/74X/merged/dyjetstoll_1_ntuple_wgtxsec.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
-                                 const TString fileprefix = "root://eoscms//eos/cms")
+                                 const TString fileprefix = "root://eoscms//eos/cms",
+                                 const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -89,7 +90,7 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep();
+  cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_dilepton_set;
 
   ZtoLLCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);

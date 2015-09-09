@@ -155,6 +155,7 @@ public:
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
     EventCorrectionSet  leptonCorrections;
+    JetAndMETCorrectionSet  jetAndMETCorrections;
 
 
     //hack for DY PU

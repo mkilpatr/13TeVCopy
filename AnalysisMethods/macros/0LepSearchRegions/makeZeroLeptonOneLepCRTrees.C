@@ -17,7 +17,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(!goodvertex) return false;
 
-      if(nBJets < 1) return false;
+      if(nBJets < 0) return false;
 
       if(nJets < 2) return false;
 
@@ -41,7 +41,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
-      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
+      //      if(fabs(PhysicsUtilities::deltaPhi(*W, *lep)) > 1)        return false;
 
       filler.fillEventInfo(&data, this, whichLep);
 
@@ -58,7 +58,8 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
                                  const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/ttbar-madgraphmlm-50ns_1_ntuple_postproc.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
-                                 const TString fileprefix = "root://eoscms//eos/cms")
+                                 const TString fileprefix = "root://eoscms//eos/cms",
+                                 const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -74,7 +75,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lepCR();
+  cfgSet::ConfigSet pars = pars0lepCR(json);
 
   double randSeed = fileindex + 2;
   TString treename = "Events";

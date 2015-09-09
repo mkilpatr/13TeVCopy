@@ -1,0 +1,116 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
+#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+
+
+using namespace std;
+using namespace ucsbsusy;
+
+class Copier : public TreeCopierManualBranches {
+public:
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,isMCTree,pars),
+  i_npv       (0),
+  i_rho       (0),
+  i_weight    (0),
+  i_puWeight  (0),
+  i_genjetpt  (0),
+  i_genjeteta (0),
+  i_genjetrank(0),
+  i_flavor    (0),
+  i_recojetpt (0)
+  {
+  };
+  virtual ~Copier() {};
+
+  virtual void loadVariables(){
+    load(cfgSet::EVTINFO);
+    load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
+  }
+
+  virtual bool fillEvent() {
+
+    for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
+      const auto& gJ = defaultJets->genJets[iJ];
+
+      if (gJ.pt()  < 20) continue;
+
+      //getrecojet
+      const RecoJetF* rJ = 0;
+      for(unsigned int iR = 0; iR < defaultJets->recoJets.size(); ++iR){
+        if(defaultJets->recoJets[iR].genJet() != &gJ) continue;
+        rJ = &defaultJets->recoJets[iR];
+        break;
+      }
+
+      data.fill<unsigned int>(i_npv,nPV);
+      data.fill<float>(i_rho       ,rho);
+      data.fill<float>(i_weight    ,weight);
+      data.fill<float>(i_puWeight  ,eventCorrections.getPUWeight());
+      data.fill<float>(i_genjetpt  ,gJ.pt() );
+      data.fill<float>(i_genjeteta ,gJ.eta() );
+      data.fill<unsigned int>(i_genjetrank,  iJ);
+      data.fill<unsigned int>(i_flavor    , convertTo<unsigned int>(gJ.flavor(),"Copier::i_flavor"));
+      data.fill<float>(i_recojetpt,rJ == 0 ? 19.5 : rJ->pt());
+    }
+
+
+
+
+
+    return true;
+  }
+
+  void book() {
+
+    i_npv         = data.add<unsigned int>("","npv"                      ,"i",0);
+    i_rho         = data.add<float>("","rho"                      ,"F",0);
+    i_weight      = data.add<float>("","weight"                   ,"F",0);
+    i_puWeight      = data.add<float>("","puWeight"               ,"F",0);
+    i_genjetpt    = data.add<float>("","genjetpt"                 ,"F",0);
+    i_genjeteta   = data.add<float>("","genjeteta"                ,"F",0);
+    i_genjetrank  = data.add<unsigned int>("","genjetrank"               ,"i",0);
+    i_flavor      = data.add<unsigned int>("","flavor"                   ,"i",0);
+    i_recojetpt   = data.add<float>("","recojetpt"                ,"F",0);
+
+  }
+
+
+  //event level info
+  size i_npv       ;
+  size i_rho       ;
+  size i_weight    ;
+  size i_puWeight    ;
+  size i_genjetpt  ;
+  size i_genjeteta ;
+  size i_genjetrank;
+  size i_flavor    ;
+  size i_recojetpt ;
+
+
+};
+
+
+#endif
+
+void JetResSkim(string fileName,  string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes", bool isMC = true) {
+
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+
+  //get the output name
+  TString prefix(fileName);
+  prefix.Remove(0,prefix.Last('/') + 1);
+  if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
+  TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
+
+  Copier a(fileName,treeName,outName.Data(),isMC, &cfg);
+
+  a.analyze();
+}
+
+
+/*
+ * Running
+ * nohup root -b -q '/uscms_data/d3/nmccoll/2011-04-15-susyra2/CMSSW_7_4_7/src/AnalysisMethods/macros/JetMETStudies/JetResSkim.C+("/eos/uscms/store/user/ocolegro/13TeV/130815/merged/qcd_ht700to1000-50ns_1_ntuple_postproc.root"  , "Events","jetRes",true)' &
+ * For every QCD file
+ */

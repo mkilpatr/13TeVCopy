@@ -43,7 +43,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
-  clog <<"Loaded configurations: ";
+  clog <<"Loaded configurations: " << endl;
+  if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
@@ -99,6 +100,9 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT){
     leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      corrections.push_back(&jetAndMETCorrections);
     }
   }
     jetCorrector.setJES(configSet.jets.JES);
@@ -223,6 +227,11 @@ void BaseTreeAnalyzer::processVariables()
     triggerflag =  evtInfoReader.triggerflag;
   }
 
+  if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+    jetAndMETCorrections.processMET(this);
+    (*met) = jetAndMETCorrections.getCorrectedMET();
+    (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+  }
 
   if(genParticleReader.isLoaded()){
     genParts.clear();

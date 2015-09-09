@@ -49,10 +49,12 @@ unsigned int targetBin;
 class CorrectionSet {
 public:
   CorrectionSet();
-  virtual void loadFile(TString correctionSetName, TString fileName, int correctionOptions);
   virtual ~CorrectionSet();
   virtual void processCorrection(const BaseTreeAnalyzer * ana) = 0;
 protected:
+  virtual void loadSimple(TString correctionSetName, int correctionOptions);
+  virtual void loadFile(TString correctionSetName, TString fileName, int correctionOptions);
+
   TString name;
   TFile * file;
   int options_;
