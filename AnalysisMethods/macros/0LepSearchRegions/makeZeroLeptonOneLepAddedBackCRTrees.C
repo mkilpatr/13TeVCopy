@@ -18,9 +18,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(metn->pt() < metcut_) return false;
       if(!goodvertex) return false;
    // if(nVetoedTracks > 0)     return false;
-      if(nJets < 5) return false;
-      if(nBJets < 1) return false;
-      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
+      if(nJets < 2) return false;
+      if(nBJets < 0) return false;
+      //      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
       filler.fillEventInfo(&data, this, 0, true, metn);
       filler.fillJetInfo(&data, jets, bJets, metn);
@@ -35,7 +35,8 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
                                  const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/ttbar-madgraphmlm-50ns_1_ntuple_postproc.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
-                                 const TString fileprefix = "root://eoscms//eos/cms")
+                                 const TString fileprefix = "root://eoscms//eos/cms",
+                                 const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -51,7 +52,7 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lepCR();
+  cfgSet::ConfigSet pars = pars0lepCR(json);
 
 /*  cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;

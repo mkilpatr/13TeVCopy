@@ -42,7 +42,7 @@ namespace ucsbsusy {
       istight_(inIsTight), ispf_(inIspf),
       isglobal_(inIsglobal), istracker_(inIstracker),
       isstandalone_(inIsstandalone), isgoodpogmuon_(false),
-      ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isvetomuon_(false) {}
+      ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isvetomuon_(false), ismediumisomuon_(false) {}
     
     ~Muon() {}
 
@@ -58,6 +58,7 @@ namespace ucsbsusy {
       bool	ismultiisovetomuonl()  const { return ismultiisovetomuonl_; }
       bool	ismultiisovetomuonvl() const { return ismultiisovetomuonvl_;}
       bool      isvetomuon()           const { return isvetomuon_;          }
+      bool      ismediumisomuon()      const { return ismediumisomuon_;     }
 
       void	setIsLoose(bool newType)	   { isloose_ = newType;		}
       void	setIsMedium(bool newType)	   { ismedium_ = newType;		}
@@ -71,6 +72,7 @@ namespace ucsbsusy {
       void	setIsMultiIsoVetoMuonL(bool flag)  { ismultiisovetomuonl_  = flag; }
       void	setIsMultiIsoVetoMuonVL(bool flag) { ismultiisovetomuonvl_ = flag; }
       void      setIsVetoMuon(bool flag)           { isvetomuon_ = flag;   }
+      void      setIsMediumIsoMuon(bool flag)      { ismediumisomuon_ = flag;   }
 
     protected :
       bool	isloose_;
@@ -85,6 +87,7 @@ namespace ucsbsusy {
       bool	ismultiisovetomuonl_;
       bool	ismultiisovetomuonvl_;
       bool	isvetomuon_;
+      bool      ismediumisomuon_;
 
   };
 

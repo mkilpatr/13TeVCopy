@@ -132,7 +132,7 @@ cfgSet::PhotonConfig cfgSet::zl_sel_photons("zl_sel_photons");
 
 void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.minPt    = 180;
-  zl_sel_photons.maxEta   = 2.4;
+  zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
   zl_sel_photons.setConfig();
 }
@@ -144,6 +144,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
   standardCorrections.eventCorrections    = ucsbsusy::EventCorrectionSet::PU;
   standardCorrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
+  standardCorrections.jetAndMETCorrections    = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
   standardCorrections.setConfig();
 }
 

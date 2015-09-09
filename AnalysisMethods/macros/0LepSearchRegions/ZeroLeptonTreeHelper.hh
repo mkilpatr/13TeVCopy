@@ -11,23 +11,23 @@
 using namespace ucsbsusy;
 
 // Adjustments to default configuration
-cfgSet::ConfigSet pars0lep() {
+cfgSet::ConfigSet pars0lep(TString json) {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt",getenv("CMSSW_BASE")));
+  cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   return cfg;
 }
 
-cfgSet::ConfigSet pars0lepCR() {
+cfgSet::ConfigSet pars0lepCR(TString json) {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt");
+  cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
   return cfg;
 }
 
-cfgSet::ConfigSet pars0LepPhoton() {
+cfgSet::ConfigSet pars0LepPhoton(TString json) {
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt");
+  cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   return cfg;
 }

@@ -111,6 +111,7 @@ void MuonReader::refresh(){
       muons.back().setPtRatio(ptratio->at(iL));
       muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
       muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
+      muons.back().setIsMediumIsoMuon(ismedium->at(iL) && pfdbetaiso->at(iL)/pt->at(iL) < 0.12);
     }
   }
 }

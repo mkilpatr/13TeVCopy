@@ -41,7 +41,7 @@ namespace ucsbsusy {
 		isveto_(inIsveto), isloose_(inIsloose),
 		ismedium_(inIsmedium), istight_(inIstight),
 		isgoodpogelectron_(false), ismvavetoelectron_(false), 
-   	  ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
+   	  ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false), ismediumisoelectron_(false) {}
 
       ~Electron() {}
 
@@ -59,6 +59,7 @@ namespace ucsbsusy {
       bool	ismultiisovetoelectronvl() const { return ismultiisovetoelectronvl_; }
       bool      ismediumid()               const { return ismediumid_;     }
       bool      islooseid()                const { return islooseid_;     }
+      bool      ismediumisoelectron()      const { return ismediumisoelectron_; }
 
 
       void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
@@ -75,6 +76,7 @@ namespace ucsbsusy {
       void	setIsMVAVetoElectron(bool flag)	       { ismvavetoelectron_ = flag;	}
       void	setIsMultiIsoVetoElectronL(bool flag)  { ismultiisovetoelectronl_  = flag; }
       void	setIsMultiIsoVetoElectronVL(bool flag) { ismultiisovetoelectronvl_ = flag; }
+      void      setIsMediumIsoElectron(bool flag)      { ismediumisoelectron_ = flag;   }
 
     protected :
       float	scEta_;
@@ -91,6 +93,7 @@ namespace ucsbsusy {
       bool	ismvavetoelectron_;
       bool	ismultiisovetoelectronl_;
       bool	ismultiisovetoelectronvl_;
+      bool      ismediumisoelectron_;
 
   };
 

@@ -54,6 +54,40 @@ namespace PlotTools {
       }                                                                                                                  
     }                                                                                                                    
     ifs.close(); 
-  } 
+  }
+
+  void toUnderflow(TH1 * h) {
+      h->SetBinContent(1,h->GetBinContent(1) +h->GetBinContent(0) );
+      h->SetBinContent(0,0);
+      if(h->GetSumw2()->fN){
+        (*h->GetSumw2())[1] += (*h->GetSumw2())[0];
+        h->SetBinError(0,0);
+      }
+  }
+  void toOverflow(TH1 * h) {
+    int nBins = h->GetNbinsX();
+      h->SetBinContent(nBins,h->GetBinContent(nBins) +h->GetBinContent(nBins+1) );
+      h->SetBinContent(nBins+1,0);
+      if(h->GetSumw2()->fN){
+        (*h->GetSumw2())[nBins] += (*h->GetSumw2())[nBins +1];
+        h->SetBinError(nBins+1,0);
+      }
+
+  }
+  void normalize(TH1 * h) {
+    if(h->GetSumw2()->fN == 0) h->Sumw2();
+    int nBins = h->GetNbinsX();
+    double norm = h->Integral(0,nBins+1);
+    if(norm)
+      h->Scale(1/norm);
+  }
+  TH1* rebin(TH1* h, int n){
+    return h->Rebin(n);
+  }
+  TH1* rebin(TH1* h, int n, double * bins){
+    return h->Rebin(n,"",bins);
+  }
+
+
   
 }
