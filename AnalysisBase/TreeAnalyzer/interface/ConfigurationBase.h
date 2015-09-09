@@ -178,11 +178,15 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
+    int leptonCorrections;
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
+    TString leptonCorrectionFile;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
-        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
+        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+    	leptonCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -196,6 +200,13 @@ namespace cfgSet {
         os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
           os << "PU " << std::endl;
+        os << std::endl;
+
+      }
+      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
+          os << "LEP " << std::endl;
         os << std::endl;
 
       }

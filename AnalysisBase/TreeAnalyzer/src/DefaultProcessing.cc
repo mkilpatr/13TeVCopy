@@ -35,6 +35,16 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
   return (pho.pt() > conf.minPt && fabs(pho.eta()) < conf.maxEta && (pho.*conf.selected)());
 }
 
+bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
+    bool boolVal = false;
+    float topRawMass   = top->topRawMass();
+    float inTopMinMass  = top->topMinMass();
+    int   topNsubJets = top->topNsubJets();
+
+    if ( ((topRawMass)>140.) && ((topRawMass)<250.) && ((inTopMinMass)>50.) && ((topNsubJets)>=3) ) { boolVal = true; }
+    return boolVal;
+}
+
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");

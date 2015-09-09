@@ -154,6 +154,8 @@ public:
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
+    EventCorrectionSet  leptonCorrections;
+
 
     //hack for DY PU
     bool zIsInvisible;

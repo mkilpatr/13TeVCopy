@@ -96,8 +96,11 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
       corrections.push_back(&eventCorrections);
     }
+    if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT){
+    leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      corrections.push_back(&leptonCorrections);
+    }
   }
-
     jetCorrector.setJES(configSet.jets.JES);
 }
 
