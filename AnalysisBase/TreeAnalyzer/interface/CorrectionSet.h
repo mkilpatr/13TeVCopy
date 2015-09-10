@@ -37,7 +37,7 @@ protected:
 
 class HistogramCorrection : public Correction {
 public:
-  HistogramCorrection(TString corrName, TFile * file,);
+  HistogramCorrection(TString corrName, TFile * file);
   void setTargetBin(unsigned int a) {targetBin = a;}
   virtual float get() const { return corrHist->GetBinContent(targetBin);}
   const TH1F* getHist()  { return corrHist;}

@@ -37,9 +37,9 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 
 bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
     bool boolVal = false;
-    float topRawMass   = top->topRawMass();
-    float inTopMinMass  = top->topMinMass();
-    int   topNsubJets = top->topNsubJets();
+    float topRawMass   = top.topRawMass();
+    float inTopMinMass  = top.topMinMass();
+    int   topNsubJets = top.topNsubJets();
 
     if ( ((topRawMass)>140.) && ((topRawMass)<250.) && ((inTopMinMass)>50.) && ((topNsubJets)>=3) ) { boolVal = true; }
     return boolVal;

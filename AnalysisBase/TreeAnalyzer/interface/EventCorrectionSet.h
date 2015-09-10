@@ -9,7 +9,6 @@
 #define ANALYSISBASE_TREEANALYZER_INTERFACE_EVENTCORRECTIONSET_H_
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
-#include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 
 namespace ucsbsusy {
 
@@ -24,12 +23,12 @@ public:
   //enum axes {NPV,INPUT_MC};
   LepCorr(TFile * file)  : HistogramCorrection("LEP",file) {}
 
-  const unsigned int muCorrBin   = 61;
-  const unsigned int muBinShift  = 0;
-  const unsigned int eleCorrBin  = 62;
-  const unsigned int eleBinShift = 20;
-  const unsigned int tauCorrBin  = 63;
-  const unsigned int tauBinShift = 40;
+static  const unsigned int muCorrBin   = 61;
+static  const unsigned int muBinShift  = 0;
+static  const unsigned int eleCorrBin  = 62;
+static  const unsigned int eleBinShift = 20;
+static  const unsigned int tauCorrBin  = 63;
+static  const unsigned int tauBinShift = 40;
 
 };
 
@@ -41,7 +40,7 @@ public:
                           , LEP              = (2 <<  0)   ///< Correct LEP EFF.
 
   };
-  EventCorrectionSet(): lepCorr(0),puCorr(0), puWeight(1),lepWeight(1){}
+  EventCorrectionSet(): puCorr(0), lepCorr(0), puWeight(1),lepWeight(1){}
   virtual ~EventCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);

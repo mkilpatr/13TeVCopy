@@ -189,7 +189,7 @@ namespace cfgSet {
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-    	leptonCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
+    	leptonCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
 
     {};
@@ -214,7 +214,7 @@ namespace cfgSet {
         if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
           os << "LEP " << std::endl;
         os << std::endl;
-
+	}
       if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
         os << "Applying jet and MET corrections -> ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)

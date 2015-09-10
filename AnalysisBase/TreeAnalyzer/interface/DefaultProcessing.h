@@ -4,6 +4,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/ConfigurationBase.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
+#include "AnalysisTools/DataFormats/interface/CMSTop.h"
 
 namespace cfgSet{
   bool isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf     );
