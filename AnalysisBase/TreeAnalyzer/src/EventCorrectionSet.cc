@@ -25,13 +25,13 @@ void EventCorrectionSet::load(TString fileName, int correctionOptions)
 }
 
 void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
+        if(!ana->isMC()){
+            puWeight =1;
+	    lepWeight = 1;
+            return;
+        }
 
-
-  if(PU) {
-	if(!ana->isMC()){
-	    puWeight =1;
-	    return;
-	}
+  if(PU) {	
         if(options_ & PU) {
            bool is25NSMC = 	ana->process == defaults::TTZ || 
 				ana->process == defaults::TTW || 
@@ -44,6 +44,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   	}
      }
   if(LEP) {
+	  lepWeight = 1; //Will be updated later
 	  int nTaggedTops = 0;
 	  for (UInt_t i=0; i<ana->cttTops.size(); ++i){
 		  if(cfgSet::isSelTaggedTop(*ana->cttTops.at(i)))

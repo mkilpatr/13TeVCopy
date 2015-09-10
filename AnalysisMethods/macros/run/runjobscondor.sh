@@ -20,20 +20,17 @@ echo "workdir: $workdir"
 echo "args: $*"
 ls -l
 
-source /cvmfs/cms.cern.ch/cmsset_default.sh
+source /uscmst1/prod/sw/cms/shrc prod
 cd $scramdir/src/
-SCRAM_ARCH=slc6_amd64_gcc491
+SCRAM_ARCH=slc6_amd64_gcc481
 eval `scramv1 runtime -sh`
 cd $workdir
 
-### done in the transfer_input_files ###
-#cp $scramdir/rootlogon.C .
-#cp $scramdir/$runmacro .
-#if [ ! -z "$json" ]; then
-#  cp $scramdir/$json .
-#fi
+cp $scramdir/rootlogon.C .
+cp $scramdir/$runmacro .
+cp src/data/JSON/$json .
 
-root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",$xsec,\"${outputdir}\",\"${prefix}\",\"${json}\"\)
+root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",$xsec,\"${outputdir}\",\"${prefix}\"\)
 
 status=`echo $?`
 echo "Status = $status"

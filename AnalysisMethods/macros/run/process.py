@@ -13,7 +13,7 @@ parser.add_argument("-o", "--outdir", dest="outdir", default="${PWD}/plots", hel
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
-parser.add_argument("-j", "--json", dest="json", default="Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt", help="json file to use. [default:\"\"]")
+parser.add_argument("-j", "--json", dest="json", default="", help="json file to use. [default:\"\"]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -21,6 +21,7 @@ samples = []
 files = []
 xsecs = []
 types = []
+jsons = []
 state = 0
 snum = 0
 with open((args.path+"/"+args.conf),"r") as f :
@@ -36,12 +37,15 @@ with open((args.path+"/"+args.conf),"r") as f :
             files.append([])
             xsecs.append([])
             types.append([])
+            if state == 0 :
+                jsons.append([])
             snum += 1
             continue
         if state == 0 :
             files[snum-1].append(content[0])
             xsecs[snum-1].append(0)
             types[snum-1].append(content[1])
+            jsons[snum-1].append(content[2])
         elif state == 1 :
             files[snum-1].append(content[0])
             xsecs[snum-1].append(content[1])
@@ -80,12 +84,12 @@ for isam in range(len(samples)) :
         findex = ifile if len(files[isam]) > 1 else -1
         ismc = 1 if types[isam][ifile] == 0 else 0
         if args.submittype == "interactive" :
-            script.write("""root -l -q -b {pathtomacro}/rootlogon.C {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",{xsec},\\"$outputdir\\",\\"$prefix\\",\\"{json}\\"\)\n""".format(
-            pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile], json="$CMSSW_BASE/src/data/JSON/"+args.json if args.json!='' else '' 
+            script.write("""root -l -q -b {pathtomacro}/rootlogon.C {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",{xsec},\\"$outputdir\\",\\"$prefix\\"\)\n""".format(
+            pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile]
             ))
         elif args.submittype == "lsf" :
-            script.write("""bsub -q {queue} $runscript $runmacro {sname} {index} {mc} {file} {xsec} $outputdir $prefix $workdir {json}\n""".format(
-            queue=args.queue, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile], json=args.json
+            script.write("""bsub -q {queue} $runscript $runmacro {sname} {index} {mc} {file} {xsec} $outputdir $prefix $workdir \n""".format(
+            queue=args.queue, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile]
             ))
         elif args.submittype == "condor" :
             os.system("mkdir -p %s/logs" % args.outdir)
