@@ -69,8 +69,13 @@ struct TreeFiller {
   size i_metnohf   ;
   size i_metnohfphi;
   size i_npv       ;
-  size i_nvetotau  ;
   size i_nvetolep  ;
+  size i_nvetotau  ;
+  size i_nvetomu   ;
+  size i_nvetolele ;
+  size i_ngoodgenmu;
+  size i_ngoodgenele;
+  size i_npromptgentau;
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
@@ -162,8 +167,13 @@ struct TreeFiller {
     i_metnohf        = data->add<float>("","metnohf","F",0);
     i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
     i_npv            = data->add<int>("","npv","I",0);
-    i_nvetotau       = data->add<int>("","nvetotau","I",0);
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
+    i_nvetotau       = data->add<int>("","nvetotau","I",0);
+    i_nvetomu        = data->add<int>("","nvetomu","I",0);
+    i_nvetolele      = data->add<int>("","nvetolele","I",0);
+    i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
+    i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
+    i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
@@ -200,7 +210,6 @@ struct TreeFiller {
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
-
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
@@ -241,6 +250,26 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+
+    int nVetoEle = 0; int nVetoMu = 0;
+    for(auto i: ana->vetoedLeptons){
+		  if(fabs(i->pdgid()) == 11) nVetoEle++;
+		  if(fabs(i->pdgid()) == 13) nVetoMu++;
+    }
+    int nGoodGenMu = 0;int nGoodGenEle = 0;int nPromptTaus = 0;
+
+    for(auto i: ana->genParts){
+		if ((abs(i->pdgId()) == 11) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24 or abs(i->pdgId()) == 15)) nGoodGenEle++;
+		if ((abs(i->pdgId()) == 13) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24 or abs(i->pdgId()) == 15)) nGoodGenMu++;
+		if ((abs(i->pdgId()) == 13) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24)) nPromptTaus++;
+    }
+
+    data->fill<int  >(i_nvetomu, nVetoMu);
+    data->fill<int  >(i_nvetolele, nVetoEle);
+
+    data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
+    data->fill<int  >(i_ngoodgenele, nGoodGenEle);
+    data->fill<int  >(i_npromptgentau, nPromptTaus);
     data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd = 0;

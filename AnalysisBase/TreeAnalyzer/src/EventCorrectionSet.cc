@@ -19,6 +19,7 @@ void EventCorrectionSet::load(TString fileName, int correctionOptions)
 	  loadFile("LEP",fileName,correctionOptions);
 	  if(options_ & LEP){
 		  lepCorr = new LepCorr(file);
+		  lepCorr->setCorrType(ucsbsusy::LepCorr::VARY_NONE);
 		  corrections.push_back(lepCorr);
 	  }
   }
@@ -72,39 +73,33 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 			}
 	  }
 
-	  if(ana->getAnaCfg().selectedLeptons.getName() == "zl_sel_leptons" or ana->getAnaCfg().selectedLeptons.getName() == "ol_sel_leptons"){
-		  for(auto* i : ana->selectedLeptons)
-		  {
-			  if(fabs(i->pdgid()) == 11) nSelectedElectrons++;
-			  if(fabs(i->pdgid()) == 13) nSelectedMuons++;
-		  }
-	  }
-	  else{
 		  for(auto* i : ana->vetoedLeptons)
 		  {
 			  if(fabs(i->pdgid()) == 11) nSelectedElectrons++;
 			  if(fabs(i->pdgid()) == 13) nSelectedMuons++;
 		  }
-	 }
+	 
 
 	  if (nSelectedMuons >= 1 && nGoodGenMu >= 1){
 		  lepCorr->setTargetBin(LepCorr::muCorrBin);
-		  vetoLepWeight = 1 - lepCorr->get();
-		  selLepWeight  = lepCorr->get();
-//		  std::cout << "The mu corr is " << selLepWeight << std::endl;
 	  }
 	  else if (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle >= 1){
 		  lepCorr->setTargetBin(LepCorr::eleCorrBin);
-		  vetoLepWeight = 1 - lepCorr->get();
-		  selLepWeight  = lepCorr->get();
-//		  std::cout << "The ele corr is " << selLepWeight << std::endl;
 	  }
 	  else if (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 0){
 		  lepCorr->setTargetBin(LepCorr::tauCorrBin);
-		  vetoLepWeight = 1 - lepCorr->get();
-		  selLepWeight  = lepCorr->get();
-//		  std::cout << "The tau corr is " << selLepWeight << std::endl;
 	  }
+                  vetoLepWeight = 1 - lepCorr->get();
+                  selLepWeight  = lepCorr->get();
+                 
+		  if(lepCorr->corrType == ucsbsusy::LepCorr::VARY_UP) {
+                  vetoLepWeight -= lepCorr->getError();
+                  selLepWeight+= lepCorr->getError();}
+
+                  if(lepCorr->corrType == ucsbsusy::LepCorr::VARY_DOWN) {
+                  vetoLepWeight += lepCorr->getError();
+                  selLepWeight -= lepCorr->getError();}
+
 	  else	if ((nSelectedMuons >= 1 && nGoodGenMu == 0)
 			  or (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle == 0 )
 			  or (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus == 0)){
