@@ -189,7 +189,6 @@ namespace cfgSet {
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-    	leptonCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
 
     {};

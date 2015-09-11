@@ -73,6 +73,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
+    cfgSet::ConfigSet getAnaCfg() const { return configSet;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
@@ -154,7 +155,6 @@ public:
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
-    EventCorrectionSet  leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
 
 

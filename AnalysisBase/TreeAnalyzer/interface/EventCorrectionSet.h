@@ -23,12 +23,9 @@ public:
   //enum axes {NPV,INPUT_MC};
   LepCorr(TFile * file)  : HistogramCorrection("LEP",file) {}
 
-static  const unsigned int muCorrBin   = 61;
-static  const unsigned int muBinShift  = 0;
-static  const unsigned int eleCorrBin  = 62;
-static  const unsigned int eleBinShift = 20;
-static  const unsigned int tauCorrBin  = 63;
-static  const unsigned int tauBinShift = 40;
+static const unsigned int muCorrBin   = 1;
+static const unsigned int eleCorrBin  = 2;
+static const unsigned int tauCorrBin  = 3;
 
 };
 
@@ -40,14 +37,16 @@ public:
                           , LEP              = (2 <<  0)   ///< Correct LEP EFF.
 
   };
-  EventCorrectionSet(): puCorr(0), lepCorr(0), puWeight(1),lepWeight(1){}
+  EventCorrectionSet(): puCorr(0), lepCorr(0), puWeight(1),vetoLepWeight(1),selLepWeight(1){}
   virtual ~EventCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
   float getPUWeight() const {return puWeight;}
-  float getLepWeight() const {return lepWeight;}
+  float getVetoLepWeight() const {return vetoLepWeight;}
+  float getSelLepWeight() const {return selLepWeight;}
+
 
 private:
   //Correction list
@@ -56,7 +55,8 @@ private:
 
   //output values
   float puWeight;
-  float lepWeight;
+  float vetoLepWeight;
+  float selLepWeight;
 };
 
 
