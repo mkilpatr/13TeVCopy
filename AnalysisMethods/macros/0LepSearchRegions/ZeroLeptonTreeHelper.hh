@@ -259,9 +259,12 @@ struct TreeFiller {
     int nGoodGenMu = 0;int nGoodGenEle = 0;int nPromptTaus = 0;
 
     for(auto i: ana->genParts){
-		if ((abs(i->pdgId()) == 11) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24 or abs(i->pdgId()) == 15)) nGoodGenEle++;
-		if ((abs(i->pdgId()) == 13) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24 or abs(i->pdgId()) == 15)) nGoodGenMu++;
-		if ((abs(i->pdgId()) == 13) && (abs(i->pdgId()) == 23 or abs(i->pdgId()) == 24)) nPromptTaus++;
+		const GenParticleF * genPartMom = 0;
+		if (i->numberOfMothers()>0) { genPartMom = i->mother(0); }
+		else{continue;}
+		if ((abs(i->pdgId()) == 11) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenEle++;
+		if ((abs(i->pdgId()) == 13) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenMu++;
+		if ((abs(i->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24)) nPromptTaus++;
     }
 
     data->fill<int  >(i_nvetomu, nVetoMu);
