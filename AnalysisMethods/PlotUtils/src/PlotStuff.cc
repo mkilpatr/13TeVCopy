@@ -203,8 +203,10 @@ void PlotStuff::loadPlots()
           TString histname = var.name + "_" + sample->name;
           TString drawstr = var.varname + ">>" + histname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
-          if( isData(sample->name) && !config_.dataismc )
-            cutstr = "1.0*(" + var.selection + ")";
+          if( isData(sample->name) && !config_.dataismc ) {
+            if(config_.unprescale) cutstr = config_.unprescalevar + "*(" + var.selection + ")";
+            else                   cutstr = "1.0*(" + var.selection + ")";
+          }
           if(var.varname.Contains(":")) {
             TH2F* hist2d = 0;
             if(var.xmax > 0 && var.ymax > 0)
