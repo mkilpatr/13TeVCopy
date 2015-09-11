@@ -155,6 +155,7 @@ void cfgSet::loadDefaultConfigurations() {
 
   zl_lepton_set.jets            = zl_lepton_jets;
   zl_lepton_set.selectedLeptons = zl_sel_leptons;
+  zl_lepton_set.vetoedLeptons = zl_sel_leptons;
   zl_lepton_set.vetoedTracks  = zl_veto_tracks;
   zl_lepton_set.corrections   = standardCorrections;
 
