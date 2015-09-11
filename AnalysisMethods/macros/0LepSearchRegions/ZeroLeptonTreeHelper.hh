@@ -7,6 +7,7 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 using namespace ucsbsusy;
 
@@ -264,7 +265,13 @@ struct TreeFiller {
 		else{continue;}
 		if ((abs(i->pdgId()) == 11) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenEle++;
 		if ((abs(i->pdgId()) == 13) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenMu++;
-		if ((abs(i->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24)) nPromptTaus++;
+		if ((abs(i->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24)) {
+			bool lepDecay = false;
+                	for(unsigned int itd = 0; itd < i->numberOfDaughters(); itd++) {
+                        	const GenParticleF* dau = i->daughter(itd);
+                                if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;}
+                        if(!lepDecay)
+			nPromptTaus++;}
     }
 
     data->fill<int  >(i_nvetomu, nVetoMu);

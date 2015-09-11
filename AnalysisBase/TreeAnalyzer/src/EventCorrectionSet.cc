@@ -2,6 +2,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 namespace ucsbsusy {
 
@@ -67,8 +68,13 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 			}
 			//(TAU) make sure mom is a W or Z
 			if ( (abs(i->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24) ) {
+			     	bool lepDecay = false;
 			    //COUNT "PROMPT" TAU'S
-				nPromptGenTaus++;
+				for(unsigned int itd = 0; itd < i->numberOfDaughters(); itd++) {
+					const GenParticleF* dau = i->daughter(itd);
+				        if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;}
+					if(!lepDecay)
+					nPromptGenTaus++;
 			}
 	  }
 
@@ -78,14 +84,15 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 			  if(fabs(i->pdgid()) == 13) nSelectedMuons++;
 		  }
 	 
-
+	  vetoLepWeight = 1;
+	  selLepWeight  = 0;
 	  if (nSelectedMuons >= 1 && nGoodGenMu >= 1){
 		  lepCorr->setTargetBin(LepCorr::muCorrBin);
 	  }
 	  else if (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle >= 1){
 		  lepCorr->setTargetBin(LepCorr::eleCorrBin);
 	  }
-	  else if (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 0){
+	  else if (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1){
 		  lepCorr->setTargetBin(LepCorr::tauCorrBin);
 	  }
                   vetoLepWeight = 1 - lepCorr->get();
@@ -99,9 +106,9 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
                   vetoLepWeight += lepCorr->getError();
                   selLepWeight -= lepCorr->getError();}
 
-	  else	if ((nSelectedMuons >= 1 && nGoodGenMu == 0)
-			  or (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle == 0 )
-			  or (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus == 0)){
+	  else	if ((nSelectedMuons >= 1) 
+			  or (nSelectedElectrons >= 1)
+			  or (ana->nVetoedTracks >= 1) ){
 		  vetoLepWeight = 0;
 		  selLepWeight  = 1;}
   }///EventCorrectionSet

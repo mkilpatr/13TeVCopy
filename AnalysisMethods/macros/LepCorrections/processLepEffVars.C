@@ -296,7 +296,7 @@ void Analyzer::runEvent() {
 		}
 		//(TAU) make sure mom is a W or a Z
 		if ((abs(genParton->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24)){
-			nPromptTau++;
+
 			bool inAcc = false;
 			bool lepDecay = false;
 			int  prongCounter = 0;
@@ -333,6 +333,8 @@ void Analyzer::runEvent() {
 				prongCounter++;
 				taudecayprods.push_back(dau);
 			}
+			if(!lepDecay)
+			nPromptTau++;
 			if(inAcc)
 				nPromptTauAcc++;
 
