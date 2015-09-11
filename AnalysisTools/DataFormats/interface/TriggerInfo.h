@@ -29,9 +29,9 @@ namespace ucsbsusy {
       bool          passtrig() const { return passtrig_; }
       unsigned int  prescale() const { return prescale_; }
 
-      void setTrigflag (const int newTrigflag) { trigflag_ = newTrigflag; }
-      void setPasstrig (const int newPasstrig) { passtrig_ = newPasstrig; }
-      void setPrescale (const int newPrescale) { prescale_ = newPrescale; }
+      void setTrigflag (const unsigned long newTrigflag) { trigflag_ = newTrigflag; }
+      void setPasstrig (const bool          newPasstrig) { passtrig_ = newPasstrig; }
+      void setPrescale (const unsigned int  newPrescale) { prescale_ = newPrescale; }
 
     protected :
       unsigned long trigflag_;
