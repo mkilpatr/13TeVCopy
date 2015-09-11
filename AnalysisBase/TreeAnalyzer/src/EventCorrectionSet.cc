@@ -46,7 +46,6 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   	}
      }
   if(LEP) {
-	  if (ana->met->pt() > 200 && ana->bJets.size() >= 1) std::cout << "Analyzing an event in the inclusive region " << std::endl;
 
 	  int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptGenTaus = 0;
 	  int nSelectedElectrons = 0;	int nSelectedMuons = 0;
