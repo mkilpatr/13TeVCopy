@@ -4,11 +4,13 @@
 
 #include "AnalysisTools/DataFormats/interface/Electron.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
+#include "AnalysisTools/DataFormats/interface/Tau.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
 
 #include <iostream>
 
@@ -151,6 +153,30 @@ namespace cfgSet {
     };
   };
 
+  class TauConfig : public BaseConfig {
+  public:
+
+    float   minPt;
+    float   maxEta;
+    float    minDeltaRFromSelLepton;
+    bool    requireOppositeQToSelLepton; 
+    bool    (ucsbsusy::TauF::*selected)() const;
+
+    TauConfig(TString inName = "NULL") :BaseConfig(inName),
+      minPt  (-1),
+      maxEta (-1),
+      selected(0)
+    {};
+    virtual ~TauConfig() {};
+
+    friend std::ostream& operator<<(std::ostream& os, const TauConfig& a){
+      os << "Printing out tau selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min tau Pt is "<< a.minPt <<std::endl;
+      os << "The max tau eta is "<< a.maxEta <<std::endl;
+      return os;
+    };
+  };
+
   class PhotonConfig : public BaseConfig {
   public:
 
@@ -178,11 +204,14 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
+    int jetCorrections;
     TString ttbarCorrectionFile;
-    TString eventCorrectionFile;
+    TString eventCorrectionFile; 
+    TString jetCorrectionFile;
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
-        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
+        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -199,6 +228,17 @@ namespace cfgSet {
         os << std::endl;
 
       }
+      if(a.jetCorrections != ucsbsusy::JetCorrectionSet::NULLOPT){
+        os << "Applying jet corrections from " << a.jetCorrectionFile.Data() <<" -> ";
+        if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT)
+          os << "BTAGWEIGHT " << std::endl;
+        else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
+          os << "BTAGOBJECTS " << std::endl;        
+        if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
+          throw  "****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS";
+        os << std::endl;
+ 
+      } 
       return os;
     }
   };
@@ -210,6 +250,7 @@ namespace cfgSet {
     LeptonConfig    selectedLeptons;
     LeptonConfig    vetoedLeptons  ;
     TrackConfig     vetoedTracks   ;
+    TauConfig       vetoedTaus     ;
     PhotonConfig    selectedPhotons;
     CorrectionConfig corrections    ;
     TString         jsonFile       ;
@@ -219,6 +260,7 @@ namespace cfgSet {
       selectedLeptons (),
       vetoedLeptons   (),
       vetoedTracks    (),
+      vetoedTaus      (),
       selectedPhotons (),
       corrections     (),
       jsonFile(""),

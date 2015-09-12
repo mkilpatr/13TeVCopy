@@ -147,13 +147,14 @@ public:
     std::vector<GenParticleF*> genParts;
     std::vector<CMSTopF*>      cttTops;
     std::vector<TriggerObjectF*> triggerObjects;
-    std::vector<TauF*>         HPSTaus;
+    std::vector<TauF*>         vetoedTaus;
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
+    JetCorrectionSet    jetCorrections;
 
     //hack for DY PU
     bool zIsInvisible;
