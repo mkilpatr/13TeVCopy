@@ -52,15 +52,10 @@ namespace ucsbsusy {
       defaults::Process process;
       size8             datrec;
       defaults::DataReco datareco;
-      std::vector<unsigned long> * trigbitflags;
-      std::vector<bool>          * trigbitpass;
-      std::vector<unsigned int>  * trigbitprescale;
 
       std::vector<unsigned long> * metfilterbitflags;
       std::vector<bool>          * metfilterbitpass;
-      std::vector<bool> * hbheHNFlt;
-
-      unsigned long triggerflag;
+      std::vector<bool>          * hbheHNFlt;
 
       bool hbheFixFlt;
       bool hbheFlt;

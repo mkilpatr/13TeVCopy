@@ -141,6 +141,8 @@ class PlotStuff {
         TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
+        bool                   unprescale;
+        TString                unprescalevar;
         bool                   dataismc;
         TString                treefilesuffix;
         TString                plotfilesuffix;
@@ -190,6 +192,8 @@ class PlotStuff {
           yieldfilename("yields.tex"),
           treename("Events"),
           wgtvar("weight"),
+          unprescale(false),
+          unprescalevar("prescale"),
           dataismc(false),
           treefilesuffix("_tree.root"),
           plotfilesuffix("_plots.root"),
@@ -235,6 +239,7 @@ class PlotStuff {
             printf("Using sample settings from %s\n",conf.Data());
             printf("Producing %lu plots using trees named %s from files ending with %s in input directory\n",treevars.size(),treename.Data(),treefilesuffix.Data());
             printf("Will apply weight variable: %s\n",wgtvar.Data());
+            if(unprescale) printf("Unprescaling data using variable: %s\n",unprescalevar.Data());
           }
           if(source == HISTS) {
             printf("Using sample settings from %s\n",conf.Data());
@@ -309,6 +314,10 @@ class PlotStuff {
     void     setTree(TString treename) { config_.treename = treename; }
     // Name of variable corresponding to weight to be applied for TTree plots
     void     setWgtVar(TString wgtvar) { config_.wgtvar = wgtvar; }
+    // set to apply an unprescale factor to data
+    void     setUnprescale(bool unprescale=true) { config_.unprescale = unprescale; }
+    // Name of variable corresponding to the factor to unprescale data by
+    void     setUnprescaleVar(TString unprescalevar) { config_.unprescalevar = unprescalevar; }
     // Set to treat (i.e. scale) the 'data' sample as if it's MC
     void     setDataIsMC(bool dataismc=true) { config_.dataismc = dataismc; }
     // Suffix to be added to sample name to get path to tree files

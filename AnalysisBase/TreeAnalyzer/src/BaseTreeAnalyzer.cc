@@ -43,7 +43,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
-  clog <<"Loaded configurations: ";
+  clog <<"Loaded configurations: " << endl;
+  if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
@@ -100,6 +101,9 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     if(configSet.corrections.jetCorrections != JetCorrectionSet::NULLOPT){
       jetCorrections.load(configSet.corrections.jetCorrectionFile, configSet.corrections.jetCorrections);
       corrections.push_back(&jetCorrections);
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      corrections.push_back(&jetAndMETCorrections);
     }
   }
 
@@ -201,6 +205,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
+  load(cfgSet::TRIGOBJS);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -222,9 +227,13 @@ void BaseTreeAnalyzer::processVariables()
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
     datareco =  evtInfoReader.datareco;
-    triggerflag =  evtInfoReader.triggerflag;
   }
 
+  if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+    jetAndMETCorrections.processMET(this);
+    (*met) = jetAndMETCorrections.getCorrectedMET();
+    (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+  }
 
   if(genParticleReader.isLoaded()){
     genParts.clear();
@@ -240,10 +249,15 @@ void BaseTreeAnalyzer::processVariables()
   }
 
   if(trigObjReader.isLoaded()){
+    triggerflag =  trigObjReader.triggerflag;
     triggerObjects.clear();
     triggerObjects.reserve(trigObjReader.trigobjs.size());
     for(auto& to : trigObjReader.trigobjs)
       triggerObjects.push_back(&to);
+    triggerInfo.clear();
+    triggerInfo.reserve(trigObjReader.triginfo.size());
+    for(auto& tI : trigObjReader.triginfo)
+      triggerInfo.push_back(&tI);
   }
 
   allLeptons.clear();

@@ -89,7 +89,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_)               return false;
       if(!passPhotonSel)                    return false;
       if(!goodvertex)                       return false;
-      filler.fillEventInfo(&data, this, datatype_);
+      filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
 #ifdef FILL_GEN_INFO
       filler.fillGenInfo  (&data, boson, genJets);
@@ -105,7 +105,8 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
                                  const TString fname = "/store/user/vdutta/13TeV/080615/merged/gjets_ht100to200_ntuple_wgtxsec.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
-                                 const TString fileprefix = "root://eoscms//eos/cms")
+                                 const TString fileprefix = "root://eoscms//eos/cms",
+                                 const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -120,7 +121,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
-  cfgSet::ConfigSet pars = pars0LepPhoton();
+  cfgSet::ConfigSet pars = pars0LepPhoton(json);
   PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
  // a.analyze(1000,10000);

@@ -11,6 +11,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 
 #include <iostream>
 
@@ -205,6 +206,7 @@ namespace cfgSet {
     int ttbarCorrections;
     int eventCorrections;
     int jetCorrections;
+    int jetAndMETCorrections;
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
     TString jetCorrectionFile;
@@ -212,19 +214,20 @@ namespace cfgSet {
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
 	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT)
+        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
         os << "Applying ttbar corrections from " << a.ttbarCorrectionFile.Data() <<" -> ";
         if(a.ttbarCorrections & ucsbsusy::TtbarCorrectionSet::TOPPAIRPT)
-          os << "TOPPAIRPT " << std::endl;
+          os << "TOPPAIRPT ";
         os << std::endl;
 
       }
       if(a.eventCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
-          os << "PU " << std::endl;
+          os << "PU ";
         os << std::endl;
 
       }
@@ -239,6 +242,14 @@ namespace cfgSet {
         os << std::endl;
  
       } 
+      if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
+        os << "Applying jet and MET corrections -> ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)
+          os << "METScale ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESOLUTION)
+          os << "METResolution ";
+        os << std::endl;
+      }
       return os;
     }
   };

@@ -1,4 +1,6 @@
 #include "AnalysisMethods/PlotUtils/interface/StyleTools.hh"
+#include "TMath.h"
+#include <iostream>
 
 using namespace StyleTools;
 
@@ -231,4 +233,80 @@ ColorMap StyleTools::DefaultColors()
 
   return colors;
 
+}
+
+TCanvas* StyleTools::newAlbum(Int_t numItems, const Char_t* name, const Char_t* title, Int_t width, Int_t height, Int_t rows, Int_t columns)
+{
+  if (rows > 0 && columns > 0) {
+  } else if (rows > 0) {
+    columns   = TMath::CeilNint(1.0 * numItems / rows);
+  } else if (columns > 0) {
+    rows      = TMath::CeilNint(1.0 * numItems / columns);
+  } else {
+    columns   = TMath::CeilNint(TMath::Sqrt(numItems));
+    rows      = TMath::CeilNint(1.0 * numItems / columns);
+  }
+  if (width < 0) {
+    if      (columns == 1)  width   = 550;
+    else if (columns == 2)  width   = 1100;
+    else if (columns == 3)  width   = 1500;
+    else                    width   = 1780;
+  }
+  if (height < 0) {
+    if      (rows == 1)     height  = 550;
+    else if (rows == 2)     height  = 950;
+    else                    height  = 1000;
+  }
+  TCanvas*    canvas = MakeCanvas(name, title, width, height);
+  if (columns > 1 || rows > 1)
+    canvas->Divide(columns, rows, 0.00001f, 0.00001f);
+  return canvas;
+}
+
+TCanvas* StyleTools::drawAll(TObjArray* plots, TString name)
+{
+  if (plots == 0 || plots->GetEntries() == 0) {
+    std::cout << "WARNING : Nothing to draw." << std::endl;
+    return 0;
+  }
+
+  Int_t             numCols   = 0;
+  Int_t             numRows   = 0;
+
+
+  Int_t             numPlots  = plots->GetEntriesFast();
+  TCanvas*          canvas    = newAlbum(numPlots, name, 0, -1, -1, numRows, numCols);
+  for (Int_t iPlot = 0; iPlot < numPlots; ++iPlot) {
+    TObject*        object    = plots->At(iPlot);
+    if (object == 0)          continue;
+
+    TVirtualPad*    pad       = canvas->cd(iPlot + 1);
+
+    if (object->InheritsFrom("TH1")) {
+      TH1*        histo     = dynamic_cast<TH1*>(object);
+      if (histo->GetMaximum() > histo->GetMinimum()) {
+        if (histo->GetDimension() > 1 && pad->GetRightMargin() < 0.1)
+          pad->SetRightMargin(0.2f);
+
+        //-- 2D histograms ----------------------------------------------------
+        histo->Draw();
+
+        if (pad->GetLogx())
+          histo->GetXaxis()->SetMoreLogLabels();
+        if (pad->GetLogy() && histo->GetMaximum() < 1e2*histo->GetMinimum())
+          histo->GetYaxis()->SetMoreLogLabels();
+        if (pad->GetLogz() && histo->GetMaximum() < 1e2*histo->GetMinimum())
+          histo->GetZaxis()->SetMoreLogLabels();
+      }
+    }
+    else if (object->InheritsFrom("TCanvas")) {
+      TCanvas*      sub     = dynamic_cast<TCanvas*>(object);
+      sub->DrawClonePad();
+    } else {
+      object->Draw();
+    }
+  }
+
+  canvas->Update();
+  return canvas;
 }

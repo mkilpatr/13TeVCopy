@@ -91,34 +91,34 @@ public:
     bool             isProcessed_;
     TreeReader       reader;        // default reader
   public:
-    EventInfoReader   evtInfoReader         ;
-    JetReader         ak4Reader             ;
-    JetReader         puppiJetsReader       ;
-    JetReader         pickyJetReader        ;
-    JetReader         caSubJetReader        ;
-    ElectronReader    electronReader        ;
-    MuonReader        muonReader            ;
-    TauReader         tauReader             ;
-    PhotonReader      photonReader          ;
-    PFCandidateReader pfcandReader          ;
-    GenParticleReader genParticleReader     ;
-    CMSTopReader      cmsTopReader          ;
+    EventInfoReader     evtInfoReader       ;
+    JetReader           ak4Reader           ;
+    JetReader           puppiJetsReader     ;
+    JetReader           pickyJetReader      ;
+    JetReader           caSubJetReader      ;
+    ElectronReader      electronReader      ;
+    MuonReader          muonReader          ;
+    TauReader           tauReader           ;
+    PhotonReader        photonReader        ;
+    PFCandidateReader   pfcandReader        ;
+    GenParticleReader   genParticleReader   ;
+    CMSTopReader        cmsTopReader        ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
-    JetCorrector      jetCorrector          ;
+    JetCorrector        jetCorrector        ;
 
 
   public:
     //--------------------------------------------------------------------------------------------------
     // Members to access common information
     //--------------------------------------------------------------------------------------------------
-    unsigned int  run;
-    unsigned int  lumi;
-    unsigned int  event;
-    float         weight;
-    defaults::Process process;
+    unsigned int       run;
+    unsigned int       lumi;
+    unsigned int       event;
+    float              weight;
+    defaults::Process  process;
     defaults::DataReco datareco;
-    unsigned long triggerflag;
+    unsigned long      triggerflag;
 
     int   nPV;
     float rho;
@@ -148,6 +148,23 @@ public:
     std::vector<CMSTopF*>      cttTops;
     std::vector<TriggerObjectF*> triggerObjects;
     std::vector<TauF*>         vetoedTaus;
+    MomentumF* met        ;
+    MomentumF* metNoHF    ;
+    MomentumF* genmet     ;
+    bool       goodvertex ;
+    std::vector<LeptonF*>        allLeptons        ;
+    std::vector<LeptonF*>        selectedLeptons   ;
+    std::vector<LeptonF*>        vetoedLeptons     ;
+    std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<PhotonF*>        selectedPhotons   ;
+    std::vector<RecoJetF*>       jets              ;
+    std::vector<RecoJetF*>       bJets             ;
+    std::vector<RecoJetF*>       nonBJets          ;
+    std::vector<GenParticleF*>   genParts          ;
+    std::vector<CMSTopF*>        cttTops           ;
+    std::vector<TriggerObjectF*> triggerObjects    ;
+    std::vector<TriggerInfo*>    triggerInfo       ;
+    std::vector<TauF*>           HPSTaus           ;
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
@@ -155,6 +172,7 @@ public:
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
     JetCorrectionSet    jetCorrections;
+    JetAndMETCorrectionSet  jetAndMETCorrections;
 
     //hack for DY PU
     bool zIsInvisible;

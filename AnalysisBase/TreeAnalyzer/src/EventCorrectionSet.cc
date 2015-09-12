@@ -11,24 +11,28 @@ void EventCorrectionSet::load(TString fileName, int correctionOptions)
   if(options_ & PU){
     puCorr = new PUCorr(file);
     corrections.push_back(puCorr);
+    puCorr50NS = new PUCorr50NS(file);
+    corrections.push_back(puCorr50NS);
   }
 }
 
 void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-  if(!ana->isMC()){
-    puWeight =1;
-    return;
-  }
+  puWeight =1;
+  pu50NSWeight =1;
+  if(!ana->isMC()) return;
 
-  if(PU) {
+  if(options_ & PU) {
+    puCorr->setAxis(PUCorr::NPV,ana->nPV);
+    puWeight = puCorr->get();
+
     bool is25NSMC = 	ana->process == defaults::TTZ || 
 			ana->process == defaults::TTW || 
 			ana->process == defaults::SINGLE_G ||
 			ana->process == defaults::SIGNAL;
     if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
-    puCorr->setAxis(PUCorr::NPV,ana->nPV);
-    puCorr->setAxis(PUCorr::INPUT_MC,is25NSMC);
-    puWeight = puCorr->get();
+    puCorr50NS->setAxis(PUCorr50NS::NPV,ana->nPV);
+    puCorr50NS->setAxis(PUCorr50NS::INPUT_MC,is25NSMC);
+    pu50NSWeight = puCorr50NS->get();
   }
 }
 
