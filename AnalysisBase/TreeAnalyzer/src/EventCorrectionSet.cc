@@ -9,11 +9,14 @@ namespace ucsbsusy {
 
 void EventCorrectionSet::load(TString fileName, int correctionOptions)
 {
+
   if(correctionOptions & PU){
-	  loadFile("PU",fileName,correctionOptions);
-	  if(options_ & PU){
-		  puCorr = new PUCorr(file);
-		  corrections.push_back(puCorr);
+  loadFile("PU",fileName,correctionOptions);
+  if(options_ & PU){
+    puCorr = new PUCorr(file);
+    corrections.push_back(puCorr);
+    puCorr50NS = new PUCorr50NS(file);
+    corrections.push_back(puCorr50NS);
 	  }
   }
   if(correctionOptions & LEP){
@@ -23,30 +26,36 @@ void EventCorrectionSet::load(TString fileName, int correctionOptions)
 		  lepCorr->setCorrType(ucsbsusy::LepCorr::VARY_NONE);
 		  corrections.push_back(lepCorr);
 	  }
-  }
+ }
 }
 
 void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-        if(!ana->isMC()){
-            puWeight =1;
-            selLepWeight = 1;
-            vetoLepWeight = 1;
-            return;
-        }
+
+  puWeight =1;
+  pu50NSWeight =1;
+  selLepWeight = 1;
+  vetoLepWeight = 1;
+  if(!ana->isMC()) return;
+             
 
   if(PU) {	
-        if(options_ & PU) {
-           bool is25NSMC = 	ana->process == defaults::TTZ || 
-				ana->process == defaults::TTW || 
-				ana->process == defaults::SINGLE_G ||
-				ana->process == defaults::SIGNAL;
-           if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
-           puCorr->setAxis(PUCorr::NPV,ana->nPV);
-           puCorr->setAxis(PUCorr::INPUT_MC,is25NSMC);
-          puWeight = puCorr->get();
-  	}
-     }
-  if(LEP) {
+    if(options_ & PU) {
+      puCorr->setAxis(PUCorr::NPV,ana->nPV);
+      puWeight = puCorr->get();
+
+      bool is25NSMC = 	ana->process == defaults::TTZ || 
+			ana->process == defaults::TTW || 
+			ana->process == defaults::SINGLE_G ||
+			ana->process == defaults::SIGNAL;
+      if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
+      puCorr50NS->setAxis(PUCorr50NS::NPV,ana->nPV);
+      puCorr50NS->setAxis(PUCorr50NS::INPUT_MC,is25NSMC);
+      pu50NSWeight = puCorr50NS->get();
+  }
+}
+
+
+   if(LEP) {
 
 	  int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptGenTaus = 0;
 	  int nSelectedElectrons = 0;	int nSelectedMuons = 0;
