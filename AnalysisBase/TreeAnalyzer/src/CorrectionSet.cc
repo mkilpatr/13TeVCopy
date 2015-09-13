@@ -20,6 +20,12 @@ RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(
   assert(corr);
 }
 
+HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1) {
+  assert(file);
+  corrHist = (const TH1F*)(file->Get(name) );
+  assert(corrHist);
+}
+
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
 
 void CorrectionSet::loadSimple(TString correctionSetName, int correctionOptions) {

@@ -179,13 +179,18 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
+    int leptonCorrections;
     int jetAndMETCorrections;
+
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
+    TString leptonCorrectionFile;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
+
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -202,6 +207,13 @@ namespace cfgSet {
         os << std::endl;
 
       }
+
+      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
+          os << "LEP " << std::endl;
+        os << std::endl;
+	}
       if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
         os << "Applying jet and MET corrections -> ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)
