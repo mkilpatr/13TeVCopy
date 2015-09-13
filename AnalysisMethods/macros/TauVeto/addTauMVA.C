@@ -11,15 +11,10 @@ public:
   Copier(string fileName, string treeName, string outFileName, bool isMCTree) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree)
   {
 
-    TFile*              file1    = TFile::Open("tauDisc_dphi1p34presel.root", "READ");
+    TFile*              file1    = TFile::Open("tauDisc_new.root", "READ");
     mva1  = dynamic_cast<ParamatrixMVA*>(file1->Get("mva_0"));
     delete file1;
     assert(mva1);
-
-    TFile*              file2    = TFile::Open("tauDisc_mt100presel.root", "READ");
-    mva2  = dynamic_cast<ParamatrixMVA*>(file2->Get("mva_0"));
-    delete file2;
-    assert(mva2);
 
   };
   virtual ~Copier() {};
@@ -107,21 +102,17 @@ public:
   }
 
   bool fillEvent() {
-    data.fill<float>(taumva_dphipresel, evaluateMVA(mva1));
-    data.fill<float>(taumva_mtpresel,   evaluateMVA(mva2));
+    data.fill<float>(taumva_new,   evaluateMVA(mva1));
     return true;
   }
 
   void book() {
-    taumva_dphipresel    = data.add<float>("","taumva_dphipresel"    ,"F",0);
-    taumva_mtpresel      = data.add<float>("","taumva_mtpresel"      ,"F",0);
+    taumva_new      = data.add<float>("","taumva_new"      ,"F",0);
   }
 
   const ParamatrixMVA*  mva1;
-  const ParamatrixMVA*  mva2;
 
-  size taumva_dphipresel;
-  size taumva_mtpresel;
+  size taumva_new;
 
   int   njets;
   float pt;
@@ -155,7 +146,7 @@ public:
 
 #endif
 
-void addTauMVA(string fileName = "run/plots/faketaus_T2tt_500_325.root", string treeName = "Candidates", string outFileName ="run/plots/faketaus_T2tt_500_325_addtaumva.root", bool isMCTree = true) {
+void addTauMVA(string fileName = "trees/faketaus_T2tt_850_100.root", string treeName = "Candidates", string outFileName ="trees/faketaus_T2tt_850_100_addtaumva.root", bool isMCTree = true) {
   Copier a(fileName,treeName,outFileName,isMCTree);
   a.analyze(100000);
 }

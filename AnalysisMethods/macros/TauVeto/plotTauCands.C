@@ -4,9 +4,11 @@
 
 
 void plotTauCands(const TString conffile="runtau.conf",
-                  const TString inputdir="run/plots",
-                  const TString outputdir="run/plots")
+                  const TString inputdir="trees",
+                  const TString outputdir="trees")
 {
+
+  gSystem->mkdir(outputdir,true);
 
   PlotStuff* myPlots1 = new PlotStuff(conffile, inputdir, outputdir);
   myPlots1->setPlotSource(PlotStuff::TREES);
@@ -37,8 +39,10 @@ void plotTauCands(const TString conffile="runtau.conf",
   myPlots1->addTreeVar("dphimet_baseline",   "dphimet",   "njets>3 && misset>150.0","|#Delta#phi(h, #slash{E}_{T})|",252,0.0,3.15);
   myPlots1->addTreeVar("dphiw_baseline",     "dphiw",     "njets>3 && misset>150.0","|#Delta#phi(h, W)|",252,0.0,3.15);
 
-  myPlots1->addTreeVar("mva_mtpresel",  "taumva_mtpresel",  "njets>3 && misset>150.0 && mt<100.0 && absdz<0.2",    "Discriminator",200,-1.0,1.0);
-  myPlots1->addTreeVar("mva_dphipresel","taumva_dphipresel","njets>3 && misset>150.0 && dphimet<1.34 && absdz<0.2","Discriminator",200,-1.0,1.0);
+  myPlots1->addTreeVar("mva_new",  "taumva_new",  "njets>3 && misset>150.0 && mt<100.0 && absdz<0.2",    "Discriminator",200,-1.0,1.0);
+  myPlots1->addTreeVar("mva_old",  "taumva",  "njets>3 && misset>150.0 && mt<100.0 && absdz<0.2",    "Discriminator",200,-1.0,1.0);
+  //myPlots1->addTreeVar("mva_mtpresel",  "taumva_mtpresel",  "njets>3 && misset>150.0 && mt<100.0 && absdz<0.2",    "Discriminator",200,-1.0,1.0);
+  //myPlots1->addTreeVar("mva_dphipresel","taumva_dphipresel","njets>3 && misset>150.0 && dphimet<1.34 && absdz<0.2","Discriminator",200,-1.0,1.0);
 
   myPlots1->plot(); 
 
