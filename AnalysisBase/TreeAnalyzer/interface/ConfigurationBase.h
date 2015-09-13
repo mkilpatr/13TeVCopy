@@ -213,7 +213,7 @@ namespace cfgSet {
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT)
+	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){

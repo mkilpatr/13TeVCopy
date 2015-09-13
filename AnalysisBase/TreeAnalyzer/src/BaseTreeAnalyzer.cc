@@ -101,6 +101,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     if(configSet.corrections.jetCorrections != JetCorrectionSet::NULLOPT){
       jetCorrections.load(configSet.corrections.jetCorrectionFile, configSet.corrections.jetCorrections);
       corrections.push_back(&jetCorrections);
+    }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
       corrections.push_back(&jetAndMETCorrections);
