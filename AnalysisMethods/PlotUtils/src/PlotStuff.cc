@@ -201,7 +201,7 @@ void PlotStuff::loadPlots()
 
         for(auto var : config_.treevars) {
           TString histname = var.name + "_" + sample->name;
-          TString drawstr = var.varname + ">>" + histname;
+          TString drawstr = var.varname;
           TString cutstr = config_.wgtvar + "*(" + var.selection + ")";
           if( isData(sample->name) && !config_.dataismc ) {
             if(config_.unprescale) cutstr = config_.unprescalevar + "*(" + var.selection + ")";
@@ -214,7 +214,7 @@ void PlotStuff::loadPlots()
             else if (var.xbins && var.ybins)
               hist2d = new TH2F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xbins, var.nbinsy, var.ybins);
             hist2d->Sumw2();
-            intree->Draw(drawstr.Data(), cutstr.Data());
+            intree->Project(histname.Data(), drawstr.Data(), cutstr.Data());
             tmphists2dv.push_back(hist2d);
             tmphists2dv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
           } else {
@@ -224,7 +224,7 @@ void PlotStuff::loadPlots()
             else if(var.xbins)
               hist = new TH1F(histname, TString("; " + var.label + "; Events"), var.nbinsx, var.xbins);
             hist->Sumw2();
-            intree->Draw(drawstr.Data(), cutstr.Data());
+            intree->Project(histname.Data(), drawstr.Data(), cutstr.Data());
             tmphistsv.push_back(hist);
             tmphistsv.back()->SetName(TString::Format("%s_%s",var.name.Data(), sample->name.Data()));
           }
@@ -446,12 +446,15 @@ void PlotStuff::loadTables()
         intree = (TTree*)infile->Get(config_.treename);
         assert(intree);
 
+        TH1F* htmp = new TH1F("htmp","",1,0,1000);
+        htmp->Sumw2();
+
         for(auto sel : config_.tablesels) {
-          TString drawstr = config_.wgtvar + ">>htmp";
+          TString drawstr = config_.wgtvar;
           TString cutstr = config_.wgtvar + "*(" + sel + ")";
-          if(isData(sample->name))
+          if(isData(sample->name) && !config_.dataismc)
             cutstr = "1.0*(" + sel + ")";
-          intree->Draw(drawstr.Data(), cutstr.Data(), "e");
+          intree->Project("htmp", drawstr.Data(), cutstr.Data());
           TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp");
           double tmperr = 0.0;
           tmpyieldsv.push_back(htmp->IntegralAndError(0, htmp->GetNbinsX()+1, tmperr));
@@ -726,6 +729,8 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
 
   if(config_.plotratio && config_.type == DATAMC)
     plot->drawRatioStack(canvas_, true, config_.format);
+  else if(config_.plotratio && config_.type == COMP)
+    plot->drawRatios(canvas_, 0, true, config_.format);
   else
     plot->draw(canvas_, true, config_.format);
 
@@ -973,7 +978,10 @@ void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> y
   bool lastbkg = false;
   for(auto* sample : samples_) {
     isam++;
-    yieldfile_ << " & " << fixed << setprecision(2) << yields[isam] << " $\\pm$ " << setprecision(2) << yielderrs[isam];
+    if(isData(sample->name))
+      yieldfile_ << " & " << fixed << setprecision(0) << yields[isam] << " $\\pm$ " << setprecision(0) << yielderrs[isam];
+    else
+      yieldfile_ << " & " << fixed << setprecision(2) << yields[isam] << " $\\pm$ " << setprecision(2) << yielderrs[isam];
     if(isBackground(sample->name)) {
       nbkg++;
       bkgtot+=yields[isam];
@@ -994,7 +1002,10 @@ void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> y
   lastbkg = false;
   for(auto* sample : samples_) {
     isam++;
-    yieldfile_ << " & " << fixed << setprecision(6) << yields[isam]/(sample->xsecs.at(0)*config_.tablelumi);
+    if(isData(sample->name))
+      yieldfile_ << " &   -  ";
+    else
+      yieldfile_ << " & " << fixed << setprecision(6) << yields[isam]/(sample->xsecs.at(0)*config_.tablelumi);
     if(isBackground(sample->name)) {
       nbkg++;
     }
@@ -1035,7 +1046,10 @@ void PlotStuff::tabulate()
   unsigned int nbkg = 0;
   bool lastbkg = false;
   for(auto* sample : samples_) {
-    yieldfile_ << "\t & " << sample->name;
+    if(isData(sample->name))
+      yieldfile_ << "\t & Data";
+    else
+      yieldfile_ << "\t & " << sample->name;
     if(isBackground(sample->name)) nbkg++;
     if(nbkg == config_.backgroundnames.size()) {
       if(!lastbkg) yieldfile_ << "\t & Total Bkg";
