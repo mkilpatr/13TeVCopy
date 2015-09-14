@@ -32,6 +32,7 @@ public:
 static const unsigned int muCorrBin   = 1;
 static const unsigned int eleCorrBin  = 2;
 static const unsigned int tauCorrBin  = 3;
+static const unsigned int fakeBin     = 4;
 unsigned int corrType;
 enum LepCorrOptions
 {
