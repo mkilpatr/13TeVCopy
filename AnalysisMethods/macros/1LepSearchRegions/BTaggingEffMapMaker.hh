@@ -17,7 +17,7 @@
 //        EffMapMaker * effmapmaker = new EffMapMaker(effmapname);
 //      after calling analyze() you MUST put the line (it calls the destructor):
 //        delete effmapmaker;
-//      and add this new argument to the analyzer:
+//      and add this new argument to the end of the analyzer's argument list:
 //        effmapmaker
 //    in ZeroLeptonTreeHelper.hh (or OneLep...)
 //      add this argument to the analyzer:
@@ -29,6 +29,8 @@
 //        EffMapMaker * effmapmaker_;
 //      and this to fillEvent(), before any cuts are made:
 //        effmapmaker_->fillEffMaps(jets,process);
+//      and this header file (make sure it's in current dir)
+//        #include "BTaggingEffMapMaker.hh"
 //      to speed things up, consider then commenting out 
 //      the rest of fillEvent, as nothing else is needed)
 //
