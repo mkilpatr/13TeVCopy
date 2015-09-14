@@ -212,7 +212,6 @@ namespace cfgSet {
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
     TString jetCorrectionFile;
-    TString eventCorrectionFile;
     TString leptonCorrectionFile;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
