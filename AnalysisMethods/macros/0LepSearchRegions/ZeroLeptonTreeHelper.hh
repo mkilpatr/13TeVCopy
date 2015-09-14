@@ -41,8 +41,10 @@ struct TreeFiller {
   size i_event     ;
   size i_weight    ;
   size i_puWeight  ;
+  size i_normWeight;
   size i_topptWeight;
   size i_passtrige ;
+  size i_passtrige27;
   size i_passtrigmu;
   size i_passtrige17e12;
   size i_passtrigmu17mu8;
@@ -83,6 +85,12 @@ struct TreeFiller {
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
+  size i_chhpt     ;
+  size i_chheta    ;
+  size i_chhdz     ;
+  size i_chhmt     ;
+  size i_chhdphimet;
+  size i_chhtaudisc;
   size i_ngenjets  ;
   size i_ngenbjets ;
   size i_njets     ;
@@ -120,10 +128,14 @@ struct TreeFiller {
   size i_leptonpt  ;
   size i_leptoneta ;
   size i_leptonpdgid;
+  size i_leptonmatchtrigmu;
+  size i_leptonmatchtrige;
   size i_mtlepmet  ;
   size i_lepton2pt ;
   size i_lepton2eta;
   size i_lepton2pdgid;
+  size i_lepton2matchtrigmu;
+  size i_lepton2matchtrige;
   size i_dileppt   ;
   size i_dilepeta  ;
   size i_dilepmass ;
@@ -154,8 +166,10 @@ struct TreeFiller {
     i_event          = data->add<unsigned int>("","event","i",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_puWeight       = data->add<float>("","puWeight","F",0);
+    i_normWeight     = data->add<float>("","normWeight","F",0);
     i_topptWeight    = data->add<float>("","topptWeight","F",0);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
+    i_passtrige27    = data->add<bool>("","passtrige27","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
     i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
     i_passtrigmu17mu8= data->add<bool >("","passtrigmu17mu8","O",0);
@@ -196,6 +210,12 @@ struct TreeFiller {
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_chhpt          = data->addMulti<float>("","chhpt",0);
+    i_chheta         = data->addMulti<float>("","chheta",0);
+    i_chhdz          = data->addMulti<float>("","chhdz",0);
+    i_chhmt          = data->addMulti<float>("","chhmt",0);
+    i_chhdphimet     = data->addMulti<float>("","chhdphimet",0);
+    i_chhtaudisc     = data->addMulti<float>("","chhtaudisc",0);
     i_ngenjets       = data->add<int>("","ngenjets","I",0);
     i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
     i_njets          = data->add<int>("","njets","I",0);
@@ -232,11 +252,15 @@ struct TreeFiller {
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
     i_leptonpdgid    = data->add<int>("","leptonpdgid","I",0);
+    i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
+    i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
     i_lepton2pt      = data->add<float>("","lepton2pt","F",0);
     i_lepton2eta     = data->add<float>("","lepton2eta","F",0);
     i_lepton2pdgid   = data->add<int>("","lepton2pdgid","I",0);
+    i_lepton2matchtrigmu  = data->add<bool>("","lepton2matchtrigmu","O",0);
+    i_lepton2matchtrige   = data->add<bool>("","lepton2matchtrige","O",0);
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepeta       = data->add<float>("","dilepeta","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
@@ -249,8 +273,10 @@ struct TreeFiller {
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
+    data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrige27,  ana->isMC() ? ana->triggerflag & kHLT_Ele27_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
     data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
@@ -300,6 +326,17 @@ struct TreeFiller {
       if(passCTTSelection(ctt)) ncttstd++;
     }
     data->fill<int  >(i_ncttstd, ncttstd);
+
+    for(auto& pfc : ana->pfcandReader.pfcands) {
+      if(!pfc.ischargedhadron() || pfc.pt() < 10.0 || fabs(pfc.eta()) > 2.4) continue;
+      data->fillMulti<float>(i_chhpt, pfc.pt());
+      data->fillMulti<float>(i_chheta, pfc.eta());
+      data->fillMulti<float>(i_chhdz, pfc.dz());
+      data->fillMulti<float>(i_chhmt, pfc.mt());
+      data->fillMulti<float>(i_chhdphimet, fabs(pfc.dphimet()));
+      data->fillMulti<float>(i_chhtaudisc, pfc.taudisc());
+    } 
+
     if(ana->nSelLeptons > 0) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
       MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + (useMetNoHF ? ana->metNoHF->p4() : ana->met->p4()));
@@ -307,6 +344,21 @@ struct TreeFiller {
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
       data->fill<int  >(i_leptonpdgid, ana->selectedLeptons.at(randomLepton)->pdgid());
+      bool matchtrigmu = false, matchtrige = false;
+      for(auto* to : ana->triggerObjects) {
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrigmu = true;
+          }
+        }
+        if((to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf) || (to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf))) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrige = true;
+          }
+        }
+      }
+      data->fill<bool >(i_leptonmatchtrigmu, matchtrigmu);
+      data->fill<bool >(i_leptonmatchtrige, matchtrige);
       data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, (useMetNoHF ? *ana->metNoHF : *ana->met)));
       if(ana->nSelLeptons > 1) {
         int index2 = (randomLepton==0) ? 1 : 0;
@@ -314,6 +366,15 @@ struct TreeFiller {
         data->fill<float>(i_lepton2pt, lep2->pt());
         data->fill<float>(i_lepton2eta, lep2->eta());
         data->fill<int  >(i_lepton2pdgid, lep2->pdgid());
+        matchtrigmu = false, matchtrige = false;
+        for(auto* to : ana->triggerObjects) {
+          if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1) && PhysicsUtilities::deltaR(*lep2, *to) < 0.05)
+            matchtrigmu = true;
+          if((to->filterflags() & kSingleEle32) && (to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf) && PhysicsUtilities::deltaR(*lep2, *to) < 0.05)
+            matchtrige = true;
+        }
+        data->fill<bool >(i_lepton2matchtrigmu, matchtrigmu);
+        data->fill<bool >(i_lepton2matchtrige, matchtrige);
         MomentumF* dilep = new MomentumF(lep->p4() + lep2->p4());
         data->fill<float>(i_dileppt, dilep->pt());
         data->fill<float>(i_dilepeta, dilep->eta());
@@ -440,6 +501,18 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     void book() {
       filler.book(&data);
+    }
+
+    void loadVariables() {
+      load(cfgSet::EVTINFO);
+      load(cfgSet::AK4JETS);
+      load(cfgSet::ELECTRONS);
+      load(cfgSet::MUONS);
+      load(cfgSet::PHOTONS);
+      load(cfgSet::PFCANDS);
+      load(cfgSet::CMSTOPS);
+      load(cfgSet::TRIGOBJS);
+      if(isMC()) load(cfgSet::GENPARTICLES);
     }
 
     bool fillEvent() {
