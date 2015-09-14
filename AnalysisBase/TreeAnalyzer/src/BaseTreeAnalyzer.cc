@@ -95,7 +95,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     }
     if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
-      eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT)
+        eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
       corrections.push_back(&eventCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){

@@ -36,7 +36,7 @@ void CorrectionSet::loadSimple(TString correctionSetName, int correctionOptions)
 }
 
 void CorrectionSet::loadFile(TString correctionSetName, TString fileName, int correctionOptions) {
-  options_ =correctionOptions;
+  options_ |=correctionOptions;
 
   std::clog << "Loading file: "<< fileName <<" and correctionSet: " << correctionSetName <<std::endl;
   file = TFile::Open(fileName,"read");

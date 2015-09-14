@@ -35,27 +35,32 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   pu50NSWeight =1;
   selLepWeight = 1;
   vetoLepWeight = 1;
+  normWeight = 1;
   if(!ana->isMC()) return;
              
 
-  if(PU) {	
-    if(options_ & PU) {
-      puCorr->setAxis(PUCorr::NPV,ana->nPV);
-      puWeight = puCorr->get();
+  if(options_ & PU) {
+    puCorr->setAxis(PUCorr::NPV,ana->nPV);
+    puWeight = puCorr->get();
 
-      bool is25NSMC = 	ana->process == defaults::TTZ || 
+    bool is25NSMC = 	ana->process == defaults::TTZ || 
 			ana->process == defaults::TTW || 
 			ana->process == defaults::SINGLE_G ||
-			ana->process == defaults::SIGNAL;
-      if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
-      puCorr50NS->setAxis(PUCorr50NS::NPV,ana->nPV);
-      puCorr50NS->setAxis(PUCorr50NS::INPUT_MC,is25NSMC);
-      pu50NSWeight = puCorr50NS->get();
+ 			ana->process == defaults::SIGNAL;
+    if(ana->zIsInvisible && ana->process == defaults::SINGLE_Z) is25NSMC = true;
+    puCorr50NS->setAxis(PUCorr50NS::NPV,ana->nPV);
+    puCorr50NS->setAxis(PUCorr50NS::INPUT_MC,is25NSMC);
+    pu50NSWeight = puCorr50NS->get();
   }
-}
 
+  if(options_ & NORM) {
+    if(ana->process == defaults::TTBAR) normWeight = TTBAR_SF;
+    if(ana->process == defaults::SINGLE_Z && ana->nBJets == 0) normWeight = Z_0B_SF;
+    if(ana->process == defaults::SINGLE_Z && ana->nBJets == 1) normWeight = Z_1B_SF;
+    if(ana->process == defaults::SINGLE_Z && ana->nBJets >= 2) normWeight = Z_2B_SF;
+  }
 
-   if(LEP) {
+   if(options_ & LEP) {
 
 	  int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptGenTaus = 0;
 	  int nSelectedElectrons = 0;	int nSelectedMuons = 0;

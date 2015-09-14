@@ -28,8 +28,8 @@ public:
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
-  //individual axxessors
-
+  //individual accessors
+  float getTopPTWeight() const {return topPTWeight;}
 
 private:
   //Correction list
