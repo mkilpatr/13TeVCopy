@@ -51,7 +51,6 @@ cfgSet::LeptonConfig cfgSet::zl_veto_leptons("zl_veto_leptons");
 cfgSet::LeptonConfig cfgSet::zl_loose_leptons("zl_loose_leptons");
 cfgSet::LeptonConfig cfgSet::ol_sel_leptons ("ol_sel_leptons") ;
 cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
-cfgSet::LeptonConfig cfgSet::zl_cr_leptons ("zl_cr_leptons") ;
 
 void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.minEPt            = 5;
@@ -73,16 +72,6 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_loose_leptons.selectedElectron   = &ucsbsusy::ElectronF::islooseelectron;
   zl_loose_leptons.minMuPt            = 10;
   zl_loose_leptons.selectedMuon       = &ucsbsusy::MuonF::isloosemuon;
-
-  zl_cr_leptons = zl_sel_leptons;
-  zl_cr_leptons.minEPt            = 15;
-  zl_cr_leptons.maxEEta           = 2.5;
-  zl_cr_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
-  zl_cr_leptons.minMuPt           = 10;
-  zl_cr_leptons.maxMuEta          = 2.4;
-  zl_cr_leptons.maxMuD0           = 0.02;
-  zl_cr_leptons.maxMuDz           = 0.1;
-  zl_cr_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
 
   ol_sel_leptons = zl_sel_leptons;
   ol_sel_leptons.minEPt            = 40;

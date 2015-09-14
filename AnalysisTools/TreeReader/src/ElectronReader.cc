@@ -121,7 +121,6 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
-      electrons.back().setIsMediumIsoElectron(ismedium->at(iL) && pfdbetaiso->at(iL)/pt->at(iL) < 0.12);
     }
   }
 }
