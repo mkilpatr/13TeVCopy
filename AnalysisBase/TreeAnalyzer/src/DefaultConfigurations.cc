@@ -10,7 +10,6 @@ cfgSet::JetConfig cfgSet::zl_search_jets("zl_search_jets");
 cfgSet::JetConfig cfgSet::zl_photon_jets("zl_photon_jets");
 cfgSet::JetConfig cfgSet::zl_lepton_jets("zl_lepton_jets");
 cfgSet::JetConfig cfgSet::zl_dilepton_jets("zl_dilepton_jets");
-cfgSet::JetConfig cfgSet::zl_ttbarcr_jets("zl_ttbarcr_jets");
 cfgSet::JetConfig cfgSet::ol_search_jets("ol_search_jets");
 
 
@@ -37,9 +36,6 @@ void cfgSet::loadDefaultJetConfigurations() {
 
   zl_dilepton_jets = zl_search_jets;
   zl_dilepton_jets.cleanJetsvSelectedLeptons = true;
-
-  zl_ttbarcr_jets = zl_search_jets;
-  zl_ttbarcr_jets.cleanJetsvSelectedLeptons = true;
 
   ol_search_jets = zl_search_jets;
   ol_search_jets.cleanJetsvSelectedLeptons = true;
@@ -153,7 +149,6 @@ void cfgSet::loadDefaultCorrections() {
 cfgSet::ConfigSet cfgSet::zl_search_set;
 cfgSet::ConfigSet cfgSet::zl_lepton_set;
 cfgSet::ConfigSet cfgSet::zl_dilepton_set;
-cfgSet::ConfigSet cfgSet::zl_ttbarcr_set;
 cfgSet::ConfigSet cfgSet::zl_photon_set;
 cfgSet::ConfigSet cfgSet::ol_search_set;
 
@@ -181,11 +176,6 @@ void cfgSet::loadDefaultConfigurations() {
   zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
   zl_dilepton_set.corrections = standardCorrections;
 
-  zl_ttbarcr_set.jets            = zl_ttbarcr_jets;
-  zl_ttbarcr_set.selectedLeptons = zl_cr_leptons;
-  zl_ttbarcr_set.vetoedTracks    = zl_veto_tracks;
-  zl_ttbarcr_set.corrections = standardCorrections;
-
   zl_photon_set.jets            = zl_photon_jets;
   zl_photon_set.vetoedLeptons   = zl_veto_leptons;
   zl_photon_set.vetoedTracks    = zl_veto_tracks;
@@ -206,8 +196,6 @@ void cfgSet::setJSONFile(const TString jsonfile) {
   zl_lepton_set.jsonProcessing = new JSONProcessing(jsonfile);
   zl_dilepton_set.jsonFile = jsonfile;
   zl_dilepton_set.jsonProcessing = new JSONProcessing(jsonfile);
-  zl_ttbarcr_set.jsonFile = jsonfile;
-  zl_ttbarcr_set.jsonProcessing = new JSONProcessing(jsonfile);
   zl_photon_set.jsonFile = jsonfile;
   zl_photon_set.jsonProcessing = new JSONProcessing(jsonfile);
   ol_search_set.jsonFile = jsonfile;
