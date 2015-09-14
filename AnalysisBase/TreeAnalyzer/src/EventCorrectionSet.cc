@@ -104,7 +104,10 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 	  else if (ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1){
 		  lepCorr->setTargetBin(LepCorr::tauCorrBin);
 	  }
-                  vetoLepWeight = 1 - lepCorr->get();
+          else  if ((nSelectedMuons >= 1) or (nSelectedElectrons >= 1) or (ana->nVetoedTracks >= 1) ){
+       		  lepCorr->setTargetBin(LepCorr::fakeBin);
+          }
+	          vetoLepWeight = 1 - lepCorr->get();
                   selLepWeight  = lepCorr->get();
                  
 		  if(lepCorr->corrType == ucsbsusy::LepCorr::VARY_UP) {
@@ -115,11 +118,6 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
                   vetoLepWeight += lepCorr->getError();
                   selLepWeight -= lepCorr->getError();}
 
-	  else	if ((nSelectedMuons >= 1) 
-			  or (nSelectedElectrons >= 1)
-			  or (ana->nVetoedTracks >= 1) ){
-		  vetoLepWeight = 0;
-		  selLepWeight  = 1;}
   }///EventCorrectionSet
 }
 
