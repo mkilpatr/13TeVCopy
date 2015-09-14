@@ -260,8 +260,6 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
-    data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
-    data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
     for(auto i: ana->vetoedLeptons){
