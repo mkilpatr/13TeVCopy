@@ -1,6 +1,38 @@
 #ifndef BTAGGINGEFFMAPMAKER_HH
 #define BTAGGINGEFFMAPMAKER_HH
 
+ 
+//  written September 2015 by Alex Patterson
+//  creates TH2Ds with numerator and denominator of b-tagging efficiencies in X_effmap.root
+//  links to usual makeZeroLeptonSRTrees.C and ZeroLeptonTreeHelper.hh:
+//
+//  instructions to link this code and generate b-tagging effmaps
+//    in makeZeroLeptonSRTrees.C (or OneLep...)
+//      before calling analyze() put the two lines:
+//        TString effmapname = outputdir+"/"+sname+"_effmap.root";
+//        EffMapMaker * effmapmaker = new EffMapMaker(effmapname);
+//      after calling analyze() you MUST put the line (it calls the destructor):
+//        delete effmapmaker;
+//      and add this new argument to the analyzer:
+//        effmapmaker
+//    in ZeroLeptonTreeHelper.hh (or OneLep...)
+//      add this argument to the analyzer:
+//        EffMapMaker * effmapmaker 
+//      this to its constructor's initializer list:
+//        effmapmaker_(effmapmaker)
+//      this to its data section (next to TreeFiller perhaps):
+//        EffMapMaker * effmapmaker_;
+//      and this to fillEvent(), before any cuts are made:
+//        effmapmaker_->fillEffMaps(jets);
+//      to speed things up, consider then commenting out 
+//      the rest of fillEvent, as nothing else is needed)
+//
+//  after generating the X_effmap.root you MUST run the the merger,
+//    mergeEffMaps.py,
+//  which combines the efficiency maps of sample-parts in a sample (eg ttbar_5_X),
+//  and does the actual calculation efficiency=numerator/denominator.
+//  it also rebins the corrections, which is necessary
+
 #include "TH2D.h"
 #include "TFile.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h" // CSV_MEDIUM
@@ -15,10 +47,13 @@ EffMapMaker(TString effmapname) : effmapname_(effmapname), isLoaded_(false) {
 
 void createEffMaps(defaults::Process process) {
 
-  f_EffMap->cd();
-  std::string s_proc = defaults::PROCESS_NAMES[process];
+  process_ = process;
+  std::string s_proc = defaults::PROCESS_NAMES[process_];
+  if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
 
   // declare effmap histos
+  f_EffMap->cd();
+  std::cout << "Filling these b-tagging efficiency maps (TH2D) in the file " << std::endl << effmapname_ << std::endl;
   for(unsigned int iOP = 0; iOP < NUMOPERATINGPOINTS; iOP++){ // operating points
     for(unsigned int iFl = 0; iFl < NUMMCJETFLAVORS; iFl++){ // MC jet flavors
       std::string sNum   = "h2_BTaggingEfficiency_Num_"   + s_proc + "_" + opStrings[iOP] + "_"+mcFlavStrings[iFl];
@@ -42,9 +77,10 @@ void createEffMaps(defaults::Process process) {
 }//destruct
 
 // loop over event's jets making effmaps
-void fillEffMaps(vector<RecoJetF*> jets, defaults::Process process) {
+void fillEffMaps(vector<RecoJetF*> jets) {
 
-  if(!isLoaded_) {createEffMaps(process);};
+  if(!isLoaded_) {createEffMaps(process_);};
+  if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
 
   for(auto* jet : jets){
     if(!(jet->genJet())) continue; // avoid segfault in flavor check
@@ -75,14 +111,14 @@ void fillEffMaps(vector<RecoJetF*> jets, defaults::Process process) {
     bool isLoaded_ = false;
 
     // start new effmap file and histos
-    // reference uses pt 0..1000 in 100 bins, eta -3..3 in 60 bins
-    // we do pt 20+ (rare exceptions) and eta -2.4 ... 2.4 (no exceptions?)
-    int ptNBins = 10;
-    int etaNBins = 6;
-    double ptMin = 0;
-    double ptMax = 400;
-    double etaMin = -2.4;
-    double etaMax =  2.4;
+    // it doesn't matter how finely we bin here, since python rebinner takes care of it.
+    // the reference analysis code uses pt 0..1000 in 100 bins, eta -3..3 in 60 bins
+    int ptNBins = 100;
+    int etaNBins = 60; // (etaMax-etaMin)/etaNBins should divide 0.6 to put eta=2.4 on a bin edge
+    double ptMin = 0.;
+    double ptMax = 1000.;
+    double etaMin = -3.;
+    double etaMax =  3.;
 
     enum operatingPoint     { OP_LOOSE, OP_MEDIUM, OP_TIGHT, NUMOPERATINGPOINTS };
     enum MCJetFlavor        { JF_MC_B, JF_MC_C, JF_MC_UDS, JF_MC_G, NUMMCJETFLAVORS};

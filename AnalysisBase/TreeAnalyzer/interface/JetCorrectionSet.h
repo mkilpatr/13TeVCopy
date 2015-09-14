@@ -90,7 +90,7 @@ public:
 					           };
     
   JetCorrectionSet(): btagCorr(0), b_correctionOptions(NULLOPT), f_corr(0), histosLoaded(false) {}
-  virtual ~JetCorrectionSet() { f_corr->Close(); };
+  virtual ~JetCorrectionSet() { if(f_corr) f_corr->Close(); }; // gave a seg fault bug if file was never loaded (NULLOPT)
 
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);

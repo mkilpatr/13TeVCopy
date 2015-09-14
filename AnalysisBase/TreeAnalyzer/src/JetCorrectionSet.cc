@@ -20,40 +20,41 @@ void JetCorrectionSet::load(TString fileName, int correctionOptions)
   }
 
   // BTAG correction file loading
-  if(correctionOptions != NULLOPT) {
-    corrections.push_back(btagCorr);
 
-    // load MC efficiency histogram file
-    TString s_corr_path = TString::Format("%s/src/data/corrections/",cfgSet::CMSSW_BASE); 
-    TString s_beff_path = s_corr_path+"jetCorr.root";
-    std::string s_csv_path = s_corr_path.Data();
-    std::string s_csv_name = "CSVv2.csv"; // .c_str()?
-    s_csv_path += s_csv_name;
+  // load MC efficiency histogram file
+  TString s_corr_path = TString::Format("%s/src/data/corrections/",cfgSet::CMSSW_BASE); 
+  TString s_beff_path = s_corr_path+"jetCorr.root";
+  std::string s_csv_path = s_corr_path.Data();
+  std::string s_csv_name = "CSVv2.csv"; // .c_str()?
+  s_csv_path += s_csv_name;
 
-    std::cout << "Loading files: " << std::endl;
-    std::cout << "  " << s_beff_path << std::endl;
-    std::cout << "  " << s_csv_path << std::endl;
-    std::cout << "Loading correction: ";
-    if(correctionOptions & BTAGWEIGHT) std::cout << "BTAGWEIGHT";
-    else std::cout << "BTAGOBJECTS";
-    std::cout << std::endl;
+  std::cout << "Loading files: " << std::endl;
+  std::cout << "  " << s_beff_path << std::endl;
+  std::cout << "  " << s_csv_path << std::endl;
+  std::cout << "Loading correction: ";
+  if(correctionOptions & BTAGWEIGHT) std::cout << "BTAGWEIGHT";
+  else if (correctionOptions & BTAGOBJECTS) std::cout << "BTAGOBJECTS";
+  else std::cout << "NULLOPT";
+  std::cout << std::endl;
 
-    f_corr = new TFile(s_beff_path, "READ");
-    if(f_corr->IsZombie()) throw "error in b-tagging corrections: root file is a zoombie. A zoombie, Carl!";
+//  loadFile("BTAG",fileName,correctionOptions);
+  f_corr = new TFile(s_beff_path, "READ");
+  if(f_corr->IsZombie()) throw "error in b-tagging corrections: root file is a zoombie. A zoombie, Carl!";
+
+  corrections.push_back(btagCorr);
     
-    // load .csv offical scale factor file and readers (operating point, systematics type)
-    calib = new BTagCalibration("csvv2", s_csv_path);
-    for(unsigned int iOP = 0; iOP < NUMOPERATINGPOINTS; iOP++){
-      // before hack, three lines: reader[][CENTRAL/DOWN/UP] = ...
-      // hack for light flavors being only in "comb":
-      heavyFlavorReader[iOP][CENTRAL] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"central");
-      heavyFlavorReader[iOP][DOWN   ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"down");
-      heavyFlavorReader[iOP][UP     ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"up");
-      lightFlavorReader[iOP][CENTRAL] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"central"); 
-      lightFlavorReader[iOP][DOWN   ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"down");
-      lightFlavorReader[iOP][UP     ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"up");
-    }
-  }//BTAG file loading
+  // load .csv offical scale factor file and readers (operating point, systematics type)
+  calib = new BTagCalibration("csvv2", s_csv_path);
+  for(unsigned int iOP = 0; iOP < NUMOPERATINGPOINTS; iOP++){
+    // before hack, three lines: reader[][CENTRAL/DOWN/UP] = ...
+    // hack for light flavors being only in "comb":
+    heavyFlavorReader[iOP][CENTRAL] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"central");
+    heavyFlavorReader[iOP][DOWN   ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"down");
+    heavyFlavorReader[iOP][UP     ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, heavyMeasurementType,"up");
+    lightFlavorReader[iOP][CENTRAL] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"central"); 
+    lightFlavorReader[iOP][DOWN   ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"down");
+    lightFlavorReader[iOP][UP     ] = BTagCalibrationReader(&(*calib),(BTagEntry::OperatingPoint)iOP, lightMeasurementType,"up");
+  }
 
 }//load
 
