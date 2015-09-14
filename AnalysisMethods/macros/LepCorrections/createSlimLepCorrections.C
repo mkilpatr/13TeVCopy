@@ -25,28 +25,31 @@ double multiplyUnc(std::vector<double> errors,std::vector<double> vals, double m
 void fillSearchVectors(std::vector<TString>& c_SBins_0l, std::vector<TString>& c_SBins_1l,TString c_presel_0l,TString c_presel_1l);
 
 void createSlimLepCorrections(TString varDraw,bool normalize){
-	TString  fileTree = "events";
-	TString scaleName = "weight";
-	TString dataString = "run/lepEffSlimmed/data_tree.root";
-	TString mcString = "run/lepEffSlimmed/sm_tree.root";
-	////STRING FOR FILE SAVE NAME
-	TString LumiString = "40pb";
-	TString Lumi = ".0402";
+    TString  fileTree = "Events";
+    TString scaleName = "weight";
+    TString dataString = "run/lepEffSlimmed/data_tree.root";
+    TString mcString = "run/lepEffSlimmed/sm_tree.root";
+    ////STRING FOR FILE SAVE NAME
+    TString LumiString = "40pb";
+    TString Lumi = ".0402";
 
-	//EVENT SELECTIONS
-	TString triggerSelection             = "&&(passDiJetmet > 0)";
-	TString baseline                     = "(nbjets >=1)&&(njets >= 5)&&(njets60 >= 2)&&(dphij12met>.4) &&(dphij3met>0.4) &&(met>200)";
-	TString searchString 				 =  baseline + "&&(mtcsv12MET > 175)&&(dphij12met>1) && (dphij3met>0.5)";
+    //EVENT SELECTIONS
+    TString triggerSelection             = "&&(passdijetmet > 0)";
+    TString baseline                     = "(njets60 >= 2) && (dphij12met>.4) && (dphij3met>0.4) && (met>200) &&(njets >=5 ) && (nbjets >= 1)";
+    TString searchString                             =  baseline + "&&(mtcsv12met > 175)&& (dphij12met>1) && (dphij3met>0.5)";
 
-	////GEN LEVEL CUT STRINGS
-	TString noPromptEle                  = "&&(nGoodEle == 0)";		TString onePromptEle                 = "&&(nGoodEle >= 1)";
-	TString noPromptMu                   = "&&(nGoodMu == 0)";		TString onePromptMu                  = "&&(nGoodMu >= 1)";
-	TString noPromptTau                  = "&&(nPromptTau == 0)";	TString onePromptTau                 = "&&(nPromptTau >= 1)";
+    ////GEN LEVEL CUT STRINGS
+    TString noPromptEle                  = "&&(ngoodgenele == 0)";
+    TString onePromptEle                 = "&&(ngoodgenele >= 1)";
+    TString noPromptMu                   = "&&(ngoodgenmu == 0)";
+    TString onePromptMu                  = "&&(ngoodgenmu >= 1)";
+    TString noPromptTau                  = "&&(npromptgentau == 0)";
+    TString onePromptTau                 = "&&(npromptgentau >= 1)";
 
-	////ORTHOGONALIZE AT RECO LEVEL
-	TString recoEleCut 					 = "&&(nSelectedElectrons >= 1)&&(nSelectedMuons    == 0)";
-	TString recoMuCut 					 = "&&(nSelectedMuons    >= 1)";
-	TString recoTauCut 		     		 = "&&(nvetotau    >= 1)&&(nSelectedElectrons == 0)&&(nSelectedMuons    == 0)";
+    ////ORTHOGONALIZE AT RECO LEVEL
+    TString recoEleCut                                       = "&&(nvetolele >= 1)&&(ngoodgenmu    == 0)";
+    TString recoMuCut                                        = "&&(nvetomu    >= 1)";
+    TString recoTauCut                               = "&&(nvetotau    >= 1)&&(nvetolele == 0)&&(nvetomu    == 0)";
 
 	////FILL GEN AND RECO CUT STRINGS
 	std::vector<TString> recoLepCuts; 	std::vector<TString> genNoLep; 	std::vector<TString> genOneLep;
@@ -69,7 +72,7 @@ void createSlimLepCorrections(TString varDraw,bool normalize){
 
 
     //CREATE CORRECTION HISTS
-	TH1F* LEP 	 = new TH1F("LEP","LEP",3,0.0,3.0);LEP->Sumw2();
+	TH1F* LEP 	 = new TH1F("LEP","LEP",4,0.0,4.0);LEP->Sumw2();
 
 	TH1F* dataInc;TH1F* dataOneLep;TH1F* mcOneLep;TH1F* mcInvEffHist;TH1F *dataEffHist;
 	dataInc 	 = new TH1F("dataInc","dataInc",1,0.0,1.0);dataInc->Sumw2();
@@ -177,6 +180,8 @@ void createSlimLepCorrections(TString varDraw,bool normalize){
 			yieldfile_ << fakeCorr << " $\\pm$ " << mcFakeError << " & " <<  lepCorr2 << " $\\pm$ " << lepCorrError2 << " \\\\ " << std::endl;
 			yieldfile_ << "\\hline"  << std::endl;
     }
+	LEP->SetBinContent(4,1);
+	LEP->SetBinError(4,0);
     yieldfile_ << "\\end{tabular}"  << std::endl;
     yieldfile_ << "\\end{center}" << std::endl;
 	TFile* file = new TFile("lepCorr_" + LumiString + ".root","RECREATE");
