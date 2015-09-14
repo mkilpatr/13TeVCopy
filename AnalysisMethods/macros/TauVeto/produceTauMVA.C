@@ -40,6 +40,10 @@ public:
     setConfiguration(mvaName,"TauDisc","tauXML");
   }
 
+  void process() {
+    BaseTMVAProducer::process();
+  }
+
   TTree * sigTree;
   TTree * bkgTree;
   string mvaName;
@@ -48,7 +52,7 @@ public:
 
 
 
-void produceTauMVA(string sigFileName = "run/plots/ttbar.root", string bkgFileName = "run/plots/T2tt_650_325.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_mt100presel.root") {
+void produceTauMVA(string sigFileName = "trees/ttbar.root", string bkgFileName = "trees/T2tt_650_325.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_new.root") {
   TFile * sigFile = new TFile(sigFileName.c_str(),"read");
   TFile * bkgFile = new TFile(bkgFileName.c_str(),"read");
   TTree * sigTree = 0;

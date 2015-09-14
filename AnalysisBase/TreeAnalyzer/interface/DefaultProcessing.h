@@ -4,6 +4,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/ConfigurationBase.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
+#include "AnalysisTools/DataFormats/interface/CMSTop.h"
 
 namespace cfgSet{
   bool isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf     );
@@ -13,6 +14,8 @@ namespace cfgSet{
   bool isSelTrack(const ucsbsusy::PFCandidateF& track, const TrackConfig& conf);
   bool isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::LeptonF*>& selectedLeptons, const TauConfig& conf);
   bool isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf       );
+  bool isSelTaggedTop(const ucsbsusy::CMSTopF& top); //Config Pending
+
   void selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons  ,std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf);
   void selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const TrackConfig& conf);
   void selectTaus(std::vector<ucsbsusy::TauF*>& selectedTaus, std::vector<ucsbsusy::LeptonF*>& selectedLeptons, ucsbsusy::TauFCollection& allTaus, const TauConfig& conf);

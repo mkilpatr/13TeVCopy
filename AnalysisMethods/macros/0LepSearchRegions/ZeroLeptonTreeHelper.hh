@@ -7,6 +7,7 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 using namespace ucsbsusy;
 
@@ -43,6 +44,7 @@ struct TreeFiller {
   size i_puWeight  ;
   size i_pu50NSWeight  ;
   size i_btagWeight;
+  size i_normWeight;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtrige17e12;
@@ -66,13 +68,20 @@ struct TreeFiller {
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
+  size i_lepvetoweight;
+  size i_lepselweight;
   size i_met       ;
   size i_metphi    ;
   size i_metnohf   ;
   size i_metnohfphi;
   size i_npv       ;
-  size i_nvetotau  ;
   size i_nvetolep  ;
+  size i_nvetotau  ;
+  size i_nvetomu   ;
+  size i_nvetolele ;
+  size i_ngoodgenmu;
+  size i_ngoodgenele;
+  size i_npromptgentau;
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
@@ -108,6 +117,8 @@ struct TreeFiller {
   size i_absdphilepw;
   size i_leptonpt  ;
   size i_leptoneta ;
+  size i_leptonmatchtrigmu;
+  size i_leptonmatchtrige;
   size i_mtlepmet  ;
 
  bool passCTTSelection(CMSTopF* ctt) {
@@ -138,6 +149,7 @@ struct TreeFiller {
     i_puWeight       = data->add<float>("","puWeight","F",0);
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
+    i_normWeight     = data->add<float>("","normWeight","F",0);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
     i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
@@ -162,12 +174,19 @@ struct TreeFiller {
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
     i_met            = data->add<float>("","met","F",0);
+    i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
+    i_lepselweight   = data->add<float>("","lepselweight","F",0);
     i_metphi         = data->add<float>("","metphi","F",0);
     i_metnohf        = data->add<float>("","metnohf","F",0);
     i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
     i_npv            = data->add<int>("","npv","I",0);
-    i_nvetotau       = data->add<int>("","nvetotau","I",0);
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
+    i_nvetotau       = data->add<int>("","nvetotau","I",0);
+    i_nvetomu        = data->add<int>("","nvetomu","I",0);
+    i_nvetolele      = data->add<int>("","nvetolele","I",0);
+    i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
+    i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
+    i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
@@ -202,9 +221,10 @@ struct TreeFiller {
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
+    i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
+    i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
-
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
@@ -215,6 +235,7 @@ struct TreeFiller {
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_btagWeight, ana->jetCorrections.getBtagCorrection(JetCorrectionSet::BtagCorrectionType::NOMINAL));
+    data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
@@ -232,7 +253,9 @@ struct TreeFiller {
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
-    bool passesLumi = ana->passesLumiMask();
+    bool passesLumi = ana->passesLumiMask();  
+    data->fill<float>(i_lepvetoweight, ana->eventCorrections.getVetoLepWeight());
+    data->fill<float>(i_lepselweight, ana->eventCorrections.getSelLepWeight());
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack) {
@@ -247,6 +270,35 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+
+    int nVetoEle = 0; int nVetoMu = 0;
+    for(auto i: ana->vetoedLeptons){
+		  if(fabs(i->pdgid()) == 11) nVetoEle++;
+		  if(fabs(i->pdgid()) == 13) nVetoMu++;
+    }
+    int nGoodGenMu = 0;int nGoodGenEle = 0;int nPromptTaus = 0;
+
+    for(auto i: ana->genParts){
+		const GenParticleF * genPartMom = 0;
+		if (i->numberOfMothers()>0) { genPartMom = i->mother(0); }
+		else{continue;}
+		if ((abs(i->pdgId()) == 11) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenEle++;
+		if ((abs(i->pdgId()) == 13) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24 or abs(genPartMom->pdgId()) == 15)) nGoodGenMu++;
+		if ((abs(i->pdgId()) == 15) && (abs(genPartMom->pdgId()) == 23 or abs(genPartMom->pdgId()) == 24)) {
+			bool lepDecay = false;
+                	for(unsigned int itd = 0; itd < i->numberOfDaughters(); itd++) {
+                        	const GenParticleF* dau = i->daughter(itd);
+                                if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;}
+                        if(!lepDecay)
+			nPromptTaus++;}
+    }
+
+    data->fill<int  >(i_nvetomu, nVetoMu);
+    data->fill<int  >(i_nvetolele, nVetoEle);
+
+    data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
+    data->fill<int  >(i_ngoodgenele, nGoodGenEle);
+    data->fill<int  >(i_npromptgentau, nPromptTaus);
     data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd = 0;
@@ -260,6 +312,21 @@ struct TreeFiller {
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
+      bool matchtrigmu = false, matchtrige = false;
+      for(auto* to : ana->triggerObjects) {
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrigmu = true;
+          }
+        }
+        if((to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf) || (to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf))) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrige = true;
+          }
+        }
+      }
+      data->fill<bool >(i_leptonmatchtrigmu, matchtrigmu);
+      data->fill<bool >(i_leptonmatchtrige, matchtrige);
       data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
 
@@ -372,13 +439,14 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
 
-      if(nVetoedLeptons > 0)  return false;
+      //if(nVetoedLeptons > 0)  return false;
 
-      if(nVetoedTracks > 0)   return false;
+      //if(nVetoedTracks > 0)   return false;
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-
+//      if(nJets < 5) return false;
+//      if(nBJets < 1) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;

@@ -73,6 +73,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
+    cfgSet::ConfigSet getAnaCfg() const { return configSet;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
@@ -158,6 +159,7 @@ public:
     EventCorrectionSet  eventCorrections;
     JetCorrectionSet    jetCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
+
 
     //hack for DY PU
     bool zIsInvisible;
