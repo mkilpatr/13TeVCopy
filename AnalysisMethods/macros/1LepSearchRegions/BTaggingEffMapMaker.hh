@@ -1,6 +1,5 @@
 #ifndef BTAGGINGEFFMAPMAKER_HH
 #define BTAGGINGEFFMAPMAKER_HH
-
  
 //  written September 2015 by Alex Patterson
 //  creates TH2Ds with numerator and denominator of b-tagging efficiencies in X_effmap.root
@@ -23,7 +22,7 @@
 //      this to its data section (next to TreeFiller perhaps):
 //        EffMapMaker * effmapmaker_;
 //      and this to fillEvent(), before any cuts are made:
-//        effmapmaker_->fillEffMaps(jets);
+//        effmapmaker_->fillEffMaps(jets,process);
 //      to speed things up, consider then commenting out 
 //      the rest of fillEvent, as nothing else is needed)
 //
@@ -40,7 +39,7 @@
 struct EffMapMaker {
 
 // initialize effmap file (can't do histos until event info is loaded, need process name)
-EffMapMaker(TString effmapname) : effmapname_(effmapname), isLoaded_(false) {
+EffMapMaker(TString effmapname, TString sname) : effmapname_(effmapname), sname_(sname), isLoaded_(false) {
   // make effmap file
   f_EffMap = new TFile(effmapname,"RECREATE");
 }
@@ -48,7 +47,16 @@ EffMapMaker(TString effmapname) : effmapname_(effmapname), isLoaded_(false) {
 void createEffMaps(defaults::Process process) {
 
   process_ = process;
-  std::string s_proc = defaults::PROCESS_NAMES[process_];
+  if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
+
+  std::string s_proc;
+  // for signal MC samples, 'signal' is insufficient. this code grabs eg 'T2tt' or 'T1tttt'
+//  if (process_ != defaults::SIGNAL)
+    s_proc = defaults::PROCESS_NAMES[process_];
+//  else {
+//    TString s2(sname_(0,sname_.First('_')));
+//    s_proc = s2.Data(); 
+//  }
   if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
 
   // declare effmap histos
@@ -77,9 +85,8 @@ void createEffMaps(defaults::Process process) {
 }//destruct
 
 // loop over event's jets making effmaps
-void fillEffMaps(vector<RecoJetF*> jets) {
-
-  if(!isLoaded_) {createEffMaps(process_);};
+void fillEffMaps(vector<RecoJetF*> jets, defaults::Process process) {
+  if(!isLoaded_) {createEffMaps(process);};
   if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
 
   for(auto* jet : jets){
@@ -108,6 +115,7 @@ void fillEffMaps(vector<RecoJetF*> jets) {
 
     defaults::Process process_;
     TString effmapname_;
+    TString sname_;
     bool isLoaded_ = false;
 
     // start new effmap file and histos

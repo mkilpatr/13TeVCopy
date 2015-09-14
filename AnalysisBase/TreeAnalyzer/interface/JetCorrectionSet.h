@@ -11,19 +11,20 @@
 	https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X50ns
      they're read with a .csv reader I got from the twiki, modified to return the nearest efficiency
        if the pt is out of range of the official scale factors (eg 20 GeV jet gets the eff of the nearest
-       official scale factor at 30 GeV). abs(eta) should never be > 2.4, I didn't change that.
+       official scale factor at 30 GeV). 
+
+     input histos (in jetCorr.root) are from mergeEffMaps.py, see that for more details. 
+     note that eta is positive (|eta|) in jetCorr.root
 
      **** there's a hack in place so light flavors are read using "comb" measurementType, and heavy
      ****   flavors using the user-defined string below, since right now only "comb" has light flavor measurements.
      ****   search for "hack" to remove if scale factors improve.
 
-     mc efficiencies are calculated using the function in EffMapMaker.h
-     and are stored in TH2D(pt,eta) (a histo for each process type, working point, and flavor) format in
-	jetCorr.root
-     systematics are all calculated at once. reweights are returned by
-        getBtagCorrection
-     and you have the option of which systematics (see below) and whether one or multiple operating points.
-     default behavior is central values and multiple (LOOSE, MEDIUM, and TIGHT) operating points.
+     systematics are calculated all at once.
+     reweights are returned by getBtagCorrection, and you have the option of which systematics and whether
+     one b-tagging working point or multiple are used in the analysis. see below to tune working points.
+
+     default behavior is central values for systematics and multiple (LOOSE, MEDIUM, and TIGHT) operating points.
 
      adjustable options:
         oneOperatingPoint:    set which b-tagging operating point (OP) to use for the one-OP calculation.
@@ -86,10 +87,10 @@ public:
   std::vector<unsigned int> operatingPointsToUse = {
 						    static_cast<unsigned int>(operatingPoint::OP_LOOSE)
 						   ,static_cast<unsigned int>(operatingPoint::OP_MEDIUM)
-//						   ,static_cast<unsigned int>(operatingPoint::OP_TIGHT) 
+						   ,static_cast<unsigned int>(operatingPoint::OP_TIGHT) 
 					           };
     
-  JetCorrectionSet(): btagCorr(0), b_correctionOptions(NULLOPT), f_corr(0), histosLoaded(false) {}
+  JetCorrectionSet(): btagCorr(0), correctionOptions_(NULLOPT), f_corr(0), histosLoaded(false) {}
   virtual ~JetCorrectionSet() { if(f_corr) f_corr->Close(); }; // gave a seg fault bug if file was never loaded (NULLOPT)
 
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
@@ -107,7 +108,7 @@ private:
   // btagging correction variables
   std::string heavyMeasurementType = "mujets";        // how scale factors were measured, see .csv scale factors file
   std::string lightMeasurementType = "comb";         // temporary hack? light flavor jets only measured in comb
-  int b_correctionOptions;                       // preserved correctionOptions for processCorrection
+  int correctionOptions_;                       // preserved correctionOptions for processCorrection
   TFile * f_corr;                                // MC effs file
   bool histosLoaded;                             // load histos only once
   TH2D * h2_eff[NUMOPERATINGPOINTS][NUMMCJETFLAVORS]; // MC effs histos

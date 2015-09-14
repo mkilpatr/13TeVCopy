@@ -12,7 +12,7 @@ namespace ucsbsusy {
 void JetCorrectionSet::load(TString fileName, int correctionOptions)
 {
   // preserve options (since processCorrection is invoked without it)  
-  b_correctionOptions = correctionOptions;
+  correctionOptions_ = correctionOptions;
 
   // contradiction checks in options
   if((correctionOptions & BTAGOBJECTS) && (correctionOptions & BTAGWEIGHT)) {
@@ -37,7 +37,6 @@ void JetCorrectionSet::load(TString fileName, int correctionOptions)
   else std::cout << "NULLOPT";
   std::cout << std::endl;
 
-//  loadFile("BTAG",fileName,correctionOptions);
   f_corr = new TFile(s_beff_path, "READ");
   if(f_corr->IsZombie()) throw "error in b-tagging corrections: root file is a zoombie. A zoombie, Carl!";
 
@@ -83,14 +82,10 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     histosLoaded = true;
   }
 
-//  std::cout << "**** event start" << std::endl;
-
   // option to produce reweight for each event, leaving bjet objects untouched.
   // we calculate all reweights (varying systematics) so user has to run just once.
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods
-  if(b_correctionOptions & BTAGWEIGHT) {
-
-//    std::cout << "**** BTAGWEIGHT " << std::endl;
+  if(correctionOptions_ & BTAGWEIGHT) {
 
     // start (multiplicative) event probabilities at one
     float pmc = 1;                   // event's probability (given btagging) in MC
@@ -107,8 +102,6 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       int flavor = jet->genJet()->flavor();
       if(flavor == JetFlavorInfo::unmatched_jet) continue;
 
-//      std::cout << "****  jet chosen JetFlavorInfo, JetFlavor, pt, eta: " << flavor << " " << flavMapToSF[flavor] << " " << jet->pt() << " " << jet->eta() << std::endl;
-
       float csv = jet->csv(); // default (error) from csv algo is -10, so assume untagged
 
       // assign btag to jet for every operating point
@@ -117,18 +110,14 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       tagged[OP_MEDIUM] = csv > defaults::CSV_MEDIUM;
       tagged[OP_TIGHT]  = csv > defaults::CSV_TIGHT;
 
-//      std::cout << "****  tagging (LMT): " << tagged[0] << tagged[1] << tagged[2] << std::endl;
-
       // get MC effs for the jet and every operating point in use
       Int_t binPt;
       Int_t binEta;
       float eff[NUMOPERATINGPOINTS];
       for(unsigned int iOP = 0; iOP < NUMOPERATINGPOINTS; iOP++){
         binPt    = h2_eff[iOP][flavMapToMC[flavor]]->GetXaxis()->FindBin(jet->pt());
-        binEta   = h2_eff[iOP][flavMapToMC[flavor]]->GetYaxis()->FindBin(jet->eta());          
+        binEta   = h2_eff[iOP][flavMapToMC[flavor]]->GetYaxis()->FindBin(fabs(jet->eta()));          
         eff[iOP] = h2_eff[iOP][flavMapToMC[flavor]]->GetBinContent(binPt,binEta);
-//       std::cout << "**** MC effs for OP: " << iOP <<std::endl; 
-//       std::cout << "****    binPt, binEta, eff:  " << binPt << " " << binEta <<  " " << eff[iOP] << std::endl;
       }
 
       // get official scale factors for the jet, every operating point, and every systematics type
@@ -153,10 +142,6 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
           sf[iOP][iCT] = ((BTagEntry::JetFlavor)flavMapToSF[flavor] < BTagEntry::FLAV_UDSG)
             ? heavyFlavorReader[iOP][sysTypeHeavy].eval((BTagEntry::JetFlavor)flavMapToSF[flavor],jet->eta(),jet->pt())
             : lightFlavorReader[iOP][sysTypeLight].eval((BTagEntry::JetFlavor)flavMapToSF[flavor],jet->eta(),jet->pt());
-//          std::cout << "****  scale factor: iOP, iCT, SF: " << iOP << " " << iCT << " " << sf[iOP][iCT] << std::endl;
-//          std::cout << "****    BTagEntry jet flavor: " << flavMapToSF[flavor] << std::endl;
-//          std::cout << "****    sysTypeHeavy and sysTypeLight: " << sysTypeHeavy << sysTypeLight << std::endl;
-//          std::cout << "****    jet pt and eta: " << jet->pt() << " " << jet->eta() << std::endl;
         }
       }//operatingPoints
 
@@ -166,19 +151,11 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       //   and translate from them to the whole enum of points (operatingPoint)
       //   using the user-adjustable list operatingPointsToUse.      
 
-//      std::cout << "**** using OPs: ";
-//      for(unsigned int J = 0; J <  operatingPointsToUse.size(); J++) 
-//        std::cout << "  " << operatingPointsToUse[J];
-//      std::cout << std::endl;
- 
       for(unsigned int J = 0; J <  operatingPointsToUse.size(); J++){
-//        std::cout << "**** for operating point: " << J << std::endl;
-
         // only update this part of (mc and data) product if jet is tagged J but not J+1, eg loose but not medium
         // and no jet is tagged as beyond-tightest operating point
         bool isTaggedJ   = tagged[operatingPointsToUse[J]];
         bool isTaggedJp1 = (J != operatingPointsToUse.size()-1) ? tagged[operatingPointsToUse[J+1]] : 0;
-//        std::cout << "**** isTagged, isTaggedJp1: " << isTaggedJ << " " << isTaggedJp1 << std::endl;
         if (!(isTaggedJ && !isTaggedJp1)) continue;
 
         // eff for Jth tag for the jet's properties. beyond-loosest OP (J=0) always given eff = 1.
@@ -186,56 +163,38 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
         float effJ   = (J != 0) ? eff[operatingPointsToUse[J]] : 1;
         float effJp1 = (J != operatingPointsToUse.size()-1) ? eff[operatingPointsToUse[J+1]] : 0;
   
-//        std::cout << "**** effJ, effJp1: " << effJ << " " << effJp1 << std::endl;
-//        std::cout << "**** old pmc:  " << pmc << std::endl;
-  
         // update MC probability (no systematics)
         pmc *= effJ - effJp1;
   
-//        std::cout << "**** new pmc: " << pmc << std::endl;
-
         // update data probability (for each set of systematics) in same way
         for(unsigned int iCT = 0; iCT < NUMCORRECTIONTYPES; iCT++){
           float sfJ    = (J != 0) ? sf [operatingPointsToUse[J]][iCT] : 1;
           float sfJp1  = (J != operatingPointsToUse.size()-1) ? sf [operatingPointsToUse[J+1]][iCT] : 0;
-//          std::cout << "**** old pdata, iCT: " << pdata[iCT] << " " << iCT << std::endl;
           pdata[iCT] *= sfJ*effJ - sfJp1*effJp1;       
-//          std::cout << "**** new pdata, iCT: " << pdata[iCT] << " " << iCT << std::endl;
         }
       }//operatingPointsToUse
       
       // also update mc and data probabilities for one operating point
       bool isTaggedOneOP = tagged[oneOperatingPoint];
-//      std::cout << "**** istaggedoneop (MED?):  " << isTaggedOneOP << std::endl;      
-//        std::cout << "**** old pmcOneOP:  " << pmcOneOP << std::endl;
-//        std::cout << "**** oneop eff:  " << eff[oneOperatingPoint] << std::endl;
-
       pmcOneOP *= isTaggedOneOP ? eff[oneOperatingPoint] : 1-eff[oneOperatingPoint];
-//        std::cout << "**** new pmcOneOP:  " << pmcOneOP << std::endl;
 
       for(unsigned int iCT = 0; iCT < NUMCORRECTIONTYPES; iCT++){
-//        std::cout << "**** old pdataOneOP, iCT:  " << pdataOneOP[iCT] << " " << iCT << std::endl;
         float sfTimesEff = sf[oneOperatingPoint][iCT]*eff[oneOperatingPoint];
-//        std::cout << "**** sf, eff, sfTimesEFf for one OP: " << sf[oneOperatingPoint][iCT] << " " << eff[oneOperatingPoint] << " " << sfTimesEff << std::endl;
         pdataOneOP[iCT] *= isTaggedOneOP ? sfTimesEff : 1 - sfTimesEff;
-//        std::cout << "**** new pdataOneOP, iCT:  " << pdataOneOP[iCT] << " " << iCT << std::endl;
       }
 
     }//jets
 
-    // record the reweight of the event
+    // record the reweight of the event. If the efficiencies clunk out an give zero statistics, don't correct (weight = 1).
     for(unsigned int iCT = 0; iCT < NUMCORRECTIONTYPES; iCT++){
-      bTagWeightsMultipleOP[iCT] = pdata[iCT]/pmc;
-      bTagWeightsOneOP[iCT]      = pdataOneOP[iCT]/pmcOneOP;
-//        std::cout << "**** multiple weights, iCT:  " << bTagWeightsMultipleOP[iCT]  << std::endl;
-//        std::cout << "**** one weights, iCT:  " << bTagWeightsOneOP[iCT]  << std::endl;
-
+      bTagWeightsMultipleOP[iCT] = (pmc != 0.) ? pdata[iCT]/pmc : 1.; 
+      bTagWeightsOneOP[iCT]      = (pmcOneOP != 0.) ? pdataOneOP[iCT]/pmcOneOP : 1.;
     } 
 
   }//BTAGWEIGHT
 
   // OR option to shuffle bjets, without event reweighting
-  else if (b_correctionOptions & BTAGOBJECTS) {
+  else if (correctionOptions_ & BTAGOBJECTS) {
 
   }//BTAGOBJECTS
 
