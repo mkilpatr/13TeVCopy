@@ -22,12 +22,17 @@
 #   h2_BTaggingEfficiency_ttbar_MEDIUM_b
 # these are then ready to use by the b-tagging efficiency correction code. output eta bins are positive, |eta|.
 #
+# I also threw in a stat uncertainty histogram to help with binning, in h2_BTaggingStatistics_...
+#   stat uncer in typical ratio eff=num/denom is eff*sqrt( (~num/num)^2 + (~denom/denom)^2 )
+#   so with random fluctuations, ~X = sqrt(X), we have
+#   (stat uncer of eff) = eff*sqrt(1/num + 1/denom)
+#
 # quick way to draw the output histos in jetCorr.root and tune pt, eta regions:
 #   root -l jetCorr.root
 #   _file0->ls()
 #   TH2D *ttbar_eff = h2_BTaggingEfficiency_ttbar_MEDIUM_b
 #   ttbar_eff->Draw("colz")
-#   <tune binning until even coloring (even statistical error) and not-too-many-bins>
+#   < repeat replacing Efficiency with Numerator and Denominator to get a feel for statistical error >
 #
 # derived in part from 
 #   https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/test/bTaggingEfficiency/makeBTaggingEfficiencyMapAK5PF.py
@@ -202,6 +207,7 @@ for isam in range(len(samples)) :
       denominatorOut = TH2D('h2_BTaggingDenominator_'  + sproc + '_' + operatingPoint + '_' + partonFlavor, '', (len(binsX)-1), binsX, (len(binsY)-1), binsY)
       numeratorOut   = TH2D('h2_BTaggingNumerator_'  + sproc + '_' + operatingPoint + '_' + partonFlavor, '', (len(binsX)-1), binsX, (len(binsY)-1), binsY)
       efficiencyOut  = TH2D('h2_BTaggingEfficiency_'  + sproc + '_' + operatingPoint + '_' + partonFlavor, '', (len(binsX)-1), binsX, (len(binsY)-1), binsY)
+      statisticsOut  = TH2D('h2_BTaggingStatistics_'  + sproc + '_' + operatingPoint + '_' + partonFlavor, '', (len(binsX)-1), binsX, (len(binsY)-1), binsY)
 
 # loop over all output bins to fill them. note that all of a sample's sample-parts contribute to each output bin.
       for i in range(1,denominatorOut.GetXaxis().GetNbins()+1):
@@ -256,12 +262,18 @@ for isam in range(len(samples)) :
           numeratorOut.SetBinContent(i,j,numerator)
           efficiency = numerator/denominator if denominator > 0. else 0.
           efficiencyOut.SetBinContent(i,j,efficiency)
+          statUncer = efficiency*sqrt(1./denominator + 1./numerator) if ((denominator is not 0.) and (numerator is not 0.)) else 0.
+          statisticsOut.SetBinContent(i,j,statUncer)
 
 # check if 0 or 100% efficiency in this output bin
           if(efficiency == 0. or efficiency == 1.):
             print 'Warning! Bin(%i,%i) for %s process, %s jets, and %s operating point has a b-tagging efficiency of %.3f'%(i,j,sproc,partonFlavor,operatingPoint,efficiency)
             print '  Corresponds to pt [%.3f, %.3f] and eta [%.3f,%.3f]' % (denominatorOut.GetXaxis().GetBinLowEdge(i), denominatorOut.GetXaxis().GetBinUpEdge(i), denominatorOut.GetYaxis().GetBinLowEdge(j), denominatorOut.GetYaxis().GetBinUpEdge(j))
-# set efficiencies of pt and eta overflow bins equal to those of nearest (highest) bin
+# check if statistical uncertainty is ... prohibitive
+          if(statUncer > efficiency) :  
+            print 'Warning! Bin(%i,%i) for %s process, %s jets, and %s operating point has a stat error of %.3f on an efficiency of %.3f' % (i,j,sproc,partonFlavor,operatingPoint,statUncer,efficiency)
+                 
+# set efficiencies of pt and eta overflow bins equal to those of nearest (highest) bin (ignore stat histo here -- it's for human inspection)
       for i in range(1,denominatorOut.GetXaxis().GetNbins()+1): # eta overflow
         efficiencyOut.SetBinContent(i, denominatorOut.GetYaxis().GetNbins()+1, efficiencyOut.GetBinContent(i, denominatorOut.GetYaxis().GetNbins()))
       for j in range(1,denominatorOut.GetYaxis().GetNbins()+2): # pt overflow
@@ -272,10 +284,11 @@ for isam in range(len(samples)) :
       denominatorOut.Write()
       numeratorOut.Write()
       efficiencyOut.Write()
+      statisticsOut.Write()
 
 # after all sample-parts, jet flavors, and operating points done for this sample, let user know
   print '-------------------------------------------------------------------------------------------'
-  print 'b-tagging efficiency map for'
+  print 'b-tagging efficiency map (numerator count, denominator count, efficiency, and stat uncertainty) for'
   print sproc
   print 'successfully created and stored in %s' % outputFilename
   print ''
