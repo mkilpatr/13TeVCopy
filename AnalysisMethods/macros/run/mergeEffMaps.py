@@ -32,7 +32,33 @@
 #   _file0->ls()
 #   TH2D *ttbar_eff = h2_BTaggingEfficiency_ttbar_MEDIUM_b
 #   ttbar_eff->Draw("colz")
-#   < repeat replacing Efficiency with Numerator and Denominator to get a feel for statistical error >
+#
+# VERY useful script to draw the four output histos for a sample:
+# // Derived from Rene @ ROOT
+# // puts four on a pad. to separate, follow the comments.
+# {
+#    const Int_t nhist=4;
+#    char * hnames[nhist] = {"h2_BTaggingNumerator_signal_MEDIUM_b"
+#                           ,"h2_BTaggingDenominator_signal_MEDIUM_b"
+#                           ,"h2_BTaggingStatistics_signal_MEDIUM_b"
+#                           ,"h2_BTaggingEfficiency_signal_MEDIUM_b"};
+#    TFile * f = new TFile("jetCorr.root");
+#    TH2D * hist[nhist];
+#    TCanvas c1("c1", "canvas", 1000, 750); // comment
+#    c1.Divide(2,2); // comment
+# //   TCanvas * c[nhist]; // uncomment 
+#    for (Int_t i=0;i<nhist;i++) {
+#       c1.cd(i+1); // comment
+#       hist[i] = (TH2D*)f->Get(hnames[i]);
+#       hist[i]->GetXaxis()->SetTitle("pT");
+#       hist[i]->GetXaxis()->CenterTitle();
+#       hist[i]->GetYaxis()->SetTitle("|#eta|");
+#       hist[i]->GetYaxis()->CenterTitle();
+# //      c[i] = new TCanvas(Form("c%d",i)); //uncomment 
+# //      hist[i]->SetStats(0); 
+#       hist[i]->Draw("colz");
+#    }
+# }
 #
 # derived in part from 
 #   https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/test/bTaggingEfficiency/makeBTaggingEfficiencyMapAK5PF.py
@@ -66,50 +92,50 @@ datasets = {
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'ttbar':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'w':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'z':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'g':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   't':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'ttZ':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   'ttW':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
   },
   # signal
   'signal':{ # dataset name (defaults::PROCESS_NAMES)
-     'b':    [[0., 40., 60., 80., 100., 150., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
+     'b':    [[0., 40., 80., 100., 120., 140., 160., 200., 300., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for b jets
      'c':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for c jets
      'uds':  [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]],  # jet Pt and |eta| bins for uds jets
      'g':    [[0., 40., 60., 80., 100., 150., 200., 1000.],[0., 0.6, 1.2, 2.4]]  # jet Pt and |eta| bins for g jets
@@ -172,9 +198,11 @@ print 'Creating merged effmap file: jetCorr.root'
 if len(samples) == 0 :
   raise ValueError('no samples found in file')
 
-# set up the single output file
+# set up the single output file (make directory if doesn't exist)
 outputFilename = args.outdir + '/' + 'jetCorr.root'
-outputFile     = TFile(outputFilename, 'RECREATE')
+if not os.path.exists(args.outdir) : 
+  os.makedirs(args.outdir)
+outputFile = TFile(outputFilename, 'RECREATE')
 
 # iterate over samples, eg ttbar-madgraphmlm-50ns
 for isam in range(len(samples)) :
@@ -194,7 +222,7 @@ for isam in range(len(samples)) :
   else :
     sproc = sname.split( '_' )[0] # ttbar-madgraphmlm-50ns_5_X -> ttbar-madgraphmlm-50ns, also cuts off things like t_barW, which is OK (see confToFramework)
     sproc = sproc.split( '-' )[0] # ttbar-madgraphmlm-50ns -> ttbar
-  sproc = confToFramework['sproc'] 
+  sproc = confToFramework[sproc] 
   print 'Process name (MUST match the entry in ucsbsusy::defaults::PROCESS_NAMES: %s' % sproc
 
 # iterate over parton flavors and operating points (needed to set up output histo)
@@ -263,7 +291,7 @@ for isam in range(len(samples)) :
           numeratorOut.SetBinContent(i,j,numerator)
           efficiency = numerator/denominator if denominator > 0. else 0.
           efficiencyOut.SetBinContent(i,j,efficiency)
-          statUncer = efficiency*sqrt(1./denominator + 1./numerator) if ((denominator is not 0.) and (numerator is not 0.)) else 0.
+          statUncer = efficiency*sqrt(1./denominator + 1./numerator) if ((denominator > 0.) and (numerator > 0.)) else 0.
           statisticsOut.SetBinContent(i,j,statUncer)
 
 # check if 0 or 100% efficiency in this output bin
@@ -273,6 +301,7 @@ for isam in range(len(samples)) :
 # check if statistical uncertainty is ... prohibitive
           if(statUncer > efficiency) :  
             print 'Warning! Bin(%i,%i) for %s process, %s jets, and %s operating point has a stat error of %.3f on an efficiency of %.3f' % (i,j,sproc,partonFlavor,operatingPoint,statUncer,efficiency)
+            print '  Corresponds to pt [%.3f, %.3f] and eta [%.3f,%.3f]' % (denominatorOut.GetXaxis().GetBinLowEdge(i), denominatorOut.GetXaxis().GetBinUpEdge(i), denominatorOut.GetYaxis().GetBinLowEdge(j), denominatorOut.GetYaxis().GetBinUpEdge(j))
                  
 # set efficiencies of pt and eta overflow bins equal to those of nearest (highest) bin (ignore stat histo here -- it's for human inspection)
       for i in range(1,denominatorOut.GetXaxis().GetNbins()+1): # eta overflow
