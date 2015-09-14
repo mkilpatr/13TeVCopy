@@ -95,15 +95,17 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     }
     if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
+      if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT)
+        eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
       corrections.push_back(&eventCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
       corrections.push_back(&jetAndMETCorrections);
     }
-  }
-
+  
     jetCorrector.setJES(configSet.jets.JES);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -201,6 +203,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
+  load(cfgSet::TRIGOBJS);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -222,7 +225,6 @@ void BaseTreeAnalyzer::processVariables()
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
     datareco =  evtInfoReader.datareco;
-    triggerflag =  evtInfoReader.triggerflag;
   }
 
   if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
@@ -245,10 +247,15 @@ void BaseTreeAnalyzer::processVariables()
   }
 
   if(trigObjReader.isLoaded()){
+    triggerflag =  trigObjReader.triggerflag;
     triggerObjects.clear();
     triggerObjects.reserve(trigObjReader.trigobjs.size());
     for(auto& to : trigObjReader.trigobjs)
       triggerObjects.push_back(&to);
+    triggerInfo.clear();
+    triggerInfo.reserve(trigObjReader.triginfo.size());
+    for(auto& tI : trigObjReader.triginfo)
+      triggerInfo.push_back(&tI);
   }
 
   allLeptons.clear();

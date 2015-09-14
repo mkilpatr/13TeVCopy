@@ -99,15 +99,15 @@ void JetAndMETCorrectionSet::load(int correctionOptions)
 }
 
 void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
-  if(ana->process < defaults::TTBAR || ana->process > defaults::SIGNAL ){
-    return;
-  }
-
   originalMET =  *ana->met;
   correctedMET = *ana->met;
 
   originalMETNoHF =  *ana->metNoHF;
   correctedMETNoHF = *ana->metNoHF;
+
+  if(ana->process < defaults::TTBAR || ana->process > defaults::SIGNAL ){
+    return;
+  }
 
   if(options_ & NULLOPT) return;
 

@@ -4,8 +4,8 @@
 
 
 void plotPHYS14vsS15(const TString conffile="runtau.conf",
-                     const TString inputdir="trees_091115",
-                     const TString outputdir="plots_091115",
+                     const TString inputdir="trees",
+                     const TString outputdir="plots",
                      const bool    plotttbar=false)
 {
 

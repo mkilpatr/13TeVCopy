@@ -2,8 +2,8 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotROCCurves.h"
 #endif
 
-void makeROCCurves(const TString sigtree    = "run/plots/realtaus_tt1tau_addtaumva.root",
-                   const TString bkgtree    = "run/plots/faketaus_T2tt_650_325_addtaumva.root",
+void makeROCCurves(const TString sigtree    = "trees/realtaus_tt1tau_addtaumva.root",
+                   const TString bkgtree    = "trees/faketaus_T2tt_650_325_addtaumva.root",
                    const TString siglabel   = "#varepsilon(t#bar{t} gen-matched h^{#pm})",
                    const TString bkglabel   = "#varepsilon(T2tt(650,325) non-matched h^{#pm})",
                    const TString treename   = "Candidates",
@@ -14,7 +14,7 @@ void makeROCCurves(const TString sigtree    = "run/plots/realtaus_tt1tau_addtaum
   TString selmt     = selbase + " && absdz<0.2 && mt<100";
   TString seldphi   = selbase + " && absdz<0.2 && dphimet<1.34";
 
-  vector<TString> compmvas_training = {"taumva_dphipresel", "taumva_mtpresel"};
+  vector<TString> compmvas_training = {"taumva", "taumva_new"};
 
   vector<TString> compvars = {"dphimet", "dphiw", "mt", "mtnophoton"};
 
@@ -23,8 +23,8 @@ void makeROCCurves(const TString sigtree    = "run/plots/realtaus_tt1tau_addtaum
   plots->addSignalTree    (sigtree, treename, siglabel);
   plots->addBackgroundTree(bkgtree, treename, bkglabel);
 
-  plots->addROCVariable("taumva_dphipresel", "|#Delta#phi| preselection", seldphi, seldphi, kRed+2,    200, -1.0, 1.0);
-  plots->addROCVariable("taumva_mtpresel", "m_{T} preselection", selmt, selmt, kBlue+2,    200, -1.0, 1.0);
+  plots->addROCVariable("taumva", "Old training", selmt, selmt, kRed+2,    200, -1.0, 1.0);
+  plots->addROCVariable("taumva_new", "New training", selmt, selmt, kBlue+2,    200, -1.0, 1.0);
   plots->addROCVariable("dphimet", "|#Delta#phi(h^{#pm}, #slash{E}_{T})|", selbase, selbase, kRed+2, 210, 0, 3.15, 1);
   plots->addROCVariable("dphiw", "|#Delta#phi(h^{#pm}, W)|", selbase, selbase, kBlue+2, 210, 0, 3.15, 1);
   plots->addROCVariable("mt", "m_{T} (with #gamma)", selbase, selbase, kOrange+2, 250, 0, 500, 1);
@@ -52,7 +52,7 @@ void makeROCCurves(const TString sigtree    = "run/plots/realtaus_tt1tau_addtaum
   plots->getInfoForCut("mt", 100.0);
   plots->getInfoForBackgroundEff("dphimet", bkgeff_mt100);
 
-  plots->getInfoForSignalEff("taumva_mtpresel", 0.7);
-  plots->getInfoForSignalEff("taumva_dphipresel", 0.7);
+  plots->getInfoForSignalEff("taumva_new", 0.7);
+  plots->getInfoForSignalEff("taumva", 0.7);
 
 }
