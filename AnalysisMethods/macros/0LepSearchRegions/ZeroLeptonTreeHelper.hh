@@ -43,6 +43,7 @@ struct TreeFiller {
   size i_weight    ;
   size i_puWeight  ;
   size i_pu50NSWeight  ;
+  size i_normWeight;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtrige17e12;
@@ -115,6 +116,8 @@ struct TreeFiller {
   size i_absdphilepw;
   size i_leptonpt  ;
   size i_leptoneta ;
+  size i_leptonmatchtrigmu;
+  size i_leptonmatchtrige;
   size i_mtlepmet  ;
 
  bool passCTTSelection(CMSTopF* ctt) {
@@ -144,6 +147,7 @@ struct TreeFiller {
     i_weight         = data->add<float>("","weight","F",0);
     i_puWeight       = data->add<float>("","puWeight","F",0);
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
+    i_normWeight     = data->add<float>("","normWeight","F",0);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
     i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
@@ -215,6 +219,8 @@ struct TreeFiller {
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
+    i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
+    i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
   }
@@ -226,6 +232,7 @@ struct TreeFiller {
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
+    data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
@@ -302,6 +309,21 @@ struct TreeFiller {
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
+      bool matchtrigmu = false, matchtrige = false;
+      for(auto* to : ana->triggerObjects) {
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrigmu = true;
+          }
+        }
+        if((to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf) || (to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf))) {
+          if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
+            matchtrige = true;
+          }
+        }
+      }
+      data->fill<bool >(i_leptonmatchtrigmu, matchtrigmu);
+      data->fill<bool >(i_leptonmatchtrige, matchtrige);
       data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
     }
 
@@ -414,9 +436,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
 
-//      if(nVetoedLeptons > 0)  return false;
+      //if(nVetoedLeptons > 0)  return false;
 
-//      if(nVetoedTracks > 0)   return false;
+      //if(nVetoedTracks > 0)   return false;
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;

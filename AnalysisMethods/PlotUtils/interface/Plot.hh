@@ -77,6 +77,9 @@ class Plot {
     // Draw ratio of data/MC, with MC constituents stacked
     void drawRatioStack(TCanvas *c, TH1F *hData, TH1F *hMC, bool doSave=false, TString format="png");
 
+    // Draw 1D histograms and ratios wrt base histogram
+    void drawRatios(TCanvas *c, unsigned int baseIndex=0, bool doSave=false, TString format="png");
+
     // Draw the plot to a given canvas
     void draw(TCanvas *c, bool doSave=false, TString format="png");
   

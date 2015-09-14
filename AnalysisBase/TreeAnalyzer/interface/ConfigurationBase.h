@@ -204,6 +204,8 @@ namespace cfgSet {
         os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
           os << "PU ";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
+          os << "NORM ";
         os << std::endl;
 
       }

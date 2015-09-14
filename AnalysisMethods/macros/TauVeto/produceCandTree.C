@@ -39,6 +39,7 @@ class Analyzer : public BaseTreeAnalyzer {
   float misset;
   float abseta;
   float absdz;
+  float taumva;
   float chiso0p1;
   float chiso0p2;
   float chiso0p3;
@@ -81,10 +82,10 @@ class Analyzer : public BaseTreeAnalyzer {
 void Analyzer::loadVariables()
 {
 
-  load(EVTINFO);
-  load(AK4JETS);
-  load(PFCANDS,PFCandidateReader::LOADRECO | PFCandidateReader::LOADEXTRECO | PFCandidateReader::FILLOBJ);
-  if(isMC()) load(GENPARTICLES);
+  load(cfgSet::EVTINFO);
+  load(cfgSet::AK4JETS);
+  load(cfgSet::PFCANDS,PFCandidateReader::LOADRECO | PFCandidateReader::LOADEXTRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETOMT);
+  if(isMC()) load(cfgSet::GENPARTICLES);
 
 }
 
@@ -148,6 +149,7 @@ void Analyzer::loadTree()
   candtree->Branch("misset",&misset,"misset/F");
   candtree->Branch("abseta",&abseta,"abseta/F");
   candtree->Branch("absdz",&absdz,"absdz/F");
+  candtree->Branch("taumva",&taumva,"taumva/F");
   candtree->Branch("chiso0p1",&chiso0p1,"chiso0p1/F");
   candtree->Branch("chiso0p2",&chiso0p2,"chiso0p2/F");
   candtree->Branch("chiso0p3",&chiso0p3,"chiso0p3/F");
@@ -191,6 +193,7 @@ void Analyzer::runEvent()
   misset = 0.0;
   abseta = 0.0;
   absdz = 0.0;
+  taumva = 0.0;
   chiso0p1 = 0.0;
   chiso0p2 = 0.0;
   chiso0p3 = 0.0;
@@ -305,6 +308,7 @@ void Analyzer::runEvent()
 
       abseta = fabs(c->eta());
       absdz = fabs(c->dz());
+      taumva = c->taudisc();
       chiso0p1 = c->chiso0p1();
       chiso0p2 = c->chiso0p2();
       chiso0p3 = c->chiso0p3();
@@ -366,7 +370,7 @@ void produceCandTree(TString sname = "T2tt_500_325",
                      const bool isMC = true,
                      const TString fname = "T2tt_500_325_ntuple.root",
                      const double xsec = 1.0,
-                     const TString outputdir = "run/plots",
+                     const TString outputdir = "trees",
                      const TString fileprefix = "root://eoscms//eos/cms/store/user/vdutta/13TeV/270215/merged/")
 {
 
@@ -380,7 +384,7 @@ void produceCandTree(TString sname = "T2tt_500_325",
 
   TString fullname = fileprefix+fname;
 
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, outputdir, sname);
+  Analyzer a(fullname, "Events", isMC, outputdir, sname);
 
   a.analyze(10000);
 

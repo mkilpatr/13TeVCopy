@@ -12,6 +12,11 @@
 
 namespace ucsbsusy {
 
+const double TTBAR_SF = 0.93;
+const double Z_0B_SF  = 1.02;
+const double Z_1B_SF  = 1.00;
+const double Z_2B_SF  = 1.28;
+
 class PUCorr50NS : public RefoldCorrection {
 public:
   enum axes {NPV,INPUT_MC};
@@ -47,9 +52,10 @@ public:
                             NULLOPT          = 0
                           , PU               = (1 <<  0)   ///< Correct PU
                           , LEP              = (1 <<  1)   ///< Correct LEP EFF.
+                          , NORM             = (1 <<  2)   ///< Incl. normalization corrections
 
   };
- EventCorrectionSet(): puCorr50NS(0), puCorr(0), lepCorr(0), puWeight(1), pu50NSWeight(1),vetoLepWeight(1),selLepWeight(1){}
+ EventCorrectionSet(): puCorr50NS(0), puCorr(0), lepCorr(0), puWeight(1), pu50NSWeight(1), vetoLepWeight(1), selLepWeight(1), normWeight(1) {}
 
   virtual ~EventCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
@@ -60,7 +66,7 @@ public:
   float getVetoLepWeight() const {return vetoLepWeight;}
   float getSelLepWeight() const {return selLepWeight;}
   float get50NSPUWeight() const {return pu50NSWeight;}
-
+  float getNormWeight() const {return normWeight;}
 
 private:
   //Correction list
@@ -73,6 +79,7 @@ private:
   float pu50NSWeight;
   float vetoLepWeight;
   float selLepWeight;
+  float normWeight;
 
 };
 

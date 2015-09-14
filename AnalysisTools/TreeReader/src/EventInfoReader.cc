@@ -102,8 +102,8 @@ void EventInfoReader::refresh()
   hbheFlt    = false;
   hbheFixFlt = false;
 
-  //  if (hbheHNFlt->size()>0)
-  hbheFixFlt = hbheHNFlt->at(0); 
+  if (hbheHNFlt->size()>0)
+    hbheFixFlt = hbheHNFlt->at(0); 
   for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
 
     if (i==2)  { cscFlt     = metfilterbitpass->at(i); }
