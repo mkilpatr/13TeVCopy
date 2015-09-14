@@ -664,6 +664,10 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         if(config_.rebinx != 1)
           hists[isam]->Rebin(config_.rebinx);
 
+        if(config_.scalecompto1) {
+          hist0->Scale(1./hist0->Integral(0, hist0->GetNbinsX()+1));
+          hists[isam]->Scale(1./hists[isam]->Integral(0, hists[isam]->GetNbinsX()+1));
+        }
         hists[isam]->Divide(hist0);
 
         plot->addHist(hists[isam], sample->label, config_.drawopt, config_.colormap[colorname], 0, config_.colormap[colorname], 1, config_.plotoverflow);
