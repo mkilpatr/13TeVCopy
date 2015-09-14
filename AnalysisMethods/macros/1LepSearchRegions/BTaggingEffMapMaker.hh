@@ -2,10 +2,15 @@
 #define BTAGGINGEFFMAPMAKER_HH
  
 //  written September 2015 by Alex Patterson
-//  creates TH2Ds with numerator and denominator of b-tagging efficiencies in X_effmap.root
-//  links to usual makeZeroLeptonSRTrees.C and ZeroLeptonTreeHelper.hh:
 //
-//  instructions to link this code and generate b-tagging effmaps
+// part of b-tagging efficiency calculations:
+//   BTaggingEffMapMaker.hh ---------> mergeEffMaps.py -----> jetCorrectionSet
+//   numerator/denominator histos      merged eff histos      application of eff histos
+//
+//  creates TH2Ds with numerator and denominator of b-tagging efficiencies in X_effmap.root
+//  links to the usual makeZeroLeptonSRTrees.C and ZeroLeptonTreeHelper.hh.
+//
+//  instructions to link this code and generate b-tagging numerator/denominator histos:
 //    in makeZeroLeptonSRTrees.C (or OneLep...)
 //      before calling analyze() put the two lines:
 //        TString effmapname = outputdir+"/"+sname+"_effmap.root";
@@ -19,18 +24,19 @@
 //        EffMapMaker * effmapmaker 
 //      this to its constructor's initializer list:
 //        effmapmaker_(effmapmaker)
-//      this to its data section (next to TreeFiller perhaps):
+//      (so it looks like ", pars), effmapmaker_(effmapmaker) {" )
+//      this to its data section (next to "TreeFiller filler" perhaps):
 //        EffMapMaker * effmapmaker_;
 //      and this to fillEvent(), before any cuts are made:
 //        effmapmaker_->fillEffMaps(jets,process);
 //      to speed things up, consider then commenting out 
 //      the rest of fillEvent, as nothing else is needed)
 //
-//  after generating the X_effmap.root you MUST run the the merger,
+//  after generating the X_effmap.root files you MUST run the the merger,
 //    mergeEffMaps.py,
-//  which combines the efficiency maps of sample-parts in a sample (eg ttbar_5_X),
-//  and does the actual calculation efficiency=numerator/denominator.
-//  it also rebins the corrections, which is necessary
+//  which combines the efficiency maps of sample-parts in a sample (eg ttbar_*_effmap.root),
+//  and creates a rebinned efficiency = numerator/denominator histo ready for jetCorrectionSet.
+//
 
 #include "TH2D.h"
 #include "TFile.h"
@@ -50,7 +56,7 @@ void createEffMaps(defaults::Process process) {
   if (process_ > defaults::Process::SIGNAL) return; // don't bother with effmaps for data
 
   std::string s_proc;
-  // for signal MC samples, 'signal' is insufficient. this code grabs eg 'T2tt' or 'T1tttt'
+  // for signal MC samples, 'signal' is insufficient. this code grabs eg 'T2tt' or 'T1tttt' from the file name.
 //  if (process_ != defaults::SIGNAL)
     s_proc = defaults::PROCESS_NAMES[process_];
 //  else {

@@ -3,26 +3,31 @@
 # mergeEffMaps.py
 # created Sept 13, 2015 by Alex Patterson
 #
-# takes maps created by BTaggingEffMapMaker.hh (numerator & denominator of b-tagging efficiency),
-#   rebins in variable-sized pt and eta bins for clearer statistics,
-#   and divides the two to obtain efficiency maps.
+# part of b-tagging efficiency calculations:
+#   BTaggingEffMapMaker.hh ---------> mergeEffMaps.py -----> jetCorrectionSet
+#   numerator/denominator histos      merged eff histos      application of eff histos
 #
-# input (maps) format is many files (indicated by usual config file) labeled as so:
+# takes maps created by BTaggingEffMapMaker.hh (numerator/denominator of b-tagging efficiency),
+#   rebins in variable-sized pt/eta bins, and calculates efficiency = num/denom histos which
+#   are ready for jetCorrectionSet.
+#
+# input (maps) format is _effmap.root files (indicated by usual config file) labeled as so:
 #   ttbar-50ns_2_effmap.root
 # they contain T2HDs labeled by process name (defaults::PROCESS_NAMES), operating point, and parton flavor as so:
 #   h2_BTaggingEfficiency_Num_ttbar_MEDIUM_b
-# input histograms MUST be evenly binned (see 'shift' usage far below to change this yourself if need be)
-# and are assumed to span negative eta as well. easy to switch input assumption to |eta| -- see 'lookhere:abs' labels far below.
+# histograms created by BTaggingEffMapMaker.hh MUST be left evenly binned, and span eta<0 as well.
+# easy to switch input assumption to |eta| -- see 'lookhere:abs' labels far below.
 #
 # output format is single file, jetCorr.root, containing TH2Ds labeled again by PN, OP, and PF as so:
 #   h2_BTaggingEfficiency_ttbar_MEDIUM_b
 # these are then ready to use by the b-tagging efficiency correction code. output eta bins are positive, |eta|.
 #
-# to draw output histos and tune pt, eta regions:
+# quick way to draw the output histos in jetCorr.root and tune pt, eta regions:
 #   root -l jetCorr.root
 #   _file0->ls()
 #   TH2D *ttbar_eff = h2_BTaggingEfficiency_ttbar_MEDIUM_b
 #   ttbar_eff->Draw("colz")
+#   <tune binning until even coloring (even statistical error) and not-too-many-bins>
 #
 # derived in part from 
 #   https://github.com/rappoccio/usercode/blob/Dev_53x/EDSHyFT/test/bTaggingEfficiency/makeBTaggingEfficiencyMapAK5PF.py
@@ -111,6 +116,20 @@ mcJetFlavors = ['b', 'c', 'uds', 'g']
 # operating points whose effmaps were calculated
 operatingPoints = ['LOOSE', 'MEDIUM', 'TIGHT']
 
+# translate conf file process names into default::PROCESS_NAMES
+confToFramework = {	 'wjets' : 'w'
+		 	,'tW'    : 't'
+			,'tbar'  : 't' # tbar_tW gets cut to tbar
+			,'t'     : 't' # t_X gets cut to t
+                        ,'znunu' : 'z'
+			,'dyjetstoll' : 'z'
+			,'gjets' : 'g'
+			,'ttbar' : 'ttbar'
+			,'ttW'   : 'ttW'
+			,'ttZ'   : 'ttZ'
+			,'qcd'   : 'qcd'
+			,'signal': 'signal'}
+
 # parse config file into samples
 samples = []
 files = []
@@ -161,12 +180,15 @@ for isam in range(len(samples)) :
 
 # extract process name (sproc, eg ttbar) from sample name (sname, eg ttbar_0_...)
 # NOTE: sproc MUST match the entry in ucsbsusy::defaults::PROCESS_NAMES.
+#   we run over file names, so just hack up a dictionary to translate these into
+#   defaults::PROCESS_NAMES strings. Eg ttW in a filename is really process 't'.
   sname = samples[isam]
   if sname.startswith( 'T2' ) or sname.startswith( 'T1' ): # catches T2tt, T1ttt, leaves possible Ttbar alone
-    sproc = 'signal'
+    sproc = 'signal' # opportunity to use exact name of signal .. but FW isn't ready for this.
   else :
-    sproc = sname.split( '_' )[0] # ttbar-madgraphmlm-50ns_5_X -> ttbar-madgraphmlm-50ns
+    sproc = sname.split( '_' )[0] # ttbar-madgraphmlm-50ns_5_X -> ttbar-madgraphmlm-50ns, also cuts off things like t_barW, which is OK (see confToFramework)
     sproc = sproc.split( '-' )[0] # ttbar-madgraphmlm-50ns -> ttbar
+  sproc = confToFramework['sproc'] 
   print 'Process name (MUST match the entry in ucsbsusy::defaults::PROCESS_NAMES: %s' % sproc
 
 # iterate over parton flavors and operating points (needed to set up output histo)
