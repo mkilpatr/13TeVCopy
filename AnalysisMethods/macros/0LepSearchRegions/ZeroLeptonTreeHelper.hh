@@ -66,6 +66,8 @@ struct TreeFiller {
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
+  size i_lepvetoweight;
+  size i_lepselweight;
   size i_met       ;
   size i_metphi    ;
   size i_metnohf   ;
@@ -166,6 +168,8 @@ struct TreeFiller {
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
     i_met            = data->add<float>("","met","F",0);
+    i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
+    i_lepselweight   = data->add<float>("","lepselweight","F",0);
     i_metphi         = data->add<float>("","metphi","F",0);
     i_metnohf        = data->add<float>("","metnohf","F",0);
     i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
@@ -239,7 +243,9 @@ struct TreeFiller {
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
-    bool passesLumi = ana->passesLumiMask();
+    bool passesLumi = ana->passesLumiMask();  
+    data->fill<float>(i_lepvetoweight, ana->eventCorrections.getVetoLepWeight());
+    data->fill<float>(i_lepselweight, ana->eventCorrections.getSelLepWeight());
     data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack) {
@@ -408,13 +414,14 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     bool fillEvent() {
 
-      if(nVetoedLeptons > 0)  return false;
+//      if(nVetoedLeptons > 0)  return false;
 
-      if(nVetoedTracks > 0)   return false;
+//      if(nVetoedTracks > 0)   return false;
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-
+//      if(nJets < 5) return false;
+//      if(nBJets < 1) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
