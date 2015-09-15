@@ -507,14 +507,10 @@ struct TreeFiller {
 
   void fillJetInfo(TreeWriterData* data, vector<RecoJetF*> jets, vector<RecoJetF*> bjets, MomentumF* met) {
     int njets60 = 0, njets30 = 0;
+    int nlbjets = 0, nmbjets = 0, ntbjets = 0;
     for(auto* j : jets) {
       if(j->pt() > 60.0) njets60++;
       if(j->pt() > 30.0) njets30++;
-    }
-    int nlbjets = 0;
-    int nmbjets = 0;
-    int ntbjets = 0;
-    for(auto* j : jets) {
       if(j->csv() > defaults::CSV_LOOSE ) nlbjets++;
       if(j->csv() > defaults::CSV_MEDIUM) nmbjets++;
       if(j->csv() > defaults::CSV_TIGHT ) ntbjets++;
@@ -523,15 +519,15 @@ struct TreeFiller {
     for(auto* b : bjets) {
       if(b->pt() > 30.0) nbjets30++;
     }
-    data->fill<int>(i_njets, int(jets.size()));
-    data->fill<int>(i_njets30, njets30);
-    data->fill<int>(i_njets60, njets60);
-    data->fill<int>(i_nbjets, int(bjets.size()));
+    data->fill<int>(i_njets,    int(jets.size()));
+    data->fill<int>(i_njets30,  njets30);
+    data->fill<int>(i_njets60,  njets60);
+    data->fill<int>(i_nbjets,   int(bjets.size()));
     data->fill<int>(i_nbjets30, nbjets30);
-    data->fill<int>(i_nlbjets, nlbjets);
-    data->fill<int>(i_nmbjets, nmbjets);
-    data->fill<int>(i_ntbjets, ntbjets);
-    data->fill<float>(i_ht, JetKinematics::ht(jets, 20.0, 2.4));
+    data->fill<int>(i_nlbjets,  nlbjets);
+    data->fill<int>(i_nmbjets,  nmbjets);
+    data->fill<int>(i_ntbjets,  ntbjets);
+    data->fill<float>(i_ht,   JetKinematics::ht(jets, 20.0, 2.4));
     data->fill<float>(i_ht30, JetKinematics::ht(jets, 30.0, 2.4));
     data->fill<float>(i_ht40, JetKinematics::ht(jets, 40.0, 2.4));
 
