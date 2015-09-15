@@ -84,11 +84,26 @@ struct TreeFiller {
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
+  size i_nfjsdwa   ;
+  size i_nfjsdwb   ;
+  size i_nfjsdwc   ;
+  size i_nfjsdta   ;
+  size i_nfjsdtb   ;
+  size i_ncttsdwa0 ;
+  size i_ncttsdwa1 ;
+  size i_ncttsdwa2 ;
+  size i_ncttsdwa12;
+  size i_ncttsdwb  ;
+  size i_ncttsdwc  ;
+  size i_ncttsdta  ;
+  size i_ncttsdtb  ;
   size i_ngenjets  ;
   size i_ngenbjets ;
   size i_njets     ;
   size i_njets60   ;
   size i_nbjets    ;
+  size i_nlbjets   ;
+  size i_nmbjets   ;
   size i_ntbjets   ;
   size i_ht        ;
   size i_j1pt      ;
@@ -120,9 +135,22 @@ struct TreeFiller {
   size i_leptonmatchtrige;
   size i_mtlepmet  ;
 
- bool passCTTSelection(CMSTopF* ctt) {
+  bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   } 
+
+  //bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
+  //  return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) );
+  //}
+
+  bool passSoftDropTaggerCTT(CMSTopF* ctt,float minMass,float maxMass,int nsubjet, float t2ovt1) {
+
+    float mass_   = ctt->topSoftDropMass();
+    int nsubjts_  = ctt->topNsubJets();
+    float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
+
+    return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
+  }
 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
@@ -188,11 +216,26 @@ struct TreeFiller {
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_nfjsdwa        = data->add<int>("","nfjsdwa","I",0);
+    i_nfjsdwb        = data->add<int>("","nfjsdwb","I",0);
+    i_nfjsdwc        = data->add<int>("","nfjsdwc","I",0);
+    i_nfjsdta        = data->add<int>("","nfjsdta","I",0);
+    i_nfjsdtb        = data->add<int>("","nfjsdtb","I",0);
+    i_ncttsdwa0      = data->add<int>("","ncttsdwa0","I",0);
+    i_ncttsdwa1      = data->add<int>("","ncttsdwa1","I",0);
+    i_ncttsdwa2      = data->add<int>("","ncttsdwa2","I",0);
+    i_ncttsdwa12     = data->add<int>("","ncttsdwa12","I",0);
+    i_ncttsdwb       = data->add<int>("","ncttsdwb","I",0);
+    i_ncttsdwc       = data->add<int>("","ncttsdwc","I",0);
+    i_ncttsdta       = data->add<int>("","ncttsdta","I",0);
+    i_ncttsdtb       = data->add<int>("","ncttsdtb","I",0);
     i_ngenjets       = data->add<int>("","ngenjets","I",0);
     i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
     i_njets          = data->add<int>("","njets","I",0);
     i_njets60        = data->add<int>("","njets60","I",0);
     i_nbjets         = data->add<int>("","nbjets","I",0);
+    i_nlbjets        = data->add<int>("","nlbjets","I",0);
+    i_nmbjets        = data->add<int>("","nmbjets","I",0);
     i_ntbjets        = data->add<int>("","ntbjets","I",0);
     i_ht             = data->add<float>("","ht","F",0);
     i_j1pt           = data->add<float>("","j1pt","F",0);
@@ -297,12 +340,56 @@ struct TreeFiller {
     data->fill<int  >(i_ngoodgenele, nGoodGenEle);
     data->fill<int  >(i_npromptgentau, nPromptTaus);
     data->fill<int  >(i_nsellep, ana->nSelLeptons);
+
     data->fill<int  >(i_nctt, ana->cttTops.size());
-    int ncttstd = 0;
+    int ncttstd    = 0;
+    int ncttsdwa0  = 0; // here
+    int ncttsdwa1  = 0;
+    int ncttsdwa2  = 0;
+    int ncttsdwa12 = 0;
+    int ncttsdwb   = 0;
+    int ncttsdwc   = 0;
+    int ncttsdta   = 0;
+    int ncttsdtb   = 0;
     for(auto* ctt : ana->cttTops) {
       if(passCTTSelection(ctt)) ncttstd++;
+      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1, 10  )) { ++ncttsdwa0;  } // here
+      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2, 10  )) { ++ncttsdwa1;  }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1,  0.6)) { ++ncttsdwa2;  }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2,  0.6)) { ++ncttsdwa12; }
+      if (passSoftDropTaggerCTT(ctt,  60.,   120., -1, 10  )) { ++ncttsdwb;   }
+      if (passSoftDropTaggerCTT(ctt,  60.,   150., -1, 10  )) { ++ncttsdwc;   }
+      if (passSoftDropTaggerCTT(ctt, 150., 99999., -1, 10  )) { ++ncttsdta;   }
+      if (passSoftDropTaggerCTT(ctt, 150.,   250., -1, 10  )) { ++ncttsdtb;   }
     }
-    data->fill<int  >(i_ncttstd, ncttstd);
+    data->fill<int  >(i_ncttstd   , ncttstd   );
+    data->fill<int  >(i_ncttsdwa0 , ncttsdwa0 );
+    data->fill<int  >(i_ncttsdwa1 , ncttsdwa1 );
+    data->fill<int  >(i_ncttsdwa2 , ncttsdwa2 );
+    data->fill<int  >(i_ncttsdwa12, ncttsdwa12);
+    data->fill<int  >(i_ncttsdwb  , ncttsdwb  );
+    data->fill<int  >(i_ncttsdwc  , ncttsdwc  );
+    data->fill<int  >(i_ncttsdta  , ncttsdta  );
+    data->fill<int  >(i_ncttsdtb  , ncttsdtb  );
+
+    int nfjsdwa = 0;
+    int nfjsdwb = 0;
+    int nfjsdwc = 0;
+    int nfjsdta = 0;
+    int nfjsdtb = 0;
+    //for(auto* fj : ana->fatJets) {  // FatJetF* fj,float minMass,float maxMass
+    //  if(passSoftDropTaggerFJ(fj,  60., 99999.)) { ++nfjsdwa; }
+    //  if(passSoftDropTaggerFJ(fj,  60.,   120.)) { ++nfjsdwb; }
+    //  if(passSoftDropTaggerFJ(fj,  60.,   150.)) { ++nfjsdwc; }
+    //  if(passSoftDropTaggerFJ(fj, 150., 99999.)) { ++nfjsdta; }
+    //  if(passSoftDropTaggerFJ(fj, 150.,   250.)) { ++nfjsdtb; }
+    //}
+    data->fill<int  >(i_nfjsdwa, nfjsdwa);
+    data->fill<int  >(i_nfjsdwb, nfjsdwb);
+    data->fill<int  >(i_nfjsdwc, nfjsdwc);
+    data->fill<int  >(i_nfjsdta, nfjsdta);
+    data->fill<int  >(i_nfjsdtb, nfjsdtb);
+
     if(ana->nSelLeptons > 0) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
       MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
@@ -352,13 +439,19 @@ struct TreeFiller {
     for(auto* j : jets) {
       if(j->pt() > 60.0) njets60++;
     }
+    int nlbjets = 0;
+    int nmbjets = 0;
     int ntbjets = 0;
-    for(auto* b : bjets) {
-      if(b->csv() > defaults::CSV_TIGHT) ntbjets++;
+    for(auto* j : jets) {
+      if(j->csv() > defaults::CSV_LOOSE ) nlbjets++;
+      if(j->csv() > defaults::CSV_MEDIUM) nmbjets++;
+      if(j->csv() > defaults::CSV_TIGHT ) ntbjets++;
     }
     data->fill<int>(i_njets, int(jets.size()));
     data->fill<int>(i_njets60, njets60);
     data->fill<int>(i_nbjets, int(bjets.size()));
+    data->fill<int>(i_nlbjets, nlbjets);
+    data->fill<int>(i_nmbjets, nmbjets);
     data->fill<int>(i_ntbjets, ntbjets);
     data->fill<float>(i_ht, JetKinematics::ht(jets, 20.0, 2.4));
 
@@ -442,8 +535,8 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(met->pt() < metcut_) return false;
       if(!goodvertex) return false;
-//      if(nJets < 5) return false;
-//      if(nBJets < 1) return false;
+      if(nJets  < 2) return false;
+      //if(nBJets < 1) return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
       return true;
