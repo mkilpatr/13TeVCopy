@@ -92,7 +92,6 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_veto_leptons.maxMuD0           = 0.1;
   ol_veto_leptons.maxMuDz           = 0.5;
   ol_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
-
 }
 
 cfgSet::TrackConfig cfgSet::zl_veto_tracks("zl_veto_tracks");
