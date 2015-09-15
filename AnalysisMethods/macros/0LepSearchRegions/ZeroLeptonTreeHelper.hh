@@ -380,33 +380,35 @@ struct TreeFiller {
     data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
     data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
 
-  }
-
-  void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
-    for(auto* p : ana->genParts) {
-      const GenParticleF * genPartMom = 0;
-      if (p->numberOfMothers()>0) 
-        genPartMom = p->mother(0);
-      else
-        continue;
-      if (ParticleInfo::isA(ParticleInfo::p_eminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom)))
-        nGoodGenEle++;
-      else if (ParticleInfo::isA(ParticleInfo::p_muminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom)))
-        nGoodGenMu++;
-      else if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
-        bool lepDecay = false;
-        for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
-          const GenParticleF* dau = p->daughter(itd);
-          if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
+    if(isMC) {
+      for(auto* p : ana->genParts) {
+        const GenParticleF * genPartMom = 0;
+        if (p->numberOfMothers()>0) 
+          genPartMom = p->mother(0);
+        else
+          continue;
+        if (ParticleInfo::isA(ParticleInfo::p_eminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom)))
+          nGoodGenEle++;
+        else if (ParticleInfo::isA(ParticleInfo::p_muminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom)))
+          nGoodGenMu++;
+        else if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
+          bool lepDecay = false;
+          for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
+            const GenParticleF* dau = p->daughter(itd);
+            if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
+          }
+          if(!lepDecay)
+            nPromptTaus++;
         }
-        if(!lepDecay)
-          nPromptTaus++;
-        }
+      }
     }
     data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
     data->fill<int  >(i_ngoodgenele, nGoodGenEle);
     data->fill<int  >(i_npromptgentau, nPromptTaus);
+  }
+
+  void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
     data->fill<float>(i_bosonpt, boson ? boson->pt() : 0.0);
     data->fill<float>(i_bosoneta, boson ? boson->eta() : 0.0);
     int ngenjets = 0, ngenbjets = 0;
@@ -423,15 +425,13 @@ struct TreeFiller {
 
   void fillJetInfo(TreeWriterData* data, vector<RecoJetF*> jets, vector<RecoJetF*> bjets, MomentumF* met) {
     int njets60 = 0, njets30 = 0;
+    int ntbjets = 0, nlbjets = 0, nbjets30 = 0;
     for(auto* j : jets) {
       if(j->pt() > 60.0) njets60++;
       if(j->pt() > 30.0) njets30++;
-    }
-    int ntbjets = 0, nlbjets = 0, nbjets30 = 0;
-    for(auto* b : bjets) {
-      if(b->csv() > defaults::CSV_LOOSE) nlbjets++;
-      if(b->csv() > defaults::CSV_TIGHT) ntbjets++;
-      if(b->pt() > 30.0) nbjets30++;
+      if(j->csv() > defaults::CSV_LOOSE) nlbjets++;
+      if(j->csv() > defaults::CSV_TIGHT) ntbjets++;
+      if(j->csv() > defaults::CSV_MEDIUM && j->pt() > 30.0) nbjets30++;
     }
     data->fill<int>(i_njets, int(jets.size()));
     data->fill<int>(i_njets30, njets30);
