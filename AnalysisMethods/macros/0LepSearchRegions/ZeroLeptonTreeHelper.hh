@@ -69,10 +69,6 @@ struct TreeFiller {
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
-  size i_genjetpt  ;
-  size i_genjeteta ;
-  size i_genbjetpt ;
-  size i_genbjeteta;
   size i_lepvetoweight;
   size i_lepselweight;
   size i_met       ;
@@ -197,10 +193,6 @@ struct TreeFiller {
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
-    i_genjetpt       = data->addMulti<float>("","genjetpt",0);
-    i_genjeteta      = data->addMulti<float>("","genjeteta",0);
-    i_genbjetpt      = data->addMulti<float>("","genbjetpt",0);
-    i_genbjeteta     = data->addMulti<float>("","genbjeteta",0);
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
@@ -418,12 +410,8 @@ struct TreeFiller {
     for(auto* j : genjets) {
       if(cleanjetsvboson && boson && PhysicsUtilities::deltaR2(*j, *boson) < 0.16) continue;
       ngenjets++;
-      data->fillMulti<float>(i_genjetpt, j->pt());
-      data->fillMulti<float>(i_genjeteta, j->eta());
       if(fabs(j->flavor()) == JetFlavorInfo::b_jet) {
         ngenbjets++;
-        data->fillMulti<float>(i_genbjetpt, j->pt());
-        data->fillMulti<float>(i_genbjeteta, j->eta());
       }
     }
     data->fill<int  >(i_ngenjets, ngenjets);
