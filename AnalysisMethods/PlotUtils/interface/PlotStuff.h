@@ -38,6 +38,15 @@ class PlotStuff {
     // TREES : Plot from a set of "tree.root" files, one per sample, with a TTree. Variables to be plotted and selections to be used should be added with addTreeVar
     // HISTSSINGLEFILE : Plot histograms from a file (passed in the specialized constructor). Sets of histograms to be plotted together should be added with addCompSet
     enum PlotSource {HISTS, TREES, HISTSSINGLEFILE};
+    enum PlotLepton {ZEROL, MUELETAU,MUNOELENOTAU, MUELENOTAU, MUNOELETAU,NOMUNOTAUELE,NOMUTAUELE,NOMUTAUNOELE};
+
+        ///Use lepvetoweight if it is a vetoed event   (1 or more leptons)
+        //    ///Use selvetoweight if it is a selected event (0 leptons)
+        //        ///To apply any cutstring add to cut + LeptonCuts[ `enum corersponding to lepton cut' ]
+    std::string LeptonCuts[8] ={"selvetoweight*","lepvetoweight*(nvetomu >= 1 || nvetoele >= 1 || nvetotau >= 1)", "lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau >= 1)",
+    								     "lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau == 0)","lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau == 0)",
+										 "lepvetoweight*(nvetomu == 0 || nvetoele >= 1 || nvetotau == 0)","lepvetoweight*(nvetomu == 0 || nvetoele >= 1 || nvetotau >= 1)",
+										 "lepvetoweight*(nvetomu == 0 || nvetoele == 0 || nvetotau == 0)"};
 
     // Hold information about tree variables and selections to be used for plotting
     struct PlotTreeVar {

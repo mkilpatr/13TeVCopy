@@ -89,6 +89,7 @@ void TauReader::refresh(){
       taus.back().setLeadCandidate(CylLorentzVectorF(leadcandpt->at(iL), leadcandeta->at(iL), leadcandphi->at(iL), leadcandmass->at(iL)));
       taus.back().setLeadChargedCandidate(CylLorentzVectorF(leadchcandpt->at(iL), leadchcandeta->at(iL), leadchcandphi->at(iL), leadchcandmass->at(iL)));
       taus.back().setIsGoodPOGTau(tauId->passTauId((&taus.back())));
+      taus.back().setIsHPSVetoTau(hpsid->at(iL) & kMediumIsoMVALT);
     }
   }
 }

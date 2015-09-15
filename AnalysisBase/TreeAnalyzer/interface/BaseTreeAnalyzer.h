@@ -141,6 +141,7 @@ public:
     std::vector<LeptonF*>        selectedLeptons   ;
     std::vector<LeptonF*>        vetoedLeptons     ;
     std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<TauF*>           vetoedTaus        ;
     std::vector<PhotonF*>        selectedPhotons   ;
     std::vector<RecoJetF*>       jets              ;
     std::vector<RecoJetF*>       bJets             ;
@@ -156,6 +157,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
+    JetCorrectionSet    jetCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
 
 

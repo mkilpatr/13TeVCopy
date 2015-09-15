@@ -47,6 +47,7 @@ namespace ucsbsusy {
       unsigned long	hpsid() const { return hpsid_;	}
       bool	passpogid() 		const { return passpogid_;	}
       bool	passpogiso() 		const { return passpogiso_;	}
+      bool      ishpsvetotau()          const { return ishpsvetotau_;   }
       bool	isgoodpogtau() 	const { return isgoodpogtau_;	}
       const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
       void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
@@ -62,6 +63,7 @@ namespace ucsbsusy {
       void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
       void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
       void	setIsGoodPOGTau(bool flag)	{ isgoodpogtau_ = flag;	}
+      void	setIsHPSVetoTau(bool flag)	{ ishpsvetotau_ = flag; }
 
     protected :
       int	index_;  //Index in tau vector
@@ -75,6 +77,7 @@ namespace ucsbsusy {
       bool	passpogid_;
       bool	passpogiso_;
       bool	isgoodpogtau_;
+      bool      ishpsvetotau_;
 
   };
 
