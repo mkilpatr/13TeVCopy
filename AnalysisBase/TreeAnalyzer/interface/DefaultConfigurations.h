@@ -29,6 +29,11 @@ namespace cfgSet {
 
   void loadDefaultTrackConfigurations();
 
+  extern TauConfig zl_veto_taus;
+  extern TauConfig ol_veto_taus;
+  
+  void loadDefaultTauConfigurations();
+
   extern PhotonConfig zl_sel_photons;
 
   void loadDefaultPhotonConfigurations();
