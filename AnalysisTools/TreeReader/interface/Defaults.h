@@ -21,9 +21,9 @@ namespace defaults {
 
   const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
 
-  enum DataReco {PROMPT_50NS, JUL17_2015_50NS, MC};
+  enum DataReco {PROMPT_50NS, JUL17_2015_50NS, MC, PROMPT_25NS_2015C};
 
-  const std::string DATA_RECO_NAMES[] = {"2015b-pr","2015b-17jul15",""};
+  const std::string DATA_RECO_NAMES[] = {"2015b-pr","2015b-17jul15","","2015c-pr","invalid"};
 
   const std::string BRANCH_PUPPIJETS  = "ak4puppi";
   const std::string BRANCH_CA8JETS    = "ca8";
@@ -39,12 +39,9 @@ namespace defaults {
   const std::string BRANCH_TRIGGERS   = "trig";
   const std::string BRANCH_METFILTERS = "metfilter";
 
-  const double CSV_LOOSE      = 0.605;
-  const double CSV_MEDIUM     = 0.890;
-  const double CSV_TIGHT      = 0.970;
-  const double CSV_OLD_LOOSE  = 0.244;
-  const double CSV_OLD_MEDIUM = 0.679;
-  const double CSV_OLD_TIGHT  = 0.898;
+  const double CSV_LOOSE        = 0.605;
+  const double CSV_MEDIUM       = 0.890;
+  const double CSV_TIGHT        = 0.970;
   const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.65;
   const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.56;
   const double TAU_MVA_VETO_MTPRESEL_TIGHT = 0.45;

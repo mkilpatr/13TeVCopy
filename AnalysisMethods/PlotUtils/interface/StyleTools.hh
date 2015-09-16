@@ -13,7 +13,9 @@
 #include <TStyle.h>
 #include <TLegend.h>
 #include <TPaveText.h>
+#include <TObjArray.h>
 #include "map"
+
 
 namespace StyleTools {
 
@@ -61,6 +63,9 @@ namespace StyleTools {
   void      SetStyle       ();
   ColorMap  DefaultColors  ();
   
+  TCanvas* newAlbum(Int_t numItems, const Char_t* name, const Char_t* title, Int_t width, Int_t height, Int_t rows, Int_t columns);
+  TCanvas* drawAll(TObjArray* plots, TString name);
+
 };
 
 #endif

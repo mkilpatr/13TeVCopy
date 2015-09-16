@@ -14,6 +14,7 @@
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
 #include "AnalysisTools/DataFormats/interface/TriggerObject.h"
+#include "AnalysisTools/DataFormats/interface/TriggerInfo.h"
 
 namespace ucsbsusy {
 
@@ -41,7 +42,14 @@ namespace ucsbsusy {
       std::vector<unsigned long> * pathflags;
       std::vector<unsigned long> * filterflags;
 
+      std::vector<unsigned long> * trigbitflags;
+      std::vector<bool         > * trigbitpass;
+      std::vector<unsigned int > * trigbitprescale;
+
+      unsigned long            triggerflag;
       TriggerObjectFCollection trigobjs;
+      TriggerInfoCollection    triginfo;
+
 
   };
 

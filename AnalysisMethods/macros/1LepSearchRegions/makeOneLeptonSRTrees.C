@@ -10,7 +10,8 @@ void makeOneLeptonSRTrees(TString sname = "singlemu",
                           const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/singlemu-2015b-pr_ntuple_postproc.root",
                           const double xsec = 1.0,
                           const TString outputdir = "trees",
-                          const TString fileprefix = "root://eoscms//eos/cms")
+                          const TString fileprefix = "root://eoscms//eos/cms",
+                          const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -25,7 +26,7 @@ void makeOneLeptonSRTrees(TString sname = "singlemu",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
-  cfgSet::ConfigSet pars = pars1lep();
+  cfgSet::ConfigSet pars = pars1lep(json);
 
   TString treename = "Events";
   OneLeptonAnalyzer a(fullname, treename, outfilename, isMC, &pars);

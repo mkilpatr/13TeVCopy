@@ -43,10 +43,6 @@ EventInfoReader::EventInfoReader()
   process = defaults::NUMPROCESSES;
   datrec = 0;
   datareco = defaults::MC;
-  trigbitflags = new vector<unsigned long>;
-  trigbitpass = new vector<bool>;
-  trigbitprescale = new vector<unsigned int>;
-  triggerflag = 0;
   metfilterbitflags = new vector<unsigned long>;
   metfilterbitpass = new vector<bool>;
   hbheHNFlt  = new vector<bool>;
@@ -81,9 +77,6 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
   treeReader->setBranchAddress(branchName,"genweight", &genweight);
   treeReader->setBranchAddress(branchName,"genqscale", &genqscale);
-  treeReader->setBranchAddress(defaults::BRANCH_TRIGGERS,"bit_flag", &trigbitflags);
-  treeReader->setBranchAddress(defaults::BRANCH_TRIGGERS,"bit_pass", &trigbitpass);
-  treeReader->setBranchAddress(defaults::BRANCH_TRIGGERS,"bit_prescale", &trigbitprescale);
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"datareco", &datrec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
@@ -97,7 +90,6 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
 
 void EventInfoReader::refresh()
 {
-  triggerflag = 0;
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
   //met.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   metNoHF.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
@@ -106,17 +98,13 @@ void EventInfoReader::refresh()
   datareco = static_cast<defaults::DataReco>(datrec);
   evtweight = xsecweight * genevtweight;
 
-  for (unsigned int i = 0; i < trigbitflags->size(); ++i) {
-    if(trigbitpass->at(i)) triggerflag |= trigbitflags->at(i);
-  }
-
   cscFlt     = false;
   eeBadSCFlt = false;
   hbheFlt    = false;
   hbheFixFlt = false;
 
-  //  if (hbheHNFlt->size()>0)
-  hbheFixFlt = hbheHNFlt->at(0); 
+  if (hbheHNFlt->size()>0)
+    hbheFixFlt = hbheHNFlt->at(0); 
   for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
 
     if (i==2)  { cscFlt     = metfilterbitpass->at(i); }
