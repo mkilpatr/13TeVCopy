@@ -59,8 +59,9 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
         for(auto *p : genParts)
           if(p->pdgId() == ParticleInfo::p_Z0) {
             boson = p;
-            return; // end of znunu
+            break; // end of znunu
           }
+        return;
       }
 
       if (selectedPhotons.empty()){
