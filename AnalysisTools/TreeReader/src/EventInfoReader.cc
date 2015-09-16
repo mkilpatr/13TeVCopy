@@ -99,6 +99,7 @@ void EventInfoReader::refresh()
 {
   triggerflag = 0;
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+  //met.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   metNoHF.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
