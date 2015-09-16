@@ -68,7 +68,7 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
 };
 
-void makeInclusiveZtoLLCRTrees(TString sname = "dyjetstoll_cr",
+void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
                                  const TString fname = "/store/user/vdutta/13TeV/150715/74X/merged/dyjetstoll_1_ntuple_wgtxsec.root",
