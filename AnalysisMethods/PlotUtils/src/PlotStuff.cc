@@ -455,7 +455,6 @@ void PlotStuff::loadTables()
           if(isData(sample->name) && !config_.dataismc)
             cutstr = "1.0*(" + sel + ")";
           intree->Project("htmp", drawstr.Data(), cutstr.Data());
-          TH1F* htmp = (TH1F*)gPad->GetPrimitive("htmp");
           double tmperr = 0.0;
           tmpyieldsv.push_back(htmp->IntegralAndError(0, htmp->GetNbinsX()+1, tmperr));
           tmpyielderrsv.push_back(tmperr);
