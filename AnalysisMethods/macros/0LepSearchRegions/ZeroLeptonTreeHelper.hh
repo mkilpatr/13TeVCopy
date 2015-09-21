@@ -116,6 +116,7 @@ struct TreeFiller {
   size i_nlbjets   ;
   size i_nmbjets   ;
   size i_ntbjets   ;
+  size i_nlbjets   ;
   size i_ht        ;
   size i_ht30      ;
   size i_ht40      ;
@@ -159,18 +160,18 @@ struct TreeFiller {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   } 
 
-  //bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
-  //  return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) );
-  //}
+  bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
+    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) );
+  } 
 
   bool passSoftDropTaggerCTT(CMSTopF* ctt,float minMass,float maxMass,int nsubjet, float t2ovt1) {
-
+    
     float mass_   = ctt->topSoftDropMass();
     int nsubjts_  = ctt->topNsubJets();
-    float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
+    float t2ovt1_ = (ctt->topTau2)/(ctt->topTau1);
 
     return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
-  }
+  } 
 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
@@ -268,6 +269,7 @@ struct TreeFiller {
     i_nlbjets        = data->add<int>("","nlbjets","I",0);
     i_nmbjets        = data->add<int>("","nmbjets","I",0);
     i_ntbjets        = data->add<int>("","ntbjets","I",0);
+    i_nlbjets        = data->add<int>("","nlbjets","I",0);
     i_ht             = data->add<float>("","ht","F",0);
     i_ht30           = data->add<float>("","ht30","F",0);
     i_ht40           = data->add<float>("","ht40","F",0);
@@ -363,10 +365,9 @@ struct TreeFiller {
     data->fill<int  >(i_nvetomu, nVetoMu);
     data->fill<int  >(i_nvetolele, nVetoEle);
     data->fill<int  >(i_nsellep, ana->nSelLeptons);
-
     data->fill<int  >(i_nctt, ana->cttTops.size());
     int ncttstd    = 0;
-    int ncttsdwa0  = 0; // here
+    int ncttsdwa0  = 0;
     int ncttsdwa1  = 0;
     int ncttsdwa2  = 0;
     int ncttsdwa12 = 0;
@@ -376,14 +377,14 @@ struct TreeFiller {
     int ncttsdtb   = 0;
     for(auto* ctt : ana->cttTops) {
       if(passCTTSelection(ctt)) ncttstd++;
-      if(passSoftDropTaggerCTT(ctt,  60., 99999., -1, 10  )) { ++ncttsdwa0;  }
-      if(passSoftDropTaggerCTT(ctt,  60., 99999.,  2, 10  )) { ++ncttsdwa1;  }
-      if(passSoftDropTaggerCTT(ctt,  60., 99999., -1,  0.6)) { ++ncttsdwa2;  }
-      if(passSoftDropTaggerCTT(ctt,  60., 99999.,  2,  0.6)) { ++ncttsdwa12; }
-      if(passSoftDropTaggerCTT(ctt,  60.,   120., -1, 10  )) { ++ncttsdwb;   }
-      if(passSoftDropTaggerCTT(ctt,  60.,   150., -1, 10  )) { ++ncttsdwc;   }
-      if(passSoftDropTaggerCTT(ctt, 150., 99999., -1, 10  )) { ++ncttsdta;   }
-      if(passSoftDropTaggerCTT(ctt, 150.,   250., -1, 10  )) { ++ncttsdtb;   }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1, 10  )) { ++ncttsdwa0;  }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2, 10  )) { ++ncttsdwa1;  }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1,  0.6)) { ++ncttsdwa2;  }
+      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2,  0.6)) { ++ncttsdwa12; }
+      if (passSoftDropTaggerCTT(ctt,  60.,   120., -1, 10  )) { ++ncttsdwb;   }
+      if (passSoftDropTaggerCTT(ctt,  60.,   150., -1, 10  )) { ++ncttsdwc;   }
+      if (passSoftDropTaggerCTT(ctt, 150., 99999., -1, 10  )) { ++ncttsdta;   }
+      if (passSoftDropTaggerCTT(ctt, 150.,   250., -1, 10  )) { ++ncttsdtb;   }
     }
     data->fill<int  >(i_ncttstd   , ncttstd   );
     data->fill<int  >(i_ncttsdwa0 , ncttsdwa0 );
@@ -400,13 +401,13 @@ struct TreeFiller {
     int nfjsdwc = 0;
     int nfjsdta = 0;
     int nfjsdtb = 0;
-    //for(auto* fj : ana->fatJets) {  // FatJetF* fj,float minMass,float maxMass
-    //  if(passSoftDropTaggerFJ(fj,  60., 99999.)) { ++nfjsdwa; }
-    //  if(passSoftDropTaggerFJ(fj,  60.,   120.)) { ++nfjsdwb; }
-    //  if(passSoftDropTaggerFJ(fj,  60.,   150.)) { ++nfjsdwc; }
-    //  if(passSoftDropTaggerFJ(fj, 150., 99999.)) { ++nfjsdta; }
-    //  if(passSoftDropTaggerFJ(fj, 150.,   250.)) { ++nfjsdtb; }
-    //}
+    for(auto* fj : ana->fatJets) {
+      if(passSoftDropTaggerFJ(fj,  60., 99999.)) { ++nfjsdwa; } //if (passSoftDropTaggerFJ(fj,60.,99999.))  { ++nfjsdwa; }
+      if(passSoftDropTaggerFJ(fj,  60.,   120.)) { ++nfjsdwb; } //if (passSoftDropTaggerFJ(fj,60.,120.))    { ++nfjsdwb; }
+      if(passSoftDropTaggerFJ(fj,  60.,   150.)) { ++nfjsdwc; } //if (passSoftDropTaggerFJ(fj,60.,150.))    { ++nfjsdwc; }
+      if(passSoftDropTaggerFJ(fj, 150., 99999.)) { ++nfjsdta; } //if (passSoftDropTaggerFJ(fj,150.,99999.)) { ++nfjsdta; }
+      if(passSoftDropTaggerFJ(fj, 150.,   250.)) { ++nfjsdtb; } //if (passSoftDropTaggerFJ(fj,150.,250.))   { ++nfjsdtb; }
+    }
     data->fill<int  >(i_nfjsdwa, nfjsdwa);
     data->fill<int  >(i_nfjsdwb, nfjsdwb);
     data->fill<int  >(i_nfjsdwc, nfjsdwc);
@@ -422,6 +423,7 @@ struct TreeFiller {
       data->fillMulti<float>(i_chhdphimet, fabs(pfc.dphimet()));
       data->fillMulti<float>(i_chhtaudisc, pfc.taudisc());
     } 
+
 
     if(ana->nSelLeptons > 0) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
