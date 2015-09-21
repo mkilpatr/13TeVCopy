@@ -116,7 +116,6 @@ struct TreeFiller {
   size i_nlbjets   ;
   size i_nmbjets   ;
   size i_ntbjets   ;
-  size i_nlbjets   ;
   size i_ht        ;
   size i_ht30      ;
   size i_ht40      ;
@@ -168,7 +167,7 @@ struct TreeFiller {
     
     float mass_   = ctt->topSoftDropMass();
     int nsubjts_  = ctt->topNsubJets();
-    float t2ovt1_ = (ctt->topTau2)/(ctt->topTau1);
+    float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
 
     return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
   } 
@@ -269,7 +268,6 @@ struct TreeFiller {
     i_nlbjets        = data->add<int>("","nlbjets","I",0);
     i_nmbjets        = data->add<int>("","nmbjets","I",0);
     i_ntbjets        = data->add<int>("","ntbjets","I",0);
-    i_nlbjets        = data->add<int>("","nlbjets","I",0);
     i_ht             = data->add<float>("","ht","F",0);
     i_ht30           = data->add<float>("","ht30","F",0);
     i_ht40           = data->add<float>("","ht40","F",0);
