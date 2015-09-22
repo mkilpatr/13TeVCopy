@@ -42,9 +42,12 @@ namespace defaults {
   const double CSV_LOOSE        = 0.605;
   const double CSV_MEDIUM       = 0.890;
   const double CSV_TIGHT        = 0.970;
-  const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.65;
-  const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.56;
-  const double TAU_MVA_VETO_MTPRESEL_TIGHT = 0.45;
+  const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.64;
+  const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.55;
+  const double TAU_MVA_VETO_MTPRESEL_TIGHT = 0.46;
+  const double TAU_MVA_VETO_MTPRESEL_PHYS14_LOOSE = 0.65;
+  const double TAU_MVA_VETO_MTPRESEL_PHYS14_MEDIUM = 0.56;
+  const double TAU_MVA_VETO_MTPRESEL_PHYS14_TIGHT = 0.45;
   const double TAU_MVA_VETO_DPHIPRESEL_LOOSE = 0.66;
   const double TAU_MVA_VETO_DPHIPRESEL_MEDIUM = 0.53;
   const double TAU_MVA_VETO_DPHIPRESEL_TIGHT = 0.44;
