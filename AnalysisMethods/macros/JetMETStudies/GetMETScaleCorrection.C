@@ -99,7 +99,11 @@ void getResponseValues(TTree * mcTree, TTree * dataTree){
 
 
   new TCanvas();
+  outFormula->SetTitle(" ");
+  outFormula->GetXaxis()->SetTitle("p_{T}(Z)");
+  outFormula->GetYaxis()->SetTitle("<Data>/<MC> (#slash{E}_{T} #parallel / p_{T}(Z))");
   outFormula->Draw();
+
 
   TFile * f = new TFile("metCorrections.root","recreate");
   a->Write();
@@ -210,7 +214,7 @@ void GetMETScaleCorrection(const TString treeName = "Events")
 //  mcFileNames.push_back("SM_DiLep_corr_resp90_metCorr.root");
 //  mcFileNames.push_back("SM_DiLep_corr_resp75_metCorr.root");
 //  mcFileNames.push_back("SM_DiLep_corr_resp50_metCorr.root");
-  mcFileNames.push_back("SM_DiLep_corr_scale_metCorr.root");
+//  mcFileNames.push_back("SM_DiLep_corr_scale_metCorr.root");
 
   vector<TTree*> mcTrees(mcFileNames.size(),0);
 
@@ -220,7 +224,7 @@ void GetMETScaleCorrection(const TString treeName = "Events")
 //  mcTreeNames.push_back("corr res 0p90");
 //  mcTreeNames.push_back("corr res 0p75");
 //  mcTreeNames.push_back("corr res 0p50");
-  mcTreeNames.push_back("corr scale");
+//  mcTreeNames.push_back("corr scale");
 
   for(unsigned int iT = 0; iT < mcFileNames.size(); ++iT){
     TFile * tF = new TFile(mcFileNames[iT],"read");
@@ -232,7 +236,7 @@ void GetMETScaleCorrection(const TString treeName = "Events")
 //  makeComparisonPlots(mcTrees[2],dt,"corr_scale_");
 
 
-//      getResponseValues(mcTrees[0],dt);
+      getResponseValues(mcTrees[0],dt);
 //  compareMETResolution(mcTrees,mcTreeNames,dt,false,"offsetComp_");
 
 //  compareMETResolution(mcTrees,mcTreeNames,dt,true,"resComp_");
