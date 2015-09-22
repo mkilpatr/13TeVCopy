@@ -28,6 +28,7 @@
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
+#include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 
 
 namespace ucsbsusy {
@@ -73,6 +74,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
+    cfgSet::ConfigSet getAnaCfg() const { return configSet;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
@@ -103,6 +105,7 @@ public:
     PFCandidateReader   pfcandReader        ;
     GenParticleReader   genParticleReader   ;
     CMSTopReader        cmsTopReader        ;
+    FatJetReader      fatJetReader          ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
     JetCorrector        jetCorrector        ;
@@ -140,22 +143,27 @@ public:
     std::vector<LeptonF*>        selectedLeptons   ;
     std::vector<LeptonF*>        vetoedLeptons     ;
     std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<TauF*>           vetoedTaus        ;
     std::vector<PhotonF*>        selectedPhotons   ;
     std::vector<RecoJetF*>       jets              ;
     std::vector<RecoJetF*>       bJets             ;
     std::vector<RecoJetF*>       nonBJets          ;
     std::vector<GenParticleF*>   genParts          ;
     std::vector<CMSTopF*>        cttTops           ;
+    std::vector<FatJetF*>      fatJets;
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
+
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
+    JetCorrectionSet    jetCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
+
 
     //hack for DY PU
     bool zIsInvisible;

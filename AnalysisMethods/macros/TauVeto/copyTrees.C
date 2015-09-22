@@ -1,9 +1,9 @@
 #include "TTree.h"
 #include "TFile.h"
 
-void copyTrees(const TString infilename  = "TauVeto/run/plots/ttbar.root",
+void copyTrees(const TString infilename  = "trees/ttbar.root",
                const TString treename    = "Events",
-               const TString outfilename = "TauVeto/run/plots/realtaus_tt1tau.root",
+               const TString outfilename = "trees/realtaus_tt1tau.root",
                const TString selection   = "nGenLeptons==0 && nGenTaus==nGenHadTaus && nGenHadTaus==1 && gentaumatch==1") {
 
   TFile* infile = new TFile(infilename);

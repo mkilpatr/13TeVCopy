@@ -58,8 +58,8 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismultiisovetoelectronl;
   zl_sel_leptons.minMuPt           = 5;
   zl_sel_leptons.maxMuEta          = 2.4;
-  zl_sel_leptons.maxMuD0           = .1;//0.02;
-  zl_sel_leptons.maxMuDz           = .5;//0.1;
+  zl_sel_leptons.maxMuD0           = 0.1;//0.02;
+  zl_sel_leptons.maxMuDz           = 0.5;//0.1;
   zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismultiisovetomuonl;
   zl_sel_leptons.setConfig();
 
@@ -112,6 +112,21 @@ void cfgSet::loadDefaultTrackConfigurations() {
   ol_veto_tracks.setConfig();
 }
 
+cfgSet::TauConfig cfgSet::zl_veto_taus("zl_veto_taus");
+cfgSet::TauConfig cfgSet::ol_veto_taus("ol_veto_taus");
+
+void cfgSet::loadDefaultTauConfigurations() {
+  zl_veto_taus.minPt      = 20;
+  zl_veto_taus.maxEta     = 2.4;
+  zl_veto_taus.requireOppositeQToSelLepton = true;
+  zl_veto_taus.minDeltaRFromSelLepton      = 0.4;
+  zl_veto_taus.selected   = &ucsbsusy::TauF::ishpsvetotau;
+  zl_veto_taus.setConfig();
+
+  ol_veto_taus = zl_veto_taus;
+  ol_veto_taus.setConfig();
+}
+
 cfgSet::PhotonConfig cfgSet::zl_sel_photons("zl_sel_photons");
 
 void cfgSet::loadDefaultPhotonConfigurations() {
@@ -124,10 +139,16 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.ttbarCorrections    = ucsbsusy::TtbarCorrectionSet::NULLOPT;
-  standardCorrections.ttbarCorrectionFile =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
-  standardCorrections.eventCorrections    = ucsbsusy::EventCorrectionSet::PU;
-  standardCorrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
+  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
+  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
+  standardCorrections.ttbarCorrections    	= ucsbsusy::TtbarCorrectionSet::NULLOPT;
+  standardCorrections.ttbarCorrectionFile 	=  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
+  standardCorrections.eventCorrections    	= ucsbsusy::EventCorrectionSet::PU;
+  standardCorrections.eventCorrectionFile 	=  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
+  standardCorrections.leptonCorrections  	= ucsbsusy::EventCorrectionSet::LEP;
+  standardCorrections.leptonCorrectionFile	=  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
+  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
+  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.jetAndMETCorrections    = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
   standardCorrections.setConfig();
 }
@@ -143,34 +164,42 @@ void cfgSet::loadDefaultConfigurations() {
   loadDefaultJetConfigurations();
   loadDefaultLeptonConfigurations();
   loadDefaultTrackConfigurations();
+  loadDefaultTauConfigurations();
   loadDefaultPhotonConfigurations();
   loadDefaultCorrections();
 
   zl_search_set.jets          = zl_search_jets;
   zl_search_set.vetoedLeptons = zl_veto_leptons;
   zl_search_set.vetoedTracks  = zl_veto_tracks;
+  zl_search_set.vetoedTaus    = zl_veto_taus;
   zl_search_set.corrections   = standardCorrections;
 
   zl_lepton_set.jets            = zl_lepton_jets;
   zl_lepton_set.selectedLeptons = zl_sel_leptons;
+  zl_lepton_set.corrections     = standardCorrections;
+  zl_lepton_set.vetoedLeptons = zl_sel_leptons;
+  zl_lepton_set.vetoedTracks  = zl_veto_tracks;
   zl_lepton_set.corrections   = standardCorrections;
 
   zl_dilepton_set.jets            = zl_dilepton_jets;
   zl_dilepton_set.selectedLeptons = zl_loose_leptons;
   zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
-  zl_dilepton_set.corrections = standardCorrections;
+  zl_dilepton_set.vetoedTaus      = zl_veto_taus;
+  zl_dilepton_set.corrections     = standardCorrections;
 
   zl_photon_set.jets            = zl_photon_jets;
   zl_photon_set.vetoedLeptons   = zl_veto_leptons;
   zl_photon_set.vetoedTracks    = zl_veto_tracks;
+  zl_photon_set.vetoedTaus      = zl_veto_taus;
   zl_photon_set.selectedPhotons = zl_sel_photons;
-  zl_photon_set.corrections   = standardCorrections;
+  zl_photon_set.corrections     = standardCorrections;
 
   ol_search_set.jets            = ol_search_jets;
   ol_search_set.selectedLeptons = ol_sel_leptons;
   ol_search_set.vetoedLeptons   = ol_veto_leptons;
   ol_search_set.vetoedTracks    = ol_veto_tracks;
-  ol_search_set.corrections   = standardCorrections;
+  ol_search_set.vetoedTaus      = ol_veto_taus;
+  ol_search_set.corrections     = standardCorrections;
 }
 
 void cfgSet::setJSONFile(const TString jsonfile) {

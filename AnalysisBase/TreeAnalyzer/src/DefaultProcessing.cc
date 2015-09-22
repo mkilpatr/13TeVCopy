@@ -31,8 +31,28 @@ bool cfgSet::isSelTrack(const ucsbsusy::PFCandidateF& track, const TrackConfig& 
   return (track.pt() > conf.minPt && fabs(track.eta()) < conf.maxEta && (track.*conf.selected)());
 }
 
+bool cfgSet::isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::LeptonF*>& selectedLeptons, const TauConfig& conf){
+  if(conf.minPt  > 0 && tau.pt()  < conf.minPt ) return false;
+  if(conf.maxEta > 0 && tau.eta() > conf.maxEta) return false;
+  bool pass = (tau.*conf.selected)();
+  // future option to use > 1 selected lepton here
+  if(conf.requireOppositeQToSelLepton && selectedLeptons.size() > 0) pass = pass & (tau.q()*selectedLeptons.at(0)->q() < 0);
+  if(conf.minDeltaRFromSelLepton > 0  && selectedLeptons.size() > 0) pass = pass & (PhysicsUtilities::deltaR(tau.p4(), selectedLeptons.at(0)->p4()) > conf.minDeltaRFromSelLepton);
+  return pass;
+}
+
 bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf       ){
   return (pho.pt() > conf.minPt && fabs(pho.eta()) < conf.maxEta && (pho.*conf.selected)());
+}
+
+bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
+    bool boolVal = false;
+    float topRawMass   = top.topRawMass();
+    float inTopMinMass  = top.topMinMass();
+    int   topNsubJets = top.topNsubJets();
+
+    if ( ((topRawMass)>140.) && ((topRawMass)<250.) && ((inTopMinMass)>50.) && ((topNsubJets)>=3) ) { boolVal = true; }
+    return boolVal;
 }
 
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf){
@@ -57,6 +77,19 @@ void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, 
   for(auto& pfc : allTracks) {
     if(isSelTrack(pfc,conf))
       selectedTracks.push_back(&pfc);
+  }
+}
+
+// must not preceed selectedLeptons
+void cfgSet::selectTaus(std::vector<ucsbsusy::TauF*>& selectedTaus, std::vector<ucsbsusy::LeptonF*>& selectedLeptons, ucsbsusy::TauFCollection& allTaus, const TauConfig& conf){
+  if(!conf.isConfig())
+    throw std::invalid_argument("config::selectTaus(): You want to do selecting but have not yet configured the selection!");
+    
+  selectedTaus.clear();
+  
+  for(auto& tau : allTaus){
+    if(isSelTau(tau,selectedLeptons,conf))
+     selectedTaus.push_back(&tau);
   }
 }
 

@@ -35,6 +35,18 @@ protected:
   const QuickRefold::Refold * corr;
 };
 
+class HistogramCorrection : public Correction {
+public:
+  HistogramCorrection(TString corrName, TFile * file);
+  void setTargetBin(unsigned int a) {targetBin = a;}
+  virtual float get() const { return corrHist->GetBinContent(targetBin);}
+  virtual float getError() const { return corrHist->GetBinError(targetBin);}
+  const TH1F* getHist()  { return corrHist;}
+protected:
+const TH1F* corrHist;
+unsigned int targetBin;
+};
+
 class CorrectionSet {
 public:
   CorrectionSet();

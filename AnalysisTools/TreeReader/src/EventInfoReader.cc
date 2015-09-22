@@ -91,6 +91,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
 void EventInfoReader::refresh()
 {
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+  //met.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   metNoHF.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
@@ -102,8 +103,8 @@ void EventInfoReader::refresh()
   hbheFlt    = false;
   hbheFixFlt = false;
 
-  //  if (hbheHNFlt->size()>0)
-  hbheFixFlt = hbheHNFlt->at(0); 
+  if (hbheHNFlt->size()>0)
+    hbheFixFlt = hbheHNFlt->at(0); 
   for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
 
     if (i==2)  { cscFlt     = metfilterbitpass->at(i); }

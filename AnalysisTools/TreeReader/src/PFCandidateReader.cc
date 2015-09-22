@@ -41,6 +41,8 @@ PFCandidateReader::PFCandidateReader() : BaseReader(){
   totiso0p3    = new vector<float> ;
   totiso0p4    = new vector<float> ;
   neartrkdr    = new vector<float> ;
+  contjetdr    = new vector<float> ;
+  contjetcsv   = new vector<float> ;
   trackiso     = new vector<float> ;
 
 }
@@ -66,8 +68,13 @@ void PFCandidateReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
     treeReader->setBranchAddress(branchName , "mttrkplusphoton", &mt       , true);
     treeReader->setBranchAddress(branchName , "dphimet"     , &dphimet       , true);
-    if(options_ & LOADTAUVETOMT)
-      treeReader->setBranchAddress(branchName , "taudisc_mtpresel", &taudisc , true);
+    if(options_ & LOADTAUVETOMT) {
+      if(options_ & LOADPHYS14) {
+        treeReader->setBranchAddress(branchName , "taudisc_mtpresel", &taudisc , true);
+      } else {
+        treeReader->setBranchAddress(branchName , "taudisc_s15", &taudisc , true);
+      }
+    }
     else if(options_ & LOADTAUVETODPHI)
       treeReader->setBranchAddress(branchName , "taudisc_dphipresel", &taudisc , true);
     treeReader->setBranchAddress(branchName , "fromPV"      , &fromPV      , true);
@@ -85,6 +92,8 @@ void PFCandidateReader::load(TreeReader *treeReader, int options, string branchN
       treeReader->setBranchAddress(branchName , "totiso0p3"    , &totiso0p3   , true);
       treeReader->setBranchAddress(branchName , "totiso0p4"    , &totiso0p4   , true);
       treeReader->setBranchAddress(branchName , "nearestTrkDR" , &neartrkdr   , true);
+      treeReader->setBranchAddress(branchName , "contJetDR"    , &contjetdr   , true);
+      treeReader->setBranchAddress(branchName , "contJetCSV"   , &contjetcsv  , true);
     }
   }
   if(options_ & FILLOBJ)
@@ -135,8 +144,12 @@ void PFCandidateReader::refresh(){
       cand.setFromPV(fromPV->at(iL));
       cand.setJetIndex(jetIndex->at(iL));
       cand.setTauIndex(tauIndex->at(iL));
-      if(options_ & LOADTAUVETOMT)
-        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+      if(options_ & LOADTAUVETOMT) {
+        if(options_ & LOADPHYS14)
+          cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+        else
+          cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_PHYS14_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+      }
       else if(options_ & LOADTAUVETODPHI)
         cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
       cand.setChIso0p1(chiso0p1->at(iL));
@@ -148,6 +161,8 @@ void PFCandidateReader::refresh(){
       cand.setTotIso0p3(totiso0p3->at(iL));
       cand.setTotIso0p4(totiso0p4->at(iL));
       cand.setNearTrkDR(neartrkdr->at(iL));
+      cand.setContJetDR(contjetdr->at(iL));
+      cand.setContJetCSV(contjetcsv->at(iL));
       extpfcands.push_back(cand);
     }
   }

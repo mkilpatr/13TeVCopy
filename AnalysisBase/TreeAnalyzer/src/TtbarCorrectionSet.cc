@@ -30,7 +30,10 @@ void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(!top1 || !top2)       throw "TtbarCorrectionSet::processVariables: two gen tops were not found!";
   float topPT = top1->pt() + top2->pt();
 
-  if(topPTCorr) topPTCorr->setAxis(TOPPAIRPTCorr::TopPairPT,topPT);
+  if(topPTCorr) {
+    topPTCorr->setAxis(TOPPAIRPTCorr::TopPairPT,topPT);
+    topPTWeight = topPTCorr->get();
+  }
 }
 
 } /* namespace ucsbsusy */
