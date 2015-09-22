@@ -16,6 +16,7 @@ cfgSet::ConfigSet pars0lep(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
 
@@ -23,6 +24,7 @@ cfgSet::ConfigSet pars0lepCR(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_lepton_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
 
@@ -30,6 +32,7 @@ cfgSet::ConfigSet pars0LepPhoton(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
 
