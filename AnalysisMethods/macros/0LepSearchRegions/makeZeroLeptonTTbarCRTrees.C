@@ -98,11 +98,11 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_search_set;
   pars.jets.cleanJetsvSelectedLeptons = true;
-  pars.leptons = cfgSet::ol_sel_leptons;
-  pars.leptons.minEPt = 15.0;
-  pars.leptons.maxEEta = 2.5;
-  pars.leptons.minMuPt = 10.0;
-  pars.leptons.maxEEta = 2.4;
+  pars.selectedLeptons = cfgSet::ol_sel_leptons;
+  pars.selectedLeptons.minEPt = 15.0;
+  pars.selectedLeptons.maxEEta = 2.5;
+  pars.selectedLeptons.minMuPt = 10.0;
+  pars.selectedLeptons.maxEEta = 2.4;
 
   pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
