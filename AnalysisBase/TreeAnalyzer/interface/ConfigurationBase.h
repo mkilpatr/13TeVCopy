@@ -17,7 +17,7 @@
 
 namespace cfgSet {
 
-  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL, TRIGOBJS};
+  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, CORRAL, TRIGOBJS};
 
   //base used for all future ConfigSets
   class BaseConfig {
@@ -149,9 +149,9 @@ namespace cfgSet {
       os << "The min track Pt is "<< a.minPt <<std::endl;
       os << "The max track eta is "<< a.maxEta <<std::endl;
       if(a.mtPresel == 1)
-      os << "The mt presel is is on " << std::endl;
+      os << "The mt presel is on " << std::endl;
       else
-      os << "The mt presel is is off " << std::endl;
+      os << "The mt presel is off " << std::endl;
       os << "The max track Dz is "<< a.maxDz <<std::endl;
       return os;
     };

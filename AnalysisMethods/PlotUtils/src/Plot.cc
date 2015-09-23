@@ -835,6 +835,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   h00->Draw("same");
 
+  p1->RedrawAxis();
 
   if(fLeg) {
     fLeg->SetFillStyle(0);
@@ -870,7 +871,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
-  TLine *l = new TLine(xmin,0,xmax,0);
+  TLine *l = new TLine(xmin,1,xmax,1);
   l->SetLineWidth(3);
   l->SetLineColor(kBlack);
 
@@ -1033,6 +1034,8 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
 
   c->cd();
 
+  c->RedrawAxis();
+  
   // Add header and lumi text
   header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

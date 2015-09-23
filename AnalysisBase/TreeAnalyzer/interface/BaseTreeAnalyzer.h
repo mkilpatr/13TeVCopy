@@ -28,6 +28,7 @@
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
+#include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 
 
 namespace ucsbsusy {
@@ -104,6 +105,7 @@ public:
     PFCandidateReader   pfcandReader        ;
     GenParticleReader   genParticleReader   ;
     CMSTopReader        cmsTopReader        ;
+    FatJetReader      fatJetReader          ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
     JetCorrector        jetCorrector        ;
@@ -148,9 +150,11 @@ public:
     std::vector<RecoJetF*>       nonBJets          ;
     std::vector<GenParticleF*>   genParts          ;
     std::vector<CMSTopF*>        cttTops           ;
+    std::vector<FatJetF*>      fatJets;
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
+
 
     //--------------------------------------------------------------------------------------------------
     // Correction sets
