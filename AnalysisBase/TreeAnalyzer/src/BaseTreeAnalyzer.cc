@@ -304,7 +304,7 @@ void BaseTreeAnalyzer::processVariables()
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
-    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,configSet.jets);
+    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
