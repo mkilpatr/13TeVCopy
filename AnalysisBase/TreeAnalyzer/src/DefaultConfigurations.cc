@@ -25,6 +25,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.cleanJetsvSelectedLeptons = false;
   zl_search_jets.cleanJetsvVetoedLeptons   = false;
   zl_search_jets.cleanJetsvSelectedPhotons = false;
+  zl_search_jets.cleanJetsvVetoedTracks    = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
   zl_search_jets.setConfig();
 
@@ -33,6 +34,7 @@ void cfgSet::loadDefaultJetConfigurations() {
 
   zl_lepton_jets = zl_search_jets;
   zl_lepton_jets.cleanJetsvSelectedLeptons = false;
+  zl_lepton_jets.cleanJetsvVetoedTracks    = false;
 
   zl_dilepton_jets = zl_search_jets;
   zl_dilepton_jets.cleanJetsvSelectedLeptons = true;
