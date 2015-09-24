@@ -32,6 +32,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   qglInterface_      (new QuarkGluonTagInterface),
   qgTaggingVar_      (new QuarkGluonTaggingVariables),
   fillReGenJets_     (cfg.getUntrackedParameter<bool>        ("fillReGenJets")),
+  jptCompleteMin_    (cfg.getUntrackedParameter<double>      ("completeMinJetPt")),
   jptMin_            (cfg.getUntrackedParameter<double>      ("minJetPt")),
   jets_              (0),
   reGenJets_         (0),
@@ -117,6 +118,10 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     if(fillReGenJets_) iEvent.getByToken(reGenJetToken_,reGenJets_);
     else               iEvent.getByToken(reGenJetToken_,reGenJets_);
     iEvent.getByToken(flvAssocToken_,flvAssoc_);
+
+    //clear caches
+    reGenRecoRef_.clear();
+    stdGenRecoRef_.clear();
   }
   if(options_ & LOADSUPER) {
     iEvent.getByToken(superJetToken_,superJets_);
@@ -146,19 +151,45 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
 template<typename Jet>
 void JetFiller<Jet>::fill()
 {
-  vector<int> filledIndex;
-  int curGenIndex = -1;
+  vector<int> genJetIndicies;
+  int curIndex = -1;
   if(options_ & LOADGEN){
     const reco::GenJetCollection& genJets = fillReGenJets_ ? (*reGenJets_.product()) : (*stdGenJets_.product());
-    filledIndex.reserve(genJets.size());
+    genJetIndicies.reserve(genJets.size());
     for(unsigned int iJ = 0; iJ < genJets.size(); ++iJ){
       const auto& j = genJets[iJ];
-      if(j.pt() < jptMin_){ filledIndex.push_back(-1); continue;}
-      filledIndex.push_back(++curGenIndex);
+      auto rJ = getRecoJet(iJ, fillReGenJets_);
+      if(j.pt() < jptMin_
+          && (rJ.isNull() ? 0 : rJ->pt()) < jptMin_ ){
+        genJetIndicies.push_back(-1);
+        continue;
+      }
+      genJetIndicies.push_back(++curIndex);
+
+      //Basic information saved for all jets
       data.fillMulti<float>(igenjetpt_    ,j.pt());
       data.fillMulti<float>(igenjeteta_   ,j.eta());
       data.fillMulti<float>(igenjetphi_   ,j.phi());
       data.fillMulti<float>(igenjetmass_  ,j.mass());
+
+      //Zero out complete information for low pT jets
+      if(j.pt() < jptCompleteMin_){
+        data.fillMulti<size8>(igenjetflavor_,0);
+        if(options_ & LOADJETSHAPE){
+          assert(evtInfofiller_->isLoaded());
+          qgTaggingVar_->compute(&j,false);
+          data.fillMulti<float>(igenjetptD_     ,0);
+          data.fillMulti<float>(igenjetaxis1_   ,0);
+          data.fillMulti<float>(igenjetaxis2_   ,0);
+          data.fillMulti<size16>(igenjetMult_   ,0);
+          data.fillMulti<float>(igenjetcharge_  ,0);
+          data.fillMulti<float>(igenjetpullrap_ ,0);
+          data.fillMulti<float>(igenjetpullphi_ ,0);
+        }
+        continue;
+      }
+
+      //Fill it in for higher pt jets
       data.fillMulti<size8>(igenjetflavor_,fillReGenJets_ ? flvAssoc_->at(iJ) : 0);
       if(options_ & LOADJETSHAPE){
         assert(evtInfofiller_->isLoaded());
@@ -182,7 +213,10 @@ void JetFiller<Jet>::fill()
         bool firstJet = true;
         for(const auto& ja : p.jetAssoc){
           //check to see if in the stored jet collection
-          if(filledIndex[ja.first] < 0) continue;
+          if(genJetIndicies[ja.first] < 0) continue;
+          //make sure that it is above our min pT threshold
+          if(genJets[ja.first].pt() < jptCompleteMin_) continue;
+
           TopJetMatching::conType con = TopJetMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
           //if the containment is less than 1% leave it off the list
           if(con == 0) continue;
@@ -206,7 +240,7 @@ void JetFiller<Jet>::fill()
     filledSJIndex.reserve(superJets_->size());
     for(unsigned int iJ = 0; iJ < superJets_->size(); ++iJ){
       const auto& j = superJets_->at(iJ);
-      if(j.pt() < jptMin_){ filledSJIndex.push_back(-1); continue;}
+      if(j.pt() < jptCompleteMin_){ filledSJIndex.push_back(-1); continue;}
       filledSJIndex.push_back(++curSJIndex);
       data.fillMulti<float>(isuperjetpt_    ,j.pt());
       data.fillMulti<float>(isuperjeteta_   ,j.eta());
@@ -220,31 +254,63 @@ void JetFiller<Jet>::fill()
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
     const Jet& j = jets_->at(iJ);
     if(j.pt() < jptMin_) continue;
+
+    //Basic information saved for all jets
     data.fillMulti<float>(ijetpt_   ,j.pt());
     data.fillMulti<float>(ijeteta_  ,j.eta());
     data.fillMulti<float>(ijetphi_  ,j.phi());
     data.fillMulti<float>(ijetmass_ ,j.mass());
+
+    if(options_ & LOADGEN) {
+      const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
+      if(gJ.isNonnull()) {
+        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(genJetIndicies[gJ.key()],"JetFiller::genJetIndex"));
+      } else {
+        data.fillMulti<int16>(ijetgenindex_   );
+      }
+    }
+
+    //Zero out complete information for low pT jets
+    if(j.pt() < jptCompleteMin_){
+      data.fillMulti<float>(ijetptraw_ ,0);
+      data.fillMulti<float>(ijetpuId_  ,0);
+      data.fillMulti<float>(ijetcsv_   ,0);
+      data.fillMulti<float>(ijetarea_  ,0);
+      data.fillMulti<bool>(ijetlooseId_,false);
+      data.fillMulti<bool>(ijettightId_,false);
+      data.fillMulti<float>(ijetuncertainty_,0);
+      if(options_ & LOADSUPER) {
+        data.fillMulti<int16>(ijetsuperindex_,-1);
+      }
+      if(options_ & LOADJETSHAPE){
+        data.fillMulti<float>(ijetbetaStar_,0);
+        data.fillMulti<float>(ijetptD_     ,0);
+        data.fillMulti<float>(ijetaxis1_   ,0);
+        data.fillMulti<float>(ijetaxis2_   ,0);
+        data.fillMulti<size16>(ijetMult_   ,0);
+        data.fillMulti<float>(ijetcharge_  ,0);
+        data.fillMulti<float>(ijetpullrap_ ,0);
+        data.fillMulti<float>(ijetpullphi_ ,0);
+        if(options_ & SAVEQGL) {
+          data.fillMulti<float>(ijetqgl_   ,0);
+        } // SAVEQGL
+      } // LOADJETSHAPE
+      continue;
+    }
+
+    //Fill it in for higher pt jets
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
     data.fillMulti<float>(ijetarea_ ,j.jetArea());
     data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
     data.fillMulti<bool>(ijettightId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.9 && j.neutralHadronEnergyFraction()<0.9 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)));
-//    if(j.pt()>30) std::cout<<j.pt()<<" "<<j.eta()<<" "<<j.chargedMultiplicity()<<" "<<j.neutralMultiplicity()<<" "<<j.neutralEmEnergyFraction()<<" "<<j.neutralHadronEnergyFraction()<<" "<< j.chargedEmEnergyFraction()<<" "<<j.chargedHadronEnergyFraction()<<std::endl;
-    
+
     /* Fill RecoJet JEC Uncertainties */
     jecUnc_->setJetEta(j.eta());
     jecUnc_->setJetPt(j.pt());
     data.fillMulti<float>(ijetuncertainty_, jecUnc_->getUncertainty(true));
-        
-    if(options_ & LOADGEN) {
-      const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
-      if(gJ.isNonnull()) {
-        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(filledIndex[gJ.key()],"JetFiller::genJetIndex"));
-      } else {
-        data.fillMulti<int16>(ijetgenindex_   );
-      }
-    }
+
     if(options_ & LOADSUPER) {
       const int sjAssoc = superJetAssoc_->at(iJ);
       data.fillMulti<int16>(ijetsuperindex_, sjAssoc > -1 ? convertTo<int16>(filledSJIndex[sjAssoc], "JetFiller::superJetIndex") : -1);

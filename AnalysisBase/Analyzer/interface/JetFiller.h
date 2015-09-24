@@ -140,7 +140,8 @@ public:
     public:
       // Data members
       const bool                              fillReGenJets_;
-      const double                            jptMin_;
+      const double                            jptCompleteMin_; //To save all info
+      const double                            jptMin_; //To save just basic info
       edm::Handle<std::vector<Jet>>           jets_;
       edm::Handle<reco::GenJetCollection>     reGenJets_;
       edm::Handle<reco::GenJetCollection>     stdGenJets_;
