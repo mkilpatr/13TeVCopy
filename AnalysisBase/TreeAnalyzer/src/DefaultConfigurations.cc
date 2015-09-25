@@ -170,18 +170,19 @@ void cfgSet::loadDefaultConfigurations() {
   loadDefaultPhotonConfigurations();
   loadDefaultCorrections();
 
-  zl_search_set.jets          = zl_search_jets;
-  zl_search_set.vetoedLeptons = zl_veto_leptons;
-  zl_search_set.vetoedTracks  = zl_veto_tracks;
-  zl_search_set.vetoedTaus    = zl_veto_taus;
-  zl_search_set.corrections   = standardCorrections;
+  zl_search_set.jets            = zl_search_jets;
+  zl_search_set.vetoedLeptons   = zl_veto_leptons;
+  zl_search_set.selectedLeptons = zl_sel_leptons;
+  zl_search_set.vetoedTracks    = zl_veto_tracks;
+  zl_search_set.vetoedTaus      = zl_veto_taus;
+  zl_search_set.corrections     = standardCorrections;
 
   zl_lepton_set.jets            = zl_lepton_jets;
   zl_lepton_set.selectedLeptons = zl_sel_leptons;
   zl_lepton_set.corrections     = standardCorrections;
-  zl_lepton_set.vetoedLeptons = zl_sel_leptons;
-  zl_lepton_set.vetoedTracks  = zl_veto_tracks;
-  zl_lepton_set.corrections   = standardCorrections;
+  zl_lepton_set.vetoedLeptons   = zl_sel_leptons;
+  zl_lepton_set.vetoedTracks    = zl_veto_tracks;
+  zl_lepton_set.corrections     = standardCorrections;
 
   zl_dilepton_set.jets            = zl_dilepton_jets;
   zl_dilepton_set.selectedLeptons = zl_loose_leptons;
