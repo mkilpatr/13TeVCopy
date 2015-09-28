@@ -116,6 +116,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case EVTINFO : {
       int defaultOptions = EventInfoFiller::defaultOptions;
+      if(isMC()) defaultOptions |= EventInfoFiller::LOADPUINFO;
       if(isMC()) defaultOptions |= EventInfoFiller::LOADGEN;
       if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),

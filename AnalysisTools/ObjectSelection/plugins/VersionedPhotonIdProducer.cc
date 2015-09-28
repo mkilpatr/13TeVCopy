@@ -1,5 +1,3 @@
-// Photon ID: egm_id_74X_v1
-
 // system include files
 #include <memory>
 

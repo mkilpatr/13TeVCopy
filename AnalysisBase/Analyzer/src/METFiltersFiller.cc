@@ -15,9 +15,11 @@ using namespace ucsbsusy;
 //--------------------------------------------------------------------------------------------------
 METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  triggerBitToken_     (cc.consumes<edm::TriggerResults>                   (cfg.getParameter<edm::InputTag>("bits"))),
-  triggerNames_(0),
-  hNoiseResultToken_   (cc.consumes<bool>                                  (cfg.getParameter<edm::InputTag>("hbhe")))
+  triggerBitToken_            (cc.consumes<edm::TriggerResults> (cfg.getParameter<edm::InputTag>("bits"))),
+  hNoiseResultToken_          (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbhe"))),
+  hNoiseResultRun2LooseToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2loose"))),
+  hNoiseResultRun2TightToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2tight"))),
+  triggerNames_(0)
 {
 
   initTriggerNames();
@@ -25,6 +27,8 @@ METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCo
   itrig_bit_flag        = data.addMulti<unsigned long>(branchName_,"bit_flag",0);
   itrig_bit_pass        = data.addMulti<bool         >(branchName_,"bit_pass",0);
   hbheFilterFix_        = data.addMulti<bool         >(branchName_,"hbheFilterFix",0);
+  hbheFilterRun2Loose_  = data.addMulti<bool         >(branchName_,"hbheFilterRun2Loose",0);
+  hbheFilterRun2Tight_  = data.addMulti<bool         >(branchName_,"hbheFilterRun2Tight",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -51,8 +55,10 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
-  triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   iEvent.getByToken(hNoiseResultToken_, hNoiseResult_);
+  iEvent.getByToken(hNoiseResultRun2LooseToken_, hNoiseResultRun2Loose_);
+  iEvent.getByToken(hNoiseResultRun2TightToken_, hNoiseResultRun2Tight_);
+  triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 
 }
@@ -62,14 +68,15 @@ void METFiltersFiller::fill()
 {
 
   data.fillMulti<bool>(hbheFilterFix_,*hNoiseResult_);
+  data.fillMulti<bool>(hbheFilterRun2Loose_,*hNoiseResultRun2Loose_);
+  data.fillMulti<bool>(hbheFilterRun2Tight_,*hNoiseResultRun2Tight_);
+
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
-    
     if(trigindex != trigIds_.end()) {
       data.fillMulti<unsigned long>(itrig_bit_flag, trigindex->second);
       data.fillMulti<bool         >(itrig_bit_pass, triggerBits_->accept(i));
     }
-    
   }
 
 } // end of METFiltersFiller::fill()

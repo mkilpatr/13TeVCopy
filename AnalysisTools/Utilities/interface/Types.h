@@ -165,7 +165,18 @@ namespace ucsbsusy {
     kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ = 1UL<<43,
     kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ = 1UL<<44,
     kHLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL = 1UL<<45,
-    kHLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<46
+    kHLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<46,
+    kHLT_IsoMu22 = 1UL<<47,
+    kHLT_IsoTkMu22 = 1UL<<48,
+    kHLT_Ele22_eta2p1_WPLoose_Gsf = 1UL<<49,
+    kHLT_Ele22_eta2p1_WP75_Gsf = 1UL<<50,
+    kHLT_Ele22_eta2p1_WPTight_Gsf = 1UL<<51,
+    kHLT_Ele27_eta2p1_WPTight_Gsf = 1UL<<52,
+    kHLT_Ele32_eta2p1_WPTight_Gsf = 1UL<<53,
+    kHLT_PFHT350_PFMET100_JetIdCleaned = 1UL<<54,
+    kHLT_PFMET170_JetIdCleaned = 1UL<<55,
+    kHLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL = 1UL<<56,
+    kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<57
   };
 
   enum TriggerFilters {
@@ -179,7 +190,18 @@ namespace ucsbsusy {
     kSingleIsoMu27 = 1UL<<7,
     kSingleIsoTkMu24 = 1UL<<8,
     kSingleIsoTkMu27 = 1UL<<9,
-    kSingleEle32 = 1UL<<10
+    kSingleEle32 = 1UL<<10,
+    kSingleIsoMu22 = 1UL<<11,
+    kSingleIsoTkMu22 = 1UL<<12,
+    kSingleEle22 = 1UL<<13,
+    kSingleEle22WPTight = 1UL<<14,
+    kSingleEle27 = 1UL<<15,
+    kSingleEle27WPTight = 1UL<<16,
+    kSingleEle32WPTight = 1UL<<17,
+    kMu17Ele12MuLeg = 1UL<<18,
+    kMu17Ele12EleLeg = 1UL<<19,
+    kMu23Ele12MuLeg = 1UL<<20,
+    kMu23Ele12EleLeg = 1UL<<21
   };
 
   enum METFilterBits {

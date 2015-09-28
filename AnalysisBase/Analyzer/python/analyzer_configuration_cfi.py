@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('MCRUN2_74_V9'),                    
+                                      globalTag        = cms.string ('74X_mcRun2_asymptotic_v2'),                    
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('MCRUN2_74_V9'),      #Global tag
+                                      globalTag        = cms.string ('74X_mcRun2_asymptotic_v2'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -45,6 +45,7 @@ nominal_configuration = cms.PSet(
                                   EventInfo = cms.untracked.PSet(
                                       isFilled               = cms.untracked.bool(True),
                                       vertices               = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                      pileupSummaryInfos     = cms.InputTag('addPileupInfo'),
                                       rho                    = cms.InputTag('fixedGridRhoFastjetAll'),
                                       mets                   = cms.InputTag('slimmedMETs','','run'),  
                                       metsOOB                = cms.InputTag('slimmedMETs','','PAT'),  
@@ -73,7 +74,7 @@ nominal_configuration = cms.PSet(
                                       superJets         = cms.untracked.InputTag(''),
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
-                                      loadJecUncFile    = cms.untracked.bool(True),
+                                      loadJecUncFile    = cms.untracked.bool(False),
                                       jetCorrInputFile  = cms.untracked.FileInPath('PhysicsTools/PatUtils/data/Summer15_50nsV2_DATA_UncertaintySources_AK4PFchs.txt'),
                                       jecLabel          = cms.untracked.string('AK4PFchs'),
                                       jetCorrUncertainty= cms.untracked.string('SubTotalMC'),
@@ -170,6 +171,14 @@ nominal_configuration = cms.PSet(
                                       looseId                   = cms.InputTag(''),
                                       mediumId                  = cms.InputTag(''),
                                       tightId                   = cms.InputTag(''),
+                                      mvanontrigwp90Id          = cms.InputTag(''),
+                                      mvanontrigwp80Id          = cms.InputTag(''),
+                                      mvanontrigValuesMap       = cms.InputTag(''),
+                                      mvanontrigCategoriesMap   = cms.InputTag(''),
+                                      mvatrigwp90Id             = cms.InputTag(''),
+                                      mvatrigwp80Id             = cms.InputTag(''),
+                                      mvatrigValuesMap          = cms.InputTag(''),
+                                      mvatrigCategoriesMap      = cms.InputTag(''),
                                       ca8jets                   = cms.InputTag('redCA8'),
                                       rho                       = cms.InputTag('fixedGridRhoFastjetAll'),
                                       jets                      = cms.InputTag('slimmedJets'),
@@ -177,7 +186,7 @@ nominal_configuration = cms.PSet(
                                       minElectronPt             = cms.untracked.double(5.0),
                                       bunchSpacing              = cms.untracked.int32(25),
                                       printElectronIDs          = cms.untracked.bool(False),
-                                      fillElectronIDVars        = cms.untracked.bool(False),
+                                      fillElectronIDVars        = cms.untracked.bool(True),
                                       fillElectronIsoVars       = cms.untracked.bool(True),
                                       evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
                                       fillElectronGenInfo       = cms.untracked.bool(True),
@@ -217,13 +226,13 @@ nominal_configuration = cms.PSet(
                                       pfcands                   = cms.InputTag('packedPFCandidates'),
                                       jets                      = cms.InputTag('slimmedJets'),
                                       taus                      = cms.InputTag('slimmedTaus'),
-                                      minCandPt                 = cms.untracked.double(5.0),
+                                      minCandPt                 = cms.untracked.double(8.0),
                                       maxCandEta                = cms.untracked.double(3.0),
                                       minTauDisc                = cms.untracked.double(0.0),
-                                      tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel.root'),
+                                      tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel_S15.root'),
                                       tauMVAFileName_DphiPresel = cms.untracked.string('tauDisc_dphi1p34presel.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
-                                      saveAllCandidates         = cms.untracked.bool(True),
+                                      saveAllCandidates         = cms.untracked.bool(False),
                                   ),
 
                                   CMSTops = cms.untracked.PSet(
@@ -241,13 +250,15 @@ nominal_configuration = cms.PSet(
                                       bits      = cms.InputTag('TriggerResults','','HLT'),
                                       objects   = cms.InputTag('selectedPatTrigger'),
                                       prescales = cms.InputTag('patTrigger'),
-                                      printTriggerNames = cms.untracked.bool(True)
+                                      printTriggerNames = cms.untracked.bool(False)
                                       ),
 
                                   METFilters = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       bits     = cms.InputTag('TriggerResults','','PAT'),
                                       hbhe     = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
+                                      hbherun2loose = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Loose'),
+                                      hbherun2tight = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
                                       ),
 
                                 )
