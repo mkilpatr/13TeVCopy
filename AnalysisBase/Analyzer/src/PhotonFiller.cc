@@ -127,6 +127,13 @@ void PhotonFiller::fill()
 
     if(pho->r9()>0.8 || pho->chargedHadronIso()<20 || pho->chargedHadronIso()<(pho->pt()*0.3 )){
       passminiaodpresel=true;
+      int numberOfClusters =  pho->superCluster()->clusters().size();
+      bool missing_clusters = false;
+      if( numberOfClusters > 0 ) missing_clusters = !pho->superCluster()->clusters()[numberOfClusters-1].isAvailable();
+      int numberOfPSClusters =  pho->superCluster()->preshowerClusters().size();
+      bool missing_PSclusters = false;
+      if( numberOfPSClusters > 0 ) missing_PSclusters = !pho->superCluster()->preshowerClusters()[numberOfPSClusters-1].isAvailable();
+      if( missing_clusters || missing_PSclusters ) continue;
       PFIsolation_struct FPR_out = remover.PFIsolation(pho->superCluster(),  VtxPtr);
       photonIsoFPRRandomConeChargedVtx0 = FPR_out.chargediso_primvtx_rcone; 
       photonIsoFPRRandomConeNeutral = FPR_out.neutraliso_rcone; 

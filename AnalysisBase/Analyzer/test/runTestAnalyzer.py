@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process('run')
 
 process.options = cms.untracked.PSet( 
-    allowUnscheduled = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(False),
     wantSummary = cms.untracked.bool(False) 
 )
 
@@ -23,6 +23,7 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/30000/0022C9A0-4E61-E511-BAAC-0002C92DB46C.root'
 
 options.maxEvents = -1
 
