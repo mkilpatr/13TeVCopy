@@ -1,11 +1,11 @@
-#ifndef TOPJETMATCHING_H_
-#define TOPJETMATCHING_H_
+#ifndef PARTONMATCHING_H_
+#define PARTONMATCHING_H_
 
 #include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 #include "AnalysisTools/DataFormats/interface/GenParticle.h"
 
-namespace TopJetMatching {
+namespace PartonMatching {
 
 //types used for containment
 //kept as typedef for easier changing if the need arises
@@ -32,7 +32,13 @@ enum  PartonDiagnosis {
                       , numPartonDiagnoses
                       };
 
-
+//diagnosis constants
+extern float minPartonPT        ;
+extern float maxPartonETA       ;
+extern float minHadronRelE      ;
+extern float minPartontRelE     ;
+extern float extraJetsPartonRelE;
+extern float minJetRelE         ;
 
 class Parton {
 public:
@@ -51,72 +57,102 @@ public:
 
   void addContainment(const unsigned int jetIDx, const float con) {containment.emplace_back(con,jetIDx);}
 
-  static void finalize(const std::vector<Jet*>&   jets, const std::vector<const Parton *>& impPartons, std::vector<Parton>& partons);
-
-  //diagnosis constants
-  static float minPartonPT        ;
-  static float maxPartonETA       ;
-  static float minHadronRelE      ;
-  static float minPartontRelE     ;
-  static float extraJetsPartonRelE;
-  static float minJetRelE         ;
-  static void setPurity(bool pure = true);
-  static PartonDiagnosis getDiagnosis(const std::vector<Jet*>& jets,const std::vector<const Parton *>&impPartons,const Parton& parton);
+  friend std::ostream& operator<<(std::ostream& os, const Parton& m);
 };
 
 
-enum TopDiagnosis {
+void setPartonPurity(bool pure = true);
+PartonDiagnosis getPartonDiagnosis(const Parton& parton, const std::vector<Jet*>& jets,const std::vector<const Parton *>* impPartons = 0);
+
+
+enum DecayDiagnosis {
   BAD_PARTON   ,      //At least one parton is soft or dispersed
   LOST_JET     , //At least one parton has no matched jet
   SPLIT_PARTONS,  //At least one parton is split into two jets
   MERGED_PARTONS, // depending on your accepted contamination, you can have siginficant deposits from other top quarks
   CONTAMINATION,  //At least one parton is highly contaminated from outside
-  RESOLVED_TOP ,  //ALL three partons are resolved well
-  numTopDiagnoses,
+  RESOLVED ,  //ALL three partons are resolved well
+  numDecayDiagnoses,
   };
+DecayDiagnosis getDecayDiagnosis(const std::vector<const Parton *>& decayPartons);
 
+class BosonDecay {
+public:
+  std::vector<Parton> nonHadronicPartons; //holder for leptons and photons
+  std::vector<const Parton *> hadronicPartons;
+
+  const Particle * boson;
+
+  const Parton * boson_dau1;
+  const Parton * boson_dau2;
+
+  bool isHadronic;
+  DecayDiagnosis diag;
+
+  BosonDecay(const Particle * inBoson, int indx,  const std::vector<Parton>& allPartons);
+
+  friend std::ostream& operator<<(std::ostream& os, const BosonDecay& m);
+
+};
 
 
 class TopDecay {
 public:
-  std::vector<Parton> leptonPartons;
   std::vector<const Parton *> hadronicPartons;
 
   const Particle * top;
   const Particle * W;
+
+  const BosonDecay * W_decay;
 
   const Parton * b;
   const Parton * W_dau1;
   const Parton * W_dau2;
 
   bool isLeptonic;
-  TopDiagnosis diag;
+  DecayDiagnosis diag;
 
-  TopDecay(const Particle * inTop, const std::vector<Parton>& allPartons);
-  static TopDiagnosis getDiagnosis(const TopDecay& parton);
+  TopDecay(const Particle * inTop, const std::vector<BosonDecay>& bosonDecays, const std::vector<Parton>& allPartons);
+
+  friend std::ostream& operator<<(std::ostream& os, const TopDecay& m);
+};
+
+
+class DecayID {
+public:
+  enum Type {NONE,RADIATED,TOP_B,TOP_W};
+  DecayID() : type(NONE), topInd(-1) {};
+
+  const Parton* mainParton() const {return conPartons.size() == 0 ? 0 : conPartons.front().second;}
+
+  Type type;
+  int topInd;
+  std::vector<std::pair<float,const Parton*> > conPartons; //[Contained jet E][parton ptr]
 
 };
 
-template<typename TopDecay>
-struct GreaterTopDecayPT : public std::binary_function<const TopDecay&, const TopDecay&, bool> {
-  bool operator()(const TopDecay& h1, const TopDecay& h2) const
-  { return h1.top->pt() > h2.top->pt(); }
-};
 
-class TopDecayEvent {
+class PartonEvent {
 public:
   const std::vector<Jet*> jets;
   std::vector<Parton>     partons;
-  std::vector<TopDecay>   topDecays;
+  std::vector<const Parton*>    importantPartons;
 
-  TopDecayEvent(
+  std::vector<TopDecay> topDecays;
+  std::vector<BosonDecay> bosonDecays;
+
+  std::vector<float> subtractedJetPTs;
+
+
+  PartonEvent(
       const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
       const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE, const std::vector<Jet*>& inJets) : jets(inJets) {
-    initialize(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+    getPartonsAndContaiment(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+    finalizePartons(&importantPartons);
   }
 
   template<typename GenPrtRead,typename JetRead>
-  TopDecayEvent(const GenPrtRead& genParticleReader, JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
+  PartonEvent(const GenPrtRead& genParticleReader, JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
     //Get pointers to necessary variables
     const std::vector<ucsbsusy::size16 >* genAssocPrtIndex = jetReader.genAssocPrtIndex_;
     const std::vector<ucsbsusy::size16 >* genAssocJetIndex = jetReader.genAssocJetIndex_;
@@ -124,34 +160,22 @@ public:
     const std::vector<Particle>*          genParticles     = &genParticleReader.genParticles;
     const std::vector<float   >*          hadronE          = genParticleReader.hade_;
 
-    initialize(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+    getPartonsAndContaiment(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE);
+    finalizePartons(&importantPartons);
   }
 
-  class DecayID {
-  public:
-    enum Type {NONE,RADIATED,TOP_B,TOP_W};
-    DecayID() : type(NONE), topInd(-1) {};
-
-    const Parton* mainParton() const {return conPartons.size() == 0 ? 0 : conPartons.front().second;}
-
-    Type type;
-    int topInd;
-    std::vector<std::pair<float,const Parton*> > conPartons; //[Contained jet E][parton ptr]
-
-  };
-
-  void getDecayMatches(const std::vector<ucsbsusy::RecoJetF*> recoJets, std::vector<TopDecayEvent::DecayID>& decayIDs) const;
-
-
+  void processSubtractedJetPTs(float maxNonHadDR = 0.4);
+  void getTopJetDecayMatches(const std::vector<ucsbsusy::RecoJetF*> recoJets, std::vector<DecayID>& decayIDs) const;
 private:
-  void initialize(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
+  void getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
       const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE);
 
-};
+  void finalizePartons(const std::vector<const Parton *>* impPartons = 0);
+
 
 };
 
-//#include "AnalysisTools/Utilities/src/TopJetMatching.icc"
 
+}
 
 #endif
