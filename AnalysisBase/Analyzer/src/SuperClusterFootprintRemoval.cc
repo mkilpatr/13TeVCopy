@@ -267,6 +267,15 @@ angular_distances_struct SuperClusterFootprintRemoval::GetPFCandHitDistanceFromS
   TVector3 pfmomentum((*pfCandidates)[pfindex].px(),(*pfCandidates)[pfindex].py(),(*pfCandidates)[pfindex].pz());
   pfmomentum = pfmomentum.Unit();
 
+  if (std::isinf(double(pfvertex.z()))){
+    std::cout << "GetPFCandHitDistanceFromSC: unphysical vertex coordinates. Returning error state." << std::endl;
+    angular_distances_struct out;
+    out.dR = 999;
+    out.dEta = 999;
+    out.dPhi = 999;
+    return out;
+  }
+
   TVector3 ecalpfhit = PropagatePFCandToEcal(pfindex,isbarrel ? sc_position.Perp() : sc_position.z(),isbarrel);
 
   if (ecalpfhit.Perp()==0){
