@@ -272,7 +272,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
 		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd,shell=True)
         if args.arrangement == "das" :
-		cmd = ("./das_client.py --query \"dataset=%s instance=%s| grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
+		cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
         	ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         	numevents=int(ps.communicate()[0])
         	if args.maxevents > -1  and args.maxevents < numevents :
