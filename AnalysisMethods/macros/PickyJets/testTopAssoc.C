@@ -8,7 +8,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "PickyHelper.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
@@ -84,7 +84,7 @@ public:
 	    const vector<GenParticleF>* genParticles = &genParticleReader.genParticles;
 	    const vector<float   >* hadronE      = genParticleReader.hade_;
 
-	    TopJetMatching::TopDecayEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
+	    PartonMatching::PartonEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
 
 	    for(const auto& t : topDecayEvent.topDecays){
 	      eventPlots.rewind();
@@ -96,10 +96,10 @@ public:
 
 	      ++eventPlots;
 	      eventPlots("all__",true);
-	      eventPlots("good_partons__",t.diag  > TopJetMatching::BAD_PARTON);
-	      eventPlots("assoc_jets__"  ,t.diag  > TopJetMatching::LOST_JET);
-	      eventPlots("no_splits__"   ,t.diag  > TopJetMatching::SPLIT_PARTONS);
-	      eventPlots("good_top__"    ,t.diag  > TopJetMatching::CONTAMINATION);
+	      eventPlots("good_partons__",t.diag  > PartonMatching::BAD_PARTON);
+	      eventPlots("assoc_jets__"  ,t.diag  > PartonMatching::LOST_JET);
+	      eventPlots("no_splits__"   ,t.diag  > PartonMatching::SPLIT_PARTONS);
+	      eventPlots("good_top__"    ,t.diag  > PartonMatching::CONTAMINATION);
 
 
 	      eventPlots.fill(t.top->pt(),1,"top_pt",";top p_{T}",50,0,1000,prefix);
@@ -109,7 +109,7 @@ public:
       for(const auto& t : topDecayEvent.topDecays){
         eventPlots.rewind();
         if(t.isLeptonic) continue;
-        if(t.diag  <= TopJetMatching::BAD_PARTON) continue;
+        if(t.diag  <= PartonMatching::BAD_PARTON) continue;
 
         double eta = TMath::Abs(t.top->eta());
 
@@ -133,14 +133,14 @@ public:
         for(const auto* p : t.hadronicPartons ){
           eventPlots.revert();
           ++eventPlots;
-          eventPlots("noJet__"          ,p->diag == TopJetMatching::NO_JET);
-          eventPlots("splitJet__"       ,p->diag == TopJetMatching::SPLIT_JETS);
-          eventPlots("dirtyJet__"       ,p->diag == TopJetMatching::DIRTY_JET);
-          eventPlots("resolvedParton__" ,p->diag == TopJetMatching::RESOLVED_PARTON);
+          eventPlots("noJet__"          ,p->diag == PartonMatching::NO_JET);
+          eventPlots("splitJet__"       ,p->diag == PartonMatching::SPLIT_JETS);
+          eventPlots("dirtyJet__"       ,p->diag == PartonMatching::DIRTY_JET);
+          eventPlots("resolvedParton__" ,p->diag == PartonMatching::RESOLVED_PARTON);
 
           double pt = p->hadE;
 
-          if(p->diag == TopJetMatching::DIRTY_JET || p->diag == TopJetMatching::RESOLVED_PARTON)
+          if(p->diag == PartonMatching::DIRTY_JET || p->diag == PartonMatching::RESOLVED_PARTON)
             pt = p->matchedJet->pt();
 
           eventPlots.fill(pt,1,"parton_pt",";parton p_{T}",100,0,1000,prefix);
@@ -156,10 +156,10 @@ public:
 	    for(const auto& t : topDecayEvent.topDecays){
 	    	if(t.isLeptonic) continue;
 	    	if(TMath::Abs(t.top->eta()) >= 2.4 ) continue;
-	    	if(t.diag  == TopJetMatching::BAD_PARTON)nB++;
-	    	if(t.diag  == TopJetMatching::LOST_JET) nL++;
-	    	if(t.diag  == TopJetMatching::SPLIT_PARTONS) nS++;
-	    	if(t.diag  == TopJetMatching::CONTAMINATION) nC++;
+	    	if(t.diag  == PartonMatching::BAD_PARTON)nB++;
+	    	if(t.diag  == PartonMatching::LOST_JET) nL++;
+	    	if(t.diag  == PartonMatching::SPLIT_PARTONS) nS++;
+	    	if(t.diag  == PartonMatching::CONTAMINATION) nC++;
 	    	tops.push_back(t.top->p4());
 	    }
 	    if(tops.size() == 2){
@@ -192,11 +192,11 @@ public:
 
 	    for(const auto& t : topDecayEvent.topDecays){
 	      for(const auto* p : t.hadronicPartons ){
-	        if(p->diag > TopJetMatching::DISPERSED_PARTON) nGoodPartons++;
-	        if(p->diag == TopJetMatching::NO_JET) nNoJetPartons++;
-          if(p->diag == TopJetMatching::SPLIT_JETS)nSplitPartons++;
-          if(p->diag == TopJetMatching::DIRTY_JET)nDirtyPartons++;
-          if(p->diag == TopJetMatching::RESOLVED_PARTON)nResolovedPartons++;
+	        if(p->diag > PartonMatching::DISPERSED_PARTON) nGoodPartons++;
+	        if(p->diag == PartonMatching::NO_JET) nNoJetPartons++;
+          if(p->diag == PartonMatching::SPLIT_JETS)nSplitPartons++;
+          if(p->diag == PartonMatching::DIRTY_JET)nDirtyPartons++;
+          if(p->diag == PartonMatching::RESOLVED_PARTON)nResolovedPartons++;
 	      }
 	    }
 	    eventPlots.rewind();
@@ -248,7 +248,7 @@ public:
       const vector<GenParticleF>* genParticles = &genParticleReader.genParticles;
       const vector<float   >* hadronE      = genParticleReader.hade_;
 
-      TopJetMatching::TopDecayEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
+      PartonMatching::PartonEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
 
 
     int nB = 0;
@@ -259,10 +259,10 @@ public:
     for(const auto& t : topDecayEvent.topDecays){
       if(t.isLeptonic) continue;
       if(TMath::Abs(t.top->eta()) >= 2.4 ) continue;
-      if(t.diag  == TopJetMatching::BAD_PARTON)nB++;
-      if(t.diag  == TopJetMatching::LOST_JET) nL++;
-      if(t.diag  == TopJetMatching::SPLIT_PARTONS) nS++;
-      if(t.diag  == TopJetMatching::CONTAMINATION || t.diag  == TopJetMatching::MERGED_PARTONS) nC++;
+      if(t.diag  == PartonMatching::BAD_PARTON)nB++;
+      if(t.diag  == PartonMatching::LOST_JET) nL++;
+      if(t.diag  == PartonMatching::SPLIT_PARTONS) nS++;
+      if(t.diag  == PartonMatching::CONTAMINATION || t.diag  == PartonMatching::MERGED_PARTONS) nC++;
       tops.push_back(t.top->p4());
     }
 
@@ -372,10 +372,10 @@ public:
 //
 ////    ParticleInfo::printGenInfo(*genParticles,-1);
 //
-//    TopJetMatching::TopDecayEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
+//    PartonMatching::TopDecayEvent topDecayEvent(genAssocPrtIndex,genAssocJetIndex,genAssocCon,genParticles,hadronE,genJets);
 //
 ////    for(unsigned int iP = 0; iP < topDecayEvent.partons.size(); ++iP){
-////      const TopJetMatching::Parton& p = topDecayEvent.partons[iP];
+////      const PartonMatching::Parton& p = topDecayEvent.partons[iP];
 ////      ParticleInfo::printGenParticleInfo(p.parton,p.genIdx);
 ////      cout <<p.parton->energy() <<" "<< p.hadE << " :: ";
 ////      for(unsigned int iJ = 0; iJ < p.containment.size(); ++iJ)
@@ -406,10 +406,10 @@ public:
 //
 //      ++eventPlots;
 //      eventPlots("all__",true);
-//      eventPlots("good_partons__",t.diag  > TopJetMatching::BAD_PARTON);
-//      eventPlots("assoc_jets__"  ,t.diag  > TopJetMatching::LOST_JET);
-//      eventPlots("no_splits__"   ,t.diag  > TopJetMatching::SPLIT_PARTONS);
-//      eventPlots("good_top__"    ,t.diag  > TopJetMatching::CONTAMINATION);
+//      eventPlots("good_partons__",t.diag  > PartonMatching::BAD_PARTON);
+//      eventPlots("assoc_jets__"  ,t.diag  > PartonMatching::LOST_JET);
+//      eventPlots("no_splits__"   ,t.diag  > PartonMatching::SPLIT_PARTONS);
+//      eventPlots("good_top__"    ,t.diag  > PartonMatching::CONTAMINATION);
 //
 //
 //      eventPlots.fill(t.top->pt(),1,"top_pt","top p_{T}",50,0,800);

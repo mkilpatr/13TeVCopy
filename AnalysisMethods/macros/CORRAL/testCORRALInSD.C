@@ -7,7 +7,7 @@
 #include "TCanvas.h"
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
@@ -84,18 +84,18 @@ public:
 
     if(process == defaults::SIGNAL) {
       std::vector<RecoJetF*> recoJets;
-      std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
-      TopJetMatching::TopDecayEvent* topDecayEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
+      std::vector<PartonMatching::DecayID> decays;
+      PartonMatching::PartonEvent* PartonEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
       //filter
         int nB = 0;
         int nBJ = 0;
         vector<MomentumF> tops;
-        for(const auto& t : topDecayEvent->topDecays){
+        for(const auto& t : PartonEvent->topDecays){
           if(t.isLeptonic) leptonic =  true;
           if(t.isLeptonic) continue;
           if(TMath::Abs(t.top->eta()) >= 2.4 ) nB++;
-          if(t.diag  == TopJetMatching::BAD_PARTON)nB++;
-          if(t.diag  != TopJetMatching::RESOLVED_TOP ) nBJ++;
+          if(t.diag  == PartonMatching::BAD_PARTON)nB++;
+          if(t.diag  != PartonMatching::RESOLVED ) nBJ++;
           tops.push_back(t.top->p4());
       }
       badPartons = nB > 0 || tops.size() != 2;
@@ -225,19 +225,19 @@ public:
     eventPlots("",process == defaults::SIGNAL);
 
     std::vector<RecoJetF*> recoJets;
-    std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
-    TopJetMatching::TopDecayEvent* topDecayEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
+    std::vector<PartonMatching::DecayID> decays;
+    PartonMatching::PartonEvent* PartonEvent = CORRAL::associateDecays(&genParticleReader,&pickyJetReader,recoJets,decays);
 
     int nBadTops = 0;
     int nBadPartons = 0;
     int nBadJets = 0;
 
     vector<MomentumF> tops;
-    for(const auto& t : topDecayEvent->topDecays){
+    for(const auto& t : PartonEvent->topDecays){
       if(t.isLeptonic) return;
       if(TMath::Abs(t.top->eta()) >= 2.4 ) nBadTops++;
-      if(t.diag  == TopJetMatching::BAD_PARTON) nBadPartons++;
-      if(t.diag  != TopJetMatching::RESOLVED_TOP ) nBadJets++;
+      if(t.diag  == PartonMatching::BAD_PARTON) nBadPartons++;
+      if(t.diag  != PartonMatching::RESOLVED ) nBadJets++;
       tops.push_back(t.top->p4());
     }
     sort(tops.begin(), tops.end(), PhysicsUtilities::greaterPT<MomentumF>());
