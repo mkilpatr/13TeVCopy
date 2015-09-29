@@ -145,15 +145,15 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_            ,met_->pt());
   data.fill<float>       (imetphi_           ,met_->phi());
   data.fill<float>       (imetsumEt_         ,met_->sumEt());
-  data.fill<float>       (irawmetpt_         ,met_->uncorrectedPt());
-  data.fill<float>       (irawmetphi_        ,met_->uncorrectedPhi());
-  data.fill<float>       (irawmetsumEt_      ,met_->uncorrectedSumEt());
+  data.fill<float>       (irawmetpt_         ,met_->uncorPt());
+  data.fill<float>       (irawmetphi_        ,met_->uncorPhi());
+  data.fill<float>       (irawmetsumEt_      ,met_->uncorSumEt());
   data.fill<float>       (imetnohfpt_        ,metNoHF_->pt());
   data.fill<float>       (imetnohfphi_       ,metNoHF_->phi());
   data.fill<float>       (imetnohfsumEt_     ,metNoHF_->sumEt());
-  data.fill<float>       (irawmetnohfpt_     ,metNoHF_->uncorrectedPt());
-  data.fill<float>       (irawmetnohfphi_    ,metNoHF_->uncorrectedPhi());
-  data.fill<float>       (irawmetnohfsumEt_  ,metNoHF_->uncorrectedSumEt());
+  data.fill<float>       (irawmetnohfpt_     ,metNoHF_->uncorPt());
+  data.fill<float>       (irawmetnohfphi_    ,metNoHF_->uncorPhi());
+  data.fill<float>       (irawmetnohfsumEt_  ,metNoHF_->uncorSumEt());
 
   if(options_ & LOADGEN) {
     data.fill<float>     (igenmetpt_    ,metOOB_->genMET()->pt());

@@ -22,17 +22,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/0066F143-F8FD-E411-9A0B-D4AE526A0D2E.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/10000/009D49A5-7314-E511-84EF-0025905A605E.root'
-#options.inputFiles = '/store/data/Run2015B/BTagCSV/MINIAOD/17Jul2015-v1/40000/C88E0BCD-972E-E511-B231-0025905B85F6.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/60087A61-9134-E511-B0C6-0025905B855E.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2AC9FDED-4319-E511-AAF9-02163E011C20.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
-#options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
-#options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
-#options.inputFiles = '/store/data/Run2015C/HTMHT/MINIAOD/PromptReco-v1/000/253/620/00000/1E9DB47F-1640-E511-B7EB-02163E014450.root'
+options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
 
 options.maxEvents = -1
 
@@ -204,7 +194,7 @@ if ISDATA :
 # Configurable options =======================================================================
 runOnData=ISDATA        #data/MC switch
 usePrivateSQlite=False  #use external JECs (sqlite file)
-useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
+useHFCandidates=True    #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 
 # For adding NoHF MET
@@ -238,44 +228,47 @@ if usePrivateSQlite:
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Jets are rebuilt from those candidates by the tools, no need to do anything else
-from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+runMetCorrAndUnc = False
 
-# Default configuration for miniAOD reprocessing, change the isData flag to run on data
-# For a full met computation, remove the pfCandColl input
-JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
-runMetCorAndUncFromMiniAOD(process,
-                           isData=runOnData,
-                           jecUncFile=JECUNCFILE
-                           )
+if runMetCorrAndUnc :
+    from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
-if not useHFCandidates:
+    # Default configuration for miniAOD reprocessing, change the isData flag to run on data
+    # For a full met computation, remove the pfCandColl input
+    JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
-                               jecUncFile=JECUNCFILE,
-                               pfCandColl=cms.InputTag("noHFCands"),
-                               postfix="NoHF"
+                               jecUncFile=JECUNCFILE
                                )
 
-# The lines below remove the L2L3 residual corrections when processing data
-if not applyResiduals:
-    process.patPFMetT1T2Corr.jetCorrLabelRes = cms.InputTag("L3Absolute")
-    process.patPFMetT1T2SmearCorr.jetCorrLabelRes = cms.InputTag("L3Absolute")
-    process.patPFMetT2Corr.jetCorrLabelRes = cms.InputTag("L3Absolute")
-    process.patPFMetT2SmearCorr.jetCorrLabelRes = cms.InputTag("L3Absolute")
-    process.shiftedPatJetEnDown.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
-    process.shiftedPatJetEnUp.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
-
     if not useHFCandidates:
-          process.patPFMetT1T2CorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
-          process.patPFMetT1T2SmearCorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
-          process.patPFMetT2CorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
-          process.patPFMetT2SmearCorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
-          process.shiftedPatJetEnDownNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
-          process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
+        runMetCorAndUncFromMiniAOD(process,
+                                   isData=runOnData,
+                                   jecUncFile=JECUNCFILE,
+                                   pfCandColl=cms.InputTag("noHFCands"),
+                                   postfix="NoHF"
+                                   )
+
+    # The lines below remove the L2L3 residual corrections when processing data
+    if not applyResiduals:
+        process.patPFMetT1T2Corr.jetCorrLabelRes = cms.InputTag("L3Absolute")
+        process.patPFMetT1T2SmearCorr.jetCorrLabelRes = cms.InputTag("L3Absolute")
+        process.patPFMetT2Corr.jetCorrLabelRes = cms.InputTag("L3Absolute")
+        process.patPFMetT2SmearCorr.jetCorrLabelRes = cms.InputTag("L3Absolute")
+        process.shiftedPatJetEnDown.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
+        process.shiftedPatJetEnUp.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
+
+        if not useHFCandidates:
+              process.patPFMetT1T2CorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
+              process.patPFMetT1T2SmearCorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
+              process.patPFMetT2CorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
+              process.patPFMetT2SmearCorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
+              process.shiftedPatJetEnDownNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
+              process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
 
 #==============================================================================================================================#
 # Also update jets with different JECs
-updateJECs = True
+updateJECs = False
 
 if updateJECs:
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
