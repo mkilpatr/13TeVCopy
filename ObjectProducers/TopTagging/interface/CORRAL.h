@@ -2,7 +2,7 @@
 #define OBJECTPRODUCERS_TOPTAGGING_CORRAL_H
 
 #include <vector>
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 
 namespace ucsbsusy{
 class GenParticleReader;
@@ -27,12 +27,12 @@ bool isCORRALJet(const float jPT, const float jETA){ return (TMath::Abs(jETA) < 
 
 //Figure out what the decay structure of the event looks like
 //Filter out jets
-TopJetMatching::TopDecayEvent* associateDecays(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
-    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays);
+PartonMatching::PartonEvent* associateDecays(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
+    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<PartonMatching::DecayID>& decays);
 
 //Wrapper for above, returns a bool if you should filter the event or not
 bool setup(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
-    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays);
+    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<PartonMatching::DecayID>& decays);
 
 // ---------------------------------------------------------------------
 //
@@ -44,7 +44,7 @@ bool setup(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetRe
 // signal (W jet = 1)
 // bkg (Non W or B jet = 2)
 
-void getJetCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void getJetCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<int>& types );
 
 // Container for all jet candidate variables
@@ -101,11 +101,11 @@ struct WCand {
 
 //Takes two jets and adds the candidate to the wCand vector, with truth info
 void addWCandidate(const unsigned int iJ, const unsigned int iJ2,
-    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<WCand>& wCands);
 
 //Iterates over the list of jets and builds all candidates
-void getWCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void getWCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<WCand>& wCands  );
 
 struct WCandVars {
@@ -184,10 +184,10 @@ struct TCand {
 
 //Put together a TCandidate with truth info and place it in the TCand vector
 void addTCandidate(const unsigned int iW, const WCand& wCand, const unsigned int iJ,
-    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<TCand>& tCands);
 
-void getTCandidates(const WMVA& wMVA, const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void getTCandidates(const WMVA& wMVA, const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     const std::vector<WCand>& wCands,const std::vector<WCandVars>& wCandVars, std::vector<TCand>& tCands   );
 
 struct TCandVars {
@@ -281,7 +281,7 @@ std::vector<std::vector<int> > countTops(const std::vector<TCand>& tCands,const 
 struct CORRALData {
   //storage of all pieces of the algorithm
   std::vector<ucsbsusy::RecoJetF*>  recoJets ;
-  std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
+  std::vector<PartonMatching::DecayID> decays;
   std::vector<jetCandVars>     jetVars  ;
   std::vector<WCand>     wCands   ;
   std::vector<WCandVars> wCandVars;
