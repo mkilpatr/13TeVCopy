@@ -11,7 +11,7 @@ using namespace ucsbsusy;
 
 namespace PartonMatching{
 //We only do > tests so conversion is to the percent floor
-conType toContainmentType(const float inCon ){ return ucsbsusy::convertTo<conType>( std::floor(inCon*100) ,"TopJetMatching::toContainmentType");}
+conType toContainmentType(const float inCon ){ return ucsbsusy::convertTo<conType>( std::floor(inCon*100) ,"PartonMatching::toContainmentType");}
 float   fromContainmentType(const conType inCon){return float(inCon)/100; }
 
 float minPartonPT         (20 );
@@ -381,5 +381,47 @@ void PartonEvent::processSubtractedJetPTs(float maxNonHadDR){
     }
   }
 }
+//--------------------------------------------------------------------------------------------------
+void PartonEvent::getTopJetDecayMatches(const vector<ucsbsusy::RecoJetF*> recoJets, std::vector<DecayID>& decayIDs)  const {
+  decayIDs.clear();
+  decayIDs.resize(recoJets.size());
+
+  for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
+    const auto * gj = recoJets[iJ]->genJet();
+    if(gj == 0) continue;
+
+    for(unsigned int iP = 0; iP < partons.size(); ++iP){
+      for(unsigned int iC = 0; iC < partons[iP].containment.size(); ++iC){
+        if(gj->index() !=  partons[iP].containment[iC].second) continue;
+        decayIDs[iJ].conPartons.emplace_back( partons[iP].containment[iC].first* partons[iP].hadE,&partons[iP]);
+      }
+    }
+    std::sort( decayIDs[iJ].conPartons.begin(),  decayIDs[iJ].conPartons.end(), PhysicsUtilities::greaterFirst<float,const Parton*>());
+
+    if(decayIDs[iJ].conPartons.size()){
+      const Parton * leadPtr = decayIDs[iJ].conPartons.front().second;
+      if(leadPtr->matchedJet != gj) continue;
+      for(unsigned int iT = 0; iT < topDecays.size(); ++iT){
+        if(leadPtr == topDecays[iT].b){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_B;
+          break;
+        }
+        if(leadPtr == topDecays[iT].W_dau1){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_W;
+          break;
+        }
+        if(leadPtr == topDecays[iT].W_dau2){
+          decayIDs[iJ].topInd = iT;
+          decayIDs[iJ].type = DecayID::TOP_W;
+          break;
+        }
+      }
+      if(decayIDs[iJ].type == DecayID::NONE) decayIDs[iJ].type = DecayID::RADIATED;
+    }
+  }
 }
 
+
+}

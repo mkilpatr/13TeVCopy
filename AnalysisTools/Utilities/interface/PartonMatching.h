@@ -1,5 +1,5 @@
-#ifndef TOPJETMATCHING_H_
-#define TOPJETMATCHING_H_
+#ifndef PARTONMATCHING_H_
+#define PARTONMATCHING_H_
 
 #include "AnalysisTools/Utilities/interface/Types.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
@@ -118,6 +118,19 @@ public:
 };
 
 
+class DecayID {
+public:
+  enum Type {NONE,RADIATED,TOP_B,TOP_W};
+  DecayID() : type(NONE), topInd(-1) {};
+
+  const Parton* mainParton() const {return conPartons.size() == 0 ? 0 : conPartons.front().second;}
+
+  Type type;
+  int topInd;
+  std::vector<std::pair<float,const Parton*> > conPartons; //[Contained jet E][parton ptr]
+
+};
+
 
 class PartonEvent {
 public:
@@ -152,7 +165,7 @@ public:
   }
 
   void processSubtractedJetPTs(float maxNonHadDR = 0.4);
-
+  void getTopJetDecayMatches(const std::vector<ucsbsusy::RecoJetF*> recoJets, std::vector<DecayID>& decayIDs) const;
 private:
   void getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* genAssocPrtIndex, const std::vector<ucsbsusy::size16 >* genAssocJetIndex, const std::vector<conType>* genAssocCon,
       const std::vector<Particle>* genParticles,const std::vector<float   >* hadronE);
