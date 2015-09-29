@@ -237,13 +237,15 @@ void BaseTreeAnalyzer::processVariables()
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
     datareco =  evtInfoReader.datareco;
+
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.processMET(this);
+      (*met) = jetAndMETCorrections.getCorrectedMET();
+      (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+    }
   }
 
-  if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-    jetAndMETCorrections.processMET(this);
-    (*met) = jetAndMETCorrections.getCorrectedMET();
-    (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
-  }
+
 
   if(genParticleReader.isLoaded()){
     genParts.clear();
