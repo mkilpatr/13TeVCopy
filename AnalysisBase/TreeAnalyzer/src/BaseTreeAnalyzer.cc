@@ -237,13 +237,17 @@ void BaseTreeAnalyzer::processVariables()
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
     datareco =  evtInfoReader.datareco;
+
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.processMET(this);
+      (*met) = jetAndMETCorrections.getCorrectedMET();
+      (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+    }
+    if(defaultJets && defaultJets->isLoaded())
+      jetCorrector.shiftJES(defaultJets->recoJets, met);
   }
 
-  if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-    jetAndMETCorrections.processMET(this);
-    (*met) = jetAndMETCorrections.getCorrectedMET();
-    (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
-  }
+
 
   if(genParticleReader.isLoaded()){
     genParts.clear();
@@ -311,8 +315,6 @@ void BaseTreeAnalyzer::processVariables()
   if(tauReader.isLoaded() && configSet.vetoedTaus.isConfig())
     cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.vetoedTaus);
   nVetoHPSTaus = vetoedTaus.size();
-
-  jetCorrector.shiftJES(defaultJets->recoJets, met);
 
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
