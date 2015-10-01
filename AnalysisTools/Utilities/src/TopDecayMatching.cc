@@ -11,7 +11,9 @@ using namespace TopDecayMatching;
 void ColorSinglet::getSingletMotherCompositon( const edm::Handle<reco::GenParticleCollection>& particles, const int idx, vector<int>& partonIDXs, vector<int>& incommingIDxs){
   for(unsigned int iM = 0; iM < particles->at(idx).numberOfMothers(); ++iM){
     const reco::GenParticleRef& m = particles->at(idx).motherRef(iM);
-    if(ParticleInfo::isIncoming(m->status()) || ParticleInfo::isDocIntermediate(m->status()) || ParticleInfo::isDocAltered(m->status()) ){
+  if(ParticleInfo::isDocAltered(m->status())){ //parton showering + ISR..
+    getSingletMotherCompositon(particles,m.key(),partonIDXs,incommingIDxs);
+  } else if(ParticleInfo::isIncoming(m->status()) || ParticleInfo::isDocIntermediate(m->status())){
       incommingIDxs.push_back(m.key());
     }else if(m->status() >= 91 && m->status() <= 99){
       getSingletMotherCompositon(particles,m.key(),partonIDXs,incommingIDxs); //pythia decay

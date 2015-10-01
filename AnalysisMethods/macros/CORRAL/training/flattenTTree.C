@@ -1,6 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "ObjectProducers/TopTagging/interface/CORRAL.h"
 using namespace std;
@@ -49,15 +49,15 @@ public:
   bool fillEvent() {
     auto * jetReader = &pickyJetReader;
     std::vector<RecoJetF*> recoJets;
-    std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
+    std::vector<PartonMatching::DecayID> decays;
     if(!setup(&genParticleReader,jetReader, recoJets,decays)) return false;
 
 
     if(onlyGoodTops){
       std::vector<RecoJetF*> newRecoJets;
-      std::vector<TopJetMatching::TopDecayEvent::DecayID> newDecays;
+      std::vector<PartonMatching::DecayID> newDecays;
       for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
-        if(decays[iJ].type < TopJetMatching::TopDecayEvent::DecayID::TOP_B ) continue;
+        if(decays[iJ].type < PartonMatching::DecayID::TOP_B ) continue;
         newRecoJets.push_back(recoJets[iJ]);
         newDecays.push_back(decays[iJ]);
       }

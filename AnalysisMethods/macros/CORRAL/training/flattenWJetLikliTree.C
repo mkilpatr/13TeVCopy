@@ -1,12 +1,12 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "ObjectProducers/TopTagging/interface/CORRAL.h"
 
 using namespace std;
 using namespace ucsbsusy;
 using namespace CORRAL;
-using TopJetMatching::TopDecayEvent;
+using PartonMatching::PartonEvent;
 
 class Copier : public TreeCopierManualBranches {
 public:
@@ -39,7 +39,7 @@ public:
   bool fillEvent() {
     auto * jetReader = &pickyJetReader;
     std::vector<RecoJetF*> recoJets;
-    std::vector<TopDecayEvent::DecayID> decays;
+    std::vector<PartonMatching::DecayID> decays;
     if(!setup(&genParticleReader,jetReader, recoJets,decays)) return false;
     vector<int> types;
     getJetCandidates(recoJets,decays,types);

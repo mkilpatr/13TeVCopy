@@ -14,8 +14,8 @@ using namespace ucsbsusy;
 //
 // ---------------------------------------------------------------------
 
-TopJetMatching::TopDecayEvent* CORRAL::associateDecays(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
-    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays){
+PartonMatching::PartonEvent* CORRAL::associateDecays(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
+    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<PartonMatching::DecayID>& decays){
 
   vector<GenJetF*> genJets;
   recoJets.clear();
@@ -28,9 +28,9 @@ TopJetMatching::TopDecayEvent* CORRAL::associateDecays(const ucsbsusy::GenPartic
   }
 
   if(genParticleReader){
-    TopJetMatching::TopDecayEvent * topDecayEvent = new TopJetMatching::TopDecayEvent(*genParticleReader,*jetReader,genJets);
-    topDecayEvent->getDecayMatches(recoJets,decays);
-    return topDecayEvent;
+    PartonMatching::PartonEvent * partonEvent = new PartonMatching::PartonEvent(*genParticleReader,*jetReader,genJets);
+    partonEvent->getTopJetDecayMatches(recoJets,decays);
+    return partonEvent;
   } else {
     return 0;
   }
@@ -39,18 +39,18 @@ TopJetMatching::TopDecayEvent* CORRAL::associateDecays(const ucsbsusy::GenPartic
 }
 
 bool CORRAL::setup(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsusy::JetReader * jetReader,
-    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays){
+    std::vector<ucsbsusy::RecoJetF*>& recoJets,  std::vector<PartonMatching::DecayID>& decays){
 
-  TopJetMatching::TopDecayEvent* topDecayEvent = associateDecays(genParticleReader,jetReader,recoJets,decays);
+  PartonMatching::PartonEvent* partonEvent = associateDecays(genParticleReader,jetReader,recoJets,decays);
   bool decision = true;
 
   //filter
-  for(const auto& t : topDecayEvent->topDecays){
+  for(const auto& t : partonEvent->topDecays){
     if(t.isLeptonic) decision =  false;
-    if(t.diag != TopJetMatching::RESOLVED_TOP) decision = false;
+    if(t.diag != PartonMatching::DecayDiagnosis::RESOLVED) decision = false;
   }
 
-  delete topDecayEvent;
+  delete partonEvent;
   return decision;
 }
 
@@ -60,14 +60,14 @@ bool CORRAL::setup(const ucsbsusy::GenParticleReader* genParticleReader, ucsbsus
 //     W Jet Likilihood
 //
 // ---------------------------------------------------------------------
-void CORRAL::getJetCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void CORRAL::getJetCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<int>& types ){
   types.clear();
   types.resize(recoJets.size());
   for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
-    if(decays[iJ].type == TopJetMatching::TopDecayEvent::DecayID::TOP_W)
+    if(decays[iJ].type == PartonMatching::DecayID::TOP_W)
       types[iJ] = 1;
-    else if(decays[iJ].type == TopJetMatching::TopDecayEvent::DecayID::TOP_B)
+    else if(decays[iJ].type == PartonMatching::DecayID::TOP_B)
       types[iJ] = 0;
     else
       types[iJ] = 2;
@@ -145,13 +145,13 @@ CORRAL::WCand::WCand(const WCand& other) :
 {}
 
 void CORRAL::addWCandidate(const unsigned int iJ, const unsigned int iJ2,
-    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<WCand>& wCands){
   bool isW = false;
   int topIn = -1;
-  TopJetMatching::TopDecayEvent::DecayID::Type id1 = decays[iJ].type;
-  TopJetMatching::TopDecayEvent::DecayID::Type id2 = decays[iJ2].type;
-  if(id1 ==  TopJetMatching::TopDecayEvent::DecayID::TOP_W &&  id2 == TopJetMatching::TopDecayEvent::DecayID::TOP_W){
+  PartonMatching::DecayID::Type id1 = decays[iJ].type;
+  PartonMatching::DecayID::Type id2 = decays[iJ2].type;
+  if(id1 ==  PartonMatching::DecayID::TOP_W &&  id2 == PartonMatching::DecayID::TOP_W){
     if(decays[iJ].topInd == decays[iJ2].topInd){
       if(decays[iJ].mainParton() != decays[iJ2].mainParton())
         isW = true;
@@ -162,10 +162,10 @@ void CORRAL::addWCandidate(const unsigned int iJ, const unsigned int iJ2,
   if(!isW){
     int nWs = 0;
     int nBs = 0;
-    if(id1 ==  TopJetMatching::TopDecayEvent::DecayID::TOP_B )nBs++;
-    if(id2 ==  TopJetMatching::TopDecayEvent::DecayID::TOP_B )nBs++;
-    if(id1 ==  TopJetMatching::TopDecayEvent::DecayID::TOP_W )nWs++;
-    if(id2 ==  TopJetMatching::TopDecayEvent::DecayID::TOP_W )nWs++;
+    if(id1 ==  PartonMatching::DecayID::TOP_B )nBs++;
+    if(id2 ==  PartonMatching::DecayID::TOP_B )nBs++;
+    if(id1 ==  PartonMatching::DecayID::TOP_W )nWs++;
+    if(id2 ==  PartonMatching::DecayID::TOP_W )nWs++;
 
     if(nWs == 2) fakeCategory = 0;
     else if(nWs == 1) {
@@ -178,7 +178,7 @@ void CORRAL::addWCandidate(const unsigned int iJ, const unsigned int iJ2,
   wCands.emplace_back(recoJets[iJ],recoJets[iJ2],iJ,iJ2,isW, topIn, fakeCategory);
 }
 
-void CORRAL::getWCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void CORRAL::getWCandidates(const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<WCand>& wCands  ){
   wCands.clear();
   if(recoJets.size() < 2) return;
@@ -324,14 +324,14 @@ CORRAL::TCand::TCand(const WCand * wCand_,const ucsbsusy::RecoJetF * bJet_, int 
       }
 
 void CORRAL::addTCandidate(const unsigned int iW, const WCand& wCand, const unsigned int iJ,
-    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+    const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     std::vector<TCand>& tCands){
   int type = 2;
   int topIndex = -1;
   if(decays[iJ].topInd >= 0 ){
     if(decays[iJ].topInd  ==  decays[wCand.ind1].topInd && decays[iJ].topInd  ==  decays[wCand.ind2].topInd ){
       topIndex = decays[iJ].topInd;
-      if(decays[iJ].type == TopJetMatching::TopDecayEvent::DecayID::TOP_B){
+      if(decays[iJ].type == PartonMatching::DecayID::TOP_B){
         type = 1;
       } else {
         type = 0;
@@ -341,11 +341,11 @@ void CORRAL::addTCandidate(const unsigned int iW, const WCand& wCand, const unsi
   int fakeCategory = -1;
   if(type == 2){
     if(wCand.isW){
-      if(decays[iJ].type == TopJetMatching::TopDecayEvent::DecayID::TOP_B) fakeCategory = 0; //w1b2;
+      if(decays[iJ].type == PartonMatching::DecayID::TOP_B) fakeCategory = 0; //w1b2;
       else fakeCategory = 1; //wF;
     } else if(decays[wCand.ind1].topInd == decays[wCand.ind2].topInd){
       fakeCategory = 2; //w(bw)F
-    } else if(decays[iJ].type == TopJetMatching::TopDecayEvent::DecayID::TOP_B){
+    } else if(decays[iJ].type == PartonMatching::DecayID::TOP_B){
       if( decays[wCand.ind1].topInd ==  decays[iJ].topInd ) fakeCategory = 3; //w(wf)b
       else if( decays[wCand.ind2].topInd ==  decays[iJ].topInd) fakeCategory = 3; //w(wf)b
       else fakeCategory = 4; //w(ff)b;
@@ -355,7 +355,7 @@ void CORRAL::addTCandidate(const unsigned int iW, const WCand& wCand, const unsi
   tCands.emplace_back(&wCand,recoJets[iJ],iW,iJ,type, topIndex, fakeCategory);
 }
 
-void CORRAL::getTCandidates(const WMVA& wMVA, const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<TopJetMatching::TopDecayEvent::DecayID>& decays,
+void CORRAL::getTCandidates(const WMVA& wMVA, const std::vector<ucsbsusy::RecoJetF*>& recoJets, const std::vector<PartonMatching::DecayID>& decays,
     const std::vector<WCand>& wCands,const std::vector<WCandVars>& wCandVars, std::vector<TCand>& tCands   ){
   tCands.clear();
   if(recoJets.size() < 3) return;

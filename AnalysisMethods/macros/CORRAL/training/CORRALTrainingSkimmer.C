@@ -35,7 +35,7 @@ public:
 //    ParticleInfo::printGenInfo(genParticleReader.genParticles,-1);
     auto * jetReader = &pickyJetReader;
         std::vector<RecoJetF*> recoJets;
-        std::vector<TopJetMatching::TopDecayEvent::DecayID> decays;
+        std::vector<PartonMatching::DecayID> decays;
         if(!setup(&genParticleReader,jetReader, recoJets,decays)) return false;
 
     return true;

@@ -7,7 +7,7 @@
 #include "TCanvas.h"
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
@@ -20,7 +20,6 @@
 using namespace std;
 using namespace ucsbsusy;
 using namespace CORRAL;
-using TopJetMatching::TopDecayEvent;
 
 static TString MVAprefix;
 
@@ -49,16 +48,16 @@ public:
 
   void plotJets(JetReader * jetReader, TString prefix){
     std::vector<RecoJetF*> recoJets;
-    std::vector<TopDecayEvent::DecayID> decays;
-    TopJetMatching::TopDecayEvent * topDecayEvent =  associateDecays(&genParticleReader,jetReader, recoJets,decays);
+    std::vector<PartonMatching::DecayID> decays;
+    PartonMatching::PartonEvent * topDecayEvent =  associateDecays(&genParticleReader,jetReader, recoJets,decays);
 
     bool baseline = true;
     bool resolved = true;
 
     for(const auto& t : topDecayEvent->topDecays){
       if(t.isLeptonic) baseline =  false;
-      if(t.diag == TopJetMatching::BAD_PARTON)   baseline = false;
-      if(t.diag != TopJetMatching::RESOLVED_TOP) resolved = false;
+      if(t.diag == PartonMatching::BAD_PARTON)   baseline = false;
+      if(t.diag != PartonMatching::RESOLVED) resolved = false;
     }
 
     if(!baseline) return;
@@ -227,7 +226,7 @@ public:
 void testTopPairs(string fname = "evttree.root", string treeName = "TestAnalyzer/Events", TString output = "testPlots.root", TString MVAprefix_ = "", bool pureMatching = true, bool isMCTree = true) {
 
   MVAprefix = MVAprefix_;
-  if(!pureMatching) TopJetMatching::Parton::setPurity(false);
+  if(!pureMatching) PartonMatching::setPartonPurity(false);
 
   Analyze a(fname, treeName,isMCTree);
   TString name = fname;
