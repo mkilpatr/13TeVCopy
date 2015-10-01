@@ -11,7 +11,7 @@ from math import sqrt
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2(True)
 
-DEBUG_UNCERTAINTIES = False
+DEBUG_UNCERTAINTIES = True
 
 def main():
     # to get the config file
@@ -128,7 +128,8 @@ class DatacardConfig:
                 os.rename(self.datacarddir,self.datacarddir+moveStr) 
                 os.makedirs(self.datacarddir)
             else :
-                print 'will be overwritten'
+                print 'will be overwritten' 
+                os.popen('rm -rf '+self.datacarddir+'/*')
         else :
             os.makedirs(self.datacarddir)
         copy(self.conf_file,self.datacarddir)
@@ -184,7 +185,7 @@ class DatacardConfig:
                     background = background.split('_')[0]
                 lineProcess1 += background.ljust(self.yieldwidth)
                 lineProcess2 += str(ibkg+1).ljust(self.yieldwidth)
-                nevts = self.getNumEvents(bkgFile,bins)
+                nevts = self.getNumEvents(bkgFile, bins, False, fitregion.selection)
                 nBkgEvts.append(nevts)
                 lineRate     += str(nevts).ljust(self.yieldwidth)
 
@@ -246,7 +247,7 @@ class DatacardConfig:
             # now loop through the signal files to get the actual datacards
             for signal in self.signals:
                 sigFile = os.path.join( self.treebase, signal+self.filesuffix )
-                nSig    = self.getNumEvents(sigFile,bins)
+                nSig    = self.getNumEvents(sigFile, bins, False, fitregion.selection)
 
                 # put signal numbers into the placeholders in the template datacard
                 fdatacard = open(templateFile,'r')
