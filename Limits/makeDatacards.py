@@ -11,8 +11,6 @@ from math import sqrt
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2(True)
 
-DEBUG_UNCERTAINTIES = True
-
 def main():
     # to get the config file
     configFile = 'dc_0l_setup.conf'
@@ -49,6 +47,7 @@ class DatacardConfig:
         self.binmapfile     = config_parser.get('config','crtosr_bin_map')
         self.basesel        = config_parser.get('config','basesel')
         self.usedummyuncs   = config_parser.getboolean('config','dummyuncertainties')
+        self.printuncs      = config_parser.getboolean('config','printuncertainties')
         self.has_data       = config_parser.getboolean('config','havedata')
         self.saveoverwrites = config_parser.getboolean('config','saveoverwrites')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
@@ -416,7 +415,7 @@ class DatacardConfig:
                                 self.uncertainties[sampuncname] = Uncertainty(sampuncname,type)
                                 self.uncnames.append(sampuncname)
         self.fillUncertaintyValues()
-        if DEBUG_UNCERTAINTIES :
+        if self.printuncs :
             # printout for debugging
             print 'printing uncertanties by bin: uncName('+'type ::: '+'cr_nevts :: '+'vals) [-1 means it will be calculated later]'
             for k in sorted(self.uncertainties.keys()):
@@ -450,7 +449,7 @@ class DatacardConfig:
                         binname = binnames[i]
                         uncname = uncnames[i]
                         if not self.uncertainties.has_key(uncname) :
-                            if DEBUG_UNCERTAINTIES :
+                            if self.printuncs :
                                 print 'Didn\'t find uncertainty ',uncname
                             continue
                         if len(uncname) > self.colwidth :
