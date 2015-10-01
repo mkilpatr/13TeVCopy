@@ -11,8 +11,6 @@ from math import sqrt
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2(True)
 
-DEBUG_UNCERTAINTIES = False
-
 def main():
     # to get the config file
     configFile = 'dc_0l_setup.conf'
@@ -49,6 +47,7 @@ class DatacardConfig:
         self.binmapfile     = config_parser.get('config','crtosr_bin_map')
         self.basesel        = config_parser.get('config','basesel')
         self.usedummyuncs   = config_parser.getboolean('config','dummyuncertainties')
+        self.printuncs      = config_parser.getboolean('config','printuncertainties')
         self.has_data       = config_parser.getboolean('config','havedata')
         self.saveoverwrites = config_parser.getboolean('config','saveoverwrites')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
@@ -128,7 +127,8 @@ class DatacardConfig:
                 os.rename(self.datacarddir,self.datacarddir+moveStr) 
                 os.makedirs(self.datacarddir)
             else :
-                print 'will be overwritten'
+                print 'will be overwritten' 
+                os.popen('rm -rf '+self.datacarddir+'/*')
         else :
             os.makedirs(self.datacarddir)
         copy(self.conf_file,self.datacarddir)
@@ -184,7 +184,7 @@ class DatacardConfig:
                     background = background.split('_')[0]
                 lineProcess1 += background.ljust(self.yieldwidth)
                 lineProcess2 += str(ibkg+1).ljust(self.yieldwidth)
-                nevts = self.getNumEvents(bkgFile,bins)
+                nevts = self.getNumEvents(bkgFile, bins, False, fitregion.selection)
                 nBkgEvts.append(nevts)
                 lineRate     += str(nevts).ljust(self.yieldwidth)
 
@@ -246,7 +246,7 @@ class DatacardConfig:
             # now loop through the signal files to get the actual datacards
             for signal in self.signals:
                 sigFile = os.path.join( self.treebase, signal+self.filesuffix )
-                nSig    = self.getNumEvents(sigFile,bins)
+                nSig    = self.getNumEvents(sigFile, bins, False, fitregion.selection)
 
                 # put signal numbers into the placeholders in the template datacard
                 fdatacard = open(templateFile,'r')
@@ -415,7 +415,7 @@ class DatacardConfig:
                                 self.uncertainties[sampuncname] = Uncertainty(sampuncname,type)
                                 self.uncnames.append(sampuncname)
         self.fillUncertaintyValues()
-        if DEBUG_UNCERTAINTIES :
+        if self.printuncs :
             # printout for debugging
             print 'printing uncertanties by bin: uncName('+'type ::: '+'cr_nevts :: '+'vals) [-1 means it will be calculated later]'
             for k in sorted(self.uncertainties.keys()):
@@ -449,7 +449,7 @@ class DatacardConfig:
                         binname = binnames[i]
                         uncname = uncnames[i]
                         if not self.uncertainties.has_key(uncname) :
-                            if DEBUG_UNCERTAINTIES :
+                            if self.printuncs :
                                 print 'Didn\'t find uncertainty ',uncname
                             continue
                         if len(uncname) > self.colwidth :
