@@ -9,6 +9,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
+#include "AnalysisTools/JSONSpirit/src/json_spirit.h"
 
 using namespace cfgSet;
 
@@ -53,6 +54,52 @@ void JSONProcessing::addJSONFile(const TString jsonfile)
       }
     }
   }
+
+}
+
+void JSONProcessing::fillRunLumiSet(const RunLumiSet &rlset)
+{
+
+  runlumimap.clear();
+  unsigned int firstlumi = 0;
+
+  for (RunLumiSet::const_iterator it = rlset.begin(); it!=rlset.end(); ++it) {
+    if (firstlumi==0) firstlumi = it->second;
+    RunLumiMap::mapped_type &lumiPairList = runlumimap[it->first];
+    RunLumiSet::const_iterator itnext = it;
+    ++itnext;
+    if ( itnext==rlset.end() || itnext->first!=it->first || itnext->second!=(it->second+1) ) {
+      lumiPairList.push_back(RunLumiPair(firstlumi,it->second));
+      firstlumi = 0;
+    }
+  }
+
+}
+
+void JSONProcessing::dumpJSONFile(const TString filepath)
+{
+
+  fillRunLumiSet(runLumiSet());
+
+  json_spirit::Object jsonTree;
+
+  for (RunLumiMap::const_iterator it = runlumimap.begin(); it!=runlumimap.end(); ++it) {
+    unsigned int runnum  = it->first;
+    json_spirit::Array lumiPairListArray;
+    const RunLumiMap::mapped_type &lumiPairList = it->second;
+    for (RunLumiMap::mapped_type::const_iterator jt = lumiPairList.begin(); jt<lumiPairList.end(); ++jt) {
+      json_spirit::Array lumiPairArray;
+      lumiPairArray.push_back(int(jt->first));
+      lumiPairArray.push_back(int(jt->second));
+
+      lumiPairListArray.push_back(lumiPairArray);
+    }
+    json_spirit::Pair runPair(boost::lexical_cast<std::string>(runnum), lumiPairListArray);
+    jsonTree.push_back(runPair);
+  }
+
+  std::ofstream os(filepath.Data());
+  json_spirit::write(jsonTree,os);
 
 }
 

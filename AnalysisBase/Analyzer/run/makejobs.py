@@ -39,6 +39,7 @@ parser.add_argument("-t", "--submittype", dest="submittype", default="condor", c
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
 parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
+parser.add_argument("-e", "--redir", dest="redir", default="", help="Url of redirector to be added to file names. [Default: None (will be determined by xrootd config)]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -80,15 +81,15 @@ if args.postprocess :
     prefix = ""
     for isam in range(len(samples)) :
         filelist = []
-        if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
-            if args.outdir.startswith("/eos/uscms/store/user") :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         files.append(filelist)
         nposevents = get_num_events(filelist,prefix)
@@ -265,7 +266,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
     for isam in range(len(samples)) :
 
  	if args.arrangement == "das" :
-		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
+		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.redir,args.jobdir,samples[isam]))
 	elif args.arrangement == "local" and args.splittype == "file" :
 		cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
 	else :

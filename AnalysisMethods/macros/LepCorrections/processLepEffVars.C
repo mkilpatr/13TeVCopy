@@ -6,7 +6,7 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisMethods/PlotUtils/interface/EffPlotTools.hh"
 

@@ -3,7 +3,7 @@
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -103,7 +103,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   if(options_ & SAVETOPASSOC) {
     iGenAssocPrtIndex_ = data.addMulti<size16>(branchName_,"prtassoc_partonIndex",0);
     iGenAssocJetIndex_ = data.addMulti<size16>(branchName_,"prtassoc_jetIndex",0);
-    iGenAssocCont_     = data.addMulti<TopJetMatching::conType>(branchName_,"prtassoc_jetCont",0);
+    iGenAssocCont_     = data.addMulti<PartonMatching::conType>(branchName_,"prtassoc_jetCont",0);
   }
 }
 //--------------------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void JetFiller<Jet>::fill()
           //make sure that it is above our min pT threshold
           if(genJets[ja.first].pt() < jptCompleteMin_) continue;
 
-          TopJetMatching::conType con = TopJetMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
+          PartonMatching::conType con = PartonMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
           //if the containment is less than 1% leave it off the list
           if(con == 0) continue;
           if(firstJet){
@@ -221,7 +221,7 @@ void JetFiller<Jet>::fill()
             firstJet = false;
           }
           data.fillMulti<size16>(iGenAssocJetIndex_,convertTo<size16>(ja.first,"JetFiller::prtassoc_jetIndex"));
-          data.fillMulti<TopJetMatching::conType>(iGenAssocCont_,con);
+          data.fillMulti<PartonMatching::conType>(iGenAssocCont_,con);
         }
       }
     }

@@ -9,6 +9,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "TRegexp.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -18,6 +19,16 @@ public:
   Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0) {};
 
   virtual ~Copier() {};
+
+  // temporary because I was stupid and gave two branches the same name
+  void setupTree() {
+    reader.getTree()->SetBranchStatus("*",1);
+    reader.getTree()->SetBranchStatus("ele_mvanontrigmediumid",0);
+    reader.getTree()->SetBranchStatus("ele_mvanontrigtightid",0);
+    outFile_ = new TFile(outFileName_,"RECREATE");
+    outFile_->cd();
+    treeWriter_ = new TreeWriter(reader.getTree()->CloneTree(0));
+  }
 
   void loadVariables() {
     load(cfgSet::EVTINFO);
@@ -92,7 +103,9 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
     TString recostr = outName;
     recostr.ReplaceAll("_ntuple_"+outPostfix+".root","");
     recostr.Remove(0, recostr.First('-')+1);
-    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP] != "invalid"; ++iP) {if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);}
+    TRegexp ext("_[0-9]+");
+    if (recostr.Index(ext) != TString::kNPOS) recostr.Remove(recostr.Index(ext));
+    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP] != "invalid"; ++iP) if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);
     if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
   }
 

@@ -7,7 +7,7 @@
 #include "TCanvas.h"
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
@@ -20,7 +20,6 @@
 using namespace std;
 using namespace ucsbsusy;
 using namespace CORRAL;
-using TopJetMatching::TopDecayEvent;
 
 
 class Analyze : public BaseTreeAnalyzer{
@@ -45,7 +44,7 @@ public:
 
   void plotJets(JetReader * jetReader, TString prefix){
     std::vector<RecoJetF*> recoJets;
-    std::vector<TopDecayEvent::DecayID> decays;
+    std::vector<PartonMatching::DecayID> decays;
 
     if(!setup(&genParticleReader,jetReader, recoJets,decays)) return;
     vector<int> types;
