@@ -29,6 +29,7 @@ public :
   // Functions to facilitate momentum operations
   Float_t   pt()      const { return fMom.Pt();       }
   Float_t   eta()     const { return fMom.Eta();      }
+  Float_t   absEta()  const { return TMath::Abs(fMom.Eta());}
   Float_t   phi()     const { return fMom.Phi();      }
   Float_t   mass()    const { return fMom.M();        }
   Float_t   E()       const { return fMom.E();        }
