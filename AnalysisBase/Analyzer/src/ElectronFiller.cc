@@ -53,8 +53,8 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
   imvanontrigmediumid_ = data.addMulti<bool >(branchName_,"mvanontrigmediumid",false);
   imvanontrigtightid_  = data.addMulti<bool >(branchName_,"mvanontrigtightid",false);
-  imvatrigmediumid_    = data.addMulti<bool >(branchName_,"mvanontrigmediumid",false);
-  imvatrigtightid_     = data.addMulti<bool >(branchName_,"mvanontrigtightid",false);
+  imvatrigmediumid_    = data.addMulti<bool >(branchName_,"mvatrigmediumid",false);
+  imvatrigtightid_     = data.addMulti<bool >(branchName_,"mvatrigtightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
   iannulus_    = data.addMulti<float>(branchName_,"annulus",0);
