@@ -82,13 +82,13 @@ if args.postprocess :
     for isam in range(len(samples)) :
         filelist = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
-            cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
+            cmd = ("%s find -f %s | egrep '%s(-ext|)(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         files.append(filelist)
@@ -319,7 +319,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             output = ps.communicate()[0][0]
             if int(output) > 0 :
-                print "Output file output_%s_%d%s.root exists already! Skipping ..." % (samples[isam],ijob,suffix)
+                print "Output file output_%d_%s%s.root exists already! Skipping ..." % (ijob,samples[isam],suffix)
                 continue
 
             if args.submittype == "interactive" :
