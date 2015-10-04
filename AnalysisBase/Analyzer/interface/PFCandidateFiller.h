@@ -41,8 +41,9 @@ namespace ucsbsusy {
       void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
 
-      int getContainingJetIndex(const pat::PackedCandidate* pfc);
-      int getHPSTauIndex(const unsigned int pfInd);
+      int   getContainingJetIndex(const pat::PackedCandidate* pfc);
+      int   getHPSTauIndex(const unsigned int pfInd);
+      int   getNearPhotonIndex(const pat::PackedCandidate* pfc);
       float getDRNearestTrack(const pat::PackedCandidate* particle, const float minTrackPt=1.0);
       float computeMT(const pat::PackedCandidate* pfc, const pat::MET* met);
       float computePFIsolation(const pat::PackedCandidate* particle, const float minDR, const float maxDR, const unsigned int isotype=0, const float minNeutralPt=0.5, const float minPUPt=0.5, const float dBeta=0.5);
@@ -80,6 +81,9 @@ namespace ucsbsusy {
       size itotiso0p2_;
       size itotiso0p3_;
       size itotiso0p4_;
+      size inearphopt_;
+      size inearphoeta_;
+      size inearphophi_;
       size inearestTrkDR_;
       size icontJetIndex_;
       size icontJetDR_;

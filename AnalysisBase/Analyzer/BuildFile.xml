@@ -5,6 +5,7 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="AnalysisTools/DataFormats"/>
 <use name="AnalysisTools/JetShapeVariables"/>
+<use name="AnalysisTools/IsolationVariables"/>
 <use name="AnalysisTools/Utilities"/>
 <use name="AnalysisTools/ObjectSelection"/>
 <use name="DataFormats/Math"/>
