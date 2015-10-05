@@ -27,7 +27,6 @@ namespace ucsbsusy {
                             , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers)
                             , LOADTAUVETOMT   = (1 <<  3)   ///< Tau veto based on mT preselection
                             , LOADTAUVETODPHI = (1 <<  4)   ///< Tau veto based on dphi preselection
-                            , LOADPHYS14      = (1 <<  5)   ///< PHYS15 tau veto training
     };
     static const int defaultOptions;
 
