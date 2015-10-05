@@ -46,8 +46,12 @@ EventInfoReader::EventInfoReader()
   metfilterbitflags = new vector<unsigned long>;
   metfilterbitpass = new vector<bool>;
   hbheHNFlt  = new vector<bool>;
+  hbheHNFltR2Loose  = new vector<bool>;
+  hbheHNFltR2Tight  = new vector<bool>;
   hbheFixFlt = false;
   hbheFlt    = false;
+  hbheFltR2Loose = false;
+  hbheFltR2Tight = false;
   cscFlt     = false;
   eeBadSCFlt = false;
 
@@ -84,6 +88,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_flag", &metfilterbitflags);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterFix", &hbheHNFlt);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Loose", &hbheHNFltR2Loose);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Tight", &hbheHNFltR2Tight);
 
   clog << endl;
 }
@@ -102,9 +108,15 @@ void EventInfoReader::refresh()
   eeBadSCFlt = false;
   hbheFlt    = false;
   hbheFixFlt = false;
+  hbheFltR2Loose = false;
+  hbheFltR2Tight = false;
 
   if (hbheHNFlt->size()>0)
     hbheFixFlt = hbheHNFlt->at(0); 
+  if (hbheHNFltR2Loose->size()>0)
+    hbheFltR2Loose = hbheHNFltR2Loose->at(0); 
+  if (hbheHNFltR2Tight->size()>0)
+    hbheFltR2Tight = hbheHNFltR2Tight->at(0); 
   for (unsigned int i = 0; i < metfilterbitflags->size(); ++i) {
 
     if (i==2)  { cscFlt     = metfilterbitpass->at(i); }

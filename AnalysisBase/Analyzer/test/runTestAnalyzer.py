@@ -22,7 +22,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
+options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/0066F143-F8FD-E411-9A0B-D4AE526A0D2E.root'
+#options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/00000/06B5178E-F008-E511-A2CF-00261894390B.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/10000/009D49A5-7314-E511-84EF-0025905A605E.root'
 #options.inputFiles = '/store/data/Run2015B/BTagCSV/MINIAOD/17Jul2015-v1/40000/C88E0BCD-972E-E511-B231-0025905B85F6.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/022B08C4-C702-E511-9995-D4856459AC30.root'
@@ -31,6 +32,7 @@ options.inputFiles = '/store/mc/RunIISpring15DR74/TTJets_TuneCUETP8M1_13TeV-madg
 #options.inputFiles = '/store/mc/RunIISpring15DR74/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/906D9FB3-4906-E511-9C81-0025905A6056.root'
 #options.inputFiles = '/store/mc/RunIISpring15DR74/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/028A8588-3A03-E511-B296-0025905B858A.root'
 #options.inputFiles = '/store/data/Run2015B/MET/MINIAOD/PromptReco-v1/000/251/244/00000/5E425D83-6B27-E511-98E0-02163E01345F.root'
+#options.inputFiles = '/store/data/Run2015C/HTMHT/MINIAOD/PromptReco-v1/000/253/620/00000/1E9DB47F-1640-E511-B7EB-02163E014450.root'
 
 options.maxEvents = -1
 
@@ -66,12 +68,16 @@ if 'madgraph' in options.inputFiles[0] or 'powheg' in options.inputFiles[0] or '
 else : 
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
+# global Tag for 50ns MC
+if '50ns' in options.inputFiles[0] :
+    process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_startup_v2')
+
 ISDATA = False
 
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v1')
+    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_v2')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -99,15 +105,20 @@ process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 
 process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
+process.load("AnalysisTools.ObjectSelection.ElectronMVAValueMapProducer_cfi")
 
 # Overwrite collection name
 process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
 
 from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
-process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
+process.egmGsfElectronIDSequence = cms.Sequence(process.electronMVAValueMapProducer * process.egmGsfElectronIDs)
 
 # Define which IDs we want to produce
-my_id_modules = ['AnalysisTools.ObjectSelection.cutBasedElectronID_PHYS14_PU20bx25_V2_cff']
+my_id_modules = ['AnalysisTools.ObjectSelection.cutBasedElectronID_Spring15_25ns_V1_cff',
+                 'AnalysisTools.ObjectSelection.cutBasedElectronID_Spring15_50ns_V2_cff',
+                 'AnalysisTools.ObjectSelection.mvaElectronID_Spring15_25ns_nonTrig_V1_cff',
+                 'AnalysisTools.ObjectSelection.mvaElectronID_Spring15_25ns_Trig_V1_cff']
+
 
 # Add them to the VID producer
 if process.TestAnalyzer.Electrons.isFilled:
@@ -115,10 +126,18 @@ if process.TestAnalyzer.Electrons.isFilled:
         setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
 # Set ID tags
-process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto")
-process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-loose")
-process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-medium")
-process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight")
+process.TestAnalyzer.Electrons.vetoId   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
+process.TestAnalyzer.Electrons.looseId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
+process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
+process.TestAnalyzer.Electrons.tightId  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+process.TestAnalyzer.Electrons.mvanontrigwp90Id        = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp90")
+process.TestAnalyzer.Electrons.mvanontrigwp80Id        = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp80")
+process.TestAnalyzer.Electrons.mvanontrigValuesMap     = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15NonTrigv225nsV1Values")
+process.TestAnalyzer.Electrons.mvanontrigCategoriesMap = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15NonTrigv225nsV1Categories")
+process.TestAnalyzer.Electrons.mvatrigwp90Id        = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-Trig-V1-wp90")
+process.TestAnalyzer.Electrons.mvatrigwp80Id        = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-Trig-V1-wp80")
+process.TestAnalyzer.Electrons.mvatrigValuesMap     = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values")
+process.TestAnalyzer.Electrons.mvatrigCategoriesMap = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Categories")
 
 #==============================================================================================================================#
 # Photon ID, following prescription in
@@ -136,7 +155,7 @@ process.load('RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi')
 process.egmPhotonIDSequence = cms.Sequence(process.photonIDValueMapProducer * process.egmPhotonIDs)
 
 # Define which IDs we want to produce
-my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_50ns_V1_cff']
 
 # Add them to the VID producer
 if process.TestAnalyzer.Photons.isFilled:
@@ -144,10 +163,10 @@ if process.TestAnalyzer.Photons.isFilled:
         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 # Set ID tags
-process.TestAnalyzer.Photons.vetoId     = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-veto")
-process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-loose")
-process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-medium")
-process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight")
+#process.TestAnalyzer.Photons.vetoId     = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-veto")
+process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-loose")
+process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-medium")
+process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-tight")
 
 
 #==============================================================================================================================#
@@ -158,6 +177,12 @@ process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
 process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
    inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
    reverseDecision = cms.bool(False)
+)
+process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFilter.clone(
+   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Loose'),
+)
+process.ApplyBaselineHBHENoiseFilterRun2Tight = process.ApplyBaselineHBHENoiseFilter.clone(
+   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Tight'),
 )
 # ================================ end of HCAL NOISE FILTER =====================
 
@@ -178,9 +203,9 @@ if ISDATA :
 # Custom METs
 # Configurable options =======================================================================
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=True   #use external JECs (sqlite file)
+usePrivateSQlite=False  #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
-applyResiduals=False    #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
+applyResiduals=True     #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 
 # For adding NoHF MET
 if not useHFCandidates:
@@ -217,13 +242,16 @@ from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMet
 
 # Default configuration for miniAOD reprocessing, change the isData flag to run on data
 # For a full met computation, remove the pfCandColl input
+JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
 runMetCorAndUncFromMiniAOD(process,
                            isData=runOnData,
+                           jecUncFile=JECUNCFILE
                            )
 
 if not useHFCandidates:
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
+                               jecUncFile=JECUNCFILE,
                                pfCandColl=cms.InputTag("noHFCands"),
                                postfix="NoHF"
                                )
@@ -257,6 +285,8 @@ if updateJECs:
                   'L2Relative', 
                   'L3Absolute'],
         payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
+    if ISDATA and applyResiduals:
+        process.patJetCorrFactorsReapplyJEC.levels = ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']
 
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
     process.patJetsReapplyJEC = patJetsUpdated.clone(

@@ -38,6 +38,8 @@ parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help=
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
+parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
+parser.add_argument("-e", "--redir", dest="redir", default="", help="Url of redirector to be added to file names. [Default: None (will be determined by xrootd config)]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -79,15 +81,15 @@ if args.postprocess :
     prefix = ""
     for isam in range(len(samples)) :
         filelist = []
-        if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
-            cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
+            cmd = ("%s find -f %s | egrep '%s(-ext|)(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
-            if args.outdir.startswith("/eos/uscms/store/user") :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         files.append(filelist)
         nposevents = get_num_events(filelist,prefix)
@@ -261,18 +263,24 @@ echo "$cfgfile $runscript $workdir $outputdir"
 """.format(
         pathtocfg=args.path,runscript=args.script,stype=args.submittype
         ))
-
     for isam in range(len(samples)) :
-        cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.jobdir,samples[isam]))
+
+ 	if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.redir,args.jobdir,samples[isam]))
+	elif args.arrangement == "local" and args.splittype == "file" :
+		cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+	else :
+		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd,shell=True)
-        cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
-        ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-        numevents=int(ps.communicate()[0])
-        if args.maxevents > -1  and args.maxevents < numevents :
-            numevents = args.maxevents
-        numlines = 0
+        if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
+        	ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+        	numevents=int(ps.communicate()[0])
+        	if args.maxevents > -1  and args.maxevents < numevents :
+            		numevents = args.maxevents
         numperjob = args.numperjob
-        infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
+        numlines = 0
+	infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
         print "Creating jobs for %s" % samples[isam]
         with open(infilename,"r") as infile :
            numlines = len(infile.readlines())
@@ -293,7 +301,10 @@ echo "$cfgfile $runscript $workdir $outputdir"
             end = numperjob*(ijob+1)
             jobfile = "filelist_%s.txt" % (samples[isam])
             skipevts = 0
-            if args.splittype == "file" :
+            if args.splittype == "file" and args.arrangement == "local" :
+                jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
+                os.system("sed -n %d,%dp %s | awk \'{print \"root://cmseos:1094/\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
+ 	    elif args.splittype == "file" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
                 os.system("sed -n %d,%dp %s > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
             elif args.splittype == "event" :
@@ -303,12 +314,12 @@ echo "$cfgfile $runscript $workdir $outputdir"
             cmd = ""
             if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
                 cmd = ("%s ls %s | grep -c output_%d_%s%s.root" % (eos,args.outdir,ijob,samples[isam],suffix))
-            else :
+	    else :
                 cmd = "ls %s | grep -c output_%d_%s%s.root" % (args.outdir,ijob,samples[isam],suffix)
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             output = ps.communicate()[0][0]
             if int(output) > 0 :
-                print "Output file output_%s_%d%s.root exists already! Skipping ..." % (samples[isam],ijob,suffix)
+                print "Output file output_%d_%s%s.root exists already! Skipping ..." % (ijob,samples[isam],suffix)
                 continue
 
             if args.submittype == "interactive" :
@@ -328,7 +339,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
 
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
-                jobscript = open("{}/submit_{}_{}.sh".format(args.jobdir,samples[isam],ijob),"w")
+                jobscript = open("{0}/submit_{1}_{2}.sh".format(args.jobdir,samples[isam],ijob),"w")
                 jobscript.write("""
 cat > submit.cmd <<EOF
 universe                = vanilla

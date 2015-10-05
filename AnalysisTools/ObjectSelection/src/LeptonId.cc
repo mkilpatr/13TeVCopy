@@ -212,37 +212,56 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
     return ele->istightelectron();
   }
   else if(WP == MVA) { 
-    if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.8 && ele->pfdbetaiso()/ele->pt()<0.15);
-    else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.85 && ele->pfdbetaiso()/ele->pt()<0.15);
-    else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.25 && ele->pfdbetaiso()/ele->pt()<0.15);
-    else return false;
+    if(ele->pt() > 10) {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.967083 && ele->miniiso()<0.1);
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.929117 && ele->miniiso()<0.1);
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.726311 && ele->miniiso()<0.1);
+      else return false;
+    } else {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.287435 && ele->miniiso()<0.1);
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.221846 && ele->miniiso()<0.1);
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>-0.303263 && ele->miniiso()<0.1);
+      else return false;
+    }
   }
   else if(WP == MVAVeto){
-    if(fabs(ele->eta())<0.8 && ele->pt()>10) return (ele->mvaidnontrig()>0.7 && ele->mvaiso()>0);
-    else if(fabs(ele->eta())<0.8 && ele->pt()<10) return (ele->mvaidnontrig()>-0.4 && ele->mvaiso()>-0.95);
-    else if(fabs(ele->eta())<1.479 && ele->pt()>10) return (ele->mvaidnontrig()>0.45 && ele->mvaiso()>0);
-    else if(fabs(ele->eta())<1.479 && ele->pt()<10) return (ele->mvaidnontrig()>-0.45 && ele->mvaiso()>-0.95);
-    else if(fabs(ele->eta())<2.5 && ele->pt()>10) return (ele->mvaidnontrig()>0.0 && ele->mvaiso()>0);
-    else if(fabs(ele->eta())<2.5 && ele->pt()<10) return (ele->mvaidnontrig()>-0.1 && ele->mvaiso()>-0.9);
-    else return false;
+    if(ele->pt() > 10) {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.913286 && ele->miniiso()<0.2);
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.805013 && ele->miniiso()<0.2);
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.358969 && ele->miniiso()<0.2);
+      else return false;
+    } else {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>-0.083313 && ele->miniiso()<0.2);
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>-0.235222 && ele->miniiso()<0.2);
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>-0.67099 && ele->miniiso()<0.2);
+      else return false;
+    }
   }
   else if(WP == MultiIsoVetoL){ 
-    if(fabs(ele->eta())<0.8 && ele->pt()>10)        return (ele->mvaidnontrig()>0.7   && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else if(fabs(ele->eta())<0.8 && ele->pt()<10)   return (ele->mvaidnontrig()>-0.4  && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else if(fabs(ele->eta())<1.479 && ele->pt()>10) return (ele->mvaidnontrig()>0.45  && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else if(fabs(ele->eta())<1.479 && ele->pt()<10) return (ele->mvaidnontrig()>-0.45 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else if(fabs(ele->eta())<2.5 && ele->pt()>10)   return (ele->mvaidnontrig()>0.0   && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else if(fabs(ele->eta())<2.5 && ele->pt()<10)   return (ele->mvaidnontrig()>-0.1  && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6)));
-    else return false;
+    if(ele->pt() > 10) {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.913286 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.805013 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.358969 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else return false;
+    } else {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>-0.083313 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>-0.235222 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>-0.67099 && (ele->miniiso()<0.22 && (ele->ptratio()>0.63 || ele->ptrel()>6.0)));
+      else return false;
+    }
   }
   else if(WP == MultiIsoVetoVL){ 
-    if(fabs(ele->eta())<0.8 && ele->pt()>10)        return (ele->mvaidnontrig()>0.7   && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else if(fabs(ele->eta())<0.8 && ele->pt()<10)   return (ele->mvaidnontrig()>-0.4  && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else if(fabs(ele->eta())<1.479 && ele->pt()>10) return (ele->mvaidnontrig()>0.45  && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else if(fabs(ele->eta())<1.479 && ele->pt()<10) return (ele->mvaidnontrig()>-0.45 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else if(fabs(ele->eta())<2.5 && ele->pt()>10)   return (ele->mvaidnontrig()>0.0   && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else if(fabs(ele->eta())<2.5 && ele->pt()<10)   return (ele->mvaidnontrig()>-0.1  && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
-    else return false;
+    if(ele->pt() > 10) {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>0.913286 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>0.805013 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>0.358969 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else return false;
+    } else {
+      if(fabs(ele->eta())<0.8) return (ele->mvaidnontrig()>-0.083313 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else if(fabs(ele->eta())<1.479) return (ele->mvaidnontrig()>-0.235222 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>-0.67099 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
+      else return false;
+    }
   }
   else {
     printf("Electron ID working point not defined!\n");

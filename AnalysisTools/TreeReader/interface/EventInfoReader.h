@@ -56,9 +56,13 @@ namespace ucsbsusy {
       std::vector<unsigned long> * metfilterbitflags;
       std::vector<bool>          * metfilterbitpass;
       std::vector<bool>          * hbheHNFlt;
+      std::vector<bool>          * hbheHNFltR2Loose;
+      std::vector<bool>          * hbheHNFltR2Tight;
 
       bool hbheFixFlt;
       bool hbheFlt;
+      bool hbheFltR2Loose;
+      bool hbheFltR2Tight;
       bool cscFlt;
       bool eeBadSCFlt;
 

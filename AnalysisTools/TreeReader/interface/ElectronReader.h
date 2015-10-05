@@ -46,7 +46,6 @@ namespace ucsbsusy {
       std::vector<float> *	dz;
       std::vector<float> *	sip3d;
       std::vector<float> *	pfdbetaiso;
-      std::vector<float> *	mvaiso;
       std::vector<float> *	mvaidnontrig;
       std::vector<float> *	mvaidtrig;
       std::vector<bool>  *	isveto;
@@ -58,6 +57,7 @@ namespace ucsbsusy {
       std::vector<float> *      miniiso;
       std::vector<float> *      ptrel;
       std::vector<float> *      ptratio;
+      std::vector<float> *      annulus;
 
       ElectronFCollection electrons;
 

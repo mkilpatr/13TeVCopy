@@ -59,7 +59,7 @@ namespace ucsbsusy {
     // Input from the config file
     edm::EDGetTokenT<pat::PhotonCollection> photonToken_;
     // For cut-based ID decisions
-    edm::EDGetTokenT<edm::ValueMap<bool> >  vetoIdToken_;
+    //edm::EDGetTokenT<edm::ValueMap<bool> >  vetoIdToken_;
     edm::EDGetTokenT<edm::ValueMap<bool> >  looseIdToken_;
     edm::EDGetTokenT<edm::ValueMap<bool> >  mediumIdToken_;
     edm::EDGetTokenT<edm::ValueMap<bool> >  tightIdToken_;
@@ -86,7 +86,7 @@ namespace ucsbsusy {
     size imass_;
     size ir9_;
     // Id flags: cut-based electron ID flags
-    size ivetoid_;
+    //size ivetoid_;
     size ilooseid_;
     size imediumid_;
     size itightid_;
@@ -95,6 +95,7 @@ namespace ucsbsusy {
     // ID variables
     size isigietaieta_;
     size ipassElectronVeto_;
+    size ihasPixelSeed_;
     // used in POG photon ID:
     size ifull5x5sigietaieta_;
     size ihOverE_;
@@ -122,7 +123,7 @@ namespace ucsbsusy {
   public :
     // Data members
     edm::Handle<pat::PhotonCollection>  photons_;
-    edm::Handle<edm::ValueMap<bool> >   veto_id_decisions_;
+    //edm::Handle<edm::ValueMap<bool> >   veto_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   medium_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   tight_id_decisions_;
     edm::Handle<edm::ValueMap<bool> >   loose_id_decisions_;
