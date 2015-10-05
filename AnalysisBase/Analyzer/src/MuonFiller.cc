@@ -40,7 +40,6 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
   iisglobal_     = data.addMulti<bool >(branchName_,"isGlobal",false);
   iistracker_    = data.addMulti<bool >(branchName_,"isTracker",false);
   iisstandalone_ = data.addMulti<bool >(branchName_,"isStandAlone",false);
-  iMVAiso_       = data.addMulti<float>(branchName_,"MVAiso",0);
   iminiiso_      = data.addMulti<float>(branchName_,"miniiso",0);
   iannulus_      = data.addMulti<float>(branchName_,"annulus",0);
   iptrel_        = data.addMulti<float>(branchName_,"ptrel",0);

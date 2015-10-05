@@ -127,12 +127,20 @@ void PhotonFiller::fill()
 
     if(pho->r9()>0.8 || pho->chargedHadronIso()<20 || pho->chargedHadronIso()<(pho->pt()*0.3 )){
       passminiaodpresel=true;
-      PFIsolation_struct FPR_out = remover.PFIsolation(pho->superCluster(),  VtxPtr);
-      photonIsoFPRRandomConeChargedVtx0 = FPR_out.chargediso_primvtx_rcone; 
-      photonIsoFPRRandomConeNeutral = FPR_out.neutraliso_rcone; 
-      photonIsoFPRRandomConePhoton  = FPR_out.photoniso_rcone; 
-      photonIsoFPRRandomConeEta     = FPR_out.eta_rcone;
-      photonIsoFPRRandomConePhi     = FPR_out.phi_rcone; // if RC is not ok, everything is 999
+      int numberOfClusters =  pho->superCluster()->clusters().size();
+      bool missing_clusters = false;
+      if( numberOfClusters > 0 ) missing_clusters = !pho->superCluster()->clusters()[numberOfClusters-1].isAvailable();
+      int numberOfPSClusters =  pho->superCluster()->preshowerClusters().size();
+      bool missing_PSclusters = false;
+      if( numberOfPSClusters > 0 ) missing_PSclusters = !pho->superCluster()->preshowerClusters()[numberOfPSClusters-1].isAvailable();
+      if( !missing_clusters && !missing_PSclusters ) {
+        PFIsolation_struct FPR_out = remover.PFIsolation(pho->superCluster(),  VtxPtr);
+        photonIsoFPRRandomConeChargedVtx0 = FPR_out.chargediso_primvtx_rcone; 
+        photonIsoFPRRandomConeNeutral = FPR_out.neutraliso_rcone; 
+        photonIsoFPRRandomConePhoton  = FPR_out.photoniso_rcone; 
+        photonIsoFPRRandomConeEta     = FPR_out.eta_rcone;
+        photonIsoFPRRandomConePhi     = FPR_out.phi_rcone; // if RC is not ok, everything is 999
+      }
     }
     data.fillMulti<float>(ipt_, pho->pt());
     data.fillMulti<float>(ieta_, pho->eta());

@@ -21,9 +21,9 @@ namespace defaults {
 
   const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
 
-  enum DataReco {PROMPT_50NS, JUL17_2015_50NS, MC, PROMPT_25NS_2015C};
+  enum DataReco {MC, PROMPT_50NS, JUL17_2015_50NS, PROMPT_25NS_2015C, PROMPT_25NS_2015D};
 
-  const std::string DATA_RECO_NAMES[] = {"2015b-pr","2015b-17jul15","","2015c-pr","invalid"};
+  const std::string DATA_RECO_NAMES[] = {"","2015b-pr","2015b-17jul15","2015c-pr","2015d-pr","invalid"};
 
   const std::string BRANCH_PUPPIJETS  = "ak4puppi";
   const std::string BRANCH_CA8JETS    = "ca8";
