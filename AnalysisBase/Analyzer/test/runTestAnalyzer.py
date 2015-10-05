@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process('run')
 
 process.options = cms.untracked.PSet( 
-    allowUnscheduled = cms.untracked.bool(False),
+    allowUnscheduled = cms.untracked.bool(True),
     wantSummary = cms.untracked.bool(False) 
 )
 
@@ -194,8 +194,8 @@ if ISDATA :
 # Custom METs
 # Configurable options =======================================================================
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=False  #use external JECs (sqlite file)
-useHFCandidates=True    #create an additionnal NoHF slimmed MET collection if the option is set to false
+usePrivateSQlite=True   #use external JECs (sqlite file)
+useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 
 # For adding NoHF MET
@@ -209,8 +209,8 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era="Summer15_50nsV2_MC"
-    dBFile = os.path.expandvars("$CMSSW_BASE/src/PhysicsTools/PatAlgos/test/"+era+".db")
+    era="Summer15_25nsV5_DATA"
+    dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
                                connect = cms.string( "sqlite_file://"+dBFile ),
                                toGet =  cms.VPSet(
@@ -229,18 +229,24 @@ if usePrivateSQlite:
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Jets are rebuilt from those candidates by the tools, no need to do anything else
-runMetCorrAndUnc = False
+runMetCorrAndUnc = True
 
 if runMetCorrAndUnc :
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
     # Default configuration for miniAOD reprocessing, change the isData flag to run on data
     # For a full met computation, remove the pfCandColl input
-    JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
+    JECUNCFILE = ''
+    if ISDATA :
+        JECUNCFILE = 'data/JEC/Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt'
+    else :
+        JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
                                jecUncFile=JECUNCFILE
                                )
+    getattr(process,"slimmedMETs").t01Variation = cms.InputTag("slimmedMETs","","RECO")
+    process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETs','','run')
 
     if not useHFCandidates:
         runMetCorAndUncFromMiniAOD(process,
@@ -249,6 +255,8 @@ if runMetCorrAndUnc :
                                    pfCandColl=cms.InputTag("noHFCands"),
                                    postfix="NoHF"
                                    )
+        getattr(process,"slimmedMETsNoHF").t01Variation = cms.InputTag("slimmedMETsNoHF","","RECO")
+        process.TestAnalyzer.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF','','run')
 
     # The lines below remove the L2L3 residual corrections when processing data
     if not applyResiduals:
@@ -269,7 +277,7 @@ if runMetCorrAndUnc :
 
 #==============================================================================================================================#
 # Also update jets with different JECs
-updateJECs = False
+updateJECs = True
 
 if updateJECs:
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
