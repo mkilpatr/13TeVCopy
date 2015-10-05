@@ -35,10 +35,11 @@ MuonReader::MuonReader() : BaseReader(){
   isglobal     = new vector<bool>;
   istracker    = new vector<bool>;
   isstandalone = new vector<bool>;
-  ptrel        = new vector<float>;
   miniiso      = new vector<float>;
-  muonId       = new LeptonId();
+  ptrel        = new vector<float>;
   ptratio      = new vector<float>;
+  annulus      = new vector<float>;
+  muonId       = new LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -56,23 +57,22 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"eta"         , &eta         , true);
     treeReader->setBranchAddress(branchName ,"phi"         , &phi         , true);
     treeReader->setBranchAddress(branchName ,"mass"        , &mass        , true);
-    treeReader->setBranchAddress(branchName ,"q", &q                      , true);
-    treeReader->setBranchAddress(branchName ,"d0", &d0                    , true);
-    treeReader->setBranchAddress(branchName ,"dz", &dz                    , true);
-    treeReader->setBranchAddress(branchName ,"sip3d", &sip3d              , true);
-    treeReader->setBranchAddress(branchName ,"pfdbetaiso", &pfdbetaiso    , true);
-    treeReader->setBranchAddress(branchName ,"MVAiso", &mvaiso            , true);
-    treeReader->setBranchAddress(branchName ,"isLoose", &isloose          , true);
-    treeReader->setBranchAddress(branchName ,"isMedium", &ismedium        , true);
-    treeReader->setBranchAddress(branchName ,"isTight", &istight          , true);
-    treeReader->setBranchAddress(branchName ,"isPF", &ispf                , true);
-    treeReader->setBranchAddress(branchName ,"isGlobal", &isglobal        , true);
-    treeReader->setBranchAddress(branchName ,"isTracker", &istracker      , true);
+    treeReader->setBranchAddress(branchName ,"q"           , &q           , true);
+    treeReader->setBranchAddress(branchName ,"d0"          , &d0          , true);
+    treeReader->setBranchAddress(branchName ,"dz"          , &dz          , true);
+    treeReader->setBranchAddress(branchName ,"sip3d"       , &sip3d       , true);
+    treeReader->setBranchAddress(branchName ,"pfdbetaiso"  , &pfdbetaiso  , true);
+    treeReader->setBranchAddress(branchName ,"isLoose"     , &isloose     , true);
+    treeReader->setBranchAddress(branchName ,"isMedium"    , &ismedium    , true);
+    treeReader->setBranchAddress(branchName ,"isTight"     , &istight     , true);
+    treeReader->setBranchAddress(branchName ,"isPF"        , &ispf        , true);
+    treeReader->setBranchAddress(branchName ,"isGlobal"    , &isglobal    , true);
+    treeReader->setBranchAddress(branchName ,"isTracker"   , &istracker   , true);
     treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
-    treeReader->setBranchAddress(branchName ,"miniiso", &miniiso          , true);
-    treeReader->setBranchAddress(branchName ,"ptrel", &ptrel              , true);
-    treeReader->setBranchAddress(branchName ,"ptratio", &ptratio          , true);
-
+    treeReader->setBranchAddress(branchName ,"miniiso"     , &miniiso     , true);
+    treeReader->setBranchAddress(branchName ,"ptrel"       , &ptrel       , true);
+    treeReader->setBranchAddress(branchName ,"ptratio"     , &ptratio     , true);
+    treeReader->setBranchAddress(branchName ,"annulus"     , &annulus     , true);
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";
@@ -93,7 +93,6 @@ void MuonReader::refresh(){
       muons.back().setDz(dz->at(iL));
       muons.back().setSip3d(sip3d->at(iL));
       muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
-      muons.back().setMVAIso(mvaiso->at(iL));
       muons.back().setIsLoose(isloose->at(iL));
       muons.back().setIsMedium(ismedium->at(iL));
       muons.back().setIsTight(istight->at(iL));
@@ -101,14 +100,12 @@ void MuonReader::refresh(){
       muons.back().setIsGlobal(isglobal->at(iL));
       muons.back().setIsTracker(istracker->at(iL));
       muons.back().setIsStandalone(isstandalone->at(iL));
-      muons.back().setPtRel(ptrel->at(iL));
       muons.back().setMiniIso(miniiso->at(iL));
+      muons.back().setPtRel(ptrel->at(iL));
+      muons.back().setPtRatio(ptratio->at(iL));
+      muons.back().setAnnulusActivity(annulus->at(iL));
       muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
       muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
-      muons.back().setIsMVAVetoMuon(muonId->passMuonId((&muons.back()), muonId->MVAVeto));
-      muons.back().setPtRel(ptrel->at(iL));
-      muons.back().setMiniIso(miniiso->at(iL));
-      muons.back().setPtRatio(ptratio->at(iL));
       muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
       muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
     }
