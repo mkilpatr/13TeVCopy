@@ -70,6 +70,8 @@ struct TreeFiller {
   size i_passeebadscflt;
   size i_passhbheflt;
   size i_passhbhefixflt;
+  size i_passhbhefltloose;
+  size i_passhbheflttight;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -222,6 +224,8 @@ struct TreeFiller {
     i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
     i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
     i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
+    i_passhbhefltloose    = data->add<bool>("","passhbhefltloose","O",0);
+    i_passhbheflttight    = data->add<bool>("","passhbheflttight","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -466,6 +470,8 @@ struct TreeFiller {
     data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
     data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
     data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
+    data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
+    data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
 
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
     if(isMC) {

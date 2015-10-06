@@ -42,6 +42,8 @@ bool cfgSet::isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::Lep
 }
 
 bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf       ){
+  if (conf.usePixelSeedVeto && pho.hasPixelSeed())         return false;
+  if (conf.useElectronVeto  && (!pho.passElectronVeto()) ) return false;
   return (pho.pt() > conf.minPt && fabs(pho.eta()) < conf.maxEta && (pho.*conf.selected)());
 }
 
