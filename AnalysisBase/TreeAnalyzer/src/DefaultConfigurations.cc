@@ -135,6 +135,8 @@ void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.minPt    = 180;
   zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
+  zl_sel_photons.usePixelSeedVeto = true;
+  zl_sel_photons.useElectronVeto  = false;
   zl_sel_photons.setConfig();
 }
 
