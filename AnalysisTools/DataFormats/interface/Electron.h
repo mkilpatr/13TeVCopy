@@ -23,7 +23,7 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false), ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
+      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isvetoid_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false), isgoodpogelectron_(false), ismvavetoelectron_(false), ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false), ismt2vetoelectron_(false) {}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -32,16 +32,17 @@ namespace ucsbsusy {
   	        float inMiniiso=0, float inPtrel = 0, float inPtratio = 0,
 		float inSCEta = 0, float inR9 = 0, 
 		float inMvaidnontrig = 0, float inMvaidtrig = 0,
-		bool inIsveto = false, bool inIsloose = false,
+		bool inIsvetoid = false, bool inIsloose = false,
 		bool inIsmedium = false, bool inIstight = false) : 
 		Lepton<InputCoordSystem>(inMomentum, inIndex, inPdgid,
 					 inCharge, inD0, inDz, inPfdbetaiso, inMvaiso, inMiniiso, inPtrel, inPtratio),
 		scEta_(inSCEta), r9_(inR9),
 		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
-		isveto_(inIsveto), isloose_(inIsloose),
+		isvetoid_(inIsvetoid), isloose_(inIsloose),
 		ismedium_(inIsmedium), istight_(inIstight),
 		isgoodpogelectron_(false), ismvavetoelectron_(false), 
-   	  ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false) {}
+    ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false),
+    ismt2vetoelectron_(false)  {}
 
       ~Electron() {}
 
@@ -49,7 +50,7 @@ namespace ucsbsusy {
       float	r9() 			   const { return r9_;		}
       float	mvaidnontrig() 		   const { return mvaidnontrig_;	}
       float	mvaidtrig() 		   const { return mvaidtrig_;	}
-      bool	isvetoelectron() 	   const { return isveto_;	}
+      bool  isvetoidelectron()   const { return isvetoid_; }
       bool	islooseelectron() 	   const { return isloose_;	}
       bool	ismediumelectron() 	   const { return ismedium_;	}
       bool	istightelectron() 	   const { return istight_;	}
@@ -57,6 +58,7 @@ namespace ucsbsusy {
       bool	ismvavetoelectron() 	   const { return ismvavetoelectron_;	}
       bool	ismultiisovetoelectronl()  const { return ismultiisovetoelectronl_;	}
       bool	ismultiisovetoelectronvl() const { return ismultiisovetoelectronvl_; }
+      bool  ismt2vetoelectron()        const { return ismt2vetoelectron_; }
       bool      ismediumid()               const { return ismediumid_;     }
       bool      islooseid()                const { return islooseid_;     }
 
@@ -65,7 +67,7 @@ namespace ucsbsusy {
       void	setR9(float newR9)		{ r9_ = newR9;		}
       void	setMVAIDNonTrig(float newID)	{ mvaidnontrig_ = newID;}
       void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
-      void	setIsVeto(bool newType)		{ isveto_ = newType;	}
+      void  setIsVetoId(bool newType) { isvetoid_ = newType; }
       void	setIsLoose(bool newType)	{ isloose_ = newType;	}
       void	setIsMediumId(bool newType)	{ ismediumid_ = newType;	}
       void      setIsLooseId(bool newType)     { islooseid_ = newType;        }
@@ -75,13 +77,14 @@ namespace ucsbsusy {
       void	setIsMVAVetoElectron(bool flag)	       { ismvavetoelectron_ = flag;	}
       void	setIsMultiIsoVetoElectronL(bool flag)  { ismultiisovetoelectronl_  = flag; }
       void	setIsMultiIsoVetoElectronVL(bool flag) { ismultiisovetoelectronvl_ = flag; }
+      void  setisMT2VetoElectron(bool flag)        { ismt2vetoelectron_ = flag;        }
 
     protected :
       float	scEta_;
       float	r9_;
       float	mvaidnontrig_;
       float	mvaidtrig_;
-      bool	isveto_;
+      bool  isvetoid_;
       bool	isloose_;
       bool	ismedium_;
       bool	ismediumid_;
@@ -91,6 +94,7 @@ namespace ucsbsusy {
       bool	ismvavetoelectron_;
       bool	ismultiisovetoelectronl_;
       bool	ismultiisovetoelectronvl_;
+      bool  ismt2vetoelectron_;
 
   };
 

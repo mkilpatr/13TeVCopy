@@ -198,7 +198,7 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
 {
 
   if(WP == VETO) { 
-    return ele->isvetoelectron();
+    return ele->isvetoidelectron();
   }
   else if(WP == LOOSE) {
     //   return ele->islooseelectron();
@@ -262,6 +262,9 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
       else if (fabs(ele->eta())<2.5) return (ele->mvaidnontrig()>-0.67099 && (ele->miniiso()<0.23 && (ele->ptratio()>0.60 || ele->ptrel()>5.8)));
       else return false;
     }
+  }
+  else if(WP == MT2Veto){
+    return (ele->isvetoidelectron() && ele->miniiso()<0.2);
   }
   else {
     printf("Electron ID working point not defined!\n");
