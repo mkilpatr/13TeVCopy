@@ -248,7 +248,7 @@ namespace cfgSet {
         else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
           os << "BTAGOBJECTS " << std::endl;        
         if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
-          throw  "****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS";
+          throw std::invalid_argument("****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS");
         os << std::endl;
  
       } 

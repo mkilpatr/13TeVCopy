@@ -27,7 +27,7 @@ void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     if(top1) top2 = g;
     else top1 = g;
   }
-  if(!top1 || !top2)       throw "TtbarCorrectionSet::processVariables: two gen tops were not found!";
+  if(!top1 || !top2)       throw std::invalid_argument("TtbarCorrectionSet::processVariables: two gen tops were not found!");
   float topPT = top1->pt() + top2->pt();
 
   if(topPTCorr) {
