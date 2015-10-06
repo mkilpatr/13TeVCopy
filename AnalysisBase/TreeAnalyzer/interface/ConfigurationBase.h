@@ -187,11 +187,15 @@ namespace cfgSet {
     float   minPt     ;
     float   maxEta    ;
     bool    (ucsbsusy::PhotonF::*selected)() const;
+    bool    usePixelSeedVeto;
+    bool    useElectronVeto;
 
     PhotonConfig(TString inName = "NULL") :BaseConfig(inName),
       minPt  (-1),
       maxEta (-1),
-      selected(0)
+      selected(0),
+      usePixelSeedVeto(false),
+      useElectronVeto(false)
     {};
     virtual ~PhotonConfig() {};
 
