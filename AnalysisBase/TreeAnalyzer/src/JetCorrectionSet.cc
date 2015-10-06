@@ -16,7 +16,7 @@ void JetCorrectionSet::load(TString fileName, int correctionOptions)
 
   // contradiction checks in options
   if((correctionOptions & BTAGOBJECTS) && (correctionOptions & BTAGWEIGHT)) {
-    throw "error in b-tagging corrections: Can't declare both options BTAGOBJECTS and BTAGWEIGHT";
+    throw std::invalid_argument("error in b-tagging corrections: Can't declare both options BTAGOBJECTS and BTAGWEIGHT");
   }
 
   // BTAG correction file loading
@@ -38,7 +38,7 @@ void JetCorrectionSet::load(TString fileName, int correctionOptions)
   std::cout << std::endl;
 
   f_corr = new TFile(s_beff_path, "READ");
-  if(f_corr->IsZombie()) throw "error in b-tagging corrections: root file is a zoombie. A zoombie, Carl!";
+  if(f_corr->IsZombie()) throw std::invalid_argument("error in b-tagging corrections: root file is a zoombie. A zoombie, Carl!");
 
   corrections.push_back(btagCorr);
     
@@ -76,7 +76,7 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
         TString debugs = "h2_BTaggingEfficiency_" + s_proc + "_" + opStrings[iOP] + "_"+mcFlavStrings[iFl];
 //        std::cout << "**** loading histo: " << debugs << std::endl;
         if (!(f_corr->GetListOfKeys()->Contains("h2_BTaggingEfficiency_" + s_proc + "_" + opStrings[iOP] + "_"+mcFlavStrings[iFl])))
-          throw "error in b-tagging corrections: root file doesn't contain all needed histograms";
+          throw std::invalid_argument("error in b-tagging corrections: root file doesn't contain all needed histograms");
         h2_eff[iOP][iFl] = (TH2D*)f_corr->Get("h2_BTaggingEfficiency_" + s_proc + "_" + opStrings[iOP] + "_"+mcFlavStrings[iFl]);
       }
     histosLoaded = true;
@@ -136,7 +136,7 @@ void JetCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
               sysTypeLight = CENTRAL; sysTypeHeavy = UP     ; break;
             case DOWNHEAVY :
               sysTypeLight = CENTRAL; sysTypeHeavy = DOWN   ; break;
-            default : throw "unknown b-tag effs correction systematic type";
+            default : throw  std::invalid_argument("unknown b-tag effs correction systematic type");
           }
 	  // before hack: same reader for light and heavy
           sf[iOP][iCT] = ((BTagEntry::JetFlavor)flavMapToSF[flavor] < BTagEntry::FLAV_UDSG)

@@ -19,7 +19,7 @@ public:
 
   virtual bool fillEvent() {
 
-    if(met->pt() < 175 && metNoHF->pt() < 175) return false;
+    if(met->pt() < 175) return false;
     if(nJets < 2 || jets[1]->pt() < 60) return false;
 //    if(nBJets < 1) return false;
     return true;

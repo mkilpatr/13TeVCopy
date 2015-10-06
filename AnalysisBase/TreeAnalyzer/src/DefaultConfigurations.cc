@@ -141,7 +141,7 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
+  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::NULLOPT;
   standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.ttbarCorrections    	= ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile 	=  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
