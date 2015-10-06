@@ -31,7 +31,7 @@ ElectronReader::ElectronReader() : BaseReader(){
   pfdbetaiso   = new vector<float> ;
   mvaidnontrig = new vector<float> ;
   mvaidtrig    = new vector<float> ;
-  isvetoid     = new vector<bool>  ;
+  isveto       = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   ismediumid   = new vector<bool>  ;
@@ -68,7 +68,7 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
     treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
     treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
-    treeReader->setBranchAddress(branchName , "vetoid"      , &isvetoid    , true);
+    treeReader->setBranchAddress(branchName , "vetoid"      , &isveto      , true);
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
@@ -114,11 +114,12 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setAnnulusActivity(annulus->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
-      electrons.back().setIsVetoId(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
+      electrons.back().setIsVeto(eleId->passElectronId((&electrons.back()), eleId->VETO));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
-      electrons.back().setisMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
+      electrons.back().setIsminiisovetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
+      electrons.back().setIsMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
     }
   }
 }

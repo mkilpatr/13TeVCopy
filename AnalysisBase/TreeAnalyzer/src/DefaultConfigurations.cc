@@ -88,7 +88,7 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_veto_leptons = zl_sel_leptons;
   ol_veto_leptons.minEPt            = 5;
   ol_veto_leptons.maxEEta           = 2.4;
-  ol_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoidelectron;
+  ol_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
   ol_veto_leptons.minMuPt           = 5;
   ol_veto_leptons.maxMuEta          = 2.4;
   ol_veto_leptons.maxMuD0           = 0.1;
