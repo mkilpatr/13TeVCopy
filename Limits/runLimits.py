@@ -208,6 +208,19 @@ class LimitConfig:
     print '='*5, 'SIGNIFICANCES', '('+self.limitmethod+')', '='*5
     print '\n'.join(significances)
     print '\n'
+    
+    # rearrange significances to be more eaisly put in a table
+    if self.limitmethod=='Asymptotic':
+      sigsamps = []
+      siglims  = []
+      for s in significances:
+        s = s.split()
+        sigsamps.append(s[0][:-1])
+        siglims.append(s[1])
+      print '\t'.join(sigsamps)
+      print '\t'.join(siglims)
+      print '\n'
+      
 
 
 if __name__=='__main__': main()
