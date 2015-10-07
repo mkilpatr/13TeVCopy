@@ -32,8 +32,8 @@ bool cfgSet::isSelTrack(const ucsbsusy::PFCandidateF& track, const TrackConfig& 
 }
 
 bool cfgSet::isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::LeptonF*>& selectedLeptons, const TauConfig& conf){
-  if(conf.minPt  > 0 && tau.pt()  < conf.minPt ) return false;
-  if(conf.maxEta > 0 && tau.eta() > conf.maxEta) return false;
+  if(conf.minPt  > 0 && tau.pt()     < conf.minPt ) return false;
+  if(conf.maxEta > 0 && tau.absEta() > conf.maxEta) return false;
   bool pass = (tau.*conf.selected)();
   // future option to use > 1 selected lepton here
   if(conf.requireOppositeQToSelLepton && selectedLeptons.size() > 0) pass = pass & (tau.q()*selectedLeptons.at(0)->q() < 0);

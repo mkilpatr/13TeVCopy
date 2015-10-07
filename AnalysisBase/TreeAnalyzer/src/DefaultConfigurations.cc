@@ -57,12 +57,12 @@ cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
 void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.minEPt            = 5;
   zl_sel_leptons.maxEEta           = 2.4;
-  zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismultiisovetoelectronl;
+  zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismt2vetoelectron;
   zl_sel_leptons.minMuPt           = 5;
   zl_sel_leptons.maxMuEta          = 2.4;
   zl_sel_leptons.maxMuD0           = 0.1;//0.02;
   zl_sel_leptons.maxMuDz           = 0.5;//0.1;
-  zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismultiisovetomuonl;
+  zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismt2vetomuon;
   zl_sel_leptons.setConfig();
 
   zl_veto_leptons = zl_sel_leptons;
@@ -120,7 +120,7 @@ cfgSet::TauConfig cfgSet::ol_veto_taus("ol_veto_taus");
 void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.minPt      = 20;
   zl_veto_taus.maxEta     = 2.4;
-  zl_veto_taus.requireOppositeQToSelLepton = true;
+  zl_veto_taus.requireOppositeQToSelLepton = false;
   zl_veto_taus.minDeltaRFromSelLepton      = 0.4;
   zl_veto_taus.selected   = &ucsbsusy::TauF::ishpsvetotau;
   zl_veto_taus.setConfig();

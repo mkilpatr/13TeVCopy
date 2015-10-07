@@ -212,6 +212,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::ELECTRONS);
   load(cfgSet::MUONS);
   load(cfgSet::PHOTONS);
+  load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS);

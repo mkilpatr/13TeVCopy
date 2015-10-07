@@ -108,6 +108,8 @@ void MuonReader::refresh(){
       muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
       muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
       muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
+      muons.back().setIsMiniIsoVetoMuon(muonId->passMuonId((&muons.back()), muonId->MiniIsoVeto));
+      muons.back().setIsMT2VetoMuon(muonId->passMuonId((&muons.back()), muonId->MT2Veto));
     }
   }
 }
