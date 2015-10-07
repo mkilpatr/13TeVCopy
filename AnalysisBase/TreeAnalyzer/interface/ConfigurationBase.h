@@ -193,11 +193,15 @@ namespace cfgSet {
     float   minPt     ;
     float   maxEta    ;
     bool    (ucsbsusy::PhotonF::*selected)() const;
+    bool    usePixelSeedVeto;
+    bool    useElectronVeto;
 
     PhotonConfig(TString inName = "NULL") :BaseConfig(inName),
       minPt  (-1),
       maxEta (-1),
-      selected(0)
+      selected(0),
+      usePixelSeedVeto(false),
+      useElectronVeto(false)
     {};
     virtual ~PhotonConfig() {};
 
@@ -254,7 +258,7 @@ namespace cfgSet {
         else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
           os << "BTAGOBJECTS " << std::endl;        
         if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
-          throw  "****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS";
+          throw std::invalid_argument("****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS");
         os << std::endl;
  
       } 

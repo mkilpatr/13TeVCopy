@@ -57,12 +57,12 @@ cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
 void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.minEPt            = 5;
   zl_sel_leptons.maxEEta           = 2.4;
-  zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismultiisovetoelectronl;
+  zl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::ismt2vetoelectron;
   zl_sel_leptons.minMuPt           = 5;
   zl_sel_leptons.maxMuEta          = 2.4;
   zl_sel_leptons.maxMuD0           = 0.1;//0.02;
   zl_sel_leptons.maxMuDz           = 0.5;//0.1;
-  zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismultiisovetomuonl;
+  zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismt2vetomuon;
   zl_sel_leptons.setConfig();
 
   zl_veto_leptons = zl_sel_leptons;
@@ -122,7 +122,7 @@ cfgSet::TauConfig cfgSet::ol_veto_taus("ol_veto_taus");
 void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.minPt      = 20;
   zl_veto_taus.maxEta     = 2.4;
-  zl_veto_taus.requireOppositeQToSelLepton = true;
+  zl_veto_taus.requireOppositeQToSelLepton = false;
   zl_veto_taus.minDeltaRFromSelLepton      = 0.4;
   zl_veto_taus.selected   = &ucsbsusy::TauF::ishpsvetotau;
   zl_veto_taus.setConfig();
@@ -137,13 +137,15 @@ void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.minPt    = 180;
   zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
+  zl_sel_photons.usePixelSeedVeto = true;
+  zl_sel_photons.useElectronVeto  = false;
   zl_sel_photons.setConfig();
 }
 
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
+  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::NULLOPT;
   standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.ttbarCorrections    	= ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile 	=  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
@@ -151,8 +153,6 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.eventCorrectionFile 	=  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
   standardCorrections.leptonCorrections  	= ucsbsusy::EventCorrectionSet::LEP;
   standardCorrections.leptonCorrectionFile	=  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
-  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.jetAndMETCorrections    = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
   standardCorrections.setConfig();
 }

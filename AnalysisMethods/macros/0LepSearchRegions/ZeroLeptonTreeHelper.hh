@@ -70,6 +70,8 @@ struct TreeFiller {
   size i_passeebadscflt;
   size i_passhbheflt;
   size i_passhbhefixflt;
+  size i_passhbhefltloose;
+  size i_passhbheflttight;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -82,6 +84,7 @@ struct TreeFiller {
   size i_npv       ;
   size i_nvetolep  ;
   size i_nvetotau  ;
+  size i_nvetohpstaus;
   size i_nvetomu   ;
   size i_nvetolele ;
   size i_ngoodgenmu;
@@ -222,6 +225,8 @@ struct TreeFiller {
     i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
     i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
     i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
+    i_passhbhefltloose    = data->add<bool>("","passhbhefltloose","O",0);
+    i_passhbheflttight    = data->add<bool>("","passhbheflttight","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -234,6 +239,7 @@ struct TreeFiller {
     i_npv            = data->add<int>("","npv","I",0);
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
     i_nvetotau       = data->add<int>("","nvetotau","I",0);
+    i_nvetohpstaus   = data->add<int>("","nvetohpstaus","I",0);
     i_nvetomu        = data->add<int>("","nvetomu","I",0);
     i_nvetolele      = data->add<int>("","nvetolele","I",0);
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
@@ -356,6 +362,7 @@ struct TreeFiller {
     data->fill<float>(i_metnohfphi, ana->metNoHF->phi());
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
+    data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
@@ -466,6 +473,8 @@ struct TreeFiller {
     data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
     data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
     data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
+    data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
+    data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
 
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
     if(isMC) {
