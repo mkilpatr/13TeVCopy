@@ -202,11 +202,11 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
   }
   else if(WP == LOOSE) {
     //   return ele->islooseelectron();
-    return ele->islooseid() && ele->miniiso()<0.2;
+    return (ele->islooseid() && ele->miniiso()<0.2);
   }
   else if(WP == MEDIUM) {
     //    return ele->ismediumelectron();
-    return ele->ismediumid() && ele->miniiso()<0.1;
+    return (ele->ismediumid() && ele->miniiso()<0.1);
   }
   else if(WP == TIGHT) { 
     return ele->istightelectron();
