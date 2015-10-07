@@ -151,8 +151,6 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.eventCorrectionFile 	=  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
   standardCorrections.leptonCorrections  	= ucsbsusy::EventCorrectionSet::LEP;
   standardCorrections.leptonCorrectionFile	=  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
-  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.jetAndMETCorrections    = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
   standardCorrections.setConfig();
 }
