@@ -103,7 +103,7 @@ void ElectronReader::refresh(){
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
       electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
-      //      electrons.back().setIsVeto(isveto->at(iL));
+      electrons.back().setIsVeto(isveto->at(iL));
       electrons.back().setIsLoose(isloose->at(iL));
       electrons.back().setIsLooseId(islooseid->at(iL));
       electrons.back().setIsMedium(ismedium->at(iL));
@@ -114,11 +114,11 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setAnnulusActivity(annulus->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
-      electrons.back().setIsVeto(isveto->at(iL));
+      electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
-      electrons.back().setIsminiisovetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
+      electrons.back().setIsMiniIsoVetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
       electrons.back().setIsMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
     }
   }

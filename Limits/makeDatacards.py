@@ -476,12 +476,12 @@ class DatacardConfig:
                                         crnevts = self.getNumEvents(datafile, crbin, True, cr.selection)
                                     else :
                                         crnevts = int(self.getNumEvents(datafile, crbin, False, cr.selection)) 
-                                    #change to cr_nmcevets TODO
                                     if not unc.cr_nevts.has_key(binname):
                                         unc.cr_nevts[binname] = {}
                                     unc.cr_nevts[binname]['data'] = max(crnevts,1)
                                     unc.cr_nevts[binname]['mc']   = max( 1, self.getNumEvents(mcfile, crbin, False, cr.selection) )
                                     unc.vals[binname][samp] = -1
+                                    unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
                                 else :
                                     if binname=='all' or uncVal:
                                         unc.vals[binname][samp] = float(uncVal)
@@ -497,12 +497,17 @@ class DatacardConfig:
                                             crbin = cr.binmap[cr.srtocrbinmap[binname]]
                                             (srevts,srunc) = self.getNumEventsError(srfile, srbin, False )
                                             (crevts,crunc) = self.getNumEventsError(crfile, crbin, False, cr.selection)
-                                            if crevts==0:
-                                                unc.vals[binname][samp] = 2.00
-                                            elif srevts==0:
+                                            crstatuncname = uncname.replace(binname,cr.srtocrbinmap[binname])
+                                            if not self.uncertainties.has_key(crstatuncname) :
+                                                self.uncertainties[crstatuncname] = Uncertainty(crstatuncname,unc.type)
+                                                self.uncnames.append(crstatuncname)
+                                            if not self.uncertainties[crstatuncname].vals.has_key(binname) :
+                                                self.uncertainties[crstatuncname].vals[binname] = {}
+                                            self.uncertainties[crstatuncname].vals[binname][samp] = 1 + (crunc/crevts) if crevts > 0 else 2.00
+                                            if srevts==0:
                                                 unc.vals[binname][samp] = 1.00
                                             else:
-                                                unc.vals[binname][samp] = 1 + sqrt( (srunc/srevts)**2 + (crunc/crevts)**2 )
+                                                unc.vals[binname][samp] = 1 + (srunc/srevts)
                                         else :
                                             mcfile = os.path.join( self.treebase, samp+self.filesuffix )
                                             selection = self.basesel
@@ -531,7 +536,7 @@ class DatacardConfig:
         """Get line with uncertainty name, type, and values correctly formatted
         """
         isglobal = unc.vals.has_key('all')
-        uncline = uncname.ljust(self.colwidth)
+        uncline = unc.label.ljust(self.colwidth)
         uncline += unc.type + ' '
         # don't count uncertainties with no entries for any of the processes
         hasEntry = False
@@ -587,6 +592,7 @@ class Uncertainty:
     def __init__(self,name,type):
         self.name = name
         self.type = type
+        self.label = name
         self.cr_nevts = {}
         self.vals = {}
     def __str__(self):
