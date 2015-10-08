@@ -151,6 +151,8 @@ struct TreeFiller {
   size i_leptonpt  ;
   size i_leptoneta ;
   size i_leptonpdgid;
+  size i_htalonglep;
+  size i_annulus   ;
   size i_leptonmatchtrigmu;
   size i_leptonmatchtrige;
   size i_mtlepmet  ;
@@ -305,6 +307,8 @@ struct TreeFiller {
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
     i_leptonpdgid    = data->add<int>("","leptonpdgid","I",0);
+    i_htalonglep     = data->add<float>("","htalonglep","F",0);
+    i_annulus        = data->add<float>("","annulus","F",0);
     i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
     i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
@@ -327,7 +331,7 @@ struct TreeFiller {
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_btagWeight, ana->jetCorrections.getBtagCorrection(JetCorrectionSet::BtagCorrectionType::NOMINAL));
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
-    data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
     data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
@@ -440,6 +444,19 @@ struct TreeFiller {
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
       data->fill<int  >(i_leptonpdgid, ana->selectedLeptons.at(randomLepton)->pdgid());
+      bool cleanHt = false;
+      float htalonglep = 0;
+      float leppt  = lep->pt();
+      float lepeta = lep->eta();
+      for(const auto* jet : ana->jets ){
+        if (PhysicsUtilities::absDeltaPhi(*jet,*lep) < TMath::PiOver2()) {
+          htalonglep += jet->pt();
+          if(PhysicsUtilities::deltaR(*jet,*lep) < .4) cleanHt = true;
+        }
+      } // jets
+      if(cleanHt) htalonglep -= leppt;
+      data->fill<float>(i_htalonglep, htalonglep);
+      data->fill<float>(i_annulus, lep->pt() * ana->selectedLeptons.at(randomLepton)->annulusactivity());
       bool matchtrigmu = false, matchtrige = false;
       for(auto* to : ana->triggerObjects) {
         if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) {
