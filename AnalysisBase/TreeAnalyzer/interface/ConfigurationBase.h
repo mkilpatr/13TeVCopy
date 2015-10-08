@@ -94,6 +94,8 @@ namespace cfgSet {
 
     float   minEPt     ;
     float   maxEEta    ;
+    float   maxED0     ;
+    float   maxEDz     ;
     bool    (ucsbsusy::ElectronF::*selectedElectron)() const;
 
     float   minMuPt     ;
@@ -105,6 +107,8 @@ namespace cfgSet {
     LeptonConfig(TString inName = "NULL") :BaseConfig(inName),
       minEPt  (-1),
       maxEEta (-1),
+      maxED0  (-1),
+      maxEDz  (-1),
       selectedElectron(0),
       minMuPt         (-1),
       maxMuEta        (-1),
@@ -118,6 +122,8 @@ namespace cfgSet {
       os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min electron Pt is "<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
+      os << "The electron max D0 is "<< a.maxED0 <<std::endl;
+      os << "The electron max Dz "<< a.maxEDz <<std::endl;
       os << "The min muon pt is "<< a.minMuPt <<std::endl;
       os << "The max muon eta is "<< a.maxMuEta <<std::endl;
       os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
