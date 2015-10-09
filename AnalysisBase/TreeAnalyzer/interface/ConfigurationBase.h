@@ -10,7 +10,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
-#include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 
 #include <iostream>
@@ -218,21 +218,27 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
-    int jetCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
-    TString jetCorrectionFile;
     TString leptonCorrectionFile;
+
+
+    int bTagCorrections;
+    TString bTagEffFile;
+    TString bTagSFFile;
+    ucsbsusy::CORRTYPE heavyBTagCorrType;
+    ucsbsusy::CORRTYPE lightBTagCorrType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT),
-        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
-
+        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
+        heavyBTagCorrType(ucsbsusy::NONE),
+        lightBTagCorrType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -251,16 +257,11 @@ namespace cfgSet {
         os << std::endl;
 
       }
-      if(a.jetCorrections != ucsbsusy::JetCorrectionSet::NULLOPT){
-        os << "Applying jet corrections from " << a.jetCorrectionFile.Data() <<" -> ";
-        if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT)
-          os << "BTAGWEIGHT " << std::endl;
-        else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
-          os << "BTAGOBJECTS " << std::endl;        
-        if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
-          throw std::invalid_argument("****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS");
+      if(a.bTagCorrections != ucsbsusy::BTagCorrectionSet::NULLOPT){
+        os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
+        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT)
+          os << "BYEVTWEIGHT H("<<corrTypeName(a.heavyBTagCorrType)<<") L("<<corrTypeName(a.lightBTagCorrType)<<")" << std::endl;
         os << std::endl;
- 
       } 
 
       if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
