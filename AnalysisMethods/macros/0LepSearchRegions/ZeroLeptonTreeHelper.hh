@@ -327,8 +327,8 @@ struct TreeFiller {
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
-    data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
-    data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
+    data->fill<bool >(i_passtrige,  ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
+    data->fill<bool >(i_passtrigmu, ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoMu22 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
     data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
     data->fill<bool >(i_passtrigmu17tkmu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
@@ -442,12 +442,12 @@ struct TreeFiller {
       data->fill<int  >(i_leptonpdgid, ana->selectedLeptons.at(randomLepton)->pdgid());
       bool matchtrigmu = false, matchtrige = false;
       for(auto* to : ana->triggerObjects) {
-        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) {
+        if((to->filterflags() & kSingleIsoMu22) && (to->pathflags() & kHLT_IsoMu22)) {
           if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
             matchtrigmu = true;
           }
         }
-        if((to->filterflags() & kSingleEle32) && ((to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf) || (to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf))) {
+        if((to->filterflags() & kSingleEle22) && (to->pathflags() & kHLT_Ele22_eta2p1_WPLoose_Gsf)) {
           if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
             matchtrige = true;
           }

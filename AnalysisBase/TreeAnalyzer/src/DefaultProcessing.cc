@@ -17,6 +17,8 @@ bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, 
 }
 
 bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf){
+  if(conf.maxED0 > 0 && fabs(electron.d0()) >= conf.maxED0) return false;
+  if(conf.maxEDz > 0 && fabs(electron.dz()) >= conf.maxEDz) return false;
   return (electron.pt() > conf.minEPt && fabs(electron.eta()) < conf.maxEEta && (electron.*conf.selectedElectron)());
 }
 
