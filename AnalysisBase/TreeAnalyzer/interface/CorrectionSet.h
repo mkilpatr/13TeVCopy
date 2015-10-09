@@ -11,17 +11,20 @@
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
+
 class TFile;
 
 namespace ucsbsusy {
 class BaseTreeAnalyzer;
+
+enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
+TString corrTypeName (CORRTYPE type);
 
 //General class that holds a single correction
 class Correction {
 public:
   Correction(TString corrName);
   virtual ~Correction() {}
-  virtual float get() const = 0;
 protected:
   const TString name;
 };
