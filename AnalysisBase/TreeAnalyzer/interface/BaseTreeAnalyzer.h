@@ -161,8 +161,8 @@ public:
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
-    JetCorrectionSet    jetCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
+    BTagCorrectionSet    bTagCorrections;
 
 
     //hack for DY PU

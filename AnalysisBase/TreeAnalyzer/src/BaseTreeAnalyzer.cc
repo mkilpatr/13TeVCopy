@@ -100,9 +100,11 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
         eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
       corrections.push_back(&eventCorrections);
     }
-    if(configSet.corrections.jetCorrections != JetCorrectionSet::NULLOPT){
-      jetCorrections.load(configSet.corrections.jetCorrectionFile, configSet.corrections.jetCorrections);
-      corrections.push_back(&jetCorrections);
+    if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
+      bTagCorrections.load(configSet.corrections.bTagEffFile,
+          configSet.corrections.bTagSFFile,configSet.corrections.lightBTagCorrType,configSet.corrections.heavyBTagCorrType,
+          configSet.corrections.bTagCorrections);
+      corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);

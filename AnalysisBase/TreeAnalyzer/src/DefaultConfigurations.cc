@@ -143,17 +143,20 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::NULLOPT;
-  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
   standardCorrections.ttbarCorrections    	= ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile 	=  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
   standardCorrections.eventCorrections    	= ucsbsusy::EventCorrectionSet::PU;
   standardCorrections.eventCorrectionFile 	=  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
   standardCorrections.leptonCorrections  	= ucsbsusy::EventCorrectionSet::LEP;
   standardCorrections.leptonCorrectionFile	=  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
-  standardCorrections.jetCorrections	  = ucsbsusy::JetCorrectionSet::BTAGWEIGHT;
-  standardCorrections.jetCorrectionFile   =  TString::Format("%s/src/data/corrections/jetCorr.root",CMSSW_BASE);
-  standardCorrections.jetAndMETCorrections    = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
+  standardCorrections.jetAndMETCorrections  = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
+
+  standardCorrections.bTagCorrections       = ucsbsusy::BTagCorrectionSet::NULLOPT;
+  standardCorrections.bTagEffFile           =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
+  standardCorrections.bTagSFFile            =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
+  standardCorrections.heavyBTagCorrType     = ucsbsusy::NOMINAL;
+  standardCorrections.lightBTagCorrType     = ucsbsusy::NOMINAL;
+
   standardCorrections.setConfig();
 }
 
