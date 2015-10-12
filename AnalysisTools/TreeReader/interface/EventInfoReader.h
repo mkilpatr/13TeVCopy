@@ -30,6 +30,7 @@ namespace ucsbsusy {
       unsigned int  lumi;
       unsigned int  event;
       unsigned int  nPV;
+      float         nPUTrue;
       float         rho;
       float         pvx;
       float         pvy;
