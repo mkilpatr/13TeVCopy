@@ -37,7 +37,7 @@ RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(
 
 HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1) {
   assert(file);
-  corrHist = (const TH1F*)(file->Get(name) );
+  corrHist = (TH1F*)(file->Get(name) );
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }
 

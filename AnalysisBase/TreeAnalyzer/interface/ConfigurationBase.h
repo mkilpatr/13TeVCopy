@@ -10,6 +10,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 
@@ -218,11 +219,13 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
+    int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
+    TString puCorrectionFile;
     TString leptonCorrectionFile;
 
 
@@ -235,6 +238,8 @@ namespace cfgSet {
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
@@ -264,12 +269,22 @@ namespace cfgSet {
         os << std::endl;
       } 
 
-      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
-        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
-        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
-          os << "LEP " << std::endl;
+      if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
+        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
+          os << "LEP ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_UP)
+          os << "VARY_UP " << std::endl;
+        else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
+          os << "VARY_DOWN " << std::endl;
         os << std::endl;
-	}
+      }
+      if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
+        if(a.puCorrections & ucsbsusy::EventCorrectionSet::TRUEPU)
+          os << "TRUEPU " << std::endl;
+        os << std::endl;
+      }
       if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
         os << "Applying jet and MET corrections -> ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)

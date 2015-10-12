@@ -24,6 +24,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     process           (defaults::NUMPROCESSES),
     datareco          (defaults::MC),
     nPV               (0),
+    nPU               (0),
     rho               (0),
     nSelLeptons       (0),
     nVetoedLeptons    (0),
@@ -96,9 +97,14 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     }
     if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
-      if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT)
-        eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT)
+        eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
+    }
+    if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
+      if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT)
+        leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
       bTagCorrections.load(configSet.corrections.bTagEffFile,
@@ -232,6 +238,7 @@ void BaseTreeAnalyzer::processVariables()
     lumi  = evtInfoReader.lumi;
     event = evtInfoReader.event;
     nPV   = evtInfoReader.nPV;
+    nPU   = evtInfoReader.nPUTrue;
     rho   = evtInfoReader.rho;
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
