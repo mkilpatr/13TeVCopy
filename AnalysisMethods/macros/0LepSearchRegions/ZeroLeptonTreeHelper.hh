@@ -707,7 +707,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dyjets")) zIsInvisible = false;}
+      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
 
     const double metcut_   = 175.0 ;
     const int    minnjets_ =   2   ;

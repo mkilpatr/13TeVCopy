@@ -189,6 +189,7 @@ class PlotStuff {
         bool                   make_integral;
         bool                   reverse_integral_dir;
         bool                   plotratio;
+        bool                   tabulateeffs;
 
         PlotConfig() :
           type(DATAMC),
@@ -233,7 +234,8 @@ class PlotStuff {
           plotoverflow(1),
           make_integral(false),
           reverse_integral_dir(false),
-          plotratio(false)
+          plotratio(false),
+          tabulateeffs(false)
         {}
 
         void print() {
@@ -373,6 +375,8 @@ class PlotStuff {
     void     setRatioPlot(bool plotratio = true) { config_.plotratio = plotratio; }
     // Scale backgrounds to data (when plotting data vs MC)
     void     setScaleToData(bool scaletodata = true) { config_.scaletodata = scaletodata; }
+    // Add efficiencies to yields table
+    void     setTabulateEffs(bool tabulateeffs = true) { config_.tabulateeffs = tabulateeffs; }
 
   // Helper functions
   private :
