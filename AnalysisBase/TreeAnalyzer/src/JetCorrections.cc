@@ -29,7 +29,7 @@ using namespace ucsbsusy;
 
 /***********************    VARIABLE INITIALIZATIONS    ************************/
 
-const float JetCorrector::JESValues[]={0.0f,1.0f,-1.0f};
+const float JetCorrector::JESValues[]={0.0,1.0,-1.0};
 
 /*******************    METHOD IMPLEMENTATIONS    ********************/
 
@@ -39,7 +39,6 @@ const float JetCorrector::JESValues[]={0.0f,1.0f,-1.0f};
  ************************************************************************/
 JetCorrector::JetCorrector() : jet_scale(NOMINAL)
 {
-   // vector<float> JetCorrector::JESValues={0.0f, 1.0f, -1.0f};
 }
 
 /*************************************************************************
@@ -62,24 +61,27 @@ JetCorrector::~JetCorrector()
 void JetCorrector::shiftJES(std::vector<RecoJetF>& jets, MomentumF *const met)
 {
     float JEC_scale_factor;
+
 #if DEBUG
     float pt_raw_old = 0, pt_cor_old = 0;
     cout << "\nEVENT CONTAINS " << jets.size() << " JETS." << endl;
-    cout << "JET INDEX\t\tUNSCALED RAW PT\t\tUNSCALED CORR PT\tSCALED RAW PT\t\tSCALED CORR PT\t\tETA\t\tCORR FACTOR\t\t\
+    cout << "ORIGINAL MET: " << met->pt() << endl;
+    cout << "JET INDEX\t\tORIGINAL RAW PT\t\tUNSCALED CORR PT\tSCALED RAW PT\t\tSCALED CORR PT\t\tETA\t\tCORR FACTOR\t\t\
 RAW REL ADJ" << endl;
-#endif
     if (JESValues[jet_scale]) {
         for ( RecoJetF i : jets) {
             /*  Loop over all jets in vector and scale PT by scale factor.  */
-           #if !DEBUG 
+            #if !DEBUG 
                 if (!(i.uncertainty())) {continue;}
             #endif
             if (i.uncertainty() < 0) {
                 cout << "JetCorrector::shiftJEC(): Possible bad data. Uncertainty value of " <<
                      i.uncertainty() << " in jet " << i << "failed sanity check." << endl;
             }
+            if(i.uncertainty() == 0.0) continue;
 #if DEBUG
             pt_raw_old = i.pt_raw(); pt_cor_old = i.pt();
+            cout << "MET was: " << met->pt() << endl;
 #endif
             /* Remove unshifted jet PT from MET vector */
             met->setP4((i.p4()) + (met->p4()));
@@ -96,9 +98,12 @@ RAW REL ADJ" << endl;
                  << ((i.uncertainty()) ? i.uncertainty() : JESValues[jet_scale]) << "\t\t\t"
                  << (int)(0.5f + (100.0f * ((i.pt_raw() - pt_raw_old) / pt_raw_old )))
                  << "%"  << endl;
+            cout << "MET is: " << met->pt() << endl;
 #endif
         }
-        cout << "\n";
     }
     else {return;}
+#if DEBUG
+      cout << "NEW MET: " << met->pt() << endl;
+#endif
 }

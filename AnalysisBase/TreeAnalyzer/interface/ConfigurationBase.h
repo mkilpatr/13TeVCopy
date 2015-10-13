@@ -67,7 +67,8 @@ namespace cfgSet {
       cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
       cleanJetsvVetoedTracks  (false),
-      cleanJetsMaxDR           (-1)
+      cleanJetsMaxDR           (-1),
+      JES                      (0)
     {};
     virtual ~JetConfig() {};
 
@@ -78,6 +79,7 @@ namespace cfgSet {
       os << "The min jet pt is "<< a.minBJetPt <<std::endl;
       os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
       os << "The default CSV is "<< a.defaultCSV <<std::endl;
+      os << "The JES variation is " << a.JES << std::endl;
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
       if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
