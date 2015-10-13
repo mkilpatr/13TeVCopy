@@ -66,8 +66,8 @@ void JetCorrector::shiftJES(std::vector<RecoJetF>& jets, MomentumF *const met)
     float pt_raw_old = 0, pt_cor_old = 0;
     cout << "\nEVENT CONTAINS " << jets.size() << " JETS." << endl;
     cout << "ORIGINAL MET: " << met->pt() << endl;
-    cout << "JET INDEX\t\tORIGINAL RAW PT\t\tUNSCALED CORR PT\tSCALED RAW PT\t\tSCALED CORR PT\t\tETA\t\tCORR FACTOR\t\t\
-RAW REL ADJ" << endl;
+    cout << "JET INDEX\t\tORIGINAL RAW PT\t\tUNSCALED CORR PT\tSCALED RAW PT\t\tSCALED CORR PT\t\tETA\t\tCORR FACTOR\t\t\RAW REL ADJ" << endl;
+#endif
     if (JESValues[jet_scale]) {
         for ( RecoJetF i : jets) {
             /*  Loop over all jets in vector and scale PT by scale factor.  */
