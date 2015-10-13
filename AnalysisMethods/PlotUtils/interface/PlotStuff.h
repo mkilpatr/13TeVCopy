@@ -231,7 +231,7 @@ class PlotStuff {
           logy(false),
           tablelumi(4000.),
           colormap(DefaultColors()),
-          plotoverflow(0),
+          plotoverflow(1),
           make_integral(false),
           reverse_integral_dir(false),
           plotratio(false),

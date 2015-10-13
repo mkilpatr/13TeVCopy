@@ -10,7 +10,8 @@
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
-#include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 
 #include <iostream>
@@ -220,21 +221,31 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
-    int jetCorrections;
+    int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
-    TString jetCorrectionFile;
+    TString puCorrectionFile;
     TString leptonCorrectionFile;
+
+
+    int bTagCorrections;
+    TString bTagEffFile;
+    TString bTagSFFile;
+    ucsbsusy::CORRTYPE heavyBTagCorrType;
+    ucsbsusy::CORRTYPE lightBTagCorrType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT),
-        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
-
+        puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
+        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
+        heavyBTagCorrType(ucsbsusy::NONE),
+        lightBTagCorrType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -253,24 +264,29 @@ namespace cfgSet {
         os << std::endl;
 
       }
-      if(a.jetCorrections != ucsbsusy::JetCorrectionSet::NULLOPT){
-        os << "Applying jet corrections from " << a.jetCorrectionFile.Data() <<" -> ";
-        if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT)
-          os << "BTAGWEIGHT " << std::endl;
-        else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
-          os << "BTAGOBJECTS " << std::endl;        
-        if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
-          throw std::invalid_argument("****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS");
+      if(a.bTagCorrections != ucsbsusy::BTagCorrectionSet::NULLOPT){
+        os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
+        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT)
+          os << "BYEVTWEIGHT H("<<corrTypeName(a.heavyBTagCorrType)<<") L("<<corrTypeName(a.lightBTagCorrType)<<")" << std::endl;
         os << std::endl;
- 
       } 
 
-      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
-        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
-        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
-          os << "LEP " << std::endl;
+      if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
+        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
+          os << "LEP ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_UP)
+          os << "VARY_UP " << std::endl;
+        else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
+          os << "VARY_DOWN " << std::endl;
         os << std::endl;
-	}
+      }
+      if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
+        if(a.puCorrections & ucsbsusy::EventCorrectionSet::TRUEPU)
+          os << "TRUEPU " << std::endl;
+        os << std::endl;
+      }
       if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
         os << "Applying jet and MET corrections -> ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)
