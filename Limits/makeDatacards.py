@@ -433,7 +433,7 @@ class DatacardConfig:
                     entries = re.split('\s+',line)
                     binnames = []
                     uncnames = []
-                    if entries[0] == 'all' :
+                    if not entries[0] == 'perbin' :
                         binnames = [entries[0]]
                         uncnames = [entries[1]]
                     else :
