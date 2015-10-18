@@ -8,6 +8,10 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include <vector>
+#include "Math/LorentzVector.h"
+#include "Math/VectorUtil.h"
+#include "AnalysisTools/KinematicVariables/interface/mt2w.h"
 
 using namespace ucsbsusy;
 
@@ -36,6 +40,8 @@ cfgSet::ConfigSet pars0LepPhoton(TString json) {
   return cfg;
 }
 
+std::vector<LorentzVector> topsPass;
+std::vector<LorentzVector> topCands;
 
 struct TreeFiller {
 
@@ -160,6 +166,7 @@ struct TreeFiller {
   size i_mtcsv1met ;
   size i_mtcsv2met ;
   size i_mtcsv12met;
+  size i_mtcsv12met_mod;
   size i_dphicsv1met;
   size i_dphicsv2met;
   size i_dphicsv12met;
@@ -178,6 +185,13 @@ struct TreeFiller {
   size i_dileppt   ;
   size i_dilepeta  ;
   size i_dilepmass ;
+  size i_bclose2lep;
+  size i_ntopcand  ;
+  size i_ntoppass  ;
+  size i_topcandpt ;
+  size i_topcandeta;
+  size i_toppasspt ;
+  size i_toppasseta;
 
   bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
@@ -333,6 +347,7 @@ struct TreeFiller {
     i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
     i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
+    i_mtcsv12met_mod = data->add<float>("","mtcsv12met_mod","F",0);
     i_dphicsv1met    = data->add<float>("","dphicsv1met","F",0);
     i_dphicsv2met    = data->add<float>("","dphicsv2met","F",0);
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
@@ -351,6 +366,13 @@ struct TreeFiller {
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepeta       = data->add<float>("","dilepeta","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
+    i_bclose2lep     = data->add<bool>("","bclose2lep","O",0);
+    i_ntopcand       = data->add<unsigned int>("","ntopcand","i",0);
+    i_ntoppass       = data->add<unsigned int>("","ntoppass","i",0);
+    i_topcandpt      = data->add<float>("","topcandpt","F",0);
+    i_topcandeta     = data->add<float>("","topcandeta","F",0);
+    i_toppasspt      = data->add<float>("","toppasspt","F",0);
+    i_toppasseta     = data->add<float>("","toppasseta","F",0);
 
   }
 
@@ -421,8 +443,19 @@ struct TreeFiller {
     int ncttsdwc   = 0;
     int ncttsdta   = 0;
     int ncttsdtb   = 0;
+
+    topCands.clear();
+    topsPass.clear();
     for(auto* ctt : ana->cttTops) {
-      if(passCTTSelection(ctt)) ncttstd++;
+
+      LorentzVector tmpVecCand; tmpVecCand = ctt->p4();
+      topCands.push_back(tmpVecCand);
+
+      if(passCTTSelection(ctt)) { ncttstd++;
+	LorentzVector tmpVec; tmpVec = ctt->p4();
+	topsPass.push_back(tmpVec);
+      }
+
       if (passSoftDropTaggerCTT(ctt,  60., 99999., -1, 10  )) { ++ncttsdwa0;  }
       if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2, 10  )) { ++ncttsdwa1;  }
       if (passSoftDropTaggerCTT(ctt,  60., 99999., -1,  0.6)) { ++ncttsdwa2;  }
@@ -441,7 +474,6 @@ struct TreeFiller {
     data->fill<int  >(i_ncttsdwc  , ncttsdwc  );
     data->fill<int  >(i_ncttsdta  , ncttsdta  );
     data->fill<int  >(i_ncttsdtb  , ncttsdtb  );
-
     int nfjsdwa = 0;
     int nfjsdwb = 0;
     int nfjsdwc = 0;
@@ -624,7 +656,77 @@ struct TreeFiller {
     data->fill<int  >(i_ngenbjets, ngenbjets);
   }
 
+
+  void fillTopTagInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets) {
+
+
+    bool bClose2Lep_ = false;    
+    unsigned int ntopcand_ = 0;   
+    unsigned int ntoppass_ = 0;
+    float topCandPt_ = -9.; float topCandEta_ = -9.;
+    float topPassPt_ = -9.; float topPassEta_ = -9.;
+    
+    vector<LorentzVector> csvmjets;
+    for(auto* j : jets) {
+
+      if(j->csv() > defaults::CSV_MEDIUM) {
+	LorentzVector tmpVecCSVMJets; tmpVecCSVMJets = j->p4();
+	csvmjets.push_back(tmpVecCSVMJets); }
+    }
+
+
+    if(ana->nSelLeptons > 0) {
+      MomentumF* lep = new MomentumF(ana->selectedLeptons.at(0)->p4());
+
+
+      for (unsigned int i0=0; i0<csvmjets.size(); ++i0) {
+
+	float dRLepBJet_ = PhysicsUtilities::deltaR(*lep,csvmjets[i0]);
+	if (dRLepBJet_<(3.14/2.)) { bClose2Lep_ = true; }
+      }
+
+      unsigned int countTopTags = 0;
+      unsigned int indx = 99;
+      for (auto* ctt : ana->cttTops) {
+
+	float dRLepCTT_ = PhysicsUtilities::deltaR(*lep,ctt->p4());
+	float maxFatJetPt_ = -1.;
+
+	if (dRLepCTT_>=(3.14/2.)) { 
+
+	  float fatJetPt_ = ctt->p4().pt();
+	  if (fatJetPt_>maxFatJetPt_) { indx = countTopTags; }
+
+	}
+
+	++countTopTags;
+      }
+      
+
+      if (indx<99) { 
+	ntopcand_ = 1;
+	topCandPt_ = ana->cttTops[indx]->p4().pt(); topCandEta_ = ana->cttTops[indx]->p4().eta();
+
+	if (passCTTSelection(ana->cttTops[indx])) { 
+	  ntoppass_ = 1;
+	  topPassPt_ = ana->cttTops[indx]->p4().pt(); topPassEta_ = ana->cttTops[indx]->p4().eta(); }
+
+      }     
+ 
+    } // end of at least one lepton
+    data->fill<bool>(i_bclose2lep, bClose2Lep_);
+    data->fill<unsigned int>(i_ntopcand, ntopcand_);
+    data->fill<unsigned int>(i_ntoppass, ntoppass_);
+    data->fill<float>(i_topcandpt, topCandPt_);
+    data->fill<float>(i_topcandeta, topCandEta_);
+    data->fill<float>(i_toppasspt, topPassPt_);
+    data->fill<float>(i_toppasseta, topPassEta_);
+    
+  } // end of fillTopTagInfo
+
+
   void fillJetInfo(TreeWriterData* data, vector<RecoJetF*> jets, vector<RecoJetF*> bjets, MomentumF* met) {
+
     int njets60 = 0, njets30 = 0;
     int ntbjets = 0, nmbjets = 0, nlbjets = 0, nbjets30 = 0;
     for(auto* j : jets) {
@@ -688,6 +790,17 @@ struct TreeFiller {
     }
 
     if(jetsCSVranked.size() > 1) {
+
+      int bJetFarFromTop = -1;
+      if (topsPass.size()==1) {
+	
+	float dr1 = PhysicsUtilities::deltaR(*jetsCSVranked[0],topsPass[0]);
+	float dr2 = PhysicsUtilities::deltaR(*jetsCSVranked[1],topsPass[0]);
+
+	if (dr1>=dr2) { bJetFarFromTop = 0; } else { bJetFarFromTop = 1; } 
+
+      }
+
       mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
       dphicsv2met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[1], *met));
       data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
@@ -697,6 +810,13 @@ struct TreeFiller {
       data->fill<float>(i_mtcsv12met, min(mtcsv1met,mtcsv2met));
       data->fill<float>(i_dphicsv2met, dphicsv2met);
       data->fill<float>(i_dphicsv12met,min(dphicsv1met,dphicsv2met));
+
+      float mtcsv12met_mod_tmp = -1.;
+      if (topsPass.size()!=1) { mtcsv12met_mod_tmp = min(mtcsv1met,mtcsv2met); }
+      else                    { mtcsv12met_mod_tmp = JetKinematics::transverseMass(*jetsCSVranked[bJetFarFromTop], *met); }
+
+      data->fill<float>(i_mtcsv12met_mod, mtcsv12met_mod_tmp);
+
     }
    
   }
