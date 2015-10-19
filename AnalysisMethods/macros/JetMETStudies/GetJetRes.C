@@ -12,8 +12,8 @@ using namespace std;
 
 void getRes(TTree * tree,TFile* oF){
 
-  double jetPTs[] = {25,30,40,50,60,80,100,120,150,180,220,270,350,450,550,700,900,1200,2000};
-  int nJetPTS = 18;
+  double jetPTs[] = {20,25,30,40,50,60,80,100,120,150,180,220,270,350,450,550,700,900,1200,2000};
+  int nJetPTS = 19;
 
   double jetETAs[] = {0,1.1,1.7,2.3,2.8,3.2,5};
   int nJetETAS = 6;

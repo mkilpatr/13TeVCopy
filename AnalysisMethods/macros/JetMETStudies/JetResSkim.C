@@ -27,6 +27,23 @@ public:
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
   }
 
+  //--------------------------------------------------------------------------------------------------
+  void analyze(int reportFrequency = 10000, int numEvents = -1)
+  {
+    loadVariables();
+    isLoaded_ = true;
+    setupTree();
+    book();
+    data.book(treeWriter_);
+    while(reader.nextEvent(reportFrequency)){
+      isProcessed_ = false;
+      if(numEvents >= 0 && getEventNumber() >= numEvents) return;
+      processVariables();
+      data.reset();
+      fillEvent();
+    }
+  }
+
   virtual bool fillEvent() {
 
     for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
@@ -51,6 +68,8 @@ public:
       data.fill<unsigned int>(i_genjetrank,  iJ);
       data.fill<unsigned int>(i_flavor    , convertTo<unsigned int>(gJ.flavor(),"Copier::i_flavor"));
       data.fill<float>(i_recojetpt,rJ == 0 ? 19.5 : rJ->pt());
+      outFile_->cd();
+      treeWriter_->fill();
     }
 
 
