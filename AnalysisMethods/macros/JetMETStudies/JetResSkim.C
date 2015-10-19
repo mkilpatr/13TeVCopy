@@ -67,7 +67,7 @@ public:
       data.fill<float>(i_genjeteta ,gJ.eta() );
       data.fill<unsigned int>(i_genjetrank,  iJ);
       data.fill<unsigned int>(i_flavor    , convertTo<unsigned int>(gJ.flavor(),"Copier::i_flavor"));
-      data.fill<float>(i_recojetpt,rJ == 0 ? 19.5 : rJ->pt());
+      data.fill<float>(i_recojetpt,rJ == 0 ? 9.5 : rJ->pt());
       outFile_->cd();
       treeWriter_->fill();
     }
