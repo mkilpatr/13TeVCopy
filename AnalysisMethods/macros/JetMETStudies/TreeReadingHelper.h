@@ -7,6 +7,12 @@
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
 #include "AnalysisMethods/PlotUtils/interface/PlotTools.hh"
 
+int colorGetter(int counter){
+  int color = counter+1;
+  if(color>= 10) color++;
+  return color;
+}
+
 struct PlotInfo{
   double  minX  ;
   double  maxX  ;

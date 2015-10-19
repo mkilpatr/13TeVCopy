@@ -35,6 +35,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       filler.fillEventInfo(&data, this);
       if(isMC()) filler.fillGenInfo  (&data, 0, genJets, false);
       filler.fillJetInfo  (&data, jets, bJets, met);
+      filler.fillTopTagInfo(&data,this, jets);
       return true;
     }
 
