@@ -472,14 +472,15 @@ struct TreeFiller {
 
     if(ana->nSelLeptons > 0) {
       for(auto* l : ana->selectedLeptons) {
+        bool cleanHt = false;
         float htalong = 0;
         for(const auto* jet : ana->jets) {
           if(PhysicsUtilities::absDeltaPhi(*jet,*l) < TMath::PiOver2()) {
             htalong += jet->pt();
-            if(PhysicsUtilities::deltaR(*jet,*l) < 0.4)
-              htalong -= l->pt();
+            if(PhysicsUtilities::deltaR(*jet,*l) < 0.4) cleanHt = true;
           }
         }
+        if(cleanHt) htalong -= l->pt();
         if(l->ismuon()) {
           data->fillMulti<float>(i_mupt, l->pt());
           data->fillMulti<float>(i_mueta, l->eta());
@@ -498,14 +499,15 @@ struct TreeFiller {
       for(const auto* tr : ana->vetoedTracks) {
         data->fillMulti<float>(i_trackpt, tr->pt());
         data->fillMulti<float>(i_tracketa, tr->eta());
+        bool cleanHt = false;
         float htalong = 0;
         for(const auto* jet : ana->jets) {
           if(PhysicsUtilities::absDeltaPhi(*jet,*tr) < TMath::PiOver2()) {
             htalong += jet->pt();
-            if(PhysicsUtilities::deltaR(*jet,*tr) < 0.4)
-              htalong -= tr->pt();
+            if(PhysicsUtilities::deltaR(*jet,*tr) < 0.4) cleanHt = true;
           }
         }
+        if(cleanHt) htalong -= tr->pt();
         data->fillMulti<float>(i_trackhtalong, htalong);
       }
     }
@@ -514,14 +516,15 @@ struct TreeFiller {
       for(const auto* tau : ana->vetoedTaus) {
         data->fillMulti<float>(i_taupt, tau->pt());
         data->fillMulti<float>(i_taueta, tau->eta());
+        bool cleanHt = false;
         float htalong = 0;
         for(const auto* jet : ana->jets) {
           if(PhysicsUtilities::absDeltaPhi(*jet,*tau) < TMath::PiOver2()) {
             htalong += jet->pt();
-            if(PhysicsUtilities::deltaR(*jet,*tau) < 0.4)
-              htalong -= tau->pt();
+            if(PhysicsUtilities::deltaR(*jet,*tau) < 0.4) cleanHt = true;
           }
         }
+        if(cleanHt) htalong -= tau->pt();
         data->fillMulti<float>(i_tauhtalong, htalong);
       }
     }
@@ -533,16 +536,15 @@ struct TreeFiller {
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
       data->fill<int  >(i_leptonpdgid, ana->selectedLeptons.at(randomLepton)->pdgid());
+      bool cleanHt = false;
       float htalonglep = 0;
-      float leppt  = lep->pt();
-      float lepeta = lep->eta();
       for(const auto* jet : ana->jets ){
         if (PhysicsUtilities::absDeltaPhi(*jet,*lep) < TMath::PiOver2()) {
           htalonglep += jet->pt();
-          if(PhysicsUtilities::deltaR(*jet,*lep) < 0.4)
-            htalonglep -= leppt;
+          if(PhysicsUtilities::deltaR(*jet,*lep) < .4) cleanHt = true;
         }
       } // jets
+      if(cleanHt) htalonglep -= lep->pt();
       data->fill<float>(i_htalonglep, htalonglep);
       data->fill<float>(i_annulus, lep->pt() * ana->selectedLeptons.at(randomLepton)->annulusactivity());
       bool matchtrigmu = false, matchtrige = false;

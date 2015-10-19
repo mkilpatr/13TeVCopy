@@ -12,6 +12,7 @@
 // mass window will have to be adjusted if we fit non-Z resonances
 
 using namespace ucsbsusy;
+using namespace std; // remove for committing?
 
 class TnPAnalyzer : public BaseTreeAnalyzer {
 
@@ -24,9 +25,12 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
       pt(0),
       eta(0),
       abseta(0),
+      htalong(0),
+      annulus(0),
       phi(0),
       charge(0),
       pass(0),
+      matchnum(0),
       passid(0),
       passiso(0)
     {
@@ -54,9 +58,13 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
     float pt;
     float eta;
     float abseta;
+    float htalong;
+    float annulus;
     float phi;
     float charge;
     int   pass;
+    int   trgmatch;
+    int   matchnum;
     int   passid;
     int   passiso;
 
@@ -87,9 +95,13 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
       outTree_->Branch("pt",&pt,"pt/F");
       outTree_->Branch("eta",&eta,"eta/F");
       outTree_->Branch("abseta",&abseta,"abseta/F");
+      outTree_->Branch("htalong",&htalong,"htalong/F");
+      outTree_->Branch("annulus",&annulus,"annulus/F");
       outTree_->Branch("phi",&phi,"phi/F");
       outTree_->Branch("charge",&charge,"charge/I");
       outTree_->Branch("pass",&pass,"pass/I");
+      outTree_->Branch("trgmatch",&trgmatch,"trgmatch/I");
+      outTree_->Branch("matchnum",&matchnum,"matchnum/I");
       // to be added: separate id and iso
       outTree_->Branch("passid",&passid,"passid/I");
       outTree_->Branch("passiso",&passiso,"passiso/I");
@@ -97,6 +109,7 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
 
     void loadVariables() {
       load(cfgSet::EVTINFO);
+      load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::FILLOBJ);
       load(cfgSet::ELECTRONS);
       load(cfgSet::MUONS);
       load(cfgSet::TRIGOBJS);
@@ -156,30 +169,40 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
       if(tnpLeptons_.size() < 2) return;
 
       // apply trigger
-      if(lepId_ == 13 && !(triggerflag & kHLT_IsoMu24_eta2p1)) return;
+      if(lepId_ == 13 && !(triggerflag & kHLT_IsoTkMu24_eta2p1)) return; // kHLT_IsoMu24_eta2p1
       else if(lepId_ == 11) {
-        if (!isMC() && !(triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf)) return;
-        else if (isMC() && !(triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf)) return;
+        if (!isMC() && !(triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf)) return;
+        else if (isMC() && !(triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf)) return;
       }
 
       // tnp selection
+      matchnum = 0;
       for(auto* tag : tnpLeptons_) {
         // tag has to be a good lepton
         if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, goodLeptonConfig_)) continue;
         else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, goodLeptonConfig_)) continue;
 
+        // check the trigger turn-on
+        if(lepId_==13 && tag->pt()<27) continue;
+        else if(lepId_==11 && tag->pt()<35) continue;
+        if(fabs(tag->eta())>2.1) continue;
+
         // require trigger matching
+        trgmatch = false;
         bool trigmatch = false;
         for(auto* to : triggerObjects) {
-          if(lepId_ == 13 && (to->filterflags() & kSingleIsoMu24) && (to->pathflags() & kHLT_IsoMu24_eta2p1) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          if(lepId_ == 13 && (to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+            trgmatch = true;
             trigmatch = true;
             break;
           }
-          else if(lepId_ == 11 && (to->filterflags() & kSingleEle32) && (isMC() ? (to->pathflags() & kHLT_Ele32_eta2p1_WP75_Gsf) : (to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          else if(lepId_ == 11 && (to->filterflags() & kSingleEle27) && (isMC() ? (to->pathflags() & kHLT_Ele22_eta2p1_WP75_Gsf) : (to->pathflags() & kHLT_Ele27_eta2p1_WPLoose_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+            trgmatch = true;
             trigmatch = true;
             break;
           }
         }
+        if(lepId_==11 && isMC()) trigmatch=true;
         if(!trigmatch) continue;
 
         for(auto* probe : tnpLeptons_) {
@@ -202,12 +225,28 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
 
           mass    = dilep->mass();
           pt      = probe->pt();
-	  eta     = probe->eta();
+          eta     = probe->eta();
           abseta  = fabs(probe->eta());
           phi     = probe->phi();
           charge  = probe->q();
+          annulus = pt * probe->annulusactivity();
+
+          // hadronic activity
+          htalong = 0;
+          bool cleanHttag   = false;
+          bool cleanHtprobe = false;
+          for(const auto* jet : jets ){
+            if (PhysicsUtilities::absDeltaPhi(*jet,*probe) < TMath::PiOver2()) {
+              htalong += jet->pt();
+              if(PhysicsUtilities::deltaR(*jet,*tag  ) < .4) cleanHttag   = true;
+              if(PhysicsUtilities::deltaR(*jet,*probe) < .4) cleanHtprobe = true;
+            }
+          }
+          if(cleanHttag)   htalong -= tag->pt();
+          if(cleanHtprobe) htalong -= pt;
 
           // fill tree
+          ++matchnum;
           outTree_->Fill();
 
           // NB: at the moment if there are multiple T-P pairs in an event, we save all of them. Might want to try the other options
@@ -227,7 +266,7 @@ void produceTnPTree(TString sname = "dyjets_el",
                     const TString outputdir = "trees",
                     const TString fileprefix = "root://cmseos:1094/",
                     const TString json="Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON_v2.txt",
-                    const int leptonId = 11)
+                    const int leptonId = 13)
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -253,7 +292,8 @@ void produceTnPTree(TString sname = "dyjets_el",
   // defines the lepton selection
   a.goodLeptonConfig_ = cfgSet::zl_sel_leptons;
 
-  a.is50ns_ = fname.Contains("50ns") || json.Contains("50ns");
+  //a.is50ns_ = fname.Contains("50ns") || json.Contains("50ns");
+  a.is50ns_ = false;
 
   // lepton flavour
   a.lepId_ = leptonId;
