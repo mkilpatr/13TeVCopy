@@ -11,17 +11,20 @@
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
+
 class TFile;
 
 namespace ucsbsusy {
 class BaseTreeAnalyzer;
+
+enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
+TString corrTypeName (CORRTYPE type);
 
 //General class that holds a single correction
 class Correction {
 public:
   Correction(TString corrName);
   virtual ~Correction() {}
-  virtual float get() const = 0;
 protected:
   const TString name;
 };
@@ -39,11 +42,12 @@ class HistogramCorrection : public Correction {
 public:
   HistogramCorrection(TString corrName, TFile * file);
   void setTargetBin(unsigned int a) {targetBin = a;}
+  void setAxis(float value) { targetBin = corrHist->FindBin(value); }
   virtual float get() const { return corrHist->GetBinContent(targetBin);}
   virtual float getError() const { return corrHist->GetBinError(targetBin);}
-  const TH1F* getHist()  { return corrHist;}
+  TH1F* getHist()        { return corrHist; }
 protected:
-const TH1F* corrHist;
+TH1F* corrHist;
 unsigned int targetBin;
 };
 
