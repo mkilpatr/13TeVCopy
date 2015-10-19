@@ -68,8 +68,9 @@ class LimitConfig:
     tree = file.Get('limit')
     htmp = TH1D('htmp','htmp',1,0,10000)
     mean = htmp.GetMean()
-    error = htmp.GetError()
-    output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
+    #error = htmp.GetError()
+    #output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
+    output = 'mean=' + str(mean) + '\n'
     return output
 
   # for each signal, combine the datacards for it, run the
@@ -115,7 +116,25 @@ class LimitConfig:
       #####
       
       # === Asymptotic
-      if self.limitmethod=='Asymptotic':
+      if self.limitmethod=='AsymptoticLimits':
+        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 -n '+signal
+        # run the limit command and figure out what the output root file is
+        print 'now running:' #DEUBGGING ONLY 
+        print runLimitsCommand, '\n' # keep this in some kind of log file?
+        output = commands.getoutput(runLimitsCommand)
+        print output # maybe redirect this to some kind of log file?
+        
+        # pull the expected limit out and store
+        tempLimit = ''
+        for line in output.split('\n'): 
+          if 'Expected 50' in line: 
+            tempLimit = line.replace('Expected',signal+' expected') 
+        if tempLimit=='': 
+          significances.append(signal+': no limits found..')
+        else:
+          significances.append(tempLimit)  
+      
+      elif self.limitmethod=='Asymptotic':
         runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --expectSignal=1 -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
@@ -205,10 +224,10 @@ class LimitConfig:
       print '\n', '='*60, '\n'
     
     # print the significances
-    print '='*5, 'SIGNIFICANCES', '('+self.limitmethod+')', '='*5
+    print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
     print '\n'.join(significances)
     print '\n'
-    
+
     # rearrange significances to be more eaisly put in a table
     if self.limitmethod=='Asymptotic':
       sigsamps = []
@@ -221,6 +240,5 @@ class LimitConfig:
       print '\t'.join(siglims)
       print '\n'
       
-
 
 if __name__=='__main__': main()

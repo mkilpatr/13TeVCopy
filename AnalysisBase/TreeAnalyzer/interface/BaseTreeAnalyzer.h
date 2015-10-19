@@ -124,6 +124,7 @@ public:
     unsigned long      triggerflag;
 
     int   nPV;
+    float nPU;
     float rho;
     int   nSelLeptons;
     int   nVetoedLeptons;
@@ -161,6 +162,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
     EventCorrectionSet  eventCorrections;
+    LeptonCorrectionSet leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
     BTagCorrectionSet    bTagCorrections;
 
