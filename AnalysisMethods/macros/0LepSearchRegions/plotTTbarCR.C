@@ -3,13 +3,13 @@
 #endif
 
 
-void plotTTbarCR(const TString conffile="plotttbarcr_2e.conf",
-                 const TString inputdir="trees_ttbarcr_100615",
-                 const TString outputdir="plots_ttbarcr/100615/2e",
-                 const TString channel="2e",
+void plotTTbarCR(const TString conffile="plotting/plotttbarcr_emu.conf",    // plotting/plotttbarcr_2mu.conf // plotting/plotttbarcr_2e.conf
+                 const TString inputdir="trees_ttbarcr",
+                 const TString outputdir="plots_ttbarcr/emu",               // plots_ttbarcr/2mu    // plots_ttbarcr/2e
+                 const TString channel="e#mu",                              // 2e // 2#mu
                  const double  sigscale = -1,
                  const bool    plotlog = false,
-                 const TString lumistr = "0.209",
+                 const TString lumistr = "578",
                  const TString format = "png")
 {
 
@@ -28,8 +28,8 @@ void plotTTbarCR(const TString conffile="plotttbarcr_2e.conf",
   plots->setFormat(format);
   if(plotlog)
     plots->setLogy();
-  plots->setWgtVar(lumistr+"*weight");
-  plots->setHeaderText("#sqrt{s} = 13 TeV","209 pb^{-1}",channel);
+  plots->setWgtVar(lumistr+"*0.001*weight*puWeight");
+  plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr+" pb^{-1}",channel);
   plots->setHeaderPosition(0.2, 0.93);
 
   map<TString,TString> sel;
@@ -37,30 +37,31 @@ void plotTTbarCR(const TString conffile="plotttbarcr_2e.conf",
   sel["trig2mu"]       = "passjson && leptonpdgid==13 && lepton2pdgid==13 && passtrigmu17mu8 && leptonpt>20 && lepton2pt > 10 && (dilepmass<71 || dilepmass>111) && !(" + sel["trigemu"] + ")";
   sel["trig2e"]        = "passjson && leptonpdgid==11 && lepton2pdgid==11 && passtrige17e12 && leptonpt>20 && lepton2pt > 15 && (dilepmass<71 || dilepmass>111) && !(" + sel["trigemu"] + ") && !(" + sel["trig2mu"] + ")";
   sel["trigall"]       = "((" + sel["trigemu"]  + ") || (" + sel["trig2mu"] + ") || (" + sel["trig2e"] + "))";
-  sel["filt"]          = " && passcscflt && passeebadscflt && passhbheflt";
+  sel["filt"]          = " && passcscflt && passeebadscflt && passhbheflttight";
   sel["jets"]          = " && dilepmass>20 && njets>=1 && nbjets>=1 && met>50"; // + sel["filt"];
+  sel["lumicorr"]      = "((562./578.)*(" + sel["trig2e"] + ") + 1.0*(!(" + sel["trig2e"] + ")))*";
 
   // all
   if(channel == "2l") {
-    plots->addTreeVar("npv_trigall",                             "npv",                          sel["trigall"] + sel["jets"],                                                     "Number of Vertices", 36, -0.5, 35.5);
-    plots->addTreeVar("njets_trigall",                           "njets",                        sel["trigall"] + sel["jets"],                                                     "Number of Jets", 11, -0.5, 10.5);
-    plots->addTreeVar("njets30_trigall",                         "njets30",                      sel["trigall"] + sel["jets"],                                                     "Number of Jets", 11, -0.5, 10.5);
-    plots->addTreeVar("nbjets_trigall",                          "nbjets",                       sel["trigall"] + sel["jets"],                                                     "Number of b-Jets", 6, -0.5, 5.5);
-    plots->addTreeVar("nbjets30_trigall",                        "nbjets30",                     sel["trigall"] + sel["jets"],                                                     "Number of b-Jets", 6, -0.5, 5.5);
-    plots->addTreeVar("met_trigall",                             "met",                          sel["trigall"] + sel["jets"],                                                     "#slash{E}_{T} [GeV]", 25, 0, 500);
-    plots->addTreeVar("metnohf_trigall",                         "metnohf",                      sel["trigall"] + sel["jets"],                                                     "No HF #slash{E}_{T} [GeV]", 25, 0, 500);
-    plots->addTreeVar("dilep_pt_trigall",                        "dileppt",                      sel["trigall"] + sel["jets"],                                                     "p_{T}(ll) [GeV]", 20, 0, 400);
-    plots->addTreeVar("dilep_mass_trigall",                      "dilepmass",                    sel["trigall"] + sel["jets"],                                                     "m(ll) [GeV]", 20, 0, 400);
-    plots->addTreeVar("ht_trigall",                              "ht",                           sel["trigall"] + sel["jets"],                                                     "H_{T} [GeV]", 25, 0, 300);
-    plots->addTreeVar("ht30_trigall",                            "ht30",                         sel["trigall"] + sel["jets"],                                                     "H_{T} [GeV]", 25, 0, 500);
-    plots->addTreeVar("j1pt_trigall",                            "j1pt",                         sel["trigall"] + sel["jets"],                                                     "Leading jet p_{T} [GeV]", 25, 0, 250);
-    plots->addTreeVar("j1eta_trigall",                           "j1eta",                        sel["trigall"] + sel["jets"],                                                     "Leading jet #eta", 20, -3.0, 3.0);
-    plots->addTreeVar("j2pt_trigall",                            "j2pt",                         sel["trigall"] + sel["jets"] + " && njets>=2",                                  "Second jet p_{T} [GeV]", 25, 0, 250);
-    plots->addTreeVar("j2eta_trigall",                           "j2eta",                        sel["trigall"] + sel["jets"] + " && njets>=2",                                  "Second jet #eta", 20, -3.0, 3.0);
-    plots->addTreeVar("lepton1pt_trigall",                       "leptonpt",                     sel["trigall"] + sel["jets"],                                                     "Leading lepton p_{T} [GeV]", 25, 0, 250);
-    plots->addTreeVar("lepton1eta_trigall",                      "leptoneta",                    sel["trigall"] + sel["jets"],                                                     "Leading lepton #eta", 20, -3.0, 3.0);
-    plots->addTreeVar("lepton2pt_trigall",                       "lepton2pt",                    sel["trigall"] + sel["jets"],                                                     "Second lepton p_{T} [GeV]", 25, 0, 250);
-    plots->addTreeVar("lepton2eta_trigall",                      "lepton2eta",                   sel["trigall"] + sel["jets"],                                                     "Second lepton #eta", 20, -3.0, 3.0);
+    plots->addTreeVar("npv_trigall",                             "npv",                          sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Number of Vertices", 36, -0.5, 35.5);
+    plots->addTreeVar("njets_trigall",                           "njets",                        sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Number of Jets", 11, -0.5, 10.5);
+    plots->addTreeVar("njets30_trigall",                         "njets30",                      sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Number of Jets", 11, -0.5, 10.5);
+    plots->addTreeVar("nbjets_trigall",                          "nbjets",                       sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Number of b-Jets", 6, -0.5, 5.5);
+    plots->addTreeVar("nbjets30_trigall",                        "nbjets30",                     sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Number of b-Jets", 6, -0.5, 5.5);
+    plots->addTreeVar("met_trigall",                             "met",                          sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "#slash{E}_{T} [GeV]", 25, 0, 500);
+    plots->addTreeVar("metnohf_trigall",                         "metnohf",                      sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "No HF #slash{E}_{T} [GeV]", 25, 0, 500);
+    plots->addTreeVar("dilep_pt_trigall",                        "dileppt",                      sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "p_{T}(ll) [GeV]", 20, 0, 400);
+    plots->addTreeVar("dilep_mass_trigall",                      "dilepmass",                    sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "m(ll) [GeV]", 20, 0, 400);
+    plots->addTreeVar("ht_trigall",                              "ht",                           sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "H_{T} [GeV]", 25, 0, 300);
+    plots->addTreeVar("ht30_trigall",                            "ht30",                         sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "H_{T} [GeV]", 25, 0, 500);
+    plots->addTreeVar("j1pt_trigall",                            "j1pt",                         sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Leading jet p_{T} [GeV]", 25, 0, 250);
+    plots->addTreeVar("j1eta_trigall",                           "j1eta",                        sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Leading jet #eta", 20, -3.0, 3.0);
+    plots->addTreeVar("j2pt_trigall",                            "j2pt",                         sel["lumicorr"] + sel["trigall"] + sel["jets"] + " && njets>=2",                                    "Second jet p_{T} [GeV]", 25, 0, 250);
+    plots->addTreeVar("j2eta_trigall",                           "j2eta",                        sel["lumicorr"] + sel["trigall"] + sel["jets"] + " && njets>=2",                                    "Second jet #eta", 20, -3.0, 3.0);
+    plots->addTreeVar("lepton1pt_trigall",                       "leptonpt",                     sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Leading lepton p_{T} [GeV]", 25, 0, 250);
+    plots->addTreeVar("lepton1eta_trigall",                      "leptoneta",                    sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Leading lepton #eta", 20, -3.0, 3.0);
+    plots->addTreeVar("lepton2pt_trigall",                       "lepton2pt",                    sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Second lepton p_{T} [GeV]", 25, 0, 250);
+    plots->addTreeVar("lepton2eta_trigall",                      "lepton2eta",                   sel["lumicorr"] + sel["trigall"] + sel["jets"],                                                     "Second lepton #eta", 20, -3.0, 3.0);
   }
 
   // emu
