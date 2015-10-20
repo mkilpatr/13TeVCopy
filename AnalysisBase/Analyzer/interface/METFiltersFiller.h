@@ -54,6 +54,8 @@ namespace ucsbsusy {
     size hbheFilterRun2Loose_;
     size hbheFilterRun2Tight_;
 
+    bool isFastSim_;
+
   public :
     edm::Handle<edm::TriggerResults> triggerBits_;
     edm::Handle<bool> hNoiseResult_;

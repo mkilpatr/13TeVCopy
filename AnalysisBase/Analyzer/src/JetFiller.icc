@@ -40,6 +40,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   superJets_         (0),
   superJetAssoc_     (0),
   superJetNsub_      (0),
+  jetCorrInputFileName_ (cfg.getUntrackedParameter<edm::FileInPath>("jetCorrInputFile")),
   jetCorrUncertaintyTag_(cfg.getUntrackedParameter<std::string>("jetCorrUncertainty")),
   jecLabel_             (cfg.getUntrackedParameter<std::string>("jecLabel","AK4PFchs")),
   jecUnc_            (0)
@@ -131,10 +132,16 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     iEvent.getByToken(qglToken_,qgHandleQGL_);
   }
   // Fill JEC uncertainty variables
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get(jecLabel_, JetCorParColl);
-  JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
-  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  if(options_ & LOADUNCFROMFILE) {
+    if ( jetCorrInputFileName_.location() == edm::FileInPath::Unknown) throw cms::Exception("JetFiller");
+    JetCorrectorParameters* JetCorPar = new JetCorrectorParameters(jetCorrInputFileName_.fullPath().data(), jetCorrUncertaintyTag_);
+    jecUnc_ = new JetCorrectionUncertainty(*JetCorPar);
+  } else {
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    iSetup.get<JetCorrectionsRecord>().get(jecLabel_, JetCorParColl);
+    JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
+    jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  }
 
   isLoaded_ = true;
 
@@ -332,6 +339,7 @@ void JetFiller<Jet>::fill()
 
   }
 
+  delete jecUnc_;
   isFilled_ = true;
 }
 }

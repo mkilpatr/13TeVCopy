@@ -19,7 +19,8 @@ METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCo
   hNoiseResultToken_          (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbhe"))),
   hNoiseResultRun2LooseToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2loose"))),
   hNoiseResultRun2TightToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2tight"))),
-  triggerNames_(0)
+  triggerNames_(0),
+  isFastSim_(cfg.getUntrackedParameter<bool>("isFastSim"))
 {
 
   initTriggerNames();
@@ -55,9 +56,11 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
-  iEvent.getByToken(hNoiseResultToken_, hNoiseResult_);
-  iEvent.getByToken(hNoiseResultRun2LooseToken_, hNoiseResultRun2Loose_);
-  iEvent.getByToken(hNoiseResultRun2TightToken_, hNoiseResultRun2Tight_);
+  if( ! isFastSim_ ) {
+    iEvent.getByToken(hNoiseResultToken_, hNoiseResult_);
+    iEvent.getByToken(hNoiseResultRun2LooseToken_, hNoiseResultRun2Loose_);
+    iEvent.getByToken(hNoiseResultRun2TightToken_, hNoiseResultRun2Tight_);
+  }
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 
@@ -66,10 +69,9 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 //--------------------------------------------------------------------------------------------------
 void METFiltersFiller::fill()
 {
-
-  data.fillMulti<bool>(hbheFilterFix_,*hNoiseResult_);
-  data.fillMulti<bool>(hbheFilterRun2Loose_,*hNoiseResultRun2Loose_);
-  data.fillMulti<bool>(hbheFilterRun2Tight_,*hNoiseResultRun2Tight_);
+  data.fillMulti<bool>(hbheFilterFix_,       isFastSim_ ? true : *hNoiseResult_);
+  data.fillMulti<bool>(hbheFilterRun2Loose_, isFastSim_ ? true : *hNoiseResultRun2Loose_);
+  data.fillMulti<bool>(hbheFilterRun2Tight_, isFastSim_ ? true : *hNoiseResultRun2Tight_);
 
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));

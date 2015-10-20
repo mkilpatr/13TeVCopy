@@ -77,6 +77,10 @@ if '/store/data' in options.inputFiles[0] :
     else :
         process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
         process.TestAnalyzer.EventInfo.metsOOB = cms.InputTag('slimmedMETs','','RECO')
+    import FWCore.PythonUtilities.LumiList as LumiList
+    import os
+    dcsOnlyJSON = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_259626_20Oct2015.txt")
+    process.source.lumisToProcess = LumiList.LumiList(filename = dcsOnlyJSON).getVLuminosityBlockRange()
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
