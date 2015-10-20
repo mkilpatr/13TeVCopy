@@ -64,11 +64,20 @@ if '50ns' in options.inputFiles[0] :
     process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_startup_v2')
 
 ISDATA = False
+runMetCorrAndUnc = False
+updateJECs = False
+JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
 
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_v2')
+    JECUNCFILE = 'data/JEC/Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt'
+    if 'PromptReco-v3' in options.inputFiles[0] :
+        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
+        updateJECs = True
+        runMetCorrAndUnc = True
+    else :
+        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v4')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -198,7 +207,7 @@ if ISDATA :
 # Custom METs
 # Configurable options =======================================================================
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=True   #use external JECs (sqlite file)
+usePrivateSQlite=False  #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 
@@ -233,18 +242,11 @@ if usePrivateSQlite:
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Jets are rebuilt from those candidates by the tools, no need to do anything else
-runMetCorrAndUnc = True
-
 if runMetCorrAndUnc :
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
     # Default configuration for miniAOD reprocessing, change the isData flag to run on data
     # For a full met computation, remove the pfCandColl input
-    JECUNCFILE = ''
-    if ISDATA :
-        JECUNCFILE = 'data/JEC/Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt'
-    else :
-        JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
                                jecUncFile=JECUNCFILE
@@ -280,9 +282,9 @@ if runMetCorrAndUnc :
               process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
 
 #==============================================================================================================================#
-# Also update jets with different JECs
-updateJECs = True
+process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE)
 
+# Also update jets with different JECs
 if updateJECs:
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
     process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
