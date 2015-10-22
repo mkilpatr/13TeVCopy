@@ -152,8 +152,6 @@ public:
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
       // JEC uncertainties
-      edm::FileInPath           jetCorrInputFileName_;  // if from external file
-      std::string               jetCorrUncertaintyTag_;
       std::string               jecLabel_;
       JetCorrectionUncertainty *jecUnc_;
 
