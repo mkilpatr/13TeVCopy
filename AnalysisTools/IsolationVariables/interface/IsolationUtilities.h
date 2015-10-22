@@ -31,13 +31,15 @@ typedef std::vector<LorentzVector> LorentzVectorCollection;
 
 namespace Isolation {
 
+enum IsoType {CHARGED, PF_WEIGHT, EA_CORR, DBETA_CORR};
+
 struct MiniPFIsoResult{
   double miniIso, activity;
   MiniPFIsoResult(double iso, double act) : miniIso(iso), activity(act) {}
 };
 
-MiniPFIsoResult miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands);
-MiniPFIsoResult miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands);
+MiniPFIsoResult miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands, IsoType isotype = DBETA_CORR, double rho = 0);
+MiniPFIsoResult miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands, IsoType isotype = DBETA_CORR, double rho = 0);
 
 double rhoIso(const pat::Electron& el, double rho);
 double rhoIso(const pat::Muon& mu, double rho);

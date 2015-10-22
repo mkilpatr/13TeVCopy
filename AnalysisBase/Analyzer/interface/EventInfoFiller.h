@@ -59,6 +59,7 @@ namespace ucsbsusy {
       edm::EDGetTokenT<pat::METCollection>              metToken_;
       edm::EDGetTokenT<pat::METCollection>              metOOBToken_;
       edm::EDGetTokenT<pat::METCollection>              metNoHFToken_;
+      edm::EDGetTokenT<pat::METCollection>              puppimetToken_;
       edm::EDGetTokenT<GenEventInfoProduct>             genEvtInfoToken_;
       edm::EDGetTokenT<LHEEventProduct>                 lheEvtInfoToken_;
       std::vector<unsigned int>                         systWgtIndices_;
@@ -87,9 +88,9 @@ namespace ucsbsusy {
       size imetnohfpt_    ;
       size imetnohfphi_   ;
       size imetnohfsumEt_ ;
-      size irawmetnohfpt_ ;
-      size irawmetnohfphi_;
-      size irawmetnohfsumEt_;
+      size ipuppimetpt_   ;
+      size ipuppimetphi_  ;
+      size ipuppimetsumEt_;
       size igenmetpt_     ; 
       size igenmetphi_    ;
       size igenwgt_       ;
@@ -106,12 +107,14 @@ namespace ucsbsusy {
       const pat::MET *met_;
       const pat::MET *metOOB_;
       const pat::MET *metNoHF_;
+      const pat::MET *puppimet_;
       edm::Handle<reco::VertexCollection>          vertices_;
       edm::Handle<double>                          rho_;
       edm::Handle<std::vector<PileupSummaryInfo> > puSummaryInfos_;
       edm::Handle<pat::METCollection>              mets_;
       edm::Handle<pat::METCollection>              metsOOB_;
       edm::Handle<pat::METCollection>              metsNoHF_;
+      edm::Handle<pat::METCollection>              puppimets_;
       edm::Handle<GenEventInfoProduct>             genEvtInfo_;
       edm::Handle<LHEEventProduct>                 lheEvtInfo_;
 

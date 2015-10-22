@@ -22,8 +22,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
-#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/30000/0022C9A0-4E61-E511-BAAC-0002C92DB46C.root'
+#options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
+options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
 
 options.maxEvents = -1
 
@@ -66,7 +66,7 @@ if '50ns' in options.inputFiles[0] :
 ISDATA = False
 runMetCorrAndUnc = False
 updateJECs = False
-JECUNCFILE = 'PhysicsTools/PatUtils/data/Summer15_25nsV2_MC_UncertaintySources_AK4PFchs.txt' if '25ns' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
+JECUNCFILE = 'data/JEC/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt' if '25ns' in options.inputFiles[0] or '74X_mcRun2_asymptotic_v2' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
 
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
@@ -172,14 +172,22 @@ process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPho
 process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-medium")
 process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-tight")
 
+if not 'Photon' in options.inputFiles[0] and not 'GJets' in options.inputFiles[0] and not 'QCD' in options.inputFiles[0] :
+    process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
+    process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
 
 #==============================================================================================================================#
 # ======================== HCAL_Noise_Filter ===================================
 process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
 process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
+process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(False) 
 
 process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
    inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+   reverseDecision = cms.bool(False)
+)
+process.ApplyBaselineHBHEIsoNoiseFilter = cms.EDFilter('BooleanFlagFilter',
+   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHEIsoNoiseFilterResult'),
    reverseDecision = cms.bool(False)
 )
 process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFilter.clone(
@@ -218,7 +226,7 @@ if not useHFCandidates:
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
                                      )
 
-# Run using external JECs ... doesn't work at the moment
+# Run using external JECs
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
@@ -293,15 +301,27 @@ if updateJECs:
                   'L2Relative', 
                   'L3Absolute'],
         payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
+    process.patJetCorrFactorsReapplyJECAK8 = patJetCorrFactorsUpdated.clone(
+        src = cms.InputTag("slimmedJetsAK8"),
+        levels = ['L1FastJet', 
+                  'L2Relative', 
+                  'L3Absolute'],
+        payload = 'AK8PFchs' ) # Make sure to choose the appropriate levels and payload here!
     if ISDATA and applyResiduals:
         process.patJetCorrFactorsReapplyJEC.levels = ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']
+        process.patJetCorrFactorsReapplyJECAK8.levels = ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']
 
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
     process.patJetsReapplyJEC = patJetsUpdated.clone(
         jetSource = cms.InputTag("slimmedJets"),
         jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
     )
+    process.patJetsAK8ReapplyJEC = patJetsUpdated.clone(
+        jetSource = cms.InputTag("slimmedJetsAK8"),
+        jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
+    )
     process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('patJetsAK8ReapplyJEC')
     process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Electrons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Photons.jets = cms.InputTag('patJetsReapplyJEC')
@@ -311,7 +331,9 @@ if updateJECs:
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
 
     process.p = cms.Path(process.patJetCorrFactorsReapplyJEC *
+                         process.patJetCorrFactorsReapplyJECAK8 *
                          process.patJetsReapplyJEC        *
+                         process.patJetsAK8ReapplyJEC     *
                          process.ak4PatAssocSeq           * 
                          process.ca8JetsSeq               *
                          process.egmGsfElectronIDSequence * 

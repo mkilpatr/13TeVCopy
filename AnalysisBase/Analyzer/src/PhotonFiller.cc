@@ -12,7 +12,6 @@ using namespace ucsbsusy;
 PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
   photonToken_  (cc.consumes<pat::PhotonCollection>(cfg.getParameter<edm::InputTag>("photons"))),
-  //vetoIdToken_  (cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("vetoId"))),
   looseIdToken_ (cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("looseId"))),
   mediumIdToken_(cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("mediumId"))),
   tightIdToken_ (cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("tightId"))),
@@ -27,43 +26,42 @@ PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   jetptMinRC_     (cfg.getUntrackedParameter<double> ("minJetPtRC")),
   leptonptMinRC_     (cfg.getUntrackedParameter<double> ("minLeptonPtRC"))
 {
-	  ipt_         = data.addMulti<float>(branchName_,"pt",0);
-	  ieta_        = data.addMulti<float>(branchName_,"eta",0);
-	  iSCeta_      = data.addMulti<float>(branchName_,"SCeta",0);
-	  iphi_        = data.addMulti<float>(branchName_,"phi",0);
-	  imass_       = data.addMulti<float>(branchName_,"mass",0);
-	  ir9_         = data.addMulti<float>(branchName_,"r9",0);
-	  //ivetoid_     = data.addMulti<bool >(branchName_,"vetoid",false);
-	  ilooseid_    = data.addMulti<bool >(branchName_,"looseid",false);
-	  imediumid_   = data.addMulti<bool >(branchName_,"mediumid",false);
-	  itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
-	  ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
+    ipt_         = data.addMulti<float>(branchName_,"pt",0);
+    ieta_        = data.addMulti<float>(branchName_,"eta",0);
+    iSCeta_      = data.addMulti<float>(branchName_,"SCeta",0);
+    iphi_        = data.addMulti<float>(branchName_,"phi",0);
+    imass_       = data.addMulti<float>(branchName_,"mass",0);
+    ir9_         = data.addMulti<float>(branchName_,"r9",0);
+    ilooseid_    = data.addMulti<bool >(branchName_,"looseid",false);
+    imediumid_   = data.addMulti<bool >(branchName_,"mediumid",false);
+    itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
+    ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
     ipassElectronVeto_   = data.addMulti<bool >(branchName_,"passConvVeto",false);
     ihasPixelSeed_       = data.addMulti<bool >(branchName_,"hasPixelSeed",false);
 
-	  if(options_ & FILLIDVARS) {
-	    isigietaieta_        = data.addMulti<float>(branchName_,"sigietaieta",0);
-	    ifull5x5sigietaieta_ = data.addMulti<float>(branchName_,"full5x5sigietaieta",0);
-	    ihOverE_             = data.addMulti<float>(branchName_,"hOverE",0);
-	    irhoPFchargedHadronIso_ = data.addMulti<float>(branchName_,"rhoPFchargedHadronIso",0);
-	    irhoPFneutralHadronIso_ = data.addMulti<float>(branchName_,"rhoPFneutralHadronIso",0);
-	    irhoPFphotonIso_        = data.addMulti<float>(branchName_,"rhoPFphotonIso",0);
-	    ietaRC_                 = data.addMulti<float>(branchName_,"etaRC",0);
-	    iphiRC_                 = data.addMulti<float>(branchName_,"phiRC",0);
-	    irhoPFchargedHadronIsoRC_ = data.addMulti<float>(branchName_,"rhoPFchargedHadronIsoRC",0);
-	    irhoPFneutralHadronIsoRC_ = data.addMulti<float>(branchName_,"rhoPFneutralHadronIsoRC",0);
-	    irhoPFphotonIsoRC_        = data.addMulti<float>(branchName_,"rhoPFphotonIsoRC",0);
-	  }
+    if(options_ & FILLIDVARS) {
+      isigietaieta_        = data.addMulti<float>(branchName_,"sigietaieta",0);
+      ifull5x5sigietaieta_ = data.addMulti<float>(branchName_,"full5x5sigietaieta",0);
+      ihOverE_             = data.addMulti<float>(branchName_,"hOverE",0);
+      irhoPFchargedHadronIso_ = data.addMulti<float>(branchName_,"rhoPFchargedHadronIso",0);
+      irhoPFneutralHadronIso_ = data.addMulti<float>(branchName_,"rhoPFneutralHadronIso",0);
+      irhoPFphotonIso_        = data.addMulti<float>(branchName_,"rhoPFphotonIso",0);
+      ietaRC_                 = data.addMulti<float>(branchName_,"etaRC",0);
+      iphiRC_                 = data.addMulti<float>(branchName_,"phiRC",0);
+      irhoPFchargedHadronIsoRC_ = data.addMulti<float>(branchName_,"rhoPFchargedHadronIsoRC",0);
+      irhoPFneutralHadronIsoRC_ = data.addMulti<float>(branchName_,"rhoPFneutralHadronIsoRC",0);
+      irhoPFphotonIsoRC_        = data.addMulti<float>(branchName_,"rhoPFphotonIsoRC",0);
+    }
 
-	  if(options_ & FILLISOVARS) {
-	    itrackiso_     = data.addMulti<float>(branchName_,"trackiso",0);
-	    iecaliso_      = data.addMulti<float>(branchName_,"ecaliso",0);
-	    ihcaliso_      = data.addMulti<float>(branchName_,"hcaliso",0);
-	    ipfchargedHadronIso_ = data.addMulti<float>(branchName_,"pfchargediso",0);
-	    ipfneutralHadronIso_ = data.addMulti<float>(branchName_,"pfneutraliso",0);
-	    ipfphotonIso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
-	    ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
-	  }
+    if(options_ & FILLISOVARS) {
+      itrackiso_     = data.addMulti<float>(branchName_,"trackiso",0);
+      iecaliso_      = data.addMulti<float>(branchName_,"ecaliso",0);
+      ihcaliso_      = data.addMulti<float>(branchName_,"hcaliso",0);
+      ipfchargedHadronIso_ = data.addMulti<float>(branchName_,"pfchargediso",0);
+      ipfneutralHadronIso_ = data.addMulti<float>(branchName_,"pfneutraliso",0);
+      ipfphotonIso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
+      ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -71,7 +69,6 @@ void PhotonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(photonToken_,photons_);
-  //iEvent.getByToken(vetoIdToken_,veto_id_decisions_);
   iEvent.getByToken(looseIdToken_,loose_id_decisions_);
   iEvent.getByToken(mediumIdToken_,medium_id_decisions_);
   iEvent.getByToken(tightIdToken_,tight_id_decisions_);
@@ -152,11 +149,9 @@ void PhotonFiller::fill()
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
 
     const edm::Ptr<pat::Photon> phoPtr(photons_, pho - photons_->begin() );
-    //bool passveto = (*veto_id_decisions_)[ phoPtr ];
     bool passloose = (*loose_id_decisions_)[ phoPtr ];
     bool passmedium = (*medium_id_decisions_)[ phoPtr ];
     bool passtight = (*tight_id_decisions_)[ phoPtr ];
-    //data.fillMulti<bool >(ivetoid_, passveto);
     data.fillMulti<bool >(ilooseid_, passloose);
     data.fillMulti<bool >(imediumid_, passmedium);
     data.fillMulti<bool >(itightid_, passtight);
@@ -172,13 +167,13 @@ void PhotonFiller::fill()
       data.fillMulti<float>(ietaRC_, photonIsoFPRRandomConeEta);
       data.fillMulti<float>(iphiRC_, photonIsoFPRRandomConePhi);
       if(passminiaodpresel){
-	data.fillMulti<float>(irhoPFchargedHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeChargedVtx0, *rho_, CHARGED));
-	data.fillMulti<float>(irhoPFneutralHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeNeutral, *rho_, NEUTRAL));
-	data.fillMulti<float>(irhoPFphotonIsoRC_,        calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConePhoton, *rho_, PHOTON));
+        data.fillMulti<float>(irhoPFchargedHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeChargedVtx0, *rho_, CHARGED));
+        data.fillMulti<float>(irhoPFneutralHadronIsoRC_, calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConeNeutral, *rho_, NEUTRAL));
+        data.fillMulti<float>(irhoPFphotonIsoRC_,        calculateRhoIso(photonIsoFPRRandomConeEta, photonIsoFPRRandomConePhoton, *rho_, PHOTON));
       }else{//if miniaod info for photons not saved, not a real good photon for RC -> put then default values of -99 everywhere
-	data.fillMulti<float>(irhoPFchargedHadronIsoRC_, photonIsoFPRRandomConeEta);
-	data.fillMulti<float>(irhoPFneutralHadronIsoRC_, photonIsoFPRRandomConeEta);
-	data.fillMulti<float>(irhoPFphotonIsoRC_,        photonIsoFPRRandomConeEta);
+        data.fillMulti<float>(irhoPFchargedHadronIsoRC_, photonIsoFPRRandomConeEta);
+        data.fillMulti<float>(irhoPFneutralHadronIsoRC_, photonIsoFPRRandomConeEta);
+        data.fillMulti<float>(irhoPFphotonIsoRC_,        photonIsoFPRRandomConeEta);
       }
     }
     

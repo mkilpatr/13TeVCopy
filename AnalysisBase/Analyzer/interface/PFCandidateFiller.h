@@ -69,10 +69,6 @@ namespace ucsbsusy {
       size id0_;
       size idz_;
       size ifromPV_;
-      size imt_;
-      size idphimet_;
-      size imtnohf_;
-      size idphimetnohf_;
       size ichiso0p1_;
       size ichiso0p2_;
       size ichiso0p3_;
@@ -88,7 +84,6 @@ namespace ucsbsusy {
       size icontJetIndex_;
       size icontJetDR_;
       size icontJetCSV_;
-      size icontTauIndex_;
       size itaudisc_mtpresel_;
       size itaudisc_dphipresel_;
       size itrackiso_;

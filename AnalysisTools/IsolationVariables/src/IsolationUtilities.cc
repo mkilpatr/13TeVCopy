@@ -6,25 +6,33 @@
  */
 #include "AnalysisTools/IsolationVariables/interface/IsolationUtilities.h"
 
-Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands) {
+Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands, Isolation::IsoType isotype, double rho) {
   using namespace ElectronIso;
-  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, ACT_CONESIZE);
+  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
   iso.setDeadCone(DEADCONE_CH_EB, DEADCONE_NH_EB, DEADCONE_PH_EB, DEADCONE_PU_EB);
   iso.setDeadConeEE(DEADCONE_CH_EE, DEADCONE_NH_EE, DEADCONE_PH_EE, DEADCONE_PU_EE);
   iso.setObjectMinPt(MIN_PT);
   iso.setPtThreshold(PF_PT_THRESHOLD);
+  iso.setEA(MINIISO_EA_ETA, MINIISO_EA_VALUE);
+  if(isotype == CHARGED) iso.setChargedOnly();
+  else if(isotype == PF_WEIGHT) iso.setUsePFWeight();
+  else if(isotype == EA_CORR) iso.setUseEACorr();
 
   iso.compute(el, pfcands);
   return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity());
 }
 
-Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands) {
+Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands, Isolation::IsoType isotype, double rho) {
   using namespace MuonIso;
-  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, ACT_CONESIZE);
+  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
   iso.setDeadCone(DEADCONE_CH_EB, DEADCONE_NH_EB, DEADCONE_PH_EB, DEADCONE_PU_EB);
   iso.setDeadConeEE(DEADCONE_CH_EE, DEADCONE_NH_EE, DEADCONE_PH_EE, DEADCONE_PU_EE);
   iso.setObjectMinPt(MIN_PT);
   iso.setPtThreshold(PF_PT_THRESHOLD);
+  iso.setEA(MINIISO_EA_ETA, MINIISO_EA_VALUE);
+  if(isotype == CHARGED) iso.setChargedOnly();
+  else if(isotype == PF_WEIGHT) iso.setUsePFWeight();
+  else if(isotype == EA_CORR) iso.setUseEACorr();
 
   iso.compute(mu, pfcands);
   return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity());
