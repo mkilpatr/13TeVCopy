@@ -25,7 +25,7 @@ class QuarkGluonTaggingVariables {
     blf1_     (0),
     blf2_     (0)
   {};
-   ~QuarkGluonTaggingVariables();
+   ~QuarkGluonTaggingVariables() {};
 
 
    void compute(const reco::Jet * jet, bool isReco){
