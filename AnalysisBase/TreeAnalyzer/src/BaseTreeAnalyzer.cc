@@ -16,7 +16,7 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
     run               (0),
     lumi              (0),
     event             (0),

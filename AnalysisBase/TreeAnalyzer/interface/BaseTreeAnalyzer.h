@@ -36,7 +36,7 @@ class BaseTreeAnalyzer {
 public:
     
   public:
-    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,cfgSet::ConfigSet *pars = 0, TString readOption = "READ");
+    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,cfgSet::ConfigSet *pars = 0);
     virtual ~BaseTreeAnalyzer() {};
 
 
