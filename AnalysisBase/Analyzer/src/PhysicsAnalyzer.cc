@@ -248,6 +248,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case TAUS : {
       int defaultOptions = TauFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillCandInfo"))             defaultOptions |= TauFiller::FILLCANDINFO;
       if(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators")) defaultOptions |= TauFiller::FILLRAWDISCS;
       if(cfg.getUntrackedParameter<bool>("printTauIDs"))              defaultOptions |= TauFiller::PRINTIDS;
 

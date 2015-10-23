@@ -40,10 +40,6 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   id0_     = data.addMulti<float>(branchName_,"d0",0);
   idz_     = data.addMulti<float>(branchName_,"dz",0);
   ifromPV_ = data.addMulti<int  >(branchName_,"fromPV",-1);
-  imt_     = data.addMulti<float>(branchName_,"mttrkplusphoton",0);
-  imtnohf_ = data.addMulti<float>(branchName_,"mtnohftrkplusphoton",0);
-  idphimet_      = data.addMulti<float>(branchName_,"dphimet",0);
-  idphimetnohf_  = data.addMulti<float>(branchName_,"dphimetnohf",0);
   ichiso0p1_     = data.addMulti<float>(branchName_,"chiso0p1",0);
   ichiso0p2_     = data.addMulti<float>(branchName_,"chiso0p2",0);
   ichiso0p3_     = data.addMulti<float>(branchName_,"chiso0p3",0);
@@ -60,7 +56,6 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   icontJetIndex_ = data.addMulti<int  >(branchName_,"contJetIndex",-1);
   icontJetDR_    = data.addMulti<float>(branchName_,"contJetDR",-1.0);
   icontJetCSV_   = data.addMulti<float>(branchName_,"contJetCSV",-1.0);
-  icontTauIndex_ = data.addMulti<int  >(branchName_,"contTauIndex",-1);
   itaudisc_mtpresel_      = data.addMulti<float>(branchName_,"taudisc_mtpresel",-10.0);
   itaudisc_dphipresel_    = data.addMulti<float>(branchName_,"taudisc_dphipresel",-10.0);
 }
@@ -275,10 +270,6 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(id0_, -1.*pfc->dxy());
     data.fillMulti<float>(idz_, pfc->dz());
     data.fillMulti<int  >(ifromPV_, pfc->fromPV());
-    data.fillMulti<float>(imt_, computeMT(pfc, evtInfoFiller_->met()));
-    data.fillMulti<float>(imtnohf_, computeMT(pfc, evtInfoFiller_->metNoHF()));
-    data.fillMulti<float>(idphimet_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->met())));
-    data.fillMulti<float>(idphimetnohf_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->metNoHF())));
     data.fillMulti<float>(ichiso0p1_, chiso0p1);
     data.fillMulti<float>(ichiso0p2_, chiso0p2);
     data.fillMulti<float>(ichiso0p3_, chiso0p3);
@@ -295,7 +286,6 @@ void PFCandidateFiller::fill()
     data.fillMulti<int  >(icontJetIndex_, jetIndex);
     data.fillMulti<float>(icontJetDR_, contjetdr);
     data.fillMulti<float>(icontJetCSV_, contjetcsv);
-    data.fillMulti<int  >(icontTauIndex_, getHPSTauIndex(ic));
     data.fillMulti<float>(itaudisc_mtpresel_, taumva_mtpresel);
     data.fillMulti<float>(itaudisc_dphipresel_, taumva_dphipresel);
   }

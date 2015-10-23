@@ -51,13 +51,11 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   ilooseid_    = data.addMulti<bool >(branchName_,"looseid",false);
   imediumid_   = data.addMulti<bool >(branchName_,"mediumid",false);
   itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
-  imvanontrigmediumid_ = data.addMulti<bool >(branchName_,"mvanontrigmediumid",false);
-  imvanontrigtightid_  = data.addMulti<bool >(branchName_,"mvanontrigtightid",false);
-  imvatrigmediumid_    = data.addMulti<bool >(branchName_,"mvatrigmediumid",false);
-  imvatrigtightid_     = data.addMulti<bool >(branchName_,"mvatrigtightid",false);
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
   iannulus_    = data.addMulti<float>(branchName_,"annulus",0);
+  iminiisoeacorr_= data.addMulti<float>(branchName_,"miniisoeacorr",0);
+  iannuluseacorr_= data.addMulti<float>(branchName_,"annuluseacorr",0);
   iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
   iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
   irhoiso_     = data.addMulti<float>(branchName_,"rhoiso",0);
@@ -93,6 +91,10 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   }
 
   if(options_ & FILLPOGMVA) {
+    imvanontrigmediumid_ = data.addMulti<bool >(branchName_,"mvanontrigmediumid",false);
+    imvanontrigtightid_  = data.addMulti<bool >(branchName_,"mvanontrigtightid",false);
+    imvatrigmediumid_    = data.addMulti<bool >(branchName_,"mvatrigmediumid",false);
+    imvatrigtightid_     = data.addMulti<bool >(branchName_,"mvatrigtightid",false);
     imvaidnontrig_    = data.addMulti<float>(branchName,"mvaidnontrig",0);
     imvaidcatnontrig_ = data.addMulti<float>(branchName,"mvaidcatnontrig",0);
     imvaidtrig_       = data.addMulti<float>(branchName,"mvaidtrig",0);
@@ -123,14 +125,16 @@ void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
   iEvent.getByToken(tightIdToken_,tight_id_decisions_);
   iEvent.getByToken(looseIdFullInfoMapToken_,loose_id_cutflow_);
   iEvent.getByToken(mediumIdFullInfoMapToken_,medium_id_cutflow_);
-  iEvent.getByToken(mvanontrigMediumIdToken_,mvanontrig_medium_id_decisions_);
-  iEvent.getByToken(mvanontrigTightIdToken_,mvanontrig_tight_id_decisions_);
-  iEvent.getByToken(mvanontrigMVAValueToken_,mvanontrig_value_map_);
-  iEvent.getByToken(mvanontrigMVACatToken_,mvanontrig_category_map_);
-  iEvent.getByToken(mvatrigMediumIdToken_,mvatrig_medium_id_decisions_);
-  iEvent.getByToken(mvatrigTightIdToken_,mvatrig_tight_id_decisions_);
-  iEvent.getByToken(mvatrigMVAValueToken_,mvatrig_value_map_);
-  iEvent.getByToken(mvatrigMVACatToken_,mvatrig_category_map_);
+  if(options_ & FILLPOGMVA) {
+    iEvent.getByToken(mvanontrigMediumIdToken_,mvanontrig_medium_id_decisions_);
+    iEvent.getByToken(mvanontrigTightIdToken_,mvanontrig_tight_id_decisions_);
+    iEvent.getByToken(mvanontrigMVAValueToken_,mvanontrig_value_map_);
+    iEvent.getByToken(mvanontrigMVACatToken_,mvanontrig_category_map_);
+    iEvent.getByToken(mvatrigMediumIdToken_,mvatrig_medium_id_decisions_);
+    iEvent.getByToken(mvatrigTightIdToken_,mvatrig_tight_id_decisions_);
+    iEvent.getByToken(mvatrigMVAValueToken_,mvatrig_value_map_);
+    iEvent.getByToken(mvatrigMVACatToken_,mvatrig_category_map_);
+  }
   iEvent.getByToken(ca8jetToken_,ca8jets_);
   iEvent.getByToken(rhoToken_,rho_);
   iEvent.getByToken(jetToken_,ak4jets_);
@@ -165,14 +169,14 @@ void ElectronFiller::fill()
     data.fillMulti<bool >(ilooseid_, (*loose_id_decisions_)[ elPtr ]);
     data.fillMulti<bool >(imediumid_, (*medium_id_decisions_)[ elPtr ]);
     data.fillMulti<bool >(itightid_, (*tight_id_decisions_)[ elPtr ]);
-    data.fillMulti<bool >(imvanontrigmediumid_, (*mvanontrig_medium_id_decisions_)[ elPtr ]);
-    data.fillMulti<bool >(imvanontrigtightid_, (*mvanontrig_tight_id_decisions_)[ elPtr ]);
-    data.fillMulti<bool >(imvatrigmediumid_, (*mvatrig_medium_id_decisions_)[ elPtr ]);
-    data.fillMulti<bool >(imvatrigtightid_, (*mvatrig_tight_id_decisions_)[ elPtr ]);
 
     const auto& miniIsoRlt = Isolation::miniPFIso(*elPtr, *pfcands_);
     data.fillMulti<float>(iminiiso_,miniIsoRlt.miniIso);
     data.fillMulti<float>(iannulus_,miniIsoRlt.activity);
+
+    const auto& miniIsoRltEA = Isolation::miniPFIso(*elPtr, *pfcands_, Isolation::EA_CORR, *rho_);
+    data.fillMulti<float>(iminiisoeacorr_,miniIsoRltEA.miniIso);
+    data.fillMulti<float>(iannuluseacorr_,miniIsoRltEA.activity);
 
     data.fillMulti<float>(iptrel_, Isolation::leptonPtRel(*elPtr, *ak4jets_));
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(*elPtr, *ak4jets_));
@@ -219,6 +223,10 @@ void ElectronFiller::fill()
     }
 
     if(options_ & FILLPOGMVA) {
+      data.fillMulti<bool >(imvanontrigmediumid_, (*mvanontrig_medium_id_decisions_)[ elPtr ]);
+      data.fillMulti<bool >(imvanontrigtightid_, (*mvanontrig_tight_id_decisions_)[ elPtr ]);
+      data.fillMulti<bool >(imvatrigmediumid_, (*mvatrig_medium_id_decisions_)[ elPtr ]);
+      data.fillMulti<bool >(imvatrigtightid_, (*mvatrig_tight_id_decisions_)[ elPtr ]);
       data.fillMulti<float>(imvaidnontrig_, (*mvanontrig_value_map_)[ elPtr ]);
       data.fillMulti<int  >(imvaidcatnontrig_, (*mvanontrig_category_map_)[ elPtr ]);
       data.fillMulti<float>(imvaidtrig_, (*mvatrig_value_map_)[ elPtr ]);

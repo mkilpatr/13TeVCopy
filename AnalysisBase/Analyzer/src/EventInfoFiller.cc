@@ -26,11 +26,15 @@ EventInfoFiller::EventInfoFiller(
   metToken_          (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("mets"))),
   metOOBToken_       (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsOOB"))),
   metNoHFToken_      (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsNoHF"))),
+  puppimetToken_     (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("puppimets"))),
   genEvtInfoToken_   (cc.consumes<GenEventInfoProduct>   (cfg.getParameter<edm::InputTag>("genEvtInfo"))),
   lheEvtInfoToken_   (cc.consumes<LHEEventProduct>       (cfg.getParameter<edm::InputTag>("lheEvtInfo"))),
   systWgtIndices_    (cfg.getUntrackedParameter<std::vector<unsigned int> >              ("whichSystematicWeights")),
   primaryVertexIndex_(-1),
-  met_(0)
+  met_(0),
+  metOOB_(0),
+  metNoHF_(0),
+  puppimet_(0)
 {
   irun_           =  data.add<unsigned int>(branchName_,"run"       ,"i",0);
   ilumi_          =  data.add<unsigned int>(branchName_,"lumi"      ,"i",0);
@@ -51,12 +55,12 @@ EventInfoFiller::EventInfoFiller(
   irawmetpt_      =  data.add<float>       (branchName_,"rawmet_pt"    ,"F",0);
   irawmetphi_     =  data.add<float>       (branchName_,"rawmet_phi"   ,"F",0);
   irawmetsumEt_   =  data.add<float>       (branchName_,"rawmet_sumEt" ,"F",0);
-  imetnohfpt_     =  data.add<float>       (branchName_,"metnohf_pt"    ,"F",0);
-  imetnohfphi_    =  data.add<float>       (branchName_,"metnohf_phi"   ,"F",0);
-  imetnohfsumEt_  =  data.add<float>       (branchName_,"metnohf_sumEt" ,"F",0);
-  irawmetnohfpt_   =  data.add<float>       (branchName_,"rawmetnohf_pt"    ,"F",0);
-  irawmetnohfphi_  =  data.add<float>       (branchName_,"rawmetnohf_phi"   ,"F",0);
-  irawmetnohfsumEt_=  data.add<float>       (branchName_,"rawmetnohf_sumEt" ,"F",0);
+  imetnohfpt_     =  data.add<float>       (branchName_,"metnohf_pt"   ,"F",0);
+  imetnohfphi_    =  data.add<float>       (branchName_,"metnohf_phi"  ,"F",0);
+  imetnohfsumEt_  =  data.add<float>       (branchName_,"metnohf_sumEt","F",0);
+  ipuppimetpt_    =  data.add<float>       (branchName_,"puppimet_pt"   ,"F",0);
+  ipuppimetphi_   =  data.add<float>       (branchName_,"puppimet_phi"  ,"F",0);
+  ipuppimetsumEt_ =  data.add<float>       (branchName_,"puppimet_sumEt","F",0);
   igenmetpt_      =  data.add<float>       (branchName_,"genmet_pt" ,"F",0);
   igenmetphi_     =  data.add<float>       (branchName_,"genmet_phi","F",0);
   igoodvertex_    =  data.add<bool>        (branchName_,"goodvertex","O",false);
@@ -81,6 +85,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
   iEvent.getByToken(metToken_, mets_);
   iEvent.getByToken(metOOBToken_, metsOOB_);
   iEvent.getByToken(metNoHFToken_, metsNoHF_);
+  iEvent.getByToken(puppimetToken_, puppimets_);
   if(options_ & LOADGEN)
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
   if(options_ & LOADLHE)
@@ -92,6 +97,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
   met_ = &mets_->front();
   metOOB_ = &metsOOB_->front();
   metNoHF_ = &metsNoHF_->front();
+  puppimet_ = &puppimets_->front();
   eventCoords.run = iEvent.run();
   eventCoords.lumi = iEvent.luminosityBlock();
   eventCoords.event = iEvent.id().event();
@@ -151,9 +157,9 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetnohfpt_        ,metNoHF_->pt());
   data.fill<float>       (imetnohfphi_       ,metNoHF_->phi());
   data.fill<float>       (imetnohfsumEt_     ,metNoHF_->sumEt());
-  data.fill<float>       (irawmetnohfpt_     ,metNoHF_->uncorPt());
-  data.fill<float>       (irawmetnohfphi_    ,metNoHF_->uncorPhi());
-  data.fill<float>       (irawmetnohfsumEt_  ,metNoHF_->uncorSumEt());
+  data.fill<float>       (ipuppimetpt_       ,puppimet_->pt());
+  data.fill<float>       (ipuppimetphi_      ,puppimet_->phi());
+  data.fill<float>       (ipuppimetsumEt_    ,puppimet_->sumEt());
 
   if(options_ & LOADGEN) {
     data.fill<float>     (igenmetpt_    ,metOOB_->genMET()->pt());

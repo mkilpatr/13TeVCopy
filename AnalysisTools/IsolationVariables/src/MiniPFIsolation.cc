@@ -14,7 +14,7 @@ void MiniPFIsolation::compute(const reco::Candidate& obj, const pat::PackedCandi
     return;
   }
 
-  deadcone2_nh = neutralDeadConeEB2_, deadcone2_ch = chargedDeadConeEB2_, deadcone2_ph = photonDeadConeEB2_, deadcone2_pu = puDeadConeEB2_;
+  deadcone2_nh = neutralDeadConeEB2_; deadcone2_ch = chargedDeadConeEB2_; deadcone2_ph = photonDeadConeEB2_; deadcone2_pu = puDeadConeEB2_;
   if (isEndCap(obj)){
     deadcone2_nh = neutralDeadConeEE2_; deadcone2_ch = chargedDeadConeEE2_; deadcone2_ph = photonDeadConeEE2_; deadcone2_pu = puDeadConeEE2_;
   }
@@ -26,7 +26,7 @@ void MiniPFIsolation::compute(const reco::Candidate& obj, const pat::PackedCandi
     double deltaR2 = reco::deltaR2(obj, pfc);
     if (deltaR2 <= isoConeSize2_){
       addToIsolation(pfc, pfcands, deltaR2);
-    } else if (deltaR2 < actConeSize2_){
+    } else if (deltaR2 > minActConeSize2_ && deltaR2 < actConeSize2_){
       addToActivity(pfc);
     }
   }
@@ -34,10 +34,12 @@ void MiniPFIsolation::compute(const reco::Candidate& obj, const pat::PackedCandi
   double iso;
   if (chargedOnly_) iso = chargedIso_;
   else if (usePFWeight_) iso = chargedIso_+neutralIso_+photonIso_;
+  else if (useEACorr_) iso = Isolation::calcEACorrIso(chargedIso_, neutralIso_, photonIso_, obj.eta(), eaEta_, eaValue_, rho_, 0.0, isoConeSize2_);
   else iso = Isolation::calcDeltaBetaIso(chargedIso_, neutralIso_, photonIso_, puIso_);
   miniIso_ = iso/obj.pt();
 
-  activity_ = Isolation::calcDeltaBetaIso(chargedAct_, neutralAct_, photonAct_, puAct_) / obj.pt();
+  if (useEACorr_) activity_ = Isolation::calcEACorrIso(chargedAct_, neutralAct_, photonAct_, obj.eta(), eaEta_, eaValue_, rho_, minActConeSize2_, actConeSize2_) / obj.pt();
+  else activity_ = Isolation::calcDeltaBetaIso(chargedAct_, neutralAct_, photonAct_, puAct_) / obj.pt();
 
 }
 

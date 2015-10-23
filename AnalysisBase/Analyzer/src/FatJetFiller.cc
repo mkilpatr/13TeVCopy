@@ -24,6 +24,8 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_softdropmass_  = data.addMulti<float>(branchName_,"fatjet_softdropmass",0);
   ifj_filteredmass_  = data.addMulti<float>(branchName_,"fatjet_filteredmass",0);
   ifj_cmstoptagmass_ = data.addMulti<float>(branchName_,"fatjet_cmstoptagmass",0);
+  ifj_cmstoptagminmass_   = data.addMulti<float>(branchName_,"fatjet_cmstoptagminmass",0);
+  ifj_cmstoptagnsubjets_  = data.addMulti<float>(branchName_,"fatjet_cmstoptagnsubjets",0);
   //ifj_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
   ifj_tau1_          = data.addMulti<float>(branchName_,"fatjet_tau1",-1.);
   ifj_tau2_          = data.addMulti<float>(branchName_,"fatjet_tau2",-1.);
@@ -48,10 +50,16 @@ void FatJetFiller::fill()
 
   for (const pat::Jet &fatjet : *fatJets_) {
 
-    float cmstoptagmass_ = -1;
+    float cmstoptagmass = -1;
+    float cmstoptagminmass = -1;
+    int   cmstoptagnsubjets = 0;
     const reco::CATopJetTagInfo * catopTag = dynamic_cast<reco::CATopJetTagInfo const *>(fatjet.tagInfo("caTop"));
-    if (catopTag) { cmstoptagmass_ = catopTag->properties().topMass; }
-    else          { cmstoptagmass_ = fatjet.mass(); }
+    if (catopTag) {
+      cmstoptagmass     = catopTag->properties().topMass;
+      cmstoptagminmass  = catopTag->properties().minMass;
+      cmstoptagnsubjets = catopTag->properties().nSubJets;
+    }
+    else          { cmstoptagmass = fatjet.mass(); }
 
 
 
@@ -60,7 +68,9 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_prunedmass_    , fatjet.userFloat("ak8PFJetsCHSPrunedMass"));
     data.fillMulti<float>(ifj_softdropmass_  , fatjet.userFloat("ak8PFJetsCHSSoftDropMass"));
     data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJetsCHSFilteredMass"));
-    data.fillMulti<float>(ifj_cmstoptagmass_ , cmstoptagmass_);
+    data.fillMulti<float>(ifj_cmstoptagmass_ , cmstoptagmass);
+    data.fillMulti<float>(ifj_cmstoptagminmass_ , cmstoptagminmass);
+    data.fillMulti<int  >(ifj_cmstoptagnsubjets_, cmstoptagnsubjets);
     //    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
     data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8:tau1"));
     data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8:tau2"));
