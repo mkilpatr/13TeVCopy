@@ -58,10 +58,10 @@ public:
                           , BYEVTWEIGHT      = (1 <<  0)
 
   };
-  BTagCorrectionSet(): bTagByEvtWeightCorr(0), bTagByEvtWeight(1), bTagByEvtWeight_HeavyType(NONE), bTagByEvtWeight_LightType(NONE) {}
+  BTagCorrectionSet(): bTagByEvtWeightCorr(0), bTagByEvtWeight(1) {}
 
   virtual ~BTagCorrectionSet() {};
-  virtual void load(TString effFileName,TString sfFileName,CORRTYPE lightCorrType, CORRTYPE heavyCorrType,  int correctionOptions = NULLOPT);
+  virtual void load(TString effFileName,TString sfFileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
@@ -75,9 +75,6 @@ private:
 
   //output values
   float bTagByEvtWeight;
-  CORRTYPE bTagByEvtWeight_HeavyType;
-  CORRTYPE bTagByEvtWeight_LightType;
-
 };
 
 
