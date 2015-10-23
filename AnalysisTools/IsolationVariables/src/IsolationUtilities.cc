@@ -8,7 +8,7 @@
 
 Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands, Isolation::IsoType isotype, double rho) {
   using namespace ElectronIso;
-  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
+  MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
   iso.setDeadCone(DEADCONE_CH_EB, DEADCONE_NH_EB, DEADCONE_PH_EB, DEADCONE_PU_EB);
   iso.setDeadConeEE(DEADCONE_CH_EE, DEADCONE_NH_EE, DEADCONE_PH_EE, DEADCONE_PU_EE);
   iso.setObjectMinPt(MIN_PT);
@@ -24,7 +24,7 @@ Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Electron& el, const p
 
 Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands, Isolation::IsoType isotype, double rho) {
   using namespace MuonIso;
-  static MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
+  MiniPFIsolation iso(MIN_CONESIZE, MAX_CONESIZE, KTSCALE, MIN_ACT_CONESIZE, ACT_CONESIZE, rho);
   iso.setDeadCone(DEADCONE_CH_EB, DEADCONE_NH_EB, DEADCONE_PH_EB, DEADCONE_PU_EB);
   iso.setDeadConeEE(DEADCONE_CH_EE, DEADCONE_NH_EE, DEADCONE_PH_EE, DEADCONE_PU_EE);
   iso.setObjectMinPt(MIN_PT);
