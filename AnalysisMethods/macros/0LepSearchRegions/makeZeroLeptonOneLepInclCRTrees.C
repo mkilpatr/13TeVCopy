@@ -9,8 +9,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), passOneLepSel(false) {}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed,isMCTree, pars), passOneLepSel(false) {}
 
     vector<GenJetF*> genJets;
 
@@ -77,7 +77,7 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
   pars.selectedLeptons.maxMuEta = 2.4;
   pars.vetoedLeptons = cfgSet::ol_veto_leptons;
 
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 
   a.analyze(100000);
 

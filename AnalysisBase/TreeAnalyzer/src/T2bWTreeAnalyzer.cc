@@ -7,7 +7,7 @@ using namespace ucsbsusy;
 const double T2bWTreeAnalyzer::T2BWDiscCuts[] = {.94,.73,.92,.82,.93};
 
 T2bWTreeAnalyzer::T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree)
-: BaseTreeAnalyzer(fileName,treeName,isMCTree,0)
+: BaseTreeAnalyzer(fileName,treeName,2,isMCTree,0)
 , minPT (30)
 , maxETA(2.4)
 , T2BWParams(NUM_T2BW_SEARCHREGIONS,0)

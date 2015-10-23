@@ -247,8 +247,8 @@ struct TreeFiller {
 class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
+    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;
