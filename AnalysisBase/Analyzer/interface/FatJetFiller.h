@@ -36,6 +36,8 @@ namespace ucsbsusy {
     size ifj_softdropmass_;
     size ifj_filteredmass_;
     size ifj_cmstoptagmass_;
+    size ifj_cmstoptagminmass_;
+    size ifj_cmstoptagnsubjets_;
     //size ifj_massdropfilteredmass_;
     size ifj_tau1_;
     size ifj_tau2_;
