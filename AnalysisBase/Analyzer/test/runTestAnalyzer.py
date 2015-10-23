@@ -23,7 +23,9 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
-options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
+#options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
+options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
 
 options.maxEvents = -1
 
@@ -61,7 +63,7 @@ else :
 
 # global Tag for 50ns MC
 if '50ns' in options.inputFiles[0] :
-    process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_startup_v2')
+    process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_asymptotic50ns_v0')
 
 ISDATA = False
 runMetCorrAndUnc = False
@@ -76,6 +78,8 @@ if '/store/data' in options.inputFiles[0] :
         process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
         updateJECs = True
         runMetCorrAndUnc = True
+    elif '05Oct2015' in options.inputFiles[0] :
+        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
     else :
         process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v4')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
@@ -83,6 +87,8 @@ if '/store/data' in options.inputFiles[0] :
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     if '17Jul2015' in options.inputFiles[0] :
         process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','PAT')
+    elif '05Oct2015' in options.inputFiles[0] :
+        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
     else :
         process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
         process.TestAnalyzer.EventInfo.metsOOB = cms.InputTag('slimmedMETs','','RECO')
@@ -251,6 +257,7 @@ if usePrivateSQlite:
 
 # Jets are rebuilt from those candidates by the tools, no need to do anything else
 if runMetCorrAndUnc :
+    print 'Adding MET corrections'
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
     # Default configuration for miniAOD reprocessing, change the isData flag to run on data
@@ -294,6 +301,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 
 # Also update jets with different JECs
 if updateJECs:
+    print 'Adding sequence to update JECs'
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
     process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
         src = cms.InputTag("slimmedJets"),
