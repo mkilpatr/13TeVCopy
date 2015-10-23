@@ -36,7 +36,7 @@ class BaseTreeAnalyzer {
 public:
     
   public:
-    BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false,cfgSet::ConfigSet *pars = 0);
+    BaseTreeAnalyzer(TString fileName, TString treeName,size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars);
     virtual ~BaseTreeAnalyzer() {};
 
 
@@ -75,6 +75,7 @@ public:
     // Standard information
     //--------------------------------------------------------------------------------------------------
     const cfgSet::ConfigSet& getAnaCfg() const { return configSet;}
+    const TRandom3*  getRndGen()  { return randGen;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
@@ -92,6 +93,7 @@ public:
     bool             isLoaded_;
     bool             isProcessed_;
     TreeReader       reader;        // default reader
+    TRandom3*        randGen;
   public:
     EventInfoReader     evtInfoReader       ;
     JetReader           ak4Reader           ;

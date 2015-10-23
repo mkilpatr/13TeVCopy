@@ -16,7 +16,8 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
+    randGen           (new TRandom3(randomSeed)),
     run               (0),
     lumi              (0),
     event             (0),
