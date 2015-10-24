@@ -16,7 +16,8 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
+    randGen           (new TRandom3(randomSeed)),
     run               (0),
     lumi              (0),
     event             (0),
@@ -107,13 +108,11 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
-      bTagCorrections.load(configSet.corrections.bTagEffFile,
-          configSet.corrections.bTagSFFile,configSet.corrections.lightBTagCorrType,configSet.corrections.heavyBTagCorrType,
-          configSet.corrections.bTagCorrections);
+      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagCorrections);
       corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
   
@@ -252,6 +251,8 @@ void BaseTreeAnalyzer::processVariables()
       jetAndMETCorrections.processMET(this);
       (*met) = jetAndMETCorrections.getCorrectedMET();
       (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+      if(defaultJets && defaultJets->isLoaded())
+        jetAndMETCorrections.correctJetResolution(this,defaultJets->recoJets,*met);
     }
   }
 

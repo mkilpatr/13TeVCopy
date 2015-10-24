@@ -35,8 +35,8 @@ class Analyzer : public BaseTreeAnalyzer {
 
   public :
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+  Analyzer(TString fileName, TString treeName,  size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
+    BaseTreeAnalyzer(fileName, treeName, randSeed,isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
       // configuration
 
       tNess     = new Topness();
@@ -460,7 +460,7 @@ void make1lbabies(TString sname = "T2tt_650_325",               // sample name
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
 
   // Declare analyzer
-  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
+  Analyzer a(fullname, "Events", fileindex+2, isMC, &cfg, xsec, sname, outputdir);
   //     a.analyze(1000,1000);
        a.analyze(100000);
 

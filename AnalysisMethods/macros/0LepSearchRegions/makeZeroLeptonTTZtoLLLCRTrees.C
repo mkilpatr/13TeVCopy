@@ -29,8 +29,8 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
   }
 
-    ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars,TString sname, int proc) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), name(sname), extProcess(proc) {}
+    ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars,TString sname, int proc) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars), name(sname), extProcess(proc) {}
 
     // booking
     size i_ptzll = 0;
@@ -281,7 +281,7 @@ void makeZeroLeptonTTZtoLLLCRTrees(TString sname = "dyjetstoll_cr",
   else if(origSname.BeginsWith("WW_")) extProcess = WW;
 
 
-  ZtoLLCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars,origSname,extProcess);
+  ZtoLLCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars,origSname,extProcess);
   a.analyze(100000);
 
 

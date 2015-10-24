@@ -9,8 +9,8 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+    ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
     // booking
     size i_ptzll = 0;
@@ -121,7 +121,7 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
 //  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 //  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
 
-  ZtoLLCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  ZtoLLCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(100000);
 //  a.analyze(100000, 10000);
 

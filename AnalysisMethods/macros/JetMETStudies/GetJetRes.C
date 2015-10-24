@@ -1,6 +1,8 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
 #include "AnalysisMethods/PlotUtils/interface/PlotTools.hh"
+#include "AnalysisTools/QuickRefold/interface/TF1Container.h"
+
 #include "TreeReadingHelper.h"
 #include "TDirectory.h"
 #include "TTree.h"
@@ -10,7 +12,7 @@
 
 using namespace std;
 
-void getRes(TTree * tree,TFile* oF){
+  void getRes(TTree * tree,TFile* oF){
 
   double jetPTs[] = {20,25,30,40,50,60,80,100,120,150,180,220,270,350,450,550,700,900,1200,2000};
   int nJetPTS = 19;
@@ -85,19 +87,33 @@ void getTrend(TFile* iF){
   TMultiGraph * mg = (TMultiGraph* )can->GetPrimitive("sigGraph");
   TList * l = mg->GetListOfGraphs();
 
+//  TFormula * trendFormula = new TFormula("trendFormula","[0] + [1]/x + [2]/(x*x)");
+//  TF1 * trendFitter =new TF1("trendFitter"
   TF1 * trendFitter =new TF1("trendFitter","[0] + [1]/x + [2]/(x*x)");
+
+
+  QuickRefold::TF1Container * a = new QuickRefold::TF1Container("AK4ResTrend",1);
+  float jetETAs[] = {0,1.1,1.7,2.3,2.8,3.2,5};
+  int nJetETAS = 6;
+  a->addAxis(0,"ETA",nJetETAS,jetETAs);
+  a->stopSetup();
 
 
   for(unsigned int iG = 0; iG < l->GetSize(); ++iG){
    TGraphErrors * g = (TGraphErrors*)l->At(iG);
    g->Fit(trendFitter);
    cout  << g->GetTitle() <<" "<< trendFitter->GetParameter(0) <<" "<< trendFitter->GetParameter(1) <<" "<< trendFitter->GetParameter(2) <<endl;
+   cout << (jetETAs[iG]  + jetETAs[iG+1])/2 << endl;
+   a->setBin(0,(jetETAs[iG]  + jetETAs[iG+1])/2);
 
+   a->setValue(*trendFitter);
   }
 
-
-
   can->Draw();
+
+  TFile * f = new TFile("ak4JetResTrends.root","recreate");
+  a->Write();
+  f->Close();
 }
 
 
@@ -107,7 +123,7 @@ void getTrend(TFile* iF){
 void GetJetRes(const TString inFile="qcd_jetRes.root", const TString treeName = "Events", const TString outFile = "resOut.root")
 {
 //  TFile * oF = new TFile(outFile,"recreate");
-//  StyleTools::SetStyle();
+  StyleTools::SetStyle();
 //  TFile * mf = new TFile(inFile,"read");
 //  TTree * mt =0;
 //  mf->GetObject(treeName,mt);
@@ -118,5 +134,14 @@ void GetJetRes(const TString inFile="qcd_jetRes.root", const TString treeName = 
   if(of){
     getTrend(of);
   }
+
+//  TFile * f = new TFile("ak4JetResTrends.root","read");
+//  const QuickRefold::TF1Container * a;
+//  f->GetObject("AK4ResTrend",a);
+//  a->getValue(3.0);
+//  cout << a->getValue(3.0).Eval(20)<<endl;
+//
+//  f->Close();
+//  delete f;
 
 }
