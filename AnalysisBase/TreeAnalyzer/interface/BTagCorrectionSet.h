@@ -10,7 +10,6 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
-#include "Math/PtEtaPhiM4D.h"
 
 class BTagCalibration;
 class BTagCalibrationReader;
@@ -19,6 +18,13 @@ namespace QuickRefold {
 template<typename data>
 class TObjectContainer;
 typedef   TObjectContainer<TH1F>  TH1FContainer;
+}
+
+namespace ROOT{
+namespace Math{
+template <class ScalarType>
+class PtEtaPhiM4D;
+}
 }
 
 namespace ucsbsusy {
