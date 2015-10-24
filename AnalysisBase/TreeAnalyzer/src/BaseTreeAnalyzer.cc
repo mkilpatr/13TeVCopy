@@ -112,7 +112,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
   
@@ -251,6 +251,8 @@ void BaseTreeAnalyzer::processVariables()
       jetAndMETCorrections.processMET(this);
       (*met) = jetAndMETCorrections.getCorrectedMET();
       (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+      if(defaultJets && defaultJets->isLoaded())
+        jetAndMETCorrections.correctJetResolution(this,defaultJets->recoJets,*met);
     }
   }
 
