@@ -262,6 +262,7 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
 
 void JetAndMETCorrectionSet::correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met){
   if(!jetResolution) return;
+  if(!ana->isMC()) return;
   jetResolution->correctJetsAndMET(ana->getAnaCfg().corrections.jetResCorr,jets,met);
 }
 
