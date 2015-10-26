@@ -192,13 +192,11 @@ double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, COR
 }
 
 
-void BTagCorrectionSet::load(TString effFileName,TString sfFileName,CORRTYPE lightCorrType, CORRTYPE heavyCorrType,  int correctionOptions)
+void BTagCorrectionSet::load(TString effFileName,TString sfFileName,  int correctionOptions)
 {
   loadSimple("BTagCorrection",correctionOptions);
 
   if(options_ & BYEVTWEIGHT){
-    bTagByEvtWeight_LightType = lightCorrType;
-    bTagByEvtWeight_HeavyType = heavyCorrType;
     bTagByEvtWeightCorr = new BTagByEvtWeightCorr(effFileName,sfFileName);
     corrections.push_back(bTagByEvtWeightCorr);
   }
@@ -213,9 +211,9 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     bool isTTBARLike = false;
     if(ana->process == defaults::TTBAR || ana->process == defaults::SINGLE_T || ana->process == defaults::TTZ || ana->process == defaults::TTW )
       isTTBARLike = true;
-    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,bTagByEvtWeight_LightType,bTagByEvtWeight_HeavyType,isTTBARLike);
+    const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTTBARLike);
   }
 
 }
-
 } /* namespace ucsbsusy */

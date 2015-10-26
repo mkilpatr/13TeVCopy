@@ -12,8 +12,8 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    PhotonCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+    PhotonCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
     const double DR_CUT = 0.4;
 
@@ -202,7 +202,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   cfgSet::ConfigSet pars = pars0LepPhoton(json);
 
 
-  PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  PhotonCRAnalyzer a(fullname, "Events", outfilename, fileindex+2,isMC, &pars);
   a.flagQCDFake = sname.Contains("fake");
   a.analyze(100000);
 //   a.analyze(1000,10000);

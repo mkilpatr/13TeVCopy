@@ -151,7 +151,10 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.puCorrectionFile      =  TString::Format("%s/src/data/corrections/puCorr.root",CMSSW_BASE);
   standardCorrections.leptonCorrections     = ucsbsusy::LeptonCorrectionSet::LEP;
   standardCorrections.leptonCorrectionFile  =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
+
   standardCorrections.jetAndMETCorrections  = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
+  standardCorrections.jetResCorr            = 1;
+  standardCorrections.jetResFile            = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
 
   standardCorrections.bTagCorrections       = ucsbsusy::BTagCorrectionSet::NULLOPT;
   standardCorrections.bTagEffFile           =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);

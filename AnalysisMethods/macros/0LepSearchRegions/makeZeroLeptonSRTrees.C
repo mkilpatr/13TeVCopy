@@ -29,7 +29,7 @@ void makeZeroLeptonSRTrees(TString sname = "htmht",
   cfgSet::ConfigSet pars = pars0lep(json);
 
   TString treeName = "Events";
-  ZeroLeptonAnalyzer a(fullname, treeName, outfilename, isMC, &pars);
+  ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
   a.analyze(1000000);
 

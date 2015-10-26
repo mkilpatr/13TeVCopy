@@ -192,6 +192,16 @@ struct TreeFiller {
   size i_topcandeta;
   size i_toppasspt ;
   size i_toppasseta;
+  size i_topcandrawmass;
+  size i_topcandtrimmedmass;
+  size i_topcandprunedmass;
+  size i_topcandsoftdropmass;
+  size i_topcandcmstoptagmass;
+  size i_topcandtau1;
+  size i_topcandtau2;
+  size i_topcandtau3;
+  size i_topcandnsubjets;
+  size i_topcandminmass;
 
   bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
@@ -373,6 +383,16 @@ struct TreeFiller {
     i_topcandeta     = data->add<float>("","topcandeta","F",0);
     i_toppasspt      = data->add<float>("","toppasspt","F",0);
     i_toppasseta     = data->add<float>("","toppasseta","F",0);
+    i_topcandrawmass       = data->add<float>("","topcandrawmass","F",0);
+    i_topcandtrimmedmass   = data->add<float>("","topcandtrimmedmass","F",0);
+    i_topcandprunedmass    = data->add<float>("","topcandprunedmass","F",0);
+    i_topcandsoftdropmass  = data->add<float>("","topcandsoftdropmass","F",0);
+    i_topcandcmstoptagmass = data->add<float>("","topcandcmstoptagmass","F",0);
+    i_topcandtau1 = data->add<float>("","topcandtau1","F",0);
+    i_topcandtau2 = data->add<float>("","topcandtau2","F",0);
+    i_topcandtau3 = data->add<float>("","topcandtau3","F",0);
+    i_topcandnsubjets = data->add<int>("","topcandnsubjets","I",0);
+    i_topcandminmass = data->add<float>("","topcandminmass","F",0);
 
   }
 
@@ -661,12 +681,23 @@ struct TreeFiller {
 
   void fillTopTagInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets) {
 
-
     bool bClose2Lep_ = false;    
     unsigned int ntopcand_ = 0;   
     unsigned int ntoppass_ = 0;
     float topCandPt_ = -9.; float topCandEta_ = -9.;
     float topPassPt_ = -9.; float topPassEta_ = -9.;
+
+    float topcandrawmass_       = -9.;
+    float topcandtrimmedmass_   = -9.;
+    float topcandprunedmass_    = -9.;
+    float topcandsoftdropmass_  = -9.;
+    float topcandcmstoptagmass_ = -9.;
+    float topcandtau1_ = -9.;
+    float topcandtau2_ = -9.;
+    float topcandtau3_ = -9.;
+    int topcandnsubjets_ = -1;
+    float topcandminmass_ = -9.;
+
     
     vector<LorentzVector> csvmjets;
     for(auto* j : jets) {
@@ -677,14 +708,47 @@ struct TreeFiller {
     }
 
 
-    if(ana->nSelLeptons > 0) {
+    if (ana->nSelLeptons == 0) {
+
+      unsigned int countTopTags = 0;
+      unsigned int indx = 99;
+      for (auto* ctt : ana->cttTops) {
+
+	float maxFatJetPt_ = -1.;
+	float fatJetPt_ = ctt->p4().pt();
+	if (fatJetPt_>maxFatJetPt_) { indx = countTopTags; }
+	
+	++countTopTags; 
+      }
+
+      if (indx<99) {
+	ntopcand_ = 1;
+	topCandPt_ = ana->cttTops[indx]->p4().pt(); topCandEta_ = ana->cttTops[indx]->p4().eta();
+	topcandrawmass_ = ana->cttTops[indx]->topRawMass();
+	topcandtrimmedmass_ = ana->cttTops[indx]->topTrimmedMass();
+	topcandprunedmass_ = ana->cttTops[indx]->topPrunedMass();
+	topcandsoftdropmass_ = ana->cttTops[indx]->topSoftDropMass();
+	topcandcmstoptagmass_ = ana->cttTops[indx]->topCmsTopTagMass(); 
+	topcandtau1_ = ana->cttTops[indx]->topTau1();
+	topcandtau2_ = ana->cttTops[indx]->topTau2();
+	topcandtau3_ = ana->cttTops[indx]->topTau3();
+	topcandnsubjets_ = ana->cttTops[indx]->topNsubJets();
+	topcandminmass_ = ana->cttTops[indx]->topMinMass();
+
+	if (passCTTSelection(ana->cttTops[indx])) { 
+	  ntoppass_ = 1;
+	  topPassPt_ = ana->cttTops[indx]->p4().pt(); topPassEta_ = ana->cttTops[indx]->p4().eta(); }
+      }     
+      
+    } // end of zero leptons
+
+
+    if (ana->nSelLeptons > 0) {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(0)->p4());
 
-
       for (unsigned int i0=0; i0<csvmjets.size(); ++i0) {
-
 	float dRLepBJet_ = PhysicsUtilities::deltaR(*lep,csvmjets[i0]);
-	if (dRLepBJet_<(3.14/2.)) { bClose2Lep_ = true; }
+	if (dRLepBJet_<(3.14/2.)) { bClose2Lep_ = true; } 
       }
 
       unsigned int countTopTags = 0;
@@ -695,31 +759,50 @@ struct TreeFiller {
 	float maxFatJetPt_ = -1.;
 
 	if (dRLepCTT_>=(3.14/2.)) { 
-
 	  float fatJetPt_ = ctt->p4().pt();
 	  if (fatJetPt_>maxFatJetPt_) { indx = countTopTags; }
-
 	}
 
-	++countTopTags;
+	++countTopTags; 
       }
       
-
       if (indx<99) { 
 	ntopcand_ = 1;
 	topCandPt_ = ana->cttTops[indx]->p4().pt(); topCandEta_ = ana->cttTops[indx]->p4().eta();
+	topcandrawmass_ = ana->cttTops[indx]->topRawMass();
+	topcandtrimmedmass_ = ana->cttTops[indx]->topTrimmedMass();
+	topcandprunedmass_ = ana->cttTops[indx]->topPrunedMass();
+	topcandsoftdropmass_ = ana->cttTops[indx]->topSoftDropMass();
+	topcandcmstoptagmass_ = ana->cttTops[indx]->topCmsTopTagMass();
+	topcandtau1_ = ana->cttTops[indx]->topTau1();
+	topcandtau2_ = ana->cttTops[indx]->topTau2();
+	topcandtau3_ = ana->cttTops[indx]->topTau3();
+	topcandnsubjets_ = ana->cttTops[indx]->topNsubJets();
+	topcandminmass_ = ana->cttTops[indx]->topMinMass();
 
 	if (passCTTSelection(ana->cttTops[indx])) { 
 	  ntoppass_ = 1;
 	  topPassPt_ = ana->cttTops[indx]->p4().pt(); topPassEta_ = ana->cttTops[indx]->p4().eta(); }
-
+	
       }     
- 
+      
     } // end of at least one lepton
+    
+
     data->fill<bool>(i_bclose2lep, bClose2Lep_);
     data->fill<unsigned int>(i_ntopcand, ntopcand_);
     data->fill<unsigned int>(i_ntoppass, ntoppass_);
     data->fill<float>(i_topcandpt, topCandPt_);
+    data->fill<float>(i_topcandrawmass, topcandrawmass_);
+    data->fill<float>(i_topcandtrimmedmass, topcandtrimmedmass_);
+    data->fill<float>(i_topcandprunedmass, topcandprunedmass_);
+    data->fill<float>(i_topcandsoftdropmass, topcandsoftdropmass_);
+    data->fill<float>(i_topcandcmstoptagmass, topcandcmstoptagmass_);
+    data->fill<float>(i_topcandtau1, topcandtau1_);
+    data->fill<float>(i_topcandtau2, topcandtau2_);
+    data->fill<float>(i_topcandtau3, topcandtau3_);
+    data->fill<int>(i_topcandnsubjets, topcandnsubjets_);
+    data->fill<float>(i_topcandminmass, topcandminmass_);
     data->fill<float>(i_topcandeta, topCandEta_);
     data->fill<float>(i_toppasspt, topPassPt_);
     data->fill<float>(i_toppasseta, topPassEta_);
@@ -828,8 +911,8 @@ struct TreeFiller {
 class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
+    ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
 
     const double metcut_   = 175.0 ;
     const int    minnjets_ =   2   ;
@@ -854,6 +937,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
+      filler.fillTopTagInfo(&data,this, jets);
       return true;
     }
 

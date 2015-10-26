@@ -13,8 +13,8 @@ class Analyzer : public BaseTreeAnalyzer {
 
   public :
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir) : 
-    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+  Analyzer(TString fileName, TString treeName, size randSeed, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir) :
+    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
 
       // initiliaze tree
       gSystem->mkdir(outputdir,true);
@@ -139,7 +139,7 @@ void syncSingleLepton(TString sname = "T2tt_850_100",          // sample name
   pars.cleanJetsMaxDR = 0.4;
 
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", isMC, &pars, xsec, sname, outputdir);
+  Analyzer a(fullname, "TestAnalyzer/Events", fileindex +2, isMC, &pars, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(10000);

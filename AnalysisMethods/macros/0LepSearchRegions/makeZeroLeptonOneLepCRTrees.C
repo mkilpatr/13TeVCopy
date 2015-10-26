@@ -3,14 +3,13 @@
 #endif
 
 using namespace ucsbsusy;
-TRandom3 rnd;
 
 class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars, double randSeed) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {rnd.SetSeed(randSeed);}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
     bool fillEvent() { 
       if(met->pt() < metcut_) return false;
@@ -37,7 +36,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nSelLeptons<1)      return false;
       //if(nVetoedTracks > 0)     return false;
       float maxLep = nSelLeptons;
-      int whichLep = rnd.Uniform(0.,nSelLeptons);
+      int whichLep = randGen->Uniform(0.,nSelLeptons);
       MomentumF* lep = new MomentumF(selectedLeptons.at(whichLep)->p4());
       MomentumF* W = new MomentumF(lep->p4() + met->p4());
 
@@ -77,9 +76,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   cfgSet::ConfigSet pars = pars0lepCR(json);
 
-  double randSeed = fileindex + 2;
-  TString treename = "Events";
-  OneLepCRAnalyzer a(fullname, treename, outfilename, isMC, &pars, randSeed);
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex + 2, isMC, &pars);
 
   a.analyze(1000000);
 
