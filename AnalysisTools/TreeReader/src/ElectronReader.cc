@@ -29,8 +29,8 @@ ElectronReader::ElectronReader() : BaseReader(){
   dz           = new vector<float> ;
   sip3d        = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
-  mvaidnontrig = new vector<float> ;
-  mvaidtrig    = new vector<float> ;
+  //mvaidnontrig = new vector<float> ;
+  //mvaidtrig    = new vector<float> ;
   isveto       = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
@@ -66,8 +66,8 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
     treeReader->setBranchAddress(branchName , "sip3d"       , &sip3d       , true);
     treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
-    treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
-    treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
+    //treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
+    //treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
     treeReader->setBranchAddress(branchName , "vetoid"      , &isveto      , true);
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
@@ -101,8 +101,8 @@ void ElectronReader::refresh(){
       electrons.back().setDz(dz->at(iL));
       electrons.back().setSip3d(sip3d->at(iL));
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
-      electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
-      electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
+      //electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
+      //electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
       electrons.back().setIsVeto(isveto->at(iL));
       electrons.back().setIsLoose(isloose->at(iL));
       electrons.back().setIsLooseId(islooseid->at(iL));

@@ -40,6 +40,9 @@ TriggerFiller::TriggerFiller(const edm::ParameterSet& cfg, edm::ConsumesCollecto
 void TriggerFiller::initTriggerNames()
 {
 
+  trigIds_["HLT_IsoMu20_v1"] = kHLT_IsoMu20;
+  trigIds_["HLT_IsoMu20_v2"] = kHLT_IsoMu20;
+  trigIds_["HLT_IsoMu20_v3"] = kHLT_IsoMu20;
   trigIds_["HLT_IsoMu22_v1"] = kHLT_IsoMu22;
   trigIds_["HLT_IsoMu22_v2"] = kHLT_IsoMu22;
   trigIds_["HLT_IsoMu24_eta2p1_v1"] = kHLT_IsoMu24_eta2p1;
@@ -58,6 +61,9 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele22_eta2p1_WP75_Gsf_v1"] = kHLT_Ele22_eta2p1_WP75_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele22_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPTight_Gsf_v2"] = kHLT_Ele22_eta2p1_WPTight_Gsf;
+  trigIds_["HLT_Ele23_WPLoose_Gsf_v1"] = kHLT_Ele23_WPLoose_Gsf;
+  trigIds_["HLT_Ele23_WPLoose_Gsf_v2"] = kHLT_Ele23_WPLoose_Gsf;
+  trigIds_["HLT_Ele27_WPLoose_Gsf_v1"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
@@ -78,8 +84,10 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_PFMET170_NoiseCleaned_v1"] = kHLT_PFMET170_NoiseCleaned;
   trigIds_["HLT_PFMET170_NoiseCleaned_v2"] = kHLT_PFMET170_NoiseCleaned;
   trigIds_["HLT_PFMET170_NoiseCleaned_v3"] = kHLT_PFMET170_NoiseCleaned;
-  trigIds_["HLT_PFMET170_JetIdCleaned_v1"] = kHLT_PFMET170_NoiseCleaned;
-  trigIds_["HLT_PFMET170_JetIdCleaned_v2"] = kHLT_PFMET170_NoiseCleaned;
+  trigIds_["HLT_PFMET170_JetIdCleaned_v1"] = kHLT_PFMET170_JetIdCleaned;
+  trigIds_["HLT_PFMET170_JetIdCleaned_v2"] = kHLT_PFMET170_JetIdCleaned;
+  trigIds_["HLT_PFMET170_v1"] = kHLT_PFMET170_NoiseCleaned;
+  trigIds_["HLT_PFMET170_v2"] = kHLT_PFMET170_NoiseCleaned;
   trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV07_v1"] = kHLT_PFMET120_NoiseCleaned_BTagCSV07;
   trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV072_v1"] = kHLT_PFMET120_NoiseCleaned_BTagCSV072;
   trigIds_["HLT_PFMET120_NoiseCleaned_BTagCSV072_v2"] = kHLT_PFMET120_NoiseCleaned_BTagCSV072;
@@ -180,6 +188,7 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltPFHT350Filter"] = kPFHT350;
   trigFilterIds_["hltDiCentralPFJet55"] = kDiCentralPFJet55;
   trigFilterIds_["hltDiCentralPFJet70"] = kDiCentralPFJet70;
+  trigFilterIds_["hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"] = kSingleIsoMu20;
   trigFilterIds_["hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09"] = kSingleIsoMu22;
   trigFilterIds_["hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09"] = kSingleIsoMu24;
   trigFilterIds_["hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09"] = kSingleIsoMu27;
@@ -189,6 +198,8 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltSingleEle22WPLooseGsfTrackIsoFilter"] = kSingleEle22;
   trigFilterIds_["hltSingleEle22WP75GsfTrackIsoFilter"] = kSingleEle22;
   trigFilterIds_["hltSingleEle22WPTightGsfTrackIsoFilter"] = kSingleEle22WPTight;
+  trigFilterIds_["hltEle23WPLooseGsfTrackIsoFilter"] = kSingleEle23NoER;
+  trigFilterIds_["hltEle27noerWPLooseGsfTrackIsoFilter"] = kSingleEle27NoER;
   trigFilterIds_["hltEle27WPLooseGsfTrackIsoFilter"] = kSingleEle27;
   trigFilterIds_["hltEle27WP75GsfTrackIsoFilter"] = kSingleEle27;
   trigFilterIds_["hltEle27WPTightGsfTrackIsoFilter"] = kSingleEle27WPTight;
@@ -199,6 +210,10 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu17Ele12EleLeg;
   trigFilterIds_["hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered23"] = kMu23Ele12MuLeg;
   trigFilterIds_["hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu23Ele12EleLeg;
+  trigFilterIds_["hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8"] = kMu8Ele23MuLeg;
+  trigFilterIds_["hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele23EleLeg;
+  trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8"] = kMu8Ele17MuLeg;
+  trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele17EleLeg;
 
 }
 
@@ -230,10 +245,10 @@ void TriggerFiller::fill()
 
   for (pat::TriggerObjectStandAlone obj : *triggerObjects_) {
     obj.unpackPathNames(*triggerNames_);
+    unsigned long trigflags = 0;
+    unsigned long trigfilterflags = 0;
     for (unsigned h = 0; h < obj.filterLabels().size(); ++h) {
       auto filterIndex = trigFilterIds_.find(obj.filterLabels()[h]);
-      unsigned long trigflags = 0;
-      unsigned long trigfilterflags = 0;
       if(filterIndex != trigFilterIds_.end()) {
         trigfilterflags |= filterIndex->second;
         for(auto trigindex : trigIds_) {
@@ -241,14 +256,14 @@ void TriggerFiller::fill()
             trigflags |= trigindex.second;
           }
         }
-        data.fillMulti<float>(itrig_obj_pt, obj.pt());
-        data.fillMulti<float>(itrig_obj_eta, obj.eta());
-        data.fillMulti<float>(itrig_obj_phi, obj.phi());
-        data.fillMulti<float>(itrig_obj_mass, obj.mass());
-        data.fillMulti<unsigned long>(itrig_obj_pathflags, trigflags);
-        data.fillMulti<unsigned long>(itrig_obj_filterflags, trigfilterflags);
       }
     }
+    data.fillMulti<float>(itrig_obj_pt, obj.pt());
+    data.fillMulti<float>(itrig_obj_eta, obj.eta());
+    data.fillMulti<float>(itrig_obj_phi, obj.phi());
+    data.fillMulti<float>(itrig_obj_mass, obj.mass());
+    data.fillMulti<unsigned long>(itrig_obj_pathflags, trigflags);
+    data.fillMulti<unsigned long>(itrig_obj_filterflags, trigfilterflags);
   }
 
 }

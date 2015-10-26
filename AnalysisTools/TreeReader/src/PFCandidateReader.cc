@@ -26,12 +26,9 @@ PFCandidateReader::PFCandidateReader() : BaseReader(){
   pdgid        = new vector<int>   ;
   d0           = new vector<float> ;
   dz           = new vector<float> ;
-  mt           = new vector<float> ;
-  dphimet      = new vector<float> ;
   taudisc      = new vector<float> ;
   fromPV       = new vector<int>   ;
   jetIndex     = new vector<int>   ;
-  tauIndex     = new vector<int>   ;
   chiso0p1     = new vector<float> ;
   chiso0p2     = new vector<float> ;
   chiso0p3     = new vector<float> ;
@@ -44,6 +41,9 @@ PFCandidateReader::PFCandidateReader() : BaseReader(){
   contjetdr    = new vector<float> ;
   contjetcsv   = new vector<float> ;
   trackiso     = new vector<float> ;
+  nearphopt    = new vector<float>;
+  nearphoeta   = new vector<float>;
+  nearphophi   = new vector<float>;
 
 }
 
@@ -66,16 +66,16 @@ void PFCandidateReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName , "pdgid"       , &pdgid       , true);
     treeReader->setBranchAddress(branchName , "d0"          , &d0          , true);
     treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
-    treeReader->setBranchAddress(branchName , "mttrkplusphoton", &mt       , true);
-    treeReader->setBranchAddress(branchName , "dphimet"     , &dphimet       , true);
     if(options_ & LOADTAUVETOMT)
       treeReader->setBranchAddress(branchName , "taudisc_mtpresel", &taudisc , true);
     else if(options_ & LOADTAUVETODPHI)
       treeReader->setBranchAddress(branchName , "taudisc_dphipresel", &taudisc , true);
     treeReader->setBranchAddress(branchName , "fromPV"      , &fromPV      , true);
     treeReader->setBranchAddress(branchName , "contJetIndex", &jetIndex    , true);
-    treeReader->setBranchAddress(branchName , "contTauIndex", &tauIndex    , true);
     treeReader->setBranchAddress(branchName , "trackiso" , &trackiso   , true);
+    treeReader->setBranchAddress(branchName , "nearphopt", &nearphopt  , true);
+    treeReader->setBranchAddress(branchName , "nearphoeta", &nearphoeta  , true);
+    treeReader->setBranchAddress(branchName , "nearphophi", &nearphophi  , true);
     if(options_ & LOADEXTRECO){
       clog << " + extra info ";
       treeReader->setBranchAddress(branchName , "chiso0p1"     , &chiso0p1    , true);
@@ -109,17 +109,15 @@ void PFCandidateReader::refresh(){
       pfcands.back().setCharge(q->at(iL));
       pfcands.back().setD0(d0->at(iL));
       pfcands.back().setDz(dz->at(iL));
-      pfcands.back().setMt(mt->at(iL));
-      pfcands.back().setDphiMet(dphimet->at(iL));
+      pfcands.back().setNearPhoton(CylLorentzVectorF(nearphopt->at(iL),nearphoeta->at(iL),nearphophi->at(iL),0));
       pfcands.back().setTauDisc(taudisc->at(iL));
       pfcands.back().setFromPV(fromPV->at(iL));
       pfcands.back().setJetIndex(jetIndex->at(iL));
-      pfcands.back().setTauIndex(tauIndex->at(iL));
       pfcands.back().setTrackIso(trackiso->at(iL));
       if(options_ & LOADTAUVETOMT)
-        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM);
       else if(options_ & LOADTAUVETODPHI)
-        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
+        pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM);
     }
   }
   if(options_ & LOADEXTRECO){
@@ -133,16 +131,13 @@ void PFCandidateReader::refresh(){
       cand.setCharge(q->at(iL));
       cand.setD0(d0->at(iL));
       cand.setDz(dz->at(iL));
-      cand.setMt(mt->at(iL));
-      cand.setDphiMet(dphimet->at(iL));
       cand.setTauDisc(taudisc->at(iL));
       cand.setFromPV(fromPV->at(iL));
       cand.setJetIndex(jetIndex->at(iL));
-      cand.setTauIndex(tauIndex->at(iL));
       if(options_ & LOADTAUVETOMT)
-        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM && mt->at(iL) < defaults::TAU_MTCUT_VETO);
+        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM);
       else if(options_ & LOADTAUVETODPHI)
-        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM && fabs(dphimet->at(iL)) < defaults::TAU_DPHICUT_VETO);
+        cand.setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_DPHIPRESEL_MEDIUM);
       cand.setChIso0p1(chiso0p1->at(iL));
       cand.setChIso0p2(chiso0p2->at(iL));
       cand.setChIso0p3(chiso0p3->at(iL));

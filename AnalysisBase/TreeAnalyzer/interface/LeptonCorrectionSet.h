@@ -37,10 +37,10 @@ namespace ucsbsusy {
         LEP           = (1 << 0), // apply lepton corrections
         LEP_VARY_UP   = (1 << 1), // systematic variation up
         LEP_VARY_DOWN = (1 << 2), // systematic variation down
-        USE_MVATAUS   = (1 << 3)
+        USE_HPSTAUS   = (1 << 3)
       }; 
 
-      LeptonCorrectionSet() : lepCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(true) {}
+      LeptonCorrectionSet() : lepCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false) {}
       virtual ~LeptonCorrectionSet() {}
       virtual void load(TString fileName, int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);

@@ -279,6 +279,8 @@ namespace cfgSet {
         os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
           os << "LEP ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)
+          os << "USE_HPSTAUS ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_UP)
           os << "VARY_UP " << std::endl;
         else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
