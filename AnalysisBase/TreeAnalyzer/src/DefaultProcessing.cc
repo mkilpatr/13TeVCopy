@@ -34,7 +34,7 @@ bool cfgSet::isSelTrack(ucsbsusy::PFCandidateF& track, const ucsbsusy::MomentumF
   MomentumF* cand = new MomentumF(track.p4());
   if(track.nearPhoton().pt() > -1.) cand->setP4(cand->p4() + track.nearPhoton().p4());
   track.setMt(JetKinematics::transverseMass(*cand,*met));
-  if(conf.mtPresel && JetKinematics::transverseMass(*cand,*met) > defaults::TAU_MTCUT_VETO) return false;
+  if(conf.mtPresel && track.mt() > defaults::TAU_MTCUT_VETO) return false;
   return (track.pt() > conf.minPt && fabs(track.eta()) < conf.maxEta && (track.*conf.selected)());
 }
 
