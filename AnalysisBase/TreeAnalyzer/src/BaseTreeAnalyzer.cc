@@ -312,7 +312,7 @@ void BaseTreeAnalyzer::processVariables()
 
   vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.vetoedTracks.isConfig())
-    cfgSet::selectTracks(vetoedTracks,pfcandReader.pfcands, configSet.vetoedTracks);
+    cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.vetoedTracks);
   nVetoedTracks = vetoedTracks.size();
 
   if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())

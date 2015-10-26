@@ -1,6 +1,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 
 
 using namespace std;
@@ -28,8 +29,12 @@ bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonConfig& conf){
   return (muon.pt() > conf.minMuPt && fabs(muon.eta()) < conf.maxMuEta && (muon.*conf.selectedMuon)());
 }
 
-bool cfgSet::isSelTrack(const ucsbsusy::PFCandidateF& track, const TrackConfig& conf){
+bool cfgSet::isSelTrack(ucsbsusy::PFCandidateF& track, const ucsbsusy::MomentumF* met, const TrackConfig& conf){
   if(conf.maxDz > 0 && fabs(track.dz()) >= conf.maxDz) return false;
+  MomentumF* cand = new MomentumF(track.p4());
+  if(track.nearPhoton().pt() > -1.) cand->setP4(cand->p4() + track.nearPhoton().p4());
+  track.setMt(JetKinematics::transverseMass(*cand,*met));
+  if(conf.mtPresel && JetKinematics::transverseMass(*cand,*met) > defaults::TAU_MTCUT_VETO) return false;
   return (track.pt() > conf.minPt && fabs(track.eta()) < conf.maxEta && (track.*conf.selected)());
 }
 
@@ -72,14 +77,14 @@ void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std
 
 }
 
-void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const TrackConfig& conf){
+void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const MomentumF* met, const TrackConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectTracks(): You want to do selecting but have not yet configured the selection!");
 
   selectedTracks.clear();
 
   for(auto& pfc : allTracks) {
-    if(isSelTrack(pfc,conf))
+    if(isSelTrack(pfc,met,conf))
       selectedTracks.push_back(&pfc);
   }
 }
