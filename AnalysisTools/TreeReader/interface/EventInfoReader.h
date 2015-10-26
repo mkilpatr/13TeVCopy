@@ -54,14 +54,11 @@ namespace ucsbsusy {
       size8             datrec;
       defaults::DataReco datareco;
 
-      std::vector<unsigned long> * metfilterbitflags;
       std::vector<bool>          * metfilterbitpass;
-      std::vector<bool>          * hbheHNFlt;
-      std::vector<bool>          * hbheHNFltR2Loose;
-      std::vector<bool>          * hbheHNFltR2Tight;
 
       bool hbheFixFlt;
       bool hbheFlt;
+      bool hbheIsoFlt;
       bool hbheFltR2Loose;
       bool hbheFltR2Tight;
       bool cscFlt;

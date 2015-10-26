@@ -12,8 +12,8 @@ void LeptonCorrectionSet::load(TString fileName, int correctionOptions)
     if(options_ & LEP) {
       lepCorr = new LepCorr(file);
       corrections.push_back(lepCorr);
-      if(options_ & USE_MVATAUS)
-        setUseHPSTaus(false);
+      if(options_ & USE_HPSTAUS)
+        setUseHPSTaus(true);
     }
   }
 }

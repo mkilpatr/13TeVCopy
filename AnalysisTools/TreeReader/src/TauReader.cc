@@ -22,14 +22,6 @@ TauReader::TauReader() : BaseReader(){
   eta          = new vector<float>;
   phi          = new vector<float>;
   mass         = new vector<float>;
-  leadcandpt     = new  vector<float>         ;
-  leadcandeta    = new  vector<float>         ;
-  leadcandphi    = new  vector<float>         ;
-  leadcandmass   = new  vector<float>         ;
-  leadchcandpt   = new  vector<float>         ;
-  leadchcandeta  = new  vector<float>         ;
-  leadchcandphi  = new  vector<float>         ;
-  leadchcandmass = new  vector<float>         ;
   q              = new  vector<int>           ;
   dxy            = new  vector<float>         ;
   dxyerr         = new  vector<float>         ;
@@ -53,14 +45,6 @@ void TauReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName,"eta"         , &eta                   , true);
     treeReader->setBranchAddress(branchName,"phi"         , &phi                   , true);
     treeReader->setBranchAddress(branchName,"mass"        , &mass                  , true);
-    treeReader->setBranchAddress(branchName,"leadcand_pt", &leadcandpt             , true);
-    treeReader->setBranchAddress(branchName,"leadcand_eta", &leadcandeta           , true);
-    treeReader->setBranchAddress(branchName,"leadcand_phi", &leadcandphi           , true);
-    treeReader->setBranchAddress(branchName,"leadcand_mass", &leadcandmass         , true);
-    treeReader->setBranchAddress(branchName,"leadchargedcand_pt", &leadchcandpt    , true);
-    treeReader->setBranchAddress(branchName,"leadchargedcand_eta", &leadchcandeta  , true);
-    treeReader->setBranchAddress(branchName,"leadchargedcand_phi", &leadchcandphi  , true);
-    treeReader->setBranchAddress(branchName,"leadchargedcand_mass", &leadchcandmass, true);
     treeReader->setBranchAddress(branchName,"q", &q                                , true);
     treeReader->setBranchAddress(branchName,"dxy", &dxy                            , true);
     treeReader->setBranchAddress(branchName,"dxyerr", &dxyerr                      , true);
@@ -86,8 +70,6 @@ void TauReader::refresh(){
       taus.back().setDxyErr(dxyerr->at(iL));
       taus.back().setDxySig(dxysig->at(iL));
       taus.back().setHPSId(hpsid->at(iL));
-      taus.back().setLeadCandidate(CylLorentzVectorF(leadcandpt->at(iL), leadcandeta->at(iL), leadcandphi->at(iL), leadcandmass->at(iL)));
-      taus.back().setLeadChargedCandidate(CylLorentzVectorF(leadchcandpt->at(iL), leadchcandeta->at(iL), leadchcandphi->at(iL), leadchcandmass->at(iL)));
       taus.back().setIsGoodPOGTau(tauId->passTauId((&taus.back())));
       taus.back().setIsHPSVetoTau((hpsid->at(iL) & kLooseIsoDB3Hits)>0 && ((hpsid->at(iL) & kDecayMode)>0));
     }
