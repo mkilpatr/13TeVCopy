@@ -24,8 +24,9 @@ options = VarParsing('analysis')
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
 #options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
-options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
+#options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
+options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
 
 options.maxEvents = -1
 
@@ -94,7 +95,7 @@ if '/store/data' in options.inputFiles[0] :
         process.TestAnalyzer.EventInfo.metsOOB = cms.InputTag('slimmedMETs','','RECO')
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    dcsOnlyJSON = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_259626_20Oct2015.txt")
+    dcsOnlyJSON = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_259820_23Oct2015.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename = dcsOnlyJSON).getVLuminosityBlockRange()
 
 # import of standard configurations
