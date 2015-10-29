@@ -13,20 +13,17 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
     // booking
-    size i_ptzll = 0;
     size i_origmet = 0;
     size i_origmetnohf = 0;
     size i_iselectron = 0;
 
     bool  passZtoLLSel = false;
-    float ptzll = 0;
     float origMET = 0;
     float origMETNoHF = 0;
 
     void book() {
       ZeroLeptonAnalyzer::book();
 
-      i_ptzll             = data.add<float>("","ptzll","F",0);
       i_origmet           = data.add<float>("","origmet","F",0);
       i_origmetnohf       = data.add<float>("","origmetnohf","F",0);
       i_iselectron        = data.add<bool>("", "iselectron", "O", 0);
@@ -50,29 +47,26 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if (lep0->iselectron() == lep1->iselectron() && lep0->q()*lep1->q() < 0){
         auto z_p4 = lep0->p4() + lep1->p4();
-        if (z_p4.mass()>80 && z_p4.mass()<100){
-          passZtoLLSel = true;
-          ptzll = z_p4.pt();
-          met->setP4(met->p4() + z_p4);
-          metNoHF->setP4(metNoHF->p4() + z_p4);
+        passZtoLLSel = true;
+        met->setP4(met->p4() + z_p4);
+        metNoHF->setP4(metNoHF->p4() + z_p4);
 
-          // clean vetoedTracks vs selectedLeptons
-          vector<bool> isOverlapTrack(vetoedTracks.size(),false);
-          vector<PFCandidateF*> tmpTracks;
-          for(const auto* lep : selectedLeptons) {
-            double nearDR = 0;
-            int near = PhysicsUtilities::findNearestDRDeref(*lep,vetoedTracks,nearDR,0.4,-1,0,vetoedTracks.size());
-            if(near >= 0){
-              isOverlapTrack[near] = true;
-            }
+        // clean vetoedTracks vs selectedLeptons
+        vector<bool> isOverlapTrack(vetoedTracks.size(),false);
+        vector<PFCandidateF*> tmpTracks;
+        for(const auto* lep : selectedLeptons) {
+          double nearDR = 0;
+          int near = PhysicsUtilities::findNearestDRDeref(*lep,vetoedTracks,nearDR,0.4,-1,0,vetoedTracks.size());
+          if(near >= 0){
+            isOverlapTrack[near] = true;
           }
-          for (unsigned int iT = 0; iT < vetoedTracks.size(); ++iT){
-            if (!isOverlapTrack.at(iT))
-              tmpTracks.push_back(vetoedTracks.at(iT));
-          }
-          vetoedTracks = tmpTracks;
-          nVetoedTracks = vetoedTracks.size();
         }
+        for (unsigned int iT = 0; iT < vetoedTracks.size(); ++iT){
+          if (!isOverlapTrack.at(iT))
+            tmpTracks.push_back(vetoedTracks.at(iT));
+        }
+        vetoedTracks = tmpTracks;
+        nVetoedTracks = vetoedTracks.size();
       }
 
     }
@@ -84,7 +78,6 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
 
-      data.fill<float>(i_ptzll, ptzll);
       data.fill<float>(i_origmet, origMET);
       data.fill<float>(i_origmetnohf, origMETNoHF);
       data.fill<bool>(i_iselectron, selectedLeptons.front()->iselectron());
