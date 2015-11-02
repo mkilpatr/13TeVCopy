@@ -997,28 +997,32 @@ void PlotStuff::makeTable(TString label, vector<double> yields, vector<double> y
   }
 
   yieldfile_ << "\t \\\\" << endl;
-  yieldfile_ << "\\hline" << endl;
-  yieldfile_ << "Efficiency ";
 
-  isam = -1;
-  nbkg = 0;
-  lastbkg = false;
-  for(auto* sample : samples_) {
-    isam++;
-    if(isData(sample->name))
-      yieldfile_ << " &   -  ";
-    else
-      yieldfile_ << " & " << fixed << setprecision(6) << yields[isam]/(sample->xsecs.at(0)*config_.tablelumi);
-    if(isBackground(sample->name)) {
-      nbkg++;
+  if(config_.tabulateeffs) {
+    yieldfile_ << "\\hline" << endl;
+    yieldfile_ << "Efficiency ";
+
+    isam = -1;
+    nbkg = 0;
+    lastbkg = false;
+    for(auto* sample : samples_) {
+      isam++;
+      if(isData(sample->name))
+        yieldfile_ << " &   -  ";
+      else
+        yieldfile_ << " & " << fixed << setprecision(6) << yields[isam]/(sample->xsecs.at(0)*config_.tablelumi);
+      if(isBackground(sample->name)) {
+        nbkg++;
+      }
+      if(nbkg == config_.backgroundnames.size()) {
+        if(!lastbkg) yieldfile_ << " & ";
+        lastbkg = true;
+      }
     }
-    if(nbkg == config_.backgroundnames.size()) {
-      if(!lastbkg) yieldfile_ << " & ";
-      lastbkg = true;
-    }
+
+    yieldfile_ << "\t \\\\" << endl;
   }
 
-  yieldfile_ << "\t \\\\" << endl;
   yieldfile_ << "\\hline" << endl;
 
 }

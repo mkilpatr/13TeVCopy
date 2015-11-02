@@ -27,7 +27,6 @@ namespace ucsbsusy {
                             , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers)
                             , LOADTAUVETOMT   = (1 <<  3)   ///< Tau veto based on mT preselection
                             , LOADTAUVETODPHI = (1 <<  4)   ///< Tau veto based on dphi preselection
-                            , LOADPHYS14      = (1 <<  5)   ///< PHYS15 tau veto training
     };
     static const int defaultOptions;
 
@@ -46,12 +45,9 @@ namespace ucsbsusy {
       std::vector<int>   * pdgid;
       std::vector<float> * d0;
       std::vector<float> * dz;
-      std::vector<float> * mt;
-      std::vector<float> * dphimet;
       std::vector<float> * taudisc;
       std::vector<int>   * fromPV;
       std::vector<int>   * jetIndex;
-      std::vector<int>   * tauIndex;
       std::vector<float> * chiso0p1;
       std::vector<float> * chiso0p2;
       std::vector<float> * chiso0p3;
@@ -64,6 +60,9 @@ namespace ucsbsusy {
       std::vector<float> * contjetdr;
       std::vector<float> * contjetcsv;
       std::vector<float> * trackiso;
+      std::vector<float> * nearphopt;
+      std::vector<float> * nearphoeta;
+      std::vector<float> * nearphophi;
 
       PFCandidateFCollection pfcands;
       ExtendedPFCandidateCollection extpfcands;

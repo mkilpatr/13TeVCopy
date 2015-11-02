@@ -6,9 +6,11 @@
 using namespace std;
 using namespace ucsbsusy;
 
+//#define TEST
+
 class Copier : public TreeCopierManualBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,isMCTree,pars),
+  Copier(string fileName, string treeName, string outFileName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,randSeed,isMCTree,pars),
   i_npv       (0),
   i_rho       (0),
   i_weight    (0),
@@ -27,11 +29,36 @@ public:
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
   }
 
+  //--------------------------------------------------------------------------------------------------
+  void analyze(int reportFrequency = 10000, int numEvents = -1)
+  {
+    loadVariables();
+    isLoaded_ = true;
+    setupTree();
+    book();
+    data.book(treeWriter_);
+    while(reader.nextEvent(reportFrequency)){
+      isProcessed_ = false;
+      if(numEvents >= 0 && getEventNumber() >= numEvents) return;
+      processVariables();
+      data.reset();
+      fillEvent();
+    }
+  }
+
   virtual bool fillEvent() {
+#ifdef  TEST
+    cout << "------"<<endl;
+    cout << *met;
+    cout << "------"<<endl;
+    for(const auto& j : defaultJets->recoJets){
+      cout << j << endl;
+    }
+    cout << endl;
+#endif
 
     for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
       const auto& gJ = defaultJets->genJets[iJ];
-
       if (gJ.pt()  < 20) continue;
 
       //getrecojet
@@ -50,7 +77,9 @@ public:
       data.fill<float>(i_genjeteta ,gJ.eta() );
       data.fill<unsigned int>(i_genjetrank,  iJ);
       data.fill<unsigned int>(i_flavor    , convertTo<unsigned int>(gJ.flavor(),"Copier::i_flavor"));
-      data.fill<float>(i_recojetpt,rJ == 0 ? 19.5 : rJ->pt());
+      data.fill<float>(i_recojetpt,rJ == 0 ? 9.5 : rJ->pt());
+      outFile_->cd();
+      treeWriter_->fill();
     }
 
 
@@ -92,20 +121,24 @@ public:
 
 #endif
 
-void JetResSkim(string fileName,  string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes", bool isMC = true) {
+void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes", bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+#ifdef  TEST
+  cfg.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::JETRESOLUTION;
+  cfg.corrections.jetResCorr = 1.1;
+#endif
 
   //get the output name
   TString prefix(fileName);
   prefix.Remove(0,prefix.Last('/') + 1);
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
-  TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
+  TString outName = fileIndex < 0 ? TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str()) : TString::Format("%s_%i_%s.root",prefix.Data(),fileIndex,outPostfix.c_str());
 
-  Copier a(fileName,treeName,outName.Data(),isMC, &cfg);
+  Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg);
 
-  a.analyze();
+  a.analyze(1000,10);
 }
 
 

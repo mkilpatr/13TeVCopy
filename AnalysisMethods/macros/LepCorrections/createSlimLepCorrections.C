@@ -17,233 +17,197 @@
 #include <string.h>
 #include <math.h>
 #include <vector>
-//namespace  createLepCorrectionHists{
-
-void createSlimLepCorrections(TString varDraw = "met",bool normalize = true);
-double addUnc(std::vector<double> errors);
-double multiplyUnc(std::vector<double> errors,std::vector<double> vals, double multiply);
-void fillSearchVectors(std::vector<TString>& c_SBins_0l, std::vector<TString>& c_SBins_1l,TString c_presel_0l,TString c_presel_1l);
-
-void createSlimLepCorrections(TString varDraw,bool normalize){
-    TString  fileTree = "Events";
-    TString scaleName = "weight";
-    TString dataString = "run/lepEffSlimmed/data_tree.root";
-    TString mcString = "run/lepEffSlimmed/sm_tree.root";
-    ////STRING FOR FILE SAVE NAME
-    TString LumiString = "40pb";
-    TString Lumi = ".0402";
-
-    //EVENT SELECTIONS
-    TString triggerSelection             = "&&(passdijetmet > 0)";
-    TString baseline                     = "(njets60 >= 2) && (dphij12met>.4) && (dphij3met>0.4) && (met>200) &&(njets >=5 ) && (nbjets >= 1)";
-    TString searchString                             =  baseline + "&&(mtcsv12met > 175)&& (dphij12met>1) && (dphij3met>0.5)";
-
-    ////GEN LEVEL CUT STRINGS
-    TString noPromptEle                  = "&&(ngoodgenele == 0)";
-    TString onePromptEle                 = "&&(ngoodgenele >= 1)";
-    TString noPromptMu                   = "&&(ngoodgenmu == 0)";
-    TString onePromptMu                  = "&&(ngoodgenmu >= 1)";
-    TString noPromptTau                  = "&&(npromptgentau == 0)";
-    TString onePromptTau                 = "&&(npromptgentau >= 1)";
-
-    ////ORTHOGONALIZE AT RECO LEVEL
-    TString recoEleCut                                       = "&&(nvetolele >= 1)&&(ngoodgenmu    == 0)";
-    TString recoMuCut                                        = "&&(nvetomu    >= 1)";
-    TString recoTauCut                               = "&&(nvetotau    >= 1)&&(nvetolele == 0)&&(nvetomu    == 0)";
-
-	////FILL GEN AND RECO CUT STRINGS
-	std::vector<TString> recoLepCuts; 	std::vector<TString> genNoLep; 	std::vector<TString> genOneLep;
-	recoLepCuts.push_back(recoEleCut);	recoLepCuts.push_back(recoMuCut);	recoLepCuts.push_back(recoTauCut);
-	genNoLep.push_back(noPromptEle);	genNoLep.push_back(noPromptMu);	genNoLep.push_back(noPromptTau);
-	genOneLep.push_back(onePromptEle);	genOneLep.push_back(onePromptMu);	genOneLep.push_back(onePromptTau);
-
-	////FILL THE BIN SELECTIONS
-    std::vector<TString> c_SBins_1lCR;std::vector<TString> c_SBins_1lSR;
-	fillSearchVectors(c_SBins_1lCR,c_SBins_1lSR,baseline,searchString);
-	c_SBins_1lCR.push_back(baseline);
-	c_SBins_1lSR.push_back(searchString);
-
-	////LOAD ROOT FILES
-	TFile *mcFile  = new TFile(mcString);
-    TTree *mcTree = (TTree*)mcFile->Get(fileTree);
-
-	TFile *dataFile  = new TFile(dataString);
-    TTree *dataTree = (TTree*)dataFile->Get(fileTree);
-
-
-    //CREATE CORRECTION HISTS
-	TH1F* LEP 	 = new TH1F("LEP","LEP",4,0.0,4.0);LEP->Sumw2();
-
-	TH1F* dataInc;TH1F* dataOneLep;TH1F* mcOneLep;TH1F* mcInvEffHist;TH1F *dataEffHist;
-	dataInc 	 = new TH1F("dataInc","dataInc",1,0.0,1.0);dataInc->Sumw2();
-	dataOneLep = (TH1F*) dataInc->Clone("dataOneLep");TH1F* mcNoLep	 = (TH1F*) dataInc->Clone("mcNoLep");
-	mcOneLep   =  (TH1F*) dataInc->Clone("mcOneLep");TH1F* mcInc       = (TH1F*) dataInc->Clone("mcInc");
-    mcInvEffHist = (TH1F*) dataInc->Clone("mcInvEffHist");TH1F *mcFakeHist = (TH1F*) dataInc->Clone("mcFakeHist");
-    dataEffHist = (TH1F*) dataInc->Clone("dataEffHist");
-
-
-    ofstream yieldfile_;
-    yieldfile_.open("yieldsLep.tex");
-    yieldfile_ << "\\begin{center}" << std::endl;
-    yieldfile_ << "\\begin{tabular}{|c|c|c|c|c|}" << std::endl;
-    yieldfile_ << "\\hline" << std::endl;
-    yieldfile_ << "Lepton & $\\frac{\\text{Data}_{CR_\\ell}}{\\text{Data}_{inc}}$ & ";
-    yieldfile_ << 	"$\\frac{\\text{MC}_{inc}}{\\text{MC}_{\\ell - matched }} $ & ";
-    yieldfile_ <<	"$ \\frac{\\text{MC}_{\\ell - fake}}{\\text{MC}_{\\ell - matched}}$	 & ";
-    yieldfile_ <<	"LepCorr$_{\\ell}$ \\\\" << std::endl;
-    yieldfile_ << "\\hline" << std::endl;
-
-
-	for(int i = 0; i < 3; i++){
-			////FILL THE NECESSARY HISTOGRAMS
-			dataTree->Draw(varDraw+">>dataOneLep",scaleName  + "*(" +   baseline + triggerSelection + recoLepCuts.at(i) +")");
-			dataTree->Draw(varDraw+">>dataInc",scaleName  + "*("  + baseline + triggerSelection + ")");
-			mcTree->Draw(varDraw+">>mcOneLep",scaleName + "*" + Lumi +"*(" + baseline + recoLepCuts.at(i) + genOneLep.at(i) + ")");
-			mcTree->Draw(varDraw+">>mcNoLep",scaleName + "*" + Lumi + "*(" + baseline + recoLepCuts.at(i) + genNoLep.at(i) + ")");
-			mcTree->Draw(varDraw+">>mcInc",scaleName + "*" + Lumi + "*("  + baseline + ")");
-
-			////COUT THE CORRECTION INPUT AND RESULTS
-			double dummyError;
-			std::cout << "The index i = (0,1,2) corresponds to (ele,mu,tau)" << std::endl;
-			std::cout << "Printing out initial instantiating results" << std::endl;
-			std::cout << "The cutstring recoLepCuts reads " << recoLepCuts.at(i) << " At " << i << std::endl;
-			std::cout << "The integral of dataOneLep is " << dataOneLep->IntegralAndError(0,10001,dummyError) << " At " << i << std::endl;
-			std::cout << "The integral of dataInc is " << dataInc->IntegralAndError(0,10001,dummyError) << " At " << i << std::endl;
-
-			std::cout << "The cutstring genOneLep reads " << genOneLep.at(i) << " At " << i << std::endl;
-			std::cout << "The integral of mcOneLep is " << mcOneLep->IntegralAndError(0,10001,dummyError) << " At " << i << std::endl;
-
-			std::cout << "The cutstring genOneLep reads " << genNoLep.at(i) << " At " << i << std::endl;
-			std::cout << "The integral of mcNoLep is " << mcNoLep->IntegralAndError(0,10001,dummyError) << " At " << i << std::endl;
-			std::cout << "The integral of mcInc is " << mcInc->IntegralAndError(0,10001,dummyError) << " At " << i << std::endl;
-
-			////DIVIDE THE HISTOGRAMS
-			mcInvEffHist->Divide(mcInc,mcOneLep,1.0,1.0,"B");
-			mcFakeHist->Divide(mcNoLep,mcOneLep);
-			dataEffHist->Divide(dataOneLep,dataInc,1.0,1.0,"B");
-
-
-			////FILL THE THREE LEPTON CORRECTION TERMS
-			double mcCorrError;
-			double mcCorr = mcInvEffHist->IntegralAndError(0,10001,mcCorrError);
-			double dataCorrError;
-			double dataCorr = dataEffHist->IntegralAndError(0,10001,dataCorrError);
-			double mcFakeError;
-			double fakeCorr = mcFakeHist->IntegralAndError(0,10001,mcFakeError);
-
-			////ALTERNATE CALCULATION
-			////MULTIPLY AND COMBINE HISTS
-			TH1F* LepCorrHist;
-			LepCorrHist = mcInvEffHist;
-			LepCorrHist->Multiply(dataEffHist);
-			mcInvEffHist->Add(mcFakeHist,-1);
-			double lepCorrError2;
-			double lepCorr2 = LepCorrHist->IntegralAndError(0,10001,lepCorrError2);
-
-			////CALCULATE THE LEPTON CORRECTION
-			double lepCorr = (mcCorr * dataCorr - fakeCorr);
-
-			////CALCULATE THE LEPTON CORRECTION ERROR
-			std::vector<double>tempErrors;    std::vector<double>tempVals;
-
-			tempErrors.push_back(mcCorrError);    tempErrors.push_back(dataCorrError);
-			tempVals.push_back(mcCorr);	   tempVals.push_back(dataCorr);
-			double errors2 = multiplyUnc(tempErrors,tempVals,(dataCorr*mcCorr));
-			tempErrors.clear();tempVals.clear();
-
-			tempErrors.push_back(mcFakeError);tempErrors.push_back(errors2);
-			double lepCorrError = addUnc(tempErrors);
-			tempErrors.clear();tempVals.clear();
-			////COUT THE AND RESULTS
-			std::cout << "Printing out initial correction results" << std::endl;
-			std::cout << "The value of the term mcCorr is " << mcCorr << " At " << i << std::endl;
-			std::cout << "The value of the term dataCorr is " << dataCorr << " At " << i << std::endl;
-			std::cout << "The value of the term fakeCorr is " << fakeCorr << " At " << i << std::endl;
-			std::cout << "The value of the total lepCorr is " << lepCorr << " At " << i << std::endl;
-			std::cout << "The value of the total error of lepCorr is " << lepCorrError << " At " << i << std::endl;
-			std::cout << "The value of the total lepCorr2 is " << lepCorr2 << " At " << i << std::endl;
-			std::cout << "The value of lepCorrError2 is " << lepCorrError2 << " At " << i << std::endl;
-			/////FILL THE HISTOGRAMS
-			LEP->SetBinContent(i+1,lepCorr2);
-			LEP->SetBinError(i+1,lepCorrError2);
-
-			std::cout << "The value of the net error is " << lepCorr << std::endl;
-			if(i == 0)
-			yieldfile_ << "electron &";
-			if(i == 1)
-			yieldfile_ << "muon &";
-			if(i == 2)
-			yieldfile_ << "tau &";
-			yieldfile_ << std::fixed;
-			yieldfile_.precision(3);
-			yieldfile_ << dataCorr << " $\\pm$ " << dataCorrError << " & "  << mcCorr << " $\\pm$ " << mcCorrError << " & ";
-			yieldfile_ << fakeCorr << " $\\pm$ " << mcFakeError << " & " <<  lepCorr2 << " $\\pm$ " << lepCorrError2 << " \\\\ " << std::endl;
-			yieldfile_ << "\\hline"  << std::endl;
-    }
-	LEP->SetBinContent(4,1);
-	LEP->SetBinError(4,0);
-    yieldfile_ << "\\end{tabular}"  << std::endl;
-    yieldfile_ << "\\end{center}" << std::endl;
-	TFile* file = new TFile("lepCorr_" + LumiString + ".root","RECREATE");
-	LEP->Write();
-	file->Write();
-}
 
 double addUnc(std::vector<double> errors){
-	double errorSum = 0;
-	for (int i = 0; i < errors.size(); i++)
-	{
-		errorSum += pow(errors.at(i),2);
-	}
-return (sqrt(errorSum));
-}
+  double errorSum = 0;
+  for(unsigned int i=0; i<errors.size(); i++) errorSum += pow(errors.at(i),2);
+  return sqrt(errorSum);
+} // addUnc()
+
 double multiplyUnc(std::vector<double> errors,std::vector<double> vals, double multiplied){
-	double errorSum = 0;
-	for (int i = 0; i < errors.size(); i++)
-	{
-		errorSum += pow(errors.at(i),2)/(pow(vals.at(i),2));
-		//multiply = multiply * vals.at(i);
-	}
-	return (multiplied*sqrt(errorSum));
-}
+  double errorSum = 0;
+  for(unsigned int i = 0; i < errors.size(); i++) errorSum += pow(errors.at(i),2)/(pow(vals.at(i),2));
+  return multiplied*sqrt(errorSum);
+} // multiplyUnc()
 
-void fillSearchVectors(std::vector<TString>& c_SBins_0l, std::vector<TString>& c_SBins_1l,TString c_presel_0l,TString c_presel_1l)
-{
-			TString c_Nb1NCTT0_0l = c_presel_0l+" && (nbjets==1) && (ncttstd==0)";
-	        TString c_Nb1NCTT1_0l = c_presel_0l+" && (nbjets==1) && (ncttstd>=1)";
-	        TString c_Nb2NCTT0_0l = c_presel_0l+" && (nbjets>=2) && (ncttstd==0)";
-	        TString c_Nb2NCTT1_0l = c_presel_0l+" && (nbjets>=2) && (ncttstd>=1)";
+//root -l -b -q "../CMSSW_7_4_11/src/AnalysisMethods/macros/LepCorrections/createSlimLepCorrections.C+"
+void createSlimLepCorrections(){
+  TString fileTree   = "Events";
+  TString scaleName  = "weight*puWeight";
+  TString varDraw    = "met";
+  TString dataString = "trees/151008_lepactivity/data_tree.root";
+  TString mcString   = "trees/151008_lepactivity/sm_tree.root";
+  TString LumiString = "test"; // string to track saved hists of corrections
+  TString Lumi       = "0.2092";
 
-	        TString c_Nb1NCTT0_1l = c_presel_1l+" && (nbjets==1) && (ncttstd==0)";
-	        TString c_Nb1NCTT1_1l = c_presel_1l+" && (nbjets==1) && (ncttstd>=1)";
-	        TString c_Nb2NCTT0_1l = c_presel_1l+" && (nbjets>=2) && (ncttstd==0)";
-	        TString c_Nb2NCTT1_1l = c_presel_1l+" && (nbjets>=2) && (ncttstd>=1)";
+  // event selection (relaxed SR: no mt cut, relaxed dphij123met cuts)
+  //TString triggerSelection = " && passdijetmet";
+  //TString baseline         = "met>200 && njets60 >= 2 && njets>=5 && nbjets>=1 && dphij12met>0.4 && dphij3met>0.4";
+  TString triggerSelection = " && passdijetmet && passjson && passcscflt && passeebadscflt && passhbheflt"; // passhbhefixflt  passhbheflt
+  TString baseline         = "met>200 && njets60 >= 2 && j1pt>75 && j2pt>75 && njets>=5 && nlbjets>=2 && nbjets>=1 && dphij12met>0.4 && dphij3met>0.4";
+  TString bin              = ""; //"&& leptonpt>50"; // " && leptonpt>10 "; //  && leptonpt<100    && abs(leptoneta)>1    && htalonglep>200
+  std::cout << "using bin: " << bin << std::endl;
 
-	        std::vector<TString> c_met;
-	        c_met.push_back("(met>=200. && met<300.)" );
-	        c_met.push_back("(met>=300. && met<400.)" );
-	        c_met.push_back("(met>=400. && met<500.)" );
-	        c_met.push_back("(met>=500. && met<600.)" );
-	        c_met.push_back("(met>=600. && met<7000.)");
+  // fill gen/reco cut string vectors (for looping over el,mu,tau later)
+  std::vector<TString> genNoLep;
+  genNoLep.push_back(" && ngoodgenele==0"  ); // zero gen electrons
+  genNoLep.push_back(" && ngoodgenmu==0"   ); // zero gen muons
+  genNoLep.push_back(" && npromptgentau==0"); // zero gen taus
+  std::vector<TString> genOneLep;
+  genOneLep.push_back(" && ngoodgenele>=1"  ); // at least one gen electron
+  genOneLep.push_back(" && ngoodgenmu>=1"   ); // at least one gen muon
+  genOneLep.push_back(" && npromptgentau>=1"); // at least one gen tau
+  // orthogonalize lep selection at reco level
+  std::vector<TString> recoLepCuts;
+  //recoLepCuts.push_back(" && nvetolele>=1 && ngoodgenmu==0"               ); // reco electrons (no muons)
+  recoLepCuts.push_back(" && nvetolele>=1 && nvetomu==0"                  ); // reco electrons (no muons)
+  recoLepCuts.push_back(" && nvetomu  >=1"                                ); // reco muons
+  //recoLepCuts.push_back(" && nvetotau >=1 && nvetolele==0 && nvetomu==0"  ); // reco taus (no electrons, muons)
+  recoLepCuts.push_back(" && nvetohpstaus >=1 && nvetolele==0 && nvetomu==0"  ); // reco taus (no electrons, muons)
 
-	        std::vector<TString> c_CTTstd;
-	        c_CTTstd.push_back("(ncttstd==0)");
-	        c_CTTstd.push_back("(ncttstd>=1)");
+	// load input files
+	TFile *mcFile   = new TFile(mcString);
+  TFile *dataFile = new TFile(dataString);
+  TTree *mcTree   = (TTree*)mcFile  ->Get(fileTree);
+  TTree *dataTree = (TTree*)dataFile->Get(fileTree);
 
-	        std::vector<TString> c_Nb;
-	        c_Nb.push_back("(nbjets==1)");
-	        c_Nb.push_back("(nbjets>=2)");
+  // histogram to collect the corrections
+  // bins (1,2,3) are for (electrons, muons, taus)
+  // bin 4 is for fakes (will be set to 1pm0)
+	TH1F* lepCor = new TH1F("lepCor", "lepCor", 4, 0, 4); lepCor->Sumw2();
+
+	// histograms to collect various pieces
+  TH1F* dataOneLep  = new TH1F("dataOneLep" , "dataOneLep" , 1, 0, 10000); dataOneLep ->Sumw2();
+	TH1F* dataInc     = new TH1F("dataInc"    , "dataInc"    , 1, 0, 10000); dataInc    ->Sumw2();
+  TH1F* mcOneLep    = new TH1F("mcOneLep"   , "mcOneLep"   , 1, 0, 10000); mcOneLep   ->Sumw2();
+  TH1F* mcNoLep     = new TH1F("mcNoLep"    , "mcNoLep"    , 1, 0, 10000); mcNoLep    ->Sumw2();
+  TH1F* mcInc       = new TH1F("mcInc"      , "mcInc"      , 1, 0, 10000); mcInc      ->Sumw2();
+  TH1F* mcGenLep    = new TH1F("mcGenLep"   , "mcGenLep"   , 1, 0, 10000); mcGenLep   ->Sumw2();
+	TH1F* mcEffHist   = new TH1F("mcEffHist"  , "mcEffHist"  , 1, 0, 10000); mcEffHist  ->Sumw2();
+  TH1F* mcFakeHist  = new TH1F("mcFakeHist" , "mcFakeHist" , 1, 0, 10000); mcFakeHist ->Sumw2();
+  TH1F* mcGenEff    = new TH1F("mcGenEff"   , "mcGenEff"   , 1, 0, 10000); mcGenEff   ->Sumw2();
+  TH1F* dataEffHist = new TH1F("dataEffHist", "dataEffHist", 1, 0, 10000); dataEffHist->Sumw2();
+
+  ofstream yieldfile_; // table on Sep7 s2
+  yieldfile_.open("yieldsLep.tex");
+  yieldfile_ << "\\begin{center}"               << std::endl
+             << "\\begin{tabular}{|c|c|c|c|c|}" << std::endl
+             << "\\hline"                       << std::endl
+             << "Lepton & "
+             << "$\\frac{\\text{Data}_{CR_\\ell}}{\\text{Data}_{inc}}$ & "
+             << "$\\frac{\\text{MC}_{inc}}{\\text{MC}_{\\ell - matched }} $ & "
+             <<	"$ \\frac{\\text{MC}_{\\ell - fake}}{\\text{MC}_{\\ell - matched}}$	 & "
+             <<	"LepCorr$_{\\ell}$ \\\\"        << std::endl
+             << "\\hline"                       << std::endl;
 
 
-	        for (unsigned int i0=0; i0<c_Nb.size(); ++i0) {
-	          for (unsigned int i1=0; i1<c_CTTstd.size(); ++i1) {
-	            for (unsigned int i2=0; i2<c_met.size(); ++i2) {
-	      	TString tmpStr_0l = "("+c_presel_0l+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_met[i2]+")";
-	      	TString tmpStr_1l = "("+c_presel_1l+" && "+c_Nb[i0]+" && "+c_CTTstd[i1]+" && "+c_met[i2]+")";
-	      	c_SBins_0l.push_back(tmpStr_0l);
-	      	c_SBins_1l.push_back(tmpStr_1l);
-	            } // end of looping over i2
-	          } // end of looping over i1
-	        } // end of looping over i0
-	        // ====
-}
+  // the corrections and uncertanty   are
+	for(int i=0; i<3; i++) {
+	  if(i==0) std::cout << std::endl << "starting electrons..." << std::endl;
+	  if(i==1) std::cout << std::endl << "starting muons..."     << std::endl;
+	  if(i==2) std::cout << std::endl << "starting taus..."      << std::endl;
+
+	  // fill histograms with events in various regions
+	  dataTree->Draw(varDraw+">>dataOneLep",                       "(" + baseline + triggerSelection + recoLepCuts.at(i)                   + bin + ")");
+	  dataTree->Draw(varDraw+">>dataInc"   ,                       "(" + baseline + triggerSelection                                       +       ")");
+	  mcTree  ->Draw(varDraw+">>mcOneLep"  , scaleName+"*"+Lumi + "*(" + baseline + triggerSelection + recoLepCuts.at(i) + genOneLep.at(i) + bin + ")");
+	  mcTree  ->Draw(varDraw+">>mcNoLep"   , scaleName+"*"+Lumi + "*(" + baseline + triggerSelection + recoLepCuts.at(i) + genNoLep.at(i)  + bin + ")");
+	  mcTree  ->Draw(varDraw+">>mcInc"     , scaleName+"*"+Lumi + "*(" + baseline + triggerSelection                                       +       ")");
+	  mcTree  ->Draw(varDraw+">>mcGenLep"  , scaleName+"*"+Lumi + "*(" + baseline + triggerSelection                     + genOneLep.at(i) +       ")");
+
+	  // for "by-hand cross-check"
+	  double dummyError;
+	  std::cout << "The index i = (0,1,2) corresponds to (ele,mu,tau)"                                << std::endl
+	            << "Printing out initial instantiating results"                                       << std::endl
+	            << "The cutstring recoLepCuts reads " << recoLepCuts.at(i)                            << std::endl
+	            << "The integral of dataOneLep is "   << dataOneLep->IntegralAndError(0,2,dummyError) << std::endl
+	            << "The integral of dataInc is    "   << dataInc   ->IntegralAndError(0,2,dummyError) << std::endl
+	            << "The cutstring genOneLep reads "   << genOneLep.at(i)                              << std::endl
+	            << "The integral of mcOneLep is "     << mcOneLep->IntegralAndError(0,2,dummyError)   << std::endl
+	            << "The cutstring genOneLep reads "   << genNoLep.at(i)                               << std::endl
+	            << "The integral of mcNoLep is "      << mcNoLep->IntegralAndError(0,2,dummyError)    << std::endl
+	            << "The integral of mcInc is   "      << mcInc  ->IntegralAndError(0,2,dummyError)    << std::endl;
+
+	  // pieces of the correction
+	  mcEffHist  ->Divide(mcOneLep  ,mcInc,    1, 1, "B");
+	  mcFakeHist ->Divide(mcNoLep   ,mcOneLep           );
+	  mcGenEff   ->Divide(mcOneLep  ,mcGenLep, 1, 1, "B");
+	  dataEffHist->Divide(dataOneLep,dataInc,  1, 1, "B");
+
+	  // for "by-hand cross-check": get pieces and combine
+	  double mcCorrError;   double mcCorr   = mcEffHist  ->IntegralAndError(0,2,mcCorrError  );
+	  double dataCorrError; double dataCorr = dataEffHist->IntegralAndError(0,2,dataCorrError);
+	  double mcFakeError;   double fakeCorr = mcFakeHist ->IntegralAndError(0,2,mcFakeError  );
+	  double lepCorr = (dataCorr/mcCorr) - fakeCorr;
+
+    // combine pieces
+    TH1F* LepCorrHist = (TH1F*)dataEffHist->Clone("LepCorrHist");
+    LepCorrHist->Divide(mcEffHist);
+    LepCorrHist->Add(mcFakeHist,-1);
+    double lepCorrError2; double lepCorr2 = LepCorrHist->IntegralAndError(0,2,lepCorrError2);
+
+	  // for "by-hand cross-check": get errors
+	  std::vector<double>tempErrors; tempErrors.push_back(mcCorrError);  tempErrors.push_back(dataCorrError);
+	  std::vector<double>tempVals;   tempVals.push_back(1.0/mcCorr);	       tempVals.push_back(dataCorr);
+	  double errors2 = multiplyUnc(tempErrors,tempVals,(dataCorr/mcCorr));
+
+	  tempErrors.clear(); tempVals.clear();
+	  tempErrors.push_back(mcFakeError);
+	  tempErrors.push_back(errors2);
+	  double lepCorrError = addUnc(tempErrors);
+	  tempErrors.clear();tempVals.clear();
+
+	  // print out results
+	  std::cout << "Printing out initial correction results"                                                   << std::endl
+	            << "The value of the term mcCorr is   "           << mcCorr        << " +/- " << mcCorrError   << std::endl
+	            << "The value of the term dataCorr is "           << dataCorr      << " +/- " << dataCorrError << std::endl
+	            << "The value of the term fakeCorr is "           << fakeCorr      << " +/- " << mcFakeError   << std::endl
+	            << "The value of the total lepCorr is "           << lepCorr                                   << std::endl
+	            << "The value of the total lepCorr2 is "          << lepCorr2                                  << std::endl
+              << "The value of the total error of lepCorr is  " << lepCorrError                              << std::endl
+	            << "The value of the total error of lepCorr2 is " << lepCorrError2                             << std::endl;
+
+    // for tables with data and mc eff
+    double effMCError = 0; double effMC = mcGenEff   ->IntegralAndError(0,2,effMCError);
+    double corrError  = 0; double corr  = LepCorrHist->IntegralAndError(0,2,corrError  );
+    TH1F* effDataHist = (TH1F*)LepCorrHist->Clone("effDataHist");
+    effDataHist->Multiply(mcEffHist);
+    double effDataError = 0; double effData = effDataHist->IntegralAndError(0,2,effDataError);
+    std::cout << "===== ===== ===== ===== ===== ===== ===== ===== " << std::endl
+              //<< "data eff:   " << effData << "  +/-  " << effDataError << std::endl
+              << "MC   eff:   " << effMC   << "  +/-  " << effMCError   << std::endl
+              << "correction: " << corr    << "  +/-  " << corrError    << std::endl
+              << "===== ===== ===== ===== ===== ===== ===== ===== " << std::endl;
+
+	  // fill the appropriate bin in the hist collecting all corrections
+    std::cout << "The value of the net correction is " << lepCorr2 << " +/- " << lepCorrError2 << std::endl;
+	  lepCor->SetBinContent(i+1,lepCorr2     );
+	  lepCor->SetBinError  (i+1,lepCorrError2);
+
+	  // add a line for the table
+	  if(i == 0) yieldfile_ << "electron &";
+	  if(i == 1) yieldfile_ << "muon &";
+	  if(i == 2) yieldfile_ << "tau &";
+	  yieldfile_ << std::fixed;
+	  yieldfile_.precision(3);
+	  yieldfile_ << dataCorr << " $\\pm$ " << dataCorrError << " & " << mcCorr   << " $\\pm$ " << mcCorrError   << " & ";
+	  yieldfile_ << fakeCorr << " $\\pm$ " << mcFakeError   << " & " << lepCorr2 << " $\\pm$ " << lepCorrError2 << " \\\\ " << std::endl;
+	  yieldfile_ << "\\hline" << std::endl;
+
+	  std::cout << std::endl;
+  } // int i = 0; i < 3; i++
+
+	// fill the final "fake" bin
+	lepCor->SetBinContent(4,1); // fake bin
+	lepCor->SetBinError(4,0);
+
+	// end the table
+  yieldfile_ << "\\end{tabular}" << std::endl;
+  yieldfile_ << "\\end{center}"  << std::endl;
+
+  // save the histrogram
+	TFile* file = new TFile("lepCorr_" + LumiString + ".root","RECREATE");
+	lepCor->Write();
+	file->Write();
+
+} // createSlimLepCorrections()

@@ -1,6 +1,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 
 
 using namespace std;
@@ -17,6 +18,8 @@ bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, 
 }
 
 bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf){
+  if(conf.maxED0 > 0 && fabs(electron.d0()) >= conf.maxED0) return false;
+  if(conf.maxEDz > 0 && fabs(electron.dz()) >= conf.maxEDz) return false;
   return (electron.pt() > conf.minEPt && fabs(electron.eta()) < conf.maxEEta && (electron.*conf.selectedElectron)());
 }
 
@@ -26,14 +29,18 @@ bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonConfig& conf){
   return (muon.pt() > conf.minMuPt && fabs(muon.eta()) < conf.maxMuEta && (muon.*conf.selectedMuon)());
 }
 
-bool cfgSet::isSelTrack(const ucsbsusy::PFCandidateF& track, const TrackConfig& conf){
+bool cfgSet::isSelTrack(ucsbsusy::PFCandidateF& track, const ucsbsusy::MomentumF* met, const TrackConfig& conf){
   if(conf.maxDz > 0 && fabs(track.dz()) >= conf.maxDz) return false;
+  MomentumF* cand = new MomentumF(track.p4());
+  if(track.nearPhoton().pt() > -1.) cand->setP4(cand->p4() + track.nearPhoton().p4());
+  track.setMt(JetKinematics::transverseMass(*cand,*met));
+  if(conf.mtPresel && track.mt() > defaults::TAU_MTCUT_VETO) return false;
   return (track.pt() > conf.minPt && fabs(track.eta()) < conf.maxEta && (track.*conf.selected)());
 }
 
 bool cfgSet::isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::LeptonF*>& selectedLeptons, const TauConfig& conf){
-  if(conf.minPt  > 0 && tau.pt()  < conf.minPt ) return false;
-  if(conf.maxEta > 0 && tau.eta() > conf.maxEta) return false;
+  if(conf.minPt  > 0 && tau.pt()     < conf.minPt ) return false;
+  if(conf.maxEta > 0 && tau.absEta() > conf.maxEta) return false;
   bool pass = (tau.*conf.selected)();
   // future option to use > 1 selected lepton here
   if(conf.requireOppositeQToSelLepton && selectedLeptons.size() > 0) pass = pass & (tau.q()*selectedLeptons.at(0)->q() < 0);
@@ -42,6 +49,8 @@ bool cfgSet::isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::Lep
 }
 
 bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf       ){
+  if (conf.usePixelSeedVeto && pho.hasPixelSeed())         return false;
+  if (conf.useElectronVeto  && (!pho.passElectronVeto()) ) return false;
   return (pho.pt() > conf.minPt && fabs(pho.eta()) < conf.maxEta && (pho.*conf.selected)());
 }
 
@@ -68,14 +77,14 @@ void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std
 
 }
 
-void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const TrackConfig& conf){
+void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const MomentumF* met, const TrackConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectTracks(): You want to do selecting but have not yet configured the selection!");
 
   selectedTracks.clear();
 
   for(auto& pfc : allTracks) {
-    if(isSelTrack(pfc,conf))
+    if(isSelTrack(pfc,met,conf))
       selectedTracks.push_back(&pfc);
   }
 }

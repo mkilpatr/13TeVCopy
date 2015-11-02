@@ -27,7 +27,7 @@ namespace ucsbsusy {
 
   public:
 
-    T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false, TString readOption = "READ");
+    T2bWTreeAnalyzer(TString fileName, TString treeName, bool isMCTree = false);
     virtual ~T2bWTreeAnalyzer() {};
 
 //    virtual void	load(VarType type, int options = -1, string branchName = "" );
