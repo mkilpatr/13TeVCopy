@@ -2,16 +2,17 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h"
 #endif
 
-//root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
-void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
+//root -b -q "../CMSSW_7_4_11/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
+void plotQGValidation( const TString inputdir="trees/151104_580pb"
                      , const TString outputdir="plots"
                      , const TString format = "png"
                      )
 {
   gSystem->mkdir(outputdir, true);
-  TString lumi = "0.040*";
-  TString wtVar = "weight*puWeightC"; // weight purwt
-  bool scaleToData = true;
+  TString lumi    = "0.578*";
+  TString lumiStr = "578 pb^{-1}";
+  TString wtVar   = "weight"; //*puWeightC"; // weight purwt
+  bool scaleToData = false; // true;
   TString dijetselection = "passDijet && passDijet3 && ht>450";
 
   PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet.conf", inputdir, outputdir, 0, true);
@@ -23,7 +24,7 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
   //zjetPlots->setWgtVar(lumi+"weight*puWeight");
   zjetPlots->setDataName("data_doublemu");
   //zjetPlots->setDataName("dyjetstoll"); zjetPlots->setDataIsMC();
-  zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
+  zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
   zjetPlots->setScaleToData(scaleToData);
   zjetPlots->setPlotOverflow(true);
   zjetPlots->setRatioPlot(true);
@@ -35,7 +36,7 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
   dijetPlots->setFormat(format);
   dijetPlots->setWgtVar(lumi+wtVar);
   dijetPlots->setDataName("data_jetht");
-  dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
+  dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
   dijetPlots->setScaleToData(scaleToData);
   dijetPlots->setPlotOverflow(true);
   dijetPlots->setRatioPlot(true);
@@ -52,7 +53,7 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
   gjetPlots->setWgtVar(lumi+wtVar);
   gjetPlots->setDataName("data_singlegm");
   //gjetPlots->setDataName("gjets"); gjetPlots->setDataIsMC();
-  gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", "X fb^{-1}", "");
+  gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
   gjetPlots->setScaleToData(scaleToData);
   gjetPlots->setPlotOverflow(true);
   gjetPlots->setRatioPlot(true);
@@ -86,7 +87,7 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
   TString pt080 = " && j0pt>080 && j0pt<120";
   TString pt120 = " && j0pt>120 && j0pt<200";
   TString pt200 = " && j0pt>200 && j0pt<600";
-
+/*
   zjetPlots->addTreeVar("zjets_dilepmass"      , "dilepmass" , "passZjet && passZmass"+ptlow, "dilepmass"         , 30,  60, 120 );
   zjetPlots->addTreeVar("zjets_dilepmassNoCut" , "dilepmass" , "passZjet"             +ptlow, "dilepmass (no cut)", 30,  60, 120 );
   zjetPlots->addTreeVar("zjets_mu0pt"          , "mu0pt"     , "passZjet && passZmass"+ptlow, "mu0pt"             , 30,   0, 150 );
@@ -180,12 +181,15 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
 //zjetPlots->addTreeVar("zjets_forward080_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt080, "QGL", 30, 0, 1 );
 //zjetPlots->addTreeVar("zjets_forward120_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt120, "QGL", 30, 0, 1 );
 //zjetPlots->addTreeVar("zjets_forward200_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt200, "QGL", 30, 0, 1 );
-
+*/
+/*
   dijetPlots->addTreeVar("dijets_j0pt" , "j0pt" , dijetselection, "pt_{T} [GeV]", 40, 200, 1000 );
   dijetPlots->addTreeVar("dijets_j0eta", "j0eta", dijetselection, "#eta"        , 30,  -5,    5 );
   dijetPlots->addTreeVar("dijets_rho"  , "rho"  , dijetselection, "#rho"        , 25,   0,   25 );
   dijetPlots->addTreeVar("dijets_npv"  , "npv"  , dijetselection, "npv"         , 34,   1,   34 );
+*/
   dijetPlots->addTreeVar("dijets_ht"   , "ht"   , dijetselection, "H_{T} [GeV]" , 50, 450, 1450 );
+/*
   dijetPlots->addTreeVar("dijets_central_j0mult"   , "j0mult", dijetselection+central+ptlow, "multiplicity", 35, 0, 70 );
 //dijetPlots->addTreeVar("dijets_central020_j0mult", "j0mult", dijetselection+central+pt020, "multiplicity", 35, 0, 70 );
   dijetPlots->addTreeVar("dijets_central030_j0mult", "j0mult", dijetselection+central+pt030, "multiplicity", 35, 0, 70 );
@@ -266,7 +270,8 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
 //dijetPlots->addTreeVar("dijets_forward080_j0qgl", "j0qgl", dijetselection+forward+pt080, "QGL", 30, 0, 1 );
 //dijetPlots->addTreeVar("dijets_forward120_j0qgl", "j0qgl", dijetselection+forward+pt120, "QGL", 30, 0, 1 );
 //dijetPlots->addTreeVar("dijets_forward200_j0qgl", "j0qgl", dijetselection+forward+pt200, "QGL", 30, 0, 1 );
-
+*/
+/*
   gjetPlots->addTreeVar("gjets_j0pt" , "j0pt" , "passGmjet", "pt_{T} [GeV]", 30,  0, 600 );
   gjetPlots->addTreeVar("gjets_j0eta", "j0eta", "passGmjet", "#eta"        , 30, -5,   5 );
   gjetPlots->addTreeVar("gjets_rho"  , "rho"  , "passGmjet", "#rho"        , 25,  0,  25 );
@@ -351,7 +356,7 @@ void plotQGValidation( const TString inputdir="trees/150906_withHTprescales"
 //gjetPlots->addTreeVar("gjets_forward080_j0qgl", "j0qgl", "passGmjet"+forward+pt080, "QGL", 30, 0, 1 );
 //gjetPlots->addTreeVar("gjets_forward120_j0qgl", "j0qgl", "passGmjet"+forward+pt120, "QGL", 30, 0, 1 );
 //gjetPlots->addTreeVar("gjets_forward200_j0qgl", "j0qgl", "passGmjet"+forward+pt200, "QGL", 30, 0, 1 );
-
+*/
   zjetPlots   ->plot();
   dijetPlots  ->plot();
   gjetPlots   ->plot();
