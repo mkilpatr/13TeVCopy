@@ -22,7 +22,7 @@ class Analyze : public BaseTreeAnalyzer{
 public:
 
   Analyze(TString fname, string treeName, bool isMCTree, cfgSet::ConfigSet *pars, TString sname, TString outputdir)
-         : BaseTreeAnalyzer(fname, treeName, isMCTree, pars)
+         : BaseTreeAnalyzer(fname, treeName, 1, isMCTree, pars)
   {
     //loadPlots(); // initialize plots
     TObjArray *o = sname.Tokenize("_");
@@ -144,7 +144,7 @@ public:
     //if(!triggerflag) return; // skip events that pass no saved triggers
 
     // skip events in PR with run number < 251584 - they are in the re-miniAOD
-    if(!isMC() && datareco==defaults::PROMPT_50NS && run<251584) return;
+    //if(!isMC() && datareco==defaults::PROMPT_50NS && run<251584) return;
 
     bool passTrigger = false;
 
@@ -269,18 +269,18 @@ public:
     if (!passTrigger) passGmjet = false;
 
     // check trigger objects
-    bool foundTrigMu = false;
-    for(auto* to : triggerObjects) {
-      if(passZjet) {
-        bool matchedTrigObj = false;
-        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) matchedTrigObj = true;
-        if(matchedTrigObj) {
-          auto mu0 = selectedLeptons[selMu0];
-          if (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
-        } // matchedTrigObj
-      } // passZjet
-    } // triggerObjects
-    if (!foundTrigMu) passZjet  = false;
+    //bool foundTrigMu = false;
+    //for(auto* to : triggerObjects) {
+    //  if(passZjet) {
+    //    bool matchedTrigObj = false;
+    //    if((to->filterflags() & kSingleIsoTkMu24) /*&& (to->pathflags() & kHLT_IsoTkMu24_eta2p1)*/) matchedTrigObj = true;
+    //    if(matchedTrigObj) {
+    //      auto mu0 = selectedLeptons[selMu0];
+    //      if (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
+    //    } // matchedTrigObj
+    //  } // passZjet
+    //} // triggerObjects
+    //if (!foundTrigMu) passZjet  = false;
 
     // skip events that don't pass any selection
     if (!passDijet && !passZjet && !passGmjet) return;
@@ -421,7 +421,7 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
                           , const double xsec        = 1.0
                           , const string  outputdir  = "trees/test/"  // directory to which files will be written
                           , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/130815/merged/"
-                          //, const TString fileprefix = "/eos/uscms/store/user/ocolegro/13TeV/130815/merged/"
+                          , const TString json       = "Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON_v3.txt"
                           )
 {
 
@@ -434,13 +434,13 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
 
   // Adjustments to default configuration
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
-  //cfgSet::setJSONFile("/uscms/home/mullin/nobackup/stuff2015/CMSSW_7_4_7/src/data/JSON/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
+  cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
   cfgSet::ConfigSet qgv_search_set;
   qgv_search_set.jets            = cfgSet::zl_search_jets;
   qgv_search_set.selectedLeptons = cfgSet::ol_sel_leptons;
   qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
   qgv_search_set.corrections     = cfgSet::standardCorrections;
+  qgv_search_set.corrections.eventCorrectionFile = TString::Format("%s/src/data/corrections/eventCorr_allData_600.root",getenv("CMSSW_BASE"));
 
   cfgSet::ConfigSet pars = qgv_search_set;
 
