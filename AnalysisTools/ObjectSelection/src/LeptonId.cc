@@ -206,8 +206,12 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
   else if(WP == MEDIUM) {
     return (ele->ismediumid() && ele->miniiso()<0.1);
   }
+  else if(WP == MEDIUMID) {
+    //return (ele->ismediumid() && ele->miniiso()<0.1);
+    return (ele->ismediumid());
+  }
   else if(WP == TIGHT) { 
-    return ele->istightelectron();
+    return (ele->istightelectron() && ele->pfdbetaiso()/ele->pt() < 0.15);
   }
   else if(WP == MVA) { 
     if(ele->pt() > 10) {
@@ -277,6 +281,10 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
   else if(WP == MT2Veto){
     return (ele->isvetoelectron() && ele->miniiso()<0.1);
   }
+  else if(WP == MT2VetoId){
+    //return (ele->isvetoelectron() && ele->miniiso()<0.1);
+    return (ele->isvetoelectron());
+  }
   else {
     printf("Electron ID working point not defined!\n");
   }
@@ -295,9 +303,14 @@ bool LeptonId::passMuonIdOnly(MuonF *mu)
 bool LeptonId::passMuonId(MuonF *mu, unsigned int WP)
 {
 
-  if(WP == TIGHT) return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, WP));
+  if(WP == TIGHT) return (fabs(mu->eta()) < 2.4 && mu->istightmuon() && passMuonIso(mu, MEDIUM));
   else if(WP == MEDIUM){
-    return (mu->ismediummuon() && mu->miniiso()<0.1);
+    return (mu->ismediummuon() && mu->miniiso()<0.2); // should be 0.1
+    // return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
+  }
+  else if(WP == MEDIUMID){
+    //return (mu->ismediummuon() && mu->miniiso()<0.1);
+    return (mu->ismediummuon());
     // return (fabs(mu->eta()) < 2.4 && mu->ismediummuon() && passMuonIso(mu, WP));
   }
   else if(WP==VETO){
@@ -321,6 +334,10 @@ bool LeptonId::passMuonId(MuonF *mu, unsigned int WP)
   }
   else if(WP == MT2Veto){
     return (mu->isloosemuon() && mu->miniiso()<0.2);
+  }
+  else if(WP == MT2VetoId){
+    //return (mu->isloosemuon() && mu->miniiso()<0.2);
+    return (mu->isloosemuon());
   }
   return false;
 

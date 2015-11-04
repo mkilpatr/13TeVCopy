@@ -143,24 +143,28 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.ttbarCorrections      = ucsbsusy::TtbarCorrectionSet::NULLOPT;
-  standardCorrections.ttbarCorrectionFile   =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
-  standardCorrections.eventCorrections      = ucsbsusy::EventCorrectionSet::PU;
-  standardCorrections.eventCorrectionFile   =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
-  standardCorrections.puCorrections         = ucsbsusy::EventCorrectionSet::NULLOPT;
-  standardCorrections.puCorrectionFile      =  TString::Format("%s/src/data/corrections/puCorr.root",CMSSW_BASE);
-  standardCorrections.leptonCorrections     = ucsbsusy::LeptonCorrectionSet::LEP;
-  standardCorrections.leptonCorrectionFile  =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
+  standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::NULLOPT;
+  standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
+  standardCorrections.eventCorrections         = ucsbsusy::EventCorrectionSet::PU;
+  standardCorrections.eventCorrectionFile      =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::NULLOPT;
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puCorr.root",CMSSW_BASE);
 
-  standardCorrections.jetAndMETCorrections  = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
-  standardCorrections.jetResCorr            = 1;
-  standardCorrections.jetResFile            = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
+  standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
+  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
+  standardCorrections.tnpLeptonCorrectionFile  =  TString::Format("%s/src/data/corrections/tnpLepCorr.root",CMSSW_BASE);
+  standardCorrections.elCorrType               = ucsbsusy::NOMINAL;
+  standardCorrections.muCorrType               = ucsbsusy::NOMINAL;
 
-  standardCorrections.bTagCorrections       = ucsbsusy::BTagCorrectionSet::NULLOPT;
-  standardCorrections.bTagEffFile           =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
-  standardCorrections.bTagSFFile            =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
-  standardCorrections.heavyBTagCorrType     = ucsbsusy::NOMINAL;
-  standardCorrections.lightBTagCorrType     = ucsbsusy::NOMINAL;
+  standardCorrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
+  standardCorrections.jetResCorr               = 1;
+  standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
+
+  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::NULLOPT;
+  standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
+  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
+  standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
+  standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();
 }
 

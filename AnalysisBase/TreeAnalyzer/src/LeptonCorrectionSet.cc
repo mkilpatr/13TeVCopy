@@ -5,7 +5,28 @@
 
 namespace ucsbsusy {
 
-void LeptonCorrectionSet::load(TString fileName, int correctionOptions)
+double TnPCorr::getLepWeight(TnPCorr* tnpCorr, const LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  tnpCorr->setTargetBin(1);
+  double wt = tnpCorr->get();
+  double er = tnpCorr->getError();
+  std::cout << "  pt: " << lep->pt() << "\teta: " << lep->eta() << "\twt: " << wt << "\terror: " << er << std::endl;
+  if(elCorrType & UP) {
+    wt += er;
+  }
+  else if(elCorrType & DOWN) {
+    wt -= er;
+  }
+  return wt;
+}
+
+double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  double lepWt = 1;
+  for(const auto * lep : leptons) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
+  std::cout << "event weight: " << lepWt << std::endl << std::endl;
+  return lepWt;
+}
+
+void LeptonCorrectionSet::load(TString fileName, TString tnpFileName, int correctionOptions)
 {
   if(correctionOptions & LEP) {
     loadFile("LEP",fileName,correctionOptions);
@@ -16,12 +37,20 @@ void LeptonCorrectionSet::load(TString fileName, int correctionOptions)
         setUseHPSTaus(true);
     }
   }
+  if(correctionOptions & TNP) {
+    loadFile("TNP",tnpFileName,correctionOptions);
+    if(options_ & TNP) {
+      tnpCorr = new TnPCorr(file);
+      corrections.push_back(tnpCorr);
+    }
+  }
 }
 
 void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   selLepWeight = 1;
   vetoLepWeight = 1;
+  tnpEvtWeight = 1;
   if(!ana->isMC()) return;
 
   if(options_ & LEP) {
@@ -108,7 +137,12 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       selLepWeight  -= lepCorr->getError();
     }
 
-  }///LeptonCorrectionSet
+  }
+
+  if(options_ & TNP) {
+    const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+    tnpEvtWeight = tnpCorr->getEvtWeight(tnpCorr,ana->selectedLeptons,cfg.corrections.elCorrType,cfg.corrections.muCorrType);
+  }
 
 }
 

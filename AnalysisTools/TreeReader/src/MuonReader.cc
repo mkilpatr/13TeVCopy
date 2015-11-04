@@ -105,11 +105,14 @@ void MuonReader::refresh(){
       muons.back().setPtRatio(ptratio->at(iL));
       muons.back().setAnnulusActivity(annulus->at(iL));
       muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
+      muons.back().setIsGoodPOGMuonId(muonId->passMuonId((&muons.back()), muonId->MEDIUMID));
+      muons.back().setIsTightIsoMuon(muonId->passMuonId((&muons.back()), muonId->TIGHT));
       muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
       muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
       muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
       muons.back().setIsMiniIsoVetoMuon(muonId->passMuonId((&muons.back()), muonId->MiniIsoVeto));
       muons.back().setIsMT2VetoMuon(muonId->passMuonId((&muons.back()), muonId->MT2Veto));
+      muons.back().setIsMT2VetoMuonId(muonId->passMuonId((&muons.back()), muonId->MT2VetoId));
     }
   }
 }
