@@ -6,9 +6,11 @@ using namespace std;
 
 class METFilter : public PhysicsAnalyzer {
   const double minMET;
+  const double maxMET;
+  const bool verbose;
   public:
     FILTER_MODE
-    METFilter(const edm::ParameterSet &cfg) :PhysicsAnalyzer(cfg), minMET(cfg.getParameter<double>("minMET"))
+    METFilter(const edm::ParameterSet &cfg) :PhysicsAnalyzer(cfg), minMET(cfg.getParameter<double>("minMET")), maxMET(cfg.getParameter<double>("maxMET")), verbose(cfg.getParameter<bool>("verbose"))
     {
       initialize(cfg, "EventInfo", EVTINFO);
     }
@@ -16,8 +18,15 @@ class METFilter : public PhysicsAnalyzer {
     ~METFilter() {}
 
     bool filter() override {
-      if(eventInfo->met()->pt() < minMET) return false;
-      return true;
+
+      bool pass = true;
+
+      if(minMET > 0 && eventInfo->met()->pt() < minMET) pass = false;
+      if(maxMET > 0 && eventInfo->met()->pt() > maxMET) pass = false;
+
+      if(verbose && !pass) clog << " ++   ERROR!!!! You have a MET of "<< eventInfo->met()->pt() <<"! The event will be skipped!" << endl;
+
+      return pass;
     }
 
 };

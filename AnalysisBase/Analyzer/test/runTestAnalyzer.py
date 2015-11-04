@@ -300,6 +300,10 @@ if runMetCorrAndUnc :
 #==============================================================================================================================#
 process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE)
 
+#==============================================================================================================================#
+from AnalysisBase.Analyzer.eventfilters_cfi import met131TeVFilter
+process.met131TeVFilter = met131TeVFilter
+
 # Also update jets with different JECs
 if updateJECs:
     print 'Adding sequence to update JECs'
@@ -339,7 +343,8 @@ if updateJECs:
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
 
-    process.p = cms.Path(process.patJetCorrFactorsReapplyJEC *
+    process.p = cms.Path(process.met131TeVFilter *
+                         process.patJetCorrFactorsReapplyJEC *
                          process.patJetCorrFactorsReapplyJECAK8 *
                          process.patJetsReapplyJEC        *
                          process.patJetsAK8ReapplyJEC     *
@@ -352,7 +357,8 @@ if updateJECs:
                          process.TestAnalyzer)
 
 else :
-    process.p = cms.Path(process.ak4PatAssocSeq           * 
+    process.p = cms.Path(process.met131TeVFilter *
+                         process.ak4PatAssocSeq           * 
                          process.ca8JetsSeq               *
                          process.egmGsfElectronIDSequence * 
                          process.egmPhotonIDSequence      *
