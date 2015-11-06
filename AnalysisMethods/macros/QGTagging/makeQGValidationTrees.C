@@ -14,12 +14,15 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 class Analyze : public BaseTreeAnalyzer{
 public:
+  enum sampType { OTHER, GJET, FRAG, FAKE };
+  const double dr_cut = 0.4;
 
   Analyze(TString fname, string treeName, bool isMCTree, cfgSet::ConfigSet *pars, TString sname, TString outputdir)
          : BaseTreeAnalyzer(fname, treeName, 1, isMCTree, pars)
@@ -28,6 +31,7 @@ public:
     TObjArray *o = sname.Tokenize("_");
 
     sample_     = ((TObjString *)(o->At(0)))->String();
+    mctype_     = OTHER;
     weight_     = -9 ;
     puWeight_   = -9 ;
     puWeightC_  = -9 ;
@@ -55,6 +59,7 @@ public:
     passZjet    = true;
     passZmass   = true;
     passGmjet   = true;
+    passGgenmch = true;
     dilepmass   = -1 ;
     ht          = -1 ;
     mu0pt       = -1 ;
@@ -103,6 +108,7 @@ public:
     outtree->Branch( "passZjet"     , &passZjet     ,     "passZjet/O" );
     outtree->Branch( "passZmass"    , &passZmass    ,    "passZmass/O" );
     outtree->Branch( "passGmjet"    , &passGmjet    ,    "passGmjet/O" );
+    outtree->Branch( "passGgenmch"  , &passGgenmch  ,  "passGgenmch/O" );
     outtree->Branch( "dilepmass"    , &dilepmass    ,    "dilepmass/F" );
     outtree->Branch( "ht"           , &ht           ,           "ht/F" );
     outtree->Branch( "mu0pt"        , &mu0pt        ,        "mu0pt/F" );
@@ -149,7 +155,7 @@ public:
     bool passTrigger = false;
 
     // event selection (both samples)
-    if (nPV<1)         return;
+    if(!goodvertex) return;
     if (jets.size()<1) return;
     auto& jet0 = jets[0];
     if ( !ak4Reader.jettightId_->at(jet0->index()) ) return;
@@ -203,7 +209,7 @@ public:
       else if (passHT300 && ht>450 && ht<=500) prescale = prescale300;
       else passDijet = false;
     } else if(ht<450) passDijet = false;
-/*
+    /*
     if(passDijet) {
       cout << bitset<64>(triggerflag) << endl;
       for(auto* tI: triggerInfo){
@@ -229,7 +235,7 @@ public:
       auto mu0 = selectedLeptons[0];
       auto mu1 = selectedLeptons[1];
       for (unsigned int i=0; i<selectedLeptons.size();++i) {
-        if ( selectedLeptons[i]->ismuon() && selectedLeptons[i]->eta()<2.1 ) {
+        if ( selectedLeptons[i]->ismuon() ) {
           if      (Nmu==0) { mu0 = selectedLeptons[i]; selMu0 = i; }
           else if (Nmu==1) { mu1 = selectedLeptons[i]; selMu1 = i; }
           ++Nmu;
@@ -247,7 +253,7 @@ public:
         dilepmass = (mu0->p4() + mu1->p4()).mass();
         if (dilepmass<70 || dilepmass>110) passZmass = false;
         if (jets.size()>=2) {
-          if ( jets[1]->pt() > 0.3*(mu0->pt()+mu1->pt()) ) passZjet = false;
+          if ( jets[1]->pt() > 0.3*(dilepmass) ) passZjet = false;
         } // jets.size()>=2
       } // Nmu>=2
     } // selectedLeptons.size>=2
@@ -258,25 +264,74 @@ public:
     if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
-    passGmjet = true;
-    if (selectedPhotons.size()>=1) {
-      if (selectedPhotons[0]->pt() <180) passGmjet = false;
-      if (selectedPhotons[0]->eta()>2.5) passGmjet = false;
-    } // selectedPhotons.size()<1
-    else passGmjet = false;
-    passTrigger = false;
-    if((triggerflag & kHLT_Photon165_HE10) > 0) passTrigger = true;
-    if (!passTrigger) passGmjet = false;
+    passGmjet   = true;
+    passGgenmch = false;
+    if (selectedPhotons.empty())                  passGmjet = false;
+    else if(!(triggerflag & kHLT_Photon165_HE10)) passGmjet = false;
+    else if(selectedPhotons[0]->pt()    <180)     passGmjet = false;
+    else if(selectedPhotons[0]->absEta()>2.5)     passGmjet = false;
+    else if(isMC() && mctype_ != OTHER){ // to orthogonalize gjets and qcd MC
+      auto pho = selectedPhotons[0];
+      vector<GenParticleF*> partons;    // all DocOutgiong quarks and gluons
+      vector<GenParticleF*> genphotons; // all final prompt photons
+      for(auto *gp : genParts){
+        if(ParticleInfo::isDocOutgoing(gp->status()) && ParticleInfo::isQuarkOrGluon(gp->pdgId())) partons.push_back(gp);
+        else if (ParticleInfo::isFinal(gp->status()) && gp->pdgId()==ParticleInfo::p_gamma){
+          bool isPrompt = false;
+          for (int iM=0; iM<gp->numberOfMothers(); ++iM){
+            auto mother = gp->mother(iM);
+            if (ParticleInfo::isQuark(mother->pdgId()) || mother->pdgId() == ParticleInfo::p_gamma){
+              isPrompt = true;
+              break;
+            }
+          } // gp->Mothers
+          if (isPrompt) genphotons.push_back(gp);
+        } // final photons
+      } // genParts
+
+      if (genphotons.empty()) {
+        if(mctype_ == FAKE) passGmjet = true;
+        else                passGmjet = false;
+      }else{
+        std::sort(genphotons.begin(), genphotons.end(), PhysicsUtilities::greaterPTDeref<GenParticleF>());
+        GenParticleF* genpho; // was: boson
+        for (auto *gp : genphotons){
+          if (PhysicsUtilities::deltaR2(*gp,*pho)<0.01 && pho->pt()>0.5*gp->pt() && pho->pt()<2*gp->pt()){
+            passGgenmch = true;
+            genpho = gp;
+            break;
+          } // gen photon matches sel photon
+        } // genphotons
+
+        if (passGgenmch){
+          double minDR = 0;
+          PhysicsUtilities::findNearestDRDeref(*genpho, partons, minDR);
+          if(minDR<=dr_cut) { // outgoing q/g in the cone of the gen photon
+            if(mctype_ == FRAG) passGmjet = true;
+            else                passGmjet = false;
+          }else{ // NO outgoing q/g in the cone of the gen photon
+            if     (mctype_ == GJET) passGmjet = true;
+            else                     passGmjet = false;
+          }
+        } // passGgenmch
+        else {
+          if(mctype_ == FAKE) passGmjet = true;
+          else                passGmjet = false;
+        }
+      } // non-empty genphotons
+    } // pass basic gm+jet cuts
 
     // check trigger objects
     //bool foundTrigMu = false;
     //for(auto* to : triggerObjects) {
     //  if(passZjet) {
     //    bool matchedTrigObj = false;
-    //    if((to->filterflags() & kSingleIsoTkMu24) /*&& (to->pathflags() & kHLT_IsoTkMu24_eta2p1)*/) matchedTrigObj = true;
+    //    if((to->filterflags() & kSingleIsoTkMu24)
+             // && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)
+    //       ) matchedTrigObj = true;
     //    if(matchedTrigObj) {
     //      auto mu0 = selectedLeptons[selMu0];
-    //      if (PhysicsUtilities::deltaR(*to,*mu0)<0.4 ) foundTrigMu = true;
+    //      if (PhysicsUtilities::deltaR(*to,*mu0)<dr_cut ) foundTrigMu = true;
     //    } // matchedTrigObj
     //  } // passZjet
     //} // triggerObjects
@@ -299,19 +354,26 @@ public:
     j0qgl    =      ak4Reader.jetqgl_  ->at(jet0->index()) ;
 
     // flavor matching
-    if (isMC()) {
+    if(isMC()) {
+      vector<bool> usePart;
+      for(auto gp : genParts) {
+        int pdgId = TMath::Abs(gp->pdgId());
+        if     (pdgId >= 1 && pdgId <= 5) usePart.push_back(false); // quark
+        else if(pdgId == 21             ) usePart.push_back(false); // gluon
+        else                              usePart.push_back(true);
+      }
       int type = 0; // undefined
       double nearDR = 0;
       //int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.3,20);
-      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.4,20);
+      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,dr_cut,20,&usePart);
       if(foundPart >= 0){
         int pdgId = TMath::Abs(genParts[foundPart]->pdgId());
-        if(genParts[foundPart]->status()!=23)  return; // only want particles from the matrix element
-        //genParts[foundPart]->isDoc (in ParticleInfo.h)
-        if(pdgId >= 1 && pdgId < 4) type = 1; // quark
-        if(pdgId == 21) type = 2; // gluon
-        if(pdgId ==  4) type = 3; // C
-        if(pdgId ==  5) type = 4; // B
+        if(ParticleInfo::isDoc(genParts[foundPart]->status())) { // only want particles from the matrix element
+          if(pdgId >= 1 && pdgId < 4) type = 1; // quark
+          if(pdgId == 21) type = 2; // gluon
+          if(pdgId ==  4) type = 3; // C
+          if(pdgId ==  5) type = 4; // B
+        }
         j0pdgid = pdgId;
       }
       //const GenJetF* matchGen = jet0->genJet();
@@ -349,7 +411,8 @@ public:
 
   //void out(TString outputPath){} // out()
 
-  TString sample_    ;
+  TString  sample_   ;
+  sampType mctype_   ;
 
   TFile *fout    ;
   TTree *outtree ;
@@ -383,6 +446,7 @@ public:
   bool  passZjet    ;
   bool  passZmass   ;
   bool  passGmjet   ;
+  bool  passGgenmch ;
 
   float ht          ;
   float dilepmass   ;
@@ -407,7 +471,7 @@ public:
 #endif
 
 
-//root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
+//root -b -q "../CMSSW_7_4_11/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 // 74X
 //     singlemu-2015b-17jul15_ntuple_postproc.root    (data)     singlemu
 //     jetht-2015b-17jul15_ntuple_postproc.root       (data)     jetht
@@ -417,10 +481,10 @@ public:
 void makeQGValidationTrees( TString sname            = "jetht2" // sample name
                           , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
                           , const bool    isMC       = false    // data or MC
-                          , const TString fname      = "jetht-2015b-pr_ntuple_postproc.root" // path of file to be processed
+                          , const TString fname      = "doublemu-2015d-pr_6_ntuple_postproc.root" // path of file to be processed
                           , const double xsec        = 1.0
                           , const string  outputdir  = "trees/test/"  // directory to which files will be written
-                          , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/130815/merged/"
+                          , const TString fileprefix = "/eos/uscms/store/user/hqu/13TeV/101315/merged/"
                           , const TString json       = "Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON_v3.txt"
                           )
 {
@@ -435,37 +499,41 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   // Adjustments to default configuration
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
-  cfgSet::ConfigSet qgv_search_set;
-  qgv_search_set.jets            = cfgSet::zl_search_jets;
+  cfgSet::ConfigSet qgv_search_set = cfgSet::zl_search_set;;
+  //qgv_search_set.jets            = cfgSet::zl_search_jets;
   qgv_search_set.selectedLeptons = cfgSet::ol_sel_leptons;
   qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
-  qgv_search_set.corrections     = cfgSet::standardCorrections;
+  //qgv_search_set.corrections     = cfgSet::standardCorrections;
   qgv_search_set.corrections.eventCorrectionFile = TString::Format("%s/src/data/corrections/eventCorr_allData_600.root",getenv("CMSSW_BASE"));
 
-  cfgSet::ConfigSet pars = qgv_search_set;
+  //cfgSet::ConfigSet pars = qgv_search_set;
 
-  pars.jets.minPt  = 20.0;
-  pars.jets.maxEta =  5.0;
-  pars.jets.minBJetPt  = 20.0;
-  pars.jets.maxBJetEta =  5.0;
-  pars.jets.cleanJetsvSelectedPhotons = true;
-  pars.jets.cleanJetsvSelectedLeptons = true;
+  qgv_search_set.jets.minPt  = 20.0;
+  qgv_search_set.jets.maxEta =  5.0;
+  qgv_search_set.jets.minBJetPt  = 20.0;
+  qgv_search_set.jets.maxBJetEta =  5.0;
+  qgv_search_set.jets.cleanJetsvSelectedPhotons = true;
+  qgv_search_set.jets.cleanJetsvSelectedLeptons = true;
 
-  pars.selectedLeptons.selectedMuon = (&MuonF::isgoodpogmuon);
-  pars.selectedLeptons.minMuPt  = 10.0;
-  pars.selectedLeptons.maxMuEta =  5.0;
-  pars.selectedLeptons.selectedElectron = (&ElectronF::isgoodpogelectron);
-  pars.selectedLeptons.minEPt  = 10.0;
-  pars.selectedLeptons.maxEEta =  5.0;
+  qgv_search_set.selectedLeptons.selectedMuon = (&MuonF::isgoodpogmuon);
+  qgv_search_set.selectedLeptons.minMuPt  = 10.0;
+  qgv_search_set.selectedLeptons.maxMuEta =  5.0;
+  qgv_search_set.selectedLeptons.selectedElectron = (&ElectronF::isgoodpogelectron);
+  qgv_search_set.selectedLeptons.minEPt  = 10.0;
+  qgv_search_set.selectedLeptons.maxEEta =  5.0;
 
-  pars.selectedPhotons = cfgSet::zl_sel_photons;
-  pars.selectedPhotons.minPt  = 10.0;
-  pars.selectedPhotons.maxEta =  5.0;
+  //qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
+  qgv_search_set.selectedPhotons.minPt  = 10.0;
+  qgv_search_set.selectedPhotons.maxEta =  5.0;
 
   string    treeName = "";
   if (isMC) treeName = "Events";
   else      treeName = "TestAnalyzer/Events";
-  Analyze a(fullname, "Events", isMC, &pars, sname, outputdir);
+  Analyze a(fullname, "Events", isMC, &qgv_search_set, sname, outputdir);
+  a.mctype_ = Analyze::OTHER;
+  if      (sname.Contains("gjets")) a.mctype_ = Analyze::GJET;
+  else if (sname.Contains("frag"))  a.mctype_ = Analyze::FRAG;
+  else if (sname.Contains("fake"))  a.mctype_ = Analyze::FAKE;
   a.analyze(10000);
   //a.analyze(1000,10000);
 
