@@ -3,17 +3,18 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_11/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
-void plotQGValidation( const TString inputdir="trees/151104_580pb"
+void plotQGValidation( const TString inputdir="trees/151107_qmQCD"
                      , const TString outputdir="plots"
                      , const TString format = "png"
                      )
 {
   gSystem->mkdir(outputdir, true);
-  TString lumi    = "0.578*";
+  TString lumi    = "0.578";
   TString lumiStr = "578 pb^{-1}";
-  TString wtVar   = "weight"; //*puWeightC"; // weight purwt
-  bool scaleToData = false; // true;
-  TString dijetselection = "passDijet && passDijet3 && ht>450";
+  TString wtVar   = "*weight*puWeightC"; // weight purwt
+  bool scaleToData = false;
+  float headerx = 0.5;
+  float headery = 0.92;
 
   PlotStuff* zjetPlots = new PlotStuff("plotQGValidationZjet.conf", inputdir, outputdir, 0, true);
   zjetPlots->setPlotSource(PlotStuff::TREES);
@@ -25,6 +26,7 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   zjetPlots->setDataName("data_doublemu");
   //zjetPlots->setDataName("dyjetstoll"); zjetPlots->setDataIsMC();
   zjetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
+  zjetPlots->setHeaderPosition(headerx,headery);
   zjetPlots->setScaleToData(scaleToData);
   zjetPlots->setPlotOverflow(true);
   zjetPlots->setRatioPlot(true);
@@ -37,6 +39,7 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   dijetPlots->setWgtVar(lumi+wtVar);
   dijetPlots->setDataName("data_jetht");
   dijetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
+  dijetPlots->setHeaderPosition(headerx,headery);
   dijetPlots->setScaleToData(scaleToData);
   dijetPlots->setPlotOverflow(true);
   dijetPlots->setRatioPlot(true);
@@ -54,6 +57,7 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->setDataName("data_singlegm");
   //gjetPlots->setDataName("gjets"); gjetPlots->setDataIsMC();
   gjetPlots->setHeaderText("#sqrt{s} = 13 TeV", lumiStr, "");
+  gjetPlots->setHeaderPosition(headerx,headery);
   gjetPlots->setScaleToData(scaleToData);
   gjetPlots->setPlotOverflow(true);
   gjetPlots->setRatioPlot(true);
@@ -77,8 +81,9 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->setColor("gjets_gluons", 2);
   gjetPlots->setColor("gjets_quarks", 4);
 
+  TString dijetselection = "passDijet && passDijet3 && ht>450";
   TString central = " && abs(j0eta)<2.4";
-  TString forward = " && abs(j0eta)>3.0 && abs(j0eta)<5.0";
+  TString forward = " && abs(j0eta)>2.4 && abs(j0eta)<5.0"; // 3.0
   TString ptlow = " && j0pt>030";
   TString pt020 = " && j0pt>020 && j0pt<030";
   TString pt030 = " && j0pt>030 && j0pt<040";
@@ -87,22 +92,34 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   TString pt080 = " && j0pt>080 && j0pt<120";
   TString pt120 = " && j0pt>120 && j0pt<200";
   TString pt200 = " && j0pt>200 && j0pt<600";
-/*
+  TString pt201 = " && j0pt>200 && j0pt<250";
+  TString pt250 = " && j0pt>250 && j0pt<300";
+  TString pt300 = " && j0pt>300 && j0pt<400";
+  TString pt400 = " && j0pt>400 && j0pt<1000";
+//*
+  //zjetPlots->addTreeVar("zjets_dilepmass"      , "dilepmass" , "passZjet && passZmass", "dilepmass"         , 30,  60, 120 );
+  //zjetPlots->addTreeVar("zjets_dilepmassNoCut" , "dilepmass" , "passZjet"             , "dilepmass (no cut)", 30,  60, 120 );
+  //zjetPlots->addTreeVar("zjets_mu0pt"          , "mu0pt"     , "passZjet && passZmass", "mu0pt"             , 30,   0, 150 );
+  //zjetPlots->addTreeVar("zjets_mu1pt"          , "mu1pt"     , "passZjet && passZmass", "mu1pt"             , 30,   0, 150 );
+  //zjetPlots->addTreeVar("zjets_mu0eta"         , "mu0eta"    , "passZjet && passZmass", "mu0eta"            , 30,  -5,   5 );
+  //zjetPlots->addTreeVar("zjets_mu1eta"         , "mu1eta"    , "passZjet && passZmass", "mu1eta"            , 30,  -5,   5 );
+  //zjetPlots->addTreeVar("zjets_npv"            , "npv"       , "passZjet && passZmass", "npv"               , 34,  1,  35 );
+
   zjetPlots->addTreeVar("zjets_dilepmass"      , "dilepmass" , "passZjet && passZmass"+ptlow, "dilepmass"         , 30,  60, 120 );
   zjetPlots->addTreeVar("zjets_dilepmassNoCut" , "dilepmass" , "passZjet"             +ptlow, "dilepmass (no cut)", 30,  60, 120 );
   zjetPlots->addTreeVar("zjets_mu0pt"          , "mu0pt"     , "passZjet && passZmass"+ptlow, "mu0pt"             , 30,   0, 150 );
   zjetPlots->addTreeVar("zjets_mu1pt"          , "mu1pt"     , "passZjet && passZmass"+ptlow, "mu1pt"             , 30,   0, 150 );
   zjetPlots->addTreeVar("zjets_mu0eta"         , "mu0eta"    , "passZjet && passZmass"+ptlow, "mu0eta"            , 30,  -5,   5 );
   zjetPlots->addTreeVar("zjets_mu1eta"         , "mu1eta"    , "passZjet && passZmass"+ptlow, "mu1eta"            , 30,  -5,   5 );
-
-  zjetPlots->addTreeVar("zjets_j0pt"      , "j0pt" , "passZjet && passZmass"+ptlow     , "pt_{T} [GeV]", 30,  0, 120 );
-  zjetPlots->addTreeVar("zjets_j0eta"     , "j0eta", "passZjet && passZmass"+ptlow     , "#eta"        , 30, -5,   5 );
-  zjetPlots->addTreeVar("zjets_j0eta_pt20", "j0eta", "passZjet && passZmass"+pt020     , "#eta (pt20-30)" , 30, -5,   5 );
-  zjetPlots->addTreeVar("zjets_rho"       , "rho"  , "passZjet && passZmass"+ptlow     , "#rho"        , 30,  0,  30 );
-  zjetPlots->addTreeVar("zjets_npv"       , "npv"  , "passZjet && passZmass"+ptlow     , "npv"         , 34,  1,  35 );
-  zjetPlots->addTreeVar("zjets_j0pdgid" , "j0pdgid", "passZjet && passZmass"+ptlow     , "j0pdgid"     , 30,  -5,   5 );
+  zjetPlots->addTreeVar("zjets_j0pt"      , "j0pt" , "passZjet && passZmass"+ptlow        , "pt_{T} [GeV]", 30,  0, 120 );
+  zjetPlots->addTreeVar("zjets_j0pt_frd"  , "j0pt" , "passZjet && passZmass"+forward+ptlow, "pt_{T} [GeV]", 30,  0, 120 );
+  zjetPlots->addTreeVar("zjets_j0eta"     , "j0eta", "passZjet && passZmass"+ptlow        , "#eta"        , 30, -5,   5 );
+  zjetPlots->addTreeVar("zjets_j0eta_pt20", "j0eta", "passZjet && passZmass"+pt020        , "#eta (pt20-30)" , 30, -5,   5 );
+  zjetPlots->addTreeVar("zjets_rho"       , "rho"  , "passZjet && passZmass"+ptlow        , "#rho"        , 30,  0,  30 );
+  zjetPlots->addTreeVar("zjets_npv"       , "npv"  , "passZjet && passZmass"+ptlow        , "npv"         , 34,  1,  35 );
+  zjetPlots->addTreeVar("zjets_j0pdgid" , "j0pdgid", "passZjet && passZmass"+ptlow        , "j0pdgid"     , 30,  -5,   5 );
   zjetPlots->addTreeVar("zjets_central_j0mult"   , "j0mult", "passZjet && passZmass"+central+ptlow, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_central020_j0mult", "j0mult", "passZjet && passZmass"+central+pt020, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_central020_j0mult", "j0mult", "passZjet && passZmass"+central+pt020, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_central030_j0mult", "j0mult", "passZjet && passZmass"+central+pt030, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_central040_j0mult", "j0mult", "passZjet && passZmass"+central+pt040, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_central060_j0mult", "j0mult", "passZjet && passZmass"+central+pt060, "multiplicity", 25, 0, 50 );
@@ -110,15 +127,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   zjetPlots->addTreeVar("zjets_central120_j0mult", "j0mult", "passZjet && passZmass"+central+pt120, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_central200_j0mult", "j0mult", "passZjet && passZmass"+central+pt200, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_forward_j0mult"   , "j0mult", "passZjet && passZmass"+forward+ptlow, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward020_j0mult", "j0mult", "passZjet && passZmass"+forward+pt020, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward030_j0mult", "j0mult", "passZjet && passZmass"+forward+pt030, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward040_j0mult", "j0mult", "passZjet && passZmass"+forward+pt040, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward060_j0mult", "j0mult", "passZjet && passZmass"+forward+pt060, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward080_j0mult", "j0mult", "passZjet && passZmass"+forward+pt080, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward120_j0mult", "j0mult", "passZjet && passZmass"+forward+pt120, "multiplicity", 25, 0, 50 );
-//zjetPlots->addTreeVar("zjets_forward200_j0mult", "j0mult", "passZjet && passZmass"+forward+pt200, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward020_j0mult", "j0mult", "passZjet && passZmass"+forward+pt020, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward030_j0mult", "j0mult", "passZjet && passZmass"+forward+pt030, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward040_j0mult", "j0mult", "passZjet && passZmass"+forward+pt040, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward060_j0mult", "j0mult", "passZjet && passZmass"+forward+pt060, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward080_j0mult", "j0mult", "passZjet && passZmass"+forward+pt080, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward120_j0mult", "j0mult", "passZjet && passZmass"+forward+pt120, "multiplicity", 25, 0, 50 );
+  zjetPlots->addTreeVar("zjets_forward200_j0mult", "j0mult", "passZjet && passZmass"+forward+pt200, "multiplicity", 25, 0, 50 );
   zjetPlots->addTreeVar("zjets_central_j0ptd"   , "j0ptd", "passZjet && passZmass"+central+ptlow, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_central020_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt020, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_central020_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt020, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central030_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt030, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central040_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt040, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central060_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt060, "ptD", 30, 0, 1 );
@@ -126,15 +143,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   zjetPlots->addTreeVar("zjets_central120_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt120, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central200_j0ptd", "j0ptd", "passZjet && passZmass"+central+pt200, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_forward_j0ptd"   , "j0ptd", "passZjet && passZmass"+forward+ptlow, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward020_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt020, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward030_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt030, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward040_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt040, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward060_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt060, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward080_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt080, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward120_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt120, "ptD", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward200_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt200, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward020_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt020, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward030_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt030, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward040_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt040, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward060_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt060, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward080_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt080, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward120_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt120, "ptD", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward200_j0ptd", "j0ptd", "passZjet && passZmass"+forward+pt200, "ptD", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central_j0axis1"   , "j0axis1", "passZjet && passZmass"+central+ptlow, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_central020_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt020, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central020_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt020, "-Log(axis_{1})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_central030_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt030, "-Log(axis_{1})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_central040_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt040, "-Log(axis_{1})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_central060_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt060, "-Log(axis_{1})", 40, 0, 10 );
@@ -142,31 +159,31 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   zjetPlots->addTreeVar("zjets_central120_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt120, "-Log(axis_{1})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_central200_j0axis1", "j0axis1", "passZjet && passZmass"+central+pt200, "-Log(axis_{1})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_forward_j0axis1"   , "j0axis1", "passZjet && passZmass"+forward+ptlow, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward020_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt020, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward030_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt030, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward040_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt040, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward060_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt060, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward080_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt080, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward120_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt120, "-Log(axis_{1})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward200_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt200, "-Log(axis_{1})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central_j0axis2"   , "j0axis1", "passZjet && passZmass"+central+ptlow, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_central020_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt020, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central030_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt030, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central040_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt040, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central060_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt060, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central080_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt080, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central120_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt120, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_central200_j0axis2", "j0axis1", "passZjet && passZmass"+central+pt200, "-Log(axis_{2})", 40, 0, 10 );
-  zjetPlots->addTreeVar("zjets_forward_j0axis2"   , "j0axis1", "passZjet && passZmass"+forward+ptlow, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward020_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt020, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward030_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt030, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward040_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt040, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward060_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt060, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward080_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt080, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward120_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt120, "-Log(axis_{2})", 40, 0, 10 );
-//zjetPlots->addTreeVar("zjets_forward200_j0axis2", "j0axis1", "passZjet && passZmass"+forward+pt200, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward020_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt020, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward030_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt030, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward040_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt040, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward060_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt060, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward080_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt080, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward120_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt120, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward200_j0axis1", "j0axis1", "passZjet && passZmass"+forward+pt200, "-Log(axis_{1})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central_j0axis2"   , "j0axis2", "passZjet && passZmass"+central+ptlow, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central020_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt020, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central030_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt030, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central040_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt040, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central060_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt060, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central080_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt080, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central120_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt120, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_central200_j0axis2", "j0axis2", "passZjet && passZmass"+central+pt200, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward_j0axis2"   , "j0axis2", "passZjet && passZmass"+forward+ptlow, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward020_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt020, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward030_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt030, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward040_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt040, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward060_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt060, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward080_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt080, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward120_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt120, "-Log(axis_{2})", 40, 0, 10 );
+  zjetPlots->addTreeVar("zjets_forward200_j0axis2", "j0axis2", "passZjet && passZmass"+forward+pt200, "-Log(axis_{2})", 40, 0, 10 );
   zjetPlots->addTreeVar("zjets_central_j0qgl"   , "j0qgl", "passZjet && passZmass"+central+ptlow, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_central020_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt020, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_central020_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt020, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central030_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt030, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central040_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt040, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central060_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt060, "QGL", 30, 0, 1 );
@@ -174,110 +191,80 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   zjetPlots->addTreeVar("zjets_central120_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt120, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_central200_j0qgl", "j0qgl", "passZjet && passZmass"+central+pt200, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_forward_j0qgl"   , "j0qgl", "passZjet && passZmass"+forward+ptlow, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward020_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt020, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward030_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt030, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward040_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt040, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward060_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt060, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward080_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt080, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward120_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt120, "QGL", 30, 0, 1 );
-//zjetPlots->addTreeVar("zjets_forward200_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt200, "QGL", 30, 0, 1 );
-*/
-/*
-  dijetPlots->addTreeVar("dijets_j0pt" , "j0pt" , dijetselection, "pt_{T} [GeV]", 40, 200, 1000 );
-  dijetPlots->addTreeVar("dijets_j0eta", "j0eta", dijetselection, "#eta"        , 30,  -5,    5 );
-  dijetPlots->addTreeVar("dijets_rho"  , "rho"  , dijetselection, "#rho"        , 25,   0,   25 );
-  dijetPlots->addTreeVar("dijets_npv"  , "npv"  , dijetselection, "npv"         , 34,   1,   34 );
-*/
-  dijetPlots->addTreeVar("dijets_ht"   , "ht"   , dijetselection, "H_{T} [GeV]" , 50, 450, 1450 );
-/*
+  zjetPlots->addTreeVar("zjets_forward020_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt020, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward030_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt030, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward040_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt040, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward060_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt060, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward080_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt080, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward120_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt120, "QGL", 30, 0, 1 );
+  zjetPlots->addTreeVar("zjets_forward200_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt200, "QGL", 30, 0, 1 );
+// */
+//*
+  dijetPlots->addTreeVar("dijets_j0pt"     , "j0pt" , dijetselection        , "pt_{T} [GeV]", 40, 200, 1000 );
+  dijetPlots->addTreeVar("dijets_j0pt_frd" , "j0pt" , dijetselection+forward, "pt_{T} [GeV]", 40, 200, 1000 );
+  dijetPlots->addTreeVar("dijets_j0eta"    , "j0eta", dijetselection        , "#eta"        , 30,  -5,    5 );
+  dijetPlots->addTreeVar("dijets_rho"      , "rho"  , dijetselection        , "#rho"        , 25,   0,   25 );
+  dijetPlots->addTreeVar("dijets_npv"      , "npv"  , dijetselection        , "npv"         , 34,   1,   34 );
+  dijetPlots->addTreeVar("dijets_ht"       , "ht"   , dijetselection        , "H_{T} [GeV]" , 50, 450, 1450 );
   dijetPlots->addTreeVar("dijets_central_j0mult"   , "j0mult", dijetselection+central+ptlow, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_central020_j0mult", "j0mult", dijetselection+central+pt020, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central030_j0mult", "j0mult", dijetselection+central+pt030, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central040_j0mult", "j0mult", dijetselection+central+pt040, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central060_j0mult", "j0mult", dijetselection+central+pt060, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central080_j0mult", "j0mult", dijetselection+central+pt080, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central120_j0mult", "j0mult", dijetselection+central+pt120, "multiplicity", 35, 0, 70 );
-  dijetPlots->addTreeVar("dijets_central200_j0mult", "j0mult", dijetselection+central+pt200, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_central201_j0mult", "j0mult", dijetselection+central+pt201, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_central250_j0mult", "j0mult", dijetselection+central+pt250, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_central300_j0mult", "j0mult", dijetselection+central+pt300, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_central400_j0mult", "j0mult", dijetselection+central+pt400, "multiplicity", 35, 0, 70 );
   dijetPlots->addTreeVar("dijets_forward_j0mult"   , "j0mult", dijetselection+forward+ptlow, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward020_j0mult", "j0mult", dijetselection+forward+pt020, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward030_j0mult", "j0mult", dijetselection+forward+pt030, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward040_j0mult", "j0mult", dijetselection+forward+pt040, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward060_j0mult", "j0mult", dijetselection+forward+pt060, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward080_j0mult", "j0mult", dijetselection+forward+pt080, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward120_j0mult", "j0mult", dijetselection+forward+pt120, "multiplicity", 35, 0, 70 );
-//dijetPlots->addTreeVar("dijets_forward200_j0mult", "j0mult", dijetselection+forward+pt200, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_forward201_j0mult", "j0mult", dijetselection+forward+pt201, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_forward250_j0mult", "j0mult", dijetselection+forward+pt250, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_forward300_j0mult", "j0mult", dijetselection+forward+pt300, "multiplicity", 35, 0, 70 );
+  dijetPlots->addTreeVar("dijets_forward400_j0mult", "j0mult", dijetselection+forward+pt400, "multiplicity", 35, 0, 70 );
   dijetPlots->addTreeVar("dijets_central_j0ptd"   , "j0ptd", dijetselection+central+ptlow, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_central020_j0ptd", "j0ptd", dijetselection+central+pt020, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central030_j0ptd", "j0ptd", dijetselection+central+pt030, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central040_j0ptd", "j0ptd", dijetselection+central+pt040, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central060_j0ptd", "j0ptd", dijetselection+central+pt060, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central080_j0ptd", "j0ptd", dijetselection+central+pt080, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central120_j0ptd", "j0ptd", dijetselection+central+pt120, "ptD", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central200_j0ptd", "j0ptd", dijetselection+central+pt200, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central201_j0ptd", "j0ptd", dijetselection+central+pt201, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central250_j0ptd", "j0ptd", dijetselection+central+pt250, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central300_j0ptd", "j0ptd", dijetselection+central+pt300, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central400_j0ptd", "j0ptd", dijetselection+central+pt400, "ptD", 30, 0, 1 );
   dijetPlots->addTreeVar("dijets_forward_j0ptd"   , "j0ptd", dijetselection+forward+ptlow, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward020_j0ptd", "j0ptd", dijetselection+forward+pt020, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward030_j0ptd", "j0ptd", dijetselection+forward+pt030, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward040_j0ptd", "j0ptd", dijetselection+forward+pt040, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward060_j0ptd", "j0ptd", dijetselection+forward+pt060, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward080_j0ptd", "j0ptd", dijetselection+forward+pt080, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward120_j0ptd", "j0ptd", dijetselection+forward+pt120, "ptD", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward200_j0ptd", "j0ptd", dijetselection+forward+pt200, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward201_j0ptd", "j0ptd", dijetselection+forward+pt201, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward250_j0ptd", "j0ptd", dijetselection+forward+pt250, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward300_j0ptd", "j0ptd", dijetselection+forward+pt300, "ptD", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward400_j0ptd", "j0ptd", dijetselection+forward+pt400, "ptD", 30, 0, 1 );
   dijetPlots->addTreeVar("dijets_central_j0axis1"   , "j0axis1", dijetselection+central+ptlow, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_central020_j0axis1", "j0axis1", dijetselection+central+pt020, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central030_j0axis1", "j0axis1", dijetselection+central+pt030, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central040_j0axis1", "j0axis1", dijetselection+central+pt040, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central060_j0axis1", "j0axis1", dijetselection+central+pt060, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central080_j0axis1", "j0axis1", dijetselection+central+pt080, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central120_j0axis1", "j0axis1", dijetselection+central+pt120, "-Log(axis_{1})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central200_j0axis1", "j0axis1", dijetselection+central+pt200, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central201_j0axis1", "j0axis1", dijetselection+central+pt201, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central250_j0axis1", "j0axis1", dijetselection+central+pt250, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central300_j0axis1", "j0axis1", dijetselection+central+pt300, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central400_j0axis1", "j0axis1", dijetselection+central+pt400, "-Log(axis_{1})", 30, 0, 10 );
   dijetPlots->addTreeVar("dijets_forward_j0axis1"   , "j0axis1", dijetselection+forward+ptlow, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward020_j0axis1", "j0axis1", dijetselection+forward+pt020, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward030_j0axis1", "j0axis1", dijetselection+forward+pt030, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward040_j0axis1", "j0axis1", dijetselection+forward+pt040, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward060_j0axis1", "j0axis1", dijetselection+forward+pt060, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward080_j0axis1", "j0axis1", dijetselection+forward+pt080, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward120_j0axis1", "j0axis1", dijetselection+forward+pt120, "-Log(axis_{1})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward200_j0axis1", "j0axis1", dijetselection+forward+pt200, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward201_j0axis1", "j0axis1", dijetselection+forward+pt201, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward250_j0axis1", "j0axis1", dijetselection+forward+pt250, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward300_j0axis1", "j0axis1", dijetselection+forward+pt300, "-Log(axis_{1})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward400_j0axis1", "j0axis1", dijetselection+forward+pt400, "-Log(axis_{1})", 30, 0, 10 );
   dijetPlots->addTreeVar("dijets_central_j0axis2"   , "j0axis2", dijetselection+central+ptlow, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_central020_j0axis2", "j0axis2", dijetselection+central+pt020, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central030_j0axis2", "j0axis2", dijetselection+central+pt030, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central040_j0axis2", "j0axis2", dijetselection+central+pt040, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central060_j0axis2", "j0axis2", dijetselection+central+pt060, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central080_j0axis2", "j0axis2", dijetselection+central+pt080, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central120_j0axis2", "j0axis2", dijetselection+central+pt120, "-Log(axis_{2})", 30, 0, 10 );
-  dijetPlots->addTreeVar("dijets_central200_j0axis2", "j0axis2", dijetselection+central+pt200, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central201_j0axis2", "j0axis2", dijetselection+central+pt201, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central250_j0axis2", "j0axis2", dijetselection+central+pt250, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central300_j0axis2", "j0axis2", dijetselection+central+pt300, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_central400_j0axis2", "j0axis2", dijetselection+central+pt400, "-Log(axis_{2})", 30, 0, 10 );
   dijetPlots->addTreeVar("dijets_forward_j0axis2"   , "j0axis2", dijetselection+forward+ptlow, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward020_j0axis2", "j0axis2", dijetselection+forward+pt020, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward030_j0axis2", "j0axis2", dijetselection+forward+pt030, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward040_j0axis2", "j0axis2", dijetselection+forward+pt040, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward060_j0axis2", "j0axis2", dijetselection+forward+pt060, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward080_j0axis2", "j0axis2", dijetselection+forward+pt080, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward120_j0axis2", "j0axis2", dijetselection+forward+pt120, "-Log(axis_{2})", 30, 0, 10 );
-//dijetPlots->addTreeVar("dijets_forward200_j0axis2", "j0axis2", dijetselection+forward+pt200, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward201_j0axis2", "j0axis2", dijetselection+forward+pt201, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward250_j0axis2", "j0axis2", dijetselection+forward+pt250, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward300_j0axis2", "j0axis2", dijetselection+forward+pt300, "-Log(axis_{2})", 30, 0, 10 );
+  dijetPlots->addTreeVar("dijets_forward400_j0axis2", "j0axis2", dijetselection+forward+pt400, "-Log(axis_{2})", 30, 0, 10 );
   dijetPlots->addTreeVar("dijets_central_j0qgl"   , "j0qgl", dijetselection+central+ptlow, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_central020_j0qgl", "j0qgl", dijetselection+central+pt020, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central030_j0qgl", "j0qgl", dijetselection+central+pt030, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central040_j0qgl", "j0qgl", dijetselection+central+pt040, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central060_j0qgl", "j0qgl", dijetselection+central+pt060, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central080_j0qgl", "j0qgl", dijetselection+central+pt080, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central120_j0qgl", "j0qgl", dijetselection+central+pt120, "QGL", 30, 0, 1 );
-  dijetPlots->addTreeVar("dijets_central200_j0qgl", "j0qgl", dijetselection+central+pt200, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central201_j0qgl", "j0qgl", dijetselection+central+pt201, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central250_j0qgl", "j0qgl", dijetselection+central+pt250, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central300_j0qgl", "j0qgl", dijetselection+central+pt300, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_central400_j0qgl", "j0qgl", dijetselection+central+pt400, "QGL", 30, 0, 1 );
   dijetPlots->addTreeVar("dijets_forward_j0qgl"   , "j0qgl", dijetselection+forward+ptlow, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward020_j0qgl", "j0qgl", dijetselection+forward+pt020, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward030_j0qgl", "j0qgl", dijetselection+forward+pt030, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward040_j0qgl", "j0qgl", dijetselection+forward+pt040, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward060_j0qgl", "j0qgl", dijetselection+forward+pt060, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward080_j0qgl", "j0qgl", dijetselection+forward+pt080, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward120_j0qgl", "j0qgl", dijetselection+forward+pt120, "QGL", 30, 0, 1 );
-//dijetPlots->addTreeVar("dijets_forward200_j0qgl", "j0qgl", dijetselection+forward+pt200, "QGL", 30, 0, 1 );
-*/
-/*
-  gjetPlots->addTreeVar("gjets_j0pt" , "j0pt" , "passGmjet", "pt_{T} [GeV]", 30,  0, 600 );
-  gjetPlots->addTreeVar("gjets_j0eta", "j0eta", "passGmjet", "#eta"        , 30, -5,   5 );
-  gjetPlots->addTreeVar("gjets_rho"  , "rho"  , "passGmjet", "#rho"        , 25,  0,  25 );
-  gjetPlots->addTreeVar("gjets_npv"  , "npv"  , "passGmjet", "npv"         , 34,  1,  35 );
+  dijetPlots->addTreeVar("dijets_forward201_j0qgl", "j0qgl", dijetselection+forward+pt201, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward250_j0qgl", "j0qgl", dijetselection+forward+pt250, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward300_j0qgl", "j0qgl", dijetselection+forward+pt300, "QGL", 30, 0, 1 );
+  dijetPlots->addTreeVar("dijets_forward400_j0qgl", "j0qgl", dijetselection+forward+pt400, "QGL", 30, 0, 1 );
+// */
+//*
+  gjetPlots->addTreeVar("gjets_j0pt"     , "j0pt" , "passGmjet"        , "pt_{T} [GeV]", 30,  0, 600 );
+  gjetPlots->addTreeVar("gjets_j0pt_frd" , "j0pt" , "passGmjet"+forward, "pt_{T} [GeV]", 30,  0, 600 );
+  gjetPlots->addTreeVar("gjets_j0eta"    , "j0eta", "passGmjet"        , "#eta"        , 30, -5,   5 );
+  gjetPlots->addTreeVar("gjets_rho"      , "rho"  , "passGmjet"        , "#rho"        , 25,  0,  25 );
+  gjetPlots->addTreeVar("gjets_npv"      , "npv"  , "passGmjet"        , "npv"         , 34,  1,  35 );
   gjetPlots->addTreeVar("gjets_central_j0mult"   , "j0mult", "passGmjet"+central+ptlow, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_central020_j0mult", "j0mult", "passGmjet"+central+pt020, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_central020_j0mult", "j0mult", "passGmjet"+central+pt020, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_central030_j0mult", "j0mult", "passGmjet"+central+pt030, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_central040_j0mult", "j0mult", "passGmjet"+central+pt040, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_central060_j0mult", "j0mult", "passGmjet"+central+pt060, "multiplicity", 25, 0, 50 );
@@ -285,15 +272,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->addTreeVar("gjets_central120_j0mult", "j0mult", "passGmjet"+central+pt120, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_central200_j0mult", "j0mult", "passGmjet"+central+pt200, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_forward_j0mult"   , "j0mult", "passGmjet"+forward+ptlow, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward020_j0mult", "j0mult", "passGmjet"+forward+pt020, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward030_j0mult", "j0mult", "passGmjet"+forward+pt030, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward040_j0mult", "j0mult", "passGmjet"+forward+pt040, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward060_j0mult", "j0mult", "passGmjet"+forward+pt060, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward080_j0mult", "j0mult", "passGmjet"+forward+pt080, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward120_j0mult", "j0mult", "passGmjet"+forward+pt120, "multiplicity", 25, 0, 50 );
-//gjetPlots->addTreeVar("gjets_forward200_j0mult", "j0mult", "passGmjet"+forward+pt200, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward020_j0mult", "j0mult", "passGmjet"+forward+pt020, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward030_j0mult", "j0mult", "passGmjet"+forward+pt030, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward040_j0mult", "j0mult", "passGmjet"+forward+pt040, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward060_j0mult", "j0mult", "passGmjet"+forward+pt060, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward080_j0mult", "j0mult", "passGmjet"+forward+pt080, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward120_j0mult", "j0mult", "passGmjet"+forward+pt120, "multiplicity", 25, 0, 50 );
+  gjetPlots->addTreeVar("gjets_forward200_j0mult", "j0mult", "passGmjet"+forward+pt200, "multiplicity", 25, 0, 50 );
   gjetPlots->addTreeVar("gjets_central_j0ptd"   , "j0ptd", "passGmjet"+central+ptlow, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_central020_j0ptd", "j0ptd", "passGmjet"+central+pt020, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_central020_j0ptd", "j0ptd", "passGmjet"+central+pt020, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central030_j0ptd", "j0ptd", "passGmjet"+central+pt030, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central040_j0ptd", "j0ptd", "passGmjet"+central+pt040, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central060_j0ptd", "j0ptd", "passGmjet"+central+pt060, "ptD", 30, 0, 1 );
@@ -301,15 +288,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->addTreeVar("gjets_central120_j0ptd", "j0ptd", "passGmjet"+central+pt120, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central200_j0ptd", "j0ptd", "passGmjet"+central+pt200, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_forward_j0ptd"   , "j0ptd", "passGmjet"+forward+ptlow, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward020_j0ptd", "j0ptd", "passGmjet"+forward+pt020, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward030_j0ptd", "j0ptd", "passGmjet"+forward+pt030, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward040_j0ptd", "j0ptd", "passGmjet"+forward+pt040, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward060_j0ptd", "j0ptd", "passGmjet"+forward+pt060, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward080_j0ptd", "j0ptd", "passGmjet"+forward+pt080, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward120_j0ptd", "j0ptd", "passGmjet"+forward+pt120, "ptD", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward200_j0ptd", "j0ptd", "passGmjet"+forward+pt200, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward020_j0ptd", "j0ptd", "passGmjet"+forward+pt020, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward030_j0ptd", "j0ptd", "passGmjet"+forward+pt030, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward040_j0ptd", "j0ptd", "passGmjet"+forward+pt040, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward060_j0ptd", "j0ptd", "passGmjet"+forward+pt060, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward080_j0ptd", "j0ptd", "passGmjet"+forward+pt080, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward120_j0ptd", "j0ptd", "passGmjet"+forward+pt120, "ptD", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward200_j0ptd", "j0ptd", "passGmjet"+forward+pt200, "ptD", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central_j0axis1"   , "j0axis1", "passGmjet"+central+ptlow, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_central020_j0axis1", "j0axis1", "passGmjet"+central+pt020, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_central020_j0axis1", "j0axis1", "passGmjet"+central+pt020, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central030_j0axis1", "j0axis1", "passGmjet"+central+pt030, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central040_j0axis1", "j0axis1", "passGmjet"+central+pt040, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central060_j0axis1", "j0axis1", "passGmjet"+central+pt060, "-Log(axis_{1})", 30, 0, 10 );
@@ -317,15 +304,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->addTreeVar("gjets_central120_j0axis1", "j0axis1", "passGmjet"+central+pt120, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central200_j0axis1", "j0axis1", "passGmjet"+central+pt200, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_forward_j0axis1"   , "j0axis1", "passGmjet"+forward+ptlow, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward020_j0axis1", "j0axis1", "passGmjet"+forward+pt020, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward030_j0axis1", "j0axis1", "passGmjet"+forward+pt030, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward040_j0axis1", "j0axis1", "passGmjet"+forward+pt040, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward060_j0axis1", "j0axis1", "passGmjet"+forward+pt060, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward080_j0axis1", "j0axis1", "passGmjet"+forward+pt080, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward120_j0axis1", "j0axis1", "passGmjet"+forward+pt120, "-Log(axis_{1})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward200_j0axis1", "j0axis1", "passGmjet"+forward+pt200, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward020_j0axis1", "j0axis1", "passGmjet"+forward+pt020, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward030_j0axis1", "j0axis1", "passGmjet"+forward+pt030, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward040_j0axis1", "j0axis1", "passGmjet"+forward+pt040, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward060_j0axis1", "j0axis1", "passGmjet"+forward+pt060, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward080_j0axis1", "j0axis1", "passGmjet"+forward+pt080, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward120_j0axis1", "j0axis1", "passGmjet"+forward+pt120, "-Log(axis_{1})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward200_j0axis1", "j0axis1", "passGmjet"+forward+pt200, "-Log(axis_{1})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central_j0axis2"   , "j0axis2", "passGmjet"+central+ptlow, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_central020_j0axis2", "j0axis2", "passGmjet"+central+pt020, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_central020_j0axis2", "j0axis2", "passGmjet"+central+pt020, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central030_j0axis2", "j0axis2", "passGmjet"+central+pt030, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central040_j0axis2", "j0axis2", "passGmjet"+central+pt040, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central060_j0axis2", "j0axis2", "passGmjet"+central+pt060, "-Log(axis_{2})", 30, 0, 10 );
@@ -333,15 +320,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->addTreeVar("gjets_central120_j0axis2", "j0axis2", "passGmjet"+central+pt120, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central200_j0axis2", "j0axis2", "passGmjet"+central+pt200, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_forward_j0axis2"   , "j0axis2", "passGmjet"+forward+ptlow, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward020_j0axis2", "j0axis2", "passGmjet"+forward+pt020, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward030_j0axis2", "j0axis2", "passGmjet"+forward+pt030, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward040_j0axis2", "j0axis2", "passGmjet"+forward+pt040, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward060_j0axis2", "j0axis2", "passGmjet"+forward+pt060, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward080_j0axis2", "j0axis2", "passGmjet"+forward+pt080, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward120_j0axis2", "j0axis2", "passGmjet"+forward+pt120, "-Log(axis_{2})", 30, 0, 10 );
-//gjetPlots->addTreeVar("gjets_forward200_j0axis2", "j0axis2", "passGmjet"+forward+pt200, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward020_j0axis2", "j0axis2", "passGmjet"+forward+pt020, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward030_j0axis2", "j0axis2", "passGmjet"+forward+pt030, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward040_j0axis2", "j0axis2", "passGmjet"+forward+pt040, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward060_j0axis2", "j0axis2", "passGmjet"+forward+pt060, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward080_j0axis2", "j0axis2", "passGmjet"+forward+pt080, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward120_j0axis2", "j0axis2", "passGmjet"+forward+pt120, "-Log(axis_{2})", 30, 0, 10 );
+  gjetPlots->addTreeVar("gjets_forward200_j0axis2", "j0axis2", "passGmjet"+forward+pt200, "-Log(axis_{2})", 30, 0, 10 );
   gjetPlots->addTreeVar("gjets_central_j0qgl"   , "j0qgl", "passGmjet"+central+ptlow, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_central020_j0qgl", "j0qgl", "passGmjet"+central+pt020, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_central020_j0qgl", "j0qgl", "passGmjet"+central+pt020, "QGL", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central030_j0qgl", "j0qgl", "passGmjet"+central+pt030, "QGL", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central040_j0qgl", "j0qgl", "passGmjet"+central+pt040, "QGL", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central060_j0qgl", "j0qgl", "passGmjet"+central+pt060, "QGL", 30, 0, 1 );
@@ -349,14 +336,15 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   gjetPlots->addTreeVar("gjets_central120_j0qgl", "j0qgl", "passGmjet"+central+pt120, "QGL", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_central200_j0qgl", "j0qgl", "passGmjet"+central+pt200, "QGL", 30, 0, 1 );
   gjetPlots->addTreeVar("gjets_forward_j0qgl"   , "j0qgl", "passGmjet"+forward+ptlow, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward020_j0qgl", "j0qgl", "passGmjet"+forward+pt020, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward030_j0qgl", "j0qgl", "passGmjet"+forward+pt030, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward040_j0qgl", "j0qgl", "passGmjet"+forward+pt040, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward060_j0qgl", "j0qgl", "passGmjet"+forward+pt060, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward080_j0qgl", "j0qgl", "passGmjet"+forward+pt080, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward120_j0qgl", "j0qgl", "passGmjet"+forward+pt120, "QGL", 30, 0, 1 );
-//gjetPlots->addTreeVar("gjets_forward200_j0qgl", "j0qgl", "passGmjet"+forward+pt200, "QGL", 30, 0, 1 );
-*/
+  gjetPlots->addTreeVar("gjets_forward020_j0qgl", "j0qgl", "passGmjet"+forward+pt020, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward030_j0qgl", "j0qgl", "passGmjet"+forward+pt030, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward040_j0qgl", "j0qgl", "passGmjet"+forward+pt040, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward060_j0qgl", "j0qgl", "passGmjet"+forward+pt060, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward080_j0qgl", "j0qgl", "passGmjet"+forward+pt080, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward120_j0qgl", "j0qgl", "passGmjet"+forward+pt120, "QGL", 30, 0, 1 );
+  gjetPlots->addTreeVar("gjets_forward200_j0qgl", "j0qgl", "passGmjet"+forward+pt200, "QGL", 30, 0, 1 );
+// */
+
   zjetPlots   ->plot();
   dijetPlots  ->plot();
   gjetPlots   ->plot();
@@ -366,3 +354,4 @@ void plotQGValidation( const TString inputdir="trees/151104_580pb"
   delete gjetPlots;
 
 }
+
