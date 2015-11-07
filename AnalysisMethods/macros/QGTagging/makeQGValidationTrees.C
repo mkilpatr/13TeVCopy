@@ -21,7 +21,12 @@ using namespace ucsbsusy;
 
 class Analyze : public BaseTreeAnalyzer{
 public:
-  enum sampType { OTHER, GJET, FRAG, FAKE };
+  enum sampType { OTHER = 0
+                , GJET  = 1
+                , QCD   = 2
+                , FRAG  = 2
+                , FAKE  = 2
+  };
   const double dr_cut = 0.4;
 
   Analyze(TString fname, string treeName, bool isMCTree, cfgSet::ConfigSet *pars, TString sname, TString outputdir)
@@ -158,7 +163,7 @@ public:
     if(!goodvertex) return;
     if (jets.size()<1) return;
     auto& jet0 = jets[0];
-    if ( !ak4Reader.jettightId_->at(jet0->index()) ) return;
+    //if ( !ak4Reader.jettightId_->at(jet0->index()) ) return;
     if (cfgSet::isSelBJet(*jet0,cfgSet::zl_search_jets)) return;
     if (abs(jet0->eta())<2.4 && ak4Reader.jetbetaStar_->at(jet0->index()) > 0.2*log(nPV-0.67)) return; // only jets in tracker region
 
@@ -532,8 +537,7 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   Analyze a(fullname, "Events", isMC, &qgv_search_set, sname, outputdir);
   a.mctype_ = Analyze::OTHER;
   if      (sname.Contains("gjets")) a.mctype_ = Analyze::GJET;
-  else if (sname.Contains("frag"))  a.mctype_ = Analyze::FRAG;
-  else if (sname.Contains("fake"))  a.mctype_ = Analyze::FAKE;
+  else if (sname.Contains("qcd"))   a.mctype_ = Analyze::QCD;
   a.analyze(10000);
   //a.analyze(1000,10000);
 
