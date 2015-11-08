@@ -41,6 +41,12 @@ HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Corre
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }
 
+HistogramCorrection3D::HistogramCorrection3D(TString corrName, TFile * file) : Correction(corrName),binX(1),binY(1),binZ(1) {
+  assert(file);
+  corrHist = (TH3F*)(file->Get(name) );
+  if(!corrHist) throw std::invalid_argument("HistogramCorrection3D::HistogramCorrection3D: Histogram could not be found!");
+}
+
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
 
 void CorrectionSet::loadSimple(TString correctionSetName, int correctionOptions) {

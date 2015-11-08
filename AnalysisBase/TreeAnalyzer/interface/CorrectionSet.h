@@ -10,7 +10,7 @@
 
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
-
+#include <TH3F.h>
 
 class TFile;
 
@@ -49,6 +49,22 @@ public:
 protected:
 TH1F* corrHist;
 unsigned int targetBin;
+};
+
+class HistogramCorrection3D : public Correction {
+public:
+  HistogramCorrection3D(TString corrName, TFile * file);
+  void setBinX(float a) {binX = corrHist->GetXaxis()->FindBin(a);}
+  void setBinY(float a) {binY = corrHist->GetYaxis()->FindBin(a);}
+  void setBinZ(float a) {binZ = corrHist->GetZaxis()->FindBin(a);}
+  virtual float getBinValue() const { return corrHist->GetBinContent(binX,binY,binZ);}
+  virtual float getBinError() const { return corrHist->GetBinError(binX,binY,binZ);}
+  TH3F* getHist() { return corrHist; }
+protected:
+  TH3F* corrHist;
+  unsigned int binX;
+  unsigned int binY;
+  unsigned int binZ;
 };
 
 class CorrectionSet {

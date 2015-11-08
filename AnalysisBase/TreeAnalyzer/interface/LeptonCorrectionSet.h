@@ -30,10 +30,10 @@ namespace ucsbsusy {
 
   };
 
-  class TnPCorr : public HistogramCorrection {
+  class TnPCorr : public HistogramCorrection3D {
     public:
-    TnPCorr(TFile * file)  : HistogramCorrection("TNP",file) {}
-    double getLepWeight(TnPCorr* tnpCorr, const LeptonF* lep                  , CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+    TnPCorr(TFile * file)  : HistogramCorrection3D("TNP",file) {}
+    double getLepWeight(TnPCorr* tnpCorr,       LeptonF* lep                  , CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
     double getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
   };
 

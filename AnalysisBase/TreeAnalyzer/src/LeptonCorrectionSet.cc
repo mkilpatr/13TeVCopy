@@ -5,24 +5,33 @@
 
 namespace ucsbsusy {
 
-double TnPCorr::getLepWeight(TnPCorr* tnpCorr, const LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
-  tnpCorr->setTargetBin(1);
-  double wt = tnpCorr->get();
-  double er = tnpCorr->getError();
-  std::cout << "  pt: " << lep->pt() << "\teta: " << lep->eta() << "\twt: " << wt << "\terror: " << er << std::endl;
-  if(elCorrType & UP) {
-    wt += er;
-  }
-  else if(elCorrType & DOWN) {
-    wt -= er;
-  }
+double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  if     (lep->pdgid()==11) tnpCorr->setBinZ(1);
+  else if(lep->pdgid()==13) tnpCorr->setBinZ(2);
+  else return 1;
+  float pt  = lep->pt();
+  float eta = lep->eta();
+  tnpCorr->setBinX(pt);
+  tnpCorr->setBinY(eta);
+  double wt = tnpCorr->getBinValue();
+  double er = tnpCorr->getBinError();
+  /* std::cout << "  lep flavor: " << lep->pdgid()
+            << "\tpt: "         << pt
+            << "\teta: "        << eta
+            << "\twt: "         << wt
+            << "\terror: "      << er
+            << std::endl; // */
+  if     (lep->pdgid()==11 && (elCorrType & UP  )) wt += er;
+  else if(lep->pdgid()==11 && (elCorrType & DOWN)) wt -= er;
+  else if(lep->pdgid()==13 && (muCorrType & UP  )) wt += er;
+  else if(lep->pdgid()==13 && (muCorrType & DOWN)) wt -= er;
   return wt;
 }
 
 double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
   double lepWt = 1;
-  for(const auto * lep : leptons) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
-  std::cout << "event weight: " << lepWt << std::endl << std::endl;
+  for(auto * lep : leptons) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
+  //std::cout << "event weight: " << lepWt << std::endl << std::endl;
   return lepWt;
 }
 
