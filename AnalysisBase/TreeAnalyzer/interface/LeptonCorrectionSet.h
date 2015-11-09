@@ -30,9 +30,9 @@ namespace ucsbsusy {
 
   };
 
-  class TnPCorr : public HistogramCorrection3D {
+  class TnPCorr : public LepHistogramCorrection {
     public:
-    TnPCorr(TFile * file)  : HistogramCorrection3D("TNP",file) {}
+    TnPCorr(TString tnpElFileName, TString tnpMuFileName)  : LepHistogramCorrection("TNP", tnpElFileName, tnpMuFileName) {}
     double getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
     double getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
   };
@@ -51,7 +51,7 @@ namespace ucsbsusy {
 
       LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}
       virtual ~LeptonCorrectionSet() {}
-      virtual void load(TString fileName, TString tnpFileName, int correctionOptions = NULLOPT);
+      virtual void load(TString fileName, TString tnpElFileName, TString tnpMuFileName, int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
       float getVetoLepWeight()     const { return vetoLepWeight; }

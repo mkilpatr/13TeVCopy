@@ -12,7 +12,6 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisTools/DataFormats/interface/GenParticle.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include <TH3F.h>
 
 class TFile;
 
@@ -53,20 +52,23 @@ TH1F* corrHist;
 unsigned int targetBin;
 };
 
-class HistogramCorrection3D : public Correction {
+class LepHistogramCorrection : public Correction {
 public:
-  HistogramCorrection3D(TString corrName, TFile * file);
-  void setBinX(float a) {binX = corrHist->GetXaxis()->FindFixBin(a);}
-  void setBinY(float a) {binY = corrHist->GetYaxis()->FindFixBin(a);}
-  void setBinZ(float a) {binZ = corrHist->GetZaxis()->FindFixBin(a);}
-  virtual float getBinValue() const { return corrHist->GetBinContent(binX,binY,binZ);}
-  virtual float getBinError() const { return corrHist->GetBinError(binX,binY,binZ);}
-  TH3F* getHist() { return corrHist; }
+  LepHistogramCorrection(TString corrName, TString tnpElFileName, TString tnpMuFileName);
+  virtual ~LepHistogramCorrection();
+  virtual float getElValue(float pt, float eta) const { return corrHistEl->GetBinContent(corrHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                        ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
+  virtual float getMuValue(float pt, float eta) const { return corrHistMu->GetBinContent(corrHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                        ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
+  virtual float getElError(float pt, float eta) const { return corrHistEl->GetBinError  (corrHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                        ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
+  virtual float getMuError(float pt, float eta) const { return corrHistMu->GetBinError  (corrHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                        ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
 protected:
-  TH3F* corrHist;
-  unsigned int binX;
-  unsigned int binY;
-  unsigned int binZ;
+  TFile* fileEl;
+  TFile* fileMu;
+  TH2F*  corrHistEl;
+  TH2F*  corrHistMu;
 };
 
 class CorrectionSet {

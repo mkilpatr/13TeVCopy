@@ -229,7 +229,8 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
-    TString tnpLeptonCorrectionFile;
+    TString tnpElCorrectionFile;
+    TString tnpMuCorrectionFile;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
 
@@ -292,7 +293,8 @@ namespace cfgSet {
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
-          os << "Applying tnp lepton corrections from " << a.tnpLeptonCorrectionFile.Data() <<" -> ";
+          os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
+             << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
           os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){

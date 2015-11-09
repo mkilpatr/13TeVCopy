@@ -6,52 +6,59 @@
 namespace ucsbsusy {
 
 double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
-  if     (lep->pdgid()==11) tnpCorr->setBinZ(1);
-  else if(lep->pdgid()==13) tnpCorr->setBinZ(2);
-  else return 1;
+  int   id  = lep->pdgid();
   float pt  = lep->pt();
   float eta = lep->absEta();
-  tnpCorr->setBinX(pt);
-  tnpCorr->setBinY(eta);
-  double wt = tnpCorr->getBinValue();
-  double er = tnpCorr->getBinError();
-  std::cout << "  lep flavor: " << lep->pdgid()
+  float wt = 1.0;
+  float er = 0.0;
+  if(id==11){
+    wt = tnpCorr->getElValue(pt,eta);
+    er = tnpCorr->getElError(pt,eta);
+  }
+  else if(id==13) {
+    wt = tnpCorr->getMuValue(pt,eta);
+    er = tnpCorr->getMuError(pt,eta);
+  }
+  std::cout << "  lep flavor: " << id
             << "\tpt: "         << pt
             << "\teta: "        << eta
             << "\twt: "         << wt
             << "\terror: "      << er
             << std::endl; // */
-  if     (lep->pdgid()==11 && elCorrType == UP  ) wt += er;
-  else if(lep->pdgid()==11 && elCorrType == DOWN) wt -= er;
-  else if(lep->pdgid()==13 && muCorrType == UP  ) wt += er;
-  else if(lep->pdgid()==13 && muCorrType == DOWN) wt -= er;
+  if     (id==11 && elCorrType == UP  ) wt += er;
+  else if(id==11 && elCorrType == DOWN) wt -= er;
+  else if(id==13 && muCorrType == UP  ) wt += er;
+  else if(id==13 && muCorrType == DOWN) wt -= er;
   return wt;
 }
 
 double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
   // store gen leptons for matching
-  std::vector<const GenParticleF*> genLeptons_;
-  genLeptons_.reserve(2);
+  std::vector<const GenParticleF*> genEl_;
+  std::vector<const GenParticleF*> genMu_;
   for(const auto* p : genParts) {
     // check for daughters of Zs ... to be updated when we add J/Psis / Upsilons
     if(ParticleInfo::isA(ParticleInfo::p_Z0, p) || ParticleInfo::isA(ParticleInfo::p_Wplus, p)) {
       for(unsigned int id = 0; id < p->numberOfDaughters(); ++id) {
         const GenParticleF* dau = p->daughter(id);
-        if(ParticleInfo::isA(ParticleInfo::p_eminus , dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) genLeptons_.push_back(dau);
+        if     (ParticleInfo::isA(ParticleInfo::p_eminus , dau)) genEl_.push_back(dau);
+        else if(ParticleInfo::isA(ParticleInfo::p_muminus, dau)) genMu_.push_back(dau);
       } // W,Z daughters
     } // genPart is a Z or W
   } // genParts
   double lepWt = 1;
   for(auto * lep : leptons) {
     double nearDR = 0;
-    int near = PhysicsUtilities::findNearestDRDeref(*lep, genLeptons_, nearDR, 0.4, 10.0, 0, genLeptons_.size());
+    int near = 0;
+    if     (lep->pdgid()==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4, 10.0, 0, genEl_.size());
+    else if(lep->pdgid()==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4, 10.0, 0, genMu_.size());
     if(near > 0) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
   }
   std::cout << "event weight: " << lepWt << std::endl << std::endl;
   return lepWt;
 }
 
-void LeptonCorrectionSet::load(TString fileName, TString tnpFileName, int correctionOptions)
+void LeptonCorrectionSet::load(TString fileName, TString tnpElFileName, TString tnpMuFileName, int correctionOptions)
 {
   if(correctionOptions & LEP) {
     loadFile("LEP",fileName,correctionOptions);
@@ -63,9 +70,8 @@ void LeptonCorrectionSet::load(TString fileName, TString tnpFileName, int correc
     }
   }
   if(correctionOptions & TNP) {
-    loadFile("TNP",tnpFileName,correctionOptions);
     if(options_ & TNP) {
-      tnpCorr = new TnPCorr(file);
+      tnpCorr = new TnPCorr(tnpElFileName,tnpMuFileName);
       corrections.push_back(tnpCorr);
     }
   }
