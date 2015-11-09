@@ -282,7 +282,6 @@ namespace cfgSet {
 
       if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
         os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
-        os << "Applying tnp lepton corrections from " << a.tnpLeptonCorrectionFile.Data() <<" -> ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
           os << "LEP ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)
@@ -293,6 +292,7 @@ namespace cfgSet {
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
+          os << "Applying tnp lepton corrections from " << a.tnpLeptonCorrectionFile.Data() <<" -> ";
           os << "TNP el("<<corrTypeName(a.elCorrType)<<") mu("<<corrTypeName(a.muCorrType)<<")" << std::endl;
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){

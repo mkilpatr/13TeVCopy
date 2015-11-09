@@ -10,12 +10,12 @@ double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType
   else if(lep->pdgid()==13) tnpCorr->setBinZ(2);
   else return 1;
   float pt  = lep->pt();
-  float eta = lep->eta();
+  float eta = lep->absEta();
   tnpCorr->setBinX(pt);
   tnpCorr->setBinY(eta);
   double wt = tnpCorr->getBinValue();
   double er = tnpCorr->getBinError();
-  /* std::cout << "  lep flavor: " << lep->pdgid()
+  std::cout << "  lep flavor: " << lep->pdgid()
             << "\tpt: "         << pt
             << "\teta: "        << eta
             << "\twt: "         << wt
@@ -31,7 +31,7 @@ double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType
 double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
   double lepWt = 1;
   for(auto * lep : leptons) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
-  //std::cout << "event weight: " << lepWt << std::endl << std::endl;
+  std::cout << "event weight: " << lepWt << std::endl << std::endl;
   return lepWt;
 }
 
