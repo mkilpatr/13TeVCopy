@@ -21,16 +21,32 @@ double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType
             << "\twt: "         << wt
             << "\terror: "      << er
             << std::endl; // */
-  if     (lep->pdgid()==11 && (elCorrType & UP  )) wt += er;
-  else if(lep->pdgid()==11 && (elCorrType & DOWN)) wt -= er;
-  else if(lep->pdgid()==13 && (muCorrType & UP  )) wt += er;
-  else if(lep->pdgid()==13 && (muCorrType & DOWN)) wt -= er;
+  if     (lep->pdgid()==11 && elCorrType == UP  ) wt += er;
+  else if(lep->pdgid()==11 && elCorrType == DOWN) wt -= er;
+  else if(lep->pdgid()==13 && muCorrType == UP  ) wt += er;
+  else if(lep->pdgid()==13 && muCorrType == DOWN) wt -= er;
   return wt;
 }
 
-double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  // store gen leptons for matching
+  std::vector<const GenParticleF*> genLeptons_;
+  genLeptons_.reserve(2);
+  for(const auto* p : genParts) {
+    // check for daughters of Zs ... to be updated when we add J/Psis / Upsilons
+    if(ParticleInfo::isA(ParticleInfo::p_Z0, p) || ParticleInfo::isA(ParticleInfo::p_Wplus, p)) {
+      for(unsigned int id = 0; id < p->numberOfDaughters(); ++id) {
+        const GenParticleF* dau = p->daughter(id);
+        if(ParticleInfo::isA(ParticleInfo::p_eminus , dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) genLeptons_.push_back(dau);
+      } // W,Z daughters
+    } // genPart is a Z or W
+  } // genParts
   double lepWt = 1;
-  for(auto * lep : leptons) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
+  for(auto * lep : leptons) {
+    double nearDR = 0;
+    int near = PhysicsUtilities::findNearestDRDeref(*lep, genLeptons_, nearDR, 0.4, 10.0, 0, genLeptons_.size());
+    if(near > 0) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
+  }
   std::cout << "event weight: " << lepWt << std::endl << std::endl;
   return lepWt;
 }
@@ -150,7 +166,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & TNP) {
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    tnpEvtWeight = tnpCorr->getEvtWeight(tnpCorr,ana->selectedLeptons,cfg.corrections.elCorrType,cfg.corrections.muCorrType);
+    tnpEvtWeight = tnpCorr->getEvtWeight(tnpCorr,ana->selectedLeptons,ana->genParts,cfg.corrections.tnpElCorrType,cfg.corrections.tnpMuCorrType);
   }
 
 }

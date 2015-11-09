@@ -10,6 +10,8 @@
 
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "AnalysisTools/DataFormats/interface/GenParticle.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include <TH3F.h>
 
 class TFile;
@@ -54,9 +56,9 @@ unsigned int targetBin;
 class HistogramCorrection3D : public Correction {
 public:
   HistogramCorrection3D(TString corrName, TFile * file);
-  void setBinX(float a) {binX = corrHist->GetXaxis()->FindBin(a);}
-  void setBinY(float a) {binY = corrHist->GetYaxis()->FindBin(a);}
-  void setBinZ(float a) {binZ = corrHist->GetZaxis()->FindBin(a);}
+  void setBinX(float a) {binX = corrHist->GetXaxis()->FindFixBin(a);}
+  void setBinY(float a) {binY = corrHist->GetYaxis()->FindFixBin(a);}
+  void setBinZ(float a) {binZ = corrHist->GetZaxis()->FindFixBin(a);}
   virtual float getBinValue() const { return corrHist->GetBinContent(binX,binY,binZ);}
   virtual float getBinError() const { return corrHist->GetBinError(binX,binY,binZ);}
   TH3F* getHist() { return corrHist; }
