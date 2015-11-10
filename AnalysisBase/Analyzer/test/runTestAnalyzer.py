@@ -26,7 +26,10 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
 #options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
-options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
+options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/38C49928-8D72-E511-94A6-001E67579188.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/FEE1CE52-216E-E511-9B5A-0025905A60B8.root'
+
 
 options.maxEvents = -1
 
@@ -56,8 +59,11 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
 
-# only look at LHEEventProduct info if it's available
-if 'madgraph' in options.inputFiles[0] or 'powheg' in options.inputFiles[0] or 'amcatnlo' in options.inputFiles[0]:
+if 'madgraph' and not 'SMS' in options.inputFiles[0]:
+   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
+elif 'powheg' in options.inputFiles[0]:
+   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
+elif 'amcatnlo' in options.inputFiles[0]:
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
 else : 
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
