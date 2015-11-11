@@ -10,8 +10,6 @@
 
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
-#include "AnalysisTools/DataFormats/interface/GenParticle.h"
-#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
 class TFile;
 
@@ -50,25 +48,6 @@ public:
 protected:
 TH1F* corrHist;
 unsigned int targetBin;
-};
-
-class LepHistogramCorrection : public Correction {
-public:
-  LepHistogramCorrection(TString corrName, TString tnpElFileName, TString tnpMuFileName);
-  virtual ~LepHistogramCorrection();
-  virtual float getElValue(float pt, float eta) const { return corrHistEl->GetBinContent(corrHistEl->GetXaxis()->FindFixBin(pt)
-                                                                                        ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
-  virtual float getMuValue(float pt, float eta) const { return corrHistMu->GetBinContent(corrHistMu->GetXaxis()->FindFixBin(pt)
-                                                                                        ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
-  virtual float getElError(float pt, float eta) const { return corrHistEl->GetBinError  (corrHistEl->GetXaxis()->FindFixBin(pt)
-                                                                                        ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
-  virtual float getMuError(float pt, float eta) const { return corrHistMu->GetBinError  (corrHistMu->GetXaxis()->FindFixBin(pt)
-                                                                                        ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
-protected:
-  TFile* fileEl;
-  TFile* fileMu;
-  TH2F*  corrHistEl;
-  TH2F*  corrHistMu;
 };
 
 class CorrectionSet {

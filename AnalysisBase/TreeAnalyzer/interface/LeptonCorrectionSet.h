@@ -10,6 +10,9 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
 #include "AnalysisTools/DataFormats/interface/Lepton.h"
+#include "AnalysisTools/DataFormats/interface/GenParticle.h"
+#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+
 
 namespace ucsbsusy {
 
@@ -30,11 +33,25 @@ namespace ucsbsusy {
 
   };
 
-  class TnPCorr : public LepHistogramCorrection {
+  class TnPCorr : public Correction {
     public:
-    TnPCorr(TString tnpElFileName, TString tnpMuFileName)  : LepHistogramCorrection("TNP", tnpElFileName, tnpMuFileName) {}
-    double getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
-    double getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      TnPCorr(TString corrName, TString tnpElFileName, TString tnpMuFileName);
+      virtual ~TnPCorr();
+      double getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      double getEvtWeight(const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      virtual float getElValue(float pt, float eta) const { return corrHistEl->GetBinContent(corrHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                            ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
+      virtual float getMuValue(float pt, float eta) const { return corrHistMu->GetBinContent(corrHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                            ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
+      virtual float getElError(float pt, float eta) const { return corrHistEl->GetBinError  (corrHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                            ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
+      virtual float getMuError(float pt, float eta) const { return corrHistMu->GetBinError  (corrHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                            ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
+    protected:
+      TFile* fileEl;
+      TFile* fileMu;
+      TH2F*  corrHistEl;
+      TH2F*  corrHistMu;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {

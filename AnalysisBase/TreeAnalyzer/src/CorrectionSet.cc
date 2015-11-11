@@ -41,26 +41,6 @@ HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Corre
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }
 
-LepHistogramCorrection::LepHistogramCorrection(TString corrName, TString tnpElFileName, TString tnpMuFileName) : Correction(corrName)
-{
-  std::clog << "Loading files: "<< tnpElFileName << ", " << tnpElFileName <<" and correctionSet: " << corrName <<std::endl;
-  fileEl = TFile::Open(tnpElFileName,"read");
-  fileMu = TFile::Open(tnpMuFileName,"read");
-  if(!fileEl) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: el file could not be found!");
-  if(!fileMu) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu file could not be found!");
-  corrHistEl = (TH2F*)(fileEl->Get("TNPEL") );
-  corrHistMu = (TH2F*)(fileMu->Get("TNPMU") );
-  if(!corrHistEl) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: el histogram could not be found!");
-  if(!corrHistMu) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu histogram could not be found!");
-}
-
-LepHistogramCorrection::~LepHistogramCorrection() {
-  if(fileEl) fileEl->Close();
-  if(fileMu) fileMu->Close();
-  delete fileEl;
-  delete fileMu;
-}
-
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
 
 void CorrectionSet::loadSimple(TString correctionSetName, int correctionOptions) {
