@@ -196,40 +196,46 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmm
   }
   cout << endl;
 
-  TH1F* zll_zeecr = getSRHist(filezeecr, "zll", zeecrname, zllcrbins);
-  TH1F* zll_zmmcr = getSRHist(filezmmcr, "zll", zmmcrname, zllcrbins);
-  TH1F* ttbar_zeecr = getSRHist(filezeecr, "ttbar", zeecrname, zllcrbins);
-  TH1F* ttbar_zmmcr = getSRHist(filezmmcr, "ttbar", zmmcrname, zllcrbins);
-  TH1F* data_zeecr = getSRHist(filezeecr, "data_ee", zeecrname, zllcrbins);
-  TH1F* data_zmmcr = getSRHist(filezmmcr, "data_mm", zmmcrname, zllcrbins);
-  TH1F* zll_zllcr = (TH1F*)zll_zeecr->Clone("zll_zllcr");
-  zll_zllcr->Add(zll_zmmcr);
-  TH1F* ttbar_zllcr = (TH1F*)ttbar_zeecr->Clone("ttbar_zllcr");
-  ttbar_zllcr->Add(ttbar_zmmcr);
-  TH1F* data_zllcr = (TH1F*)data_zeecr->Clone("data_zllcr");
-  data_zllcr->Add(data_zmmcr);
-  TH1F* data_less_ttbar_zllcr = (TH1F*)data_zllcr->Clone("data_less_ttbar_zllcr_" + region);
-  data_less_ttbar_zllcr->Add(ttbar_zllcr, -1);
+//  TH1F* zll_zeecr = getSRHist(filezeecr, "zll", zeecrname, zllcrbins);
+//  TH1F* zll_zmmcr = getSRHist(filezmmcr, "zll", zmmcrname, zllcrbins);
+//  TH1F* ttbar_zeecr = getSRHist(filezeecr, "ttbar", zeecrname, zllcrbins);
+//  TH1F* ttbar_zmmcr = getSRHist(filezmmcr, "ttbar", zmmcrname, zllcrbins);
+//  TH1F* data_zeecr = getSRHist(filezeecr, "data_ee", zeecrname, zllcrbins);
+//  TH1F* data_zmmcr = getSRHist(filezmmcr, "data_mm", zmmcrname, zllcrbins);
+//  TH1F* zll_zllcr = (TH1F*)zll_zeecr->Clone("zll_zllcr");
+//  zll_zllcr->Add(zll_zmmcr);
+//  TH1F* ttbar_zllcr = (TH1F*)ttbar_zeecr->Clone("ttbar_zllcr");
+//  ttbar_zllcr->Add(ttbar_zmmcr);
+//  TH1F* data_zllcr = (TH1F*)data_zeecr->Clone("data_zllcr");
+//  data_zllcr->Add(data_zmmcr);
+//  TH1F* data_less_ttbar_zllcr = (TH1F*)data_zllcr->Clone("data_less_ttbar_zllcr_" + region);
+//  data_less_ttbar_zllcr->Add(ttbar_zllcr, -1);
+//
+//  cout << "\nTTbar subtracted data in ZLL CR: ";
+//  for(int ibin = 1; ibin < data_less_ttbar_zllcr->GetNbinsX()+1; ++ibin) {
+//    cout << data_less_ttbar_zllcr->GetBinContent(ibin) << " +/- " << data_less_ttbar_zllcr->GetBinError(ibin) << "\t";
+//  }
+//  cout << endl;
+//
+//  TH1F* zll_sf = (TH1F*)data_less_ttbar_zllcr->Clone("zll_sf_" + region);
+//  zll_sf->Divide(zll_zllcr);
+//
+//  cout << "\nZ scale factors from ZLL CR: ";
+//  for(int ibin = 1; ibin < zll_sf->GetNbinsX()+1; ++ibin) {
+//    cout << zll_sf->GetBinContent(ibin) << " +/- " << zll_sf->GetBinError(ibin) << "\t";
+//  }
+//  cout << endl;
+//
+//  double sf_1b = zll_sf->GetBinContent(1);
+//  double sf_2b = zll_sf->GetBinContent(2);
+//  double sf_1b_unc = zll_sf->GetBinError(1);
+//  double sf_2b_unc = zll_sf->GetBinError(2);
 
-  cout << "\nTTbar subtracted data in ZLL CR: ";
-  for(int ibin = 1; ibin < data_less_ttbar_zllcr->GetNbinsX()+1; ++ibin) {
-    cout << data_less_ttbar_zllcr->GetBinContent(ibin) << " +/- " << data_less_ttbar_zllcr->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  TH1F* zll_sf = (TH1F*)data_less_ttbar_zllcr->Clone("zll_sf_" + region);
-  zll_sf->Divide(zll_zllcr);
-
-  cout << "\nZ scale factors from ZLL CR: ";
-  for(int ibin = 1; ibin < zll_sf->GetNbinsX()+1; ++ibin) {
-    cout << zll_sf->GetBinContent(ibin) << " +/- " << zll_sf->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  double sf_1b = zll_sf->GetBinContent(1);
-  double sf_2b = zll_sf->GetBinContent(2);
-  double sf_1b_unc = zll_sf->GetBinError(1);
-  double sf_2b_unc = zll_sf->GetBinError(2);
+  // FIXME: put zll_sf by hand for this moment. These values are for 2<=nj<=4.
+  double sf_1b = 1.01;
+  double sf_2b = 1.09;
+  double sf_1b_unc = 0.17;
+  double sf_2b_unc = 0.25;
 
   for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
     double bincontent = znunu_pred->GetBinContent(ibin);
@@ -342,9 +348,9 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
                              //const TString zllcrconf   = "runzllcrmine.conf",
                              const TString zeecrconf   = "runzeecrmine.conf",
                              const TString zmmcrconf   = "runzmmcrmine.conf",
-                             const TString lumistr     = "577",
-                             const TString crlumistr   = "578",
-                             const TString zeecrlumistr= "562",
+                             const TString lumistr     = "1264",
+                             const TString crlumistr   = "1264",
+                             const TString zeecrlumistr= "1264",
                              //const TString region      = "sr",
                              const TString region      = "srlownj",
                              const TString format      = "png",
@@ -362,9 +368,9 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscflt && passeebadscflt && passhbheflttight";
   sel["trigpho"]      = "passjson && passtrigphoton165 && j2pt>75 && met>200 && passcscflt && passeebadscflt && passhbheflttight";
-  sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>200 && masszll > 80 && masszll < 100";
-  sel["trigzee"]      = "passjson && iselectron && passtrige17e12 && j2pt>75 && met>200 && masszll > 80 && masszll < 100";
-  sel["trigzmm"]      = "passjson && !iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8) && j2pt>75 && met>200 && masszll > 80 && masszll < 100";
+  sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
+  sel["trigzee"]      = "passjson && iselectron && passtrige17e12 && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
+  sel["trigzmm"]      = "passjson && !iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8) && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
   sel["vetoes"]       = " && ((nvetolep==0 && nvetohpstaus==0) || (ismc && (ngoodgenele>0 || ngoodgenmu>0 || npromptgentau>0)))";
   sel["lepsel"]       = " && nvetolep>0";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
@@ -521,6 +527,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
 
   plots->setPlotSource(PlotStuff::HISTSSINGLEFILE);
   plots->setPlotType(PlotStuff::DATAMC);
+  plots->setFormat(format);
   plots->setYTitle("Events");
   plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr+" pb^{-1}","");
   plots->setHeaderPosition(0.2, 0.93);
@@ -535,8 +542,6 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
   plots->addCompSet("datavspred",names,labels);
 
   plots->plot();
-
-  srpred->Close();
 
   delete plots;
 
