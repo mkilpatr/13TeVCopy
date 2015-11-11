@@ -19,12 +19,6 @@ double TnPCorr::getLepWeight(TnPCorr* tnpCorr, LeptonF* lep, CORRTYPE elCorrType
     wt = tnpCorr->getMuValue(pt,eta);
     er = tnpCorr->getMuError(pt,eta);
   }
-  std::cout << "  lep flavor: " << id
-            << "\tpt: "         << pt
-            << "\teta: "        << eta
-            << "\twt: "         << wt
-            << "\terror: "      << er
-            << std::endl; // */
   if     (id==11 && elCorrType == UP  ) wt += er;
   else if(id==11 && elCorrType == DOWN) wt -= er;
   else if(id==13 && muCorrType == UP  ) wt += er;
@@ -54,7 +48,6 @@ double TnPCorr::getEvtWeight(TnPCorr* tnpCorr, const std::vector<LeptonF*>& lept
     else if(lep->pdgid()==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4, 10.0, 0, genMu_.size());
     if(near > 0) lepWt *= getLepWeight(tnpCorr,lep,elCorrType,muCorrType);
   }
-  std::cout << "event weight: " << lepWt << std::endl << std::endl;
   return lepWt;
 }
 

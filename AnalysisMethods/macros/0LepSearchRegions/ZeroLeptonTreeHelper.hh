@@ -85,6 +85,7 @@ struct TreeFiller {
   size i_bosoneta  ;
   size i_lepvetoweight;
   size i_lepselweight;
+  size i_leptnpweight;
   size i_met       ;
   size i_metphi    ;
   size i_metnohf   ;
@@ -277,6 +278,7 @@ struct TreeFiller {
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
+    i_leptnpweight   = data->add<float>("","leptnpweight","F",0);
     i_metphi         = data->add<float>("","metphi","F",0);
     i_metnohf        = data->add<float>("","metnohf","F",0);
     i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
@@ -427,9 +429,10 @@ struct TreeFiller {
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();  
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_lepvetoweight, ana->leptonCorrections.getVetoLepWeight());
     data->fill<float>(i_lepselweight, ana->leptonCorrections.getSelLepWeight());
-    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
+    data->fill<float>(i_leptnpweight, ana->leptonCorrections.getTnPLepWeight());
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack) {
       data->fill<float>(i_met, ana->met->pt());
