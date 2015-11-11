@@ -114,12 +114,15 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setAnnulusActivity(annulus->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
+      electrons.back().setIsGoodPOGElectronId(eleId->passElectronId((&electrons.back()), eleId->MEDIUMID));
       electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
+      electrons.back().setIsTightIsoElectron(eleId->passElectronId((&electrons.back()), eleId->TIGHT));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
       electrons.back().setIsMiniIsoVetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
       electrons.back().setIsMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
+      electrons.back().setIsMT2VetoElectronId(eleId->passElectronId((&electrons.back()), eleId->MT2VetoId));
     }
   }
 }

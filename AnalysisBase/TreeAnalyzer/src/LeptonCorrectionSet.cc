@@ -2,10 +2,77 @@
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "TFile.h"
 
 namespace ucsbsusy {
 
-void LeptonCorrectionSet::load(TString fileName, int correctionOptions)
+TnPCorr::TnPCorr(TString corrName, TString tnpElFileName, TString tnpMuFileName) : Correction(corrName)
+{
+  std::clog << "Loading files: "<< tnpElFileName << ", " << tnpElFileName <<" and correctionSet: " << corrName <<std::endl;
+  fileEl = TFile::Open(tnpElFileName,"read");
+  fileMu = TFile::Open(tnpMuFileName,"read");
+  if(!fileEl) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: el file could not be found!");
+  if(!fileMu) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu file could not be found!");
+  corrHistEl = (TH2F*)(fileEl->Get("TNPEL") );
+  corrHistMu = (TH2F*)(fileMu->Get("TNPMU") );
+  if(!corrHistEl) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: el histogram could not be found!");
+  if(!corrHistMu) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu histogram could not be found!");
+}
+
+TnPCorr::~TnPCorr() {
+  if(fileEl) fileEl->Close();
+  if(fileMu) fileMu->Close();
+  delete fileEl;
+  delete fileMu;
+}
+
+double TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  int   id  = lep->pdgid();
+  float pt  = lep->pt();
+  float eta = lep->absEta();
+  float wt = 1.0;
+  float er = 0.0;
+  if(id==11){
+    wt = getElValue(pt,eta);
+    er = getElError(pt,eta);
+  }
+  else if(id==13) {
+    wt = getMuValue(pt,eta);
+    er = getMuError(pt,eta);
+  }
+  if     (id==11 && elCorrType == UP  ) wt += er;
+  else if(id==11 && elCorrType == DOWN) wt -= er;
+  else if(id==13 && muCorrType == UP  ) wt += er;
+  else if(id==13 && muCorrType == DOWN) wt -= er;
+  return wt;
+  // corrtype = note
+}
+
+double TnPCorr::getEvtWeight(const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+  // store gen leptons for matching
+  std::vector<const GenParticleF*> genEl_;
+  std::vector<const GenParticleF*> genMu_;
+  for(const auto* p : genParts) {
+    if(ParticleInfo::isA(ParticleInfo::p_Z0, p) || ParticleInfo::isA(ParticleInfo::p_Wplus, p) || ParticleInfo::isA(ParticleInfo::p_tauminus, p)) {
+      for(unsigned int id = 0; id < p->numberOfDaughters(); ++id) {
+        const GenParticleF* dau = p->daughter(id);
+        if     (ParticleInfo::isA(ParticleInfo::p_eminus , dau)) genEl_.push_back(dau);
+        else if(ParticleInfo::isA(ParticleInfo::p_muminus, dau)) genMu_.push_back(dau);
+      } // W,Z daughters
+    } // genPart is a Z or W
+  } // genParts
+  double lepWt = 1;
+  for(auto * lep : leptons) {
+    double nearDR = 0;
+    int near = 0;
+    if     (lep->pdgid()==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4);
+    else if(lep->pdgid()==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4);
+    if(near > 0) lepWt *= getLepWeight(lep,elCorrType,muCorrType);
+  }
+  return lepWt;
+}
+
+void LeptonCorrectionSet::load(TString fileName, TString tnpElFileName, TString tnpMuFileName, int correctionOptions)
 {
   if(correctionOptions & LEP) {
     loadFile("LEP",fileName,correctionOptions);
@@ -16,12 +83,19 @@ void LeptonCorrectionSet::load(TString fileName, int correctionOptions)
         setUseHPSTaus(true);
     }
   }
+  if(correctionOptions & TNP) {
+    if(options_ & TNP) {
+      tnpCorr = new TnPCorr("TNP",tnpElFileName,tnpMuFileName);
+      corrections.push_back(tnpCorr);
+    }
+  }
 }
 
 void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   selLepWeight = 1;
   vetoLepWeight = 1;
+  tnpEvtWeight = 1;
   if(!ana->isMC()) return;
 
   if(options_ & LEP) {
@@ -108,7 +182,12 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       selLepWeight  -= lepCorr->getError();
     }
 
-  }///LeptonCorrectionSet
+  }
+
+  if(options_ & TNP) {
+    const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+    tnpEvtWeight = tnpCorr->getEvtWeight(ana->selectedLeptons,ana->genParts,cfg.corrections.tnpElCorrType,cfg.corrections.tnpMuCorrType);
+  }
 
 }
 
