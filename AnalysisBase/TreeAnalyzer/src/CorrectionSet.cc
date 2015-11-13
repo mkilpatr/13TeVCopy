@@ -30,13 +30,13 @@ Correction::Correction(TString corrName) : name(corrName) {
   std::clog << "Loading correction: "<< name <<std::endl;
 }
 RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(corrName),corr(0) {
-  assert(file);
+  if(!file) throw std::invalid_argument("RefoldCorrection::RefoldCorrection: file could not be found!");
   corr = (const QuickRefold::Refold*)(file->Get(name) );
   if(!corr) throw std::invalid_argument("RefoldCorrection::RefoldCorrection: Corrector could not be found!");
 }
 
 HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1) {
-  assert(file);
+  if(!file) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: file could not be found!");
   corrHist = (TH1F*)(file->Get(name) );
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }

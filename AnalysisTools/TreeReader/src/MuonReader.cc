@@ -53,26 +53,26 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
 
   if(options_ & LOADRECO){
     cout << "reco ";
-    treeReader->setBranchAddress(branchName ,"pt"          , &pt          , true);
-    treeReader->setBranchAddress(branchName ,"eta"         , &eta         , true);
-    treeReader->setBranchAddress(branchName ,"phi"         , &phi         , true);
-    treeReader->setBranchAddress(branchName ,"mass"        , &mass        , true);
-    treeReader->setBranchAddress(branchName ,"q"           , &q           , true);
-    treeReader->setBranchAddress(branchName ,"d0"          , &d0          , true);
-    treeReader->setBranchAddress(branchName ,"dz"          , &dz          , true);
-    treeReader->setBranchAddress(branchName ,"sip3d"       , &sip3d       , true);
-    treeReader->setBranchAddress(branchName ,"pfdbetaiso"  , &pfdbetaiso  , true);
-    treeReader->setBranchAddress(branchName ,"isLoose"     , &isloose     , true);
-    treeReader->setBranchAddress(branchName ,"isMedium"    , &ismedium    , true);
-    treeReader->setBranchAddress(branchName ,"isTight"     , &istight     , true);
-    treeReader->setBranchAddress(branchName ,"isPF"        , &ispf        , true);
-    treeReader->setBranchAddress(branchName ,"isGlobal"    , &isglobal    , true);
-    treeReader->setBranchAddress(branchName ,"isTracker"   , &istracker   , true);
-    treeReader->setBranchAddress(branchName ,"isStandAlone", &isstandalone, true);
-    treeReader->setBranchAddress(branchName ,"miniiso"     , &miniiso     , true);
-    treeReader->setBranchAddress(branchName ,"ptrel"       , &ptrel       , true);
-    treeReader->setBranchAddress(branchName ,"ptratio"     , &ptratio     , true);
-    treeReader->setBranchAddress(branchName ,"annulus"     , &annulus     , true);
+    treeReader->setBranchAddress(branchName ,"pt"           , &pt          , true);
+    treeReader->setBranchAddress(branchName ,"eta"          , &eta         , true);
+    treeReader->setBranchAddress(branchName ,"phi"          , &phi         , true);
+    treeReader->setBranchAddress(branchName ,"mass"         , &mass        , true);
+    treeReader->setBranchAddress(branchName ,"q"            , &q           , true);
+    treeReader->setBranchAddress(branchName ,"d0"           , &d0          , true);
+    treeReader->setBranchAddress(branchName ,"dz"           , &dz          , true);
+    treeReader->setBranchAddress(branchName ,"sip3d"        , &sip3d       , true);
+    treeReader->setBranchAddress(branchName ,"pfdbetaiso"   , &pfdbetaiso  , true);
+    treeReader->setBranchAddress(branchName ,"isLoose"      , &isloose     , true);
+    treeReader->setBranchAddress(branchName ,"isMedium"     , &ismedium    , true);
+    treeReader->setBranchAddress(branchName ,"isTight"      , &istight     , true);
+    treeReader->setBranchAddress(branchName ,"isPF"         , &ispf        , true);
+    treeReader->setBranchAddress(branchName ,"isGlobal"     , &isglobal    , true);
+    treeReader->setBranchAddress(branchName ,"isTracker"    , &istracker   , true);
+    treeReader->setBranchAddress(branchName ,"isStandAlone" , &isstandalone, true);
+    treeReader->setBranchAddress(branchName ,"miniisoeacorr", &miniiso     , true);
+    treeReader->setBranchAddress(branchName ,"ptrel"        , &ptrel       , true);
+    treeReader->setBranchAddress(branchName ,"ptratio"      , &ptratio     , true);
+    treeReader->setBranchAddress(branchName ,"annuluseacorr", &annulus     , true);
   }
   if(options_ & FILLOBJ)
     cout << "+Objects";
@@ -105,11 +105,14 @@ void MuonReader::refresh(){
       muons.back().setPtRatio(ptratio->at(iL));
       muons.back().setAnnulusActivity(annulus->at(iL));
       muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
+      muons.back().setIsGoodPOGMuonId(muonId->passMuonId((&muons.back()), muonId->MEDIUMID));
+      muons.back().setIsTightIsoMuon(muonId->passMuonId((&muons.back()), muonId->TIGHT));
       muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
       muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
       muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
       muons.back().setIsMiniIsoVetoMuon(muonId->passMuonId((&muons.back()), muonId->MiniIsoVeto));
       muons.back().setIsMT2VetoMuon(muonId->passMuonId((&muons.back()), muonId->MT2Veto));
+      muons.back().setIsMT2VetoMuonId(muonId->passMuonId((&muons.back()), muonId->MT2VetoId));
     }
   }
 }

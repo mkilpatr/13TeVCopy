@@ -85,6 +85,7 @@ struct TreeFiller {
   size i_bosoneta  ;
   size i_lepvetoweight;
   size i_lepselweight;
+  size i_leptnpweight;
   size i_met       ;
   size i_metphi    ;
   size i_metnohf   ;
@@ -101,19 +102,8 @@ struct TreeFiller {
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
-  size i_nfjsdwa   ;
-  size i_nfjsdwb   ;
-  size i_nfjsdwc   ;
-  size i_nfjsdta   ;
-  size i_nfjsdtb   ;
-  size i_ncttsdwa0 ;
-  size i_ncttsdwa1 ;
-  size i_ncttsdwa2 ;
-  size i_ncttsdwa12;
-  size i_ncttsdwb  ;
-  size i_ncttsdwc  ;
-  size i_ncttsdta  ;
-  size i_ncttsdtb  ;
+  size i_nfjsd60   ;
+  size i_nfjpr60   ;
   size i_chhpt     ;
   size i_chheta    ;
   size i_chhdz     ;
@@ -204,11 +194,15 @@ struct TreeFiller {
   size i_topcandminmass;
 
   bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
+    return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
   } 
 
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
-    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) );
+    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4);
+  } 
+
+  bool passPrunedTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
+    return ( (fj->fjPrunedMass() > minMass) && (fj->fjPrunedMass() < maxMass) && fabs(fj->p4().eta())<=2.4 );
   } 
 
   bool passSoftDropTaggerCTT(CMSTopF* ctt,float minMass,float maxMass,int nsubjet, float t2ovt1) {
@@ -277,6 +271,7 @@ struct TreeFiller {
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
+    i_leptnpweight   = data->add<float>("","leptnpweight","F",0);
     i_metphi         = data->add<float>("","metphi","F",0);
     i_metnohf        = data->add<float>("","metnohf","F",0);
     i_metnohfphi     = data->add<float>("","metnohfphi","F",0);
@@ -292,19 +287,8 @@ struct TreeFiller {
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
-    i_nfjsdwa        = data->add<int>("","nfjsdwa","I",0);
-    i_nfjsdwb        = data->add<int>("","nfjsdwb","I",0);
-    i_nfjsdwc        = data->add<int>("","nfjsdwc","I",0);
-    i_nfjsdta        = data->add<int>("","nfjsdta","I",0);
-    i_nfjsdtb        = data->add<int>("","nfjsdtb","I",0);
-    i_ncttsdwa0      = data->add<int>("","ncttsdwa0","I",0);
-    i_ncttsdwa1      = data->add<int>("","ncttsdwa1","I",0);
-    i_ncttsdwa2      = data->add<int>("","ncttsdwa2","I",0);
-    i_ncttsdwa12     = data->add<int>("","ncttsdwa12","I",0);
-    i_ncttsdwb       = data->add<int>("","ncttsdwb","I",0);
-    i_ncttsdwc       = data->add<int>("","ncttsdwc","I",0);
-    i_ncttsdta       = data->add<int>("","ncttsdta","I",0);
-    i_ncttsdtb       = data->add<int>("","ncttsdtb","I",0);
+    i_nfjsd60        = data->add<int>("","nfjsd60","I",0);
+    i_nfjpr60        = data->add<int>("","nfjpr60","I",0);
     i_chhpt          = data->addMulti<float>("","chhpt",0);
     i_chheta         = data->addMulti<float>("","chheta",0);
     i_chhdz          = data->addMulti<float>("","chhdz",0);
@@ -427,9 +411,10 @@ struct TreeFiller {
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();  
+    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
     data->fill<float>(i_lepvetoweight, ana->leptonCorrections.getVetoLepWeight());
     data->fill<float>(i_lepselweight, ana->leptonCorrections.getSelLepWeight());
-    data->fill<bool>(i_passjson, ((!isMC) && (hasJSON) && (!passesLumi)) ? false : true);
+    data->fill<float>(i_leptnpweight, ana->leptonCorrections.getTnPLepWeight());
     data->fill<float>(i_genmet, ana->genmet->pt());
     if(!lepAddedBack) {
       data->fill<float>(i_met, ana->met->pt());
@@ -454,16 +439,8 @@ struct TreeFiller {
     data->fill<int  >(i_nvetolele, nVetoEle);
     data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
-    int ncttstd    = 0;
-    int ncttsdwa0  = 0;
-    int ncttsdwa1  = 0;
-    int ncttsdwa2  = 0;
-    int ncttsdwa12 = 0;
-    int ncttsdwb   = 0;
-    int ncttsdwc   = 0;
-    int ncttsdta   = 0;
-    int ncttsdtb   = 0;
 
+    int ncttstd    = 0;
     topCands.clear();
     topsPass.clear();
     for(auto* ctt : ana->cttTops) {
@@ -476,41 +453,19 @@ struct TreeFiller {
 	topsPass.push_back(tmpVec);
       }
 
-      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1, 10  )) { ++ncttsdwa0;  }
-      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2, 10  )) { ++ncttsdwa1;  }
-      if (passSoftDropTaggerCTT(ctt,  60., 99999., -1,  0.6)) { ++ncttsdwa2;  }
-      if (passSoftDropTaggerCTT(ctt,  60., 99999.,  2,  0.6)) { ++ncttsdwa12; }
-      if (passSoftDropTaggerCTT(ctt,  60.,   120., -1, 10  )) { ++ncttsdwb;   }
-      if (passSoftDropTaggerCTT(ctt,  60.,   150., -1, 10  )) { ++ncttsdwc;   }
-      if (passSoftDropTaggerCTT(ctt, 150., 99999., -1, 10  )) { ++ncttsdta;   }
-      if (passSoftDropTaggerCTT(ctt, 150.,   250., -1, 10  )) { ++ncttsdtb;   }
+
     }
     data->fill<int  >(i_ncttstd   , ncttstd   );
-    data->fill<int  >(i_ncttsdwa0 , ncttsdwa0 );
-    data->fill<int  >(i_ncttsdwa1 , ncttsdwa1 );
-    data->fill<int  >(i_ncttsdwa2 , ncttsdwa2 );
-    data->fill<int  >(i_ncttsdwa12, ncttsdwa12);
-    data->fill<int  >(i_ncttsdwb  , ncttsdwb  );
-    data->fill<int  >(i_ncttsdwc  , ncttsdwc  );
-    data->fill<int  >(i_ncttsdta  , ncttsdta  );
-    data->fill<int  >(i_ncttsdtb  , ncttsdtb  );
-    int nfjsdwa = 0;
-    int nfjsdwb = 0;
-    int nfjsdwc = 0;
-    int nfjsdta = 0;
-    int nfjsdtb = 0;
+
+    int nfjsd60_   = 0;
+    int nfjpr60_   = 0;
     for(auto* fj : ana->fatJets) {
-      if(passSoftDropTaggerFJ(fj,  60., 99999.)) { ++nfjsdwa; } //if (passSoftDropTaggerFJ(fj,60.,99999.))  { ++nfjsdwa; }
-      if(passSoftDropTaggerFJ(fj,  60.,   120.)) { ++nfjsdwb; } //if (passSoftDropTaggerFJ(fj,60.,120.))    { ++nfjsdwb; }
-      if(passSoftDropTaggerFJ(fj,  60.,   150.)) { ++nfjsdwc; } //if (passSoftDropTaggerFJ(fj,60.,150.))    { ++nfjsdwc; }
-      if(passSoftDropTaggerFJ(fj, 150., 99999.)) { ++nfjsdta; } //if (passSoftDropTaggerFJ(fj,150.,99999.)) { ++nfjsdta; }
-      if(passSoftDropTaggerFJ(fj, 150.,   250.)) { ++nfjsdtb; } //if (passSoftDropTaggerFJ(fj,150.,250.))   { ++nfjsdtb; }
+      if (passSoftDropTaggerFJ(fj,60.,100000.)) { ++nfjsd60_; }
+      if (passPrunedTaggerFJ(fj,60.,100000.))   { ++nfjpr60_; }
+
     }
-    data->fill<int  >(i_nfjsdwa, nfjsdwa);
-    data->fill<int  >(i_nfjsdwb, nfjsdwb);
-    data->fill<int  >(i_nfjsdwc, nfjsdwc);
-    data->fill<int  >(i_nfjsdta, nfjsdta);
-    data->fill<int  >(i_nfjsdtb, nfjsdtb);
+    data->fill<int  >(i_nfjsd60, nfjsd60_);
+    data->fill<int  >(i_nfjpr60, nfjpr60_);
 
     for(auto& pfc : ana->pfcandReader.pfcands) {
       if(!pfc.ischargedhadron() || pfc.pt() < 10.0 || fabs(pfc.eta()) > 2.4) continue;
