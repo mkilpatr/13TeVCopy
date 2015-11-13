@@ -6,6 +6,8 @@ enum SysVars { NOMINAL, VARUP, VARDOWN };
 
 vector<TString> samples = {"data", "ttbarplusw","ttZ","znunu", "qcd"};
 
+double metbins[]    = {200.0, 225.0, 250.0, 300.0, 400.0, 600.0};
+
 map<TString,TString> sel;
 typedef map<TString,TString> BinMap;
 typedef map<TString,TH1F*> HistMap;
@@ -123,7 +125,7 @@ TH1F* getLLPred(TFile* file0l, TFile* filelepcr, const TString region, const TSt
 
 }
 
-TH1F* getQCDPred(TFile* file, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap) {
+TH1F* getQCDPred(TFile* file, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap, TString tffilename) {
 
   cout << "\nGetting the QCD prediction in the " << region << " region. CR label is " << crname << endl;
 
@@ -146,7 +148,21 @@ TH1F* getQCDPred(TFile* file, const TString region, const TString crname, vector
   qcd_tf->Divide(qcd_cr);
 
   cout << "\nTransfer factors: ";
+  TFile* tffile = new TFile(tffilename);
+  TH1F* tf_nb1 = (TH1F*)tffile->Get("tf_sr_nb1");
+  TH1F* tf_nb2 = (TH1F*)tffile->Get("tf_sr_nb2");
+  TF1* tf_nb1_fit = tf_nb1->GetFunction("TFfit_SR_sr_nb1");
+  TF1* tf_nb2_fit = tf_nb2->GetFunction("TFfit_SR_sr_nb2");
+  int nbins = qcd_tf->GetNbinsX();
   for(int ibin = 1; ibin < qcd_tf->GetNbinsX()+1; ++ibin) {
+    if (ibin <= nbins/2) {
+      int nmetbin = ibin;
+      qcd_tf->SetBinContent(ibin, tf_nb1_fit->Eval(0.5*(metbins[nmetbin-1] + metbins[nmetbin])));
+    }
+    else if(ibin > nbins/2) {
+      int nmetbin = (ibin - nbins/2);
+      qcd_tf->SetBinContent(ibin, tf_nb2_fit->Eval(0.5*(metbins[nmetbin-1] + metbins[nmetbin])));
+    }
     cout << qcd_tf->GetBinContent(ibin) << " +/- " << qcd_tf->GetBinError(ibin) << "\t";
   }
   cout << endl;
@@ -339,7 +355,7 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmm
 
 }*/
 
-void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_101415",
+void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Workspace/74X/CMSSW_7_4_11/src/AnalysisMethods/macros/run/trees/pu71mb/SR",
                              const TString varupdir    = "trees/varup",
                              const TString vardowndir  = "trees/vardown",
                              const TString outputdir   = "plots_bkgest_101415",
@@ -348,21 +364,22 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
                              //const TString zllcrconf   = "runzllcrmine.conf",
                              const TString zeecrconf   = "runzeecrmine.conf",
                              const TString zmmcrconf   = "runzmmcrmine.conf",
-                             const TString lumistr     = "1264",
-                             const TString crlumistr   = "1264",
-                             const TString zeecrlumistr= "1264",
+                             const TString lumistr     = "1.263",
+                             const TString crlumistr   = "1.264",
+                             const TString zeecrlumistr= "1.264",
                              //const TString region      = "sr",
                              const TString region      = "srlownj",
                              const TString format      = "png",
+                             const TString qcdfitfile  = TString::Format("%s/src/data/QCD/tffits.root",getenv("CMSSW_BASE")),
                              const bool    dolownj     = true,
                              const unsigned int sysvar = NOMINAL,
                              const bool    plotlog     = false)
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*0.001*weight*puWeight";
-  TString basewgtcr  = crlumistr + "*0.001*weight*puWeight";
-  TString basewgtcrzee  = zeecrlumistr + "*0.001*weight*puWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight";
+  TString basewgtcr  = crlumistr + "*weight*truePUWeight";
+  TString basewgtcrzee  = zeecrlumistr + "*weight*truePUWeight";
   TString lepvetowgt = basewgt + "*lepvetoweight";
   TString lepselwgt  = basewgt + "*lepselweight";
 
@@ -393,8 +410,6 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
   sel["nb2_nt0"]      = " && nbjets>=2 && ncttstd==0";
   sel["nb1_nt1"]      = " && nbjets==1 && ncttstd>0";
   sel["nb2_nt1"]      = " && nbjets>=2 && ncttstd>0";
-
-  double metbins[]    = {200.0, 225.0, 250.0, 300.0, 400.0, 600.0};
 
   TString inputdir    = sysvar == NOMINAL ? defaultdir : (sysvar == VARUP ? varupdir : vardowndir);
 
@@ -489,7 +504,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
   //TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr); 
   TH1F* znunu          = getZPred  (file0l, filephocr, filezeecr, filezmmcr, "sr", "phocr", "zeecr", "zmmcr", srbins, phocrtosr, zllcrtosr); 
-  TH1F* qcd            = getQCDPred(file0l, "sr", "qcdcr", srbins, qcdcrtosr);
+  TH1F* qcd            = getQCDPred(file0l, "sr", "qcdcr", srbins, qcdcrtosr, qcdfitfile);
   TH1F* ttz            = getSRHist (file0l, "ttZ", "sr",      srbins);
 
   removeZeroes(qcd);
@@ -529,7 +544,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "trees_0lepbkgest_10141
   plots->setPlotType(PlotStuff::DATAMC);
   plots->setFormat(format);
   plots->setYTitle("Events");
-  plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr+" pb^{-1}","");
+  plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr+" fb^{-1}","");
   plots->setHeaderPosition(0.2, 0.93);
   plots->setRatioPlot();
   plots->setColor("lostlep_pred_sr",StyleTools::color_ttbar);
