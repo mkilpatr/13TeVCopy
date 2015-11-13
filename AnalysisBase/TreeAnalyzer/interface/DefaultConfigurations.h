@@ -18,7 +18,7 @@ namespace cfgSet {
 
   extern LeptonConfig zl_sel_leptons ;
   extern LeptonConfig zl_veto_leptons;
-  extern LeptonConfig zl_loose_leptons;
+  extern LeptonConfig zl_cr_leptons;
   extern LeptonConfig ol_sel_leptons ;
   extern LeptonConfig ol_veto_leptons;
 

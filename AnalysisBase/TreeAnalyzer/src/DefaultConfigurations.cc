@@ -50,7 +50,7 @@ void cfgSet::loadDefaultJetConfigurations() {
 
 cfgSet::LeptonConfig cfgSet::zl_sel_leptons ("zl_sel_leptons") ;
 cfgSet::LeptonConfig cfgSet::zl_veto_leptons("zl_veto_leptons");
-cfgSet::LeptonConfig cfgSet::zl_loose_leptons("zl_loose_leptons");
+cfgSet::LeptonConfig cfgSet::zl_cr_leptons  ("zl_cr_leptons")  ;
 cfgSet::LeptonConfig cfgSet::ol_sel_leptons ("ol_sel_leptons") ;
 cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
 
@@ -69,12 +69,6 @@ void cfgSet::loadDefaultLeptonConfigurations() {
  // zl_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
  // zl_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
 
-  zl_loose_leptons = zl_sel_leptons;
-  zl_loose_leptons.minEPt             = 15;
-  zl_loose_leptons.selectedElectron   = &ucsbsusy::ElectronF::islooseelectron;
-  zl_loose_leptons.minMuPt            = 10;
-  zl_loose_leptons.selectedMuon       = &ucsbsusy::MuonF::isloosemuon;
-
   ol_sel_leptons = zl_sel_leptons;
   ol_sel_leptons.minEPt            = 40;
   ol_sel_leptons.maxEEta           = 2.1;
@@ -84,6 +78,12 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   ol_sel_leptons.maxMuD0           = 0.02;
   ol_sel_leptons.maxMuDz           = 0.1;
   ol_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
+
+  zl_cr_leptons = ol_sel_leptons;
+  zl_cr_leptons.minEPt             = 15;
+  zl_cr_leptons.minMuPt            = 10;
+  zl_cr_leptons.maxED0             = 0.02;
+  zl_cr_leptons.maxEDz             = 0.1;
 
   ol_veto_leptons = zl_sel_leptons;
   ol_veto_leptons.minEPt            = 5;
@@ -146,9 +146,9 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
   standardCorrections.eventCorrections         = ucsbsusy::EventCorrectionSet::PU;
-  standardCorrections.eventCorrectionFile      =  TString::Format("%s/src/data/corrections/eventCorr.root",CMSSW_BASE);
-  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::NULLOPT;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puCorr.root",CMSSW_BASE);
+  standardCorrections.eventCorrectionFile      =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",CMSSW_BASE);
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU;
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2015d_1264ipb_52bins_69mb.root",CMSSW_BASE);
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
@@ -199,7 +199,7 @@ void cfgSet::loadDefaultConfigurations() {
   zl_lepton_set.corrections     = standardCorrections;
 
   zl_dilepton_set.jets            = zl_dilepton_jets;
-  zl_dilepton_set.selectedLeptons = zl_loose_leptons;
+  zl_dilepton_set.selectedLeptons = zl_cr_leptons;
   zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
   zl_dilepton_set.vetoedTaus      = zl_veto_taus;
   zl_dilepton_set.corrections     = standardCorrections;
