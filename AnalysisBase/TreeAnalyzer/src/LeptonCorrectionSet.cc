@@ -30,6 +30,8 @@ double TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrT
   int   id  = lep->pdgid();
   float pt  = lep->pt();
   float eta = lep->absEta();
+  if     (id==11 && elCorrType == NONE) return 1;
+  else if(id==13 && muCorrType == NONE) return 1;
   float wt = 1.0;
   float er = 0.0;
   if(id==11){
@@ -64,10 +66,10 @@ double TnPCorr::getEvtWeight(const std::vector<LeptonF*>& leptons, const std::ve
   double lepWt = 1;
   for(auto * lep : leptons) {
     double nearDR = 0;
-    int near = 0;
+    int near = -1;
     if     (lep->pdgid()==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4);
     else if(lep->pdgid()==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4);
-    if(near > 0) lepWt *= getLepWeight(lep,elCorrType,muCorrType);
+    if(near >= 0) lepWt *= getLepWeight(lep,elCorrType,muCorrType);
   }
   return lepWt;
 }
