@@ -40,6 +40,7 @@ public:
     weight_     = -9 ;
     puWeight_   = -9 ;
     puWeightC_  = -9 ;
+    puWeightRho_= -9 ;
     npv         = -9 ;
     rho_        = -9 ;
     passDijet   = true;
@@ -89,6 +90,7 @@ public:
     outtree->Branch( "weight"       , &weight_      ,       "weight/F" );
     outtree->Branch( "puWeight"     , &puWeight_    ,     "puWeight/F" );
     outtree->Branch( "puWeightC"    , &puWeightC_   ,    "puWeightC/F" );
+    outtree->Branch( "puWeightRho"  , &puWeightRho_ ,  "puWeightRho/F" );
     outtree->Branch( "npv"          , &npv          ,          "npv/I" );
     outtree->Branch( "rho"          , &rho_         ,          "rho/F" );
     outtree->Branch( "passDijet"    , &passDijet    ,    "passDijet/O" );
@@ -387,27 +389,27 @@ public:
       j0flavor = type;
     } // isMC
 
-    // quick PU reweighting by npv
-    double rwtZjet[] = {0, 8.72541 , 4.54199 , 0.853572, 0.539271, 0.590481,    0.602232, 0.70575, 0.689348, 0.799847, 0.84226
-                         , 0.843986, 0.916837, 1.02284 , 1.05258 , 1.02993 ,    1.1635  , 1.22879, 1.1195  , 1.18014 , 1.25201
-                         , 1.14572 , 1.1972  , 1.18144 , 1.15038 , 1.00678 ,    1.25408 , 1.18112, 0.848419, 1.36201 , 1.97805
-                         , 1.47935  };
-    double rwtDjet[] = {0, 697.591 , 4.24526 , 0.762199, 0.394076, 0.330613,    0.418513, 0.414527, 0.538188, 0.571216, 0.704519
-                         , 0.759045, 0.900076, 1.01713 , 1.00742 , 1.21182 ,    1.22338 , 1.40168 , 1.41092 , 1.34799 , 1.42774
-                         , 1.33582 , 1.35183 , 1.38252 , 1.34385 , 1.25685 ,    1.22773 , 1.39678 , 1.02986 , 1.22173 , 0.794478
-                         , 0.868953 };
-    double rwtGjet[] = {0, 457.067 , 7.09757 , 1.12134 , 0.392318, 0.270617,    0.44275 , 0.391132, 0.408531, 0.584548, 0.639067
-                         , 0.812284, 0.923726, 1.00071 , 1.05271 , 1.22904 ,    1.27838 , 1.30048 , 1.36448 , 1.36015 , 1.47939
-                         , 1.40911 , 1.4732  , 1.44616 , 0.983238, 1.3588  ,    0.996126, 1.59561 , 1.1468  , 1.41155 , 1.56843
-                         , 0.964321 };
-    int rwtNPV = min(npv,31);
+    // quick extra PU reweighting by rho
+    double rwtZjet[] = { 0.471556, 0.631976, 0.836271, 0.991505, 1.07365 ,    1.13746 , 1.18152 , 1.14383 , 1.12851 , 1.0442
+                       , 0.991142, 0.91913 , 0.831613, 0.7619  , 0.731759,    0.620591, 0.595255, 0.532813, 0.435604, 0.379652
+                       };
+    double rwtDjet[] = { 0.493354, 0.679612, 0.864667, 0.94803 , 1.11369 ,    1.13768 , 1.17368 , 1.15123 , 1.13993 , 1.05055
+                       , 0.993487, 0.895439, 0.850206, 0.757461, 0.698321,    0.606653, 0.57766 , 0.480198, 0.406852, 0.322373
+                       };
+    double rwtGjet[] = { 0.513891, 0.63127 , 0.912403, 1.01097 , 1.06378 ,    1.18492 , 1.13323 , 1.15701 , 1.04492 , 1.08977
+                       , 1.01602 , 0.924783, 0.841563, 0.731833, 0.645179,    0.550822, 0.516163, 0.455437, 0.407913, 0.2996
+                       };
+    int rwt = (int)rho;
+    if (rwt > 20) rwt = 20;
+    if (rwt <  1) rwt = 1;
     if(isMC()){
       //cout << sample_ << endl;
-      if      (sample_ == "dyjetstoll") puWeight_ = rwtZjet[rwtNPV];
-      else if (sample_ == "qcd")        puWeight_ = rwtDjet[rwtNPV];
-      else if (sample_ == "gjets")      puWeight_ = rwtGjet[rwtNPV];
-      else puWeight_ = -99;
-    } else puWeight_ = 1;
+      if      (sample_ == "dyjetstoll") puWeightRho_ = rwtZjet[rwt-1];
+      else if (sample_ == "qcd")        puWeightRho_ = rwtDjet[rwt-1];
+      else if (sample_ == "gjets")      puWeightRho_ = rwtGjet[rwt-1];
+      else puWeightRho_ = -99;
+    } else puWeightRho_ = 1;
+    puWeight_  = eventCorrections.getPUWeight();
     puWeightC_ = eventCorrections.getPUWeight();
 
     outtree->Fill();
@@ -426,6 +428,7 @@ public:
   float weight_     ;
   float puWeight_   ;
   float puWeightC_  ;
+  float puWeightRho_;
   int   npv         ;
   float rho_        ;
 
