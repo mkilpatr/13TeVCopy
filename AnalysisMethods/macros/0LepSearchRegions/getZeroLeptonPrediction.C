@@ -6,7 +6,8 @@ enum SysVars { NOMINAL, VARUP, VARDOWN };
 
 vector<TString> samples = {"data", "ttbarplusw","ttZ","znunu", "qcd"};
 
-double metbins[]    = {200.0, 225.0, 250.0, 300.0, 400.0, 600.0};
+const int NBINS          = 5;
+double metbins[NBINS+1]  = {200.0, 225.0, 250.0, 300.0, 400.0, 600.0};
 
 map<TString,TString> sel;
 typedef map<TString,TString> BinMap;
@@ -180,9 +181,33 @@ TH1F* getQCDPred(TFile* file, const TString region, const TString crname, vector
 
 }
 
-TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmmcr, const TString region, const TString phocrname, const TString zeecrname, const TString zmmcrname, vector<TString> bins, BinMap phocrtosrmap, BinMap zllcrtosrmap) {
+TH1F* calcRZ(TH1F* hdata, TH1F* hzll, TH1F* httbar, TH1F* hdata_off, TH1F* hzll_off, TH1F* httbar_off){
+  TH1F* RZ = (TH1F*)hdata->Clone("RZ");
+  for (int ibin = 1; ibin < RZ->GetNbinsX()+1; ++ibin){
+    double data = hdata->GetBinContent(ibin), data_err = hdata->GetBinError(ibin);
+    double zll = hzll->GetBinContent(ibin), zll_err = hzll->GetBinError(ibin);
+    double ttbar = httbar->GetBinContent(ibin), ttbar_err = httbar->GetBinError(ibin);
+    double dataoff = hdata_off->GetBinContent(ibin), dataoff_err = hdata_off->GetBinError(ibin);
+    double zlloff = hzll_off->GetBinContent(ibin), zlloff_err = hzll_off->GetBinError(ibin);
+    double ttbaroff = httbar_off->GetBinContent(ibin), ttbaroff_err = httbar_off->GetBinError(ibin);
 
-  cout << "\nGetting the Z prediction in the " << region << " region. CR labels are " << phocrname << ", " << zeecrname << ", " << zmmcrname << endl;
+    double num = dataoff*ttbar - data*ttbaroff;
+    double den = zlloff *ttbar - zll *ttbaroff;
+    double val = num/den;
+    RZ->SetBinContent(ibin, val);
+    vector<double> errs{ttbar*dataoff_err, ttbaroff*data_err, val*ttbar*zlloff_err, val*ttbaroff*zll_err, (dataoff-val*zlloff)*ttbar_err, (-data+val*zll)*ttbaroff_err};
+    double sum=0;
+    for (double e : errs){
+      sum += pow(e, 2);
+    }
+    RZ->SetBinError(ibin, sqrt(sum)/abs(den));
+  }
+  return RZ;
+}
+
+TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezllcr, const TString region, const TString phocrname, const TString zllcrname, vector<TString> bins, BinMap phocrtosrmap, BinMap zllcrtosrmap) {
+
+  cout << "\nGetting the Z prediction in the " << region << " region. CR labels are " << phocrname << ", " << zllcrname << endl;
 
   TH1F* znunu_sr = getSRHist(file0l, "znunu", region, bins);
   vector<TString> phocrbins, zllcrbins;
@@ -195,11 +220,15 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmm
   TH1F* photon_phocr = getSRHist(filephocr, "photon", phocrname, phocrbins);
   TH1F* data_phocr = getSRHist(filephocr, "data", phocrname, phocrbins);
 
-  cout << "\nData yield in Photon CR: " << data_phocr->Integral(0, data_phocr->GetNbinsX()+1) << endl;
-  cout << "\nMC yield in Photon CR: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
+  TH1F* photon_phocr_nomtb = getSRHist(filephocr, "photon", phocrname+"_nomtb", phocrbins);
+  TH1F* data_phocr_nomtb = getSRHist(filephocr, "data", phocrname+"_nomtb", phocrbins);
 
-  photon_phocr->Scale(data_phocr->Integral(0, data_phocr->GetNbinsX()+1) / photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1));
+  cout << "\nData yield in Photon CR before mtb cut: " << data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) << endl;
+  cout << "\nMC yield in Photon CR before mtb cut: " << photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1) << endl;
 
+  photon_phocr->Scale(data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) / photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1));
+
+  cout << "\nData yield in Photon CR after mtb cut: " << data_phocr->Integral(0, data_phocr->GetNbinsX()+1) << endl;
   cout << "\nMC yield in Photon CR after normalizing to data: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
 
   TH1F* znunu_pred = (TH1F*)znunu_sr->Clone("znunu_pred_" + region);
@@ -212,46 +241,26 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmm
   }
   cout << endl;
 
-//  TH1F* zll_zeecr = getSRHist(filezeecr, "zll", zeecrname, zllcrbins);
-//  TH1F* zll_zmmcr = getSRHist(filezmmcr, "zll", zmmcrname, zllcrbins);
-//  TH1F* ttbar_zeecr = getSRHist(filezeecr, "ttbar", zeecrname, zllcrbins);
-//  TH1F* ttbar_zmmcr = getSRHist(filezmmcr, "ttbar", zmmcrname, zllcrbins);
-//  TH1F* data_zeecr = getSRHist(filezeecr, "data_ee", zeecrname, zllcrbins);
-//  TH1F* data_zmmcr = getSRHist(filezmmcr, "data_mm", zmmcrname, zllcrbins);
-//  TH1F* zll_zllcr = (TH1F*)zll_zeecr->Clone("zll_zllcr");
-//  zll_zllcr->Add(zll_zmmcr);
-//  TH1F* ttbar_zllcr = (TH1F*)ttbar_zeecr->Clone("ttbar_zllcr");
-//  ttbar_zllcr->Add(ttbar_zmmcr);
-//  TH1F* data_zllcr = (TH1F*)data_zeecr->Clone("data_zllcr");
-//  data_zllcr->Add(data_zmmcr);
-//  TH1F* data_less_ttbar_zllcr = (TH1F*)data_zllcr->Clone("data_less_ttbar_zllcr_" + region);
-//  data_less_ttbar_zllcr->Add(ttbar_zllcr, -1);
-//
-//  cout << "\nTTbar subtracted data in ZLL CR: ";
-//  for(int ibin = 1; ibin < data_less_ttbar_zllcr->GetNbinsX()+1; ++ibin) {
-//    cout << data_less_ttbar_zllcr->GetBinContent(ibin) << " +/- " << data_less_ttbar_zllcr->GetBinError(ibin) << "\t";
-//  }
-//  cout << endl;
-//
-//  TH1F* zll_sf = (TH1F*)data_less_ttbar_zllcr->Clone("zll_sf_" + region);
-//  zll_sf->Divide(zll_zllcr);
-//
-//  cout << "\nZ scale factors from ZLL CR: ";
-//  for(int ibin = 1; ibin < zll_sf->GetNbinsX()+1; ++ibin) {
-//    cout << zll_sf->GetBinContent(ibin) << " +/- " << zll_sf->GetBinError(ibin) << "\t";
-//  }
-//  cout << endl;
-//
-//  double sf_1b = zll_sf->GetBinContent(1);
-//  double sf_2b = zll_sf->GetBinContent(2);
-//  double sf_1b_unc = zll_sf->GetBinError(1);
-//  double sf_2b_unc = zll_sf->GetBinError(2);
+  TH1F* zll_zllcr = getSRHist(filezllcr, "zll", zllcrname, zllcrbins);
+  TH1F* ttbar_zllcr = getSRHist(filezllcr, "ttbar", zllcrname, zllcrbins);
+  TH1F* data_zllcr = getSRHist(filezllcr, "data", zllcrname, zllcrbins);
+  TH1F* zll_zllcr_offz = getSRHist(filezllcr, "zll", zllcrname+"_offz", zllcrbins);
+  TH1F* ttbar_zllcr_offz = getSRHist(filezllcr, "ttbar", zllcrname+"_offz", zllcrbins);
+  TH1F* data_zllcr_offz = getSRHist(filezllcr, "data", zllcrname+"_offz", zllcrbins);
 
-  // FIXME: put zll_sf by hand for this moment. These values are for 2<=nj<=4.
-  double sf_1b = 1.01;
-  double sf_2b = 1.09;
-  double sf_1b_unc = 0.17;
-  double sf_2b_unc = 0.25;
+  TH1F* zll_sf = calcRZ(data_zllcr, zll_zllcr, ttbar_zllcr, data_zllcr_offz, zll_zllcr_offz, ttbar_zllcr_offz);
+  zll_sf->SetName("zll_sf_" + region);
+
+  cout << "\nZ scale factors from ZLL CR: ";
+  for(int ibin = 1; ibin < zll_sf->GetNbinsX()+1; ++ibin) {
+    cout << zll_sf->GetBinContent(ibin) << " +/- " << zll_sf->GetBinError(ibin) << "\t";
+  }
+  cout << endl;
+
+  double sf_1b = zll_sf->GetBinContent(1);
+  double sf_2b = zll_sf->GetBinContent(2);
+  double sf_1b_unc = zll_sf->GetBinError(1);
+  double sf_2b_unc = zll_sf->GetBinError(2);
 
   for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
     double bincontent = znunu_pred->GetBinContent(ibin);
@@ -275,101 +284,18 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezeecr, TFile* filezmm
 
 }
 
-/*TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezllcr, const TString region, const TString phocrname, const TString zllcrname, vector<TString> bins, BinMap phocrtosrmap, BinMap zllcrtosrmap) {
-
-  cout << "\nGetting the Z prediction in the " << region << " region. CR labels are " << phocrname << ", " << zllcrname << endl;
-
-  TH1F* znunu_sr = getSRHist(file0l, "znunu", region, bins);
-  vector<TString> phocrbins, zllcrbins;
-  for(auto bin : bins) {
-    cout << "\nPhoton CR bin for " << bin << ": " << phocrtosrmap[bin] << endl;
-    cout << "\nZLL CR bin for " << bin << ": " << zllcrtosrmap[bin] << endl;
-    phocrbins.push_back(phocrtosrmap[bin]);
-    zllcrbins.push_back(zllcrtosrmap[bin]);
-  }
-  TH1F* photon_phocr = getSRHist(filephocr, "photon", phocrname, phocrbins);
-  TH1F* data_phocr = getSRHist(filephocr, "data", phocrname, phocrbins);
-
-  cout << "\nData yield in Photon CR: " << data_phocr->Integral(0, data_phocr->GetNbinsX()+1) << endl;
-  cout << "\nMC yield in Photon CR: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
-
-  photon_phocr->Scale(data_phocr->Integral(0, data_phocr->GetNbinsX()+1) / photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1));
-
-  cout << "\nMC yield in Photon CR after normalizing to data: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
-
-  cout << "\nZnunu MC x photon shape weights: ";
-  for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
-    cout << znunu_pred->GetBinContent(ibin) << " +/- " << znunu_pred->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  TH1F* zll_zllcr = getSRHist(filezllcr, "zll", zllcrname, zllcrbins);
-  TH1F* ttbar_zllcr = getSRHist(filezllcr, "ttbar", zllcrname, zllcrbins);
-  TH1F* data_zllcr = getSRHist(filezllcr, "data", zllcrname, zllcrbins);
-  TH1F* data_less_ttbar_zllcr = (TH1F*)data_zllcr->Clone("data_less_ttbar_zllcr_" + region);
-  data_less_ttbar_zllcr->Add(ttbar_zllcr, -1);
-
-  cout << "\nTTbar subtracted data in ZLL CR: ";
-  for(int ibin = 1; ibin < data_less_ttbar_zllcr->GetNbinsX()+1; ++ibin) {
-    cout << data_less_ttbar_zllcr->GetBinContent(ibin) << " +/- " << data_less_ttbar_zllcr->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  TH1F* zll_sf = (TH1F*)data_less_ttbar_zllcr->Clone("zll_sf_" + region);
-  zll_sf->Divide(zll_zllcr);
-
-  cout << "\nZ scale factors from ZLL CR: ";
-  for(int ibin = 1; ibin < zll_sf->GetNbinsX()+1; ++ibin) {
-    cout << zll_sf->GetBinContent(ibin) << " +/- " << zll_sf->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  double sf_1b = zll_sf->GetBinContent(1);
-  double sf_2b = zll_sf->GetBinContent(2);
-  double sf_1b_unc = zll_sf->GetBinError(1);
-  double sf_2b_unc = zll_sf->GetBinError(2);
-
-  TH1F* znunu_pred = (TH1F*)znunu_sr->Clone("znunu_pred_" + region);
-  znunu_pred->Multiply(data_phocr);
-  znunu_pred->Divide(photon_phocr);
-
-  for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
-    double bincontent = znunu_pred->GetBinContent(ibin);
-    double binerror = znunu_pred->GetBinError(ibin);
-    if(ibin <= znunu_pred->GetNbinsX()/2) {
-      znunu_pred->SetBinContent(ibin, bincontent * sf_1b);
-      znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_1b_unc*sf_1b_unc/(sf_1b*sf_1b)) + (binerror*binerror/(bincontent*bincontent))));
-    } else {
-      znunu_pred->SetBinContent(ibin, bincontent * sf_2b);
-      znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_2b_unc*sf_2b_unc/(sf_2b*sf_2b)) + (binerror*binerror/(bincontent*bincontent))));
-    }
-  }
-
-  cout << "\nZnunu MC x photon shape weights x ZLL scale factor: ";
-  for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
-    cout << znunu_pred->GetBinContent(ibin) << " +/- " << znunu_pred->GetBinError(ibin) << "\t";
-  }
-  cout << endl;
-
-  return znunu_pred;
-
-}*/
-
-void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Workspace/74X/CMSSW_7_4_11/src/AnalysisMethods/macros/run/trees/pu71mb/SR",
+void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Workspace/74X/CMSSW_7_4_11/src/AnalysisMethods/macros/run/trees/wtags/SR",
                              const TString varupdir    = "trees/varup",
                              const TString vardowndir  = "trees/vardown",
                              const TString outputdir   = "plots_bkgest_101415",
                              const TString srconf      = "run0lepmine.conf",
                              const TString phocrconf   = "runphotoncrmine.conf",
-                             //const TString zllcrconf   = "runzllcrmine.conf",
-                             const TString zeecrconf   = "runzeecrmine.conf",
-                             const TString zmmcrconf   = "runzmmcrmine.conf",
+                             const TString zllcrconf   = "runzllcrmine.conf",
                              const TString lumistr     = "1.263",
                              const TString crlumistr   = "1.264",
-                             const TString zeecrlumistr= "1.264",
                              //const TString region      = "sr",
                              const TString region      = "srlownj",
-                             const TString format      = "png",
+                             const TString format      = "pdf",
                              const TString qcdfitfile  = TString::Format("%s/src/data/QCD/tffits.root",getenv("CMSSW_BASE")),
                              const bool    dolownj     = true,
                              const unsigned int sysvar = NOMINAL,
@@ -379,15 +305,13 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
 
   TString basewgt    = lumistr + "*weight*truePUWeight";
   TString basewgtcr  = crlumistr + "*weight*truePUWeight";
-  TString basewgtcrzee  = zeecrlumistr + "*weight*truePUWeight";
   TString lepvetowgt = basewgt + "*lepvetoweight";
   TString lepselwgt  = basewgt + "*lepselweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscflt && passeebadscflt && passhbheflttight";
-  sel["trigpho"]      = "passjson && passtrigphoton165 && j2pt>75 && met>200 && passcscflt && passeebadscflt && passhbheflttight";
-  sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
-  sel["trigzee"]      = "passjson && iselectron && passtrige17e12 && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
-  sel["trigzmm"]      = "passjson && !iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8) && j2pt>75 && met>200 && dilepmass > 80 && dilepmass < 100";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscflt && passeebadscflt && passhbheflttight";
+  sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
+  sel["trigzlloff"]   = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
   sel["vetoes"]       = " && ((nvetolep==0 && nvetohpstaus==0) || (ismc && (ngoodgenele>0 || ngoodgenmu>0 || npromptgentau>0)))";
   sel["lepsel"]       = " && nvetolep>0";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
@@ -400,10 +324,9 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   sel["lepcr"]        = sel["trig"] + sel["lepcrsel"] + sel["njets"]    + sel["dphij123"] + sel["mtb"];
   sel["qcdcr"]        = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123inv"] + sel["mtb"];
   sel["qcdincl"]      = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij3"] + sel["mtb"];
-  sel["phocr"]        = sel["trigpho"] + sel["njets"] + sel["dphij123"] + sel["mtb"];
+  sel["phocr"]        = sel["trigpho"] + sel["njets"] + sel["dphij123"];
   sel["zllcr"]        = sel["trigzll"] + sel["njets"];
-  sel["zeecr"]        = sel["trigzee"] + sel["njets"];
-  sel["zmmcr"]        = sel["trigzmm"] + sel["njets"];
+  sel["zlloffcr"]     = sel["trigzlloff"] + sel["njets"];
   sel["nb1"]          = " && nbjets==1";
   sel["nb2"]          = " && nbjets>=2";
   sel["nb1_nt0"]      = " && nbjets==1 && ncttstd==0";
@@ -416,9 +339,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   PlotStuff* plots0l    = setupPlots(srconf,    inputdir, outputdir, lepvetowgt, plotlog, format, lumistr, "output_0l.root");
   PlotStuff* plotslepcr = setupPlots(srconf,    inputdir, outputdir, lepselwgt, plotlog, format, lumistr, "output_lepcr.root");
   PlotStuff* plotsphocr = setupPlots(phocrconf, inputdir+"/photoncr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_phocr.root");
-  //PlotStuff* plotszllcr = setupPlots(zllcrconf, inputdir+"/zllcr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_zllcr.root");
-  PlotStuff* plotszeecr = setupPlots(zeecrconf, inputdir+"/zllcr", outputdir, basewgtcr, plotlog, format, zeecrlumistr, "output_zeecr.root");
-  PlotStuff* plotszmmcr = setupPlots(zmmcrconf, inputdir+"/zllcr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_zmmcr.root");
+  PlotStuff* plotszllcr = setupPlots(zllcrconf, inputdir+"/zllcr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_zllcr.root");
 
   cout << "Plotting 0lepton region" << endl;
 
@@ -430,11 +351,11 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   plots0l->addTreeVar("dphij12met_qcdincl_nb1_nt1", "dphij12met",  sel["qcdincl"] + sel["nb1_nt1"], "min(#Delta#phi(j1,#slash{E}_{T}),#Delta#phi(j2,#slash{E}_{T}))", 63, 0, 3.15);
   plots0l->addTreeVar("dphij12met_qcdincl_nb2_nt1", "dphij12met",  sel["qcdincl"] + sel["nb2_nt1"], "min(#Delta#phi(j1,#slash{E}_{T}),#Delta#phi(j2,#slash{E}_{T}))", 63, 0, 3.15);
 
-  plots0l->addTreeVar("met_sr_nb1",                 "met",         sel["sr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 5, metbins);
-  plots0l->addTreeVar("met_sr_nb2",                 "met",         sel["sr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 5, metbins);
+  plots0l->addTreeVar("met_sr_nb1",                 "met",         sel["sr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+  plots0l->addTreeVar("met_sr_nb2",                 "met",         sel["sr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
 
-  plots0l->addTreeVar("met_qcdincl_nbgeq1",         "met",         sel["qcdincl"],              "#slash{E}_{T} [GeV]", 5, metbins);
-  plots0l->addTreeVar("met_qcdcr_nbgeq1",           "met",         sel["qcdcr"],                "#slash{E}_{T} [GeV]", 5, metbins);
+  plots0l->addTreeVar("met_qcdincl_nbgeq1",         "met",         sel["qcdincl"],              "#slash{E}_{T} [GeV]", NBINS, metbins);
+  plots0l->addTreeVar("met_qcdcr_nbgeq1",           "met",         sel["qcdcr"],                "#slash{E}_{T} [GeV]", NBINS, metbins);
 
   plots0l->plot();
 
@@ -444,36 +365,26 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   plotslepcr->addTreeVar("nvetoele_lepcr",          "nvetolele",   sel["lepcr"],                "Number of Electrons", 3, -0.5, 2.5);
   plotslepcr->addTreeVar("nvetohpstau_lepcr",       "nvetohpstaus",sel["lepcr"],                "Number of Taus", 3, -0.5, 2.5);
 
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1",        "met",         sel["lepcr"],                "#slash{E}_{T} [GeV]", 5, metbins);
+  plotslepcr->addTreeVar("met_lepcr_nbgeq1",        "met",         sel["lepcr"],                "#slash{E}_{T} [GeV]", NBINS, metbins);
 
   plotslepcr->plot();
 
   cout << "Plotting photon region" << endl;
 
-  plotsphocr->addTreeVar("met_phocr_nbgeq1",        "met",         sel["phocr"],                "#slash{E}_{T} [GeV]", 5, metbins);
+  plotsphocr->addTreeVar("met_phocr_nomtb_nbgeq1",  "met",         sel["phocr"],                "#slash{E}_{T} [GeV]", NBINS, metbins);
+  plotsphocr->addTreeVar("met_phocr_nbgeq1",        "met",         sel["phocr"]+sel["mtb"],     "#slash{E}_{T} [GeV]", NBINS, metbins);
 
   plotsphocr->plot();
 
-  /*cout << "Plotting zll region" << endl;
+  cout << "Plotting zll region" << endl;
 
-  plotszllcr->addTreeVar("met_zllcr_nb1",           "met",         sel["zllcr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
-  plotszllcr->addTreeVar("met_zllcr_nb2",           "met",         sel["zllcr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
+  plotszllcr->addTreeVar("met_zllcr_nb1",           "met",         sel["zllcr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+  plotszllcr->addTreeVar("met_zllcr_nb2",           "met",         sel["zllcr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
 
-  plotszllcr->plot();*/
+  plotszllcr->addTreeVar("met_zllcr_offz_nb1",      "met",         sel["zlloffcr"] + sel["nb1"],   "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+  plotszllcr->addTreeVar("met_zllcr_offz_nb2",      "met",         sel["zlloffcr"] + sel["nb2"],   "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
 
-  cout << "Plotting zee region" << endl;
-
-  plotszeecr->addTreeVar("met_zeecr_nb1",           "met",         sel["zeecr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
-  plotszeecr->addTreeVar("met_zeecr_nb2",           "met",         sel["zeecr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
-
-  plotszeecr->plot();
-
-  cout << "Plotting zmm region" << endl;
-
-  plotszmmcr->addTreeVar("met_zmmcr_nb1",           "met",         sel["zmmcr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
-  plotszmmcr->addTreeVar("met_zmmcr_nb2",           "met",         sel["zmmcr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 1, 200., 1000.0);
-
-  plotszmmcr->plot();
+  plotszllcr->plot();
 
   cout << "Setting up prediction" << endl;
 
@@ -483,9 +394,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   TFile* file0l      = new TFile(plots0l->outfileName());
   TFile* filelepcr   = new TFile(plotslepcr->outfileName());
   TFile* filephocr   = new TFile(plotsphocr->outfileName());
-  //TFile* filezllcr   = new TFile(plotszllcr->outfileName());
-  TFile* filezeecr   = new TFile(plotszeecr->outfileName());
-  TFile* filezmmcr   = new TFile(plotszmmcr->outfileName());
+  TFile* filezllcr   = new TFile(plotszllcr->outfileName());
 
   //HistMap data, lostlep, znunu, qcd, ttz;
   BinMap  lepcrtosr, qcdcrtosr, phocrtosr, zllcrtosr;
@@ -502,8 +411,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
 
   TH1F* data           = getSRHist (file0l, "data", "sr",      srbins);
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
-  //TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr); 
-  TH1F* znunu          = getZPred  (file0l, filephocr, filezeecr, filezmmcr, "sr", "phocr", "zeecr", "zmmcr", srbins, phocrtosr, zllcrtosr); 
+  TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
   TH1F* qcd            = getQCDPred(file0l, "sr", "qcdcr", srbins, qcdcrtosr, qcdfitfile);
   TH1F* ttz            = getSRHist (file0l, "ttZ", "sr",      srbins);
 
