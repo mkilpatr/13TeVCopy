@@ -77,12 +77,12 @@ void plotQGValidationComposition( const TString inputdir="trees/151107_qmQCD"
   TString centralSel30 = " && j0pt>30 && abs(j0eta)<2.4";
   TString forwardSel30 = " && j0pt>30 && abs(j0eta)>2.4 && abs(j0eta)<5.0";
 
-  zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet && passZmass" +centralSel30, "pt_{T} [GeV]", 22, 0, 600 ); // 23 (22) with(out) jetID
-  zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet && passZmass" +forwardSel30, "pt_{T} [GeV]", 12, 0, 600 );
-  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet && passDijet3 && ht>450"+centralSel, "pt_{T} [GeV]", 25, 0, 1000 );
-  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet && passDijet3 && ht>450"+forwardSel, "pt_{T} [GeV]", 25, 0, 1000 );
-  gjetPlots   ->addTreeVar(  "gjets_central" , "j0pt", "passGmjet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
-  gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 12, 0, 600 );
+  //zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet && passZmass" +centralSel30, "pt_{T} [GeV]", 23, 0, 600 ); // 23 (22) with(out) jetID
+  //zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet && passZmass" +forwardSel30, "pt_{T} [GeV]", 12, 0, 600 );
+  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet && passDijet3 && ht>950"+centralSel, "pt_{T} [GeV]", 25, 0, 1000 );
+  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet && passDijet3 && ht>950"+forwardSel, "pt_{T} [GeV]", 25, 0, 1000 );
+  //gjetPlots   ->addTreeVar(  "gjets_central" , "j0pt", "passGmjet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  //gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 12, 0, 600 );
 
   zjetPlots   ->plot();
   dijetPlots  ->plot();

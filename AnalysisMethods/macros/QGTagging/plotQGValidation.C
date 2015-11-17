@@ -3,7 +3,7 @@
 #endif
 
 //root -b -q "../CMSSW_7_4_11/src/AnalysisMethods/macros/QGTagging/plotQGValidation.C+"
-void plotQGValidation( const TString inputdir="trees/151107_qmQCD"
+void plotQGValidation( const TString inputdir="trees/151117_rhoRwt"
                      , const TString outputdir="plots"
                      , const TString format = "png"
                      )
@@ -11,8 +11,8 @@ void plotQGValidation( const TString inputdir="trees/151107_qmQCD"
   gSystem->mkdir(outputdir, true);
   TString lumi    = "0.578";
   TString lumiStr = "578 pb^{-1}";
-  TString wtVar   = "*weight*puWeightC"; // weight purwt
-  bool scaleToData = false;
+  TString wtVar   = "*weight*puWeight*puWeightRho"; // weight purwt
+  bool scaleToData = true;
   float headerx = 0.5;
   float headery = 0.92;
 
@@ -199,6 +199,69 @@ void plotQGValidation( const TString inputdir="trees/151107_qmQCD"
   zjetPlots->addTreeVar("zjets_forward120_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt120, "QGL", 30, 0, 1 );
   zjetPlots->addTreeVar("zjets_forward200_j0qgl", "j0qgl", "passZjet && passZmass"+forward+pt200, "QGL", 30, 0, 1 );
 // */
+/*
+  TString ht950 = " && ht>950";           TString ptht950 = " && ht>950           && j0pt>400 ";
+  TString ht750 = " && ht>750 && ht<950"; TString ptht750 = " && ht>750 && ht<950 && j0pt>300 && j0pt<520";
+  TString ht625 = " && ht>625 && ht<750"; TString ptht625 = " && ht>625 && ht<750 && j0pt>250 && j0pt<420";
+  TString ht550 = " && ht>550 && ht<625"; TString ptht550 = " && ht>550 && ht<625 && j0pt>220 && j0pt<350";
+  TString ht500 = " && ht>500 && ht<550"; TString ptht500 = " && ht>500 && ht<550 && j0pt>200 && j0pt<320";
+  TString ht450 = " && ht>450 && ht<500"; TString ptht450 = " && ht>450 && ht<500 && j0pt>150 && j0pt<300";
+
+  dijetPlots->addTreeVar("dijets_j0pt_ht950", "j0pt" , dijetselection+central+ht950 , "pt_{T} [GeV]", 30, 400, 1100 );
+  dijetPlots->addTreeVar("dijets_j0pt_ht750", "j0pt" , dijetselection+central+ht750 , "pt_{T} [GeV]", 22, 300,  520 );
+  dijetPlots->addTreeVar("dijets_j0pt_ht625", "j0pt" , dijetselection+central+ht625 , "pt_{T} [GeV]", 17, 250,  420 );
+  dijetPlots->addTreeVar("dijets_j0pt_ht550", "j0pt" , dijetselection+central+ht550 , "pt_{T} [GeV]", 13, 220,  350 );
+  dijetPlots->addTreeVar("dijets_j0pt_ht500", "j0pt" , dijetselection+central+ht500 , "pt_{T} [GeV]", 12, 200,  320 );
+  dijetPlots->addTreeVar("dijets_j0pt_ht450", "j0pt" , dijetselection+central+ht450 , "pt_{T} [GeV]", 15, 150,  300 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht950" , "j0eta"  , dijetselection        +ht950, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht950" , "npv"    , dijetselection+central+ht950, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht950" , "j0mult" , dijetselection+central+ht950, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht950" , "j0ptd"  , dijetselection+central+ht950, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht950" , "j0axis1", dijetselection+central+ht950, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht950" , "j0axis2", dijetselection+central+ht950, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht950" , "j0qgl"  , dijetselection+central+ht950, "QGL"           , 30,   0,  1 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht750" , "j0eta"  , dijetselection        +ht750, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht750" , "npv"    , dijetselection+central+ht750, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht750" , "j0mult" , dijetselection+central+ht750, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht750" , "j0ptd"  , dijetselection+central+ht750, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht750" , "j0axis1", dijetselection+central+ht750, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht750" , "j0axis2", dijetselection+central+ht750, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht750" , "j0qgl"  , dijetselection+central+ht750, "QGL"           , 30,   0,  1 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht625" , "j0eta"  , dijetselection        +ht625, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht625" , "npv"    , dijetselection+central+ht625, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht625" , "j0mult" , dijetselection+central+ht625, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht625" , "j0ptd"  , dijetselection+central+ht625, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht625" , "j0axis1", dijetselection+central+ht625, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht625" , "j0axis2", dijetselection+central+ht625, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht625" , "j0qgl"  , dijetselection+central+ht625, "QGL"           , 30,   0,  1 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht550" , "j0eta"  , dijetselection        +ht550, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht550" , "npv"    , dijetselection+central+ht550, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht550" , "j0mult" , dijetselection+central+ht550, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht550" , "j0ptd"  , dijetselection+central+ht550, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht550" , "j0axis1", dijetselection+central+ht550, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht550" , "j0axis2", dijetselection+central+ht550, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht550" , "j0qgl"  , dijetselection+central+ht550, "QGL"           , 30,   0,  1 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht500" , "j0eta"  , dijetselection        +ht500, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht500" , "npv"    , dijetselection+central+ht500, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht500" , "j0mult" , dijetselection+central+ht500, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht500" , "j0ptd"  , dijetselection+central+ht500, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht500" , "j0axis1", dijetselection+central+ht500, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht500" , "j0axis2", dijetselection+central+ht500, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht500" , "j0qgl"  , dijetselection+central+ht500, "QGL"           , 30,   0,  1 );
+
+  dijetPlots->addTreeVar(  "dijets_j0eta_ht450" , "j0eta"  , dijetselection        +ht450, "#eta"          , 30,  -5,  5 );
+  dijetPlots->addTreeVar(    "dijets_npv_ht450" , "npv"    , dijetselection+central+ht450, "npv"           , 34,   1, 34 );
+  dijetPlots->addTreeVar( "dijets_j0mult_ht450" , "j0mult" , dijetselection+central+ht450, "multiplicity"  , 35,   0, 70 );
+  dijetPlots->addTreeVar(  "dijets_j0ptd_ht450" , "j0ptd"  , dijetselection+central+ht450, "ptD"           , 30,   0,  1 );
+  dijetPlots->addTreeVar("dijets_j0axis1_ht450" , "j0axis1", dijetselection+central+ht450, "-Log(axis_{1})", 30,   0, 10 );
+  dijetPlots->addTreeVar("dijets_j0axis2_ht450" , "j0axis2", dijetselection+central+ht450, "-Log(axis_{2})", 30,   0, 10 );
+  dijetPlots->addTreeVar(  "dijets_j0qgl_ht450" , "j0qgl"  , dijetselection+central+ht450, "QGL"           , 30,   0,  1 );
+*/
 //*
   dijetPlots->addTreeVar("dijets_j0pt"     , "j0pt" , dijetselection        , "pt_{T} [GeV]", 40, 200, 1000 );
   dijetPlots->addTreeVar("dijets_j0pt_frd" , "j0pt" , dijetselection+forward, "pt_{T} [GeV]", 40, 200, 1000 );
@@ -354,4 +417,10 @@ void plotQGValidation( const TString inputdir="trees/151107_qmQCD"
   delete gjetPlots;
 
 }
-
+
+
+
+
+
+
+
