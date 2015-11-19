@@ -41,6 +41,7 @@ public:
     puWeight_   = -9 ;
     puWeightC_  = -9 ;
     puWeightRho_= -9 ;
+    gMultWt_    = -9 ;
     npv         = -9 ;
     rho_        = -9 ;
     passDijet   = true;
@@ -91,6 +92,7 @@ public:
     outtree->Branch( "puWeight"     , &puWeight_    ,     "puWeight/F" );
     outtree->Branch( "puWeightC"    , &puWeightC_   ,    "puWeightC/F" );
     outtree->Branch( "puWeightRho"  , &puWeightRho_ ,  "puWeightRho/F" );
+    outtree->Branch( "gMultWt"      , &gMultWt_     ,      "gMultWt/F" );
     outtree->Branch( "npv"          , &npv          ,          "npv/I" );
     outtree->Branch( "rho"          , &rho_         ,          "rho/F" );
     outtree->Branch( "passDijet"    , &passDijet    ,    "passDijet/O" );
@@ -408,9 +410,44 @@ public:
       else if (sample_ == "qcd")        puWeightRho_ = rwtDjet[rwt-1];
       else if (sample_ == "gjets")      puWeightRho_ = rwtGjet[rwt-1];
       else puWeightRho_ = -99;
-    } else puWeightRho_ = 1;
+    } else puWeightRho_ =   1;
     puWeight_  = eventCorrections.getPUWeight();
     puWeightC_ = eventCorrections.getPUWeight();
+
+    // reweight gluon multiplicity
+    double rwtZjetGmult[] = { 0 // DO NOT USE!!!
+                            , 0, 21.0445, 25.5486, 11.7367, 9.20504            , 0.783192, 0.991674, -1.64946, -1.08174, -0.560247
+                            , -0.441623, 0.360786, 0.774671, 1.67903, 1.60716  , 2.96429, 2.60832, 3.06251, 1.91737, 1.76025
+                            , 3.71875, 1.48734, 2.73922, 3.32801, 1.83328      , 1.58729, 2.01649, 3.51253, 5.53429, 9.19973
+                            , 2.76685, 2.07348, 3.9401, 3.89945, -0.0293365    , 6.05268, 24.7232, 3.8651, 7.57871, -8.52751
+                            , 5.11116, 40.1852, 4.88769, -112.624, 0.191959    , -3.77715, -0, 1.2812, 0, 0
+                       }; // 25*2
+    double rwtDjetGmult[] = { 0
+                            , 0, 0, 28.6158, 4.93411, 0.536764, 2.64397, 2.27779, 4.77995, 5.47224, 6.60748, 6.4766, 9.10514, 7.22784
+                            , 5.99012, 5.40705, 3.41891, 3.52568, 2.94832, 2.20819, 1.76844, 1.70158, 1.46635, 1.37784, 1.26883
+                            , 1.17281, 1.08488, 0.980761, 0.933901, 0.844996, 0.977604, 0.77676, 0.798663, 0.776461, 0.694869, 0.695897
+                            , 0.634346, 0.571494, 0.529396, 0.563128, 0.559592, 0.445727, 0.433191, 0.44345, 0.454631, 0.432487
+                            , 0.34726, 0.316925, 0.379809, 0.265298, 0.31232, 0.340197, 0.33152, 0.258042, 0.20269, 0.305671, 0.124458
+                            , 0.252885, 0.218703, 0.197533, 0.189032, 0.201527, 0.186056, 0.256245, 0.22102, 0.171713, 0.177715
+                            , -0.00522122, 0.229658, 0.0118424, 0.0867014
+                            }; // 35*2
+    double rwtGjetGmult[] = { 0
+                            , 0, 0, 0, 20.5493, 9.67352, 10.7454, 6.77105, 5.88972, 2.67506, 10.2546, 4.30916, 10.0084, 11.3868, 9.68117
+                            , 11.336, 5.26551, 7.32094, 4.06644, 3.01145, 2.37808, 1.90956, 2.04402, 1.32419, 1.05764, 1.31391, 0.906093
+                            , 0.735941, 0.794332, 0.89091, 0.740491, 0.907406, 0.509547, 0.619333, 0.716255, 0.425226, 0.456154, 0.67118
+                            , 0.517335, 0.305512, 0.364712, 0.518962, 0.358548, 0.223662, 0.35196, 0.262922, 0.117702, 0.319071, 0.48766
+                            , 0.33106, 0.314219, 0.1594, 0.511811, 0.280961, 0.241776, -0.0286059, 0.268344, -0.0830736, -0.0403848
+                            , -0.0130221, 0.193786, -0.0108588, 0.594792, -0.00599611, 0, 1.03968, 2.90775, -0.549424, 0, 3.23507, 0
+                            }; // 25*2
+    // only for MC gluons with eta<2.4
+    if(isMC() && jet0->absEta()<2.4 && j0flavor==2){
+      int nMult = j0mult;
+      if(nMult<1) nMult=1;
+      if      (sample_ == "dyjetstoll") { if(nMult>50) nMult=50; gMultWt_ = 1; }
+      else if (sample_ == "qcd")        { if(nMult>70) nMult=70; gMultWt_ = rwtDjetGmult[nMult]; }
+      else if (sample_ == "gjets")      { if(nMult>70) nMult=50; gMultWt_ = rwtGjetGmult[nMult]; }
+      else gMultWt_ = -99;
+    } else gMultWt_ =   1;
 
     outtree->Fill();
 
@@ -429,6 +466,7 @@ public:
   float puWeight_   ;
   float puWeightC_  ;
   float puWeightRho_;
+  float gMultWt_    ;
   int   npv         ;
   float rho_        ;
 
