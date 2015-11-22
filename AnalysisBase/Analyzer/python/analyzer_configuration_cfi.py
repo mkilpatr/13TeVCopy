@@ -244,6 +244,13 @@ nominal_configuration = cms.PSet(
                                   AK8FatJets = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
+                                      puRemoval = cms.untracked.string("CHS")
+                                      ),
+
+                                  AK8PuppiFatJets = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      fatJets  = cms.InputTag('selectedPatJetsAK8PFPuppi'),
+                                      puRemoval = cms.untracked.string("Puppi")
                                       ),
 
                                   Triggers = cms.untracked.PSet(

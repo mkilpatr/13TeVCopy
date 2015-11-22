@@ -59,7 +59,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, TRIGGERS, METFILTERS};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, TRIGGERS, METFILTERS};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -96,6 +96,7 @@ namespace ucsbsusy {
       GenParticleFiller * genparticles;
       CMSTopFiller      * cmstops;
       FatJetFiller      * ak8fatjets;
+      FatJetFiller      * ak8puppifatjets;
       TriggerFiller     * triggers;
       METFiltersFiller  * metfilters;
     protected:

@@ -27,8 +27,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
-options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/38C49928-8D72-E511-94A6-001E67579188.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/38C49928-8D72-E511-94A6-001E67579188.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/FEE1CE52-216E-E511-9B5A-0025905A60B8.root'
+options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext3-v1/10000/003964D7-D06E-E511-A8DA-001517F7F524.root'
 
 
 options.maxEvents = -1
@@ -77,6 +78,8 @@ runMetCorrAndUnc = False
 updateJECs = False
 JECUNCFILE = 'data/JEC/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt' if '25ns' in options.inputFiles[0] or '74X_mcRun2_asymptotic_v2' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
 
+
+
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
     process.TestAnalyzer.isData = cms.int32(1)
@@ -88,7 +91,9 @@ if '/store/data' in options.inputFiles[0] :
     elif '05Oct2015' in options.inputFiles[0] :
         process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
     else :
-        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v4')
+        #process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v4')
+       process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_asymptotic_v2')
+
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -105,12 +110,23 @@ if '/store/data' in options.inputFiles[0] :
     process.source.lumisToProcess = LumiList.LumiList(filename = dcsOnlyJSON).getVLuminosityBlockRange()
 
 # import of standard configurations
+process.load("Configuration.EventContent.EventContent_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
+
+
+## get puppi corrected ak8 jets using jettoolbox
+from JMEAnalysis.JetToolbox.jetToolbox_cff import *
+process.load('CommonTools.PileupAlgos.Puppi_cff')
+process.puppi.useExistingWeights = True
+process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
+process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
+jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=True, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+#if ISDATA :
+
 
 #==============================================================================================================================#
 # Electron ID, following prescription in
