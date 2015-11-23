@@ -30,6 +30,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , genparticles        (0)
 , cmstops             (0)
 , ak8fatjets          (0)
+, ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
 {
@@ -283,14 +284,23 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-    case AK8FATJETS : { 
-      ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
-                                    0,
-				    branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
-				    );
-      initializedFillers.push_back(ak8fatjets);
-      break;
-    }
+  case AK8FATJETS : { 
+    ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
+				  0,
+				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
+				  );
+    initializedFillers.push_back(ak8fatjets);
+    break;
+  }
+
+  case AK8PUPPIFATJETS : { 
+    ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
+				       0,
+				       branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName
+				       );
+    initializedFillers.push_back(ak8puppifatjets);
+    break;
+  }
     
     case TRIGGERS : {
       int defaultOptions = TriggerFiller::defaultOptions;

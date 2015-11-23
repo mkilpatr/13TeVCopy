@@ -36,6 +36,7 @@ namespace defaults {
   const std::string BRANCH_CMSTOPS    = "ctt";
   const std::string BRANCH_CORRAL     = "corral";
   const std::string BRANCH_AK8FATJETS = "ak8";
+  const std::string BRANCH_AK8PUPPIFATJETS = "ak8puppi";
   const std::string BRANCH_TRIGGERS   = "trig";
   const std::string BRANCH_METFILTERS = "metfilter";
 

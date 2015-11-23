@@ -28,6 +28,7 @@ namespace ucsbsusy {
 
   private :
     edm::EDGetTokenT<pat::JetCollection> fatJetToken_;
+    std::string puRemoval_;
 
     // Members to hold indices of tree data
     size ifj_rawmass_;
@@ -50,6 +51,7 @@ namespace ucsbsusy {
   public :
     // Data members
     edm::Handle<pat::JetCollection> fatJets_;
+   
   };
 
 }

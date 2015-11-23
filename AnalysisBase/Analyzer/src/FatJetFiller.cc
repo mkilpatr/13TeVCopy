@@ -15,7 +15,8 @@ using namespace ucsbsusy;
 //--------------------------------------------------------------------------------------------------
 FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  fatJetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("fatJets")))
+  fatJetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("fatJets"))),
+  puRemoval_(cfg.getUntrackedParameter<string>("puRemoval"))
 {
 
   ifj_rawmass_       = data.addMulti<float>(branchName_,"fatjet_rawmass",0);
@@ -50,6 +51,8 @@ void FatJetFiller::fill()
 
   for (const pat::Jet &fatjet : *fatJets_) {
 
+    if ((fatjet.pt()<=50.) || (abs(fatjet.eta())<2.5) ) { continue; } 
+
     float cmstoptagmass = -1;
     float cmstoptagminmass = -1;
     int   cmstoptagnsubjets = 0;
@@ -61,20 +64,25 @@ void FatJetFiller::fill()
     }
     else          { cmstoptagmass = fatjet.mass(); }
 
-
-
     data.fillMulti<float>(ifj_rawmass_       , fatjet.mass());
-    data.fillMulti<float>(ifj_trimmedmass_   , fatjet.userFloat("ak8PFJetsCHSTrimmedMass"));
-    data.fillMulti<float>(ifj_prunedmass_    , fatjet.userFloat("ak8PFJetsCHSPrunedMass"));
-    data.fillMulti<float>(ifj_softdropmass_  , fatjet.userFloat("ak8PFJetsCHSSoftDropMass"));
-    data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJetsCHSFilteredMass"));
+    data.fillMulti<float>(ifj_trimmedmass_   , fatjet.userFloat("ak8PFJets"+puRemoval_+"TrimmedMass"));
+    data.fillMulti<float>(ifj_prunedmass_    , fatjet.userFloat("ak8PFJets"+puRemoval_+"PrunedMass"));
+    data.fillMulti<float>(ifj_softdropmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"SoftDropMass"));
+    data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"FilteredMass"));
     data.fillMulti<float>(ifj_cmstoptagmass_ , cmstoptagmass);
     data.fillMulti<float>(ifj_cmstoptagminmass_ , cmstoptagminmass);
     data.fillMulti<int  >(ifj_cmstoptagnsubjets_, cmstoptagnsubjets);
-    //    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJetsCHSMassDropFilteredLinks"));
-    data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8:tau1"));
-    data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8:tau2"));
-    data.fillMulti<float>(ifj_tau3_          , fatjet.userFloat("NjettinessAK8:tau3"));
+    //    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJets"+puRemoval_+"MassDropFilteredLinks"));
+    if (puRemoval_=="Puppi") { 
+      data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau1"));
+      data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau2"));
+      data.fillMulti<float>(ifj_tau3_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau3"));
+    }
+    else {
+      data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8:tau1"));
+      data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8:tau2"));
+      data.fillMulti<float>(ifj_tau3_          , fatjet.userFloat("NjettinessAK8:tau3"));
+    } 
     data.fillMulti<float>(ifj_pt_            , fatjet.pt());
     data.fillMulti<float>(ifj_eta_           , fatjet.eta());
     data.fillMulti<float>(ifj_phi_           , fatjet.phi());
