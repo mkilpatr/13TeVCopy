@@ -85,7 +85,7 @@ class CMSTop : public Momentum<CoordSystem>
 
     //----Convenience function for throwing an exception when a member does not exist
     void checkStorage (const void * ptr, std::string message) const {
-      if(ptr == 0) throw (message+std::string("The object was never loaded!"));
+      if(ptr == 0) throw std::invalid_argument(message+std::string("The object was never loaded!"));
     }
     
   protected :

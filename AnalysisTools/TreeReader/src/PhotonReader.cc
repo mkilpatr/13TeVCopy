@@ -23,9 +23,12 @@ PhotonReader::PhotonReader() : BaseReader(){
   mass         = new vector<float>;
   r9           = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
+  isveto       = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
+  hasPixelSeed = new vector<bool>  ;
+  passElectronVeto = new vector<bool>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -49,6 +52,9 @@ void PhotonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
+    treeReader->setBranchAddress(branchName , "passConvVeto", &passElectronVeto, true);
+    treeReader->setBranchAddress(branchName , "hasPixelSeed", &hasPixelSeed    , true);
+
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -70,6 +76,8 @@ void PhotonReader::refresh(){
       photons.back().setIsLoose(isloose->at(iL));
       photons.back().setIsMedium(ismedium->at(iL));
       photons.back().setIsTight(istight->at(iL));
+      photons.back().setHasPixelSeed(hasPixelSeed->at(iL));
+      photons.back().setPassElectronVeto(passElectronVeto->at(iL));
     }
     std::sort(photons.begin(), photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
   }

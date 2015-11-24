@@ -44,8 +44,8 @@ public :
 
   stor numberOfMothers() const {return nMoms_;}
   const GenParticle<CoordSystem> * mother(const stor idx)const{
-    if(assocList_ == 0) throw ("GenParticle::mother() -> storage not loaded!");
-    if(idx >= nMoms_ ) throw ("GenParticle::mother() -> invalid mother index");
+    if(assocList_ == 0) throw std::invalid_argument("GenParticle::mother() -> storage not loaded!");
+    if(idx >= nMoms_ ) throw std::invalid_argument("GenParticle::mother() -> invalid mother index");
     return &genParticles_->at(assocList_->at(firstMom_ + idx));
   }
   CandidateRef<GenParticle<CoordSystem> > motherRef(const stor idx) const {
@@ -54,8 +54,8 @@ public :
 
   stor numberOfDaughters() const {return nDaus_;}
   const GenParticle<CoordSystem> * daughter(const stor idx)const{
-    if(assocList_ == 0) throw ("GenParticle::daughter() -> storage not loaded!");
-    if(idx >= nDaus_ ) throw ("GenParticle::daughter() -> invalid mother index");
+    if(assocList_ == 0) throw std::invalid_argument("GenParticle::daughter() -> storage not loaded!");
+    if(idx >= nDaus_ ) throw std::invalid_argument("GenParticle::daughter() -> invalid mother index");
     return &genParticles_->at(assocList_->at(firstDau_ + idx));
   }
   CandidateRef<GenParticle<CoordSystem> > daughterRef(const stor idx) const {

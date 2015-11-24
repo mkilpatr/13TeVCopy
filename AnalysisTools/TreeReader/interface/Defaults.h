@@ -40,9 +40,14 @@ namespace defaults {
   const std::string BRANCH_TRIGGERS   = "trig";
   const std::string BRANCH_METFILTERS = "metfilter";
 
+  enum CSVWPs {CSVL, CSVM, CSVT};
+  const double CSVValues[] = {0.605,0.890,0.970};
+
+  //Will be depreciated in next run
   const double CSV_LOOSE        = 0.605;
   const double CSV_MEDIUM       = 0.890;
   const double CSV_TIGHT        = 0.970;
+  ///
   const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.64;
   const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.55;
   const double TAU_MVA_VETO_MTPRESEL_TIGHT = 0.46;

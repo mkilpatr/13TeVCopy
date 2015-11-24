@@ -23,15 +23,16 @@ namespace ucsbsusy {
   {
 
     public :
-      Photon() : index_(-1), scEta_(0), r9_(0), pfdbetaiso_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false) {}
+      Photon() : index_(-1), scEta_(0), r9_(0), pfdbetaiso_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), passElectronVeto_(false), hasPixelSeed_(false) {}
 
       template <class InputCoordSystem>
       Photon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
           int inIndex = -1, float inSCEta = 0, float inR9 = 0, float inPfdbetaiso = 0,
-	  bool inIsVeto = false, bool inIsLoose = false, bool inIsMedium = false, bool inIsTight = false) :
-          Momentum<InputCoordSystem>(inMomentum),
-          index_(inIndex), scEta_(inSCEta), r9_(inR9), pfdbetaiso_(inPfdbetaiso),
-	    isveto_(inIsVeto),isloose_(inIsLoose), ismedium_(inIsMedium), istight_(inIsTight) {}
+          bool inIsVeto = false, bool inIsLoose = false, bool inIsMedium = false, bool inIsTight = false) :
+        Momentum<InputCoordSystem>(inMomentum),
+        index_(inIndex), scEta_(inSCEta), r9_(inR9), pfdbetaiso_(inPfdbetaiso),
+        isveto_(inIsVeto),isloose_(inIsLoose), ismedium_(inIsMedium), istight_(inIsTight),
+        passElectronVeto_(false), hasPixelSeed_(false) {}
 
       ~Photon() {}
 
@@ -39,10 +40,12 @@ namespace ucsbsusy {
       float scEta()           const { return scEta_; }
       float r9()              const { return r9_; }
       float pfdbetaiso()      const { return pfdbetaiso_; }
-      bool  isveto()           const { return isveto_; }
+      bool  isveto()          const { return isveto_; }
       bool  isloose()         const { return isloose_; }
       bool  ismedium()        const { return ismedium_; }
       bool  istight()         const { return istight_; }
+      bool  hasPixelSeed()    const { return hasPixelSeed_; }
+      bool  passElectronVeto()const { return passElectronVeto_; }
 
       void  setIndex(int newIndex)        { index_ = newIndex;    }
       void  setSCEta(float newSCEta)      { scEta_ = newSCEta;    }
@@ -52,6 +55,8 @@ namespace ucsbsusy {
       void  setIsLoose(bool newType)      { isloose_ = newType;   }
       void  setIsMedium(bool newType)     { ismedium_ = newType;  }
       void  setIsTight(bool newType)      { istight_ = newType;   }
+      void  setHasPixelSeed(bool hasPixelSeed) { hasPixelSeed_ = hasPixelSeed; }
+      void  setPassElectronVeto(bool passElectronVeto) { passElectronVeto_ = passElectronVeto;}
 
     protected :
       int   index_;  //Index in photon vector
@@ -62,6 +67,8 @@ namespace ucsbsusy {
       bool  isloose_;
       bool  ismedium_;
       bool  istight_;
+      bool  passElectronVeto_;
+      bool  hasPixelSeed_;
 
 
   };
@@ -73,12 +80,11 @@ namespace ucsbsusy {
   class ExtendedPhoton : public PhotonF
   {
     public :
-      ExtendedPhoton() : sigietaieta_(0), passElectronVeto_(false), full5x5sigietaieta_(0), hOverE_(0), rhoPFchargedHadronIso_(0), rhoPFneutralHadronIso_(0), rhoPFphotonIso_(0), trackiso_(0), ecaliso_(0), hcaliso_(0), pfchargedHadronIso_(0), pfneutralHadronIso_(0), pfphotonIso_(0), pfpuiso_(0),phiRC_(-2*TMath::Pi()),etaRC_(-10.), rhoPFchargedHadronIsoRC_(0), rhoPFneutralHadronIsoRC_(0), rhoPFphotonIsoRC_(0) {}
+      ExtendedPhoton() : sigietaieta_(0), full5x5sigietaieta_(0), hOverE_(0), rhoPFchargedHadronIso_(0), rhoPFneutralHadronIso_(0), rhoPFphotonIso_(0), trackiso_(0), ecaliso_(0), hcaliso_(0), pfchargedHadronIso_(0), pfneutralHadronIso_(0), pfphotonIso_(0), pfpuiso_(0),phiRC_(-2*TMath::Pi()),etaRC_(-10.), rhoPFchargedHadronIsoRC_(0), rhoPFneutralHadronIsoRC_(0), rhoPFphotonIsoRC_(0) {}
 
       ~ExtendedPhoton() {}
 
       float sigietaieta()             const { return sigietaieta_;    }
-      bool  passElectronVeto()        const { return passElectronVeto_; }
       float full5x5sigietaieta()      const { return full5x5sigietaieta_; }
       float hOverE()                  const { return hOverE_;   }
       float rhoPFChargedHadronIso()   const { return rhoPFchargedHadronIso_; }
@@ -98,7 +104,6 @@ namespace ucsbsusy {
       float rhoPFphotonIsoRC()        const { return rhoPFphotonIsoRC_;}
 
       void  setSigIEtaIEta(float newVal)            { sigietaieta_ = newVal;  }
-      void  setPassElectronVeto(bool newVal)        { passElectronVeto_ = newVal; }
       void  setFull5x5SigIEtaIEta(float newVal)     { full5x5sigietaieta_ = newVal; }
       void  setHOverE(float newVal)                 { hOverE_ = newVal;   }
       void  setRhoPFChargedHadronIso(float newVal)  { rhoPFchargedHadronIso_ = newVal; }
@@ -120,7 +125,6 @@ namespace ucsbsusy {
     protected :
       // ID Vars
       float sigietaieta_;
-      bool  passElectronVeto_;
       float full5x5sigietaieta_;
       float hOverE_;
       float rhoPFchargedHadronIso_;

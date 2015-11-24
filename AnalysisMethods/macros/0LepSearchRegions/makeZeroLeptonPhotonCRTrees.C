@@ -12,8 +12,8 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    PhotonCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+    PhotonCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
     const double DR_CUT = 0.4;
 
@@ -24,6 +24,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     bool             passDRSel      = true;
     bool             passGenMatch   = true;
     bool             flagQCDFake    = false;
+    bool             flagBypassDRSel= false;
     float            origMET        = 0;
     float            origMETNoHF    = 0;
 
@@ -49,6 +50,10 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       BaseTreeAnalyzer::processVariables();
       origMET = met->pt();
       origMETNoHF = metNoHF->pt();
+
+      // reset to nullptr
+      pho = nullptr;
+      boson = nullptr;
 
       // set these flags to be true (for data and znunu)
       passPhotonSel = true;
@@ -117,7 +122,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
           bool isPrompt = false;
           for (int i=0; i<p->numberOfMothers(); ++i){
             auto mother = p->mother(i);
-            if (ParticleInfo::isQuark(mother->pdgId()) || mother->pdgId() == ParticleInfo::p_gamma){
+            if (ParticleInfo::isQuark(mother->pdgId()) || mother->pdgId() == ParticleInfo::p_gamma || mother->pdgId() == ParticleInfo::p_proton){
               isPrompt = true;
               break;
             }
@@ -149,6 +154,11 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       } else
         passDRSel = flagQCDFake;
 
+      // bypass DR selection for processes other than GJets and QCD
+//      if (process!=defaults::SINGLE_G && process!=defaults::QCD) //FIXME: TTG is saved as SINGLE_G
+      if (flagBypassDRSel)
+        passDRSel = true;
+
     }
 
 
@@ -156,7 +166,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     bool fillEvent() {
 //      if(nVetoedLeptons > 0)                return false;
 //      if(nVetoedTracks > 0)                 return false;
-      if(met->pt() < metcut_)               return false;
+//      if(met->pt() < metcut_)               return false;
       if(!passPhotonSel)                    return false;
       if(!passDRSel)                        return false;
       if(!goodvertex)                       return false;
@@ -202,8 +212,9 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   cfgSet::ConfigSet pars = pars0LepPhoton(json);
 
 
-  PhotonCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  PhotonCRAnalyzer a(fullname, "Events", outfilename, fileindex+2,isMC, &pars);
   a.flagQCDFake = sname.Contains("fake");
+  a.flagBypassDRSel = !(sname.Contains("qcd")||sname.Contains("gjets"));
   a.analyze(100000);
 //   a.analyze(1000,10000);
 

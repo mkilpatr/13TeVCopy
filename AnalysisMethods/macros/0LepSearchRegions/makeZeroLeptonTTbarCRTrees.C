@@ -9,8 +9,8 @@ class TTbarCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    TTbarCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), passTTbarSel(false) {}
+    TTbarCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars), passTTbarSel(false) {}
 
     vector<GenJetF*> genJets;
 
@@ -107,7 +107,7 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 
-  TTbarCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  TTbarCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(10000);
 
 }

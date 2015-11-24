@@ -9,6 +9,7 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <bitset>
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
@@ -29,14 +30,33 @@ public:
     sample_     = ((TObjString *)(o->At(0)))->String();
     weight_     = -9 ;
     puWeight_   = -9 ;
+    puWeightC_  = -9 ;
     npv         = -9 ;
     rho_        = -9 ;
     passDijet   = true;
     passDijet3  = true;
+    passHT300   = false;
+    passHT350   = false;
+    passHT400   = false;
+    passHT475   = false;
+    passHT600   = false;
+    passHT650   = false;
+    passHT800   = false;
+    passHT900   = false;
+    prescale    = -9 ;
+    prescale300 = -9 ;
+    prescale350 = -9 ;
+    prescale400 = -9 ;
+    prescale475 = -9 ;
+    prescale600 = -9 ;
+    prescale650 = -9 ;
+    prescale800 = -9 ;
+    prescale900 = -9 ;
     passZjet    = true;
     passZmass   = true;
     passGmjet   = true;
     dilepmass   = -1 ;
+    ht          = -1 ;
     mu0pt       = -1 ;
     mu1pt       = -1 ;
     mu0eta      = -1 ;
@@ -49,34 +69,55 @@ public:
     j0axis1     = -9 ;
     j0axis2     = -9 ;
     j0qgl       = -9 ;
+    j0pdgid     = -9 ;
 
     // initiliaze tree
     gSystem->mkdir(outputdir,true);
     fout = new TFile (outputdir+"/"+sname+"_tree.root","RECREATE");
     fout->cd();
     outtree = new TTree("Events","analysis tree");
-    outtree->Branch( "weight"    , &weight_   ,     "weight/F" );
-    outtree->Branch( "puWeight"  , &puWeight_ ,   "puWeight/F" );
-    outtree->Branch( "npv"       , &npv       ,        "npv/I" );
-    outtree->Branch( "rho"       , &rho_      ,        "rho/F" );
-    outtree->Branch( "passDijet" , &passDijet ,  "passDijet/O" );
-    outtree->Branch( "passDijet3", &passDijet3, "passDijet3/O" );
-    outtree->Branch( "passZjet"  , &passZjet  ,   "passZjet/O" );
-    outtree->Branch( "passZmass" , &passZmass ,  "passZmass/O" );
-    outtree->Branch( "passGmjet" , &passGmjet ,  "passGmjet/O" );
-    outtree->Branch( "dilepmass" , &dilepmass ,  "dilepmass/F" );
-    outtree->Branch( "mu0pt"     , &mu0pt     ,      "mu0pt/F" );
-    outtree->Branch( "mu1pt"     , &mu1pt     ,      "mu1pt/F" );
-    outtree->Branch( "mu0eta"    , &mu0eta    ,     "mu0eta/F" );
-    outtree->Branch( "mu1eta"    , &mu1eta    ,     "mu1eta/F" );
-    outtree->Branch( "j0eta"     , &j0eta     ,      "j0eta/F" );
-    outtree->Branch( "j0pt"      , &j0pt      ,       "j0pt/F" );
-    outtree->Branch( "j0flavor"  , &j0flavor  ,   "j0flavor/I" );
-    outtree->Branch( "j0mult"    , &j0mult    ,     "j0mult/I" );
-    outtree->Branch( "j0ptd"     , &j0ptd     ,      "j0ptd/F" );
-    outtree->Branch( "j0axis1"   , &j0axis1   ,    "j0axis1/F" );
-    outtree->Branch( "j0axis2"   , &j0axis2   ,    "j0axis2/F" );
-    outtree->Branch( "j0qgl"     , &j0qgl     ,      "j0qgl/F" );
+    outtree->Branch( "weight"       , &weight_      ,       "weight/F" );
+    outtree->Branch( "puWeight"     , &puWeight_    ,     "puWeight/F" );
+    outtree->Branch( "puWeightC"    , &puWeightC_   ,    "puWeightC/F" );
+    outtree->Branch( "npv"          , &npv          ,          "npv/I" );
+    outtree->Branch( "rho"          , &rho_         ,          "rho/F" );
+    outtree->Branch( "passDijet"    , &passDijet    ,    "passDijet/O" );
+    outtree->Branch( "passDijet3"   , &passDijet3   ,   "passDijet3/O" );
+    outtree->Branch( "passHT300"    , &passHT300    ,    "passHT300/O" );
+    outtree->Branch( "passHT350"    , &passHT350    ,    "passHT350/O" );
+    outtree->Branch( "passHT400"    , &passHT400    ,    "passHT400/O" );
+    outtree->Branch( "passHT475"    , &passHT475    ,    "passHT475/O" );
+    outtree->Branch( "passHT600"    , &passHT600    ,    "passHT600/O" );
+    outtree->Branch( "passHT650"    , &passHT650    ,    "passHT650/O" );
+    outtree->Branch( "passHT800"    , &passHT800    ,    "passHT800/O" );
+    outtree->Branch( "passHT900"    , &passHT900    ,    "passHT900/O" );
+    outtree->Branch( "prescale"     , &prescale     ,     "prescale/I" );
+    outtree->Branch( "prescale300"  , &prescale300  ,  "prescale300/I" );
+    outtree->Branch( "prescale350"  , &prescale350  ,  "prescale350/I" );
+    outtree->Branch( "prescale400"  , &prescale400  ,  "prescale400/I" );
+    outtree->Branch( "prescale475"  , &prescale475  ,  "prescale475/I" );
+    outtree->Branch( "prescale600"  , &prescale600  ,  "prescale600/I" );
+    outtree->Branch( "prescale650"  , &prescale650  ,  "prescale650/I" );
+    outtree->Branch( "prescale800"  , &prescale800  ,  "prescale800/I" );
+    outtree->Branch( "prescale900"  , &prescale900  ,  "prescale900/I" );
+    outtree->Branch( "passZjet"     , &passZjet     ,     "passZjet/O" );
+    outtree->Branch( "passZmass"    , &passZmass    ,    "passZmass/O" );
+    outtree->Branch( "passGmjet"    , &passGmjet    ,    "passGmjet/O" );
+    outtree->Branch( "dilepmass"    , &dilepmass    ,    "dilepmass/F" );
+    outtree->Branch( "ht"           , &ht           ,           "ht/F" );
+    outtree->Branch( "mu0pt"        , &mu0pt        ,        "mu0pt/F" );
+    outtree->Branch( "mu1pt"        , &mu1pt        ,        "mu1pt/F" );
+    outtree->Branch( "mu0eta"       , &mu0eta       ,       "mu0eta/F" );
+    outtree->Branch( "mu1eta"       , &mu1eta       ,       "mu1eta/F" );
+    outtree->Branch( "j0eta"        , &j0eta        ,        "j0eta/F" );
+    outtree->Branch( "j0pt"         , &j0pt         ,         "j0pt/F" );
+    outtree->Branch( "j0flavor"     , &j0flavor     ,     "j0flavor/I" );
+    outtree->Branch( "j0mult"       , &j0mult       ,       "j0mult/I" );
+    outtree->Branch( "j0ptd"        , &j0ptd        ,        "j0ptd/F" );
+    outtree->Branch( "j0axis1"      , &j0axis1      ,      "j0axis1/F" );
+    outtree->Branch( "j0axis2"      , &j0axis2      ,      "j0axis2/F" );
+    outtree->Branch( "j0qgl"        , &j0qgl        ,        "j0qgl/F" );
+    outtree->Branch( "j0pdgid"      , &j0pdgid      ,      "j0pdgid/I" );
 
   }; // Analyze()
 
@@ -100,6 +141,7 @@ public:
   void runEvent(){
 
     if(!isMC() && hasJSONFile() && !passesLumiMask()) return;
+    //if(!triggerflag) return; // skip events that pass no saved triggers
 
     // skip events in PR with run number < 251584 - they are in the re-miniAOD
     if(!isMC() && datareco==defaults::PROMPT_50NS && run<251584) return;
@@ -115,19 +157,67 @@ public:
     if (abs(jet0->eta())<2.4 && ak4Reader.jetbetaStar_->at(jet0->index()) > 0.2*log(nPV-0.67)) return; // only jets in tracker region
 
     // dijet event selection
+    ht = JetKinematics::ht(jets, 40.0, 3  );
     passDijet  = true;
     passDijet3 = true;
     if (jets.size()<2) passDijet = false;
     else if ( jets[0]->pt()<40 ) passDijet = false;
     else if ( jets[1]->pt()<20 ) passDijet = false;
     else if ( PhysicsUtilities::absDeltaPhi(*jets[0],*jets[1])<2.5 )  passDijet = false;
-    else if (JetKinematics::ht(jets)<950) passDijet = false;
     if (jets.size()>=3){
       if ( jets[2]->pt() > 0.3*(jets[0]->pt() + jets[1]->pt())/2 ) passDijet3 = false;
     } // jets.size()>=3
-    passTrigger = false;
-    if((triggerflag & kHLT_PFHT800) > 0) passTrigger = true;
-    if (!passTrigger && !isMC()) passDijet = false;
+    passHT300 = false; prescale300 = -9;
+    passHT350 = false; prescale350 = -9;
+    passHT400 = false; prescale400 = -9;
+    passHT475 = false; prescale475 = -9;
+    passHT600 = false; prescale600 = -9;
+    passHT650 = false; prescale650 = -9;
+    passHT800 = false; prescale800 = -9;
+    passHT900 = false; prescale900 = -9;
+    for(auto* tI: triggerInfo){
+      if((tI->trigflag()&kHLT_PFHT300) && tI->passtrig()) passHT300 = true;
+      if((tI->trigflag()&kHLT_PFHT350) && tI->passtrig()) passHT350 = true;
+      if((tI->trigflag()&kHLT_PFHT400) && tI->passtrig()) passHT400 = true;
+      if((tI->trigflag()&kHLT_PFHT475) && tI->passtrig()) passHT475 = true;
+      if((tI->trigflag()&kHLT_PFHT600) && tI->passtrig()) passHT600 = true;
+      if((tI->trigflag()&kHLT_PFHT650) && tI->passtrig()) passHT650 = true;
+      if((tI->trigflag()&kHLT_PFHT800) && tI->passtrig()) passHT800 = true;
+      if((tI->trigflag()&kHLT_PFHT900) && tI->passtrig()) passHT900 = true;
+      if(tI->trigflag()&kHLT_PFHT300) prescale300 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT350) prescale350 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT400) prescale400 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT475) prescale475 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT600) prescale600 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT650) prescale650 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT800) prescale800 = tI->prescale();
+      if(tI->trigflag()&kHLT_PFHT900) prescale900 = tI->prescale();
+    } // passTrigger
+    prescale = 1;
+    if(!isMC()){
+      if      (passHT800 && ht>950           ) prescale = prescale800;
+      else if (passHT600 && ht>750 && ht<=950) prescale = prescale600;
+      else if (passHT475 && ht>625 && ht<=750) prescale = prescale475;
+      else if (passHT400 && ht>550 && ht<=625) prescale = prescale400;
+      else if (passHT350 && ht>500 && ht<=550) prescale = prescale350;
+      else if (passHT300 && ht>450 && ht<=500) prescale = prescale300;
+      else passDijet = false;
+    } else if(ht<450) passDijet = false;
+/*
+    if(passDijet) {
+      cout << bitset<64>(triggerflag) << endl;
+      for(auto* tI: triggerInfo){
+        if(tI->trigflag()&kHLT_PFHT300) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t300" << endl;
+        if(tI->trigflag()&kHLT_PFHT350) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t350" << endl;
+        if(tI->trigflag()&kHLT_PFHT400) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t400" << endl;
+        if(tI->trigflag()&kHLT_PFHT475) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t475" << endl;
+        if(tI->trigflag()&kHLT_PFHT600) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t600" << endl;
+        if(tI->trigflag()&kHLT_PFHT650) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t650" << endl;
+        if(tI->trigflag()&kHLT_PFHT800) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t800" << endl;
+        if(tI->trigflag()&kHLT_PFHT900) cout << bitset<64>(tI->trigflag()) << "\t" << tI->passtrig() << "  " << tI->prescale() << "\t900" << endl;
+      } // passTrigger
+      cout << endl;
+    } // */
 
     // Z jet event selection
     passZjet  = true;
@@ -151,8 +241,8 @@ public:
       mu1eta = mu1->eta();
       if (Nmu<2) passZjet = false;
       else {
-        if      (mu0->pt()<30) passZjet = false; // was 20
-        else if (mu1->pt()<20) passZjet = false; // was 10
+        if      (mu0->pt()<20) passZjet = false; // was 20 in note; 30 for singleMu
+        else if (mu1->pt()<10) passZjet = false; // was 10 in note; 20 for singleMu
         else if (mu0->q()==mu1->q()) passZjet = false;
         dilepmass = (mu0->p4() + mu1->p4()).mass();
         if (dilepmass<70 || dilepmass>110) passZmass = false;
@@ -163,7 +253,8 @@ public:
     } // selectedLeptons.size>=2
     else passZjet = false;
     passTrigger = false;
-    if((triggerflag & kHLT_IsoTkMu24_eta2p1) > 0) passTrigger = true;
+    //if((triggerflag & kHLT_IsoTkMu24_eta2p1) > 0) passTrigger = true;
+    if((triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) > 0) passTrigger = true;
     if (!passTrigger) passZjet = false;
 
     // Gamma jet event selection
@@ -211,14 +302,17 @@ public:
     if (isMC()) {
       int type = 0; // undefined
       double nearDR = 0;
-      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.3,20);
+      //int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.3,20);
+      int foundPart = PhysicsUtilities::findNearestDRDeref((*jet0),genParts,nearDR,.4,20);
       if(foundPart >= 0){
         int pdgId = TMath::Abs(genParts[foundPart]->pdgId());
+        if(genParts[foundPart]->status()!=23)  return; // only want particles from the matrix element
         //genParts[foundPart]->isDoc (in ParticleInfo.h)
         if(pdgId >= 1 && pdgId < 4) type = 1; // quark
         if(pdgId == 21) type = 2; // gluon
         if(pdgId ==  4) type = 3; // C
         if(pdgId ==  5) type = 4; // B
+        j0pdgid = pdgId;
       }
       //const GenJetF* matchGen = jet0->genJet();
       //if (type==0 && matchGen==0) type = -1; // pile-up
@@ -247,7 +341,7 @@ public:
       else if (sample_ == "gjets")      puWeight_ = rwtGjet[rwtNPV];
       else puWeight_ = -99;
     } else puWeight_ = 1;
-    //puWeight_ = eventCorrections.getPUWeight();
+    puWeightC_ = eventCorrections.getPUWeight();
 
     outtree->Fill();
 
@@ -263,14 +357,34 @@ public:
   // variables for trees
   float weight_     ;
   float puWeight_   ;
+  float puWeightC_  ;
   int   npv         ;
   float rho_        ;
+
   bool  passDijet   ;
   bool  passDijet3  ;
+  bool  passHT300   ;
+  bool  passHT350   ;
+  bool  passHT400   ;
+  bool  passHT475   ;
+  bool  passHT600   ;
+  bool  passHT650   ;
+  bool  passHT800   ;
+  bool  passHT900   ;
+  int   prescale    ;
+  int   prescale300 ;
+  int   prescale350 ;
+  int   prescale400 ;
+  int   prescale475 ;
+  int   prescale600 ;
+  int   prescale650 ;
+  int   prescale800 ;
+  int   prescale900 ;
   bool  passZjet    ;
   bool  passZmass   ;
   bool  passGmjet   ;
 
+  float ht          ;
   float dilepmass   ;
   float mu0pt       ;
   float mu1pt       ;
@@ -285,6 +399,7 @@ public:
   float j0axis1     ;
   float j0axis2     ;
   float j0qgl       ;
+  int   j0pdgid     ;
 
 }; // BaseTreeAnalyzer
 
@@ -295,11 +410,14 @@ public:
 //root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/makeQGValidationTrees.C+()"
 // 74X
 //     singlemu-2015b-17jul15_ntuple_postproc.root    (data)     singlemu
+//     jetht-2015b-17jul15_ntuple_postproc.root       (data)     jetht
+//     jetht-2015b-pr_ntuple_postproc.root                       jetht2
 //     dyjetstoll_mll50_10_ntuple_postproc.root       (MC)       dyjetstoll
-void makeQGValidationTrees( TString sname            = "singlemu" // sample name
+//     qcd_ht1000to1500-50ns_1_ntuple_postproc.root   (MC)       qcd
+void makeQGValidationTrees( TString sname            = "jetht2" // sample name
                           , const int     fileindex  = -1       // index of file (-1 means there is only 1 file for this sample)
                           , const bool    isMC       = false    // data or MC
-                          , const TString fname      = "singlemu-2015b-17jul15_ntuple_postproc.root" // path of file to be processed
+                          , const TString fname      = "jetht-2015b-pr_ntuple_postproc.root" // path of file to be processed
                           , const double xsec        = 1.0
                           , const string  outputdir  = "trees/test/"  // directory to which files will be written
                           , const TString fileprefix = "/eos/uscms/store/user/vdutta/13TeV/130815/merged/"
@@ -322,6 +440,7 @@ void makeQGValidationTrees( TString sname            = "singlemu" // sample name
   qgv_search_set.jets            = cfgSet::zl_search_jets;
   qgv_search_set.selectedLeptons = cfgSet::ol_sel_leptons;
   qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
+  qgv_search_set.corrections     = cfgSet::standardCorrections;
 
   cfgSet::ConfigSet pars = qgv_search_set;
 
