@@ -284,6 +284,133 @@ TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezllcr, const TString 
 
 }
 
+void printSFAndUnc(TH1F* hist, const vector<vector<double> > &M, const vector<vector<double> > &EM, const vector<double>  &D ){
+
+    double M11 = M[0][0]; double M21 = M[1][0]; double M31 = M[2][0];
+    double M12 = M[0][1]; double M22 = M[1][1]; double M32 = M[2][1];
+    double M13 = M[0][2]; double M23 = M[1][2]; double M33 = M[2][2];
+
+    double EM11 = EM[0][0]; double EM21 = EM[1][0]; double EM31 = EM[2][0];
+    double EM12 = EM[0][1]; double EM22 = EM[1][1]; double EM32 = EM[2][1];
+    double EM13 = EM[0][2]; double EM23 = EM[1][2]; double EM33 = EM[2][2];
+
+    double D1 = D[0];
+    double D2 = D[1];
+    double D3 = D[2];
+
+    double A1 = -((-(D3*M13*M22) + D3*M12*M23 + D2*M13*M32 - D1*M23*M32 - D2*M12*M33 + D1*M22*M33)/(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33));
+    double A2 = -((D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33)/(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33));
+    double A3 = -((D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32)/(-(M13*M22*M31) + M12*M23*M31 + M13*M21*M32 - M11*M23*M32 - M12*M21*M33 + M11*M22*M33));
+
+    double A1E2 =(EM33*pow(M13*M22 - M12*M23,2)*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2) + EM23*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2)*pow(M13*M32 - M12*M33,2) +
+     EM32*pow(M13*M22 - M12*M23,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) + EM22*pow(M13*M32 - M12*M33,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) +
+     EM13*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2)*pow(M23*M32 - M22*M33,2) + EM12*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2)*pow(M23*M32 - M22*M33,2) +
+     EM31*pow(M13*M22 - M12*M23,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + EM21*pow(M13*M32 - M12*M33,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) +
+     EM11*pow(M23*M32 - M22*M33,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + D3*pow(M13*M22 - M12*M23,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) +
+     D2*pow(M13*M32 - M12*M33,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) + D1*pow(M23*M32 - M22*M33,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2))/
+   pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,4);
+    double A2E2 = (EM33*pow(M13*M21 - M11*M23,2)*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2) + EM23*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2)*pow(M13*M31 - M11*M33,2) +
+     EM13*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2)*pow(M23*M31 - M21*M33,2) + EM32*pow(M13*M21 - M11*M23,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) +
+     EM22*pow(M13*M31 - M11*M33,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) + EM12*pow(M23*M31 - M21*M33,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) +
+     EM31*pow(M13*M21 - M11*M23,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + EM21*pow(M13*M31 - M11*M33,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) +
+     EM11*pow(M23*M31 - M21*M33,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + D3*pow(M13*M21 - M11*M23,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) +
+     D2*pow(M13*M31 - M11*M33,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) + D1*pow(M23*M31 - M21*M33,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2))/
+   pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,4);
+    double A3E2 = (EM33*pow(M12*M21 - M11*M22,2)*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2) + EM23*pow(M12*M31 - M11*M32,2)*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2) +
+     EM13*pow(M22*M31 - M21*M32,2)*pow(D3*M12*M21 - D3*M11*M22 - D2*M12*M31 + D1*M22*M31 + D2*M11*M32 - D1*M21*M32,2) + EM32*pow(M12*M21 - M11*M22,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) +
+     EM22*pow(M12*M31 - M11*M32,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) + EM12*pow(M22*M31 - M21*M32,2)*pow(D3*M13*M21 - D3*M11*M23 - D2*M13*M31 + D1*M23*M31 + D2*M11*M33 - D1*M21*M33,2) +
+     EM31*pow(M12*M21 - M11*M22,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + EM21*pow(M12*M31 - M11*M32,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) +
+     EM11*pow(M22*M31 - M21*M32,2)*pow(D3*M13*M22 - D3*M12*M23 - D2*M13*M32 + D1*M23*M32 + D2*M12*M33 - D1*M22*M33,2) + D3*pow(M12*M21 - M11*M22,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) +
+     D2*pow(M12*M31 - M11*M32,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2) + D1*pow(M22*M31 - M21*M32,2)*pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,2))/
+   pow(M13*M22*M31 - M12*M23*M31 - M13*M21*M32 + M11*M23*M32 + M12*M21*M33 - M11*M22*M33,4);
+
+    cout << A1 <<" " << TMath::Sqrt(A1E2) <<endl
+         << A2 <<" " << TMath::Sqrt(A2E2) <<endl
+         << A3 <<" " << TMath::Sqrt(A3E2) <<endl ;
+
+    double err = std::sqrt(A1E2);
+    for (int ibin=0; ibin<=hist->GetNbinsX()+1; ++ibin){
+      hist->SetBinContent(ibin, A1);
+      hist->SetBinError(ibin, err);
+    }
+
+}
+
+
+TH1F* getTTZPred(TFile* file0l, TFile* filettzcr, const TString region, const TString ttzcrname, vector<TString> bins, bool applySF) {
+
+  cout << "\nGetting the ttZ prediction in the " << region << " region. " << endl;
+
+  vector<TString> crbins{"sel", "noz", "nob"};
+  vector<vector<double> > groupYields(3,vector<double>(3)); //ttz ttbar Z
+  vector<vector<double> > groupUnc   (3,vector<double>(3));
+  vector<double> vecData(3);
+
+  for (unsigned ib=0; ib<crbins.size(); ++ib){
+    auto bin = crbins.at(ib);
+    cout << "\nCR bin for " << bin << endl;
+
+    //                  0      1  2    3    4   5   6   7   8   9  10 11   12
+    //enum EXTPROCESS {DATA, TTZ, TT, TTW, TTG, T, TW,  W, WW, TZ, Z, WZ, ZZ  };
+
+    TH1F* hMC = (TH1F*)filettzcr->Get("extProcess_" + ttzcrname + "_" + bin + "_" + "ttz-all");
+    assert(hMC);
+    groupYields[ib][0] += hMC->GetBinContent(2);
+    groupYields[ib][0] += hMC->GetBinContent(10);
+    groupYields[ib][1] += hMC->GetBinContent(3);
+    groupYields[ib][1] += hMC->GetBinContent(4);
+    groupYields[ib][1] += hMC->GetBinContent(5);
+    groupYields[ib][1] += hMC->GetBinContent(6);
+    groupYields[ib][1] += hMC->GetBinContent(7);
+    groupYields[ib][1] += hMC->GetBinContent(8);
+    groupYields[ib][1] += hMC->GetBinContent(9);
+    groupYields[ib][2] += hMC->GetBinContent(11);
+    groupYields[ib][2] += hMC->GetBinContent(12);
+    groupYields[ib][2] += hMC->GetBinContent(13);
+
+    groupUnc[ib][0] += hMC->GetBinError(2) * hMC->GetBinError(2) ;
+    groupUnc[ib][0] += hMC->GetBinError(10)* hMC->GetBinError(10);
+    groupUnc[ib][1] += hMC->GetBinError(3) * hMC->GetBinError(3) ;
+    groupUnc[ib][1] += hMC->GetBinError(4) * hMC->GetBinError(4) ;
+    groupUnc[ib][1] += hMC->GetBinError(5) * hMC->GetBinError(5) ;
+    groupUnc[ib][1] += hMC->GetBinError(6) * hMC->GetBinError(6) ;
+    groupUnc[ib][1] += hMC->GetBinError(7) * hMC->GetBinError(7) ;
+    groupUnc[ib][1] += hMC->GetBinError(8) * hMC->GetBinError(8) ;
+    groupUnc[ib][1] += hMC->GetBinError(9) * hMC->GetBinError(9) ;
+    groupUnc[ib][2] += hMC->GetBinError(11)* hMC->GetBinError(11);
+    groupUnc[ib][2] += hMC->GetBinError(12)* hMC->GetBinError(12);
+    groupUnc[ib][2] += hMC->GetBinError(13)* hMC->GetBinError(13);
+
+    TH1F* hdata = (TH1F*)filettzcr->Get("extProcess_" + ttzcrname + "_" + bin + "_" + "data");
+    assert(hdata);
+    vecData[ib] = hdata->GetBinContent(1);
+  }
+
+  TH1F* ttz_sr = getSRHist (file0l, "ttZ", region, bins);
+  TH1F* ttz_sf = (TH1F*)ttz_sr->Clone("ttZ_sf_" + region);
+  printSFAndUnc(ttz_sf, groupYields, groupUnc, vecData);
+
+  cout << "\nttZ scale factor: " << ttz_sf->GetBinContent(1) << " +/- " << ttz_sf->GetBinError(1) << endl;
+
+  TH1F* ttz_pred = (TH1F*)ttz_sr->Clone("ttZ_pred_" + region);
+  if(applySF){
+    cout << "\nttZ scale factor applied. " << endl;
+    ttz_pred->Multiply(ttz_sf);
+  }else{
+    cout << "\nttZ scale factor NOT applied. " << endl;
+  }
+
+  cout << "\nttZ prediction: ";
+  for(int ibin = 1; ibin < ttz_pred->GetNbinsX()+1; ++ibin) {
+    cout << ttz_pred->GetBinContent(ibin) << " +/- " << ttz_pred->GetBinError(ibin) << "\t";
+  }
+  cout << endl;
+
+  return ttz_pred;
+
+}
+
+
 void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Workspace/74X/CMSSW_7_4_11/src/AnalysisMethods/macros/run/trees/wtags/SR",
                              const TString varupdir    = "trees/varup",
                              const TString vardowndir  = "trees/vardown",
@@ -291,6 +418,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
                              const TString srconf      = "run0lepmine.conf",
                              const TString phocrconf   = "runphotoncrmine.conf",
                              const TString zllcrconf   = "runzllcrmine.conf",
+                             const TString ttzcrconf   = "runttzcrmine.conf",
                              const TString lumistr     = "1.263",
                              const TString crlumistr   = "1.264",
                              //const TString region      = "sr",
@@ -298,6 +426,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
                              const TString format      = "pdf",
                              const TString qcdfitfile  = TString::Format("%s/src/data/QCD/tffits.root",getenv("CMSSW_BASE")),
                              const bool    dolownj     = true,
+                             const bool    usettzsf    = false,
                              const unsigned int sysvar = NOMINAL,
                              const bool    plotlog     = false)
 {
@@ -327,6 +456,11 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   sel["phocr"]        = sel["trigpho"] + sel["njets"] + sel["dphij123"];
   sel["zllcr"]        = sel["trigzll"] + sel["njets"];
   sel["zlloffcr"]     = sel["trigzlloff"] + sel["njets"];
+//  sel["trigttz"]        = "passjson && passTrig && passMed && njets>=4 && minlepPT>15";
+  sel["trigttz"]        = "passjson && passTrig && passMed && njets>=4 && minlepPT>15 && dileppt>100";
+  sel["ttzSel"]       = sel["trigttz"] + " && nbjets>=1 && nlbjets>=2 && onZ";
+  sel["ttzNoZ"]       = sel["trigttz"] + " && nbjets>=1 && nlbjets>=2 && (!onZ)";
+  sel["ttzNoB"]       = sel["trigttz"] + " && nbjets==0 && onZ";
   sel["nb1"]          = " && nbjets==1";
   sel["nb2"]          = " && nbjets>=2";
   sel["nb1_nt0"]      = " && nbjets==1 && ncttstd==0";
@@ -340,6 +474,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   PlotStuff* plotslepcr = setupPlots(srconf,    inputdir, outputdir, lepselwgt, plotlog, format, lumistr, "output_lepcr.root");
   PlotStuff* plotsphocr = setupPlots(phocrconf, inputdir+"/photoncr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_phocr.root");
   PlotStuff* plotszllcr = setupPlots(zllcrconf, inputdir+"/zllcr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_zllcr.root");
+  PlotStuff* plotsttzcr = setupPlots(ttzcrconf, inputdir+"/ttzcr", outputdir, basewgtcr, plotlog, format, crlumistr, "output_ttzcr.root");
 
   cout << "Plotting 0lepton region" << endl;
 
@@ -386,6 +521,14 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
 
   plotszllcr->plot();
 
+  cout << "Plotting ttZ region" << endl;
+
+  plotsttzcr->addTreeVar("extProcess_ttzcr_sel",     "extProcess",  sel["ttzSel"],                  "extProcess", 13,-.5,12.5);
+  plotsttzcr->addTreeVar("extProcess_ttzcr_noz",     "extProcess",  sel["ttzNoZ"],                  "extProcess", 13,-.5,12.5);
+  plotsttzcr->addTreeVar("extProcess_ttzcr_nob",     "extProcess",  sel["ttzNoB"],                  "extProcess", 13,-.5,12.5);
+
+  plotsttzcr->plot();
+
   cout << "Setting up prediction" << endl;
 
   vector<Sample*> samples0l;
@@ -395,6 +538,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   TFile* filelepcr   = new TFile(plotslepcr->outfileName());
   TFile* filephocr   = new TFile(plotsphocr->outfileName());
   TFile* filezllcr   = new TFile(plotszllcr->outfileName());
+  TFile* filettzcr   = new TFile(plotsttzcr->outfileName());
 
   //HistMap data, lostlep, znunu, qcd, ttz;
   BinMap  lepcrtosr, qcdcrtosr, phocrtosr, zllcrtosr;
@@ -413,7 +557,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
   TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
   TH1F* qcd            = getQCDPred(file0l, "sr", "qcdcr", srbins, qcdcrtosr, qcdfitfile);
-  TH1F* ttz            = getSRHist (file0l, "ttZ", "sr",      srbins);
+  TH1F* ttz            = getTTZPred(file0l, filettzcr, "sr", "ttzcr", srbins, usettzsf);
 
   removeZeroes(qcd);
   removeZeroes(ttz);
@@ -459,7 +603,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/Wor
   plots->setMaxScale(2.0);  
 
   vector<TString> labels = {"Data", "t#bar{t}/W", "Z#rightarrow#nu#nu", "t#bar{t}Z", "QCD"};
-  vector<TString> names = {"data_sr", "lostlep_pred_sr", "znunu_pred_sr", "ttZ_sr", "qcd_pred_sr"};
+  vector<TString> names = {"data_sr", "lostlep_pred_sr", "znunu_pred_sr", "ttZ_pred_sr", "qcd_pred_sr"};
 
   plots->setDataName("data_sr");
   plots->addCompSet("datavspred",names,labels);
