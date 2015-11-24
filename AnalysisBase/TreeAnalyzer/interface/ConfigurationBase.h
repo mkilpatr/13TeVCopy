@@ -229,6 +229,10 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
+    TString tnpElCorrectionFile;
+    TString tnpMuCorrectionFile;
+    ucsbsusy::CORRTYPE tnpElCorrType;
+    ucsbsusy::CORRTYPE tnpMuCorrType;
 
 
     int bTagCorrections;
@@ -246,6 +250,8 @@ namespace cfgSet {
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        tnpElCorrType(ucsbsusy::NONE),
+        tnpMuCorrType(ucsbsusy::NONE),
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
@@ -273,7 +279,7 @@ namespace cfgSet {
         if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT)
           os << "BYEVTWEIGHT H("<<corrTypeName(a.heavyBTagCorrType)<<") L("<<corrTypeName(a.lightBTagCorrType)<<")" << std::endl;
         os << std::endl;
-      } 
+      }
 
       if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
         os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
@@ -286,6 +292,10 @@ namespace cfgSet {
         else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
+          os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
+             << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
+          os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";

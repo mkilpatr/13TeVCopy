@@ -55,29 +55,29 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
 
   if(options_ & LOADRECO){
     clog << "reco ";
-    treeReader->setBranchAddress(branchName , "pt"          , &pt          , true);
-    treeReader->setBranchAddress(branchName , "eta"         , &eta         , true);
-    treeReader->setBranchAddress(branchName , "phi"         , &phi         , true);
-    treeReader->setBranchAddress(branchName , "mass"        , &mass        , true);
-    treeReader->setBranchAddress(branchName , "q"           , &q           , true);
-    treeReader->setBranchAddress(branchName , "SCeta"       , &scEta       , true);
-    treeReader->setBranchAddress(branchName , "r9"          , &r9          , true);
-    treeReader->setBranchAddress(branchName , "d0"          , &d0          , true);
-    treeReader->setBranchAddress(branchName , "dz"          , &dz          , true);
-    treeReader->setBranchAddress(branchName , "sip3d"       , &sip3d       , true);
-    treeReader->setBranchAddress(branchName , "pfdbetaiso"  , &pfdbetaiso  , true);
-    //treeReader->setBranchAddress(branchName , "mvaidnontrig", &mvaidnontrig, true);
-    //treeReader->setBranchAddress(branchName , "mvaidtrig"   , &mvaidtrig   , true);
-    treeReader->setBranchAddress(branchName , "vetoid"      , &isveto      , true);
-    treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
-    treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
-    treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
-    treeReader->setBranchAddress(branchName , "passMediumIDOnly", &ismediumid, true);
-    treeReader->setBranchAddress(branchName , "passLooseIDOnly" , &islooseid , true);
-    treeReader->setBranchAddress(branchName , "miniiso"     , &miniiso     , true);
-    treeReader->setBranchAddress(branchName , "ptrel"       , &ptrel       , true);
-    treeReader->setBranchAddress(branchName , "ptratio"     , &ptratio     , true);
-    treeReader->setBranchAddress(branchName , "annulus"     , &annulus     , true);
+    treeReader->setBranchAddress(branchName , "pt"              , &pt          , true);
+    treeReader->setBranchAddress(branchName , "eta"             , &eta         , true);
+    treeReader->setBranchAddress(branchName , "phi"             , &phi         , true);
+    treeReader->setBranchAddress(branchName , "mass"            , &mass        , true);
+    treeReader->setBranchAddress(branchName , "q"               , &q           , true);
+    treeReader->setBranchAddress(branchName , "SCeta"           , &scEta       , true);
+    treeReader->setBranchAddress(branchName , "r9"              , &r9          , true);
+    treeReader->setBranchAddress(branchName , "d0"              , &d0          , true);
+    treeReader->setBranchAddress(branchName , "dz"              , &dz          , true);
+    treeReader->setBranchAddress(branchName , "sip3d"           , &sip3d       , true);
+    treeReader->setBranchAddress(branchName , "pfdbetaiso"      , &pfdbetaiso  , true);
+    //treeReader->setBranchAddress(branchName , "mvaidnontrig"    , &mvaidnontrig, true);
+    //treeReader->setBranchAddress(branchName , "mvaidtrig"       , &mvaidtrig   , true);
+    treeReader->setBranchAddress(branchName , "vetoid"          , &isveto      , true);
+    treeReader->setBranchAddress(branchName , "looseid"         , &isloose     , true);
+    treeReader->setBranchAddress(branchName , "mediumid"        , &ismedium    , true);
+    treeReader->setBranchAddress(branchName , "tightid"         , &istight     , true);
+    treeReader->setBranchAddress(branchName , "passMediumIDOnly", &ismediumid  , true);
+    treeReader->setBranchAddress(branchName , "passLooseIDOnly" , &islooseid   , true);
+    treeReader->setBranchAddress(branchName , "miniisoeacorr"   , &miniiso     , true);
+    treeReader->setBranchAddress(branchName , "ptrel"           , &ptrel       , true);
+    treeReader->setBranchAddress(branchName , "ptratio"         , &ptratio     , true);
+    treeReader->setBranchAddress(branchName , "annuluseacorr"   , &annulus     , true);
   }
   if(options_ & FILLOBJ)
     clog << "+Objects";
@@ -114,12 +114,15 @@ void ElectronReader::refresh(){
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setAnnulusActivity(annulus->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
+      electrons.back().setIsGoodPOGElectronId(eleId->passElectronId((&electrons.back()), eleId->MEDIUMID));
       electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
+      electrons.back().setIsTightIsoElectron(eleId->passElectronId((&electrons.back()), eleId->TIGHT));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
       electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
       electrons.back().setIsMiniIsoVetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
       electrons.back().setIsMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
+      electrons.back().setIsMT2VetoElectronId(eleId->passElectronId((&electrons.back()), eleId->MT2VetoId));
     }
   }
 }

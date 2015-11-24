@@ -11,7 +11,6 @@
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
-
 class TFile;
 
 namespace ucsbsusy {
