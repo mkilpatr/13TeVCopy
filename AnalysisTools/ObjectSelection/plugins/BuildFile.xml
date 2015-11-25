@@ -3,3 +3,7 @@
 <library   name="AnalysisToolsObjectSelectionPlugins" file="*.cc">
    <flags   EDM_PLUGIN="1"/>
 </library>
+<library name="AnalysisToolsObjectSelectionPlugins_cuts" file="cuts/*.cc">
+  <use   name="RecoEgamma/EgammaTools"/>
+  <flags   EDM_PLUGIN="1"/>
+</library>
