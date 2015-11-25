@@ -118,14 +118,19 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
 
 
+## ============================================================================================================== ##
 ## get puppi corrected ak8 jets using jettoolbox
 from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 process.load('CommonTools.PileupAlgos.Puppi_cff')
 process.puppi.useExistingWeights = True
 process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
 process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
-jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=True, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
-#if ISDATA :
+if ISDATA :
+   jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=False, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+else :
+   jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=True, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+## ============================================================================================================== ##
+
 
 
 #==============================================================================================================================#
@@ -274,6 +279,11 @@ if usePrivateSQlite:
                 tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
                 label= cms.untracked.string("AK4PFchs")
                 ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK8PFchs"),
+                label= cms.untracked.string("AK8PFchs")
+             ),
             )
                                )
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
