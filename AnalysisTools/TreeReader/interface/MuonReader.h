@@ -56,6 +56,7 @@ namespace ucsbsusy {
       std::vector<float> *	miniiso;
       std::vector<float> *	ptrel;
       std::vector<float> *	ptratio;
+      std::vector<float> *	annulus;
 
       MuonFCollection muons;
 

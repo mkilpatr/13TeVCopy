@@ -10,7 +10,8 @@
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
-#include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 
 #include <iostream>
@@ -67,7 +68,8 @@ namespace cfgSet {
       cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
       cleanJetsvVetoedTracks  (false),
-      cleanJetsMaxDR           (-1)
+      cleanJetsMaxDR           (-1),
+      JES                      (0)
     {};
     virtual ~JetConfig() {};
 
@@ -78,6 +80,7 @@ namespace cfgSet {
       os << "The min jet pt is "<< a.minBJetPt <<std::endl;
       os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
       os << "The default CSV is "<< a.defaultCSV <<std::endl;
+      os << "The JES variation is " << a.JES << std::endl;
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
       if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
@@ -94,6 +97,8 @@ namespace cfgSet {
 
     float   minEPt     ;
     float   maxEEta    ;
+    float   maxED0     ;
+    float   maxEDz     ;
     bool    (ucsbsusy::ElectronF::*selectedElectron)() const;
 
     float   minMuPt     ;
@@ -105,6 +110,8 @@ namespace cfgSet {
     LeptonConfig(TString inName = "NULL") :BaseConfig(inName),
       minEPt  (-1),
       maxEEta (-1),
+      maxED0  (-1),
+      maxEDz  (-1),
       selectedElectron(0),
       minMuPt         (-1),
       maxMuEta        (-1),
@@ -118,6 +125,8 @@ namespace cfgSet {
       os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
       os << "The min electron Pt is "<< a.minEPt <<std::endl;
       os << "The max electron eta is "<< a.maxEEta <<std::endl;
+      os << "The electron max D0 is "<< a.maxED0 <<std::endl;
+      os << "The electron max Dz "<< a.maxEDz <<std::endl;
       os << "The min muon pt is "<< a.minMuPt <<std::endl;
       os << "The max muon eta is "<< a.maxMuEta <<std::endl;
       os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
@@ -187,11 +196,15 @@ namespace cfgSet {
     float   minPt     ;
     float   maxEta    ;
     bool    (ucsbsusy::PhotonF::*selected)() const;
+    bool    usePixelSeedVeto;
+    bool    useElectronVeto;
 
     PhotonConfig(TString inName = "NULL") :BaseConfig(inName),
       minPt  (-1),
       maxEta (-1),
-      selected(0)
+      selected(0),
+      usePixelSeedVeto(false),
+      useElectronVeto(false)
     {};
     virtual ~PhotonConfig() {};
 
@@ -208,21 +221,41 @@ namespace cfgSet {
   public:
     int ttbarCorrections;
     int eventCorrections;
-    int jetCorrections;
+    int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile; 
-    TString jetCorrectionFile;
+    TString puCorrectionFile;
     TString leptonCorrectionFile;
+    TString tnpElCorrectionFile;
+    TString tnpMuCorrectionFile;
+    ucsbsusy::CORRTYPE tnpElCorrType;
+    ucsbsusy::CORRTYPE tnpMuCorrType;
+
+
+    int bTagCorrections;
+    TString bTagEffFile;
+    TString bTagSFFile;
+    ucsbsusy::CORRTYPE heavyBTagCorrType;
+    ucsbsusy::CORRTYPE lightBTagCorrType;
+
+    TString jetResFile;
+    double  jetResCorr;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT),
-        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
-
+        puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
+        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        tnpElCorrType(ucsbsusy::NONE),
+        tnpMuCorrType(ucsbsusy::NONE),
+        bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
+        heavyBTagCorrType(ucsbsusy::NONE),
+        lightBTagCorrType(ucsbsusy::NONE),
+        jetResCorr(1)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -241,30 +274,43 @@ namespace cfgSet {
         os << std::endl;
 
       }
-      if(a.jetCorrections != ucsbsusy::JetCorrectionSet::NULLOPT){
-        os << "Applying jet corrections from " << a.jetCorrectionFile.Data() <<" -> ";
-        if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT)
-          os << "BTAGWEIGHT " << std::endl;
-        else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
-          os << "BTAGOBJECTS " << std::endl;        
-        if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
-          throw  "****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS";
+      if(a.bTagCorrections != ucsbsusy::BTagCorrectionSet::NULLOPT){
+        os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
+        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT)
+          os << "BYEVTWEIGHT H("<<corrTypeName(a.heavyBTagCorrType)<<") L("<<corrTypeName(a.lightBTagCorrType)<<")" << std::endl;
         os << std::endl;
- 
-      } 
+      }
 
-      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
-        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
-        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
-          os << "LEP " << std::endl;
+      if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
+        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
+          os << "LEP ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)
+          os << "USE_HPSTAUS ";
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_UP)
+          os << "VARY_UP " << std::endl;
+        else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
+          os << "VARY_DOWN " << std::endl;
         os << std::endl;
-	}
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
+          os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
+             << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
+          os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+      }
+      if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
+        if(a.puCorrections & ucsbsusy::EventCorrectionSet::TRUEPU)
+          os << "TRUEPU " << std::endl;
+        os << std::endl;
+      }
       if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
         os << "Applying jet and MET corrections -> ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)
           os << "METScale ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESOLUTION)
           os << "METResolution ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION)
+          os << "JetResolution ("<< a.jetResCorr<<")";
         os << std::endl;
       }
       return os;

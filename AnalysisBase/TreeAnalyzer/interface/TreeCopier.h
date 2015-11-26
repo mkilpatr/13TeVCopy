@@ -23,7 +23,7 @@ namespace ucsbsusy {
   class TreeCopier : public BaseTreeAnalyzer {
   public:
 
-    TreeCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0);
+    TreeCopier(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars);
     virtual ~TreeCopier();
 
     virtual void setupTree() = 0; //Used by the child classes
@@ -43,8 +43,8 @@ namespace ucsbsusy {
 
   class TreeCopierAllBranches : public TreeCopier {
   public:
-    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false,cfgSet::ConfigSet * pars = 0) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
+    TreeCopierAllBranches(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) :
+      TreeCopier(fileName,treeName,outFileName,randomSeed,isMCTree,pars) {}
 
     virtual void setupTree() {
       reader.getTree()->SetBranchStatus("*",1);
@@ -56,8 +56,8 @@ namespace ucsbsusy {
 
   class TreeCopierLoadedBranches : public TreeCopier {
   public:
-    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
+    TreeCopierLoadedBranches(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars) :
+      TreeCopier(fileName,treeName,outFileName,randomSeed,isMCTree,pars) {}
 
     virtual void setupTree() {
       outFile_ = new TFile(outFileName_,"RECREATE");
@@ -68,8 +68,8 @@ namespace ucsbsusy {
 
   class TreeCopierManualBranches : public TreeCopier {
   public:
-    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0) :
-      TreeCopier(fileName,treeName,outFileName,isMCTree,pars) {}
+    TreeCopierManualBranches(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars) :
+      TreeCopier(fileName,treeName,outFileName,randomSeed,isMCTree,pars) {}
   public:
     virtual void setupTree() {
       outFile_ = new TFile(outFileName_,"RECREATE");
@@ -169,7 +169,7 @@ namespace ucsbsusy {
 
   class TreeFlattenCopier : public BaseTreeAnalyzer {
   public:
-    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, bool isMCTree = false, cfgSet::ConfigSet * pars = 0);
+    TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars);
     virtual ~TreeFlattenCopier();
 
     template<typename Type>

@@ -12,4 +12,14 @@ where "set lumi" is a lumi you must manually set
 
 2)To perform in depth tau studies, please use the tauEffAnalysis and the CreateHTRatios
 
+=========================
+
+additional instructions for running createSlimLepCorrections.C:
+
+Use makeZeroLeptonSRTrees.C to make trees for the htmht data and all relevent MC samples. All the MC files need to be added together into one tree. The names/locations of these trees are specified at the top of the macro. The trees I've been using are here:
+/uscms/home/mullin/nobackup/stuff2015/lepCor/trees/151008_lepactivity/
+
+The lumi, trigger/filters, cuts, etc are also specified at the top of the file. There's also a string for cuts to get the corrections per bin, but the implementation of this still needs to be verified since I'm still getting some odd results.
+
+A bunch of numbers will be printed out for each lepton type. Most of these are for debugging/cross-checks. The important ones are the MC eff and correction that are printed between the lines of "=".
 

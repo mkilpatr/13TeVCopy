@@ -2,6 +2,8 @@
 #include "AnalysisMethods/TnPUtils/interface/TagProbeFitter.h"
 #endif
 
+using namespace std;
+
 // map of PDF labels and vector holding the corresponding PDF commands
 map<string, vector<string>> fitPDFs;
 
@@ -103,37 +105,65 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
                const string templateFile = "AnalysisMethods/macros/TnP/MCTemplates/zmm_templates.root", // file with MC templates, relevant for PDFs using MC-based Z-shape
                const bool   doPtEtaEff   = true,          // 2D pt-eta binning of efficiencies
                const bool   doPtEff      = true,          // pt-binned efficiencies
-               const bool   doEtaEff     = true)          // eta-binned efficiencies
+               const bool   doEtaEff     = true,          // eta-binned efficiencies
+               const bool   doHtEff      = false,          // htalong-binned eff
+               const bool   doPtHtEff    = false,          // 2D pt-htalong binning
+               const bool   doAnEff      = false,          // annulus-binned eff
+               const bool   doPtAnEff    = false)          // 2D pt-annulus binning
 {
 
   // 2D pt/eta binning for effs
   EfficiencySet pt_eta_effset("pt_eta_eff");
-  pt_eta_effset.binning["pt"] = {10.0, 20.0, 30.0, 40.0, 60.0, 100.0};
-  pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.6, 2.4}; // muons
-  //pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.5, 2.4};   // electrons
+  pt_eta_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  //pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.6, 2.4}; // muons
+  pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.5, 2.4}; // electrons
+
+  // 2D pt/htalong binning for effs
+  EfficiencySet pt_ht_effset("pt_eta_eff");
+  pt_ht_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_ht_effset.binning["htalong"] = {0.0, 50.0, 100.0, 300.0};   // htalong
+
+  // 2D pt/annulus binning for effs
+  EfficiencySet pt_an_effset("pt_eta_eff");
+  pt_an_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
 
   // effs vs pt
   EfficiencySet pt_effset("pt_eff");
-  pt_effset.binning["pt"] = {10.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
 
   // effs vs eta
   EfficiencySet eta_effset("eta_eff");
-  eta_effset.binning["eta"] = {-2.4, -1.6, -0.8, 0.0, 0.8, 1.6, 2.4}; // muons
-  //eta_effset.binning["eta"] = {-2.4, -1.5, -0.8, 0.0, 0.8, 1.5, 2.4};   // electrons
+  //eta_effset.binning["eta"] = {-2.4, -1.6, -0.8, 0.0, 0.8, 1.6, 2.4}; // muons
+  eta_effset.binning["eta"] = {-2.4, -1.5, -0.8, 0.0, 0.8, 1.5, 2.4}; // electrons
+
+  // effs vs htalong
+  EfficiencySet ht_effset("eta_eff");
+  ht_effset.binning["htalong"] = {0.0, 50.0, 100.0, 300.0};   // htalong
+
+  // effs vs annulus
+  EfficiencySet an_effset("eta_eff");
+  an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
 
   // which efficiency parametrizations to evaluate
   vector<EfficiencySet> effsets;
   if(doPtEtaEff) effsets.push_back(pt_eta_effset);
   if(doPtEff)    effsets.push_back(pt_effset);
   if(doEtaEff)   effsets.push_back(eta_effset);
+  if(doHtEff)    effsets.push_back(ht_effset);
+  if(doPtHtEff)  effsets.push_back(pt_ht_effset);
+  if(doAnEff)    effsets.push_back(an_effset);
+  if(doPtAnEff)  effsets.push_back(pt_an_effset);
 
   // add relevant variables from tree: parameters are name, title, min, max, units
   vector<TnPVariable> vars;
-  vars.push_back(TnPVariable("mass","m_{ll}",60,120,"GeV"));
+  vars.push_back(TnPVariable("mass","m_{ll}",70,110,"GeV")); // was 60,120, try with 75,105
   vars.push_back(TnPVariable("weight","weight",0,1e+08,""));
   vars.push_back(TnPVariable("pt","Probe p_{T}",0,1000,"GeV"));
   vars.push_back(TnPVariable("eta","Probe #eta",-2.4,2.4,""));
   vars.push_back(TnPVariable("abseta","Probe |#eta|",0,2.4,""));
+  vars.push_back(TnPVariable("htalong","Probe ht_{along}",0,1000,"GeV"));
+  vars.push_back(TnPVariable("annulus","Probe annulus",0,1,""));
 
   // hold default PDF name (first entry), and, if there are different PDFs used for different bins/categories, hold pairs of bin name - PDF name
   vector<string> binToPDFmap;
@@ -259,6 +289,104 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
     }
   }
 
+  if(doPtHtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
+    for(int ipt = 0; ipt < pt_ht_effset.binning["pt"].size()-1; ++ipt) {
+      for(int iht = 0; iht < pt_ht_effset.binning["htalong"].size()-1; ++iht) {
+        TString pthtbinstr = TString::Format("%2.1fTo%2.1f_%2.1fTo%2.1f", pt_ht_effset.binning["pt"][ipt], pt_ht_effset.binning["pt"][ipt+1], pt_ht_effset.binning["htalong"][iht], pt_ht_effset.binning["htalong"][iht+1]);
+        TString pthtbinlabel = TString::Format("htalong_bin%d;pt_bin%d",iht,ipt);
+
+        string catlabel = "{" + string(pthtbinlabel.Data()) + "}";
+
+        pthtbinlabel.ReplaceAll(";","__");
+
+        string pdflabel = "MCConvGaussPlusErfExp_"+string(pthtbinlabel.Data());
+        fitPDFs[pdflabel] = {
+              "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+              "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+              "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+pthtbinstr.Data()+"_Pass\")",
+              "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+pthtbinstr.Data()+"_Fail\")",
+              "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+              "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+              "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+              "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+              "efficiency[0.5,0,1]",
+              "signalFractionInPassing[1.0]"};
+
+        if(fitModel == "MCConvGaussPlusErfExp") {
+          binToPDFmap.push_back(catlabel);
+          binToPDFmap.push_back(pdflabel);
+        }
+
+        pdflabel = "MCConvGaussPlusExp_"+string(pthtbinlabel.Data());
+        fitPDFs[pdflabel] = {
+              "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+              "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+              "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+pthtbinstr.Data()+"_Pass\")",
+              "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+pthtbinstr.Data()+"_Fail\")",
+              "RooExponential::backgroundPass(mass, aPass[-0.1, -1., 0])",
+              "RooExponential::backgroundFail(mass, aFail[-0.1, -1., 0])",
+              "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+              "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+              "efficiency[0.5,0,1]",
+              "signalFractionInPassing[0.9]"};
+
+        if(fitModel == "MCConvGaussPlusExp") {
+          binToPDFmap.push_back(catlabel);
+          binToPDFmap.push_back(pdflabel);
+        }
+      }
+    }
+  }
+
+  if(doPtAnEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
+    for(int ipt = 0; ipt < pt_an_effset.binning["pt"].size()-1; ++ipt) {
+      for(int iht = 0; iht < pt_an_effset.binning["annulus"].size()-1; ++iht) {
+        TString ptanbinstr = TString::Format("%2.1fTo%2.1f_%2.1fTo%2.1f", pt_an_effset.binning["pt"][ipt], pt_an_effset.binning["pt"][ipt+1], pt_an_effset.binning["annulus"][iht], pt_an_effset.binning["annulus"][iht+1]);
+        TString ptanbinlabel = TString::Format("annulus_bin%d;pt_bin%d",iht,ipt);
+
+        string catlabel = "{" + string(ptanbinlabel.Data()) + "}";
+
+        ptanbinlabel.ReplaceAll(";","__");
+
+        string pdflabel = "MCConvGaussPlusErfExp_"+string(ptanbinlabel.Data());
+        fitPDFs[pdflabel] = {
+              "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+              "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+              "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+ptanbinstr.Data()+"_Pass\")",
+              "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+ptanbinstr.Data()+"_Fail\")",
+              "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+              "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+              "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+              "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+              "efficiency[0.5,0,1]",
+              "signalFractionInPassing[1.0]"};
+
+        if(fitModel == "MCConvGaussPlusErfExp") {
+          binToPDFmap.push_back(catlabel);
+          binToPDFmap.push_back(pdflabel);
+        }
+
+        pdflabel = "MCConvGaussPlusExp_"+string(ptanbinlabel.Data());
+        fitPDFs[pdflabel] = {
+              "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+              "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+              "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+ptanbinstr.Data()+"_Pass\")",
+              "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+ptanbinstr.Data()+"_Fail\")",
+              "RooExponential::backgroundPass(mass, aPass[-0.1, -1., 0])",
+              "RooExponential::backgroundFail(mass, aFail[-0.1, -1., 0])",
+              "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+              "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+              "efficiency[0.5,0,1]",
+              "signalFractionInPassing[0.9]"};
+
+        if(fitModel == "MCConvGaussPlusExp") {
+          binToPDFmap.push_back(catlabel);
+          binToPDFmap.push_back(pdflabel);
+        }
+      }
+    }
+  }
+
   if(doPtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_effset.binning["pt"].size()-1; ++ipt) {
       TString ptbinstr = TString::Format("%2.1fTo%2.1f", pt_effset.binning["pt"][ipt], pt_effset.binning["pt"][ipt+1]);
@@ -344,6 +472,100 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
             "efficiency[0.5,0,1]",
             "signalFractionInPassing[0.9]"};
   
+      if(fitModel == "MCConvGaussPlusExp") {
+        binToPDFmap.push_back(catlabel);
+        binToPDFmap.push_back(pdflabel);
+      }
+    }
+  }
+
+  if(doHtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
+    for(int iht = 0; iht < ht_effset.binning["htalong"].size()-1; ++iht) {
+      double minhtalong = min(fabs(ht_effset.binning["htalong"][iht]), fabs(ht_effset.binning["htalong"][iht+1]));
+      double maxhtalong = max(fabs(ht_effset.binning["htalong"][iht]), fabs(ht_effset.binning["htalong"][iht+1]));
+      TString htalongbinstr = TString::Format("%2.1fTo%2.1f", minhtalong, maxhtalong);
+      TString htalongbinlabel = TString::Format("htalong_bin%d",iht);
+
+      string catlabel = "{" + string(htalongbinlabel.Data()) + "}";
+
+      string pdflabel = "MCConvGaussPlusErfExp_"+string(htalongbinlabel.Data());
+      fitPDFs[pdflabel] = {
+            "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+            "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+            "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+htalongbinstr.Data()+"_Pass\")",
+            "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+htalongbinstr.Data()+"_Fail\")",
+            "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+            "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+            "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+            "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+            "efficiency[0.5,0,1]",
+            "signalFractionInPassing[1.0]"};
+
+      if(fitModel == "MCConvGaussPlusErfExp") {
+        binToPDFmap.push_back(catlabel);
+        binToPDFmap.push_back(pdflabel);
+      }
+
+      pdflabel = "MCConvGaussPlusExp_"+string(htalongbinlabel.Data());
+      fitPDFs[pdflabel] = {
+            "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+            "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+            "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+htalongbinstr.Data()+"_Pass\")",
+            "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+htalongbinstr.Data()+"_Fail\")",
+            "RooExponential::backgroundPass(mass, aPass[-0.1, -1., 0])",
+            "RooExponential::backgroundFail(mass, aFail[-0.1, -1., 0])",
+            "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+            "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+            "efficiency[0.5,0,1]",
+            "signalFractionInPassing[0.9]"};
+
+      if(fitModel == "MCConvGaussPlusExp") {
+        binToPDFmap.push_back(catlabel);
+        binToPDFmap.push_back(pdflabel);
+      }
+    }
+  }
+
+  if(doAnEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
+    for(int iht = 0; iht < an_effset.binning["annulus"].size()-1; ++iht) {
+      double minannulus = min(fabs(an_effset.binning["annulus"][iht]), fabs(an_effset.binning["annulus"][iht+1]));
+      double maxannulus = max(fabs(an_effset.binning["annulus"][iht]), fabs(an_effset.binning["annulus"][iht+1]));
+      TString anbinstr = TString::Format("%2.1fTo%2.1f", minannulus, maxannulus);
+      TString anbinlabel = TString::Format("annulus%d",iht);
+
+      string catlabel = "{" + string(anbinlabel.Data()) + "}";
+
+      string pdflabel = "MCConvGaussPlusErfExp_"+string(anbinlabel.Data());
+      fitPDFs[pdflabel] = {
+            "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+            "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+            "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+anbinstr.Data()+"_Pass\")",
+            "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+anbinstr.Data()+"_Fail\")",
+            "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+            "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+            "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+            "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+            "efficiency[0.5,0,1]",
+            "signalFractionInPassing[1.0]"};
+
+      if(fitModel == "MCConvGaussPlusErfExp") {
+        binToPDFmap.push_back(catlabel);
+        binToPDFmap.push_back(pdflabel);
+      }
+
+      pdflabel = "MCConvGaussPlusExp_"+string(anbinlabel.Data());
+      fitPDFs[pdflabel] = {
+            "RooGaussian::signalResPass(mass, meanP[.0,-5.000,5.000],sigmaP[0.956,0.00,5.000])",
+            "RooGaussian::signalResFail(mass, meanF[.0,-5.000,5.000],sigmaF[0.956,0.00,5.000])",
+            "ZGeneratorLineShape::signalPhyPass(mass,\""+templateFile+"\", \"hMass_"+anbinstr.Data()+"_Pass\")",
+            "ZGeneratorLineShape::signalPhyFail(mass,\""+templateFile+"\", \"hMass_"+anbinstr.Data()+"_Fail\")",
+            "RooExponential::backgroundPass(mass, aPass[-0.1, -1., 0])",
+            "RooExponential::backgroundFail(mass, aFail[-0.1, -1., 0])",
+            "FCONV::signalPass(mass, signalPhyPass, signalResPass)",
+            "FCONV::signalFail(mass, signalPhyFail, signalResFail)",
+            "efficiency[0.5,0,1]",
+            "signalFractionInPassing[0.9]"};
+
       if(fitModel == "MCConvGaussPlusExp") {
         binToPDFmap.push_back(catlabel);
         binToPDFmap.push_back(pdflabel);

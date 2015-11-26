@@ -30,6 +30,7 @@ namespace ucsbsusy {
       unsigned int  lumi;
       unsigned int  event;
       unsigned int  nPV;
+      float         nPUTrue;
       float         rho;
       float         pvx;
       float         pvy;
@@ -53,12 +54,13 @@ namespace ucsbsusy {
       size8             datrec;
       defaults::DataReco datareco;
 
-      std::vector<unsigned long> * metfilterbitflags;
       std::vector<bool>          * metfilterbitpass;
-      std::vector<bool>          * hbheHNFlt;
 
       bool hbheFixFlt;
       bool hbheFlt;
+      bool hbheIsoFlt;
+      bool hbheFltR2Loose;
+      bool hbheFltR2Tight;
       bool cscFlt;
       bool eeBadSCFlt;
 

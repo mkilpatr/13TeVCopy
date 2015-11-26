@@ -25,6 +25,7 @@ class TriggerAnalyzer : public TreeCopierManualBranches {
 
     void book() {
       i_njets         = data.add<int>  ("","njets","I",0);
+      i_njets60       = data.add<int>  ("","njets60","I",0);
       i_met           = data.add<float>("","met","F",0);
       i_passtrig      = data.add<bool> ("","passtrig","O",0);
       i_passauxtrigmu = data.add<bool> ("","passauxtrigmu","O",0);
@@ -38,6 +39,7 @@ class TriggerAnalyzer : public TreeCopierManualBranches {
     }
 
     size i_njets;
+    size i_njets60;
     size i_met;
     size i_passtrig;
     size i_passauxtrigmu;
@@ -55,30 +57,37 @@ class TriggerAnalyzer : public TreeCopierManualBranches {
         return false;
       }
 
-      data.fill<int>  (i_njets, nJets);
       data.fill<float>(i_met, met->pt());
       data.fill<bool> (i_passtrig, (triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned));
       data.fill<bool> (i_passauxtrigmu, (triggerflag & kHLT_IsoTkMu24_eta2p1));
-      data.fill<bool> (i_passauxtrigel, (triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf));
-
-      for(auto* jet : jets) {
-        data.fillMulti<float>(i_jetpt, jet->pt());
-        data.fillMulti<float>(i_jeteta, jet->eta());
-      }
+      data.fill<bool> (i_passauxtrigel, (triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf));
 
       bool ismutrigobj = false, iseltrigobj = false;
+      int nearjet = -1;
       for(auto* to : triggerObjects) {
         if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) ismutrigobj = true;
-        if((to->filterflags() & kSingleEle32) && (to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf)) iseltrigobj = true;
+        if((to->filterflags() & kSingleEle22) && (to->pathflags() & kHLT_Ele22_eta2p1_WPLoose_Gsf)) iseltrigobj = true;
         if(ismutrigobj || iseltrigobj) {
           data.fillMulti<float>(i_trigobjpt, to->pt());
           data.fillMulti<float>(i_trigobjeta, to->eta());
           data.fillMulti<int>  (i_trigobjtype, ismutrigobj ? 13 : 11);
           double nearDR = 0.0;
-          int near = PhysicsUtilities::findNearestDRDeref(*to,jets,nearDR,0.4,10.0,0,jets.size());
-          data.fillMulti<bool> (i_trigobjoverlap, near >= 0 ? true : false);
+          nearjet = PhysicsUtilities::findNearestDRDeref(*to,jets,nearDR,0.4,10.0,0,jets.size());
+          data.fillMulti<bool> (i_trigobjoverlap, nearjet >= 0 ? true : false);
         }
       }
+
+      int nj = 0, nj60 = 0;
+      for(unsigned int ijet = 0; ijet < jets.size(); ++ijet) {
+        if(ijet == nearjet) continue;
+        auto* jet = jets.at(ijet);
+        nj++;
+        if(jet->pt() > 60.0) nj60++;
+        data.fillMulti<float>(i_jetpt, jet->pt());
+        data.fillMulti<float>(i_jeteta, jet->eta());
+      }
+      data.fill<int>  (i_njets, nj);
+      data.fill<int>  (i_njets60, nj60);
 
       return true;
     }
@@ -108,11 +117,11 @@ void studyTrigger(TString sname = "singleel",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251252_13TeV_PromptReco_Collisions15_JSON.txt");
+  cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt",getenv("CMSSW_BASE")));
   cfgSet::ConfigSet pars = cfgSet::zl_search_set;
 
-  TriggerAnalyzer a(fullname, "TestAnalyzer/Events", outfilename, isMC, &pars);
+  TriggerAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
 
-  a.analyze(10000,100000);
+  a.analyze(100000);
 
 }

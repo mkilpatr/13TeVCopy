@@ -19,7 +19,7 @@ JetFlavorInfo::JetFlavor JetFlavorInfo::jetFlavor(int particleID, bool isPartonS
 //_____________________________________________________________________________
 const TString* JetFlavorInfo::jetFlavorNames()
 {
-  static const TString  NAMES[numJetFlavors+1]  = { "x","g","uds", "c", "b", "other" };
+  static const TString  NAMES[numJetFlavors+1]  = { "x","g","uds", "c", "b", "ps_g","ps_uds","ps_c","ps_b","other" };
   return NAMES;
 }
 //_____________________________________________________________________________
@@ -35,7 +35,7 @@ const TString& JetFlavorInfo::jetFlavorTag(JetFlavor flavor)
 //_____________________________________________________________________________
 const TString* JetFlavorInfo::jetFlavorTags()
 {
-  static const TString  NAMES[numJetFlavors+1]  = { "x", "g","q", "c", "b", "" };
+  static const TString  NAMES[numJetFlavors+1]  = { "x", "g","q", "c", "b", "ps_g","ps_uds","ps_c","ps_b", "" };
   return NAMES;
 }
 //_____________________________________________________________________________

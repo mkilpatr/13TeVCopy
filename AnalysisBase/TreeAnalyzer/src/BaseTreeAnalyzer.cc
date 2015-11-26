@@ -16,7 +16,8 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMCTree,cfgSet::ConfigSet * pars, TString readOption) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,readOption),
+BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
+    randGen           (new TRandom3(randomSeed)),
     run               (0),
     lumi              (0),
     event             (0),
@@ -24,6 +25,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     process           (defaults::NUMPROCESSES),
     datareco          (defaults::MC),
     nPV               (0),
+    nPU               (0),
     rho               (0),
     nSelLeptons       (0),
     nVetoedLeptons    (0),
@@ -96,16 +98,23 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     }
     if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
       eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
-      if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT)
-        eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT)
+        eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
-    if(configSet.corrections.jetCorrections != JetCorrectionSet::NULLOPT){
-      jetCorrections.load(configSet.corrections.jetCorrectionFile, configSet.corrections.jetCorrections);
-      corrections.push_back(&jetCorrections);
+    if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
+      leptonCorrections.load(configSet.corrections.leptonCorrectionFile
+                            ,configSet.corrections.tnpElCorrectionFile
+                            ,configSet.corrections.tnpMuCorrectionFile
+                            ,configSet.corrections.leptonCorrections);
+      corrections.push_back(&leptonCorrections);
+    }
+    if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
+      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagCorrections);
+      corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
   
@@ -218,6 +227,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::ELECTRONS);
   load(cfgSet::MUONS);
   load(cfgSet::PHOTONS);
+  load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS);
@@ -236,6 +246,7 @@ void BaseTreeAnalyzer::processVariables()
     lumi  = evtInfoReader.lumi;
     event = evtInfoReader.event;
     nPV   = evtInfoReader.nPV;
+    nPU   = evtInfoReader.nPUTrue;
     rho   = evtInfoReader.rho;
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
@@ -249,9 +260,9 @@ void BaseTreeAnalyzer::processVariables()
       jetAndMETCorrections.processMET(this);
       (*met) = jetAndMETCorrections.getCorrectedMET();
       (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+      if(defaultJets && defaultJets->isLoaded())
+        jetAndMETCorrections.correctJetResolution(this,defaultJets->recoJets,*met);
     }
-    if(defaultJets && defaultJets->isLoaded())
-      jetCorrector.shiftJES(defaultJets->recoJets, met);
   }
 
 
@@ -317,7 +328,7 @@ void BaseTreeAnalyzer::processVariables()
 
   vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.vetoedTracks.isConfig())
-    cfgSet::selectTracks(vetoedTracks,pfcandReader.pfcands, configSet.vetoedTracks);
+    cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.vetoedTracks);
   nVetoedTracks = vetoedTracks.size();
 
   if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
@@ -332,6 +343,7 @@ void BaseTreeAnalyzer::processVariables()
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
+    if(configSet.jets.JES) jetCorrector.shiftJES(defaultJets->recoJets, met);
     cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
   }
   nJets    = jets.size();

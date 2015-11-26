@@ -29,22 +29,9 @@ public:
   PUCorr(TFile * file) : RefoldCorrection("PU",file) {}
 };
 
-class LepCorr : public HistogramCorrection {
-public:
-  //enum axes {NPV,INPUT_MC};
-  LepCorr(TFile * file)  : HistogramCorrection("LEP",file) {}
-  void setCorrType(unsigned int a) {corrType = a;}
-static const unsigned int muCorrBin   = 1;
-static const unsigned int eleCorrBin  = 2;
-static const unsigned int tauCorrBin  = 3;
-static const unsigned int fakeBin     = 4;
-unsigned int corrType;
-enum LepCorrOptions
-{
-    VARY_UP, // assigned 0
-    VARY_DOWN, // assigned 1
-    VARY_NONE, // assigned 2
-};
+class TruePUCorr : public HistogramCorrection {
+  public :
+    TruePUCorr(TFile* file) : HistogramCorrection("puWeight",file) {}
 };
 
 class EventCorrectionSet : public CorrectionSet {
@@ -52,11 +39,11 @@ public:
   enum  CorrectionOptions {
                             NULLOPT          = 0
                           , PU               = (1 <<  0)   ///< Correct PU
-                          , LEP              = (1 <<  1)   ///< Correct LEP EFF.
+                          , TRUEPU           = (1 <<  1)   ///< Correct PU
                           , NORM             = (1 <<  2)   ///< Incl. normalization corrections
 
   };
- EventCorrectionSet(): puCorr50NS(0), puCorr(0), lepCorr(0), puWeight(1), pu50NSWeight(1), vetoLepWeight(1), selLepWeight(1), normWeight(1) {}
+ EventCorrectionSet(): puCorr50NS(0), puCorr(0), truePUCorr(0), puWeight(1), pu50NSWeight(1), truePUWeight(1), normWeight(1) {}
 
   virtual ~EventCorrectionSet() {};
   virtual void load(TString fileName, int correctionOptions = NULLOPT);
@@ -64,8 +51,7 @@ public:
 
   //individual accessors
   float getPUWeight() const {return puWeight;}
-  float getVetoLepWeight() const {return vetoLepWeight;}
-  float getSelLepWeight() const {return selLepWeight;}
+  float getTruePUWeight() const {return truePUWeight;}
   float get50NSPUWeight() const {return pu50NSWeight;}
   float getNormWeight() const {return normWeight;}
 
@@ -73,13 +59,12 @@ private:
   //Correction list
   PUCorr50NS * puCorr50NS;
   PUCorr * puCorr;
-  LepCorr * lepCorr;
+  TruePUCorr * truePUCorr;
 
   //output values
   float puWeight;
   float pu50NSWeight;
-  float vetoLepWeight;
-  float selLepWeight;
+  float truePUWeight;
   float normWeight;
 
 };

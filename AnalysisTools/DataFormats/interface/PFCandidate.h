@@ -27,13 +27,13 @@ namespace ucsbsusy {
                 int inIndex = -1, int inPdgid = 0, int inCharge = 0,
                 float inD0 = 0, float inDz = 0, int inFromPV = 0,
                 float inMt = 0, float inDphiMet = 0, float inTauDisc = 0,
-		  int inJetIndex = -1, int inTauIndex = -1, float inTrackIso=-1.0) :
+                int inJetIndex = -1, int inTauIndex = -1, float inTrackIso=-1.0) :
                 Momentum<InputCoordSystem>(inMomentum), 
                 index_(inIndex), pdgid_(inPdgid), q_(inCharge),
                 d0_(inD0), dz_(inDz), fromPV_(inFromPV),
                 mt_(inMt), dphimet_(inDphiMet), taudisc_(inTauDisc),
                 jetIndex_(inJetIndex), tauIndex_(inTauIndex),
-		  ismvavetotau_(false),trackiso_(inTrackIso) {}
+                ismvavetotau_(false),trackiso_(inTrackIso) {}
 
       ~PFCandidate() {}
 
@@ -57,6 +57,7 @@ namespace ucsbsusy {
       bool  ischargedhadron() const { return (fabs(pdgid_) == pfhplus);    }
       bool  ismvavetotau()    const { return ismvavetotau_;                }
       float trackiso()        const { return trackiso_;       }
+      const  Momentum<CoordSystem>&  nearPhoton() const  { return nearphoton_;  }
 
       void   setIndex(int newIndex)       { index_ = newIndex;       }
       void   setPdgId(int newPdgId)       { pdgid_ = newPdgId;       }
@@ -70,7 +71,8 @@ namespace ucsbsusy {
       void   setJetIndex(int newJetIndex) { jetIndex_ = newJetIndex; }
       void   setTauIndex(int newTauIndex) { tauIndex_ = newTauIndex; }
       void   setIsMVAVetoTau(bool flag)   { ismvavetotau_ = flag;    }
-      void   setTrackIso(float newValue)  { trackiso_ = newValue;             }
+      void   setTrackIso(float newValue)  { trackiso_ = newValue;    }
+      void   setNearPhoton(const Momentum<CoordSystem>& inMom ) { nearphoton_ = inMom;    }
 
 
     protected :
@@ -87,6 +89,7 @@ namespace ucsbsusy {
       int   tauIndex_;
       bool  ismvavetotau_;
       float trackiso_;
+      Momentum<CoordSystem> nearphoton_;
 
   };
 

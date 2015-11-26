@@ -29,7 +29,7 @@ void makeOneLeptonSRTrees(TString sname = "singlemu",
   cfgSet::ConfigSet pars = pars1lep(json);
 
   TString treename = "Events";
-  OneLeptonAnalyzer a(fullname, treename, outfilename, isMC, &pars);
+  OneLeptonAnalyzer a(fullname, treename, outfilename, fileindex+2, isMC, &pars);
 
   a.analyze(10000);
 

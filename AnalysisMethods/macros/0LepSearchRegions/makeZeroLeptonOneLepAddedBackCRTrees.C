@@ -8,8 +8,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
   public :
 
-    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
+    OneLepCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars) :
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName,randomSeed, isMCTree, pars) {}
 
     bool fillEvent() {
       if(nSelLeptons!=1)      return false;
@@ -61,7 +61,7 @@ void makeZeroLeptonOneLepAddedBackCRTrees(TString sname = "ttbar_onelepcr",
   cfg.selectedLeptons.minMuPt = 30;
 */
   TString treeName = "Events";
-  OneLepCRAnalyzer a(fullname, treeName, outfilename, isMC, &pars);
+  OneLepCRAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
   a.analyze(100000);
 

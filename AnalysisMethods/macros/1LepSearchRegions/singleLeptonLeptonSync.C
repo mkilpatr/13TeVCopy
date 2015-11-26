@@ -29,8 +29,8 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
     void rankedByCSV(vector<RecoJetF*>& inJets,vector<RecoJetF*>& outJets);
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+  Analyzer(TString fileName, TString treeName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
+    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
       // configuration
       tNess     = new Topness();
       tNessInfo = new TopnessInformation();
@@ -445,7 +445,7 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
   // Declare analyzer
-  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);
+  Analyzer a(fullname, "Events",fileindex+2, isMC, &cfg, xsec, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(200000);

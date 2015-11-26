@@ -9,6 +9,7 @@ process.options = cms.untracked.PSet(
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.suppressWarning = cms.untracked.vstring('ak8PFJetsPuppiSoftDrop','ak8PFJetsPuppiPruned')
 
 # Valgrind
 #process.ProfilerService = cms.Service (
@@ -22,7 +23,6 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-#options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/PromptReco-v3/000/256/630/00000/24F810E0-335F-E511-94F4-02163E011C61.root'
 #options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
 #options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
@@ -53,13 +53,14 @@ process.source = cms.Source('PoolSource',
     skipEvents = cms.untracked.uint32(options.skipEvents)
 )
 
-
+#==============================================================================================================================#
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configuration
 
 process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
 
+# MC theory systematic weights only available for specific samples
 if 'madgraph' and not 'SMS' in options.inputFiles[0]:
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
 elif 'powheg' in options.inputFiles[0]:
@@ -69,63 +70,42 @@ elif 'amcatnlo' in options.inputFiles[0]:
 else : 
    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
-# global Tag for 50ns MC
+# Turn on jet shape info for specific datasets
+if 'Photon' in options.inputFiles[0] or 'JetHT' in options.inputFiles[0] or 'DoubleMu' in options.inputFiles[0] or 'GJets' in options.inputFiles[0] or 'QCD' in options.inputFiles[0] or 'DYJets' in options.inputFiles[0] :
+    process.TestAnalyzer.Jets.fillJetShapeInfo = cms.untracked.bool(True)
+
+# Global Tag for 50ns MC
 if '50ns' in options.inputFiles[0] :
-    process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_asymptotic50ns_v0')
+    process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_startup_v2')
 
+# Settings
 ISDATA = False
-runMetCorrAndUnc = False
-updateJECs = False
-JECUNCFILE = 'data/JEC/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt' if '25ns' in options.inputFiles[0] or '74X_mcRun2_asymptotic_v2' in options.inputFiles[0] else 'PhysicsTools/PatUtils/data/Summer15_50nsV5_MC_UncertaintySources_AK4PFchs.txt'
+runMetCorrAndUnc = True
+updateJECs = True
+JECUNCFILE = 'data/JEC/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt'
 
-
-
+# Specific to data
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
+    JECUNCFILE = 'data/JEC/Summer15_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
+    import FWCore.PythonUtilities.LumiList as LumiList
+    import os
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt")
+    process.source.lumisToProcess = LumiList.LumiList(filename = jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    JECUNCFILE = 'data/JEC/Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt'
-    if 'PromptReco-v3' in options.inputFiles[0] :
-        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
-        updateJECs = True
-        runMetCorrAndUnc = True
-    elif '05Oct2015' in options.inputFiles[0] :
-        process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v0')
-    else :
-        #process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_Prompt_v4')
-       process.TestAnalyzer.globalTag = cms.string('74X_mcRun2_asymptotic_v2')
-
+    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_v5')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
-    if '17Jul2015' in options.inputFiles[0] :
-        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','PAT')
-    elif '05Oct2015' in options.inputFiles[0] :
-        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
-    else :
-        process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
-        process.TestAnalyzer.EventInfo.metsOOB = cms.InputTag('slimmedMETs','','RECO')
-    import FWCore.PythonUtilities.LumiList as LumiList
-    import os
-    dcsOnlyJSON = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_259820_23Oct2015.txt")
-    process.source.lumisToProcess = LumiList.LumiList(filename = dcsOnlyJSON).getVLuminosityBlockRange()
+    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','RECO')
 
-# import of standard configurations
+# Import of standard configurations
 process.load("Configuration.EventContent.EventContent_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
-
-
-## get puppi corrected ak8 jets using jettoolbox
-from JMEAnalysis.JetToolbox.jetToolbox_cff import *
-process.load('CommonTools.PileupAlgos.Puppi_cff')
-process.puppi.useExistingWeights = True
-process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
-process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
-jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=True, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
-#if ISDATA :
 
 
 #==============================================================================================================================#
@@ -148,7 +128,6 @@ process.egmGsfElectronIDSequence = cms.Sequence(process.electronMVAValueMapProdu
 
 # Define which IDs we want to produce
 my_id_modules = ['AnalysisTools.ObjectSelection.cutBasedElectronID_Spring15_25ns_V1_cff',
-                 'AnalysisTools.ObjectSelection.cutBasedElectronID_Spring15_50ns_V2_cff',
                  'AnalysisTools.ObjectSelection.mvaElectronID_Spring15_25ns_nonTrig_V1_cff',
                  'AnalysisTools.ObjectSelection.mvaElectronID_Spring15_25ns_Trig_V1_cff']
 
@@ -176,19 +155,10 @@ process.TestAnalyzer.Electrons.mvatrigCategoriesMap = cms.InputTag("electronMVAV
 # Photon ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
 
-process.load("RecoEgamma.PhotonIdentification.egmPhotonIDs_cfi")
-
-# Overwrite collection name
-process.egmPhotonIDs.physicsObjectSrc = cms.InputTag('slimmedPhotons')
-
-# Load the producer module to build full 5x5 cluster shapes and whatever 
-# else is needed for IDs
-process.load('RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi')
-
-process.egmPhotonIDSequence = cms.Sequence(process.photonIDValueMapProducer * process.egmPhotonIDs)
+switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
 # Define which IDs we want to produce
-my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_50ns_V1_cff']
+my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_25ns_V1_cff']
 
 # Add them to the VID producer
 if process.TestAnalyzer.Photons.isFilled:
@@ -196,17 +166,16 @@ if process.TestAnalyzer.Photons.isFilled:
         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 # Set ID tags
-#process.TestAnalyzer.Photons.vetoId     = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-veto")
-process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-loose")
-process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-medium")
-process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-50ns-V1-standalone-tight")
+process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose")
+process.TestAnalyzer.Photons.mediumId   = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium")
+process.TestAnalyzer.Photons.tightId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-tight")
 
 if not 'Photon' in options.inputFiles[0] and not 'GJets' in options.inputFiles[0] and not 'QCD' in options.inputFiles[0] :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
 
 #==============================================================================================================================#
-# ======================== HCAL_Noise_Filter ===================================
+# HCAL Noise Filter 
 process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
 process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
 process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(False) 
@@ -225,7 +194,6 @@ process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFi
 process.ApplyBaselineHBHENoiseFilterRun2Tight = process.ApplyBaselineHBHENoiseFilter.clone(
    inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Tight'),
 )
-# ================================ end of HCAL NOISE FILTER =====================
 
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
@@ -240,13 +208,15 @@ if ISDATA :
     delattr(process,'ak4FlvAssoc')
     delattr(process,'redGenAssoc')
 
+process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE)
+
 #==============================================================================================================================#
 # Custom METs
-# Configurable options =======================================================================
+# Configurable options
 runOnData=ISDATA        #data/MC switch
 usePrivateSQlite=False  #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
-applyResiduals=True     #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
+applyResiduals=True     #application of residual corrections.
 
 # For adding NoHF MET
 if not useHFCandidates:
@@ -255,11 +225,11 @@ if not useHFCandidates:
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
                                      )
 
-# Run using external JECs
+# Run using external JECs if required
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era="Summer15_25nsV5_DATA"
+    era="Summer15_25nsV6_DATA" if ISDATA else "Summer15_25nsV6_MC"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
                                connect = cms.string( "sqlite_file://"+dBFile ),
@@ -273,6 +243,11 @@ if usePrivateSQlite:
                 record = cms.string("JetCorrectionsRecord"),
                 tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
                 label= cms.untracked.string("AK4PFchs")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK8PFchs"),
+                label= cms.untracked.string("AK8PFchs")
                 ),
             )
                                )
@@ -289,7 +264,8 @@ if runMetCorrAndUnc :
                                isData=runOnData,
                                jecUncFile=JECUNCFILE
                                )
-    getattr(process,"slimmedMETs").t01Variation = cms.InputTag("slimmedMETs","","RECO")
+    process.shiftedPatJetEnDown.jetCorrUncertaintyTag = cms.string("")
+    process.shiftedPatJetEnUp.jetCorrUncertaintyTag = cms.string("")
     process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETs','','run')
 
     if not useHFCandidates:
@@ -299,7 +275,8 @@ if runMetCorrAndUnc :
                                    pfCandColl=cms.InputTag("noHFCands"),
                                    postfix="NoHF"
                                    )
-        getattr(process,"slimmedMETsNoHF").t01Variation = cms.InputTag("slimmedMETsNoHF","","RECO")
+        process.shiftedPatJetEnDownNoHF.jetCorrUncertaintyTag = cms.string("")
+        process.shiftedPatJetEnUpNoHF.jetCorrUncertaintyTag = cms.string("")
         process.TestAnalyzer.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF','','run')
 
     # The lines below remove the L2L3 residual corrections when processing data
@@ -320,13 +297,30 @@ if runMetCorrAndUnc :
               process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
 
 #==============================================================================================================================#
-process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE)
+# Filter to remove super large MET events
+from AnalysisBase.Analyzer.eventfilters_cfi import met131TeVFilter
+
+process.met131TeVFilter = met131TeVFilter
+process.met131TeVFilter.globalTag = process.TestAnalyzer.globalTag
+process.met131TeVFilter.isData = process.TestAnalyzer.isData
 
 #==============================================================================================================================#
-from AnalysisBase.Analyzer.eventfilters_cfi import met131TeVFilter
-process.met131TeVFilter = met131TeVFilter
+# Get puppi corrected ak8 jets using jettoolbox
+from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 
-# Also update jets with different JECs
+process.load('CommonTools.PileupAlgos.Puppi_cff')
+
+process.puppi.useExistingWeights = True
+process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
+process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
+
+if ISDATA and applyResiduals:
+    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=False, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+else :
+    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+
+#==============================================================================================================================#
+# Also update jets with different JECs if needed
 if updateJECs:
     print 'Adding sequence to update JECs'
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
@@ -365,9 +359,9 @@ if updateJECs:
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
 
-    process.p = cms.Path(process.met131TeVFilter *
-                         process.patJetCorrFactorsReapplyJEC *
+    process.p = cms.Path(process.patJetCorrFactorsReapplyJEC *
                          process.patJetCorrFactorsReapplyJECAK8 *
+                         process.met131TeVFilter *
                          process.patJetsReapplyJEC        *
                          process.patJetsAK8ReapplyJEC     *
                          process.ak4PatAssocSeq           * 

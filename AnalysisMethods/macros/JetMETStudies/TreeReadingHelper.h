@@ -7,6 +7,12 @@
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
 #include "AnalysisMethods/PlotUtils/interface/PlotTools.hh"
 
+int colorGetter(int counter){
+  int color = counter+1;
+  if(color>= 10) color++;
+  return color;
+}
+
 struct PlotInfo{
   double  minX  ;
   double  maxX  ;
@@ -27,6 +33,24 @@ struct PlotInfo{
   {}
     ;
 };
+
+TH1F * getHistogram(TTree * tree, TString var, TString histName, TString histSample, int nB, double* bins, TString selection, TString * extraSel = 0, TString * weight =0, unsigned int iH = 0){
+  TString name = TString::Format("%s_%s_%i",histName.Data(), histSample.Data(),iH);
+  TString sel = selection;
+  if(extraSel)
+    sel += *extraSel;
+  if(weight)
+    sel = TString::Format("%s*(%s)",weight->Data(),sel.Data());
+
+  TH1F * h = new TH1F(name,var.Data(),nB,bins);
+  h->Sumw2();
+  tree->Draw(TString::Format("%s>>+%s",var.Data(),name.Data()),sel,"goff");
+  if(h) h = (TH1F*)h->Clone();
+  PlotTools::toUnderflow(h);
+  PlotTools::toOverflow(h);
+  return h;
+}
+
 
 TH1F * getHistogram(TTree * tree, TString var, TString histName, TString histSample, int nB, double minX, double maxX, TString selection, TString * extraSel = 0, TString * weight =0, unsigned int iH = 0){
   TString name = TString::Format("%s_%s_%i",histName.Data(), histSample.Data(),iH);
