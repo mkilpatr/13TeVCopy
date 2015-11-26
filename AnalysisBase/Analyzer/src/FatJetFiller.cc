@@ -9,6 +9,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/FatJetFiller.h"
+#include "AnalysisBase/Analyzer/interface/JetFiller.h"
 
 using namespace ucsbsusy;
 
@@ -68,6 +69,8 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_pt_            , fatjet.pt());
     data.fillMulti<float>(ifj_eta_           , fatjet.eta());
     data.fillMulti<float>(ifj_phi_           , fatjet.phi());
+    data.fillMulti<bool> (ifj_looseId_ ,JetFunctions::passLooseJetId(fatjet));
+    data.fillMulti<bool> (ifj_tightId_ ,JetFunctions::passTightJetId(fatjet));
     
     isFilled_ = true;
 

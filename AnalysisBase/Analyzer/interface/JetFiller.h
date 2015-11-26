@@ -29,6 +29,11 @@ class GenParticleFiller;
 class QuarkGluonTagInterface;
 class QuarkGluonTaggingVariables;
 
+namespace JetFunctions {
+template<typename Jet> bool passLooseJetId(const Jet& j);
+template<typename Jet> bool passTightJetId(const Jet& j);
+}
+
 class JetFillerBase {
 public:
   enum  Options           {

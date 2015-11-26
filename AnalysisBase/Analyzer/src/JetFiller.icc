@@ -15,6 +15,24 @@
 
 namespace ucsbsusy{
 
+namespace JetFunctions{
+  template<typename Jet> bool passLooseJetId(const Jet& j){
+    if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
+    if( !(j.neutralEmEnergyFraction()<0.99)                  ) return false;
+    if( !(j.neutralHadronEnergyFraction()<0.99)              ) return false;
+    if( !(j.muonEnergyFraction()<0.8)                        ) return false;
+    if( !(fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)) ) return false;
+    else return true;
+  }
+  template<typename Jet> bool passTightJetId(const Jet& j){
+    if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
+    if( !(j.neutralEmEnergyFraction()<0.9)                   ) return false;
+    if( !(j.neutralHadronEnergyFraction()<0.9)               ) return false;
+    if( !(j.muonEnergyFraction()<0.8)                        ) return false;
+    if( !(fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)) ) return false;
+    else return true;
+  }
+}
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
 JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
@@ -210,18 +228,17 @@ void JetFiller<Jet>::fill()
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
     const Jet& j = jets_->at(iJ);
     if(j.pt() < jptMin_) continue;
-    data.fillMulti<float>(ijetpt_   ,j.pt());
-    data.fillMulti<float>(ijeteta_  ,j.eta());
-    data.fillMulti<float>(ijetphi_  ,j.phi());
-    data.fillMulti<float>(ijetmass_ ,j.mass());
-    data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
-    data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
-    data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
-    data.fillMulti<float>(ijetarea_ ,j.jetArea());
-    data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
-    data.fillMulti<bool>(ijettightId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.9 && j.neutralHadronEnergyFraction()<0.9 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)));
-//    if(j.pt()>30) std::cout<<j.pt()<<" "<<j.eta()<<" "<<j.chargedMultiplicity()<<" "<<j.neutralMultiplicity()<<" "<<j.neutralEmEnergyFraction()<<" "<<j.neutralHadronEnergyFraction()<<" "<< j.chargedEmEnergyFraction()<<" "<<j.chargedHadronEnergyFraction()<<std::endl;
-    
+    data.fillMulti<float>(ijetpt_      ,j.pt());
+    data.fillMulti<float>(ijeteta_     ,j.eta());
+    data.fillMulti<float>(ijetphi_     ,j.phi());
+    data.fillMulti<float>(ijetmass_    ,j.mass());
+    data.fillMulti<float>(ijetptraw_   ,getJecUncorrection(j));
+    data.fillMulti<float>(ijetpuId_    ,getPUJetId(j));
+    data.fillMulti<float>(ijetcsv_     ,getbDisc(j));
+    data.fillMulti<float>(ijetarea_    ,j.jetArea());
+    data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
+    data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
+
     /* Fill RecoJet JEC Uncertainties */
     jecUnc->setJetEta(j.eta());
     jecUnc->setJetPt(j.pt());

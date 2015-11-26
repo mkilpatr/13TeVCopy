@@ -43,6 +43,8 @@ namespace ucsbsusy {
     size ifj_pt_;
     size ifj_eta_;
     size ifj_phi_;
+    size ifj_looseId_;
+    size ifj_tightId_;
 
 
   public :
