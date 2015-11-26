@@ -57,6 +57,7 @@ namespace ucsbsusy {
       edm::EDGetTokenT<edm::ValueMap<bool> >           looseIdToken_;
       edm::EDGetTokenT<edm::ValueMap<bool> >           mediumIdToken_;
       edm::EDGetTokenT<edm::ValueMap<bool> >           tightIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > vetoIdFullInfoMapToken_;
       edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > looseIdFullInfoMapToken_;
       edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > mediumIdFullInfoMapToken_;
       edm::EDGetTokenT<edm::ValueMap<bool> >           mvanontrigMediumIdToken_;
@@ -144,6 +145,7 @@ namespace ucsbsusy {
       // cut-based id-only decision
       size iPassMediumIDOnly_;
       size iPassLooseIDOnly_;
+      size iPassVetoIDOnly_;
 
     public :
       // Data members
@@ -152,6 +154,7 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> >           loose_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           medium_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           tight_id_decisions_;
+      edm::Handle<edm::ValueMap<vid::CutFlowResult> > veto_id_cutflow_;
       edm::Handle<edm::ValueMap<vid::CutFlowResult> > loose_id_cutflow_;
       edm::Handle<edm::ValueMap<vid::CutFlowResult> > medium_id_cutflow_;
       edm::Handle<edm::ValueMap<bool> >           mvanontrig_medium_id_decisions_;
