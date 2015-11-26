@@ -1,4 +1,3 @@
-# Photon ID: egm_id_74X_v1
 
 import FWCore.ParameterSet.Config as cms
 
@@ -160,7 +159,7 @@ def psetPhoFull5x5SigmaIEtaIEtaCut(wpEB, wpEE):
         cutValueEE = cms.double( wpEE.full5x5_sigmaIEtaIEtaCut ),
         full5x5SigmaIEtaIEtaMap = cms.InputTag('photonIDValueMapProducer:phoFull5x5SigmaIEtaIEta'),
         barrelCutOff = cms.double(ebCutOff),
-        needsAdditionalProducts = cms.bool(True),
+        needsAdditionalProducts = cms.bool(False),
         isIgnored = cms.bool(False)
         )
 

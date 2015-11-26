@@ -14,6 +14,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/PatCandidates/interface/VIDCutFlowResult.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -25,19 +26,7 @@
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
-#include "DataFormats/Math/interface/deltaR.h"
-
-#include "DataFormats/Math/interface/LorentzVector.h"
-#include "TLorentzVector.h"
-#include "Math/VectorUtil.h"
-#include <fastjet/JetDefinition.hh>
-#include <fastjet/PseudoJet.hh>
-#include "fastjet/tools/Filter.hh"
-#include <fastjet/ClusterSequence.hh>
-#include <fastjet/ClusterSequenceArea.hh>
-
-typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
-typedef std::vector<LorentzVector> LorentzVectorCollection;
+#include "AnalysisTools/IsolationVariables/interface/IsolationUtilities.h"
 
 namespace ucsbsusy {
 
@@ -56,18 +45,11 @@ namespace ucsbsusy {
                    };
       static const int defaultOptions = NULLOPT;
 
-      void initMVA();
       void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
-      void calculateLSFIso(LorentzVector el, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
-      float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
-      double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Electron ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only);
-      double getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton);
-      double getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Electron lepton);
-      double LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets);
 
     private :
-      const EventInfoFiller * evtInfoFiller_;
+      const EventInfoFiller *                          evtInfoFiller_;
       // Input from the config file
       edm::EDGetTokenT<pat::ElectronCollection>        electronToken_;
       // For cut-based ID decisions
@@ -75,18 +57,21 @@ namespace ucsbsusy {
       edm::EDGetTokenT<edm::ValueMap<bool> >           looseIdToken_;
       edm::EDGetTokenT<edm::ValueMap<bool> >           mediumIdToken_;
       edm::EDGetTokenT<edm::ValueMap<bool> >           tightIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > looseIdFullInfoMapToken_;
+      edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > mediumIdFullInfoMapToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           mvanontrigMediumIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           mvanontrigTightIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<float> >          mvanontrigMVAValueToken_;
+      edm::EDGetTokenT<edm::ValueMap<int> >            mvanontrigMVACatToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           mvatrigMediumIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<bool> >           mvatrigTightIdToken_;
+      edm::EDGetTokenT<edm::ValueMap<float> >          mvatrigMVAValueToken_;
+      edm::EDGetTokenT<edm::ValueMap<int> >            mvatrigMVACatToken_;
       edm::EDGetTokenT<reco::PFJetCollection>          ca8jetToken_;
       edm::EDGetTokenT<double>                         rhoToken_;
       edm::EDGetTokenT<pat::JetCollection>             jetToken_;
       edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
-      const int           bunchSpacing_;
-      const double        eleptMin_;
-
-      // Evaluate POG MVA ID
-      EGammaMvaEleEstimatorCSA14* eleMVATrig;
-      EGammaMvaEleEstimatorCSA14* eleMVANonTrigPhys14;
-      LeptonId*                   eleIdCuts;
-      LeptonMVA*                  eleMVAiso;
+      const double                                     eleptMin_;
 
       // Members to hold indices of tree data
       size ipt_;
@@ -98,16 +83,22 @@ namespace ucsbsusy {
       size ir9_;
       size id0_;
       size idz_;
-      // Id flags: cut-based electron ID flags based on CSA14 selection
+      // Id flags: cut-based electron ID flags based on Spring15 selection
       size ivetoid_;
       size ilooseid_;
       size imediumid_;
       size itightid_;
+      size imvanontrigmediumid_;
+      size imvanontrigtightid_;
+      size imvatrigmediumid_;
+      size imvatrigtightid_;
       // Standard delta-beta isolation
       size ipfdbetaiso_;
-      // CSA14 MVA ID (can be evalated for either 25ns or 50ns scenarios, determined by bunchSpacing_ parameter)
+      // Spring15 MVA ID
       size imvaidnontrig_;
+      size imvaidcatnontrig_;
       size imvaidtrig_;
+      size imvaidcattrig_;
       // ID variables, needed for evaluation of cut-based ID from scratch
       size iecalE_;
       size ieOverPIn_;
@@ -133,8 +124,12 @@ namespace ucsbsusy {
       // different isolations
       size iLSFIso_;
       size iminiiso_;
+      size iannulus_;
+      size iminiisoeacorr_;
+      size iannuluseacorr_;
       size iptrel_;
       size iptratio_;
+      size irhoiso_;
       size isip3d_;
       // pat matched gen lepton info
       size igenpt_;
@@ -146,8 +141,8 @@ namespace ucsbsusy {
       size igenmotherstatus_;
       size igenmotherpdgid_;
 
-      // cut-based id - put by hand
-      size iPassCutBaseNonIsoMID_;
+      // cut-based id-only decision
+      size iPassMediumIDOnly_;
       size iPassLooseIDOnly_;
 
     public :
@@ -157,6 +152,16 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> >           loose_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           medium_id_decisions_;
       edm::Handle<edm::ValueMap<bool> >           tight_id_decisions_;
+      edm::Handle<edm::ValueMap<vid::CutFlowResult> > loose_id_cutflow_;
+      edm::Handle<edm::ValueMap<vid::CutFlowResult> > medium_id_cutflow_;
+      edm::Handle<edm::ValueMap<bool> >           mvanontrig_medium_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> >           mvanontrig_tight_id_decisions_;
+      edm::Handle<edm::ValueMap<float> >          mvanontrig_value_map_;
+      edm::Handle<edm::ValueMap<int> >            mvanontrig_category_map_;
+      edm::Handle<edm::ValueMap<bool> >           mvatrig_medium_id_decisions_;
+      edm::Handle<edm::ValueMap<bool> >           mvatrig_tight_id_decisions_;
+      edm::Handle<edm::ValueMap<float> >          mvatrig_value_map_;
+      edm::Handle<edm::ValueMap<int> >            mvatrig_category_map_;
       edm::Handle<reco::PFJetCollection>          ca8jets_;
       edm::Handle<double>                         rho_;
       edm::Handle<pat::PackedCandidateCollection> pfcands_;

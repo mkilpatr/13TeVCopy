@@ -38,6 +38,15 @@ class PlotStuff {
     // TREES : Plot from a set of "tree.root" files, one per sample, with a TTree. Variables to be plotted and selections to be used should be added with addTreeVar
     // HISTSSINGLEFILE : Plot histograms from a file (passed in the specialized constructor). Sets of histograms to be plotted together should be added with addCompSet
     enum PlotSource {HISTS, TREES, HISTSSINGLEFILE};
+    enum PlotLepton {ZEROL, MUELETAU,MUNOELENOTAU, MUELENOTAU, MUNOELETAU,NOMUNOTAUELE,NOMUTAUELE,NOMUTAUNOELE};
+
+        ///Use lepvetoweight if it is a vetoed event   (1 or more leptons)
+        //    ///Use selvetoweight if it is a selected event (0 leptons)
+        //        ///To apply any cutstring add to cut + LeptonCuts[ `enum corersponding to lepton cut' ]
+    std::string LeptonCuts[8] ={"selvetoweight*","lepvetoweight*(nvetomu >= 1 || nvetoele >= 1 || nvetotau >= 1)", "lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau >= 1)",
+    								     "lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau == 0)","lepvetoweight*(nvetomu >= 1 || nvetoele == 0 || nvetotau == 0)",
+										 "lepvetoweight*(nvetomu == 0 || nvetoele >= 1 || nvetotau == 0)","lepvetoweight*(nvetomu == 0 || nvetoele >= 1 || nvetotau >= 1)",
+										 "lepvetoweight*(nvetomu == 0 || nvetoele == 0 || nvetotau == 0)"};
 
     // Hold information about tree variables and selections to be used for plotting
     struct PlotTreeVar {
@@ -141,6 +150,9 @@ class PlotStuff {
         TString                yieldfilename;
         TString                treename;
         TString                wgtvar;
+        bool                   unprescale;
+        TString                unprescalevar;
+        bool                   dataismc;
         TString                treefilesuffix;
         TString                plotfilesuffix;
         TString                sqrts;
@@ -187,8 +199,11 @@ class PlotStuff {
           writehists(false),
           outfilename("output_plots.root"),
           yieldfilename("yields.tex"),
-          treename("events"),
+          treename("Events"),
           wgtvar("weight"),
+          unprescale(false),
+          unprescalevar("prescale"),
+          dataismc(false),
           treefilesuffix("_tree.root"),
           plotfilesuffix("_plots.root"),
           sqrts("#sqrt{s} = 13 TeV"),
@@ -208,10 +223,10 @@ class PlotStuff {
           rebiny(1),
           sigscale(1),
           addsigscaletxt(true),
-          scaletodata(true),
+          scaletodata(false),
           maxscale(1.3),
-          minlogscale(0.2),
-          maxlogscale(2000.),
+          minlogscale(.8),
+          maxlogscale(20.),
           logy(false),
           tablelumi(4000.),
           colormap(DefaultColors()),
@@ -233,6 +248,7 @@ class PlotStuff {
             printf("Using sample settings from %s\n",conf.Data());
             printf("Producing %lu plots using trees named %s from files ending with %s in input directory\n",treevars.size(),treename.Data(),treefilesuffix.Data());
             printf("Will apply weight variable: %s\n",wgtvar.Data());
+            if(unprescale) printf("Unprescaling data using variable: %s\n",unprescalevar.Data());
           }
           if(source == HISTS) {
             printf("Using sample settings from %s\n",conf.Data());
@@ -244,6 +260,7 @@ class PlotStuff {
           if(type == DATAMC) {
             if(sigscale < 0) printf("Signal histograms will be scaled to sum of backgrounds\n");
             else if(sigscale != 1) printf("Signal histograms will be scaled by a factor of %d\n",sigscale);
+            if(dataismc) printf("'Data' sample is scaled like MC.");
           }
           if(rebinx != 1) printf("Histograms will be rebinned by a factor of in x%d\n",rebinx);
           if(rebiny != 1) printf("Histograms will be rebinned by a factor of in y%d\n",rebiny);
@@ -306,6 +323,12 @@ class PlotStuff {
     void     setTree(TString treename) { config_.treename = treename; }
     // Name of variable corresponding to weight to be applied for TTree plots
     void     setWgtVar(TString wgtvar) { config_.wgtvar = wgtvar; }
+    // set to apply an unprescale factor to data
+    void     setUnprescale(bool unprescale=true) { config_.unprescale = unprescale; }
+    // Name of variable corresponding to the factor to unprescale data by
+    void     setUnprescaleVar(TString unprescalevar) { config_.unprescalevar = unprescalevar; }
+    // Set to treat (i.e. scale) the 'data' sample as if it's MC
+    void     setDataIsMC(bool dataismc=true) { config_.dataismc = dataismc; }
     // Suffix to be added to sample name to get path to tree files
     void     setTreeFileSuffix(TString treefilesuffix) { config_.treefilesuffix = treefilesuffix; }
     // Suffix to be added to sample name to get path to plot files
@@ -372,11 +395,13 @@ class PlotStuff {
     // Make yields table
     void     makeTable(TString label, vector<double> yields, vector<double> yielderrs);
     // Check if a given name corresponds to a data sample
-    bool     isData(TString sname) { return config_.dataname == sname; }
+    bool     isData(TString sname) { return sname == config_.dataname; }
     // Check if a given name corresponds to a background sample
     bool     isBackground(TString sname);
     // Check if a given name corresponds to a signal sample
     bool     isSignal(TString sname);
+    // Assign colors to background samples if not already set
+    void     assignColor(TString sname);
 
   protected :
     PlotConfig               config_;

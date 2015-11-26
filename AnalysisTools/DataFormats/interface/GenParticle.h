@@ -38,8 +38,9 @@ public :
     assocList_    = assocList   ;
   }
 
-  int status()       const { return status_;}
+  int status()      const { return status_;}
   int pdgId()       const { return pdgId_; }
+  int absPdgId()    const { return TMath::Abs(pdgId_); }
 
   stor numberOfMothers() const {return nMoms_;}
   const GenParticle<CoordSystem> * mother(const stor idx)const{

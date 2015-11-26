@@ -30,19 +30,22 @@ TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
   idxy_                  = data.addMulti<float>(branchName_,"dxy",0);
   idxyerr_               = data.addMulti<float>(branchName_,"dxyerr",0);
   idxysig_               = data.addMulti<float>(branchName_,"dxysig",0);
-  ileadcand_pt_          = data.addMulti<float>(branchName_,"leadcand_pt",0);
-  ileadcand_eta_         = data.addMulti<float>(branchName_,"leadcand_eta",0);
-  ileadcand_phi_         = data.addMulti<float>(branchName_,"leadcand_phi",0);
-  ileadcand_mass_        = data.addMulti<float>(branchName_,"leadcand_mass",0);
-  ileadcand_q_           = data.addMulti<int  >(branchName_,"leadcand_q",0);
-  ileadchargedcand_pt_   = data.addMulti<float>(branchName_,"leadchargedcand_pt",0);
-  ileadchargedcand_eta_  = data.addMulti<float>(branchName_,"leadchargedcand_eta",0);
-  ileadchargedcand_phi_  = data.addMulti<float>(branchName_,"leadchargedcand_phi",0);
-  ileadchargedcand_mass_ = data.addMulti<float>(branchName_,"leadchargedcand_mass",0);
-  ileadchargedcand_q_    = data.addMulti<int  >(branchName_,"leadchargedcand_q",0);
-  ileadchargedcand_d0_   = data.addMulti<float>(branchName_,"leadchargedcand_d0",0);
-  ileadchargedcand_dz_   = data.addMulti<float>(branchName_,"leadchargedcand_dz",0);
   iidflags_              = data.addMulti<unsigned long>(branchName_,"idflags",0);
+
+  if(options_ & FILLCANDINFO) {
+    ileadcand_pt_          = data.addMulti<float>(branchName_,"leadcand_pt",0);
+    ileadcand_eta_         = data.addMulti<float>(branchName_,"leadcand_eta",0);
+    ileadcand_phi_         = data.addMulti<float>(branchName_,"leadcand_phi",0);
+    ileadcand_mass_        = data.addMulti<float>(branchName_,"leadcand_mass",0);
+    ileadcand_q_           = data.addMulti<int  >(branchName_,"leadcand_q",0);
+    ileadchargedcand_pt_   = data.addMulti<float>(branchName_,"leadchargedcand_pt",0);
+    ileadchargedcand_eta_  = data.addMulti<float>(branchName_,"leadchargedcand_eta",0);
+    ileadchargedcand_phi_  = data.addMulti<float>(branchName_,"leadchargedcand_phi",0);
+    ileadchargedcand_mass_ = data.addMulti<float>(branchName_,"leadchargedcand_mass",0);
+    ileadchargedcand_q_    = data.addMulti<int  >(branchName_,"leadchargedcand_q",0);
+    ileadchargedcand_d0_   = data.addMulti<float>(branchName_,"leadchargedcand_d0",0);
+    ileadchargedcand_dz_   = data.addMulti<float>(branchName_,"leadchargedcand_dz",0);
+  }
 
   if(options_ & FILLRAWDISCS) {
     iisodb3hitsraw_ = data.addMulti<float>(branchName_,"isodb3hitsraw",0);
@@ -55,6 +58,7 @@ TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
   }
 
 }
+
 
 //--------------------------------------------------------------------------------------------------
 void TauFiller::initTauIdNames()
@@ -123,32 +127,34 @@ void TauFiller::fill()
     data.fillMulti<float>(idxy_, tau.dxy());
     data.fillMulti<float>(idxyerr_, tau.dxy_error());
     data.fillMulti<float>(idxysig_, tau.dxy_Sig());
-    data.fillMulti<float>(ileadcand_pt_, tau.leadCand()->pt());
-    data.fillMulti<float>(ileadcand_eta_, tau.leadCand()->eta());
-    data.fillMulti<float>(ileadcand_phi_, tau.leadCand()->phi());
-    data.fillMulti<float>(ileadcand_mass_, tau.leadCand()->mass());
-    data.fillMulti<int  >(ileadcand_q_, tau.leadCand()->charge());
-
-    if(tau.leadChargedHadrCand().isNonnull()) {
-      data.fillMulti<float>(ileadchargedcand_pt_, tau.leadChargedHadrCand()->pt());
-      data.fillMulti<float>(ileadchargedcand_eta_, tau.leadChargedHadrCand()->eta());
-      data.fillMulti<float>(ileadchargedcand_phi_, tau.leadChargedHadrCand()->phi());
-      data.fillMulti<float>(ileadchargedcand_mass_, tau.leadChargedHadrCand()->mass());
-      data.fillMulti<int  >(ileadchargedcand_q_, tau.leadChargedHadrCand()->charge());
-      const reco::Track* leadtrk = 0;
-      if(tau.leadTrack().isNonnull()) leadtrk = tau.leadTrack().get();
-      assert(evtInfoFiller_->isLoaded());
-      // this is broken, need to figure out how this should be implemented
-      data.fillMulti<float>(ileadchargedcand_d0_, leadtrk ? -1.*leadtrk->dxy(evtInfoFiller_->primaryVertex()) : 0.0);
-      data.fillMulti<float>(ileadchargedcand_dz_, leadtrk ? leadtrk->dz(evtInfoFiller_->primaryVertex()) : 0.0);
-    } else {
-      data.fillMulti<float>(ileadchargedcand_pt_, 0.0);
-      data.fillMulti<float>(ileadchargedcand_eta_, 0.0);
-      data.fillMulti<float>(ileadchargedcand_phi_, 0.0);
-      data.fillMulti<float>(ileadchargedcand_mass_, 0.0);
-      data.fillMulti<int  >(ileadchargedcand_q_, 0.0);
-      data.fillMulti<float>(ileadchargedcand_d0_, 0.0);
-      data.fillMulti<float>(ileadchargedcand_dz_, 0.0);
+    if(options_ & FILLCANDINFO) {
+      data.fillMulti<float>(ileadcand_pt_, tau.leadCand()->pt());
+      data.fillMulti<float>(ileadcand_eta_, tau.leadCand()->eta());
+      data.fillMulti<float>(ileadcand_phi_, tau.leadCand()->phi());
+      data.fillMulti<float>(ileadcand_mass_, tau.leadCand()->mass());
+      data.fillMulti<int  >(ileadcand_q_, tau.leadCand()->charge());
+  
+      if(tau.leadChargedHadrCand().isNonnull()) {
+        data.fillMulti<float>(ileadchargedcand_pt_, tau.leadChargedHadrCand()->pt());
+        data.fillMulti<float>(ileadchargedcand_eta_, tau.leadChargedHadrCand()->eta());
+        data.fillMulti<float>(ileadchargedcand_phi_, tau.leadChargedHadrCand()->phi());
+        data.fillMulti<float>(ileadchargedcand_mass_, tau.leadChargedHadrCand()->mass());
+        data.fillMulti<int  >(ileadchargedcand_q_, tau.leadChargedHadrCand()->charge());
+        const reco::Track* leadtrk = 0;
+        if(tau.leadTrack().isNonnull()) leadtrk = tau.leadTrack().get();
+        assert(evtInfoFiller_->isLoaded());
+        // this is broken, need to figure out how this should be implemented
+        data.fillMulti<float>(ileadchargedcand_d0_, leadtrk ? -1.*leadtrk->dxy(evtInfoFiller_->primaryVertex()) : 0.0);
+        data.fillMulti<float>(ileadchargedcand_dz_, leadtrk ? leadtrk->dz(evtInfoFiller_->primaryVertex()) : 0.0);
+      } else {
+        data.fillMulti<float>(ileadchargedcand_pt_, 0.0);
+        data.fillMulti<float>(ileadchargedcand_eta_, 0.0);
+        data.fillMulti<float>(ileadchargedcand_phi_, 0.0);
+        data.fillMulti<float>(ileadchargedcand_mass_, 0.0);
+        data.fillMulti<int  >(ileadchargedcand_q_, 0.0);
+        data.fillMulti<float>(ileadchargedcand_d0_, 0.0);
+        data.fillMulti<float>(ileadchargedcand_dz_, 0.0);
+      }
     }
 
     if(options_ & PRINTIDS) {

@@ -17,21 +17,11 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
-#include "AnalysisTools/ObjectSelection/interface/LeptonMVA.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
-#include "TLorentzVector.h"
-#include "Math/VectorUtil.h"
-#include <fastjet/JetDefinition.hh>
-#include <fastjet/PseudoJet.hh>
-#include "fastjet/tools/Filter.hh"
-#include <fastjet/ClusterSequence.hh>
-#include <fastjet/ClusterSequenceArea.hh>
 
-typedef math::PtEtaPhiMLorentzVectorF LorentzVector;
-typedef std::vector<LorentzVector> LorentzVectorCollection;
+#include "AnalysisTools/IsolationVariables/interface/IsolationUtilities.h"
+
 
 namespace ucsbsusy {
 
@@ -49,16 +39,8 @@ namespace ucsbsusy {
     };
     static const int defaultOptions = NULLOPT;
 
-    LeptonMVA*                  muMVAiso;
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
-    void calculateLSFIso(LorentzVector mu, LorentzVectorCollection lsfSubJets_, float *lsfIso_, float *lsfIsoDR_);
-    float calculateRhoIso(double eta, double pfchargediso, double pfneutraliso, double pfphotoniso, float rho);
-    bool mediumID(bool isLoose, double pt , double pfdbetaiso, double d0, double dz, bool isGlobal, double nChi2, double trkKink, double chi2Local, double validFrac, double segComp);
-    double LSF(LorentzVector lep,edm::Handle<std::vector<reco::PFJet>> ca8jets);
-    double getPFIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands, const pat::Muon ptcl, double r_iso_min, double r_iso_max, double kt_scale, bool use_pfweight, bool charged_only);
-    double getLeptonPtRel(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton);
-    double getLeptonPtRatio(edm::Handle<pat::JetCollection> jets, const pat::Muon lepton);
 
   private :
     const EventInfoFiller * evtInfoFiller_;
@@ -81,10 +63,10 @@ namespace ucsbsusy {
     size idz_;
     size ipfdbetaiso_;
     size iisloose_;
+    size iismedium_;
     size iistight_;
     size iispf_;
     size iisglobal_;
-    size iismedium_;
     size iistracker_;
     size iisstandalone_;
     size inChi2_;
@@ -99,9 +81,12 @@ namespace ucsbsusy {
     size ipfneutraliso_;
     size ipfphotoniso_;
     size ipfpuiso_;
-    size iMVAiso_;
     size iminiiso_;
+    size iannulus_;
+    size iminiisoeacorr_;
+    size iannuluseacorr_;
     size iptrel_;
+    size irhoiso_;
     size iLSFIso_;
     size iptratio_;
     size isip3d_;
@@ -118,7 +103,6 @@ namespace ucsbsusy {
   public :
     // Data members
     edm::Handle<pat::MuonCollection>            muons_;
-    edm::Handle<LorentzVectorCollection>        lsfSubJets;
     edm::Handle<double>                         rho_;
     edm::Handle<pat::PackedCandidateCollection> pfcands_;
     edm::Handle<std::vector<reco::PFJet>>       ca8jets_;

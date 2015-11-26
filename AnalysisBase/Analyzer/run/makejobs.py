@@ -12,6 +12,9 @@ gROOT.SetBatch(True)
 # edit datasets.conf to choose samples to submit
 # run ./makejobs.py with the appropriate options
 # then, submit jobs using ./submitall.sh
+# to run the merging after the ntupling is done, run ./makejobs.py --runmerge --inputdir </path/to/dir/with/unmerged/files> -o </path/to/dir/with/merged/files>
+# if you want to split the merged output into multiple files (for large samples), add the --splitmerge option, you'll be asked how many merged files you want and how many input files you want to merge per output file
+# a script called runmerge.sh will be produced which will contain the commands needed to run the merging
 # to run the postprocessing (adding cross section weights), run ./makejobs.py --postprocess -o </path/to/dir/with/merged/files> -c <conffile> -t <condor|lsf|interactive>
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
@@ -19,18 +22,24 @@ parser.add_argument("--postprocess", dest="postprocess", action='store_true', he
 parser.add_argument("--treename", dest="treename", default="TestAnalyzer/Events", help="Name of trees in merged input files, needed for postprocessing. [Default: TestAnalyzer/Events]")
 parser.add_argument("--lumi", dest="lumi", type=float, default=1., help="Integrated luminosity to be used for calculating cross section weights in postprocessing. [Default: 1.]")
 parser.add_argument("--postsuffix", dest="postsuffix", default="wgtxsec", help="Suffix to add to output files from postprocessing. [Default: wgtxsec]")
+parser.add_argument("--runmerge", dest="runmerge", action='store_true', help="Run file merging instead of job submission. [Default: False]")
+parser.add_argument("--splitmerge", dest="splitmerge", action='store_true', help="Split file merging into multiple output files. [Default: False]")
+parser.add_argument("--inputdir", dest="inputdir", default="/store/user/${USER}/13TeV/ntuples", help="Input directory with unmerged ntuples. [Default: \"/store/user/${USER}/13TeV/ntuples\"]")
 parser.add_argument("-i", "--input", dest="input", default="datasets.conf", help="Input configuration file with list of datasets. [Default: datasets.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
 parser.add_argument("-n", "--numperjob", dest="numperjob", type=int, default=5, help="Number of files or events per job. Splittype determines whether splitting is by number of files (default) or by number of events. [Default: 5]")
 parser.add_argument("-m", "--maxevents", dest="maxevents", type=int, default=-1, help="Maximum number of events to run over. [Default: -1 (all)]")
 parser.add_argument("-p", "--pathtocfg", dest="path", default="../test", help="Path to directory with python configuration file to be run using cmsRun. [Default: \"../test/\"]")
 parser.add_argument("-c", "--config", dest="config", default="runTestAnalyzer.py", help="Configuration file to be run using cmsRun to run. [Default: runTestAnalyzer.py]")
+parser.add_argument("-d", "--dbsinstance", dest="dbsinstance", default="prod/global", help="DBS instance to query for dataset. [Default: prod/global]")
 parser.add_argument("-o", "--outdir", dest="outdir", default="/store/user/${USER}/13TeV/ntuples", help="Output directory for ntuples. [Default: \"/store/user/${USER}/13TeV/ntuples\"]")
 parser.add_argument("-j", "--jobdir", dest="jobdir", default="jobs", help="Directory for job files. [Default: jobs]")
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-l", "--splittype", dest="splittype", default="file", choices=["file","event"], help="Split jobs by number of files or events. [Options: file, event. Default: file]")
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
+parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
+parser.add_argument("-e", "--redir", dest="redir", default="", help="Url of redirector to be added to file names. [Default: None (will be determined by xrootd config)]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -72,15 +81,15 @@ if args.postprocess :
     prefix = ""
     for isam in range(len(samples)) :
         filelist = []
-        if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
-            cmd = ("%s find -f %s | egrep '%s(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
+            cmd = ("%s find -f %s | egrep '%s(-ext|)(_[0-9]+|)_ntuple.root'" % (eos,args.outdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
         else :
-            filelist = [os.path.join(args.outdir, f) for f in os.listdir(args.outdir) if re.match(r'%s(_[0-9]+|)_ntuple.root' % samples[isam], f)]
-            if args.outdir.startswith("/eos/uscms/store/user") :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         files.append(filelist)
         nposevents = get_num_events(filelist,prefix)
@@ -164,6 +173,61 @@ rm submit.cmd""".format(
     print "Done!"
     exit()
 
+elif args.runmerge :
+
+    if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
+        os.system("%s mkdir -p %s" % (eos,args.outdir))
+    else :
+        os.system("mkdir -p %s" % args.outdir)
+
+    prefix = ""
+    mergecommands = []
+    for isam in range(len(samples)) :
+        filelist = []
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
+            prefix = "root://eoscms/"
+            filelist.append
+            cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(_numEvent[0-9]+|).root'" % (eos,args.inputdir,samples[isam]))
+            ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            result = ps.communicate()
+            filelist = result[0].rstrip('\n').split('\n')
+            filelist = ["".join([prefix,file]) for file in filelist]
+            outname = "%s%s/%s_ntuple.root" % (prefix,args.outdir,samples[isam])
+            filelist.insert(0, outname)
+        else :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'output_[0-9]+_%s(_numEvent[0-9]+|).root' % samples[isam], f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
+                prefix = "root://cmseos:1094/"
+            filelist = ["".join([prefix,file]) for file in filelist]
+            outname = "%s%s/%s_ntuple.root" % (prefix,args.outdir,samples[isam])
+            filelist.insert(0, outname)
+        mergefile = "merge_%s.txt" % samples[isam]
+        with open(mergefile,"w") as f:
+            f.write('\n'.join(filelist))
+        print "There are %d files to merge for %s\n" % (len(filelist)-1, samples[isam])
+        if args.splitmerge :
+            nummergedfiles = int(input("How many merged files do you want? "))
+            numfilespermerge = int(input("How many input files per merge? "))
+            for imerge in range(1,nummergedfiles+1) :
+                start = ((imerge-1)*numfilespermerge) + 2
+                end   = (imerge*numfilespermerge) + 1
+                outfile = "merge_%s_%d.txt" % (samples[isam],imerge)
+                os.system("sed -n 1p %s | sed \"s/ntuple.root/%d_ntuple.root/\" > %s" % (mergefile,imerge,outfile))
+                os.system("sed -n %d,%dp %s >> %s" % (start,end,mergefile,outfile))
+                mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % outfile)
+            rem = len(filelist) - 1 - (nummergedfiles*numfilespermerge)
+            if rem > 0 :
+                print "Will add last %d files to last merged file" % rem
+                os.system("tail -n %d %s >> merge_%s_%d.txt" % (rem,mergefile,samples[isam],nummergedfiles))
+        else :
+            mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % mergefile)
+
+    with open("submitmerge.sh","w") as f :
+        f.write("#!/bin/bash\n")
+        f.write('\n'.join(mergecommands))
+        f.write("\n")
+    os.system("chmod +x submitmerge.sh")
+
 else :
 
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
@@ -199,18 +263,24 @@ echo "$cfgfile $runscript $workdir $outputdir"
 """.format(
         pathtocfg=args.path,runscript=args.script,stype=args.submittype
         ))
-
     for isam in range(len(samples)) :
-        cmd = ("./das_client.py --query \"file dataset=%s\" --limit=0 | grep store > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+
+ 	if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam],args.dbsinstance,args.redir,args.jobdir,samples[isam]))
+	elif args.arrangement == "local" and args.splittype == "file" :
+		cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam],args.jobdir,samples[isam]))
+	else :
+		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd,shell=True)
-        cmd = ("./das_client.py --query \"dataset=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam]))
-        ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-        numevents=int(ps.communicate()[0])
-        if args.maxevents > -1  and args.maxevents < numevents :
-            numevents = args.maxevents
-        numlines = 0
+        if args.arrangement == "das" :
+		cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam],args.dbsinstance))
+        	ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+        	numevents=int(ps.communicate()[0])
+        	if args.maxevents > -1  and args.maxevents < numevents :
+            		numevents = args.maxevents
         numperjob = args.numperjob
-        infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
+        numlines = 0
+	infilename = "%s/filelist_%s.txt" % (args.jobdir,samples[isam])
         print "Creating jobs for %s" % samples[isam]
         with open(infilename,"r") as infile :
            numlines = len(infile.readlines())
@@ -231,7 +301,10 @@ echo "$cfgfile $runscript $workdir $outputdir"
             end = numperjob*(ijob+1)
             jobfile = "filelist_%s.txt" % (samples[isam])
             skipevts = 0
-            if args.splittype == "file" :
+            if args.splittype == "file" and args.arrangement == "local" :
+                jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
+                os.system("sed -n %d,%dp %s | awk \'{print \"root://cmseos:1094/\" $0}\' > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
+ 	    elif args.splittype == "file" :
                 jobfile = "job_%d_%s.txt" % (ijob,samples[isam])
                 os.system("sed -n %d,%dp %s > %s/%s" % (start,end,infilename,args.jobdir,jobfile))
             elif args.splittype == "event" :
@@ -241,12 +314,12 @@ echo "$cfgfile $runscript $workdir $outputdir"
             cmd = ""
             if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
                 cmd = ("%s ls %s | grep -c output_%d_%s%s.root" % (eos,args.outdir,ijob,samples[isam],suffix))
-            else :
+	    else :
                 cmd = "ls %s | grep -c output_%d_%s%s.root" % (args.outdir,ijob,samples[isam],suffix)
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
             output = ps.communicate()[0][0]
             if int(output) > 0 :
-                print "Output file output_%s_%d%s.root exists already! Skipping ..." % (samples[isam],ijob,suffix)
+                print "Output file output_%d_%s%s.root exists already! Skipping ..." % (ijob,samples[isam],suffix)
                 continue
 
             if args.submittype == "interactive" :
@@ -266,7 +339,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
 
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
-                jobscript = open("{}/submit_{}_{}.sh".format(args.jobdir,samples[isam],ijob),"w")
+                jobscript = open("{0}/submit_{1}_{2}.sh".format(args.jobdir,samples[isam],ijob),"w")
                 jobscript.write("""
 cat > submit.cmd <<EOF
 universe                = vanilla
@@ -291,6 +364,7 @@ rm submit.cmd""".format(
                 runscript=args.script, stype=args.submittype, pathtocfg=args.path, cfg=args.config, infile=jobfile, workdir="${CMSSW_BASE}", sname=samples[isam], num=ijob, jobdir=args.jobdir, outputdir=args.outdir, outputname=outfile, maxevents=maxevts, skipevents=skipevts, evttag=suffix
                 ))
                 jobscript.close()
+                cpinput = ""
                 if args.splittype == "file" or (args.splittype == "event" and ijob == 0) :
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))

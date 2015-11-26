@@ -47,7 +47,7 @@ public:
       partonJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<reco::GenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genMotherParticles, clusterer.getCompoundJets(), *partonJets, iSetup, 0, true);
       else clusterer.distillJets<reco::GenParticle, reco::GenJet>(genMotherParticles, *partonJets , iSetup,0, true);
-      std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
+      //std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
     }
 
     if(outputSuperJets){
@@ -119,7 +119,7 @@ public:
       partonJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<reco::GenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genMotherParticles, clusterer.getCompoundJets(), *partonJets, iSetup, 0, true);
       else clusterer.distillJets<reco::GenParticle, reco::GenJet>(genMotherParticles, *partonJets , iSetup,0, true);
-      std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
+      //std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
     }
 
       std::auto_ptr<reco::PFJetCollection>                puInJets;

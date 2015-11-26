@@ -7,7 +7,7 @@
 #include "TCanvas.h"
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
@@ -20,7 +20,7 @@
 using namespace std;
 using namespace ucsbsusy;
 using namespace CORRAL;
-using TopJetMatching::TopDecayEvent;
+using PartonMatching::PartonEvent;
 
 static TString MVAprefix;
 

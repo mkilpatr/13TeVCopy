@@ -4,13 +4,14 @@
 
 using namespace ucsbsusy;
 
-void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
+void makeZeroLeptonSRTrees(TString sname = "htmht",
                            const int fileindex = -1,
-                           const bool isMC = true,
-                           const TString fname = "/store/user/vdutta/13TeV/080615/merged/T2tt_850_100_ntuple_wgtxsec.root",
+                           const bool isMC = false,
+                           const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
                            const double xsec = 1.0,
                            const TString outputdir = "trees",
-                           const TString fileprefix = "root://eoscms//eos/cms")
+                           const TString fileprefix = "root://eoscms//eos/cms",
+                           const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -25,10 +26,13 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_850_100",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
-  cfgSet::ConfigSet pars = pars0lep();
+  cfgSet::ConfigSet pars = pars0lep(json);
 
-  ZeroLeptonAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+  TString treeName = "Events";
+  ZeroLeptonAnalyzer a(fullname, treeName, outfilename, isMC, &pars);
 
-  a.analyze(10000);
+  a.analyze(1000000);
+
+  //a.analyze(10000,100000);
 
 }

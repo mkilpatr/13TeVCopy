@@ -57,9 +57,9 @@ class TriggerAnalyzer : public TreeCopierManualBranches {
 
       data.fill<int>  (i_njets, nJets);
       data.fill<float>(i_met, met->pt());
-      data.fill<bool> (i_passtrig, (triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1));
-      data.fill<bool> (i_passauxtrigmu, (triggerflag & kHLT_IsoTkMu24_eta2p1_v2));
-      data.fill<bool> (i_passauxtrigel, (triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1));
+      data.fill<bool> (i_passtrig, (triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned));
+      data.fill<bool> (i_passauxtrigmu, (triggerflag & kHLT_IsoTkMu24_eta2p1));
+      data.fill<bool> (i_passauxtrigel, (triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf));
 
       for(auto* jet : jets) {
         data.fillMulti<float>(i_jetpt, jet->pt());
@@ -68,8 +68,8 @@ class TriggerAnalyzer : public TreeCopierManualBranches {
 
       bool ismutrigobj = false, iseltrigobj = false;
       for(auto* to : triggerObjects) {
-        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1_v2)) ismutrigobj = true;
-        if((to->filterflags() & kSingleEle32) && (to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf_v1)) iseltrigobj = true;
+        if((to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1)) ismutrigobj = true;
+        if((to->filterflags() & kSingleEle32) && (to->pathflags() & kHLT_Ele32_eta2p1_WPLoose_Gsf)) iseltrigobj = true;
         if(ismutrigobj || iseltrigobj) {
           data.fillMulti<float>(i_trigobjpt, to->pt());
           data.fillMulti<float>(i_trigobjeta, to->eta());

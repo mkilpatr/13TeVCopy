@@ -11,6 +11,40 @@
 #include <iomanip>
 #include <cmath>
 
+//_____________________________________________________________________________
+template<typename Particle>
+bool ParticleInfo::isLastInChain(const Particle* particle, bool (*selectID)(int))
+{
+  for (unsigned int iDau = 0; iDau < particle->numberOfDaughters(); ++iDau){
+    if(selectID && !selectID(particle->daughter(iDau)->status())) continue;
+    if (particle->daughter(iDau)->pdgId() == particle->pdgId())
+      return false;
+  }
+  return true;
+}
+//_____________________________________________________________________________
+template<typename ParticleRef>
+ParticleRef ParticleInfo::getFinal(ParticleRef particle, int maxNumDaughters)
+{
+  assert(!particle.isNull());
+
+  while (const unsigned numDaughters = particle->numberOfDaughters()) {
+    if (maxNumDaughters > 0 && int(numDaughters) > maxNumDaughters)
+      break;
+
+    ParticleRef           chain;
+    for (unsigned iDau = 0; iDau < numDaughters; ++iDau)
+      if (particle->daughter(iDau)->pdgId() == particle->pdgId()) {
+        chain = ParticleRef(particle->daughterRef(iDau).operator->(), particle->daughterRef(iDau).key());
+        break;
+      }
+    if (chain.isNull())   break;
+    particle              = chain;
+  }
+
+  return particle;
+}
+//_____________________________________________________________________________
 template<typename Particle>
 bool ParticleInfo::isA(int particleID, const Particle* p, bool checkCharge)
 {

@@ -6,15 +6,19 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 namespace cfgSet {
+  extern char* CMSSW_BASE;
+
   extern JetConfig zl_search_jets;
   extern JetConfig zl_photon_jets;
   extern JetConfig zl_lepton_jets;
+  extern JetConfig zl_dilepton_jets;
   extern JetConfig ol_search_jets;
 
   void loadDefaultJetConfigurations();
 
   extern LeptonConfig zl_sel_leptons ;
   extern LeptonConfig zl_veto_leptons;
+  extern LeptonConfig zl_loose_leptons;
   extern LeptonConfig ol_sel_leptons ;
   extern LeptonConfig ol_veto_leptons;
 
@@ -25,14 +29,24 @@ namespace cfgSet {
 
   void loadDefaultTrackConfigurations();
 
+  extern TauConfig zl_veto_taus;
+  extern TauConfig ol_veto_taus;
+  
+  void loadDefaultTauConfigurations();
+
   extern PhotonConfig zl_sel_photons;
 
   void loadDefaultPhotonConfigurations();
+
+  extern CorrectionConfig standardCorrections;
+
+  void loadDefaultCorrections();
 
 
   extern ConfigSet zl_search_set;
   extern ConfigSet zl_lepton_set;
   extern ConfigSet zl_photon_set;
+  extern ConfigSet zl_dilepton_set;
   extern ConfigSet ol_search_set;
 
   void loadDefaultConfigurations();

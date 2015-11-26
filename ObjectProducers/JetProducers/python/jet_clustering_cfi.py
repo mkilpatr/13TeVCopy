@@ -50,7 +50,7 @@ ak4Jets                 = cms.EDProducer('PackedReJetProducer',
 )
 
 
-ak4PuppiJets            = cms.EDProducer('PFReJetProducer',
-                                    jet_configuration,                                                                    
-)
-ak4PuppiJets.src = cms.InputTag('puppi')
+#ak4PuppiJets            = cms.EDProducer('PFReJetProducer',
+#                                    jet_configuration,                                                                    
+#)
+#ak4PuppiJets.src = cms.InputTag('puppi')

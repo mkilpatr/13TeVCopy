@@ -22,6 +22,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     event             (0),
     weight            (1),
     process           (defaults::NUMPROCESSES),
+    datareco          (defaults::MC),
     nPV               (0),
     rho               (0),
     nSelLeptons       (0),
@@ -31,21 +32,27 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
     nBJets            (0),
     nVetoHPSTaus      (0),
     met               (0),
+    metNoHF           (0),
     genmet            (0),
     goodvertex        (false),
+    zIsInvisible      (false),
     isMC_             (isMCTree),
     defaultJets       (0),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
+
 {
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
-  clog <<"Loaded configurations: ";
+  clog <<"Loaded configurations: " << endl;
+  if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
   if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
   if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
   if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks    <<" ";
+  if(configSet.vetoedTaus     .isConfig()) clog << configSet.vetoedTaus      <<" ";
   if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons <<" ";
-
+  if(configSet.corrections.isConfig())     clog << configSet.corrections     <<" ";
+ 
   clog << endl;
 
   if(configSet.jets.isConfig()){
@@ -79,7 +86,31 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, bool isMC
   } else {
     clog << "With no default jet type" << endl  ;
   }
+
+
+  //load corrections
+  if(configSet.corrections.isConfig()){
+    if(configSet.corrections.ttbarCorrections != TtbarCorrectionSet::NULLOPT){
+      ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
+      corrections.push_back(&ttbarCorrections);
+    }
+    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
+      if(configSet.corrections.leptonCorrections != EventCorrectionSet::NULLOPT)
+        eventCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.leptonCorrections);
+      corrections.push_back(&eventCorrections);
+    }
+    if(configSet.corrections.jetCorrections != JetCorrectionSet::NULLOPT){
+      jetCorrections.load(configSet.corrections.jetCorrectionFile, configSet.corrections.jetCorrections);
+      corrections.push_back(&jetCorrections);
+    }
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections);
+      corrections.push_back(&jetAndMETCorrections);
+    }
+  
     jetCorrector.setJES(configSet.jets.JES);
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -149,6 +180,18 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::AK8FATJETS : {
+      int defaultOptions = FatJetReader::defaultOptions;
+      reader.load(&fatJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName);
+      break;
+    }
+
+    case cfgSet::AK8PUPPIFATJETS : {
+      int defaultOptions = FatJetReader::defaultOptions;
+      reader.load(&fatJetPuppiReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName);
+      break;
+    }
+
     case cfgSet::CORRAL : {
       int defaultOptions = CORRALReader::defaultOptions;
       reader.load(&corralReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CORRAL : branchName );
@@ -177,6 +220,9 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
+  load(cfgSet::AK8FATJETS);
+  load(cfgSet::AK8PUPPIFATJETS);
+  load(cfgSet::TRIGOBJS);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -193,11 +239,21 @@ void BaseTreeAnalyzer::processVariables()
     rho   = evtInfoReader.rho;
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
+    metNoHF = &evtInfoReader.metNoHF;
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
-    triggerflag =  evtInfoReader.triggerflag;
+    datareco =  evtInfoReader.datareco;
+
+    if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
+      jetAndMETCorrections.processMET(this);
+      (*met) = jetAndMETCorrections.getCorrectedMET();
+      (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
+    }
+    if(defaultJets && defaultJets->isLoaded())
+      jetCorrector.shiftJES(defaultJets->recoJets, met);
   }
+
 
 
   if(genParticleReader.isLoaded()){
@@ -213,11 +269,28 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
   }
 
+  if(fatJetReader.isLoaded()){
+    fatJets.clear();
+    fatJets.reserve(fatJetReader.fatJets.size());
+    for(auto& p : fatJetReader.fatJets) fatJets.push_back(&p);
+  }
+
+  if(fatJetPuppiReader.isLoaded()){
+    fatJetsPuppi.clear();
+    fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
+    for(auto& p : fatJetPuppiReader.fatJets) fatJets.push_back(&p);
+  }
+
   if(trigObjReader.isLoaded()){
+    triggerflag =  trigObjReader.triggerflag;
     triggerObjects.clear();
     triggerObjects.reserve(trigObjReader.trigobjs.size());
     for(auto& to : trigObjReader.trigobjs)
       triggerObjects.push_back(&to);
+    triggerInfo.clear();
+    triggerInfo.reserve(trigObjReader.triginfo.size());
+    for(auto& tI : trigObjReader.triginfo)
+      triggerInfo.push_back(&tI);
   }
 
   allLeptons.clear();
@@ -250,51 +323,35 @@ void BaseTreeAnalyzer::processVariables()
   if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
     cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.selectedPhotons);
 
-  if(tauReader.isLoaded()){
-    HPSTaus.clear();
-    HPSTaus.reserve(tauReader.taus.size());
-    for(auto& tau : tauReader.taus){
-      if(tau.pt() > 20 && fabs(tau.eta())<2.4 && (tau.hpsid() & kMediumIsoMVALT) > 0)
-        HPSTaus.push_back(&tau);
-    }
-
-    nVetoHPSTaus=0;
-    if(selectedLeptons.size()==1){
-      for(uint iT=0; iT<HPSTaus.size(); ++iT){
-        if(PhysicsUtilities::deltaR(HPSTaus.at(iT)->p4(),selectedLeptons.at(0)->p4())<0.4) continue;
-        if(HPSTaus.at(iT)->q()*selectedLeptons.at(0)->q()<0)
-          nVetoHPSTaus++;
-      }
-    }
-  }
-  
-  jetCorrector.shiftJES(defaultJets->recoJets, met);
-  if(tauReader.isLoaded()){
-    HPSTaus.clear();
-    HPSTaus.reserve(tauReader.taus.size());
-    for(auto& tau : tauReader.taus){
-      if(tau.pt() > 20 && fabs(tau.eta())<2.4 && (tau.hpsid() & kMediumIsoMVALT) > 0)
-        HPSTaus.push_back(&tau);
-    }
-
-    nVetoHPSTaus=0;
-    if(selectedLeptons.size()==1){
-      for(uint iT=0; iT<HPSTaus.size(); ++iT){
-        if(PhysicsUtilities::deltaR(HPSTaus.at(iT)->p4(),selectedLeptons.at(0)->p4())<0.4) continue;
-        if(HPSTaus.at(iT)->q()*selectedLeptons.at(0)->q()<0)
-          nVetoHPSTaus++;
-      }
-    }
-  }
+  // must not preceed selectLeptons
+  vetoedTaus.clear();
+  if(tauReader.isLoaded() && configSet.vetoedTaus.isConfig())
+    cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.vetoedTaus);
+  nVetoHPSTaus = vetoedTaus.size();
 
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
-    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,configSet.jets);
+    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
 
+  //load corrections corrections
+  for(auto * iC : corrections){
+    iC->processCorrection(this);
+  }
+
+}
+//--------------------------------------------------------------------------------------------------
+bool BaseTreeAnalyzer::processData(){
+  //only look at data
+  if(evtInfoReader.process == defaults::NUMPROCESSES || evtInfoReader.process <= defaults::SIGNAL ) return true;
+
+  // skip events in PR with run number < 251584 - they are in the re-miniAOD
+  if(evtInfoReader.datareco==defaults::PROMPT_50NS && evtInfoReader.run < 251584) return false;
+
+  return true;
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
@@ -306,6 +363,7 @@ void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
   while(reader.nextEvent(reportFrequency)){
     isProcessed_ = false;
     if(numEvents >= 0 && getEventNumber() >= numEvents) return;
+    if(!processData()) continue;
     processVariables();
     runEvent();
   }

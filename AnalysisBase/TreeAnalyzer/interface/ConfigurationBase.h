@@ -4,14 +4,20 @@
 
 #include "AnalysisTools/DataFormats/interface/Electron.h"
 #include "AnalysisTools/DataFormats/interface/Muon.h"
+#include "AnalysisTools/DataFormats/interface/Tau.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
+
 #include <iostream>
 
 namespace cfgSet {
 
-  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, CORRAL, TRIGOBJS};
+  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, CORRAL, TRIGOBJS};
 
   //base used for all future ConfigSets
   class BaseConfig {
@@ -44,6 +50,7 @@ namespace cfgSet {
     bool  cleanJetsvSelectedLeptons;
     bool  cleanJetsvVetoedLeptons  ;
     bool  cleanJetsvSelectedPhotons;
+    bool  cleanJetsvVetoedTracks   ;
     float cleanJetsMaxDR           ;
     signed int JES                 ;
 
@@ -59,6 +66,7 @@ namespace cfgSet {
       cleanJetsvSelectedLeptons(false),
       cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
+      cleanJetsvVetoedTracks  (false),
       cleanJetsMaxDR           (-1)
     {};
     virtual ~JetConfig() {};
@@ -75,6 +83,7 @@ namespace cfgSet {
       if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
       if(a.cleanJetsvVetoedLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
       if(a.cleanJetsvSelectedPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
+      if(a.cleanJetsvVetoedTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
       return os;
     };
@@ -140,10 +149,34 @@ namespace cfgSet {
       os << "The min track Pt is "<< a.minPt <<std::endl;
       os << "The max track eta is "<< a.maxEta <<std::endl;
       if(a.mtPresel == 1)
-      os << "The mt presel is is on " << std::endl;
+      os << "The mt presel is on " << std::endl;
       else
-      os << "The mt presel is is off " << std::endl;
+      os << "The mt presel is off " << std::endl;
       os << "The max track Dz is "<< a.maxDz <<std::endl;
+      return os;
+    };
+  };
+
+  class TauConfig : public BaseConfig {
+  public:
+
+    float   minPt;
+    float   maxEta;
+    float    minDeltaRFromSelLepton;
+    bool    requireOppositeQToSelLepton; 
+    bool    (ucsbsusy::TauF::*selected)() const;
+
+    TauConfig(TString inName = "NULL") :BaseConfig(inName),
+      minPt  (-1),
+      maxEta (-1),
+      selected(0)
+    {};
+    virtual ~TauConfig() {};
+
+    friend std::ostream& operator<<(std::ostream& os, const TauConfig& a){
+      os << "Printing out tau selection information" << std::endl;//<< a.jetCollection <<std::endl;
+      os << "The min tau Pt is "<< a.minPt <<std::endl;
+      os << "The max tau eta is "<< a.maxEta <<std::endl;
       return os;
     };
   };
@@ -171,7 +204,72 @@ namespace cfgSet {
 
   };
 
+  class CorrectionConfig : public BaseConfig {
+  public:
+    int ttbarCorrections;
+    int eventCorrections;
+    int jetCorrections;
+    int leptonCorrections;
+    int jetAndMETCorrections;
 
+    TString ttbarCorrectionFile;
+    TString eventCorrectionFile; 
+    TString jetCorrectionFile;
+    TString leptonCorrectionFile;
+
+    CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
+        ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
+        eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+	jetCorrections(ucsbsusy::JetCorrectionSet::NULLOPT),
+        jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT)
+
+    {};
+    friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
+      if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
+        os << "Applying ttbar corrections from " << a.ttbarCorrectionFile.Data() <<" -> ";
+        if(a.ttbarCorrections & ucsbsusy::TtbarCorrectionSet::TOPPAIRPT)
+          os << "TOPPAIRPT ";
+        os << std::endl;
+
+      }
+      if(a.eventCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
+          os << "PU ";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
+          os << "NORM ";
+        os << std::endl;
+
+      }
+      if(a.jetCorrections != ucsbsusy::JetCorrectionSet::NULLOPT){
+        os << "Applying jet corrections from " << a.jetCorrectionFile.Data() <<" -> ";
+        if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT)
+          os << "BTAGWEIGHT " << std::endl;
+        else if(a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS)
+          os << "BTAGOBJECTS " << std::endl;        
+        if( (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGOBJECTS) && (a.jetCorrections & ucsbsusy::JetCorrectionSet::BTAGWEIGHT) )
+          throw  "****** Fatal error in b-tag corrections: Can't use both options BTAGWEIGHT and BTAGOBJECTS";
+        os << std::endl;
+ 
+      } 
+
+      if(a.leptonCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
+        os << "Applying event corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        if(a.leptonCorrections & ucsbsusy::EventCorrectionSet::LEP)
+          os << "LEP " << std::endl;
+        os << std::endl;
+	}
+      if(a.jetAndMETCorrections != ucsbsusy::JetAndMETCorrectionSet::NULLOPT){
+        os << "Applying jet and MET corrections -> ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METSCALE)
+          os << "METScale ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESOLUTION)
+          os << "METResolution ";
+        os << std::endl;
+      }
+      return os;
+    }
+  };
 
 
   //The collection of default configs
@@ -180,7 +278,9 @@ namespace cfgSet {
     LeptonConfig    selectedLeptons;
     LeptonConfig    vetoedLeptons  ;
     TrackConfig     vetoedTracks   ;
+    TauConfig       vetoedTaus     ;
     PhotonConfig    selectedPhotons;
+    CorrectionConfig corrections    ;
     TString         jsonFile       ;
     JSONProcessing* jsonProcessing ;
     ConfigSet() :
@@ -188,7 +288,9 @@ namespace cfgSet {
       selectedLeptons (),
       vetoedLeptons   (),
       vetoedTracks    (),
+      vetoedTaus      (),
       selectedPhotons (),
+      corrections     (),
       jsonFile(""),
       jsonProcessing(0)
     {}

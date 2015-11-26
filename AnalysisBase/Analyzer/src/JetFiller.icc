@@ -3,7 +3,7 @@
 
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 #include "AnalysisTools/Utilities/interface/JetFlavorMatching.h"
-#include "AnalysisTools/Utilities/interface/TopJetMatching.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -50,14 +50,26 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   qglInterface_      (new QuarkGluonTagInterface),
   qgTaggingVar_      (new QuarkGluonTaggingVariables),
   fillReGenJets_     (cfg.getUntrackedParameter<bool>        ("fillReGenJets")),
+  jptCompleteMin_    (cfg.getUntrackedParameter<double>      ("completeMinJetPt")),
   jptMin_            (cfg.getUntrackedParameter<double>      ("minJetPt")),
   jets_              (0),
   reGenJets_         (0),
   stdGenJets_        (0),
   superJets_         (0),
   superJetAssoc_     (0),
-  superJetNsub_      (0)
+  superJetNsub_      (0),
+  jecLabel_             (cfg.getUntrackedParameter<std::string>("jecLabel","AK4PFchs")),
+  jecUnc_            (0)
 {
+
+  if(options_ & LOADUNCFROMFILE) {
+    edm::FileInPath           jetCorrInputFileName_ = cfg.getUntrackedParameter<edm::FileInPath>("jetCorrInputFile");
+  if ( jetCorrInputFileName_.location() == edm::FileInPath::Unknown) throw cms::Exception("JetFiller");
+  JetCorrectorParameters* JetCorPar = new JetCorrectorParameters(jetCorrInputFileName_.fullPath().data(), cfg.getUntrackedParameter<std::string>("jetCorrUncertainty"));
+  jecUnc_ = new JetCorrectionUncertainty(*JetCorPar);
+  }
+
+
   if(!(options_ & LOADGEN) && (options & SAVETOPASSOC)){
     throw cms::Exception( "JetFiller::JetFiller()","You want to save the top tag assoc but not gen jets!");
   }
@@ -72,7 +84,6 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   ijetlooseId_= data.addMulti<bool> (branchName_,"jet_looseId",0);
   ijettightId_= data.addMulti<bool> (branchName_,"jet_tightId",0);
   ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"    ,0);
-  ijetarea_   = data.addMulti<float>(branchName_,"jet_area"   ,0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
 
   if(options_ & LOADGEN) {
@@ -94,12 +105,12 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   }
 
   if(options_ & LOADJETSHAPE) {
+    ijetarea_   = data.addMulti<float>(branchName_,"jet_area"   ,0);
     ijetbetaStar_=data.addMulti<float>(branchName_,"jet_betaStar",0);
     ijetptD_     =data.addMulti<float>(branchName_,"jet_ptD"     ,0);
     ijetaxis1_   =data.addMulti<float>(branchName_,"jet_axis1"   ,0);
     ijetaxis2_   =data.addMulti<float>(branchName_,"jet_axis2"   ,0);
     ijetMult_    =data.addMulti<size16>(branchName_,"jet_jetMult" ,0);
-    ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
     ijetcharge_  =data.addMulti<float>(branchName_,"jet_charge"    ,0);
     ijetpullrap_ =data.addMulti<float>(branchName_,"jet_pullrap"    ,0);
     ijetpullphi_ =data.addMulti<float>(branchName_,"jet_pullphi"    ,0);
@@ -114,11 +125,16 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
     }
   }
 
+  if(options_ & SAVEQGL) {
+    ijetqgl_     =data.addMulti<float>(branchName_,"jet_qgl"    ,0);
+  }
+
   if(options_ & SAVETOPASSOC) {
     iGenAssocPrtIndex_ = data.addMulti<size16>(branchName_,"prtassoc_partonIndex",0);
     iGenAssocJetIndex_ = data.addMulti<size16>(branchName_,"prtassoc_jetIndex",0);
-    iGenAssocCont_     = data.addMulti<TopJetMatching::conType>(branchName_,"prtassoc_jetCont",0);
+    iGenAssocCont_     = data.addMulti<PartonMatching::conType>(branchName_,"prtassoc_jetCont",0);
   }
+
 }
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
@@ -131,6 +147,10 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     if(fillReGenJets_) iEvent.getByToken(reGenJetToken_,reGenJets_);
     else               iEvent.getByToken(reGenJetToken_,reGenJets_);
     iEvent.getByToken(flvAssocToken_,flvAssoc_);
+
+    //clear caches
+    reGenRecoRef_.clear();
+    stdGenRecoRef_.clear();
   }
   if(options_ & LOADSUPER) {
     iEvent.getByToken(superJetToken_,superJets_);
@@ -141,10 +161,13 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     iEvent.getByToken(qglToken_,qgHandleQGL_);
   }
   // Fill JEC uncertainty variables
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get("AK4PF", JetCorParColl);
-  JetCorrectorParameters const &JetCorPar = (*JetCorParColl)["Uncertainty"];
-  jecUnc = new JetCorrectionUncertainty(JetCorPar);
+  if(!(options_ & LOADUNCFROMFILE)) {
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    iSetup.get<JetCorrectionsRecord>().get(jecLabel_, JetCorParColl);
+    const JetCorrectorParameters& jetCorrParameters = (*JetCorParColl)["Uncertainty"];
+    jecUnc_ = new JetCorrectionUncertainty(jetCorrParameters);
+
+  }
 
   isLoaded_ = true;
 
@@ -154,20 +177,45 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
 template<typename Jet>
 void JetFiller<Jet>::fill()
 {
-  vector<int> filledIndex;
-  int curGenIndex = -1;
+  vector<int> genJetIndicies;
+  int curIndex = -1;
   if(options_ & LOADGEN){
     const reco::GenJetCollection& genJets = fillReGenJets_ ? (*reGenJets_.product()) : (*stdGenJets_.product());
-    filledIndex.reserve(genJets.size());
+    genJetIndicies.reserve(genJets.size());
     for(unsigned int iJ = 0; iJ < genJets.size(); ++iJ){
       const auto& j = genJets[iJ];
-      if(j.pt() < jptMin_){ filledIndex.push_back(-1); continue;}
-      filledIndex.push_back(++curGenIndex);
+      auto rJ = getRecoJet(iJ, fillReGenJets_);
+      if(j.pt() < jptMin_
+          && (rJ.isNull() ? 0 : rJ->pt()) < jptMin_ ){
+        genJetIndicies.push_back(-1);
+        continue;
+      }
+      genJetIndicies.push_back(++curIndex);
+
+      //Basic information saved for all jets
       data.fillMulti<float>(igenjetpt_    ,j.pt());
       data.fillMulti<float>(igenjeteta_   ,j.eta());
       data.fillMulti<float>(igenjetphi_   ,j.phi());
       data.fillMulti<float>(igenjetmass_  ,j.mass());
       data.fillMulti<size8>(igenjetflavor_,fillReGenJets_ ? flvAssoc_->at(iJ) : 0);
+
+      //Zero out complete information for low pT jets
+      if(j.pt() < jptCompleteMin_){
+        if(options_ & LOADJETSHAPE){
+          assert(evtInfofiller_->isLoaded());
+          qgTaggingVar_->compute(&j,false);
+          data.fillMulti<float>(igenjetptD_     ,0);
+          data.fillMulti<float>(igenjetaxis1_   ,0);
+          data.fillMulti<float>(igenjetaxis2_   ,0);
+          data.fillMulti<size16>(igenjetMult_   ,0);
+          data.fillMulti<float>(igenjetcharge_  ,0);
+          data.fillMulti<float>(igenjetpullrap_ ,0);
+          data.fillMulti<float>(igenjetpullphi_ ,0);
+        }
+        continue;
+      }
+
+      //Fill it in for higher pt jets
       if(options_ & LOADJETSHAPE){
         assert(evtInfofiller_->isLoaded());
         qgTaggingVar_->compute(&j,false);
@@ -190,8 +238,11 @@ void JetFiller<Jet>::fill()
         bool firstJet = true;
         for(const auto& ja : p.jetAssoc){
           //check to see if in the stored jet collection
-          if(filledIndex[ja.first] < 0) continue;
-          TopJetMatching::conType con = TopJetMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
+          if(genJetIndicies[ja.first] < 0) continue;
+          //make sure that it is above our min pT threshold
+          if(genJets[ja.first].pt() < jptCompleteMin_) continue;
+
+          PartonMatching::conType con = PartonMatching::toContainmentType(ja.second.energy()/p.sumFinal.energy());
           //if the containment is less than 1% leave it off the list
           if(con == 0) continue;
           if(firstJet){
@@ -202,7 +253,7 @@ void JetFiller<Jet>::fill()
             firstJet = false;
           }
           data.fillMulti<size16>(iGenAssocJetIndex_,convertTo<size16>(ja.first,"JetFiller::prtassoc_jetIndex"));
-          data.fillMulti<TopJetMatching::conType>(iGenAssocCont_,con);
+          data.fillMulti<PartonMatching::conType>(iGenAssocCont_,con);
         }
       }
     }
@@ -214,7 +265,7 @@ void JetFiller<Jet>::fill()
     filledSJIndex.reserve(superJets_->size());
     for(unsigned int iJ = 0; iJ < superJets_->size(); ++iJ){
       const auto& j = superJets_->at(iJ);
-      if(j.pt() < jptMin_){ filledSJIndex.push_back(-1); continue;}
+      if(j.pt() < jptCompleteMin_){ filledSJIndex.push_back(-1); continue;}
       filledSJIndex.push_back(++curSJIndex);
       data.fillMulti<float>(isuperjetpt_    ,j.pt());
       data.fillMulti<float>(isuperjeteta_   ,j.eta());
@@ -228,30 +279,63 @@ void JetFiller<Jet>::fill()
   for(unsigned int iJ = 0; iJ < jets_->size(); ++iJ){
     const Jet& j = jets_->at(iJ);
     if(j.pt() < jptMin_) continue;
-    data.fillMulti<float>(ijetpt_      ,j.pt());
-    data.fillMulti<float>(ijeteta_     ,j.eta());
-    data.fillMulti<float>(ijetphi_     ,j.phi());
-    data.fillMulti<float>(ijetmass_    ,j.mass());
-    data.fillMulti<float>(ijetptraw_   ,getJecUncorrection(j));
-    data.fillMulti<float>(ijetpuId_    ,getPUJetId(j));
-    data.fillMulti<float>(ijetcsv_     ,getbDisc(j));
-    data.fillMulti<float>(ijetarea_    ,j.jetArea());
-    data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
-    data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
 
-    /* Fill RecoJet JEC Uncertainties */
-    jecUnc->setJetEta(j.eta());
-    jecUnc->setJetPt(j.pt());
-    data.fillMulti<float>(ijetuncertainty_, jecUnc->getUncertainty(true));
-        
+    //Basic information saved for all jets
+    data.fillMulti<float>(ijetpt_   ,j.pt());
+    data.fillMulti<float>(ijeteta_  ,j.eta());
+    data.fillMulti<float>(ijetphi_  ,j.phi());
+    data.fillMulti<float>(ijetmass_ ,j.mass());
+
     if(options_ & LOADGEN) {
       const reco::GenJetRef gJ = fillReGenJets_ ? getReGenJet(j,iJ) : getStdGenJet(j);
       if(gJ.isNonnull()) {
-        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(filledIndex[gJ.key()],"JetFiller::genJetIndex"));
+        data.fillMulti<int16>(ijetgenindex_,convertTo<int16>(genJetIndicies[gJ.key()],"JetFiller::genJetIndex"));
       } else {
         data.fillMulti<int16>(ijetgenindex_   );
       }
     }
+
+    /* Fill RecoJet JEC Uncertainties */
+    jecUnc_->setJetEta(j.eta());
+    jecUnc_->setJetPt(j.pt());
+    data.fillMulti<float>(ijetuncertainty_, jecUnc_->getUncertainty(true));
+
+    //Zero out complete information for low pT jets
+    if(j.pt() < jptCompleteMin_){
+      data.fillMulti<float>(ijetptraw_ ,0);
+      data.fillMulti<float>(ijetpuId_  ,0);
+      data.fillMulti<float>(ijetcsv_   ,0);
+      data.fillMulti<bool>(ijetlooseId_,false);
+      data.fillMulti<bool>(ijettightId_,false);
+      if(options_ & LOADSUPER) {
+        data.fillMulti<int16>(ijetsuperindex_,-1);
+      }
+      if(options_ & LOADJETSHAPE){
+        data.fillMulti<float>(ijetarea_  ,0);
+        data.fillMulti<float>(ijetbetaStar_,0);
+        data.fillMulti<float>(ijetptD_     ,0);
+        data.fillMulti<float>(ijetaxis1_   ,0);
+        data.fillMulti<float>(ijetaxis2_   ,0);
+        data.fillMulti<size16>(ijetMult_   ,0);
+        data.fillMulti<float>(ijetcharge_  ,0);
+        data.fillMulti<float>(ijetpullrap_ ,0);
+        data.fillMulti<float>(ijetpullphi_ ,0);
+      } // LOADJETSHAPE
+      if(options_ & SAVEQGL) {
+        data.fillMulti<float>(ijetqgl_   ,0);
+      } // SAVEQGL
+      continue;
+    }
+
+    //Fill it in for higher pt jets
+    data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
+    data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
+    data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
+    data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
+    data.fillMulti<bool>(ijettightId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.9 && j.neutralHadronEnergyFraction()<0.9 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)));
+
+
+
     if(options_ & LOADSUPER) {
       const int sjAssoc = superJetAssoc_->at(iJ);
       data.fillMulti<int16>(ijetsuperindex_, sjAssoc > -1 ? convertTo<int16>(filledSJIndex[sjAssoc], "JetFiller::superJetIndex") : -1);
@@ -261,6 +345,7 @@ void JetFiller<Jet>::fill()
       assert(evtInfofiller_->isLoaded());
       // for official qgTagger
       qgTaggingVar_->compute(&j,true);
+      data.fillMulti<float>(ijetarea_ ,j.jetArea());
       data.fillMulti<float>(ijetbetaStar_,getBetaStar(j));
       data.fillMulti<float>(ijetptD_     ,qgTaggingVar_->getPtD());
       data.fillMulti<float>(ijetaxis1_   ,qgTaggingVar_->getAxis1());
@@ -272,14 +357,16 @@ void JetFiller<Jet>::fill()
       qgTaggingVar_->getPull(&j,jetPullRap,jetPullPhi);
       data.fillMulti<float>(ijetpullrap_   ,float(jetPullRap));
       data.fillMulti<float>(ijetpullphi_   ,float(jetPullPhi));
-      if(options_ & SAVEQGL) {
-        float qgQGL = (*qgHandleQGL_ )[reco::CandidatePtr(jets_, iJ)];
-        data.fillMulti<float>(ijetqgl_ , qgQGL );
-      } // SAVEQGL
+
     } // LOADJETSHAPE
+    if(options_ & SAVEQGL) {
+      float qgQGL = (*qgHandleQGL_ )[reco::CandidatePtr(jets_, iJ)];
+      data.fillMulti<float>(ijetqgl_ , qgQGL );
+    } // SAVEQGL
 
   }
 
+  if(!(options_ & LOADUNCFROMFILE)) delete jecUnc_;
   isFilled_ = true;
 }
 }

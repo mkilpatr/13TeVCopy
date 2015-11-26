@@ -10,52 +10,61 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
   public :
 
     ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars), passZtoLLSel(false) {}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, isMCTree, pars) {}
 
-    bool passZtoLLSel;
-    const float low_metcut_ = 100;
+    // booking
+    size i_njets30 = 0;
+    size i_nbjets30 = 0;
+    size i_ptzll = 0;
+
+    bool passZtoLLSel = false;
+    float ptzll = 0;
+
+    void book() {
+      ZeroLeptonAnalyzer::book();
+
+      i_njets30           = data.add<int>("","njets30","I",0);
+      i_nbjets30          = data.add<int>("","nbjets30","I",0);
+      i_ptzll             = data.add<float>("","ptzll","F",0);
+    }
 
     void processVariables(){
-      BaseTreeAnalyzer::processVariables();
-
-      // only processing Ztoll samples
-      assert(process == defaults::SINGLE_Z);
+      ZeroLeptonAnalyzer::processVariables();
 
       // selections: exactly two same flavor leptons, inv mass in (80, 100)
-      if(selectedLeptons.size() == 2){
-        auto lep0 = selectedLeptons.at(0);
-        auto lep1 = selectedLeptons.at(1);
-        if (lep0->iselectron() == lep1->iselectron()){
-          auto z_p4 = lep0->p4() + lep1->p4();
-          if (z_p4.mass()>80 && z_p4.mass()<100){
-            passZtoLLSel = true;
-            met->setP4(met->p4() + z_p4); // add leptons to met
+      passZtoLLSel = false;
+      if(selectedLeptons.size() != 2)
+        return;
 
-            // debug output
-//            cout << "#" << this->getEventNumber() << ": " << endl;
-//            cout << "lep0: " << lep0->p4() << endl;
-//            cout << "lep1: " << lep1->p4() << endl;
-//            cout << "z   : " << z_p4       << endl;
-//            cout << "met : " << met ->p4() << endl;
-//            cout << "nj  : " << jets.size()<< endl;
-//            cout << "nb  : " << bJets.size()<< endl;
+      auto lep0 = selectedLeptons.at(0);
+      auto lep1 = selectedLeptons.at(1);
 
-          }
+      if (lep0->pt()<20)
+        return;
+
+      if (lep0->iselectron() == lep1->iselectron() && lep0->q()*lep1->q() < 0){
+        auto z_p4 = lep0->p4() + lep1->p4();
+        if (z_p4.mass()>80 && z_p4.mass()<100){
+          passZtoLLSel = true;
+          ptzll = z_p4.pt();
         }
       }
 
     }
 
+
     bool fillEvent() {
-//      if(nVetoedLeptons > 0)                return false;
-      if(nVetoedTracks > 0)                 return false;
-      if(met->pt() < low_metcut_)           return false;
       if(!passZtoLLSel)                     return false;
       if(!goodvertex)                       return false;
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
+
+      data.fill<int>(i_njets30, std::count_if(jets.cbegin(), jets.cend(), [](RecoJetF* j){return j->pt()>30;}) );
+      data.fill<int>(i_nbjets30, std::count_if(bJets.cbegin(), bJets.cend(), [](RecoJetF* j){return j->pt()>30;}) );
+      data.fill<float>(i_ptzll, ptzll);
       return true;
     }
+
 
 };
 
@@ -65,7 +74,8 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
                                  const TString fname = "/store/user/vdutta/13TeV/150715/74X/merged/dyjetstoll_1_ntuple_wgtxsec.root",
                                  const double xsec = 1.0,
                                  const TString outputdir = "trees",
-                                 const TString fileprefix = "root://eoscms//eos/cms")
+                                 const TString fileprefix = "root://eoscms//eos/cms",
+                                 const TString json="")
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -80,8 +90,10 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep();
-  pars.selectedLeptons = cfgSet::ol_sel_leptons;
+  cfgSet::ConfigSet pars = pars0lep(json);
+  pars = cfgSet::zl_dilepton_set;
+//  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
+//  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
 
   ZtoLLCRAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
   a.analyze(100000);

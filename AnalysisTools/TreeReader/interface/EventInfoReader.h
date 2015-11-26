@@ -37,6 +37,9 @@ namespace ucsbsusy {
       float         met_pt;
       float         met_phi;
       float         metsumEt;
+      float         metNoHF_pt;
+      float         metNoHF_phi;
+      float         metNoHF_sumEt;
       float         genmet_pt;
       float         genmet_phi;
       bool          goodvertex;
@@ -47,13 +50,20 @@ namespace ucsbsusy {
       float         evtweight;
       size8             proc;
       defaults::Process process;
-      std::vector<unsigned long> * trigbitflags;
-      std::vector<bool>          * trigbitpass;
-      std::vector<unsigned int>  * trigbitprescale;
+      size8             datrec;
+      defaults::DataReco datareco;
 
-      unsigned long triggerflag;
+      std::vector<unsigned long> * metfilterbitflags;
+      std::vector<bool>          * metfilterbitpass;
+      std::vector<bool>          * hbheHNFlt;
+
+      bool hbheFixFlt;
+      bool hbheFlt;
+      bool cscFlt;
+      bool eeBadSCFlt;
 
       MomentumF    met;
+      MomentumF    metNoHF;
       MomentumF    genmet;
 
   };

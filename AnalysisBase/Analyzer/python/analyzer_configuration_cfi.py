@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('MCRUN2_74_V9'),                    
+                                      globalTag        = cms.string ('74X_mcRun2_asymptotic_v2'),                    
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('MCRUN2_74_V9'),      #Global tag
+                                      globalTag        = cms.string ('74X_mcRun2_asymptotic_v2'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -45,8 +45,12 @@ nominal_configuration = cms.PSet(
                                   EventInfo = cms.untracked.PSet(
                                       isFilled               = cms.untracked.bool(True),
                                       vertices               = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                      pileupSummaryInfos     = cms.InputTag('slimmedAddPileupInfo'),
                                       rho                    = cms.InputTag('fixedGridRhoFastjetAll'),
                                       mets                   = cms.InputTag('slimmedMETs'),  
+                                      metsOOB                = cms.InputTag('slimmedMETs'),  
+                                      metsNoHF               = cms.InputTag('slimmedMETsNoHF'),  
+                                      puppimets              = cms.InputTag('slimmedMETsPuppi'),
                                       genEvtInfo             = cms.InputTag('generator'),
                                       lheEvtInfo             = cms.InputTag('externalLHEProducer'),
                                       saveSystematicWeights  = cms.untracked.bool(True),
@@ -62,14 +66,18 @@ nominal_configuration = cms.PSet(
                                       qgLikelihood      = cms.untracked.InputTag('QGTagger','qgLikelihood'),
                                       fillReGenJets     = cms.untracked.bool(True),
                                       genParticles      = cms.InputTag('prunedGenParticles'),
-                                      minJetPt          = cms.untracked.double(20.0),
+                                      minJetPt          = cms.untracked.double(10.0),
+                                      completeMinJetPt  = cms.untracked.double(20.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
-                                      fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillJetShapeInfo  = cms.untracked.bool(False),
                                       fillTopJetAssoc   = cms.untracked.bool(True),
-                                      fillqgl           = cms.untracked.bool(True),
+                                      fillqgl           = cms.untracked.bool(False),
                                       superJets         = cms.untracked.InputTag(''),
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
+                                      loadJecUncFile    = cms.untracked.bool(False),
+                                      jecLabel          = cms.untracked.string('AK4PFchs'),
+                                      jetCorrUncertainty= cms.untracked.string('SubTotalMC'),
                                   ),
 
                                   PuppiJets = cms.untracked.PSet(
@@ -81,16 +89,18 @@ nominal_configuration = cms.PSet(
                                       flvAssoc           = cms.InputTag('ak4PuppiFlvAssoc','flavors'),
                                       reGenJetAssoc      = cms.InputTag('ak4PuppiJets:GenPtr'),
                                       fillReGenJets      = cms.untracked.bool(True),
-                                      minJetPt           = cms.untracked.double(20.0),
+                                      minJetPt          = cms.untracked.double(20.0),
+                                      completeMinJetPt  = cms.untracked.double(20.0),
                                       fillCustomBtagInfo = cms.untracked.bool(True),
                                       fillJetGenInfo     = cms.untracked.bool(True),
-                                      fillJetShapeInfo   = cms.untracked.bool(True),
+                                      fillJetShapeInfo   = cms.untracked.bool(False),
                                       fillTopJetAssoc    = cms.untracked.bool(True),
                                       applyJEC           = cms.untracked.bool(False),
                                       fillqgl            = cms.untracked.bool(False),
                                       superJets          = cms.untracked.InputTag(''),
                                       superJetAssoc      = cms.untracked.InputTag(''),
                                       superJetNsub       = cms.untracked.InputTag(''),
+                                      loadJecUncFile     = cms.untracked.bool(False),
                                   ),
 
                                   PickyJets = cms.untracked.PSet(
@@ -102,16 +112,18 @@ nominal_configuration = cms.PSet(
                                       flvAssoc             = cms.InputTag('pickyFlvAssoc','flavors'),
                                       reGenJetAssoc        = cms.InputTag('pickyJets:GenPtr'),
                                       fillReGenJets        = cms.untracked.bool(True),
-                                      minJetPt             = cms.untracked.double(20.0),
+                                      minJetPt          = cms.untracked.double(20.0),
+                                      completeMinJetPt  = cms.untracked.double(20.0),
                                       fillCustomBtagInfo   = cms.untracked.bool(True),
                                       fillJetGenInfo       = cms.untracked.bool(True),
-                                      fillJetShapeInfo     = cms.untracked.bool(True),
+                                      fillJetShapeInfo     = cms.untracked.bool(False),
                                       fillTopJetAssoc      = cms.untracked.bool(True),
                                       applyJEC             = cms.untracked.bool(False),
                                       fillqgl              = cms.untracked.bool(False),
                                       superJets            = cms.untracked.InputTag(''),
                                       superJetAssoc        = cms.untracked.InputTag(''),
                                       superJetNsub         = cms.untracked.InputTag(''),
+                                      loadJecUncFile       = cms.untracked.bool(False),
                                   ),
 
                                   CASubJets = cms.untracked.PSet(
@@ -124,6 +136,7 @@ nominal_configuration = cms.PSet(
                                       reGenJetAssoc        = cms.InputTag('subjetsca:GenPtr'),
                                       fillReGenJets        = cms.untracked.bool(True),
                                       minJetPt             = cms.untracked.double(20.0),
+                                      completeMinJetPt     = cms.untracked.double(20.0),
                                       fillCustomBtagInfo   = cms.untracked.bool(True),
                                       fillJetGenInfo       = cms.untracked.bool(True),
                                       fillJetShapeInfo     = cms.untracked.bool(True),
@@ -134,19 +147,20 @@ nominal_configuration = cms.PSet(
                                       superJets            = cms.untracked.InputTag('subjetsca','Super'),
                                       superJetAssoc        = cms.untracked.InputTag('subjetsca','SuperJetIndex'),
                                       superJetNsub         = cms.untracked.InputTag('subjetsca','NCASubjets'),
+                                      loadJecUncFile       = cms.untracked.bool(False),
                                   ),
 
                                   Muons = cms.untracked.PSet(
                                       isFilled          = cms.untracked.bool(True),
                                       muons             = cms.InputTag('slimmedMuons'),
                                       ca8jets           = cms.InputTag('redCA8'),
-                                      rho               = cms.InputTag('fixedGridRhoFastjetAll'),
+                                      rho               = cms.InputTag('fixedGridRhoFastjetCentralNeutral'),
                                       jets              = cms.InputTag('slimmedJets'),
                                       pfcands           = cms.InputTag('packedPFCandidates'),
                                       minMuonPt         = cms.untracked.double(5.0),
                                       requireLooseMuon  = cms.untracked.bool(True),
                                       fillMuonIDVars    = cms.untracked.bool(False),
-                                      fillMuonIsoVars   = cms.untracked.bool(True),
+                                      fillMuonIsoVars   = cms.untracked.bool(False),
                                       fillMuonGenInfo   = cms.untracked.bool(True),
                                   ),
 
@@ -157,16 +171,24 @@ nominal_configuration = cms.PSet(
                                       looseId                   = cms.InputTag(''),
                                       mediumId                  = cms.InputTag(''),
                                       tightId                   = cms.InputTag(''),
+                                      mvanontrigwp90Id          = cms.InputTag(''),
+                                      mvanontrigwp80Id          = cms.InputTag(''),
+                                      mvanontrigValuesMap       = cms.InputTag(''),
+                                      mvanontrigCategoriesMap   = cms.InputTag(''),
+                                      mvatrigwp90Id             = cms.InputTag(''),
+                                      mvatrigwp80Id             = cms.InputTag(''),
+                                      mvatrigValuesMap          = cms.InputTag(''),
+                                      mvatrigCategoriesMap      = cms.InputTag(''),
                                       ca8jets                   = cms.InputTag('redCA8'),
-                                      rho                       = cms.InputTag('fixedGridRhoFastjetAll'),
+                                      rho                       = cms.InputTag('fixedGridRhoFastjetCentralNeutral'),
                                       jets                      = cms.InputTag('slimmedJets'),
                                       pfcands                   = cms.InputTag('packedPFCandidates'),
                                       minElectronPt             = cms.untracked.double(5.0),
                                       bunchSpacing              = cms.untracked.int32(25),
                                       printElectronIDs          = cms.untracked.bool(False),
                                       fillElectronIDVars        = cms.untracked.bool(False),
-                                      fillElectronIsoVars       = cms.untracked.bool(True),
-                                      evaluateElectronPOGIDMVA  = cms.untracked.bool(True),
+                                      fillElectronIsoVars       = cms.untracked.bool(False),
+                                      evaluateElectronPOGIDMVA  = cms.untracked.bool(False),
                                       fillElectronGenInfo       = cms.untracked.bool(True),
                                   ),
 
@@ -175,19 +197,29 @@ nominal_configuration = cms.PSet(
                                       taus                      = cms.InputTag('slimmedTaus'),
                                       minTauPt                  = cms.untracked.double(18.0),
                                       printTauIDs               = cms.untracked.bool(False),
+                                      fillCandInfo              = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
                                   ),
                                  
                                   Photons = cms.untracked.PSet(
                                       isFilled                  = cms.untracked.bool(True),
                                       photons                   = cms.InputTag('slimmedPhotons'),
+                                      electrons                 = cms.InputTag('slimmedElectrons'),
+                                      muons                     = cms.InputTag('slimmedMuons'),
+                                      jets                      = cms.InputTag('slimmedJets'),
+                                      pfcandidates              = cms.InputTag('packedPFCandidates'),
+                                      vertices                  = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                      vetoId                    = cms.InputTag(''),
                                       looseId                   = cms.InputTag(''),
                                       mediumId                  = cms.InputTag(''),
                                       tightId                   = cms.InputTag(''),
                                       rho                       = cms.InputTag('fixedGridRhoFastjetAll'),
-                                      minPhotonPt               = cms.untracked.double(5.0),
-                                      fillPhotonIDVars          = cms.untracked.bool(False),
-                                      fillPhotonIsoVars         = cms.untracked.bool(False),
+                                      minPhotonPt               = cms.untracked.double(20.0),
+                                      minPhotonPtRC             = cms.untracked.double(15.0),
+                                      minJetPtRC                = cms.untracked.double(20.0),
+                                      minLeptonPtRC             = cms.untracked.double(10.0),
+                                      fillPhotonIDVars          = cms.untracked.bool(True),
+                                      fillPhotonIsoVars         = cms.untracked.bool(True),
                                   ),
 
                                   PFCandidates = cms.untracked.PSet(
@@ -195,13 +227,13 @@ nominal_configuration = cms.PSet(
                                       pfcands                   = cms.InputTag('packedPFCandidates'),
                                       jets                      = cms.InputTag('slimmedJets'),
                                       taus                      = cms.InputTag('slimmedTaus'),
-                                      minCandPt                 = cms.untracked.double(5.0),
-                                      maxCandEta                = cms.untracked.double(3.0),
+                                      minCandPt                 = cms.untracked.double(9.0),
+                                      maxCandEta                = cms.untracked.double(2.6),
                                       minTauDisc                = cms.untracked.double(0.0),
-                                      tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel.root'),
+                                      tauMVAFileName_MtPresel   = cms.untracked.string('tauDisc_mt100presel_S15.root'),
                                       tauMVAFileName_DphiPresel = cms.untracked.string('tauDisc_dphi1p34presel.root'),
                                       tauMVAName                = cms.untracked.string('mva_0'),
-                                      saveAllCandidates         = cms.untracked.bool(True),
+                                      saveAllCandidates         = cms.untracked.bool(False),
                                   ),
 
                                   CMSTops = cms.untracked.PSet(
@@ -212,6 +244,13 @@ nominal_configuration = cms.PSet(
                                   AK8FatJets = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
+                                      puRemoval = cms.untracked.string("CHS")
+                                      ),
+
+                                  AK8PuppiFatJets = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      fatJets  = cms.InputTag('selectedPatJetsAK8PFPuppi'),
+                                      puRemoval = cms.untracked.string("Puppi")
                                       ),
 
                                   Triggers = cms.untracked.PSet(
@@ -219,11 +258,17 @@ nominal_configuration = cms.PSet(
                                       bits      = cms.InputTag('TriggerResults','','HLT'),
                                       objects   = cms.InputTag('selectedPatTrigger'),
                                       prescales = cms.InputTag('patTrigger'),
+                                      printTriggerNames = cms.untracked.bool(False)
                                       ),
 
                                   METFilters = cms.untracked.PSet(
+                                      isFastSim = cms.untracked.bool(False),
                                       isFilled = cms.untracked.bool(True),
                                       bits     = cms.InputTag('TriggerResults','','PAT'),
+                                      hbhe     = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
+                                      hbheiso       = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
+                                      hbherun2loose = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Loose'),
+                                      hbherun2tight = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
                                       ),
 
                                 )

@@ -40,8 +40,6 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   id0_     = data.addMulti<float>(branchName_,"d0",0);
   idz_     = data.addMulti<float>(branchName_,"dz",0);
   ifromPV_ = data.addMulti<int  >(branchName_,"fromPV",-1);
-  imt_     = data.addMulti<float>(branchName_,"mttrkplusphoton",0);
-  idphimet_      = data.addMulti<float>(branchName_,"dphimet",0);
   ichiso0p1_     = data.addMulti<float>(branchName_,"chiso0p1",0);
   ichiso0p2_     = data.addMulti<float>(branchName_,"chiso0p2",0);
   ichiso0p3_     = data.addMulti<float>(branchName_,"chiso0p3",0);
@@ -50,15 +48,18 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   itotiso0p2_    = data.addMulti<float>(branchName_,"totiso0p2",0);
   itotiso0p3_    = data.addMulti<float>(branchName_,"totiso0p3",0);
   itotiso0p4_    = data.addMulti<float>(branchName_,"totiso0p4",0);
-  itrackiso_    = data.addMulti<float>(branchName_,"trackiso",0);
+  itrackiso_     = data.addMulti<float>(branchName_,"trackiso",0);
+  inearphopt_    = data.addMulti<float>(branchName_,"nearphopt",0);
+  inearphoeta_   = data.addMulti<float>(branchName_,"nearphoeta",0);
+  inearphophi_   = data.addMulti<float>(branchName_,"nearphophi",0);
   inearestTrkDR_ = data.addMulti<float>(branchName_,"nearestTrkDR",0.0);
   icontJetIndex_ = data.addMulti<int  >(branchName_,"contJetIndex",-1);
   icontJetDR_    = data.addMulti<float>(branchName_,"contJetDR",-1.0);
   icontJetCSV_   = data.addMulti<float>(branchName_,"contJetCSV",-1.0);
-  icontTauIndex_ = data.addMulti<int  >(branchName_,"contTauIndex",-1);
   itaudisc_mtpresel_      = data.addMulti<float>(branchName_,"taudisc_mtpresel",-10.0);
   itaudisc_dphipresel_    = data.addMulti<float>(branchName_,"taudisc_dphipresel",-10.0);
 }
+
 
 int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
 {
@@ -101,6 +102,31 @@ int PFCandidateFiller::getHPSTauIndex(const unsigned int pfInd)
 
 }
 
+int PFCandidateFiller::getNearPhotonIndex(const pat::PackedCandidate* pfc)
+{
+
+  const double minPhotonPt = 0.5;
+  const double maxPhotonDR = 0.2;
+
+  int photonInd = -1;
+  double maxPhotonPT = 0.0;
+
+  for(unsigned int ic = 0; ic < pfcands_->size(); ic++) {
+    const pat::PackedCandidate* c = &pfcands_->at(ic);
+    if(!ParticleInfo::isA(ParticleInfo::p_gamma, c)) continue;
+    if(c->pt() < minPhotonPt) continue;
+    float dr = PhysicsUtilities::deltaR(c->eta(), c->phi(), pfc->eta(), pfc->phi());
+    if(dr > maxPhotonDR) continue;
+    if(c->pt() > maxPhotonPT) {
+      maxPhotonPT = c->pt();
+      photonInd = ic;
+    }
+  }
+
+  return photonInd;
+
+}
+
 float PFCandidateFiller::getDRNearestTrack(const pat::PackedCandidate* particle, const float minTrackPt)
 {
 
@@ -122,31 +148,14 @@ float PFCandidateFiller::getDRNearestTrack(const pat::PackedCandidate* particle,
 
 }
 
-float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc)
+float PFCandidateFiller::computeMT(const pat::PackedCandidate* pfc, const pat::MET* met)
 {
-  const double minPhotonPt = 0.5;
-  const double maxPhotonDR = 0.2;
 
-  int photonInd = -1;
-  double maxPhotonPT = 0.0;
-
-  for(unsigned int ic = 0; ic < pfcands_->size(); ic++) {
-    const pat::PackedCandidate* c = &pfcands_->at(ic);
-    if(!ParticleInfo::isA(ParticleInfo::p_gamma, c)) continue;
-    if(c->pt() < minPhotonPt) continue;
-    float dr = PhysicsUtilities::deltaR(c->eta(), c->phi(), pfc->eta(), pfc->phi());
-    if(dr > maxPhotonDR) continue;
-    if(c->pt() > maxPhotonPT) {
-      maxPhotonPT = c->pt();
-      photonInd = ic;
-    }
-  }
+  int photonInd = getNearPhotonIndex(pfc);
 
   reco::Candidate::PolarLorentzVector candP4 = pfc->polarP4();
   if(photonInd > -1) candP4+=(*pfcands_)[photonInd].polarP4();
   MomentumF* cand = new MomentumF(candP4);
-
-  const pat::MET* met = evtInfoFiller_->met();
 
   return JetKinematics::transverseMass(*cand, *met);
 
@@ -169,7 +178,7 @@ float PFCandidateFiller::TrackIso(const pat::PackedCandidate* particle, const fl
   return absIso;
 }
 
-
+// next round: move isolation computations to IsolationVariables
 float PFCandidateFiller::computePFIsolation(const pat::PackedCandidate* particle, const float minDR, const float maxDR, const unsigned int isotype, const float minNeutralPt, const float minPUPt, const float dBeta)
 {
 
@@ -239,6 +248,7 @@ void PFCandidateFiller::fill()
     float totiso0p3 = computePFIsolation(pfc, 0.0, 0.3, 1);
     float totiso0p4 = computePFIsolation(pfc, 0.0, 0.4, 1);
     float trackiso = TrackIso(pfc,0.3,0.1);
+    int photonIndex = getNearPhotonIndex(pfc);
     float nearesttrkdr = getDRNearestTrack(pfc);
 
     int jetIndex = getContainingJetIndex(pfc);
@@ -246,7 +256,7 @@ void PFCandidateFiller::fill()
     bool jetmatch = jetIndex > -1 && jet->pt() > 30.0 && fabs(jet->eta()) < 2.4;
 
     float contjetdr = jetmatch ? PhysicsUtilities::deltaR(*pfc, *jet) : -1.0;
-    float contjetcsv = jetmatch ? jet->bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
+    float contjetcsv = jetmatch ? jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
 
     float taumva_mtpresel   = tauMVA_MtPresel_  ->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
     float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
@@ -260,22 +270,22 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(id0_, -1.*pfc->dxy());
     data.fillMulti<float>(idz_, pfc->dz());
     data.fillMulti<int  >(ifromPV_, pfc->fromPV());
-    data.fillMulti<float>(imt_, computeMT(pfc));
-    data.fillMulti<float>(idphimet_, PhysicsUtilities::deltaPhi(*pfc, *(evtInfoFiller_->met())));
     data.fillMulti<float>(ichiso0p1_, chiso0p1);
     data.fillMulti<float>(ichiso0p2_, chiso0p2);
     data.fillMulti<float>(ichiso0p3_, chiso0p3);
     data.fillMulti<float>(ichiso0p4_, chiso0p4);
     data.fillMulti<float>(itotiso0p1_, totiso0p1);
-    data.fillMulti<float>(itrackiso_, trackiso);
     data.fillMulti<float>(itotiso0p2_, totiso0p2);
     data.fillMulti<float>(itotiso0p3_, totiso0p3);
     data.fillMulti<float>(itotiso0p4_, totiso0p4);
+    data.fillMulti<float>(itrackiso_, trackiso);
+    data.fillMulti<float>(inearphopt_, photonIndex > -1 ? pfcands_->at(photonIndex).pt() : -1.0);
+    data.fillMulti<float>(inearphoeta_, photonIndex > -1 ? pfcands_->at(photonIndex).eta() : -1.0);
+    data.fillMulti<float>(inearphophi_, photonIndex > -1 ? pfcands_->at(photonIndex).phi() : -1.0);
     data.fillMulti<float>(inearestTrkDR_, nearesttrkdr);
     data.fillMulti<int  >(icontJetIndex_, jetIndex);
     data.fillMulti<float>(icontJetDR_, contjetdr);
     data.fillMulti<float>(icontJetCSV_, contjetcsv);
-    data.fillMulti<int  >(icontTauIndex_, getHPSTauIndex(ic));
     data.fillMulti<float>(itaudisc_mtpresel_, taumva_mtpresel);
     data.fillMulti<float>(itaudisc_dphipresel_, taumva_dphipresel);
   }

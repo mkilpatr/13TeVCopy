@@ -28,6 +28,7 @@
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
+#include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 
 
 namespace ucsbsusy {
@@ -68,9 +69,12 @@ public:
     virtual void processVariables();    //event processing
     virtual void runEvent() = 0;        //analysis code
 
+    virtual bool processData(); //process data sample
+
     //--------------------------------------------------------------------------------------------------
     // Standard information
     //--------------------------------------------------------------------------------------------------
+    cfgSet::ConfigSet getAnaCfg() const { return configSet;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
@@ -89,33 +93,36 @@ public:
     bool             isProcessed_;
     TreeReader       reader;        // default reader
   public:
-    EventInfoReader   evtInfoReader         ;
-    JetReader         ak4Reader             ;
-    JetReader         puppiJetsReader       ;
-    JetReader         pickyJetReader        ;
-    JetReader         caSubJetReader        ;
-    ElectronReader    electronReader        ;
-    MuonReader        muonReader            ;
-    TauReader         tauReader             ;
-    PhotonReader      photonReader          ;
-    PFCandidateReader pfcandReader          ;
-    GenParticleReader genParticleReader     ;
-    CMSTopReader      cmsTopReader          ;
+    EventInfoReader     evtInfoReader       ;
+    JetReader           ak4Reader           ;
+    JetReader           puppiJetsReader     ;
+    JetReader           pickyJetReader      ;
+    JetReader           caSubJetReader      ;
+    ElectronReader      electronReader      ;
+    MuonReader          muonReader          ;
+    TauReader           tauReader           ;
+    PhotonReader        photonReader        ;
+    PFCandidateReader   pfcandReader        ;
+    GenParticleReader   genParticleReader   ;
+    CMSTopReader        cmsTopReader        ;
+    FatJetReader        fatJetReader        ;
+    FatJetReader        fatJetPuppiReader   ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
-    JetCorrector      jetCorrector          ;
+    JetCorrector        jetCorrector        ;
 
 
   public:
     //--------------------------------------------------------------------------------------------------
     // Members to access common information
     //--------------------------------------------------------------------------------------------------
-    unsigned int  run;
-    unsigned int  lumi;
-    unsigned int  event;
-    float         weight;
-    defaults::Process process;
-    unsigned long triggerflag;
+    unsigned int       run;
+    unsigned int       lumi;
+    unsigned int       event;
+    float              weight;
+    defaults::Process  process;
+    defaults::DataReco datareco;
+    unsigned long      triggerflag;
 
     int   nPV;
     float rho;
@@ -129,21 +136,39 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Stored collections
     //--------------------------------------------------------------------------------------------------
-    MomentumF*                 met     ;
-    MomentumF*                 genmet  ;
-    bool goodvertex;
-    std::vector<LeptonF*>      allLeptons        ;
-    std::vector<LeptonF*>      selectedLeptons   ;
-    std::vector<LeptonF*>      vetoedLeptons     ;
-    std::vector<PFCandidateF*> vetoedTracks        ;
-    std::vector<PhotonF*>      selectedPhotons   ;
-    std::vector<RecoJetF*>     jets            ;
-    std::vector<RecoJetF*>     bJets   ;
-    std::vector<RecoJetF*>     nonBJets;
-    std::vector<GenParticleF*> genParts;
-    std::vector<CMSTopF*>      cttTops;
-    std::vector<TriggerObjectF*> triggerObjects;
-    std::vector<TauF*>         HPSTaus;
+    MomentumF* met        ;
+    MomentumF* metNoHF    ;
+    MomentumF* genmet     ;
+    bool       goodvertex ;
+    std::vector<LeptonF*>        allLeptons        ;
+    std::vector<LeptonF*>        selectedLeptons   ;
+    std::vector<LeptonF*>        vetoedLeptons     ;
+    std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<TauF*>           vetoedTaus        ;
+    std::vector<PhotonF*>        selectedPhotons   ;
+    std::vector<RecoJetF*>       jets              ;
+    std::vector<RecoJetF*>       bJets             ;
+    std::vector<RecoJetF*>       nonBJets          ;
+    std::vector<GenParticleF*>   genParts          ;
+    std::vector<CMSTopF*>        cttTops           ;
+    std::vector<FatJetF*>        fatJets;
+    std::vector<FatJetF*>        fatJetsPuppi;
+    std::vector<TriggerObjectF*> triggerObjects    ;
+    std::vector<TriggerInfo*>    triggerInfo       ;
+    std::vector<TauF*>           HPSTaus           ;
+
+
+    //--------------------------------------------------------------------------------------------------
+    // Correction sets
+    //--------------------------------------------------------------------------------------------------
+    TtbarCorrectionSet  ttbarCorrections;
+    EventCorrectionSet  eventCorrections;
+    JetCorrectionSet    jetCorrections;
+    JetAndMETCorrectionSet  jetAndMETCorrections;
+
+
+    //hack for DY PU
+    bool zIsInvisible;
 
   protected:
     //--------------------------------------------------------------------------------------------------
@@ -151,7 +176,8 @@ public:
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
     JetReader  * defaultJets;
-    cfgSet::ConfigSet    configSet;
+    cfgSet::ConfigSet   configSet;
+    std::vector<CorrectionSet*> corrections;
   };
 
 

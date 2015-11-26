@@ -2,7 +2,9 @@
 <use name="rootmath"/>
 <use name="AnalysisTools/KinematicVariables"/>
 <use name="AnalysisTools/TreeReader"/>
+<use name="AnalysisTools/JSONSpirit"/>
 <use name="AnalysisTools/Parang"/>
+<use name="AnalysisTools/QuickRefold"/>
 <export>
   <lib   name="1"/>
 </export>

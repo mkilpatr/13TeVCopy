@@ -15,14 +15,22 @@ using namespace ucsbsusy;
 //--------------------------------------------------------------------------------------------------
 METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
-  triggerBitToken_     (cc.consumes<edm::TriggerResults>                   (cfg.getParameter<edm::InputTag>("bits"))),
-  triggerNames_(0)
+  triggerBitToken_            (cc.consumes<edm::TriggerResults> (cfg.getParameter<edm::InputTag>("bits"))),
+  hNoiseResultToken_          (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbhe"))),
+  hNoiseIsoResultToken_       (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbheiso"))),
+  hNoiseResultRun2LooseToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2loose"))),
+  hNoiseResultRun2TightToken_ (cc.consumes<bool>                (cfg.getParameter<edm::InputTag>("hbherun2tight"))),
+  triggerNames_(0),
+  isFastSim_(cfg.getUntrackedParameter<bool>("isFastSim"))
 {
 
   initTriggerNames();
 
-  itrig_bit_flag        = data.addMulti<unsigned long>(branchName_,"bit_flag",0);
-  itrig_bit_pass        = data.addMulti<bool         >(branchName_,"bit_pass",0);
+  itrig_bit_pass        = data.addMulti<bool>(branchName_,"bit_pass",0);
+  hbheFilterFix_        = data.add     <bool>(branchName_,"hbheFilterFix","O",0);
+  hbheFilterIso_        = data.add     <bool>(branchName_,"hbheFilterIso","O",0);
+  hbheFilterRun2Loose_  = data.add     <bool>(branchName_,"hbheFilterRun2Loose","O",0);
+  hbheFilterRun2Tight_  = data.add     <bool>(branchName_,"hbheFilterRun2Tight","O",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -49,6 +57,12 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 {
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
+  if( ! isFastSim_ ) {
+    iEvent.getByToken(hNoiseResultToken_, hNoiseResult_);
+    iEvent.getByToken(hNoiseIsoResultToken_, hNoiseIsoResult_);
+    iEvent.getByToken(hNoiseResultRun2LooseToken_, hNoiseResultRun2Loose_);
+    iEvent.getByToken(hNoiseResultRun2TightToken_, hNoiseResultRun2Tight_);
+  }
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 
@@ -57,15 +71,16 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 //--------------------------------------------------------------------------------------------------
 void METFiltersFiller::fill()
 {
+  data.fill<bool>(hbheFilterFix_,       isFastSim_ ? true : *hNoiseResult_);
+  data.fill<bool>(hbheFilterIso_,       isFastSim_ ? true : *hNoiseIsoResult_);
+  data.fill<bool>(hbheFilterRun2Loose_, isFastSim_ ? true : *hNoiseResultRun2Loose_);
+  data.fill<bool>(hbheFilterRun2Tight_, isFastSim_ ? true : *hNoiseResultRun2Tight_);
 
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
-    
     if(trigindex != trigIds_.end()) {
-      data.fillMulti<unsigned long>(itrig_bit_flag, trigindex->second);
-      data.fillMulti<bool         >(itrig_bit_pass, triggerBits_->accept(i));
+      data.fillMulti<bool>(itrig_bit_pass, triggerBits_->accept(i));
     }
-    
   }
 
 } // end of METFiltersFiller::fill()

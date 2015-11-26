@@ -44,6 +44,7 @@ public:
                           , SAVETOPASSOC    = (1 <<  3)   ///< save the association to top decays
                           , SAVEQGL         = (1 <<  4)   ///< save the quark-gluon likelihood (for AK4 jets)
                           , LOADSUPER       = (1 <<  5)   ///< load links to super jets
+                          , LOADUNCFROMFILE = (1 <<  6)   ///< load jet uncertainties from external file
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
@@ -54,7 +55,7 @@ public:
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
       JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
-      ~JetFiller() { delete jecUnc;}
+      ~JetFiller() {}
 
       virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       virtual void fill();
@@ -144,7 +145,8 @@ public:
     public:
       // Data members
       const bool                              fillReGenJets_;
-      const double                            jptMin_;
+      const double                            jptCompleteMin_; //To save all info
+      const double                            jptMin_; //To save just basic info
       edm::Handle<std::vector<Jet>>           jets_;
       edm::Handle<reco::GenJetCollection>     reGenJets_;
       edm::Handle<reco::GenJetCollection>     stdGenJets_;
@@ -154,8 +156,9 @@ public:
       edm::Handle<std::vector<int     > >     superJetAssoc_;
       edm::Handle<std::vector<unsigned int> > superJetNsub_;
 
-     // JEC uncertainty variable
-      JetCorrectionUncertainty *jecUnc;
+      // JEC uncertainties
+      std::string               jecLabel_;
+      JetCorrectionUncertainty *jecUnc_;
 
   };
 

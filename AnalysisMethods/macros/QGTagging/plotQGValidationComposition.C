@@ -2,86 +2,67 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h"
 #endif
 
-// root -b -q "../CMSSW_7_3_1/src/AnalysisMethods/macros/QGTagging/plotQGValidationComposition.C+"
-void plotQGValidationComposition( const TString inputdir="trees/150727_fixedCleaning_dilepmass"
+//root -b -q "../CMSSW_7_4_7/src/AnalysisMethods/macros/QGTagging/plotQGValidationComposition.C+"
+void plotQGValidationComposition( const TString inputdir="trees/150826_newData"
                                 , const TString outputdir="plots"
                                 , const TString format = "png"
                                 )
 {
-  const double  sigscale = 1;
   gSystem->mkdir(outputdir, true);
+  TString wtVar = "weight*puWeight"; // weight purwt
 
-  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet74X.conf", inputdir, outputdir);
+  PlotStuff* zjetPlots = new PlotStuff("plotQGValidationMCzjet.conf", inputdir, outputdir);
   zjetPlots->setPlotSource(PlotStuff::TREES);
   zjetPlots->setPlotType(PlotStuff::NORMCOMP);
   zjetPlots->setTree("Events");
-  zjetPlots->setSigScale(sigscale);
-  zjetPlots->setAddSigScaleTxt(false);
   zjetPlots->setFormat(format);
-  zjetPlots->setWgtVar("weight");
-  zjetPlots->setDataname("dyjetstoll");
+  zjetPlots->setWgtVar(wtVar);
+  zjetPlots->setDataIsMC();
+  zjetPlots->setDataName("dyjetstoll");
   zjetPlots->setYTitle("Fraction of Jets");
   zjetPlots->setHeaderText("CMS Sim", "#sqrt{s} = 13 TeV", "");
-
 
   PlotStuff* dijetPlots = new PlotStuff("plotQGValidationMCdijet.conf", inputdir, outputdir);
   dijetPlots->setPlotSource(PlotStuff::TREES);
   dijetPlots->setPlotType(PlotStuff::NORMCOMP);
   dijetPlots->setTree("Events");
-  dijetPlots->setSigScale(sigscale);
-  dijetPlots->setAddSigScaleTxt(false);
   dijetPlots->setFormat(format);
-  dijetPlots->setWgtVar("weight");
-  dijetPlots->setDataname("qcd");
+  dijetPlots->setWgtVar(wtVar);
+  dijetPlots->setDataIsMC();
+  dijetPlots->setDataName("qcd");
   dijetPlots->setYTitle("Fraction of Jets");
   dijetPlots->setHeaderText("CMS Sim", "#sqrt{s} = 13 TeV", "");
-
-
-  PlotStuff* dijetHTPlots = new PlotStuff("plotQGValidationMCdijetHT.conf", inputdir, outputdir);
-  dijetHTPlots->setPlotSource(PlotStuff::TREES);
-  dijetHTPlots->setPlotType(PlotStuff::NORMCOMP);
-  dijetHTPlots->setTree("Events");
-  dijetHTPlots->setSigScale(sigscale);
-  dijetHTPlots->setAddSigScaleTxt(false);
-  dijetHTPlots->setFormat(format);
-  dijetHTPlots->setWgtVar("weight");
-  dijetHTPlots->setDataname("qcdHT");
-  dijetHTPlots->setYTitle("Fraction of Jets");
-  dijetHTPlots->setHeaderText("CMS Sim", "#sqrt{s} = 13 TeV", "");
-
 
   PlotStuff* gjetPlots = new PlotStuff("plotQGValidationMCgjet.conf", inputdir, outputdir);
   gjetPlots->setPlotSource(PlotStuff::TREES);
   gjetPlots->setPlotType(PlotStuff::NORMCOMP);
   gjetPlots->setTree("Events");
-  gjetPlots->setSigScale(sigscale);
-  gjetPlots->setAddSigScaleTxt(false);
   gjetPlots->setFormat(format);
-  gjetPlots->setWgtVar("weight");
-  gjetPlots->setDataname("gjets");
+  gjetPlots->setWgtVar(wtVar);
+  gjetPlots->setDataIsMC();
+  gjetPlots->setDataName("gjets");
   gjetPlots->setYTitle("Fraction of Jets");
   gjetPlots->setHeaderText("CMS Sim", "#sqrt{s} = 13 TeV", "");
 
+
   TString centralSel = " && j0pt>20 && j0eta<2.4";
   TString forwardSel = " && j0pt>20 && j0eta>3.0";
+  TString centralSel30 = " && j0pt>30 && j0eta<2.4";
+  TString forwardSel30 = " && j0pt>30 && j0eta>3.0";
 
-  zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet && passZmass" +centralSel, "pt_{T} [GeV]", 25, 0, 600 );
-  zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet && passZmass" +forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
-  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
-  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
-  dijetHTPlots->addTreeVar("dijetsHT_central", "j0pt", "passDijet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
-  dijetHTPlots->addTreeVar("dijetsHT_forward", "j0pt", "passDijet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
+  zjetPlots   ->addTreeVar(  "zjets_central" , "j0pt", "passZjet && passZmass" +centralSel30, "pt_{T} [GeV]", 20, 0, 600 );
+  zjetPlots   ->addTreeVar(  "zjets_forward" , "j0pt", "passZjet && passZmass" +forwardSel30, "pt_{T} [GeV]", 12, 0, 600 );
+  dijetPlots  ->addTreeVar(  "dijets_central", "j0pt", "passDijet && passDijet3"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
+  dijetPlots  ->addTreeVar(  "dijets_forward", "j0pt", "passDijet && passDijet3"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
   gjetPlots   ->addTreeVar(  "gjets_central" , "j0pt", "passGmjet"+centralSel, "pt_{T} [GeV]", 25, 0, 600 );
-  gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 25, 0, 600 );
+  gjetPlots   ->addTreeVar(  "gjets_forward" , "j0pt", "passGmjet"+forwardSel, "pt_{T} [GeV]", 12, 0, 600 );
 
   zjetPlots   ->plot();
   dijetPlots  ->plot();
-  dijetHTPlots->plot();
   gjetPlots   ->plot();
 
   delete zjetPlots;
   delete dijetPlots;
-  delete dijetHTPlots;
   delete gjetPlots;
 
 }

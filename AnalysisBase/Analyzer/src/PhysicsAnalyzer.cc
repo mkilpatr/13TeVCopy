@@ -30,6 +30,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , genparticles        (0)
 , cmstops             (0)
 , ak8fatjets          (0)
+, ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
 {
@@ -94,6 +95,14 @@ void PhysicsAnalyzer::fill()
 }
 
 //--------------------------------------------------------------------------------------------------
+/*void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, edm::EventSetup const &es, const VarType type, const int options, const std::string branchName){
+  if(cfg.existsAs<edm::ParameterSet>(pSetName, false)) {
+    edm::ParameterSet fcfg(cfg.getUntrackedParameter<edm::ParameterSet>(pSetName));   // parameter set for this filler
+    bool fill = fcfg.getUntrackedParameter<bool>("isFilled");                         // to fill or not to fill
+    if(fill) initialize(fcfg, es, type, options, branchName);
+  }
+  }*/
+//--------------------------------------------------------------------------------------------------
 void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options, const std::string branchName){
   if(cfg.existsAs<edm::ParameterSet>(pSetName, false)) {
     edm::ParameterSet fcfg(cfg.getUntrackedParameter<edm::ParameterSet>(pSetName));   // parameter set for this filler
@@ -108,6 +117,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case EVTINFO : {
       int defaultOptions = EventInfoFiller::defaultOptions;
+      if(isMC()) defaultOptions |= EventInfoFiller::LOADPUINFO;
       if(isMC()) defaultOptions |= EventInfoFiller::LOADGEN;
       if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),
@@ -136,6 +146,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+      if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= PatJetFiller::LOADUNCFROMFILE;
 
       ak4Jets = new PatJetFiller(cfg, consumesCollector(),
                                  options < 0 ? defaultOptions : options,
@@ -154,6 +165,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+      if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= RecoJetFiller::LOADUNCFROMFILE;
 
       puppiJets = new RecoJetFiller(cfg, consumesCollector(),
                                     options < 0 ? defaultOptions : options,
@@ -172,6 +184,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+      if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= RecoJetFiller::LOADUNCFROMFILE;
 
       pickyJets = new RecoJetFiller(cfg, consumesCollector(),
                                     options < 0 ? defaultOptions : options,
@@ -191,6 +204,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
       if(cfg.getUntrackedParameter<bool>("fillSuper"))                  defaultOptions |= RecoJetFiller::LOADSUPER;
+      if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= RecoJetFiller::LOADUNCFROMFILE;
 
       caSubJets = new RecoJetFiller(cfg, consumesCollector(),
                                     options < 0 ? defaultOptions : options,
@@ -235,6 +249,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case TAUS : {
       int defaultOptions = TauFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillCandInfo"))             defaultOptions |= TauFiller::FILLCANDINFO;
       if(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators")) defaultOptions |= TauFiller::FILLRAWDISCS;
       if(cfg.getUntrackedParameter<bool>("printTauIDs"))              defaultOptions |= TauFiller::PRINTIDS;
 
@@ -244,19 +259,6 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                            eventInfo
                            );
       initializedFillers.push_back(taus);
-      break;
-    }
-
-    case PHOTONS : {
-      int defaultOptions = PhotonFiller::defaultOptions;
-      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
-      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
-
-      photons = new PhotonFiller(cfg, consumesCollector(),
-                                 options < 0 ? defaultOptions : options,
-                                 branchName == "" ? defaults::BRANCH_PHOTONS : branchName
-                                 );
-      initializedFillers.push_back(photons);
       break;
     }
 
@@ -282,17 +284,27 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-    case AK8FATJETS : { 
-      ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
-                                    0,
-				    branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
-				    );
-      initializedFillers.push_back(ak8fatjets);
-      break;
-    }
+  case AK8FATJETS : { 
+    ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
+				  0,
+				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
+				  );
+    initializedFillers.push_back(ak8fatjets);
+    break;
+  }
+
+  case AK8PUPPIFATJETS : { 
+    ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
+				       0,
+				       branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName
+				       );
+    initializedFillers.push_back(ak8puppifatjets);
+    break;
+  }
     
     case TRIGGERS : {
       int defaultOptions = TriggerFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("printTriggerNames")) defaultOptions |= TriggerFiller::PRINTTRIGGERNAMES;
       triggers = new TriggerFiller(cfg, consumesCollector(),
                                    options < 0 ? defaultOptions : options,
                                    branchName == "" ? defaults::BRANCH_TRIGGERS : branchName
@@ -310,9 +322,21 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(metfilters);
       break;
     }
+    case PHOTONS : {
+      int defaultOptions = PhotonFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
+      if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+    
+      photons = new PhotonFiller(cfg, consumesCollector(),
+			       options < 0 ? defaultOptions : options,
+			       branchName == "" ? defaults::BRANCH_PHOTONS : branchName
+			       );
+      initializedFillers.push_back(photons);
+      break;
+    }
 
     default : {
-      cout << endl << "No settings for type: " << type << " found!" << endl;
+      cout << endl << "No settings for type: " << type << " found, maybe you should use the initialization enabling the event setup!" << endl;
       break;
     }
   }

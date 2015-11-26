@@ -40,7 +40,6 @@ GenParticleFiller::GenParticleFiller(
   if(options_ & SAVEPARTONDECAY)
     ihade        = data.addMulti<float >(branchName_,"hadronizedE",0);
 }
-
 //--------------------------------------------------------------------------------------------------
 void GenParticleFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
@@ -121,6 +120,8 @@ void GenParticleFiller::addHardInteraction(reco::GenParticleRefVector& outPartic
     else if(ParticleInfo::isDocIntermediate(status)) addable = true;
     //Add all BSM particles in status==1 (to include e.g., LSP)
     else if(ParticleInfo::isBSM(pdgId) && ParticleInfo::isFinal(status)) addable = true;
+    //Add all EWK bosons in final status (to pick up status=1 photons)
+    else if(ParticleInfo::isEWKBoson(pdgId) && ParticleInfo::isFinal(status)) addable = true;
     //also add all direct decay products of EWK bosons
     else if(!ParticleInfo::isEWKBoson(pdgId)) {
       for(unsigned int iM = 0; iM < part->numberOfMothers(); ++iM)

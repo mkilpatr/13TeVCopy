@@ -380,7 +380,7 @@ void Plot::addToStack(TH1F *h, int color)
 
 }
 
-void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth)
+void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth, unsigned int plotoverflow)
 {
 
   if(!h)
@@ -388,6 +388,7 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
   
   TH1F* hist = (TH1F*)h->Clone();
 
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
 
   if(linecolor==0)
@@ -437,14 +438,14 @@ void Plot::addToStack(TFile *f, TString histname, int color)
 
 }
 
-void Plot::addToStack(TFile *f, TString histname, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth)
+void Plot::addToStack(TFile *f, TString histname, TString label, int color, int fillstyle, int linecolor, int linestyle, int linewidth, unsigned int plotoverflow)
 {
 
   if(!f)
     return;
   
   TH1F *h = (TH1F*)f->FindObjectAny(histname);
-  addToStack(h,label,color,fillstyle,linecolor,linestyle,linewidth);
+  addToStack(h,label,color,fillstyle,linecolor,linestyle,linewidth,plotoverflow);
 
 }  
   
@@ -683,11 +684,11 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
   TH1F *h00 = (TH1F*)hData->Clone("data0");
 
   if(fStack) {
-    if(!fLogy) {
-      if(fYmin < fYmax) {
-        fStack->SetMaximum(fYmax);
-        fStack->SetMinimum(fYmin);
-      } else {
+    if(fYmin < fYmax) {
+      fStack->SetMaximum(fYmax);
+      fStack->SetMinimum(fYmin);
+    } else {
+      if(!fLogy) {
         fStack->SetMaximum(1.1*ymax);
         fStack->SetMinimum(0);
       }
@@ -752,6 +753,9 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
   c->cd();
 
+  // Add header and lumi text
+  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+
   if(doSave) {
     gSystem->mkdir(outputdir,true);
     TString outname = outputdir+TString("/")+fName+TString(".");
@@ -810,11 +814,11 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TH1F *h00 = (TH1F*)hData->Clone("data0");
 
   if(fStack) {
-    if(!fLogy) {
-      if(fYmin < fYmax) {
-        fStack->SetMaximum(fYmax);
-        fStack->SetMinimum(fYmin);
-      } else {
+    if(fYmin < fYmax) {
+      fStack->SetMaximum(fYmax);
+      fStack->SetMinimum(fYmin);
+    } else {
+      if(!fLogy) {
         fStack->SetMaximum(1.1*ymax);
         fStack->SetMinimum(0);
       }
@@ -831,6 +835,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   h00->Draw("same");
 
+  p1->RedrawAxis();
 
   if(fLeg) {
     fLeg->SetFillStyle(0);
@@ -866,7 +871,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
-  TLine *l = new TLine(xmin,0,xmax,0);
+  TLine *l = new TLine(xmin,1,xmax,1);
   l->SetLineWidth(3);
   l->SetLineColor(kBlack);
 
@@ -879,6 +884,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   l->Draw("same");
 
   c->cd();
+
+  // Add header and lumi text
+  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -893,6 +901,156 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
 }
 
+void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString format)
+{
+  assert(fHists1D.size() > baseIndex);
+  TH1F* hbase = 0;
+  if(fRebin>1)      
+    hbase = (TH1F*)fHists1D[baseIndex]->member->Rebin(fRebin,"hbase");
+  else
+    hbase = (TH1F*)fHists1D[baseIndex]->member->Clone("hbase");
+
+  assert(hbase);
+
+  if(fXmin < fXmax) {
+    hbase->GetXaxis()->SetRangeUser(fXmin,fXmax);
+  }
+
+  std::vector<TH1F*> vHists;
+  std::vector<TH1F*> vHistRatios;
+  std::vector<TString> vHistOpts;
+
+  double ymax=0;
+  uint ifirst=0;
+  
+  for(uint i=0; i<fHists1D.size(); i++) {
+    TString hname = fName;
+    hname += "_h_";
+    hname += TString(to_string(i));
+  
+    TH1F *h;     
+    if(fRebin>1)      
+      h = (TH1F*)fHists1D[i]->member->Rebin(fRebin,hname);
+    else
+      h = (TH1F*)fHists1D[i]->member->Clone(hname);
+
+    if(fXmin < fXmax) {
+      h->GetXaxis()->SetRangeUser(fXmin,fXmax);
+    }
+    
+    if(fYmin < fYmax) { 
+      h->GetYaxis()->SetRangeUser(fYmin,fYmax);
+    } else {
+      if(ymax < h->GetMaximum()) {
+        ymax = h->GetMaximum();
+        ifirst = vHists.size();
+      }
+    }
+
+    vHists.push_back(h);
+    vHistOpts.push_back(fHists1D[i]->opt);
+
+    if(i == baseIndex) continue;
+    hname += "_div";
+    TH1F *hdiv = (TH1F*)h->Clone(hname);
+    hdiv->Divide(hbase);
+    vHistRatios.push_back(hdiv);
+  }
+
+  c->cd();
+
+  TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
+  p1->SetLeftMargin  (0.18);
+  p1->SetTopMargin   (0.10);
+  p1->SetRightMargin (0.07);
+  p1->SetBottomMargin(0.03);  
+  p1->Draw();
+  if(fLogy) p1->SetLogy();
+  p1->cd();
+
+  if(vHists.size()>0) {
+    vHists[ifirst]->SetTitle(fTitle);
+    vHists[ifirst]->GetXaxis()->SetTitle(fXTitle);
+    vHists[ifirst]->GetYaxis()->SetTitle(fYTitle);
+    vHists[ifirst]->GetXaxis()->SetLabelOffset(0.20);
+    vHists[ifirst]->SetLineWidth(3);
+    vHists[ifirst]->Draw(vHistOpts[ifirst].Data());
+  }
+ 
+  for(uint i=0; i<vHists.size(); i++) {
+    TH1F *h = vHists[i];              
+    h->SetLineWidth(3);
+    char opt[100];
+    sprintf(opt,"same%s",vHistOpts[i].Data());
+    h->DrawCopy(opt);
+  }
+
+  if(fLeg) {
+    fLeg->SetFillStyle(0);
+    fLeg->SetBorderSize(0);
+    fLeg->Draw();
+  }
+
+  c->cd();
+  TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
+  p2->SetLeftMargin  (0.18);
+  p2->SetTopMargin   (0.00);
+  p2->SetRightMargin (0.07);
+  p2->SetBottomMargin(0.30);
+  p2->SetGridy(1);
+  p2->Draw();
+  p2->cd();
+
+  if(vHistRatios.size()>0) {
+    TH1F *h0 = (TH1F*)hbase->Clone("h0");
+    h0->SetTitleSize  (0.12,"Y");
+    h0->SetTitleOffset(0.60,"Y");
+    h0->SetTitleSize  (0.12,"X");
+    h0->SetLabelSize  (0.10,"X");
+    h0->SetLabelSize  (0.08,"Y");
+    h0->SetLabelOffset(0.014,"X");
+    h0->GetYaxis()->SetTitleFont(62);
+    h0->GetYaxis()->CenterTitle(kTRUE);
+    h0->GetXaxis()->SetTitleFont(62);
+    h0->GetYaxis()->SetNdivisions(305);
+    h0->GetXaxis()->SetTitle(fXTitle);
+    h0->GetYaxis()->SetTitle("Ratio");
+    h0->GetYaxis()->SetRangeUser(0.0,2.0);
+
+    h0->Draw("AXIS");
+
+    for(auto* hr : vHistRatios) {
+      hr->DrawCopy("sameE");
+    }
+
+    double xmin = hbase->GetXaxis()->GetXmin();
+    double xmax = hbase->GetXaxis()->GetXmax();
+    TLine *l = new TLine(xmin,1,xmax,1);
+    l->SetLineWidth(3);
+    l->SetLineColor(kBlack);
+
+    l->Draw("same");
+  }
+
+  c->cd();
+
+  c->RedrawAxis();
+  
+  // Add header and lumi text
+  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+
+  if(doSave) {
+    gSystem->mkdir(outputdir,true);
+    TString outname = outputdir+TString("/")+fName+TString(".");
+    if(format.CompareTo("all",TString::kIgnoreCase)==0) {
+      c->SaveAs(outname+TString("png"));
+      c->SaveAs(outname+TString("C"));
+    } else {
+      c->SaveAs(outname+format);
+    }
+  }
+
+}
 
 void Plot::draw(TCanvas *c, bool doSave, TString format)
 { 

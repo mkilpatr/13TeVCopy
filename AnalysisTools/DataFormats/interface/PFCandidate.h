@@ -96,7 +96,7 @@ namespace ucsbsusy {
   class ExtendedPFCandidate : public PFCandidateF
   {
     public :
-      ExtendedPFCandidate() : chiso0p1_(0), chiso0p2_(0), chiso0p3_(0), chiso0p4_(0), totiso0p1_(0), totiso0p2_(0), totiso0p3_(0), totiso0p4_(0), neartrkdr_(0) {}
+      ExtendedPFCandidate() : chiso0p1_(0), chiso0p2_(0), chiso0p3_(0), chiso0p4_(0), totiso0p1_(0), totiso0p2_(0), totiso0p3_(0), totiso0p4_(0), neartrkdr_(0), contjetdr_(0), contjetcsv_(0) {}
 
       ~ExtendedPFCandidate() {}
 
@@ -109,6 +109,8 @@ namespace ucsbsusy {
       float totiso0p3()     const { return totiso0p3_; }
       float totiso0p4()     const { return totiso0p4_; }
       float neartrkdr()     const { return neartrkdr_; }
+      float contjetdr()     const { return contjetdr_; }
+      float contjetcsv()    const { return contjetcsv_; }
 
       void  setChIso0p1(float newIso)    { chiso0p1_ = newIso;  }
       void  setChIso0p2(float newIso)    { chiso0p2_ = newIso;  }
@@ -119,6 +121,8 @@ namespace ucsbsusy {
       void  setTotIso0p3(float newIso)   { totiso0p3_ = newIso; }
       void  setTotIso0p4(float newIso)   { totiso0p4_ = newIso; }
       void  setNearTrkDR(float newDR)    { neartrkdr_ = newDR;  }
+      void  setContJetDR(float newDR)    { contjetdr_ = newDR;  }
+      void  setContJetCSV(float newCSV)  { contjetcsv_ = newCSV;  }
 
     protected :
       float chiso0p1_;
@@ -130,6 +134,8 @@ namespace ucsbsusy {
       float totiso0p3_;
       float totiso0p4_;
       float neartrkdr_;
+      float contjetdr_;
+      float contjetcsv_;
 
   };
 

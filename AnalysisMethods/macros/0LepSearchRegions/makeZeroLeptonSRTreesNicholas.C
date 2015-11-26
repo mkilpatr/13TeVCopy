@@ -12,7 +12,8 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
                                        "/store/user/vdutta/13TeV/080615/merged/T2tt_850_100_ntuple_wgtxsec.root",
                                    const double xsec = 1.0,
                                    const TString outputdir = "trees",
-                                   const TString fileprefix = "root://eoscms//eos/cms")
+                                   const TString fileprefix = "root://eoscms//eos/cms",
+                                   const TString json="")
 {
     printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0),
            sname.Data());
@@ -23,7 +24,7 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
     TString fullname = fileprefix + fname;
     gSystem->mkdir(outputdir, true);
     TString outfilename = outputdir + "/" + sname + "_tree.root";
-    cfgSet::ConfigSet pars = pars0lep();
+    cfgSet::ConfigSet pars = pars0lep(json);
     /********** JETCORRECTION TEST **********/
     pars.jets.JES = JetCorrector::JES_UP;
     /**************************/

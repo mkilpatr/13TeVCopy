@@ -28,8 +28,9 @@ namespace ucsbsusy {
 
       enum Options {
                     NULLOPT      = 0,
-                    FILLRAWDISCS = (1 << 0),  // whether or not to store the raw HPS discriminator outputs 
-                    PRINTIDS     = (1 << 1)   // check which HPS Tau IDs are available
+                    FILLCANDINFO = (1 << 0),  // whether or not to store information about the leading (charged) candidate 
+                    FILLRAWDISCS = (1 << 1),  // whether or not to store the raw HPS discriminator outputs 
+                    PRINTIDS     = (1 << 2)   // check which HPS Tau IDs are available
                    };
       static const int defaultOptions = NULLOPT;
 
