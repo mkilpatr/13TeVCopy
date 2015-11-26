@@ -32,6 +32,7 @@ class QuarkGluonTaggingVariables;
 namespace JetFunctions {
 template<typename Jet> bool passLooseJetId(const Jet& j);
 template<typename Jet> bool passTightJetId(const Jet& j);
+template<typename Jet> bool passMuonEnergyFraction(const Jet& j);
 }
 
 class JetFillerBase {
@@ -95,6 +96,7 @@ public:
       size ijetpuId_     ;
       size ijetlooseId_  ;
       size ijettightId_  ;
+      size ijetmuEnFrac_ ;
       size ijetcsv_      ;
       size ijetarea_     ;
       size ijetgenindex_ ;

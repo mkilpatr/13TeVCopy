@@ -48,6 +48,11 @@ namespace JetFunctions{
     }
     return true;
   }
+  template<typename Jet> bool passMuonEnergyFraction(const Jet& j){
+    if(fabs(j.eta())>3.0) return true;
+    if( !(j.muonEnergyFraction()<0.8) ) return false;
+    return true;
+  }
 }
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
@@ -91,15 +96,16 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   }
 
 
-  ijetpt_     = data.addMulti<float>(branchName_,"jet_pt"     ,0);
-  ijeteta_    = data.addMulti<float>(branchName_,"jet_eta"    ,0);
-  ijetphi_    = data.addMulti<float>(branchName_,"jet_phi"    ,0);
-  ijetmass_   = data.addMulti<float>(branchName_,"jet_mass"   ,0);
-  ijetptraw_  = data.addMulti<float>(branchName_,"jet_ptraw"  ,0);
-  ijetpuId_   = data.addMulti<float>(branchName_,"jet_puId"   ,0);
-  ijetlooseId_= data.addMulti<bool> (branchName_,"jet_looseId",0);
-  ijettightId_= data.addMulti<bool> (branchName_,"jet_tightId",0);
-  ijetcsv_    = data.addMulti<float>(branchName_,"jet_csv"    ,0);
+  ijetpt_          = data.addMulti<float>(branchName_,"jet_pt"          , 0);
+  ijeteta_         = data.addMulti<float>(branchName_,"jet_eta"         , 0);
+  ijetphi_         = data.addMulti<float>(branchName_,"jet_phi"         , 0);
+  ijetmass_        = data.addMulti<float>(branchName_,"jet_mass"        , 0);
+  ijetptraw_       = data.addMulti<float>(branchName_,"jet_ptraw"       , 0);
+  ijetpuId_        = data.addMulti<float>(branchName_,"jet_puId"        , 0);
+  ijetlooseId_     = data.addMulti<bool> (branchName_,"jet_looseId"     , 0);
+  ijettightId_     = data.addMulti<bool> (branchName_,"jet_tightId"     , 0);
+  ijetmuEnFrac_    = data.addMulti<bool> (branchName_,"jet_muEnFrac"    , 0);
+  ijetcsv_         = data.addMulti<float>(branchName_,"jet_csv"         , 0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
 
   if(options_ & LOADGEN) {
@@ -318,11 +324,12 @@ void JetFiller<Jet>::fill()
 
     //Zero out complete information for low pT jets
     if(j.pt() < jptCompleteMin_){
-      data.fillMulti<float>(ijetptraw_ ,0);
-      data.fillMulti<float>(ijetpuId_  ,0);
-      data.fillMulti<float>(ijetcsv_   ,0);
-      data.fillMulti<bool>(ijetlooseId_,false);
-      data.fillMulti<bool>(ijettightId_,false);
+      data.fillMulti<float>(ijetptraw_   ,0);
+      data.fillMulti<float>(ijetpuId_    ,0);
+      data.fillMulti<float>(ijetcsv_     ,0);
+      data.fillMulti<bool> (ijetlooseId_ ,false);
+      data.fillMulti<bool> (ijettightId_ ,false);
+      data.fillMulti<bool> (ijetmuEnFrac_,false);
       if(options_ & LOADSUPER) {
         data.fillMulti<int16>(ijetsuperindex_,-1);
       }
@@ -347,8 +354,9 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
-    data.fillMulti<bool>(ijetlooseId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.99 && j.neutralHadronEnergyFraction()<0.99 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)));
-    data.fillMulti<bool>(ijettightId_ ,((j.chargedMultiplicity()+j.neutralMultiplicity())>1 && j.neutralEmEnergyFraction()<0.9 && j.neutralHadronEnergyFraction()<0.9 && j.muonEnergyFraction()<0.8) && (fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)));
+    data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
+    data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
+    data.fillMulti<bool> (ijetmuEnFrac_,JetFunctions::passMuonEnergyFraction(j));
 
 
 

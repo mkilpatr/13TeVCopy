@@ -35,8 +35,9 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_pt_            = data.addMulti<float>(branchName_,"fatjet_pt",0);
   ifj_eta_           = data.addMulti<float>(branchName_,"fatjet_eta",0);
   ifj_phi_           = data.addMulti<float>(branchName_,"fatjet_phi",0);
-  ifj_looseId_       = data.addMulti<bool> (branchName_,"fatjet_looseId",0);
-  ifj_tightId_       = data.addMulti<bool> (branchName_,"fatjet_tightId",0);
+  ifj_looseId_       = data.addMulti<bool> (branchName_,"fatjet_looseId" ,0);
+  ifj_tightId_       = data.addMulti<bool> (branchName_,"fatjet_tightId" ,0);
+  ifj_muEnFrac_      = data.addMulti<bool> (branchName_,"fatjet_muEnFrac",0);
 
 }
 
@@ -91,6 +92,7 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_phi_           , fatjet.phi());
     data.fillMulti<bool> (ifj_looseId_       , JetFunctions::passLooseJetId(fatjet));
     data.fillMulti<bool> (ifj_tightId_       , JetFunctions::passTightJetId(fatjet));
+    data.fillMulti<bool> (ifj_muEnFrac_      , JetFunctions::passMuonEnergyFraction(fatjet));
     
     isFilled_ = true;
 
