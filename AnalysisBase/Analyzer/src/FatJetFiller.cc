@@ -35,6 +35,8 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_pt_            = data.addMulti<float>(branchName_,"fatjet_pt",0);
   ifj_eta_           = data.addMulti<float>(branchName_,"fatjet_eta",0);
   ifj_phi_           = data.addMulti<float>(branchName_,"fatjet_phi",0);
+  ifj_looseId_       = data.addMulti<bool> (branchName_,"fatjet_looseId",0);
+  ifj_tightId_       = data.addMulti<bool> (branchName_,"fatjet_tightId",0);
 
 }
 
