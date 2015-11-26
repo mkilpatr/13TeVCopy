@@ -17,20 +17,36 @@ namespace ucsbsusy{
 
 namespace JetFunctions{
   template<typename Jet> bool passLooseJetId(const Jet& j){
+    if(fabs(j.eta())>3.0){
+      if(j.neutralEmEnergyFraction()<0.90 && j.neutralMultiplicity()>10 ) return true;
+      else return false;
+    }
     if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
     if( !(j.neutralEmEnergyFraction()<0.99)                  ) return false;
     if( !(j.neutralHadronEnergyFraction()<0.99)              ) return false;
-    if( !(j.muonEnergyFraction()<0.8)                        ) return false;
-    if( !(fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0  && j.chargedEmEnergyFraction()<0.99 && j.chargedHadronEnergyFraction()>0)) ) return false;
-    else return true;
+    //if( !(j.muonEnergyFraction()<0.8)                        ) return false;
+    if(fabs(j.eta())<2.4){
+      if( !(j.chargedMultiplicity()>0)         ) return false;
+      if( !(j.chargedEmEnergyFraction()<0.99)  ) return false;
+      if( !(j.chargedHadronEnergyFraction()>0) ) return false;
+    }
+    return true;
   }
   template<typename Jet> bool passTightJetId(const Jet& j){
+    if(fabs(j.eta())>3.0){
+      if(j.neutralEmEnergyFraction()<0.90 && j.neutralMultiplicity()>10 ) return true;
+      else return false;
+    }
     if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
     if( !(j.neutralEmEnergyFraction()<0.9)                   ) return false;
     if( !(j.neutralHadronEnergyFraction()<0.9)               ) return false;
-    if( !(j.muonEnergyFraction()<0.8)                        ) return false;
-    if( !(fabs(j.eta())>2.4 || (j.chargedMultiplicity()>0 && j.chargedEmEnergyFraction()<0.9 && j.chargedHadronEnergyFraction()>0)) ) return false;
-    else return true;
+    //if( !(j.muonEnergyFraction()<0.8)                        ) return false;
+    if(fabs(j.eta())<2.4){
+      if( !(j.chargedMultiplicity()>0)         ) return false;
+      if( !(j.chargedEmEnergyFraction()<0.9)   ) return false;
+      if( !(j.chargedHadronEnergyFraction()>0) ) return false;
+    }
+    return true;
   }
 }
 //--------------------------------------------------------------------------------------------------
