@@ -3,9 +3,9 @@
 #include "AnalysisTools/ObjectSelection/interface/EffectiveAreas.h"
 
 
-class PhoAnyPFIsoWithEACut : public CutApplicatorWithEventContentBase {
+class AnalysisToolsPhoAnyPFIsoWithEACut : public CutApplicatorWithEventContentBase {
 public:
-  PhoAnyPFIsoWithEACut(const edm::ParameterSet& c);
+  AnalysisToolsPhoAnyPFIsoWithEACut(const edm::ParameterSet& c);
   
   result_type operator()(const reco::PhotonPtr&) const override final;
 
@@ -28,7 +28,7 @@ private:
   float _barrelCutOff;
   bool  _useRelativeIso;
   // Effective area constants
-  EffectiveAreas _effectiveAreas;
+  AnalysisToolsEffectiveAreas _effectiveAreas;
   // The isolations computed upstream
   edm::Handle<edm::ValueMap<float> > _anyPFIsoMap;
   // The rho
@@ -38,14 +38,14 @@ private:
   constexpr static char rhoString_     [] = "rho";
 };
 
-constexpr char PhoAnyPFIsoWithEACut::anyPFIsoWithEA_[];
-constexpr char PhoAnyPFIsoWithEACut::rhoString_[];
+constexpr char AnalysisToolsPhoAnyPFIsoWithEACut::anyPFIsoWithEA_[];
+constexpr char AnalysisToolsPhoAnyPFIsoWithEACut::rhoString_[];
 
 DEFINE_EDM_PLUGIN(CutApplicatorFactory,
-		  PhoAnyPFIsoWithEACut,
+		  AnalysisToolsPhoAnyPFIsoWithEACut,
 		  "AnalysisToolsPhoAnyPFIsoWithEACut");
 
-PhoAnyPFIsoWithEACut::PhoAnyPFIsoWithEACut(const edm::ParameterSet& c) :
+AnalysisToolsPhoAnyPFIsoWithEACut::AnalysisToolsPhoAnyPFIsoWithEACut(const edm::ParameterSet& c) :
   CutApplicatorWithEventContentBase(c),
   _C1_EB(c.getParameter<double>("C1_EB")),
   _C2_EB(c.getParameter<double>("C2_EB")),
@@ -64,7 +64,7 @@ PhoAnyPFIsoWithEACut::PhoAnyPFIsoWithEACut(const edm::ParameterSet& c) :
 
 }
 
-void PhoAnyPFIsoWithEACut::setConsumes(edm::ConsumesCollector& cc) {
+void AnalysisToolsPhoAnyPFIsoWithEACut::setConsumes(edm::ConsumesCollector& cc) {
   auto anyPFIsoWithEA = 
     cc.consumes<edm::ValueMap<float> >(contentTags_[anyPFIsoWithEA_]);
   contentTokens_.emplace(anyPFIsoWithEA_,anyPFIsoWithEA);
@@ -73,13 +73,13 @@ void PhoAnyPFIsoWithEACut::setConsumes(edm::ConsumesCollector& cc) {
   contentTokens_.emplace(rhoString_, rho);
 }
 
-void PhoAnyPFIsoWithEACut::getEventContent(const edm::EventBase& ev) {  
+void AnalysisToolsPhoAnyPFIsoWithEACut::getEventContent(const edm::EventBase& ev) {  
   ev.getByLabel(contentTags_[anyPFIsoWithEA_],_anyPFIsoMap);
   ev.getByLabel(contentTags_[rhoString_],_rhoHandle);
 }
 
 CutApplicatorBase::result_type 
-PhoAnyPFIsoWithEACut::
+AnalysisToolsPhoAnyPFIsoWithEACut::
 operator()(const reco::PhotonPtr& cand) const{  
 
   // in case we are by-value
@@ -123,7 +123,7 @@ operator()(const reco::PhotonPtr& cand) const{
   return anyPFIsoWithEA < anyPFIsoWithEACutValue;
 }
 
-double PhoAnyPFIsoWithEACut::
+double AnalysisToolsPhoAnyPFIsoWithEACut::
 value(const reco::CandidatePtr& cand) const {
   reco::PhotonPtr pho(cand);
 

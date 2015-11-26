@@ -1,16 +1,16 @@
-#ifndef EffectiveAreas_H
-#define EffectiveAreas_H
+#ifndef AnalysisTools_ObjectSelection_AnalysisToolsEffectiveAreas_H
+#define AnalysisTools_ObjectSelection_AnalysisToolsEffectiveAreas_H
 
 #include <vector>
 
 #include <string>
 
-class EffectiveAreas {
+class AnalysisToolsEffectiveAreas {
 
 public:
   // Constructor, destructor
-  EffectiveAreas(const std::string& filename);
-  ~EffectiveAreas();
+  AnalysisToolsEffectiveAreas(const std::string& filename);
+  ~AnalysisToolsEffectiveAreas();
 
   // Accessors
   const float getEffectiveArea(float eta) const;

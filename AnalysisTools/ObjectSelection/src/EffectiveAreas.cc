@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-EffectiveAreas::EffectiveAreas(const std::string& filename):
+AnalysisToolsEffectiveAreas::AnalysisToolsEffectiveAreas(const std::string& filename):
   filename_(filename)
 {
 
@@ -14,7 +14,7 @@ EffectiveAreas::EffectiveAreas(const std::string& filename):
   std::ifstream inputFile;
   inputFile.open(filename_.c_str());
   if( !inputFile.is_open() )
-    throw cms::Exception("EffectiveAreas config failure")
+    throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
       << "failed to open the file " << filename_ << std::endl;
   
   // Read file line by line
@@ -30,7 +30,7 @@ EffectiveAreas::EffectiveAreas(const std::string& filename):
     // it is likely that one or more of these vars never changed
     // the original "undef" value:
     if( etaMin==undef || etaMax==undef || effArea==undef )
-      throw cms::Exception("EffectiveAreas config failure")
+      throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
 	<< "wrong file format, file name " << filename_ << std::endl;
     
     absEtaMin_          .push_back( etaMin );
@@ -43,7 +43,7 @@ EffectiveAreas::EffectiveAreas(const std::string& filename):
   checkConsistency();
 }
 
-EffectiveAreas::~EffectiveAreas(){
+AnalysisToolsEffectiveAreas::~AnalysisToolsEffectiveAreas(){
 
   absEtaMin_.clear();
   absEtaMax_.clear();
@@ -52,7 +52,7 @@ EffectiveAreas::~EffectiveAreas(){
 }
 
 // Return effective area for given eta
-const float EffectiveAreas::getEffectiveArea(float eta) const{
+const float AnalysisToolsEffectiveAreas::getEffectiveArea(float eta) const{
 
   float effArea = 0;
   uint nEtaBins = absEtaMin_.size();
@@ -67,9 +67,9 @@ const float EffectiveAreas::getEffectiveArea(float eta) const{
   return effArea;
 }
 
-void EffectiveAreas::printEffectiveAreas() const {
+void AnalysisToolsEffectiveAreas::printEffectiveAreas() const {
 
-  printf("EffectiveAreas: source file %s\n", filename_.c_str());
+  printf("AnalysisToolsEffectiveAreas: source file %s\n", filename_.c_str());
   printf("  eta_min   eta_max    effective area\n");
   uint nEtaBins = absEtaMin_.size();
   for(uint iEta = 0; iEta<nEtaBins; iEta++){
@@ -81,11 +81,11 @@ void EffectiveAreas::printEffectiveAreas() const {
 }
 
 // Basic common sense checks
-void EffectiveAreas::checkConsistency() const {
+void AnalysisToolsEffectiveAreas::checkConsistency() const {
 
   // There should be at least one eta range with one constant
   if( effectiveAreaValues_.size() == 0 )
-    throw cms::Exception("EffectiveAreas config failure")
+    throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
       << "found no effective area constans in the file " 
       << filename_ << std::endl;
 
@@ -94,7 +94,7 @@ void EffectiveAreas::checkConsistency() const {
 
     // The low limit should be lower than the upper limit
     if( !( absEtaMin_[iEta] < absEtaMax_[iEta] ) )
-      throw cms::Exception("EffectiveAreas config failure")
+      throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
 	<< "eta ranges improperly defined (min>max) in the file" 
 	<< filename_ << std::endl;
 
@@ -102,7 +102,7 @@ void EffectiveAreas::checkConsistency() const {
     // upper limit of the previous range
     if( iEta != nEtaBins-1 ) // don't do the check for the last bin
       if( !( absEtaMin_[iEta+1] - absEtaMax_[iEta] < 0.0001 ) )
-	throw cms::Exception("EffectiveAreas config failure")
+	throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
 	  << "eta ranges improperly defined (disjointed) in the file " 
 	  << filename_ << std::endl;
 
@@ -111,7 +111,7 @@ void EffectiveAreas::checkConsistency() const {
     // eta range -2.5 to 2.5, phi 0 to 2pi => Amax = 5*2*pi ~= 31.4
     if( !( effectiveAreaValues_[iEta] >= 0
 	   && effectiveAreaValues_[iEta] < 31.4 ) )
-      throw cms::Exception("EffectiveAreas config failure")
+      throw cms::Exception("AnalysisToolsEffectiveAreas config failure")
 	<< "effective area values are too large or negative in the file"
 	<< filename_ << std::endl;
   }

@@ -155,24 +155,14 @@ process.TestAnalyzer.Electrons.mvatrigCategoriesMap = cms.InputTag("electronMVAV
 # Photon ID, following prescription in
 # https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
 
-process.load("RecoEgamma.PhotonIdentification.egmPhotonIDs_cfi")
-
-# Overwrite collection name
-process.egmPhotonIDs.physicsObjectSrc = cms.InputTag('slimmedPhotons')
-
-# Load the producer module to build full 5x5 cluster shapes and whatever 
-# else is needed for IDs
-process.load('RecoEgamma.PhotonIdentification.PhotonIDValueMapProducer_cfi')
-
-process.egmPhotonIDSequence = cms.Sequence(process.photonIDValueMapProducer * process.egmPhotonIDs)
+switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
 # Define which IDs we want to produce
 my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_25ns_V1_cff']
 
 # Add them to the VID producer
-if process.TestAnalyzer.Photons.isFilled:
-    for idmod in my_photon_id_modules:
-        setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+for idmod in my_photon_id_modules:
+    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 # Set ID tags
 process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose")
