@@ -161,8 +161,9 @@ switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_25ns_V1_cff']
 
 # Add them to the VID producer
-for idmod in my_photon_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+if process.TestAnalyzer.Photons.isFilled:
+    for idmod in my_photon_id_modules:
+        setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 # Set ID tags
 process.TestAnalyzer.Photons.looseId    = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose")
@@ -242,6 +243,11 @@ if usePrivateSQlite:
                 record = cms.string("JetCorrectionsRecord"),
                 tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
                 label= cms.untracked.string("AK4PFchs")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK8PFchs"),
+                label= cms.untracked.string("AK8PFchs")
                 ),
             )
                                )
