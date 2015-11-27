@@ -12,9 +12,16 @@
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
 
-using namespace std;
 
 namespace ucsbsusy {
+
+class CopierEventAnalyzer : public BaseEventAnalyzer {
+public:
+  CopierEventAnalyzer() {};
+  virtual ~CopierEventAnalyzer() {};
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+};
+
 
 //--------------------------------------------------------------------------------------------------
 // Copy trees directly, with all or a subset of branches
@@ -26,10 +33,18 @@ namespace ucsbsusy {
     TreeCopier(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars);
     virtual ~TreeCopier();
 
+    virtual BaseEventAnalyzer * setupEventAnalyzer() override {return new CopierEventAnalyzer();}
+
+
     virtual void setupTree() = 0; //Used by the child classes
     virtual void book() {}; //if you want to book your own variables
-    virtual void analyze(int reportFrequency = 10000, int numEvents = -1); //actual analyzer
     virtual bool fillEvent() {return true;} //whether or not to fill the event, also fill your custom vars
+
+    //helper functions for tree work
+    void bookFillingTree() {data.book(treeWriter_);}
+    void resetFillingData() {data.reset();}
+    void fillFillingTree() {outFile_->cd(); treeWriter_->fill(); }
+    TreeWriterData * fillingData() {return &data;}
 
   private:
     void runEvent() {}; //Never used
@@ -166,11 +181,20 @@ namespace ucsbsusy {
   };
 
 
+  class FlattenCopierEventAnalyzer : public BaseEventAnalyzer {
+  public:
+    FlattenCopierEventAnalyzer() {};
+    virtual ~FlattenCopierEventAnalyzer() {};
+    virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+  };
+
 
   class TreeFlattenCopier : public BaseTreeAnalyzer {
   public:
     TreeFlattenCopier(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet * pars);
     virtual ~TreeFlattenCopier();
+
+    virtual BaseEventAnalyzer * setupEventAnalyzer() {return new FlattenCopierEventAnalyzer();}
 
     template<typename Type>
     void addLinked(const Type * inData, const std::string type){
@@ -192,8 +216,11 @@ namespace ucsbsusy {
     }
 
     virtual void book() {}; //if you want to book your own variables
-    virtual void analyze(int reportFrequency = 10000, int numEvents = -1); //actual analyzer
     virtual bool fillEvent() {return true;} //whether or not to fill the event, also fill your custom vars
+
+    void bookFillingTree() {data.book(treeWriter_);}
+    void resetFillingData() {data.reset();}
+    void fillFillingTree();
 
   private:
     void runEvent() {}; //Never used
