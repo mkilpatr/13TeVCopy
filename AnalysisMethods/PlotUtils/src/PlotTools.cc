@@ -74,6 +74,31 @@ namespace PlotTools {
       }
 
   }
+  void toUnderflowX(TH2 * h) {
+    for(int iBY = 0; iBY <= h->GetNbinsY()+1; ++iBY){
+      int firstBin = h->GetBin(1,iBY);
+      int underBin = h->GetBin(0,iBY);
+      h->SetBinContent(firstBin,h->GetBinContent(firstBin)+h->GetBinContent(underBin));
+      h->SetBinContent(underBin,0);
+      if(h->GetSumw2()->fN){
+        (*h->GetSumw2())[firstBin] += (*h->GetSumw2())[underBin];
+        h->SetBinError(underBin,0);
+      }
+    }
+  }
+  void toOverflowX(TH2 * h) {
+    int nBins = h->GetNbinsX();
+    for(int iBY = 0; iBY <= h->GetNbinsY()+1; ++iBY){
+      int lastBin = h->GetBin(nBins,iBY);
+      int overBin = h->GetBin(nBins+1,iBY);
+      h->SetBinContent(lastBin,h->GetBinContent(lastBin)+h->GetBinContent(overBin));
+      h->SetBinContent(overBin,0);
+      if(h->GetSumw2()->fN){
+        (*h->GetSumw2())[lastBin] += (*h->GetSumw2())[overBin];
+        h->SetBinError(overBin,0);
+      }
+    }
+  }
   void normalize(TH1 * h) {
     if(h->GetSumw2()->fN == 0) h->Sumw2();
     int nBins = h->GetNbinsX();
