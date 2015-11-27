@@ -21,6 +21,7 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   looseIdToken_ (cc.consumes<edm::ValueMap<bool> >           (cfg.getParameter<edm::InputTag>("looseId"))),
   mediumIdToken_(cc.consumes<edm::ValueMap<bool> >           (cfg.getParameter<edm::InputTag>("mediumId"))),
   tightIdToken_ (cc.consumes<edm::ValueMap<bool> >           (cfg.getParameter<edm::InputTag>("tightId"))),
+  vetoIdFullInfoMapToken_(cc.consumes<edm::ValueMap<vid::CutFlowResult> >  (cfg.getParameter<edm::InputTag>("vetoId"))),
   looseIdFullInfoMapToken_(cc.consumes<edm::ValueMap<vid::CutFlowResult> > (cfg.getParameter<edm::InputTag>("looseId"))),
   mediumIdFullInfoMapToken_(cc.consumes<edm::ValueMap<vid::CutFlowResult> >(cfg.getParameter<edm::InputTag>("mediumId"))),
   mvanontrigMediumIdToken_(cc.consumes<edm::ValueMap<bool> > (cfg.getParameter<edm::InputTag>("mvanontrigwp90Id"))),
@@ -66,6 +67,7 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   ipassConvVeto_       = data.addMulti<bool >(branchName_,"passConvVeto",false);
   iPassMediumIDOnly_   = data.addMulti<bool >(branchName_,"passMediumIDOnly",0);
   iPassLooseIDOnly_    = data.addMulti<bool >(branchName_,"passLooseIDOnly",0);
+  iPassVetoIDOnly_     = data.addMulti<bool >(branchName_,"passVetoIDOnly",0);
 
 
   if(options_ & FILLIDVARS) {
@@ -123,6 +125,7 @@ void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
   iEvent.getByToken(looseIdToken_,loose_id_decisions_);
   iEvent.getByToken(mediumIdToken_,medium_id_decisions_);
   iEvent.getByToken(tightIdToken_,tight_id_decisions_);
+  iEvent.getByToken(vetoIdFullInfoMapToken_,veto_id_cutflow_);
   iEvent.getByToken(looseIdFullInfoMapToken_,loose_id_cutflow_);
   iEvent.getByToken(mediumIdFullInfoMapToken_,medium_id_cutflow_);
   if(options_ & FILLPOGMVA) {
@@ -199,6 +202,9 @@ void ElectronFiller::fill()
 
     vid::CutFlowResult looseIdIsoMasked = (*loose_id_cutflow_)[ elPtr ].getCutFlowResultMasking("GsfEleEffAreaPFIsoCut_0");
     data.fillMulti<bool>(iPassLooseIDOnly_, looseIdIsoMasked.cutFlowPassed());
+
+    vid::CutFlowResult vetoIdIsoMasked = (*veto_id_cutflow_)[ elPtr ].getCutFlowResultMasking("GsfEleEffAreaPFIsoCut_0");
+    data.fillMulti<bool>(iPassVetoIDOnly_, vetoIdIsoMasked.cutFlowPassed());
 
     if(options_ & FILLIDVARS) {
       data.fillMulti<float>(iecalE_, el->ecalEnergy());

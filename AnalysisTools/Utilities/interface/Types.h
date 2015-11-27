@@ -179,7 +179,9 @@ namespace ucsbsusy {
     kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<57,
     kHLT_Ele23_WPLoose_Gsf = 1UL<<58,
     kHLT_Ele27_WPLoose_Gsf = 1UL<<59,
-    kHLT_IsoMu20 = 1UL<<60
+    kHLT_IsoMu20 = 1UL<<60,
+    kHLT_PFMET90_PFMHT90_IDTight = 1UL<<61,
+    kHLT_PFMET100_PFMHT100_IDTight = 1UL<<62
   };
 
   enum TriggerFilters {

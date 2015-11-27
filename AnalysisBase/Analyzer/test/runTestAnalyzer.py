@@ -60,18 +60,16 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
 
-# MC theory systematic weights only available for specific samples
-if 'madgraph' and not 'SMS' in options.inputFiles[0]:
-   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
-elif 'powheg' in options.inputFiles[0]:
-   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
-elif 'amcatnlo' in options.inputFiles[0]:
-   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
+# MC theory systematic weights only saved for specific samples
+if 'TTZ' in options.inputFiles[0] or 'TTW' in options.inputFiles[0] or 'tZq' in options.inputFiles[0] :
+    print 'Adding theory weights'
+    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
 else : 
-   process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
+    process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
 # Turn on jet shape info for specific datasets
 if 'Photon' in options.inputFiles[0] or 'JetHT' in options.inputFiles[0] or 'DoubleMu' in options.inputFiles[0] or 'GJets' in options.inputFiles[0] or 'QCD' in options.inputFiles[0] or 'DYJets' in options.inputFiles[0] :
+    print 'Adding jet shape info'
     process.TestAnalyzer.Jets.fillJetShapeInfo = cms.untracked.bool(True)
 
 # Global Tag for 50ns MC
@@ -220,6 +218,7 @@ applyResiduals=True     #application of residual corrections.
 
 # For adding NoHF MET
 if not useHFCandidates:
+    print 'Producing NoHF candidate collection'
     process.noHFCands = cms.EDFilter("CandPtrSelector",
                                      src=cms.InputTag("packedPFCandidates"),
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
@@ -231,6 +230,7 @@ if usePrivateSQlite:
     import os
     era="Summer15_25nsV6_DATA" if ISDATA else "Summer15_25nsV6_MC"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
+    print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
                                connect = cms.string( "sqlite_file://"+dBFile ),
                                toGet =  cms.VPSet(
@@ -303,6 +303,9 @@ from AnalysisBase.Analyzer.eventfilters_cfi import met131TeVFilter
 process.met131TeVFilter = met131TeVFilter
 process.met131TeVFilter.globalTag = process.TestAnalyzer.globalTag
 process.met131TeVFilter.isData = process.TestAnalyzer.isData
+process.met131TeVFilter.EventInfo.mets = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
+process.met131TeVFilter.EventInfo.metsOOB = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
+process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', processName=cms.InputTag.skipCurrentProcess())
 
 #==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
@@ -359,9 +362,9 @@ if updateJECs:
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
 
-    process.p = cms.Path(process.patJetCorrFactorsReapplyJEC *
+    process.p = cms.Path(process.met131TeVFilter *
+                         process.patJetCorrFactorsReapplyJEC *
                          process.patJetCorrFactorsReapplyJECAK8 *
-                         process.met131TeVFilter *
                          process.patJetsReapplyJEC        *
                          process.patJetsAK8ReapplyJEC     *
                          process.ak4PatAssocSeq           * 

@@ -53,7 +53,7 @@ nominal_configuration = cms.PSet(
                                       puppimets              = cms.InputTag('slimmedMETsPuppi'),
                                       genEvtInfo             = cms.InputTag('generator'),
                                       lheEvtInfo             = cms.InputTag('externalLHEProducer'),
-                                      saveSystematicWeights  = cms.untracked.bool(True),
+                                      saveSystematicWeights  = cms.untracked.bool(False),
                                       whichSystematicWeights = cms.untracked.vuint32(),
                                   ),
                                     
