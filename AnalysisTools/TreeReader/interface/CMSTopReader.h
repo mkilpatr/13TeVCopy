@@ -52,7 +52,7 @@ namespace ucsbsusy {
     std::vector<float>* topphi_;
     std::vector<float>* topwmass_;
     std::vector<float>* topminmass_;
-    std::vector<int>*   topnsubjets_;
+    std::vector<float>*   topnsubjets_;
 
     //the actual jet collection
     CMSTopFCollection cmsTops;
