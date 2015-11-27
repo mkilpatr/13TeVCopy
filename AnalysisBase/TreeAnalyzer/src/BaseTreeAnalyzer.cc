@@ -16,6 +16,23 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
+void BaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents){
+  clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
+  ana->loadVariables();
+  ana->setLoaded(true);
+
+  while(ana->nextEvent(reportFrequency)){
+    ana->setProcessed(false);
+    if(numEvents >= 0 && ana->getEventNumber() >= numEvents) return;
+    if(!ana->processData()) continue;
+    ana->processVariables();
+    ana->runEvent();
+  }
+}
+
+
+
+//--------------------------------------------------------------------------------------------------
 BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
     randGen           (new TRandom3(randomSeed)),
     run               (0),
@@ -38,8 +55,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     genmet            (0),
     goodvertex        (false),
     zIsInvisible      (false),
-    isMC_             (isMCTree),
     defaultJets       (0),
+    isMC_             (isMCTree),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
 
 {
@@ -119,7 +136,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     jetCorrector.setJES(configSet.jets.JES);
     }
 }
-
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName)
 {
@@ -210,6 +226,12 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
     break;
   }
   }
+}
+//--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents) {
+  auto * evtAna = setupEventAnalyzer();
+  evtAna->analyzeEvent(this,reportFrequency,numEvents);
+  delete evtAna;
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::loadVariables()
@@ -349,19 +371,4 @@ bool BaseTreeAnalyzer::processData(){
   if(evtInfoReader.datareco==defaults::PROMPT_50NS && evtInfoReader.run < 251584) return false;
 
   return true;
-}
-//--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents)
-{
-  clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
-  loadVariables();
-  isLoaded_ = true;
-
-  while(reader.nextEvent(reportFrequency)){
-    isProcessed_ = false;
-    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-    if(!processData()) continue;
-    processVariables();
-    runEvent();
-  }
 }
