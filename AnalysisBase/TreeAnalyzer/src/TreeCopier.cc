@@ -3,30 +3,31 @@
 
 using namespace ucsbsusy;
 
+//--------------------------------------------------------------------------------------------------
+
+void CopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents){
+  TreeCopier * newAna = dynamic_cast<TreeCopier*>(ana);
+  if (newAna==0) throw std::invalid_argument("TreeCopierEventAnalyzer::analyzeEvent: Can only be used in an analyzer that inherits from TreeCopier!");
+
+  newAna->loadVariables();
+  newAna->setLoaded(true);
+  newAna->setupTree();
+  newAna->book();
+  newAna->bookFillingTree();
+  while(newAna->nextEvent(reportFrequency)){
+    newAna->setProcessed(false);
+    if(numEvents >= 0 && newAna->getEventNumber() >= numEvents) return;
+    newAna->processVariables();
+    newAna->resetFillingData();
+    if(!newAna->fillEvent()) continue;
+    newAna->fillFillingTree();
+  }
+}
 
 TreeCopier::TreeCopier(TString fileName, TString treeName, TString outFileName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars)
 : BaseTreeAnalyzer(fileName,treeName,randomSeed,isMCTree,pars), outFileName_(outFileName), outFile_(0), treeWriter_(0)
 {};
 TreeCopier::~TreeCopier(){ if(!outFile_) return; outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
-
-//--------------------------------------------------------------------------------------------------
-void TreeCopier::analyze(int reportFrequency, int numEvents)
-{
-  loadVariables();
-  isLoaded_ = true;
-  setupTree();
-  book();
-  data.book(treeWriter_);
-  while(reader.nextEvent(reportFrequency)){
-    isProcessed_ = false;
-    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-    processVariables();
-    data.reset();
-    if(!fillEvent()) continue;
-    outFile_->cd();
-    treeWriter_->fill();
-  }
-}
 
 
 //--------------------------------------------------------------------------------------------------
@@ -42,28 +43,33 @@ TreeFlattenCopier::TreeFlattenCopier(TString fileName, TString treeName, TString
 };
 TreeFlattenCopier::~TreeFlattenCopier(){outFile_->cd(); outFile_->Write(0, TObject::kWriteDelete); outFile_->Close(); }
 
-//--------------------------------------------------------------------------------------------------
-void TreeFlattenCopier::analyze(int reportFrequency, int numEvents)
-{
-  loadVariables();
-  isLoaded_ = true;
-  book();
-  data.book(treeWriter_);
-  while(reader.nextEvent(reportFrequency)){
-    isProcessed_ = false;
-    if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-    processVariables();
-    data.reset();
-    if(!fillEvent()) continue;
-    data.fillLinked();
-    size num = data.getVecSize();
-    for(size i = 0; i < num; ++i ){
-      data.fillLinkedMulti(i);
-      outFile_->cd();
-      treeWriter_->fill();
-    }
+void TreeFlattenCopier::fillFillingTree() {
+  data.fillLinked();
+  size num = data.getVecSize();
+  for(size i = 0; i < num; ++i ){
+    data.fillLinkedMulti(i);
+    outFile_->cd();
+    treeWriter_->fill();
   }
 }
 
 
+//--------------------------------------------------------------------------------------------------
 
+void FlattenCopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents){
+  TreeFlattenCopier * newAna = dynamic_cast<TreeFlattenCopier*>(ana);
+  if (newAna==0) throw std::invalid_argument("TreeFlattenCopierEventAnalyzer::analyzeEvent: Can only be used in an analyzer that inherits from TreeFlattenCopier!");
+
+  newAna->loadVariables();
+  newAna->setLoaded(true);
+  newAna->book();
+  newAna->bookFillingTree();
+  while(newAna->nextEvent(reportFrequency)){
+    newAna->setProcessed(false);
+    if(numEvents >= 0 && newAna->getEventNumber() >= numEvents) return;
+    newAna->processVariables();
+    newAna->resetFillingData();
+    if(!newAna->fillEvent()) continue;
+    newAna->fillFillingTree();
+  }
+}
