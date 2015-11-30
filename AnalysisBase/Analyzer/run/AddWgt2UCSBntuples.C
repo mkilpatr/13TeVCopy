@@ -16,19 +16,9 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0) {};
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0) {};
 
   virtual ~Copier() {};
-
-  // temporary because I was stupid and gave two branches the same name
-  void setupTree() {
-    reader.getTree()->SetBranchStatus("*",1);
-    reader.getTree()->SetBranchStatus("ele_mvanontrigmediumid",0);
-    reader.getTree()->SetBranchStatus("ele_mvanontrigtightid",0);
-    outFile_ = new TFile(outFileName_,"RECREATE");
-    outFile_->cd();
-    treeWriter_ = new TreeWriter(reader.getTree()->CloneTree(0));
-  }
 
   void loadVariables() {
     load(cfgSet::EVTINFO);
