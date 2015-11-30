@@ -43,6 +43,10 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_IsoMu20_v1"] = kHLT_IsoMu20;
   trigIds_["HLT_IsoMu20_v2"] = kHLT_IsoMu20;
   trigIds_["HLT_IsoMu20_v3"] = kHLT_IsoMu20;
+  trigIds_["HLT_IsoTkMu20_v1"] = kHLT_IsoTkMu20;
+  trigIds_["HLT_IsoTkMu20_v2"] = kHLT_IsoTkMu20;
+  trigIds_["HLT_IsoTkMu20_v3"] = kHLT_IsoTkMu20;
+  trigIds_["HLT_IsoTkMu20_v4"] = kHLT_IsoTkMu20;
   trigIds_["HLT_IsoMu22_v1"] = kHLT_IsoMu22;
   trigIds_["HLT_IsoMu22_v2"] = kHLT_IsoMu22;
   trigIds_["HLT_IsoMu24_eta2p1_v1"] = kHLT_IsoMu24_eta2p1;
@@ -204,6 +208,7 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09"] = kSingleIsoMu22;
   trigFilterIds_["hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09"] = kSingleIsoMu24;
   trigFilterIds_["hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09"] = kSingleIsoMu27;
+  trigFilterIds_["hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09"] = kSingleIsoTkMu20;
   trigFilterIds_["hltL3fL1sMu20L1f0Tkf22QL3trkIsoFiltered0p09"] = kSingleIsoTkMu22;
   trigFilterIds_["hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09"] = kSingleIsoTkMu24;
   trigFilterIds_["hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09"] = kSingleIsoTkMu27;

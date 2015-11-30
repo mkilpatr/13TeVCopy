@@ -181,7 +181,8 @@ namespace ucsbsusy {
     kHLT_Ele27_WPLoose_Gsf = 1UL<<59,
     kHLT_IsoMu20 = 1UL<<60,
     kHLT_PFMET90_PFMHT90_IDTight = 1UL<<61,
-    kHLT_PFMET100_PFMHT100_IDTight = 1UL<<62
+    kHLT_PFMET100_PFMHT100_IDTight = 1UL<<62,
+    kHLT_IsoTkMu20 = 1UL<<63
   };
 
   enum TriggerFilters {
@@ -213,7 +214,8 @@ namespace ucsbsusy {
     kMu8Ele23EleLeg = 1UL<<25,
     kSingleEle27NoER = 1UL<<26,
     kSingleEle23NoER = 1UL<<27,
-    kSingleIsoMu20 = 1UL<<28
+    kSingleIsoMu20 = 1UL<<28,
+    kSingleIsoTkMu20 = 1UL<<29
   };
 
   enum METFilterBits {
