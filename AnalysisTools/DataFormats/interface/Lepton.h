@@ -20,14 +20,14 @@ namespace ucsbsusy {
   {
 
     public :
-  Lepton() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), sip3d_(0), pfdbetaiso_(0), mvaiso_(0), miniiso_(0), ptrel_(0),ptratio_(0),passpogid_(false), passpogiso_(false), isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
+  Lepton() : index_(-1), pdgid_(0), q_(0), d0_(0), dz_(0), sip3d_(0), pfdbetaiso_(0), mvaiso_(0), miniiso_(0), ptrel_(0), ptratio_(0), annulus_(0), passpogid_(false), passpogiso_(false), isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
       template <class InputCoordSystem>
       Lepton(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
 		int inIndex = -1, int inPdgid = 0, int inCharge = 0,
-	     float inD0 = 0, float inDz = 0, float inSip3d = 0, float inPfdbetaiso = 0, float inMvaiso = 0, float inMiniiso=0, float inPtrel=0, float inPtratio=0) :
+	     float inD0 = 0, float inDz = 0, float inSip3d = 0, float inPfdbetaiso = 0, float inMvaiso = 0, float inMiniiso=0, float inPtrel=0, float inPtratio=0, float inAnnulus=0) :
 		Momentum<InputCoordSystem>(inMomentum), 
 		index_(inIndex), pdgid_(inPdgid), q_(inCharge),
-		d0_(inD0), dz_(inDz), sip3d_(inSip3d), pfdbetaiso_(inPfdbetaiso), mvaiso_(inMvaiso), miniiso_(inMiniiso), ptrel_(inPtrel), ptratio_(inPtratio),
+		d0_(inD0), dz_(inDz), sip3d_(inSip3d), pfdbetaiso_(inPfdbetaiso), mvaiso_(inMvaiso), miniiso_(inMiniiso), ptrel_(inPtrel), ptratio_(inPtratio), annulus_(inAnnulus),
 		passpogid_(false), passpogiso_(false),
 		isgoodpoglepton_(false), iselectron_(false), ismuon_(false) {}
 
@@ -44,6 +44,7 @@ namespace ucsbsusy {
       float	miniiso() 				{ return miniiso_;		}
       float	ptrel() 				{ return ptrel_;		}
       float	ptratio() 				{ return ptratio_;		}
+      float	annulusactivity() 			{ return annulus_;		}
       bool	passpogid() 				{ return passpogid_;		}
       bool	passpogiso() 				{ return passpogiso_;		}
       bool	isgoodpoglepton() 			{ return isgoodpoglepton_;	}
@@ -66,6 +67,7 @@ namespace ucsbsusy {
       void	setMiniIso(float newIso2)        	{ miniiso_ = newIso2;		}
       void	setPtRel(float ptRel)			{ ptrel_ = ptRel;       	}
       void	setPtRatio(float ptRatio)       	{ ptratio_ = ptRatio;		}
+      void	setAnnulusActivity(float newAnnulus)    { annulus_ = newAnnulus;	}
 
     protected :
       int	index_;  //Index in lepton vector
@@ -79,6 +81,7 @@ namespace ucsbsusy {
       float     miniiso_;
       float     ptrel_; 
       float     ptratio_ ;
+      float     annulus_;
       bool	passpogid_;
       bool	passpogiso_;
       bool	isgoodpoglepton_;

@@ -39,14 +39,6 @@ namespace ucsbsusy {
       std::vector<float> *   eta;
       std::vector<float> *   phi;
       std::vector<float> *   mass;
-      std::vector<float> *		leadcandpt;
-      std::vector<float> *		leadcandeta;
-      std::vector<float> *		leadcandphi;
-      std::vector<float> *		leadcandmass;
-      std::vector<float> *		leadchcandpt;
-      std::vector<float> *		leadchcandeta;
-      std::vector<float> *		leadchcandphi;
-      std::vector<float> *		leadchcandmass;
       std::vector<int> *		q;
       std::vector<float> *		dxy;
       std::vector<float> *		dxyerr;

@@ -170,8 +170,15 @@ void EventInfoFiller::fill()
     data.fill<int>       (inmefiltparts_,genEvtInfo_->nMEPartonsFiltered());
   }
   if(options_ & LOADLHE) {
-    for(auto index : systWgtIndices_) {
-      data.fillMulti<float>(isystwgts_   ,lheEvtInfo_->weights()[index].wgt);
+    // save all of them if no specific weights are specified
+    if(!systWgtIndices_.size()) {
+      for(auto weight : lheEvtInfo_->weights()) {
+        data.fillMulti<float>(isystwgts_   ,weight.wgt);
+      }
+    } else {
+      for(auto index : systWgtIndices_) {
+        data.fillMulti<float>(isystwgts_   ,lheEvtInfo_->weights()[index].wgt);
+      }
     }
     data.fill<float>     (ilhecentralwgt_,lheEvtInfo_->originalXWGTUP());
   }

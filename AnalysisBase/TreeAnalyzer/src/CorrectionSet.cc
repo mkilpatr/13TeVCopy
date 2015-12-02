@@ -11,19 +11,34 @@
 
 namespace ucsbsusy {
 
+TString corrTypeName (CORRTYPE type) {
+  switch(type){
+    case NOMINAL:
+      return "NOMINAL";
+    case UP:
+      return "UP";
+    case DOWN:
+      return "DOWN";
+    case NONE:
+      return "NONE";
+    default:
+      return "??";
+  }
+}
+
 Correction::Correction(TString corrName) : name(corrName) {
   std::clog << "Loading correction: "<< name <<std::endl;
 }
 RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(corrName),corr(0) {
-  assert(file);
+  if(!file) throw std::invalid_argument("RefoldCorrection::RefoldCorrection: file could not be found!");
   corr = (const QuickRefold::Refold*)(file->Get(name) );
-  assert(corr);
+  if(!corr) throw std::invalid_argument("RefoldCorrection::RefoldCorrection: Corrector could not be found!");
 }
 
 HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1) {
-  assert(file);
-  corrHist = (const TH1F*)(file->Get(name) );
-  assert(corrHist);
+  if(!file) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: file could not be found!");
+  corrHist = (TH1F*)(file->Get(name) );
+  if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }
 
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
@@ -40,7 +55,7 @@ void CorrectionSet::loadFile(TString correctionSetName, TString fileName, int co
 
   std::clog << "Loading file: "<< fileName <<" and correctionSet: " << correctionSetName <<std::endl;
   file = TFile::Open(fileName,"read");
-  assert(file);
+  if(!file) throw std::invalid_argument("CorrectionSet::loadFile: File could not be found!");
 }
 
 CorrectionSet::~CorrectionSet() {

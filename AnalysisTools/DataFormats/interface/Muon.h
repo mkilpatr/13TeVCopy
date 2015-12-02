@@ -23,7 +23,7 @@ namespace ucsbsusy {
   {
 
     public :
-	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isvetomuon_(false) {}
+	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), isgoodpogmuonid_(false), istightisomuon_(false), ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isminiisovetomuon_(false), ismt2vetomuon_(false), ismt2vetomuonid_(false), isvetomuon_(false) {}
 
       template <class InputCoordSystem>
 	Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -42,7 +42,9 @@ namespace ucsbsusy {
       istight_(inIsTight), ispf_(inIspf),
       isglobal_(inIsglobal), istracker_(inIstracker),
       isstandalone_(inIsstandalone), isgoodpogmuon_(false),
-      ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isvetomuon_(false) {}
+      isgoodpogmuonid_(false), istightisomuon_(false),
+      ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false),
+      isminiisovetomuon_(false), ismt2vetomuon_(false), ismt2vetomuonid_(false), isvetomuon_(false) {}
     
     ~Muon() {}
 
@@ -54,9 +56,14 @@ namespace ucsbsusy {
       bool	istracker()            const { return istracker_;	    }
       bool	isstandalone() 	       const { return isstandalone_;	    }
       bool	isgoodpogmuon()        const { return isgoodpogmuon_;       }
+      bool  isgoodpogmuonid()      const { return isgoodpogmuonid_;       }
+      bool  istightisomuon()       const { return istightisomuon_;      }
       bool	ismvavetomuon()        const { return ismvavetomuon_;       }
       bool	ismultiisovetomuonl()  const { return ismultiisovetomuonl_; }
       bool	ismultiisovetomuonvl() const { return ismultiisovetomuonvl_;}
+      bool  isminiisovetomuon()    const { return isminiisovetomuon_; }
+      bool  ismt2vetomuon()        const { return ismt2vetomuon_; }
+      bool  ismt2vetomuonid()      const { return ismt2vetomuonid_; }
       bool      isvetomuon()           const { return isvetomuon_;          }
 
       void	setIsLoose(bool newType)	   { isloose_ = newType;		}
@@ -67,9 +74,14 @@ namespace ucsbsusy {
       void	setIsTracker(bool newType)	   { istracker_ = newType;		}
       void	setIsStandalone(bool newType)	   { isstandalone_ = newType;	}
       void	setIsGoodPOGMuon(bool flag)	   { isgoodpogmuon_ = flag;	}
+      void  setIsGoodPOGMuonId(bool flag)  { isgoodpogmuonid_ = flag; }
+      void  setIsTightIsoMuon(bool flag)   { istightisomuon_ = flag; }
       void	setIsMVAVetoMuon(bool flag)	   { ismvavetomuon_ = flag;	}
       void	setIsMultiIsoVetoMuonL(bool flag)  { ismultiisovetomuonl_  = flag; }
       void	setIsMultiIsoVetoMuonVL(bool flag) { ismultiisovetomuonvl_ = flag; }
+      void  setIsMiniIsoVetoMuon(bool flag)    { isminiisovetomuon_    = flag; }
+      void  setIsMT2VetoMuon(bool flag)        { ismt2vetomuon_        = flag; }
+      void  setIsMT2VetoMuonId(bool flag)      { ismt2vetomuonid_      = flag; }
       void      setIsVetoMuon(bool flag)           { isvetomuon_ = flag;   }
 
     protected :
@@ -81,9 +93,14 @@ namespace ucsbsusy {
       bool	istracker_;
       bool	isstandalone_;
       bool	isgoodpogmuon_;
+      bool  isgoodpogmuonid_;
+      bool  istightisomuon_;
       bool	ismvavetomuon_;
       bool	ismultiisovetomuonl_;
       bool	ismultiisovetomuonvl_;
+      bool  isminiisovetomuon_;
+      bool  ismt2vetomuon_;
+      bool  ismt2vetomuonid_;
       bool	isvetomuon_;
 
   };

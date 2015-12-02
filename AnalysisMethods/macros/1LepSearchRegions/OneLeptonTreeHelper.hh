@@ -119,7 +119,7 @@ struct TreeFiller {
     data->fill<float>(i_weight,     ana->weight);
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
-    data->fill<float>(i_btagWeight, ana->jetCorrections.getBtagCorrection(JetCorrectionSet::BtagCorrectionType::NOMINAL));
+    data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? ana->triggerflag & kHLT_Ele32_eta2p1_WP75_Gsf : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele32_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoTkMu24_eta2p1 : false));
      bool hasJSON = ana->hasJSONFile(), isMC = ana->isMC(), passesLumi = ana->passesLumiMask();
@@ -247,8 +247,8 @@ struct TreeFiller {
 class OneLeptonAnalyzer : public TreeCopierManualBranches {
 
   public :
-    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, bool isMCTree, cfgSet::ConfigSet *pars) :
-      TreeCopierManualBranches(fileName, treeName, outfileName, isMCTree, pars) {}
+    OneLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
+      TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {}
 
     const double metcut_    = 50.0 ;
     const int    minnjets_  = 4;

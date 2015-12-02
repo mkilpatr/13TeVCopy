@@ -20,8 +20,8 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
   VariableCalculator0L vars;
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, cfgSet::ConfigSet *pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, isMCTree, pars)
+  Analyzer(TString fileName, TString treeName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars, double xSec, TString sname, TString outputdir) :
+    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars)
   {
     //loadPlots(); // initialize plots
 
@@ -242,7 +242,7 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
 
 
   //Create analyzer
-  Analyzer a(fullname, "Events", isMC, &cfg, xsec, sname, outputdir);//declare analyzer
+  Analyzer a(fullname, "Events", fileindex+2, isMC, &cfg, xsec, sname, outputdir);//declare analyzer
   a.analyze(10000); // run: Argument is frequency of printout
   //a.analyze(1000,100000); // for testing
   //a.out(sname, outputdir); // write outputfile with plots

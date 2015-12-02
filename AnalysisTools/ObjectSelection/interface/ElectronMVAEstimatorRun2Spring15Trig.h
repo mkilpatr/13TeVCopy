@@ -1,5 +1,5 @@
-#ifndef RecoEgamma_ElectronIdentification_ElectronMVAEstimatorRun2Spring15Trig_H
-#define RecoEgamma_ElectronIdentification_ElectronMVAEstimatorRun2Spring15Trig_H
+#ifndef AnalysisTools_ObjectSelection_ElectronMVAEstimatorRun2Spring15Trig_H
+#define AnalysisTools_ObjectSelection_ElectronMVAEstimatorRun2Spring15Trig_H
 
 #include "RecoEgamma/EgammaTools/interface/AnyMVAEstimatorRun2Base.h"
 

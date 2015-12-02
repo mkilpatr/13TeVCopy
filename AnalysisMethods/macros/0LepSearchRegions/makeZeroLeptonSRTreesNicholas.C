@@ -28,6 +28,6 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
     /********** JETCORRECTION TEST **********/
     pars.jets.JES = JetCorrector::JES_UP;
     /**************************/
-    ZeroLeptonAnalyzer a(fullname, "Events", outfilename, isMC, &pars);
+    ZeroLeptonAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
     a.analyze(1);
 }
