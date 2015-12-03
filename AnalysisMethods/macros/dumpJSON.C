@@ -9,7 +9,7 @@ using namespace ucsbsusy;
 class JSONAnalyzer : public BaseTreeAnalyzer {
 
   public :
-    JSONAnalyzer(TString fileName, TString treeName, TString outdirName, TString outfileName) : BaseTreeAnalyzer(fileName, treeName, false), outputDir_(outdirName), outputFile_(outfileName), lastRunLumi_(cfgSet::JSONProcessing::RunLumiPair(0,0)), jsonProc_(new cfgSet::JSONProcessing()) {}
+    JSONAnalyzer(TString fileName, TString treeName, TString outdirName, TString outfileName) : BaseTreeAnalyzer(fileName, treeName, 1, false, 0), outputDir_(outdirName), outputFile_(outfileName), lastRunLumi_(cfgSet::JSONProcessing::RunLumiPair(0,0)), jsonProc_(new cfgSet::JSONProcessing()) {}
 
     virtual ~JSONAnalyzer() {}
 

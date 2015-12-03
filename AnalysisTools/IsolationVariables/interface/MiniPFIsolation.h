@@ -104,7 +104,7 @@ inline double calcEACorrIso(double chargediso, double neutraliso, double photoni
       break;
     }
   }
-  return chargediso + std::max(neutraliso + photoniso - rho*EA_miniiso, 0.);
+  return chargediso + std::max(neutraliso + photoniso - (rho*EA_miniiso*(maxconesize2 - minconesize2)/(0.09)), 0.);
 }
 }
 
