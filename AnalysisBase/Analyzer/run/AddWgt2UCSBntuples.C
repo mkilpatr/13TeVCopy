@@ -10,13 +10,21 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "TRegexp.h"
+#include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0) {};
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), eeBadSCJSON(new cfgSet::JSONProcessing()), cscBeamHaloJSON(new cfgSet::JSONProcessing()) {
+    if(!isMC()) {
+      TString ee_bad_sc_txtfile = TString::Format("%s/src/data/JSON/ecalscn1043093_Dec01.txt", getenv("CMSSW_BASE"));
+      eeBadSCJSON->addRunLumiEventFile(ee_bad_sc_txtfile);
+      TString csc_beam_halo_txtfile = TString::Format("%s/src/data/JSON/csc2015_Dec01.txt", getenv("CMSSW_BASE"));
+      cscBeamHaloJSON->addRunLumiEventFile(csc_beam_halo_txtfile);
+    }
+  }
 
   virtual ~Copier() {};
 
@@ -30,8 +38,11 @@ public:
       iGenWeight = data.add<float> ("","evtWgtGen","F",1);
       iXSec      = data.add<float> ("","xsection" ,"F",xsec);
     }
-    iProcess   = data.add<size8> ("","process"  ,"b",process);
-    if(!isMC()) iDataReco  = data.add<size8> ("","datareco"  ,"b",datareco);
+    iProcess     = data.add<size8> ("","process"  ,"b",process);
+    if(!isMC())
+      iDataReco  = data.add<size8> ("","datareco"  ,"b",datareco);
+    iPassEEBadSC4    = data.add<bool> (defaults::BRANCH_METFILTERS,"eeBadSC4Flt","O",true);
+    iPassCSCBeamHalo = data.add<bool> (defaults::BRANCH_METFILTERS,"cscBeamHaloFlt","O",true);
   }
 
   void processVariables() {
@@ -40,7 +51,11 @@ public:
   }
 
   bool fillEvent() {
-    if(!isMC()) return true;
+    if(!isMC()) {
+      data.fill<bool>(iPassEEBadSC4,    !(eeBadSCJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
+      data.fill<bool>(iPassCSCBeamHalo, !(cscBeamHaloJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
+      return true;
+    }
     data.fill<float>(iGenWeight, genwgtsign / (1.0 - (2.0*(nNeg/(nPos+nNeg)))));
     return true;
   }
@@ -50,6 +65,8 @@ public:
   size iProcess;
   size iDataReco;
   size iXSec;
+  size iPassEEBadSC4;
+  size iPassCSCBeamHalo;
 
   double nPos;
   double nNeg;
@@ -59,6 +76,9 @@ public:
   float xsecweight;
   float xsec;
   float genwgtsign;
+
+  cfgSet::JSONProcessing* eeBadSCJSON;
+  cfgSet::JSONProcessing* cscBeamHaloJSON;
 
 };
 
@@ -72,7 +92,7 @@ public:
  * nEvents -> number of events in sample (if < 0 take it from the tree)
  *
  */
-//AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,"TestAnalyzer/Events","wgt")
+//AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,0,"TestAnalyzer/Events","wgt")
 
 void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
 
