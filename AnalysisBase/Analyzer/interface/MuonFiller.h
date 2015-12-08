@@ -85,6 +85,9 @@ namespace ucsbsusy {
     size iannulus_;
     size iminiisoeacorr_;
     size iannuluseacorr_;
+    size iminiisocharged_;
+    size iminiisoneutral_;
+    size iminiisopu_;
     size iptrel_;
     size irhoiso_;
     size iLSFIso_;

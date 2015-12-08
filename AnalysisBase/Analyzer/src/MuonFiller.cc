@@ -44,6 +44,9 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
   iannulus_      = data.addMulti<float>(branchName_,"annulus",0);
   iminiisoeacorr_= data.addMulti<float>(branchName_,"miniisoeacorr",0);
   iannuluseacorr_= data.addMulti<float>(branchName_,"annuluseacorr",0);
+  iminiisocharged_= data.addMulti<float>(branchName_,"miniisocharged",0);
+  iminiisoneutral_= data.addMulti<float>(branchName_,"miniisoneutral",0);
+  iminiisopu_    = data.addMulti<float>(branchName_,"miniisopu",0);
   iptrel_        = data.addMulti<float>(branchName_,"ptrel",0);
   iptratio_      = data.addMulti<float>(branchName_,"ptratio",0);
   isip3d_        = data.addMulti<float>(branchName_,"sip3d",0);
@@ -136,6 +139,9 @@ void MuonFiller::fill()
     const auto& miniIsoRltEA = Isolation::miniPFIso(mu, *pfcands_, Isolation::EA_CORR, *rho_);
     data.fillMulti<float>(iminiisoeacorr_,miniIsoRltEA.miniIso);
     data.fillMulti<float>(iannuluseacorr_,miniIsoRltEA.activity);
+    data.fillMulti<float>(iminiisocharged_,miniIsoRltEA.chargedMiniIso);
+    data.fillMulti<float>(iminiisoneutral_,miniIsoRltEA.neutralMiniIso+miniIsoRltEA.photonMiniIso);
+    data.fillMulti<float>(iminiisopu_,miniIsoRltEA.puMiniIso);
 
     data.fillMulti<float>(iptrel_, Isolation::leptonPtRel(mu, *ak4jets_));
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(mu, *ak4jets_));
