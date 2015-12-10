@@ -56,13 +56,13 @@ namespace ucsbsusy {
 
       std::vector<bool>          * metfilterbitpass;
 
-      bool hbheFixFlt;
-      bool hbheFlt;
       bool hbheIsoFlt;
       bool hbheFltR2Loose;
       bool hbheFltR2Tight;
       bool cscFlt;
+      bool cscBeamHaloFlt;
       bool eeBadSCFlt;
+      bool eeBadSC4Flt;
 
       MomentumF    met;
       MomentumF    metNoHF;

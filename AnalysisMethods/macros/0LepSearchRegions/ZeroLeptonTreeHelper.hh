@@ -74,10 +74,11 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
-  size i_passcscflt;
+//  size i_passcscflt; // to be added back later
+  size i_passcscbeamhaloflt;
   size i_passeebadscflt;
-  size i_passhbheflt;
-  size i_passhbhefixflt;
+  size i_passeebadsc4flt;
+  size i_passhbheisoflt;
   size i_passhbhefltloose;
   size i_passhbheflttight;
   size i_genmet    ;
@@ -259,10 +260,11 @@ struct TreeFiller {
     i_passtright900  = data->add<bool>("","passtright900","O",0); 
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
-    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
+//    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
+    i_passcscbeamhaloflt = data->add<bool>("","passcscbeamhaloflt","O",0);
     i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
-    i_passhbheflt    = data->add<bool>("","passhbheflt","O",0);
-    i_passhbhefixflt = data->add<bool>("","passhbhefixflt","O",0);
+    i_passeebadsc4flt = data->add<bool>("","passeebadsc4flt","O",0);
+    i_passhbheisoflt  = data->add<bool>("","passhbheisoflt","O",0);
     i_passhbhefltloose    = data->add<bool>("","passhbhefltloose","O",0);
     i_passhbheflttight    = data->add<bool>("","passhbheflttight","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
@@ -583,10 +585,11 @@ struct TreeFiller {
       }
     }
 
-    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
+//    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
+    data->fill<bool>(i_passcscbeamhaloflt, ana->evtInfoReader.cscBeamHaloFlt);
     data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
-    data->fill<bool>(i_passhbheflt,ana->evtInfoReader.hbheFlt);
-    data->fill<bool>(i_passhbhefixflt,ana->evtInfoReader.hbheFixFlt);
+    data->fill<bool>(i_passeebadsc4flt,ana->evtInfoReader.eeBadSC4Flt);
+    data->fill<bool>(i_passhbheisoflt,ana->evtInfoReader.hbheIsoFlt);
     data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
     data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
 
