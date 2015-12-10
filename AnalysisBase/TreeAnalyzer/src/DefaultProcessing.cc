@@ -13,8 +13,9 @@ bool cfgSet::isSelGenJet   (const ucsbsusy::GenJetF& jet, const JetConfig& conf)
 
 
 bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, const float minCSV ){
-  if(jet.csv() <= (minCSV < -9999 ? conf.defaultCSV : minCSV  ) ) return false;
-  return (jet.pt() > conf.minBJetPt && fabs(jet.eta()) < conf.maxBJetEta);
+  if (jet.pt() <= conf.minBJetPt || fabs(jet.eta()) >= conf.maxBJetEta) return false;
+  if(jet.csv() > (minCSV < -9999 ? conf.defaultCSV : minCSV  ) ) return true;
+  return false;
 }
 
 bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf){

@@ -32,13 +32,21 @@
 
 
 namespace ucsbsusy {
+class BaseEventAnalyzer {
+public:
+  BaseEventAnalyzer() {};
+  virtual ~BaseEventAnalyzer() {};
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+};
+
+
+
 class BaseTreeAnalyzer {
 public:
     
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName,size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars);
     virtual ~BaseTreeAnalyzer() {};
-
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -61,6 +69,12 @@ public:
     // Functions used for basic event processing and loading
     //--------------------------------------------------------------------------------------------------
 
+    //Used to set the particular event analyzer used
+    virtual BaseEventAnalyzer * setupEventAnalyzer() {return new BaseEventAnalyzer();}
+
+    //load the next event
+    bool nextEvent(const int reportFrequency)  {return reader.nextEvent(reportFrequency);}
+
     // Base function that runs the standard process
     virtual void analyze(int reportFrequency = 10000, int numEvents = -1);
 
@@ -75,11 +89,14 @@ public:
     // Standard information
     //--------------------------------------------------------------------------------------------------
     const cfgSet::ConfigSet& getAnaCfg() const { return configSet;}
-    const TRandom3*  getRndGen()  { return randGen;}
+    TRandom3 * getRndGen()  { return randGen;}
     int  getEventNumber() const { return reader.eventNumber;  }
     int  getEntries()     const { return reader.getEntries(); }
     bool isMC()           const { return isMC_;               }
+    void setLoaded(bool is)     { isLoaded_ = is;           }
     bool isLoaded()       const { return isLoaded_;           }
+    void setProcessed(bool is)  { isProcessed_ = is;           }
+    bool isProcessed()    const { return isProcessed_;           }
     bool hasJSONFile()    const { return configSet.jsonFile != ""; }
     bool passesLumiMask() const {
       return configSet.jsonProcessing->hasRunLumi(run, lumi);
@@ -93,7 +110,7 @@ public:
     bool             isLoaded_;
     bool             isProcessed_;
     TreeReader       reader;        // default reader
-    TRandom3*        randGen;
+    TRandom3*          randGen;
   public:
     EventInfoReader     evtInfoReader       ;
     JetReader           ak4Reader           ;
@@ -174,12 +191,13 @@ public:
     //hack for DY PU
     bool zIsInvisible;
 
+    JetReader  * defaultJets;
+
   protected:
     //--------------------------------------------------------------------------------------------------
     // Configuration parameters
     //--------------------------------------------------------------------------------------------------
     const bool   isMC_;
-    JetReader  * defaultJets;
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
   };
