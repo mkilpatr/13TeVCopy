@@ -55,6 +55,7 @@ nominal_configuration = cms.PSet(
                                       lheEvtInfo             = cms.InputTag('externalLHEProducer'),
                                       saveSystematicWeights  = cms.untracked.bool(False),
                                       whichSystematicWeights = cms.untracked.vuint32(),
+                                      isMassScan             = cms.untracked.bool(False),
                                   ),
                                     
                                   Jets = cms.untracked.PSet(  

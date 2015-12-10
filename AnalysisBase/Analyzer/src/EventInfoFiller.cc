@@ -70,6 +70,8 @@ EventInfoFiller::EventInfoFiller(
   inmefiltparts_  =  data.add<int>         (branchName_,"nmefiltpartons"  ,"I",0);
   ilhecentralwgt_ =  data.add<float>       (branchName_,"lhecentralweight","F",1);
   isystwgts_      =  data.addMulti<float>  (branchName_,"systweights",0);
+  if(options_ & LOADLHE && options_ & SAVEMASSES)
+    imasspar_     =  data.addMulti<size16> (branchName_,"massparams",0);
 
 }
 
@@ -179,6 +181,17 @@ void EventInfoFiller::fill()
       for(auto index : systWgtIndices_) {
         data.fillMulti<float>(isystwgts_   ,lheEvtInfo_->weights()[index].wgt);
       }
+    }
+    TString massstring(lheEvtInfo_->getComment(0));
+    while(massstring.Index("_") != TString::kNPOS) {
+      massstring.Remove(0,massstring.Index("_")+1);
+      TString mstr;
+      if(massstring.Index("_") != TString::kNPOS)
+        mstr = TString(massstring(0,massstring.First('_')));
+      else
+        mstr = TString(massstring(0,massstring.Length()-1));
+      if(options_ & SAVEMASSES)
+        data.fillMulti<size16>(imasspar_, convertTo<size16>(mstr.Atoi(),"EventInfoFiller::massparams"));
     }
     data.fill<float>     (ilhecentralwgt_,lheEvtInfo_->originalXWGTUP());
   }
