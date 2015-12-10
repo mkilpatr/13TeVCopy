@@ -192,6 +192,11 @@ struct TreeFiller {
   size i_topcandtau3;
   size i_topcandnsubjets;
   size i_topcandminmass;
+  size i_wcandmass;
+  size i_wcandpt;
+  size i_wcandeta;
+  size i_wpasspt;
+  size i_wpasseta;
 
   bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
@@ -377,6 +382,11 @@ struct TreeFiller {
     i_topcandtau3 = data->add<float>("","topcandtau3","F",0);
     i_topcandnsubjets = data->add<int>("","topcandnsubjets","I",0);
     i_topcandminmass = data->add<float>("","topcandminmass","F",0);
+    i_wcandmass = data->addMulti<float>("","wcandmass",0);
+    i_wcandpt   = data->addMulti<float>("","wcandpt",0);
+    i_wcandeta  = data->addMulti<float>("","wcandeta",0);
+    i_wpasspt   = data->addMulti<float>("","wpasspt",0);
+    i_wpasseta  = data->addMulti<float>("","wpasseta",0);
 
   }
 
@@ -761,6 +771,22 @@ struct TreeFiller {
     data->fill<float>(i_topcandeta, topCandEta_);
     data->fill<float>(i_toppasspt, topPassPt_);
     data->fill<float>(i_toppasseta, topPassEta_);
+
+
+    for(auto* fj : ana->fatJets) {
+
+      data->fillMulti<float>(i_wcandmass, fj->fjSoftDropMass());
+      data->fillMulti<float>(i_wcandpt  , fj->p4().pt());
+      data->fillMulti<float>(i_wcandeta , fj->p4().eta());
+
+      if (passSoftDropTaggerFJ(fj,60.,100000.)) {
+
+        data->fillMulti<float>(i_wpasspt  , fj->p4().pt());
+        data->fillMulti<float>(i_wpasseta , fj->p4().eta());
+      }
+
+    }
+
     
   } // end of fillTopTagInfo
 
