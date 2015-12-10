@@ -15,7 +15,7 @@ void MiniPFIsolation::compute(const reco::Candidate& obj, const pat::PackedCandi
   }
 
   deadcone2_nh = neutralDeadConeEB2_; deadcone2_ch = chargedDeadConeEB2_; deadcone2_ph = photonDeadConeEB2_; deadcone2_pu = puDeadConeEB2_;
-  if (isEndCap(obj)){
+  if (isEndCapEle(obj)){
     deadcone2_nh = neutralDeadConeEE2_; deadcone2_ch = chargedDeadConeEE2_; deadcone2_ph = photonDeadConeEE2_; deadcone2_pu = puDeadConeEE2_;
   }
 
@@ -31,24 +31,34 @@ void MiniPFIsolation::compute(const reco::Candidate& obj, const pat::PackedCandi
     }
   }
 
+  double eta = getEta(obj);
   double iso;
   if (chargedOnly_) iso = chargedIso_;
   else if (usePFWeight_) iso = chargedIso_+neutralIso_+photonIso_;
-  else if (useEACorr_) iso = Isolation::calcEACorrIso(chargedIso_, neutralIso_, photonIso_, obj.eta(), eaEta_, eaValue_, rho_, 0.0, isoConeSize2_);
+  else if (useEACorr_) iso = Isolation::calcEACorrIso(chargedIso_, neutralIso_, photonIso_, eta, eaEta_, eaValue_, rho_, 0.0, isoConeSize2_);
   else iso = Isolation::calcDeltaBetaIso(chargedIso_, neutralIso_, photonIso_, puIso_);
   miniIso_ = iso/obj.pt();
 
-  if (useEACorr_) activity_ = Isolation::calcEACorrIso(chargedAct_, neutralAct_, photonAct_, obj.eta(), eaEta_, eaValue_, rho_, isoConeSize2_, actConeSize2_) / obj.pt();
+  if (useEACorr_) activity_ = Isolation::calcEACorrIso(chargedAct_, neutralAct_, photonAct_, eta, eaEta_, eaValue_, rho_, isoConeSize2_, actConeSize2_) / obj.pt();
   else activity_ = Isolation::calcDeltaBetaIso(chargedAct_, neutralAct_, photonAct_, puAct_) / obj.pt();
 
 }
 
-bool MiniPFIsolation::isEndCap(const reco::Candidate& obj) {
+bool MiniPFIsolation::isEndCapEle(const reco::Candidate& obj) {
   try{
     const pat::Electron& electron = dynamic_cast<const pat::Electron&>(obj);
     return std::abs(electron.superCluster()->eta()) > 1.479;
   }catch (const std::bad_cast& e){
     return false;
+  }
+}
+
+double MiniPFIsolation::getEta(const reco::Candidate& obj) {
+  try{
+    const pat::Electron& electron = dynamic_cast<const pat::Electron&>(obj);
+    return electron.superCluster()->eta();
+  }catch (const std::bad_cast& e){
+    return obj.eta();
   }
 }
 
