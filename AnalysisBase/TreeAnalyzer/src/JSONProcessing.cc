@@ -125,3 +125,39 @@ bool JSONProcessing::hasRunLumi(const RunLumiPair rlpair) const
   return false;
 
 }
+
+void JSONProcessing::addRunLumiEventFile(const TString txtfile)
+{
+  std::ifstream ifs;
+  ifs.open(txtfile.Data());
+  assert(ifs.is_open());
+
+  std::cout << "Loading event list from " << txtfile << std::endl;
+
+  std::string line;
+  while(getline(ifs,line)) {
+    std::stringstream ss(line);
+    std::string elem;
+    std::vector<unsigned int> input;
+    input.reserve(3);
+    while(getline(ss,elem,':')) {
+      input.push_back(std::stoul(elem));
+    }
+    addRunLumiEvent(input[0], input[1], input[2]);
+  }    
+
+}
+
+bool JSONProcessing::hasRunLumiEvent(const RunLumiEvtTriple rletrip) const
+{
+
+  // Check if a given run,lumi,evt triplet is included in the stored set
+
+  RunLumiEvtSet::const_iterator it = runlumievtset.find(rletrip);
+
+  if (it!=runlumievtset.end())
+    return true;
+
+  return false;
+
+}

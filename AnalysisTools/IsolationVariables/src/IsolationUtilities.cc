@@ -19,7 +19,7 @@ Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Electron& el, const p
   else if(isotype == EA_CORR) iso.setUseEACorr();
 
   iso.compute(el, pfcands);
-  return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity());
+  return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity(), iso.getChargedMiniIso(), iso.getNeutralMiniIso(), iso.getPhotonMiniIso(), iso.getPUMiniIso());
 }
 
 Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Muon& mu, const pat::PackedCandidateCollection& pfcands, Isolation::IsoType isotype, double rho) {
@@ -35,7 +35,7 @@ Isolation::MiniPFIsoResult Isolation::miniPFIso(const pat::Muon& mu, const pat::
   else if(isotype == EA_CORR) iso.setUseEACorr();
 
   iso.compute(mu, pfcands);
-  return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity());
+  return Isolation::MiniPFIsoResult(iso.getMiniIso(), iso.getActivity(), iso.getChargedMiniIso(), iso.getNeutralMiniIso(), iso.getPhotonMiniIso(), iso.getPUMiniIso());
 }
 
 double Isolation::rhoIso(const pat::Electron& el, double rho){

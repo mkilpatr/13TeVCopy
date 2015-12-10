@@ -45,13 +45,13 @@ EventInfoReader::EventInfoReader()
   datrec = 0;
   datareco = defaults::MC;
   metfilterbitpass = new vector<bool>;
-  hbheFixFlt = false;
-  hbheFlt    = false;
   hbheIsoFlt = false;
   hbheFltR2Loose = false;
   hbheFltR2Tight = false;
   cscFlt     = false;
+  cscBeamHaloFlt = false;
   eeBadSCFlt = false;
+  eeBadSC4Flt = false;
 
 }
 
@@ -85,10 +85,11 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterFix", &hbheFixFlt);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterIso", &hbheIsoFlt);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Loose", &hbheFltR2Loose);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Tight", &hbheFltR2Tight);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"cscBeamHaloFlt", &cscBeamHaloFlt);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"eeBadSC4Flt", &eeBadSC4Flt);
 
   clog << endl;
 }
@@ -104,6 +105,5 @@ void EventInfoReader::refresh()
 
   cscFlt     = metfilterbitpass->at(2);
   eeBadSCFlt = metfilterbitpass->at(8);
-  hbheFlt    = metfilterbitpass->at(10);
 
 }

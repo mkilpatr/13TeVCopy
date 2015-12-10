@@ -1,6 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
+#include "AnalysisTools/QuickRefold/interface/TObjectContainer.h"
 
 
 using namespace std;
@@ -11,8 +12,8 @@ using namespace ucsbsusy;
 class Copier : public TreeCopierManualBranches {
 public:
   Copier(string fileName, string treeName, string outFileName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,randSeed,isMCTree,pars),
-  i_npv       (0),
-  i_rho       (0),
+//  i_npv       (0),
+//  i_rho       (0),
   i_weight    (0),
   i_puWeight  (0),
   i_genjetpt  (0),
@@ -60,7 +61,7 @@ public:
     for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
       const auto& gJ = defaultJets->genJets[iJ];
       if (gJ.pt()  < 20) continue;
-
+      if(iJ > 1) continue;
       //getrecojet
       const RecoJetF* rJ = 0;
       for(unsigned int iR = 0; iR < defaultJets->recoJets.size(); ++iR){
@@ -69,8 +70,8 @@ public:
         break;
       }
 
-      data.fill<unsigned int>(i_npv,nPV);
-      data.fill<float>(i_rho       ,rho);
+//      data.fill<unsigned int>(i_npv,nPV);
+//      data.fill<float>(i_rho       ,rho);
       data.fill<float>(i_weight    ,weight);
       data.fill<float>(i_puWeight  ,eventCorrections.getPUWeight());
       data.fill<float>(i_genjetpt  ,gJ.pt() );
@@ -82,17 +83,13 @@ public:
       treeWriter_->fill();
     }
 
-
-
-
-
     return true;
   }
 
   void book() {
 
-    i_npv         = data.add<unsigned int>("","npv"                      ,"i",0);
-    i_rho         = data.add<float>("","rho"                      ,"F",0);
+//    i_npv         = data.add<unsigned int>("","npv"                      ,"i",0);
+//    i_rho         = data.add<float>("","rho"                      ,"F",0);
     i_weight      = data.add<float>("","weight"                   ,"F",0);
     i_puWeight      = data.add<float>("","puWeight"               ,"F",0);
     i_genjetpt    = data.add<float>("","genjetpt"                 ,"F",0);
@@ -105,8 +102,8 @@ public:
 
 
   //event level info
-  size i_npv       ;
-  size i_rho       ;
+//  size i_npv       ;
+//  size i_rho       ;
   size i_weight    ;
   size i_puWeight    ;
   size i_genjetpt  ;
@@ -115,16 +112,16 @@ public:
   size i_flavor    ;
   size i_recojetpt ;
 
-
 };
 
 
 #endif
 
-void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes", bool isMC = true) {
+void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes",bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+
 #ifdef  TEST
   cfg.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::JETRESOLUTION;
   cfg.corrections.jetResCorr = 1.1;
@@ -138,7 +135,7 @@ void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "TestAna
 
   Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg);
 
-  a.analyze(1000,10);
+  a.analyze(1000,-1);
 }
 
 

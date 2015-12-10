@@ -55,8 +55,11 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iminiiso_    = data.addMulti<float>(branchName_,"miniiso",0);
   iannulus_    = data.addMulti<float>(branchName_,"annulus",0);
-  iminiisoeacorr_= data.addMulti<float>(branchName_,"miniisoeacorr",0);
-  iannuluseacorr_= data.addMulti<float>(branchName_,"annuluseacorr",0);
+  iminiisoeacorr_ = data.addMulti<float>(branchName_,"miniisoeacorr",0);
+  iannuluseacorr_ = data.addMulti<float>(branchName_,"annuluseacorr",0);
+  iminiisocharged_= data.addMulti<float>(branchName_,"miniisocharged",0);
+  iminiisoneutral_= data.addMulti<float>(branchName_,"miniisoneutral",0);
+  iminiisopu_  = data.addMulti<float>(branchName_,"miniisopu",0);
   iptrel_      = data.addMulti<float>(branchName_,"ptrel",0);
   iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
   irhoiso_     = data.addMulti<float>(branchName_,"rhoiso",0);
@@ -180,6 +183,9 @@ void ElectronFiller::fill()
     const auto& miniIsoRltEA = Isolation::miniPFIso(*elPtr, *pfcands_, Isolation::EA_CORR, *rho_);
     data.fillMulti<float>(iminiisoeacorr_,miniIsoRltEA.miniIso);
     data.fillMulti<float>(iannuluseacorr_,miniIsoRltEA.activity);
+    data.fillMulti<float>(iminiisocharged_,miniIsoRltEA.chargedMiniIso);
+    data.fillMulti<float>(iminiisoneutral_,miniIsoRltEA.neutralMiniIso+miniIsoRltEA.photonMiniIso);
+    data.fillMulti<float>(iminiisopu_,miniIsoRltEA.puMiniIso);
 
     data.fillMulti<float>(iptrel_, Isolation::leptonPtRel(*elPtr, *ak4jets_));
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(*elPtr, *ak4jets_));

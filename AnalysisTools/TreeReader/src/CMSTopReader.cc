@@ -33,7 +33,7 @@ CMSTopReader::CMSTopReader() : BaseReader(){
   topphi_           = new vector<float>;
   topwmass_         = new vector<float>;
   topminmass_       = new vector<float>;
-  topnsubjets_      = new vector<int>  ;
+  topnsubjets_      = new vector<float>  ;
 
 }
 

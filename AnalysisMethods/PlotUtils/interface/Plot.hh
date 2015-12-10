@@ -103,7 +103,7 @@ class Plot {
     void integrateHists(bool reversecutdir = false);
 
     // Get version of histogram with overflow bin added
-    TH1F* addOverFlow(TH1F* h, unsigned int overflowopt=1);
+    static TH1F* addOverFlow(TH1F* h, unsigned int overflowopt=1);
 
     // Adding a text box to the plot
     void addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=1, int textcolor=0, int fillcolor=0);

@@ -34,8 +34,8 @@ namespace Isolation {
 enum IsoType {CHARGED, PF_WEIGHT, EA_CORR, DBETA_CORR};
 
 struct MiniPFIsoResult{
-  double miniIso, activity;
-  MiniPFIsoResult(double iso, double act) : miniIso(iso), activity(act) {}
+  double miniIso, activity, chargedMiniIso, neutralMiniIso, photonMiniIso, puMiniIso;
+  MiniPFIsoResult(double iso, double act, double chiso, double neuiso, double phoiso, double puiso) : miniIso(iso), activity(act), chargedMiniIso(chiso), neutralMiniIso(neuiso), photonMiniIso(phoiso), puMiniIso(puiso) {}
 };
 
 MiniPFIsoResult miniPFIso(const pat::Electron& el, const pat::PackedCandidateCollection& pfcands, IsoType isotype = DBETA_CORR, double rho = 0);

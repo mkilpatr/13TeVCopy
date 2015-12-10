@@ -13,7 +13,7 @@ parser.add_argument("-o", "--outdir", dest="outdir", default="${PWD}/plots", hel
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
-parser.add_argument("-j", "--json", dest="json", default="Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt", help="json file to use. [default:\"\"]")
+parser.add_argument("-j", "--json", dest="json", default="Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt", help="json file to use. [default:\"\"]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -97,7 +97,7 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 199
+request_memory          = 10000
 Executable              = {runscript}{stype}.sh
 Arguments               = {macro} {sname} {index} {mc} {file} {xsec} . {prefix} {workdir} {json}
 Output                  = logs/{sname}_{num}.out

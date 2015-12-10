@@ -887,6 +887,8 @@ void PlotStuff::plot()
     if(config_.writehists) {
       outfile_->cd();
       for(auto* hist : hists_[ihist]) {
+        if(config_.plotoverflow)
+          Plot::addOverFlow(hist, config_.plotoverflow);
         hist->Write();
       }
     }

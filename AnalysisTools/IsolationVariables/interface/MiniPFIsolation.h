@@ -47,11 +47,16 @@ public:
 
   double getMiniIso() const { return miniIso_; }
   double getActivity() const { return activity_; }
+  double getChargedMiniIso() const { return chargedIso_; }
+  double getNeutralMiniIso() const { return neutralIso_; }
+  double getPhotonMiniIso() const { return photonIso_; }
+  double getPUMiniIso() const { return puIso_; }
 
   virtual void compute(const reco::Candidate& obj, const pat::PackedCandidateCollection& pfcands);
 
 protected:
-  virtual bool isEndCap(const reco::Candidate& obj);
+  virtual bool isEndCapEle(const reco::Candidate& obj);
+  virtual double getEta(const reco::Candidate& obj);
   virtual void reset() {
     isoConeSize2_ = 0; miniIso_ = 0; activity_ = 0;
     chargedIso_ = 0; neutralIso_ = 0; photonIso_ = 0; puIso_ = 0;
@@ -104,7 +109,7 @@ inline double calcEACorrIso(double chargediso, double neutraliso, double photoni
       break;
     }
   }
-  return chargediso + std::max(neutraliso + photoniso - rho*EA_miniiso, 0.);
+  return chargediso + std::max(neutraliso + photoniso - (rho*EA_miniiso*(maxconesize2 - minconesize2)/(0.09)), 0.);
 }
 }
 
