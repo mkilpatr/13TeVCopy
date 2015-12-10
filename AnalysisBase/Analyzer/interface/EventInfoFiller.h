@@ -41,7 +41,7 @@ namespace ucsbsusy {
         LOADGEN     = (1 << 0),
         LOADLHE     = (1 << 1),
         LOADPUINFO  = (1 << 2),
-        SAVEMASSES  = (1 << 2)
+        SAVEMASSES  = (1 << 3)
       };
       static const int defaultOptions = NULLOPT;
 
