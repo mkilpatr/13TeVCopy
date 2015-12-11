@@ -191,7 +191,6 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
                                  const TString fname = "/store/user/vdutta/13TeV/080615/merged/gjets_ht100to200_ntuple_wgtxsec.root",
-                                 const double xsec = 1.0,
                                  const TString outputdir = "trees",
                                  const TString fileprefix = "root://eoscms//eos/cms",
                                  const TString json="")
@@ -201,9 +200,6 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
 

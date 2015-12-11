@@ -14,7 +14,7 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
 
   Analyzer(TString fileName, TString treeName, size randSeed, bool isMCTree, ConfigPars * pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars), sname_(sname), outputdir_(outputdir) {
 
       // initiliaze tree
       gSystem->mkdir(outputdir,true);
@@ -44,7 +44,6 @@ class Analyzer : public BaseTreeAnalyzer {
   }
   
 
-  const double xsec_;
   const double lumi_         = 1000.0; // in /pb
   const double metcut_       = 0.0;
   const double muonisocut_   = 0.15;
@@ -79,7 +78,7 @@ class Analyzer : public BaseTreeAnalyzer {
 void Analyzer::runEvent()
 {
 
-  wgt = lumi_*xsec_/getEntries();
+  wgt = weight;
 
   if(nSelLeptons != nLeptons_) return; // check for exactly one lepton passing pog definitions
 
@@ -106,7 +105,6 @@ void syncSingleLepton(TString sname = "T2tt_850_100",          // sample name
                       const int fileindex = -1,                // index of file (-1 means there is only 1 file for this sample)
                       const bool isMC = true,                  // data or MC
                       const TString fname = "/store/user/vdutta/13TeV/310315/merged/T2tt_850_100_ntuple.root", // path of file to be processed
-                      const double xsec = 0.0189612,            // cross section to be used with this file
                       const TString outputdir = "run/trees",    // directory to which files with histograms will be written
                       const TString fileprefix = "root://eoscms//eos/cms") // prefix for file name, needed e.g. to access files with xrootd
 {
@@ -116,9 +114,6 @@ void syncSingleLepton(TString sname = "T2tt_850_100",          // sample name
   // Make sure the output has a unique name in case there are multiple files to process
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
 
@@ -139,7 +134,7 @@ void syncSingleLepton(TString sname = "T2tt_850_100",          // sample name
   pars.cleanJetsMaxDR = 0.4;
 
   // Declare analyzer
-  Analyzer a(fullname, "TestAnalyzer/Events", fileindex +2, isMC, &pars, xsec, sname, outputdir);
+  Analyzer a(fullname, "TestAnalyzer/Events", fileindex +2, isMC, &pars, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(10000);

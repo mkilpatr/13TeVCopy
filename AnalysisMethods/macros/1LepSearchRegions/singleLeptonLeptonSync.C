@@ -30,7 +30,7 @@ class Analyzer : public BaseTreeAnalyzer {
     void rankedByCSV(vector<RecoJetF*>& inJets,vector<RecoJetF*>& outJets);
 
   Analyzer(TString fileName, TString treeName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+    BaseTreeAnalyzer(fileName, treeName, randSeed, isMCTree, pars), sname_(sname), outputdir_(outputdir) {
       // configuration
       tNess     = new Topness();
       tNessInfo = new TopnessInformation();
@@ -78,7 +78,6 @@ class Analyzer : public BaseTreeAnalyzer {
   double lep1eta, lep1pt;
 
 // baseline selection values
-  const double xsec_;
   const double lumi_         = 1000.0; // 1 /fb in units of /pb
   const double metcut_       = 200.0;
   const double mtcut_        = 150.0;
@@ -177,7 +176,6 @@ void Analyzer::runEvent()
   // primary vertex requirement
   if(!goodvertex) return;
 
-  // double wgt = lumi_*xsec_/getEntries();  // old way
   float wgt = evtInfoReader.weight;
   ScaleFactor = wgt;
 
@@ -423,7 +421,6 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
                          const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
                          const bool isMC = true,               // data or MC
                          const TString fname = "evttree_numEvent1000.root", // path of file to be processed
-                         const double xsec = 1.0,              // cross section to be used with this file
                          const TString outputdir = "run/plots",    // directory to which files with histograms will be written
                          const TString fileprefix = "file:$CMSSW_BASE/src/AnalysisBase/Analyzer/test/") // prefix for file name, needed e.g. to access files with xrootd
 {
@@ -434,9 +431,6 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
 
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
-
   TString fullname = fileprefix+fname;
 
 // load one lepton default configs
@@ -445,7 +439,7 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
   // Declare analyzer
-  Analyzer a(fullname, "Events",fileindex+2, isMC, &cfg, xsec, sname, outputdir);
+  Analyzer a(fullname, "Events",fileindex+2, isMC, &cfg, sname, outputdir);
 
   // Run! Argument is frequency of printout
   a.analyze(200000);

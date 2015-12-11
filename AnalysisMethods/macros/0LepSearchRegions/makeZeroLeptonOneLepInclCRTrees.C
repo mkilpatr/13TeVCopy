@@ -46,7 +46,6 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
                                      const int fileindex = -1,
                                      const bool isMC = false,
                                      const TString fname = "/store/user/hqu/13TeV/290915/merged/ww-2l2nu-powheg_1_ntuple_postproc.root",
-                                     const double xsec = 1.0,
                                      const TString outputdir = "trees_1linclcr_100615",
                                      const TString fileprefix = "root://cmseos:1094/",
                                      const TString json = TString::Format("%s/src/data/JSON/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt",getenv("CMSSW_BASE")))
@@ -56,9 +55,6 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
   gSystem->mkdir(outputdir,true);
