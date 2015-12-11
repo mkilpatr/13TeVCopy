@@ -8,7 +8,6 @@ void makeZeroLeptonSRTrees(TString sname = "htmht",
                            const int fileindex = -1,
                            const bool isMC = false,
                            const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
-                           const double xsec = 1.0,
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://eoscms//eos/cms",
                            const TString json="")
@@ -18,9 +17,6 @@ void makeZeroLeptonSRTrees(TString sname = "htmht",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
 

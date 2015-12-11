@@ -77,7 +77,6 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
                                 const int fileindex = -1,
                                 const bool isMC = false,
                                 const TString fname = "/store/user/vdutta/13TeV/130815/merged/doubleeg-2015b-17jul15_ntuple_postproc.root",
-                                const double xsec = 1.0,
                                 const TString outputdir = "trees_090615_ttbarcr/norm",
                                 const TString fileprefix = "root://cmseos:1094//eos/uscms",
                                 const TString json = TString::Format("%s/src/data/JSON/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON.txt",getenv("CMSSW_BASE")))
@@ -87,9 +86,6 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
   gSystem->mkdir(outputdir,true);
@@ -103,9 +99,6 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   pars.selectedLeptons.maxEEta = 2.5;
   pars.selectedLeptons.minMuPt = 10.0;
   pars.selectedLeptons.maxEEta = 2.4;
-
-  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
-  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 
   TTbarCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(10000);

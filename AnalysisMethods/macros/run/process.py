@@ -4,22 +4,21 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser(description='Process config file')
-parser.add_argument("-c", "--conf", dest="conf", default="run1lep.conf", help="Input configuration file. [Default: run1lep.conf]")
+parser.add_argument("-c", "--conf", dest="conf", default="run0lep.conf", help="Input configuration file. [Default: run0lep.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
 parser.add_argument("-p", "--pathtomacro", dest="path", default="..", help="Path to directory with run macro and configuration file. [Default: \"../\"]")
-parser.add_argument("-m", "--runmacro", dest="macro", default="processSingleLepton.C", help="ROOT macro to run. [Default: processSingleLepton.C]")
-parser.add_argument("-x", "--prefix", dest="prefix", default="root://eoscms//eos/cms/", help="Prefix needed to access files over xrootd, [Default: \"root://eoscms//eos/cms/\"]")
+parser.add_argument("-m", "--runmacro", dest="macro", default="makeZeroLeptonSRTrees.C", help="ROOT macro to run. [Default: makeZeroLeptonSRTrees.C]")
+parser.add_argument("-x", "--prefix", dest="prefix", default="root://cmseos:1094/", help="Prefix needed to access files over xrootd, [Default: \"root://cmseos:1094/\"]")
 parser.add_argument("-o", "--outdir", dest="outdir", default="${PWD}/plots", help="Output directory for plots, [Default: \"${PWD}/plots\"]")
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
-parser.add_argument("-j", "--json", dest="json", default="Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt", help="json file to use. [default:\"\"]")
+parser.add_argument("-j", "--json", dest="json", default="Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt", help="json file to use. [Default: Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt]")
 #parser.print_help()
 args = parser.parse_args()
 
 samples = []
 files = []
-xsecs = []
 types = []
 state = 0
 snum = 0
@@ -34,17 +33,14 @@ with open((args.path+"/"+args.conf),"r") as f :
         if content[0] == "$" :
             samples.append(content[1])
             files.append([])
-            xsecs.append([])
             types.append([])
             snum += 1
             continue
         if state == 0 :
             files[snum-1].append(content[0])
-            xsecs[snum-1].append(0)
-            types[snum-1].append(content[1])
+            types[snum-1].append(1)
         elif state == 1 :
             files[snum-1].append(content[0])
-            xsecs[snum-1].append(content[1])
             types[snum-1].append(0)
 
 
@@ -80,12 +76,12 @@ for isam in range(len(samples)) :
         findex = ifile if len(files[isam]) > 1 else -1
         ismc = 1 if types[isam][ifile] == 0 else 0
         if args.submittype == "interactive" :
-            script.write("""root -l -q -b {pathtomacro}/rootlogon.C {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",{xsec},\\"$outputdir\\",\\"$prefix\\",\\"{json}\\"\)\n""".format(
-            pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile], json="$CMSSW_BASE/src/data/JSON/"+args.json if args.json!='' else '' 
+            script.write("""root -l -q -b {pathtomacro}/rootlogon.C {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",\\"$outputdir\\",\\"$prefix\\",\\"{json}\\"\)\n""".format(
+            pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], json="$CMSSW_BASE/src/data/JSON/"+args.json if args.json!='' else '' 
             ))
         elif args.submittype == "lsf" :
-            script.write("""bsub -q {queue} $runscript $runmacro {sname} {index} {mc} {file} {xsec} $outputdir $prefix $workdir {json}\n""".format(
-            queue=args.queue, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile], json=args.json
+            script.write("""bsub -q {queue} $runscript $runmacro {sname} {index} {mc} {file} $outputdir $prefix $workdir {json}\n""".format(
+            queue=args.queue, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], json=args.json
             ))
         elif args.submittype == "condor" :
             os.system("mkdir -p %s/logs" % args.outdir)
@@ -99,7 +95,7 @@ Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 request_memory          = 10000
 Executable              = {runscript}{stype}.sh
-Arguments               = {macro} {sname} {index} {mc} {file} {xsec} . {prefix} {workdir} {json}
+Arguments               = {macro} {sname} {index} {mc} {file} . {prefix} {workdir} {json}
 Output                  = logs/{sname}_{num}.out
 Error                   = logs/{sname}_{num}.err
 Log                     = logs/{sname}_{num}.log
@@ -114,7 +110,7 @@ EOF
 
   condor_submit submit.cmd;
   rm submit.cmd""".format(
-            runscript=args.script, stype=args.submittype, pathtomacro=args.path, macro=args.macro, prefix=args.prefix, workdir="${CMSSW_BASE}", sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], xsec=xsecs[isam][ifile], num=ifile, outdir=args.outdir, abspathtomacro=os.path.abspath(args.path+"/"+args.macro), abspathtorlogon=os.path.abspath(args.path+"/rootlogon.C"), outname=outputname, addjson=addJSON, json=args.json
+            runscript=args.script, stype=args.submittype, pathtomacro=args.path, macro=args.macro, prefix=args.prefix, workdir="${CMSSW_BASE}", sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], num=ifile, outdir=args.outdir, abspathtomacro=os.path.abspath(args.path+"/"+args.macro), abspathtorlogon=os.path.abspath(args.path+"/rootlogon.C"), outname=outputname, addjson=addJSON, json=args.json
             ))
             jobscript.close()
             script.write("./submit_{name}_{j}.sh\n".format(name=samples[isam], j=ifile))

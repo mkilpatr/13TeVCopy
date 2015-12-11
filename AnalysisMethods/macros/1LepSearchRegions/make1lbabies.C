@@ -36,7 +36,7 @@ class Analyzer : public BaseTreeAnalyzer {
   public :
 
   Analyzer(TString fileName, TString treeName,  size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double xSec, TString sname, TString outputdir) :
-    BaseTreeAnalyzer(fileName, treeName, randSeed,isMCTree, pars),xsec_(xSec), sname_(sname), outputdir_(outputdir) {
+    BaseTreeAnalyzer(fileName, treeName, randSeed,isMCTree, pars), sname_(sname), outputdir_(outputdir) {
       // configuration
 
       tNess     = new Topness();
@@ -128,7 +128,6 @@ class Analyzer : public BaseTreeAnalyzer {
   TFile *fout;
   TTree *outtree;
 
-  const double xsec_;
   const double luminosity         = 1.0; // in /fb
   const TString sname_       = "babytuple.root";
   const TString outputdir_   = "./babies/";  
@@ -212,7 +211,6 @@ class Analyzer : public BaseTreeAnalyzer {
 void Analyzer::runEvent()
 {
 
-  //scale1fb = luminosity*xsec_/getEntries();
   float wgt = evtInfoReader.weight;
   scale1fb = wgt;
     
@@ -431,7 +429,6 @@ void make1lbabies(TString sname = "T2tt_650_325",               // sample name
 		       const int fileindex = -1,             // index of file (-1 means there is only 1 file for this sample)
 		       const bool isMC = true,               // data or MC
 		       const TString fname = "T2tt_650_325.root", // path of file to be processed
-		       const double xsec =  1,              // cross section to be used with this file in fb
 		       const TString outputdir = "output",    // directory to which files with histograms will be written
 		       const TString fileprefix = "file:/afs/cern.ch/work/p/peveraer/") // prefix for file name, needed e.g. to access files with xrootd
 {
@@ -441,9 +438,6 @@ void make1lbabies(TString sname = "T2tt_650_325",               // sample name
   // Make sure the output has a unique name in case there are multiple files to process
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
   //  TString fullname = sname;
@@ -460,7 +454,7 @@ void make1lbabies(TString sname = "T2tt_650_325",               // sample name
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
 
   // Declare analyzer
-  Analyzer a(fullname, "Events", fileindex+2, isMC, &cfg, xsec, sname, outputdir);
+  Analyzer a(fullname, "Events", fileindex+2, isMC, &cfg, sname, outputdir);
   //     a.analyze(1000,1000);
        a.analyze(100000);
 
