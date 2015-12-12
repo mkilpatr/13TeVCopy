@@ -40,7 +40,8 @@ namespace ucsbsusy {
         NULLOPT     = 0,
         LOADGEN     = (1 << 0),
         LOADLHE     = (1 << 1),
-        LOADPUINFO  = (1 << 2)
+        LOADPUINFO  = (1 << 2),
+        SAVEMASSES  = (1 << 3)
       };
       static const int defaultOptions = NULLOPT;
 
@@ -99,6 +100,7 @@ namespace ucsbsusy {
       size inmefiltparts_ ;
       size ilhecentralwgt_;
       size isystwgts_     ;
+      size imasspar_      ;
 
     public:
       // Data members

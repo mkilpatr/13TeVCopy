@@ -158,6 +158,7 @@ public:
     //--------------------------------------------------------------------------------------------------
     MomentumF* met        ;
     MomentumF* metNoHF    ;
+    MomentumF* puppimet   ;
     MomentumF* genmet     ;
     bool       goodvertex ;
     std::vector<LeptonF*>        allLeptons        ;

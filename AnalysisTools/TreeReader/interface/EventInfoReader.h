@@ -41,6 +41,9 @@ namespace ucsbsusy {
       float         metNoHF_pt;
       float         metNoHF_phi;
       float         metNoHF_sumEt;
+      float         puppimet_pt;
+      float         puppimet_phi;
+      float         puppimetsumEt;
       float         genmet_pt;
       float         genmet_phi;
       bool          goodvertex;
@@ -66,6 +69,7 @@ namespace ucsbsusy {
 
       MomentumF    met;
       MomentumF    metNoHF;
+      MomentumF    puppimet;
       MomentumF    genmet;
 
   };

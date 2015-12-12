@@ -35,14 +35,11 @@ namespace PlotTools {
   
       if(state==0) {  // define data sample
 	string fname;
-	string json;
-	Int_t type;
 	stringstream ss(line);
-	ss >> fname >> type >> json;
+	ss >> fname;
 	samplev.back()->filenames.push_back(fname);
-	samplev.back()->types.push_back(type);
+	samplev.back()->types.push_back(1);
 	samplev.back()->xsecs.push_back(0);
-	samplev.back()->jsons.push_back(json);
       } else if(state==1) {  // define MC samples
 	string fname;
 	Double_t xsec;

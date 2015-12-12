@@ -55,7 +55,7 @@ void FatJetFiller::fill()
 
   for (const pat::Jet &fatjet : *fatJets_) {
 
-    if ((fatjet.pt()<=50.) || (abs(fatjet.eta())<2.5) ) { continue; } 
+    if (fatjet.pt()<=50.) { continue; }
 
     float cmstoptagmass = -1;
     float cmstoptagminmass = -1;
