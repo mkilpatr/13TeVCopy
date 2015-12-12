@@ -161,7 +161,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.jetResCorr               = 1;
   standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
 
-  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::NULLOPT;
+  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
   standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
