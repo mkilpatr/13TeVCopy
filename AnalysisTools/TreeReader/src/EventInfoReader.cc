@@ -107,3 +107,11 @@ void EventInfoReader::refresh()
   eeBadSCFlt = metfilterbitpass->at(8);
 
 }
+
+void EventInfoReader::pushToTree() {
+  met_pt = met.pt();
+  met_phi = met.phi();
+
+  if(genevtweight)
+    xsecweight = evtweight/genevtweight;
+}
