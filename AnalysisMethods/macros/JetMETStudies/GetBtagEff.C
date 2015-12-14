@@ -83,17 +83,20 @@ void checkEtaBinning(TString name, TTree * tree){
   double jetPTs[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,650,1000};
   int nJetPTS = 19;
 
-  double jetPT2s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,1000};
-  int nJetPT2s = 18;
+  double jetPT2s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT2s = 17;
 
-  double jetPT3s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
-  int nJetPT3s = 17;
+  double jetPT3s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT3s = 16;
 
-  double jetPT4s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,1000};
-  int nJetPT4s = 16;
+  double jetPT4s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,1000};
+  int nJetPT4s = 13;
 
-  double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,500,1000};
-  int nJetPTDoubles = 11;
+  double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,1000};
+  int nJetPTDoubles = 10;
+
+  double jetPTDoubles2[] = {20,30,40,50,75,100,150,200,300,1000};
+  int nJetPTDoubles2 = 9;
 
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
@@ -130,15 +133,21 @@ void checkEtaBinning(TString name, TTree * tree){
       } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
         thisBin =nJetPTDoubles;
         thisBinning =jetPTDoubles;
+      } else if ( name.BeginsWith("w") && (iF == 2)){
+        thisBin =nJetPTDoubles2;
+        thisBinning =jetPTDoubles2;
       }else if ( iF == 2 ) {
+        thisBin =nJetPT3s;
+        thisBinning =jetPT3s;
+      }else if ( iF == 3) {
+        thisBin =nJetPT4s;
+        thisBinning =jetPT4s;
+      }else if ( iF == 1) {
+        thisBin =nJetPT4s;
+        thisBinning =jetPT4s;
+      }else if ( iF == 0) {
         thisBin =nJetPT2s;
         thisBinning =jetPT2s;
-      }else if ( iF == 3) {
-        thisBin =nJetPT3s;
-        thisBinning =jetPT3s;
-      }else if ( iF == 1) {
-        thisBin =nJetPT3s;
-        thisBinning =jetPT3s;
       }
 
       TH1F * hD  = getHistogram(tree,"pt",histName,FLVNAMES[iF],thisBin,thisBinning, sel,0, &weightSel, 0 );
@@ -163,15 +172,21 @@ void checkEtaBinning(TString name, TTree * tree){
         } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
           thisBin =nJetPTDoubles;
           thisBinning =jetPTDoubles;
+        } else if ( name.BeginsWith("w") && (iF == 2)){
+          thisBin =nJetPTDoubles2;
+          thisBinning =jetPTDoubles2;
         }else if ( iF == 2 ) {
+          thisBin =nJetPT3s;
+          thisBinning =jetPT3s;
+        }else if ( iF == 3) {
+          thisBin =nJetPT4s;
+          thisBinning =jetPT4s;
+        }else if ( iF == 1) {
+          thisBin =nJetPT4s;
+          thisBinning =jetPT4s;
+        }else if ( iF == 0) {
           thisBin =nJetPT2s;
           thisBinning =jetPT2s;
-        }else if ( iF == 3) {
-          thisBin =nJetPT3s;
-          thisBinning =jetPT3s;
-        }else if ( iF == 1) {
-          thisBin =nJetPT3s;
-          thisBinning =jetPT3s;
         }
 
         TH1F * hD  = getHistogram(tree,"pt",histName,FLVNAMES[iF],thisBin,thisBinning,sel,0,&weightSel, iC+1);
@@ -218,17 +233,20 @@ void makeEffs(){
   double jetPTs[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,650,1000};
   int nJetPTS = 19;
 
-  double jetPT2s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,1000};
-  int nJetPT2s = 18;
+  double jetPT2s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT2s = 17;
 
-  double jetPT3s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
-  int nJetPT3s = 17;
+  double jetPT3s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT3s = 16;
 
-  double jetPT4s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,1000};
-  int nJetPT4s = 16;
+  double jetPT4s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,1000};
+  int nJetPT4s = 13;
 
   double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,1000};
   int nJetPTDoubles = 10;
+
+  double jetPTDoubles2[] = {20,30,40,50,75,100,150,200,300,1000};
+  int nJetPTDoubles2 = 9;
 
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
@@ -270,6 +288,9 @@ void makeEffs(){
         } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
           thisBin =nJetPTDoubles;
           thisBinning =jetPTDoubles;
+        } else if ( name.BeginsWith("w") && (iF == 2)){
+          thisBin =nJetPTDoubles2;
+          thisBinning =jetPTDoubles2;
         }else if ( iF == 2 ) {
           thisBin =nJetPT3s;
           thisBinning =jetPT3s;
@@ -310,7 +331,10 @@ void makeEffs(){
           } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
             thisBin =nJetPTDoubles;
             thisBinning =jetPTDoubles;
-          }else if ( iF == 2 ) {
+          }else if ( name.BeginsWith("w") && (iF == 2)){
+            thisBin =nJetPTDoubles2;
+            thisBinning =jetPTDoubles2;
+            }else if ( iF == 2 ) {
             thisBin =nJetPT3s;
             thisBinning =jetPT3s;
           }else if ( iF == 3) {
@@ -330,7 +354,7 @@ void makeEffs(){
           cout << name << " "<< FLVNAMES[iF] <<" "<< CSVNAMES[iC]<<" "<< iE << endl;
           for(unsigned int iB = 1; iB <= hD->GetNbinsX(); ++iB){
             cout << hD->GetBinContent(iB)<<" ";
-            if(hD->GetBinContent(iB) == 0 || hD->GetBinContent(iB) > 0.95)
+            if(hD->GetBinContent(iB) == 0 || hD->GetBinContent(iB) > 0.95 || hD->GetBinContent(iB) < .0001 )
               cout << endl << "ERROR!!!"<<endl;
           }
           cout << endl;
@@ -596,22 +620,21 @@ void getUnc()
 #endif
 
 //plotting
-//void GetBtagEff(const TString inFile="qcd_jetRes.root", const TString name = "znunu", const TString treeName = "Events")
-//{
-//  StyleTools::SetStyle();
-//  TFile * mf = new TFile(inFile,"read");
-//  TTree * mt =0;
-//  mf->GetObject(treeName,mt);
-////  checkSelection(name,mt);
-//  checkEtaBinning(name,mt);
-//}
+void GetBtagEff(const TString inFile="qcd_jetRes.root", const TString name = "znunu", const TString treeName = "Events")
+{
+  StyleTools::SetStyle();
+  TFile * mf = new TFile(inFile,"read");
+  TTree * mt =0;
+  mf->GetObject(treeName,mt);
+//  checkSelection(name,mt);
+  checkEtaBinning(name,mt);
+}
 
 ////producing
-void GetBtagEff()
-{
-//  TFile * oF = new TFile(outFile,"recreate");
-  StyleTools::SetStyle();
+//void GetBtagEff()
+//{
+//  StyleTools::SetStyle();
 //  makeEffs();
-//  testEfficiencies();
-  getUnc();
-}
+////  testEfficiencies();
+////  getUnc();
+//}
