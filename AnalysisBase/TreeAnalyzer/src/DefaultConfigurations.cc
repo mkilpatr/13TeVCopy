@@ -70,10 +70,10 @@ void cfgSet::loadDefaultLeptonConfigurations() {
  // zl_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
 
   ol_sel_leptons = zl_sel_leptons;
-  ol_sel_leptons.minEPt            = 20;
-  ol_sel_leptons.maxEEta           = 1.4442;
+  ol_sel_leptons.minEPt            = 40;
+  ol_sel_leptons.maxEEta           = 2.1;
   ol_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
-  ol_sel_leptons.minMuPt           = 20;
+  ol_sel_leptons.minMuPt           = 30;
   ol_sel_leptons.maxMuEta          = 2.1;
   ol_sel_leptons.maxMuD0           = 0.02;
   ol_sel_leptons.maxMuDz           = 0.1;
@@ -108,10 +108,9 @@ void cfgSet::loadDefaultTrackConfigurations() {
   zl_veto_tracks.setConfig();
 
   ol_veto_tracks = zl_veto_tracks;
-  ol_veto_tracks.mtPresel  = false;
-  ol_veto_tracks.minPt     = 10;
-  ol_veto_tracks.maxDz     = 0.1;
-  ol_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ischargedhadron;
+  ol_veto_tracks.minPt     = 5;
+  ol_veto_tracks.maxDz     = -1;
+  ol_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ismvavetotau;
   ol_veto_tracks.setConfig();
 }
 
@@ -127,8 +126,6 @@ void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.setConfig();
 
   ol_veto_taus = zl_veto_taus;
-  ol_veto_taus.requireOppositeQToSelLepton = true;
-  ol_veto_taus.selected   = &ucsbsusy::TauF::isgoodpogtau;
   ol_veto_taus.setConfig();
 }
 

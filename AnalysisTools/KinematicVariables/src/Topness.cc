@@ -240,7 +240,7 @@ double Topness::findMinTopnessConfiguration(const LeptonF* lepton,const std::vec
   vector<int> addjets;
 
   for(unsigned int iJ =0; iJ < rankedJets.size(); ++iJ){
-    if(rankedJets[iJ].first>defaults::CSV_MEDIUM) bjets.push_back(rankedJets[iJ].second);
+    if(rankedJets[iJ].first>0.814) bjets.push_back(rankedJets[iJ].second);
     else {
       if (bjets.size()<2 && bjets.size()+addjets.size()<3) addjets.push_back(rankedJets[iJ].second);
     }
