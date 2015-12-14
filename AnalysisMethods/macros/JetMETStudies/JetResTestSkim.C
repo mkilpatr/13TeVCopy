@@ -254,7 +254,7 @@ public:
 #endif
 
 
-void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes", int type = 0, double window = -1,  bool isMC = true) {
+void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Events", string outPostfix ="jetResTest", int type = 0, double window = -1,  bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;

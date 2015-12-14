@@ -215,8 +215,8 @@ void QCDRespSmearingBaseEventAnalyzer::setupSmearing(BaseTreeAnalyzer * analyzer
 void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer){
   //what we use from the analyzer
   TRandom3 * const randGen = analyzer->getRndGen();
-  const auto & genJets =  analyzer->defaultJets->genJets;
-  auto & recoJets =  analyzer->defaultJets->recoJets;
+  const auto * genJets =  &analyzer->defaultJets->genJets;
+  auto * recoJets =  &analyzer->defaultJets->recoJets;
   auto * met =  &analyzer->evtInfoReader.met;
   auto * weight =  &analyzer->evtInfoReader.evtweight;
 
@@ -248,24 +248,26 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
   //get the list of jets we can smear and put them in a vector
   std::vector<JetRespSmear::SmearInfo> smearJets;
 
-  for(unsigned int iJ = 0; iJ < smearOptions.nSmearJets && iJ < genJets.size(); ++iJ){
-    const auto* gJ = &genJets[iJ];
+  for(unsigned int iJ = 0; iJ < smearOptions.nSmearJets && iJ < genJets->size(); ++iJ){
+    const auto* gJ = &(*genJets)[iJ];
     int rJI = -1;
     if(gJ->pt() == 0) break;
-    for(unsigned int iR = 0; iR < recoJets.size(); ++iR){
-      if(recoJets[iR].genJet() != gJ) continue;
+    for(unsigned int iR = 0; iR < recoJets->size(); ++iR){
+      if((*recoJets)[iR].genJet() != gJ) continue;
       rJI = iR;
       break;
     }
 
     //its a missing jet...or just below 10 GeV
     if(rJI < 0 ){
-      rJI = recoJets.size();
-      recoJets.emplace_back(ucsbsusy::CylLorentzVectorF(9.5, gJ->eta(), gJ->phi(),gJ->mass()), -1,
+      rJI = recoJets->size();
+      RecoJetF newJet(ucsbsusy::CylLorentzVectorF(9.5, gJ->eta(), gJ->phi(),gJ->mass()), -1,
           0, 9.5, 0,
           1, const_cast<ucsbsusy::GenJetF*>(gJ));
+
+      analyzer->defaultJets->addRecoJet(&newJet);
     }
-    RecoJetF * rJ = &recoJets[rJI];
+    RecoJetF * rJ = &(*recoJets)[rJI];
 
 
     double origRes = rJ->pt() / gJ->pt();
@@ -291,7 +293,7 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
 
 
   //orignal values
-  const RecoJetFCollection originalRecoJets = recoJets;
+  const RecoJetFCollection originalRecoJets = *recoJets;
   const MomentumF originalMET = (*met);
   const float originalWeight = (*weight);
 
@@ -335,7 +337,7 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
       }
       smearWeight *= smearingCorr / contribProb;
 
-      auto& recoJet = recoJets[info->rJI];
+      auto& recoJet = (*recoJets)[info->rJI];
 
       met->p4() += recoJet.p4();
       ucsbsusy::CylLorentzVectorF newP4(newResValue * info->gJ->pt(),recoJet.eta(),recoJet.phi(),recoJet.mass());
@@ -344,9 +346,11 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     }
 
     if(canSmear){
-      std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
+      std::sort(recoJets->begin(),recoJets->end(),PhysicsUtilities::greaterPT<RecoJetF>());
       smearWeight /= float(smearOptions.nSmears);
       (*weight) *= smearWeight;
+      analyzer->defaultJets->pushToTree(); //update vectors
+      analyzer->evtInfoReader.pushToTree(); //update vectors
       runOneInstance(analyzer);
     }
 
@@ -355,7 +359,7 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     (*weight) = originalWeight;
     canSmear = false;
     (*met) = originalMET;
-    recoJets = originalRecoJets;
+    (*recoJets) = originalRecoJets;
   }
 }
 

@@ -31,21 +31,8 @@ public:
   }
 
   //--------------------------------------------------------------------------------------------------
-  void analyze(int reportFrequency = 10000, int numEvents = -1)
-  {
-    loadVariables();
-    isLoaded_ = true;
-    setupTree();
-    book();
-    data.book(treeWriter_);
-    while(reader.nextEvent(reportFrequency)){
-      isProcessed_ = false;
-      if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-      processVariables();
-      data.reset();
-      fillEvent();
-    }
-  }
+  virtual BaseEventAnalyzer * setupEventAnalyzer() override {return new CopierFillYourselfEventAnalyzer();}
+
 
   virtual bool fillEvent() {
 #ifdef  TEST
@@ -61,7 +48,7 @@ public:
     for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
       const auto& gJ = defaultJets->genJets[iJ];
       if (gJ.pt()  < 20) continue;
-      if(iJ > 1) continue;
+//      if(iJ > 1) continue;
       //getrecojet
       const RecoJetF* rJ = 0;
       for(unsigned int iR = 0; iR < defaultJets->recoJets.size(); ++iR){
@@ -76,11 +63,10 @@ public:
       data.fill<float>(i_puWeight  ,eventCorrections.getPUWeight());
       data.fill<float>(i_genjetpt  ,gJ.pt() );
       data.fill<float>(i_genjeteta ,gJ.eta() );
-      data.fill<unsigned int>(i_genjetrank,  iJ);
-      data.fill<unsigned int>(i_flavor    , convertTo<unsigned int>(gJ.flavor(),"Copier::i_flavor"));
+      data.fill<size8>(i_genjetrank,  std::min(iJ,250u));
+      data.fill<size8>(i_flavor    , convertTo<size8>(gJ.flavor(),"Copier::i_flavor"));
       data.fill<float>(i_recojetpt,rJ == 0 ? 9.5 : rJ->pt());
-      outFile_->cd();
-      treeWriter_->fill();
+      fillFillingTree();
     }
 
     return true;
@@ -94,8 +80,8 @@ public:
     i_puWeight      = data.add<float>("","puWeight"               ,"F",0);
     i_genjetpt    = data.add<float>("","genjetpt"                 ,"F",0);
     i_genjeteta   = data.add<float>("","genjeteta"                ,"F",0);
-    i_genjetrank  = data.add<unsigned int>("","genjetrank"               ,"i",0);
-    i_flavor      = data.add<unsigned int>("","flavor"                   ,"i",0);
+    i_genjetrank  = data.add<size8>("","genjetrank"               ,"s",0);
+    i_flavor      = data.add<size8>("","flavor"                   ,"s",0);
     i_recojetpt   = data.add<float>("","recojetpt"                ,"F",0);
 
   }
@@ -117,7 +103,7 @@ public:
 
 #endif
 
-void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "TestAnalyzer/Events", string outPostfix ="jetRes",bool isMC = true) {
+void JetResSkim(string fileName,  int fileIndex = -1, string treeName = "Events", string outPostfix ="jetRes",bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
