@@ -23,6 +23,14 @@ public:
 };
 
 
+class CopierFillYourselfEventAnalyzer : public BaseEventAnalyzer {
+public:
+  CopierFillYourselfEventAnalyzer() {};
+  virtual ~CopierFillYourselfEventAnalyzer() {};
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+};
+
+
 //--------------------------------------------------------------------------------------------------
 // Copy trees directly, with all or a subset of branches
 //--------------------------------------------------------------------------------------------------
