@@ -8,7 +8,7 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierLoadedBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierLoadedBranches(fileName,treeName,outFileName,0u,isMCTree,pars) {
+  Copier(string fileName, string treeName, string outFileName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierLoadedBranches(fileName,treeName,outFileName,randSeed,isMCTree,pars) {
   };
   virtual ~Copier() {};
 
@@ -31,7 +31,7 @@ public:
 
 #endif
 
-void QCDSkimmer(string fileName,  string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", bool isMC = true) {
+void QCDSkimmer(string fileName, int fileIndex = -1, string treeName = "Events", string outPostfix ="qcdSkim", bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
@@ -40,9 +40,10 @@ void QCDSkimmer(string fileName,  string treeName = "TestAnalyzer/Events", strin
   TString prefix(fileName);
   prefix.Remove(0,prefix.Last('/') + 1);
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
-  TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
+  TString outName = fileIndex < 0 ? TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str()) : TString::Format("%s_%i_%s.root",prefix.Data(),fileIndex,outPostfix.c_str());
 
-  Copier a(fileName,treeName,outName.Data(),isMC, &cfg);
+
+  Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg);
 
   a.analyze();
 }
