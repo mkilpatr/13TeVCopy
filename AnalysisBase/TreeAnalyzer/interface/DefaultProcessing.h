@@ -17,7 +17,6 @@ namespace cfgSet{
   bool isSelTaggedTop(const ucsbsusy::CMSTopF& top); //Config Pending
 
   void selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons  ,std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf);
-  void selectVetoedLeptons(std::vector<ucsbsusy::LeptonF*>& vetoedLeptons, std::vector<ucsbsusy::LeptonF*> selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf);
   void selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const ucsbsusy::MomentumF* met, const TrackConfig& conf);
   void selectTaus(std::vector<ucsbsusy::TauF*>& selectedTaus, std::vector<ucsbsusy::LeptonF*>& selectedLeptons, ucsbsusy::TauFCollection& allTaus, const TauConfig& conf);
   void selectPhotons(std::vector<ucsbsusy::PhotonF*>& selectedPhotons, ucsbsusy::PhotonFCollection& allPhotons, const PhotonConfig& conf);

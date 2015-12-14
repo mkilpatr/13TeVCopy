@@ -78,20 +78,6 @@ void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std
 
 }
 
-void cfgSet::selectVetoedLeptons(std::vector<ucsbsusy::LeptonF*>& vetoedLeptons, std::vector<ucsbsusy::LeptonF*> selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf){
-  if(!conf.isConfig())
-    throw std::invalid_argument("config::selectVetoedLeptons(): You want to do selecting but have not yet configured the selection!");
-
-  vetoedLeptons.clear();
-
-  for(auto* lepton : allLeptons){
-	if (selectedLeptons.size()>0 && PhysicsUtilities::deltaR(lepton->p4(), selectedLeptons.at(0)->p4()) < 0.01) continue;
-    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, conf): isSelElectron(*(ElectronF*)lepton, conf))
-      vetoedLeptons.push_back(lepton);
-  }
-
-}
-
 void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const MomentumF* met, const TrackConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectTracks(): You want to do selecting but have not yet configured the selection!");

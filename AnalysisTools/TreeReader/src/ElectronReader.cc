@@ -32,7 +32,6 @@ ElectronReader::ElectronReader() : BaseReader(){
   //mvaidnontrig = new vector<float> ;
   //mvaidtrig    = new vector<float> ;
   isveto       = new vector<bool>  ;
-  isvetoid     = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   ismediumid   = new vector<bool>  ;
@@ -73,7 +72,6 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "looseid"         , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"        , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"         , &istight     , true);
-    treeReader->setBranchAddress(branchName , "passVetoIDOnly"  , &isvetoid    , true);
     treeReader->setBranchAddress(branchName , "passMediumIDOnly", &ismediumid  , true);
     treeReader->setBranchAddress(branchName , "passLooseIDOnly" , &islooseid   , true);
     treeReader->setBranchAddress(branchName , "miniisoeacorr"   , &miniiso     , true);
@@ -106,7 +104,6 @@ void ElectronReader::refresh(){
       //electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
       //electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
       electrons.back().setIsVeto(isveto->at(iL));
-      electrons.back().setIsVetoId(isvetoid->at(iL));
       electrons.back().setIsLoose(isloose->at(iL));
       electrons.back().setIsLooseId(islooseid->at(iL));
       electrons.back().setIsMedium(ismedium->at(iL));
@@ -118,7 +115,7 @@ void ElectronReader::refresh(){
       electrons.back().setAnnulusActivity(annulus->at(iL));
       electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
       electrons.back().setIsGoodPOGElectronId(eleId->passElectronId((&electrons.back()), eleId->MEDIUMID));
-      electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->VETO));
+      electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
       electrons.back().setIsTightIsoElectron(eleId->passElectronId((&electrons.back()), eleId->TIGHT));
       electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
       electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
