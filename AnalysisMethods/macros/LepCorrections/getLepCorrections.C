@@ -37,9 +37,9 @@ vector<TH1F*> getRatios(vector<TH1F*> num_hists, vector<TH1F*> den_hists, bool c
   return ratios;
 }
 
-void getLepCorrections(const TString inputdir = "root://cmseos:1094//store/user/vdutta/13TeV/trees/101415/trees_newdata/0lepbkgest",
-                       const TString outputdir = "plots_lepeffs_newdata/lepcorrs",
-                       const TString lumistr = "577",
+void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep_1211",
+                       const TString outputdir = "plots_lepeffs_1211/lepcorrs",
+                       const TString lumistr = "2137",
                        const bool    plotlog = false,
                        const TString format = "png")
 {
@@ -47,8 +47,8 @@ void getLepCorrections(const TString inputdir = "root://cmseos:1094//store/user/
   gSystem->mkdir(outputdir, true);
 
   map<TString,TString> sel;
-  sel["trig"]       = "passjson && passdijetmet && passcscflt && passeebadscflt && passhbheflttight";
-  sel["base"]       = sel["trig"] + " && met>200 && j2pt>75 && njets>=5 && nlbjets>=2 && nbjets>=1";
+  sel["trig"]       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["base"]       = sel["trig"] + " && met>200 && j2pt>75 && njets>=2 && nlbjets>=2 && nbjets>=1";
   sel["inclcr"]     = sel["base"] + " && dphij12met>0.4 && dphij3met>0.4";
   sel["inclcrnomu"] = sel["inclcr"] + " && nvetomu==0";
   sel["inclcrnoemu"]= sel["inclcrnomu"] + " && nvetolele==0";
@@ -71,7 +71,7 @@ void getLepCorrections(const TString inputdir = "root://cmseos:1094//store/user/
   TTree* mctree = (TTree*)mcfile->Get("Events");
   assert(mctree);
 
-  TString wgtexpr = lumistr + "*0.001*weight";
+  TString wgtexpr = lumistr + "*0.001*weight*truePUWeight";
 
   vector<TH1F*> data_incl, data_sel, data_sel_nobins;
   vector<TH1F*> mc_incl, mc_sel;

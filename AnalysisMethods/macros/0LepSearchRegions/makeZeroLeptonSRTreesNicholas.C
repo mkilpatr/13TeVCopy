@@ -10,7 +10,6 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
                                    const bool isMC = true,
                                    const TString fname =
                                        "/store/user/vdutta/13TeV/080615/merged/T2tt_850_100_ntuple_wgtxsec.root",
-                                   const double xsec = 1.0,
                                    const TString outputdir = "trees",
                                    const TString fileprefix = "root://eoscms//eos/cms",
                                    const TString json="")
@@ -19,8 +18,6 @@ void makeZeroLeptonSRTreesNicholas(TString sname = "T2tt_850_100",
            sname.Data());
     if (fileindex > -1)
     { sname += TString::Format("_%d", fileindex); }
-    if (isMC)
-    { printf("Cross section: %5.2f pb\n", xsec); }
     TString fullname = fileprefix + fname;
     gSystem->mkdir(outputdir, true);
     TString outfilename = outputdir + "/" + sname + "_tree.root";

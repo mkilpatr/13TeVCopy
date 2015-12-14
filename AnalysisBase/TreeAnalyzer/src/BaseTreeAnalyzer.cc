@@ -52,6 +52,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nVetoHPSTaus      (0),
     met               (0),
     metNoHF           (0),
+    puppimet          (0),
     genmet            (0),
     goodvertex        (false),
     zIsInvisible      (false),
@@ -273,6 +274,7 @@ void BaseTreeAnalyzer::processVariables()
     goodvertex=evtInfoReader.goodvertex;
     met   = &evtInfoReader.met;
     metNoHF = &evtInfoReader.metNoHF;
+    puppimet= &evtInfoReader.puppimet;
     genmet= &evtInfoReader.genmet;
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;

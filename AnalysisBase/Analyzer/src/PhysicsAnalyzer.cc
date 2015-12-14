@@ -120,6 +120,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC()) defaultOptions |= EventInfoFiller::LOADPUINFO;
       if(isMC()) defaultOptions |= EventInfoFiller::LOADGEN;
       if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
+      if(isMC() && cfg.getUntrackedParameter<bool>("isMassScan")) defaultOptions |= EventInfoFiller::SAVEMASSES;
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),
                                       options < 0 ? defaultOptions : options
                                       );

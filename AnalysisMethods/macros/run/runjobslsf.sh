@@ -5,11 +5,10 @@ sname=$2
 index=$3
 ismc=$4
 filename=$5
-xsec=$6
-outputdir=$7
-prefix=$8
-scramdir=$9
-json=${10}
+outputdir=$6
+prefix=$7
+scramdir=$8
+json=$9
 
 workdir=`pwd`
 
@@ -29,7 +28,7 @@ if [ ! -z "$json" ]; then
   cp $scramdir/$json .
 fi
 
-root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",$xsec,\"${outputdir}\",\"${prefix}\",\"${json}\"\)
+root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",\"${outputdir}\",\"${prefix}\",\"${json}\"\)
 
 status=`echo $?`
 echo "Status = $status"

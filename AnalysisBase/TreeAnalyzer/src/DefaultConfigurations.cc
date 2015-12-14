@@ -148,7 +148,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.eventCorrections         = ucsbsusy::EventCorrectionSet::PU;
   standardCorrections.eventCorrectionFile      =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",CMSSW_BASE);
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2015d_1264ipb_52bins_69mb.root",CMSSW_BASE);
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2015d_2137ipb_52bins_69mb.root",CMSSW_BASE);
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
@@ -161,7 +161,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.jetResCorr               = 1;
   standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
 
-  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::NULLOPT;
+  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
   standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;

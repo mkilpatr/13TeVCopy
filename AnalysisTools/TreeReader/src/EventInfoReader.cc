@@ -32,6 +32,9 @@ EventInfoReader::EventInfoReader()
   metNoHF_pt = 0;
   metNoHF_phi = 0;
   metNoHF_sumEt = 0;
+  puppimet_pt = 0;
+  puppimet_phi = 0;
+  puppimetsumEt = 0;
   genmet_pt = 0;
   genmet_phi = 0;
   goodvertex = false;
@@ -75,6 +78,9 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"metnohf_pt", &metNoHF_pt);
   treeReader->setBranchAddress(branchName,"metnohf_phi", &metNoHF_phi);
   treeReader->setBranchAddress(branchName,"metnohf_sumEt", &metNoHF_sumEt);
+  treeReader->setBranchAddress(branchName,"puppimet_pt", &puppimet_pt);
+  treeReader->setBranchAddress(branchName,"puppimet_phi", &puppimet_phi);
+  treeReader->setBranchAddress(branchName,"puppimet_sumEt", &puppimetsumEt);
   treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
@@ -98,6 +104,7 @@ void EventInfoReader::refresh()
 {
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
   metNoHF.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
+  puppimet.setP4(CylLorentzVectorF(puppimet_pt,0,puppimet_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
   process = static_cast<defaults::Process>(proc);
   datareco = static_cast<defaults::DataReco>(datrec);

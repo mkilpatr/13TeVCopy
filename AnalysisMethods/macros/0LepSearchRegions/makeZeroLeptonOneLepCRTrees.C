@@ -55,7 +55,6 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
                                  const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/ttbar-madgraphmlm-50ns_1_ntuple_postproc.root",
-                                 const double xsec = 1.0,
                                  const TString outputdir = "trees",
                                  const TString fileprefix = "root://eoscms//eos/cms",
                                  const TString json="")
@@ -65,9 +64,6 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
 

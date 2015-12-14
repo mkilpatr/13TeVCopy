@@ -29,7 +29,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/38C49928-8D72-E511-94A6-001E67579188.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/FEE1CE52-216E-E511-9B5A-0025905A60B8.root'
-options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext3-v1/10000/003964D7-D06E-E511-A8DA-001517F7F524.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext3-v1/10000/003964D7-D06E-E511-A8DA-001517F7F524.root'
+options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500to1525_mLSP-50to1125_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/FastAsympt25ns_74X_mcRun2_asymptotic_v2-v1/20000/0A5EEA32-037C-E511-9870-002590596486.root'
+#options.inputFiles = '/store/mc/RunIISpring15FSPremix/SMS-T2tt_mStop-600-950_mLSP-1to450_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/MCRUN2_74_V9-v1/00000/00667B2C-6F9B-E511-978E-02163E013DDA.root'
 
 
 options.maxEvents = -1
@@ -61,9 +63,11 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
 )
 
 # MC theory systematic weights only saved for specific samples
-if 'TTZ' in options.inputFiles[0] or 'TTW' in options.inputFiles[0] or 'tZq' in options.inputFiles[0] :
+if 'TTZ' in options.inputFiles[0] or 'TTW' in options.inputFiles[0] or 'tZq' in options.inputFiles[0] or 'SMS' in options.inputFiles[0] :
     print 'Adding theory weights'
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
+    if 'SMS' in options.inputFiles[0] :
+        process.TestAnalyzer.EventInfo.lheEvtInfo = cms.InputTag('source')
 else : 
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
@@ -78,9 +82,26 @@ if '50ns' in options.inputFiles[0] :
 
 # Settings
 ISDATA = False
+ISFASTSIM = False
+ISMINIAODV1 = False
 runMetCorrAndUnc = True
 updateJECs = True
 JECUNCFILE = 'data/JEC/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt'
+
+# FastSim samples
+if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in options.inputFiles[0] :
+    print 'Running on FastSim'
+    ISFASTSIM = True
+    JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
+    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','HLT')
+    process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
+    if 'RunIISpring15FSPremix' in options.inputFiles[0] :
+        print 'Running on miniAODv1'
+        ISMINIAODV1 = True
+        process.TestAnalyzer.EventInfo.pileupSummaryInfos = cms.InputTag('addPileupInfo')
+    if 'SMS' in options.inputFiles[0] :
+        print 'SMS: will save masses'
+        process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
 
 # Specific to data
 if '/store/data' in options.inputFiles[0] :
@@ -174,24 +195,25 @@ if not 'Photon' in options.inputFiles[0] and not 'GJets' in options.inputFiles[0
 
 #==============================================================================================================================#
 # HCAL Noise Filter 
-process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
-process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
-process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(False) 
-
-process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
-   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
-   reverseDecision = cms.bool(False)
-)
-process.ApplyBaselineHBHEIsoNoiseFilter = cms.EDFilter('BooleanFlagFilter',
-   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHEIsoNoiseFilterResult'),
-   reverseDecision = cms.bool(False)
-)
-process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFilter.clone(
-   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Loose'),
-)
-process.ApplyBaselineHBHENoiseFilterRun2Tight = process.ApplyBaselineHBHENoiseFilter.clone(
-   inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Tight'),
-)
+if not ISFASTSIM :
+    process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+    process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
+    process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(False) 
+    
+    process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+       reverseDecision = cms.bool(False)
+    )
+    process.ApplyBaselineHBHEIsoNoiseFilter = cms.EDFilter('BooleanFlagFilter',
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHEIsoNoiseFilterResult'),
+       reverseDecision = cms.bool(False)
+    )
+    process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFilter.clone(
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Loose'),
+    )
+    process.ApplyBaselineHBHENoiseFilterRun2Tight = process.ApplyBaselineHBHENoiseFilter.clone(
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResultRun2Tight'),
+    )
 
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
@@ -212,7 +234,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=False  #use external JECs (sqlite file)
+usePrivateSQlite=ISFASTSIM  #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections.
 
@@ -229,6 +251,8 @@ if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
     era="Summer15_25nsV6_DATA" if ISDATA else "Summer15_25nsV6_MC"
+    if ISFASTSIM :
+        era="MCRUN2_74_V9"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
     print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
@@ -260,7 +284,14 @@ if runMetCorrAndUnc :
 
     # Default configuration for miniAOD reprocessing, change the isData flag to run on data
     # For a full met computation, remove the pfCandColl input
-    runMetCorAndUncFromMiniAOD(process,
+    if ISMINIAODV1 :
+        runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               jecUncFile=JECUNCFILE,
+                               repro74X=True
+                               )
+    else :
+        runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
                                jecUncFile=JECUNCFILE
                                )
@@ -269,7 +300,17 @@ if runMetCorrAndUnc :
     process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETs','','run')
 
     if not useHFCandidates:
-        runMetCorAndUncFromMiniAOD(process,
+        if ISMINIAODV1 :
+            runMetCorAndUncFromMiniAOD(process,
+                                   isData=runOnData,
+                                   jecUncFile=JECUNCFILE,
+                                   pfCandColl=cms.InputTag("noHFCands"),
+                                   postfix="NoHF",
+                                   repro74X=True,
+                                   reclusterJets=True
+                                   )
+        else :
+            runMetCorAndUncFromMiniAOD(process,
                                    isData=runOnData,
                                    jecUncFile=JECUNCFILE,
                                    pfCandColl=cms.InputTag("noHFCands"),
@@ -306,6 +347,8 @@ process.met131TeVFilter.isData = process.TestAnalyzer.isData
 process.met131TeVFilter.EventInfo.mets = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
 process.met131TeVFilter.EventInfo.metsOOB = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
 process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', processName=cms.InputTag.skipCurrentProcess())
+if ISMINIAODV1 :
+    process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF','','run')
 
 #==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
@@ -362,28 +405,30 @@ if updateJECs:
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
 
-    process.p = cms.Path(process.met131TeVFilter *
-                         process.patJetCorrFactorsReapplyJEC *
-                         process.patJetCorrFactorsReapplyJECAK8 *
-                         process.patJetsReapplyJEC        *
-                         process.patJetsAK8ReapplyJEC     *
-                         process.ak4PatAssocSeq           * 
-                         process.ca8JetsSeq               *
-                         process.egmGsfElectronIDSequence * 
-                         process.egmPhotonIDSequence      *
-                         process.QGTagger                 *
-                         process.HBHENoiseFilterResultProducer *
-                         process.TestAnalyzer)
+    process.seq = cms.Sequence(process.patJetCorrFactorsReapplyJEC *
+                               process.patJetCorrFactorsReapplyJEC *
+                               process.patJetCorrFactorsReapplyJECAK8 *
+                               process.patJetsReapplyJEC        *
+                               process.patJetsAK8ReapplyJEC     *
+                               process.ak4PatAssocSeq           * 
+                               process.met131TeVFilter          *
+                               process.ca8JetsSeq               *
+                               process.egmGsfElectronIDSequence * 
+                               process.egmPhotonIDSequence)
+
 
 else :
-    process.p = cms.Path(process.met131TeVFilter *
-                         process.ak4PatAssocSeq           * 
-                         process.ca8JetsSeq               *
-                         process.egmGsfElectronIDSequence * 
-                         process.egmPhotonIDSequence      *
-                         process.QGTagger                 *
-                         process.HBHENoiseFilterResultProducer *
-                         process.TestAnalyzer)
+    process.seq = cms.Sequence(process.met131TeVFilter *
+                               process.ak4PatAssocSeq  * 
+                               process.ca8JetsSeq      *
+                               process.egmGsfElectronIDSequence * 
+                               process.egmPhotonIDSequence *
+                               process.QGTagger)
+
+if ISFASTSIM :
+    process.p = cms.Path(process.seq * process.TestAnalyzer)
+else :
+    process.p = cms.Path(process.seq * process.HBHENoiseFilterResultProducer * process.TestAnalyzer)
 
 if ISDATA :
     process.p.remove(process.ak4PatAssocSeq)

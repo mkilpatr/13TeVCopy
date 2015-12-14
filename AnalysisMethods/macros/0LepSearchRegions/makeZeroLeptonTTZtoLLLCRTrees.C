@@ -238,7 +238,6 @@ void makeZeroLeptonTTZtoLLLCRTrees(TString sname = "dyjetstoll_cr",
                                  const int fileindex = 0,
                                  const bool isMC = true,
                                  const TString fname = "/store/user/vdutta/13TeV/150715/74X/merged/dyjetstoll_1_ntuple_wgtxsec.root",
-                                 const double xsec = 1.0,
                                  const TString outputdir = "trees",
                                  const TString fileprefix = "root://eoscms//eos/cms",
                                  const TString json="")
@@ -250,9 +249,6 @@ void makeZeroLeptonTTZtoLLLCRTrees(TString sname = "dyjetstoll_cr",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
   gSystem->mkdir(outputdir,true);
