@@ -198,7 +198,7 @@ bool LeptonId::passElectronId(ElectronF *ele, unsigned int WP)
 {
 
   if(WP == VETO) { 
-    return ele->isvetoelectron();
+    return (ele->isvetoid() && ele->miniiso()<0.2);
   }
   else if(WP == LOOSE) {
     return (ele->islooseid() && ele->miniiso()<0.2);

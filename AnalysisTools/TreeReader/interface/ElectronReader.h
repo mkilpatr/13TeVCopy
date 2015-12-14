@@ -49,6 +49,7 @@ namespace ucsbsusy {
       std::vector<float> *	mvaidnontrig;
       std::vector<float> *	mvaidtrig;
       std::vector<bool>  *	isveto;
+      std::vector<bool>  *	isvetoid;
       std::vector<bool>  *	isloose;
       std::vector<bool>  *	ismedium;
       std::vector<bool>  *      ismediumid;

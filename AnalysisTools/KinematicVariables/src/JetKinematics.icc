@@ -97,6 +97,40 @@ double JetKinematics::htAlongHtAway(const MET& met, const std::vector<Jet*>& jet
 }
 
 //_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::htAlong(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
+{
+  double htAlong = 0;
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    const double            dPhi            = PhysicsUtilities::absDeltaPhi(*jet,met);
+
+    if (dPhi < TMath::PiOver2()) {
+      htAlong              += jet->pt();
+    }
+  }
+
+  return htAlong;
+}
+
+//_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::htAway(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
+{
+  double htAway = 0;
+  for(const auto* jet : jets ){
+    if (!passCuts(*jet,minPT,maxEta)) continue;
+    const double            dPhi            = PhysicsUtilities::absDeltaPhi(*jet,met);
+
+    if (dPhi >= TMath::PiOver2()) {
+      htAway              += jet->pt();
+    }
+  }
+
+  return htAway;
+}
+
+//_____________________________________________________________________________
 template<typename Jet>
 double JetKinematics::ptRMS(const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {

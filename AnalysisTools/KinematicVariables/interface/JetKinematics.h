@@ -42,6 +42,12 @@ namespace JetKinematics {
   template<typename MET,typename Jet>
   double htAlongHtAway(const MET& met, const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
 
+  template<typename MET,typename Jet>
+  double htAlong(const MET& met, const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double htAway(const MET& met, const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
+
   template<typename Jet>
   double ptRMS(const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
 
