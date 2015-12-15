@@ -322,7 +322,7 @@ void make8TeVbkgestTrees( TString sname            = "ttbar_0" // sample name
   //cfgSet::setJSONFile("/uscms/home/mullin/nobackup/stuff2015/CMSSW_7_4_7/src/data/JSON/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet pars = cfgSet::ol_search_set;
+  cfgSet::ConfigSet pars = cfgSet::sl_search_set;
   pars.jets.cleanJetsvVetoedLeptons = true;
 
   string treeName = isMC ? "Events" : "TestAnalyzer/Events";

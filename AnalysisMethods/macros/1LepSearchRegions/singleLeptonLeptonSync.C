@@ -435,7 +435,7 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
 
 // load one lepton default configs
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
   // Declare analyzer

@@ -547,7 +547,7 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
   cfgSet::ConfigSet qgv_search_set = cfgSet::zl_search_set;;
   //qgv_search_set.jets            = cfgSet::zl_search_jets;
-  qgv_search_set.selectedLeptons = cfgSet::ol_sel_leptons;
+  qgv_search_set.selectedLeptons = cfgSet::zl_ctr_leptons;
   qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
   //qgv_search_set.corrections     = cfgSet::standardCorrections;
   qgv_search_set.corrections.eventCorrectionFile = TString::Format("%s/src/data/corrections/eventCorr_allData_600.root",getenv("CMSSW_BASE"));

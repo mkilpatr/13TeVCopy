@@ -10,7 +10,7 @@ cfgSet::JetConfig cfgSet::zl_search_jets("zl_search_jets");
 cfgSet::JetConfig cfgSet::zl_photon_jets("zl_photon_jets");
 cfgSet::JetConfig cfgSet::zl_lepton_jets("zl_lepton_jets");
 cfgSet::JetConfig cfgSet::zl_dilepton_jets("zl_dilepton_jets");
-cfgSet::JetConfig cfgSet::ol_search_jets("ol_search_jets");
+cfgSet::JetConfig cfgSet::sl_search_jets("sl_search_jets");
 
 
 void cfgSet::loadDefaultJetConfigurations() {
@@ -39,20 +39,22 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_dilepton_jets = zl_search_jets;
   zl_dilepton_jets.cleanJetsvSelectedLeptons = true;
 
-  ol_search_jets = zl_search_jets;
-  ol_search_jets.cleanJetsvSelectedLeptons = true;
-  ol_search_jets.cleanJetsvVetoedLeptons   = false;
-  ol_search_jets.minPt                     = 30;
-  ol_search_jets.minBJetPt                 = 30;
-  ol_search_jets.applyJetID                = true;
-  ol_search_jets.cleanJetsMaxDR            = 0.4;
+  sl_search_jets = zl_search_jets;
+  sl_search_jets.cleanJetsvSelectedLeptons = true;
+  sl_search_jets.cleanJetsvVetoedLeptons   = false;
+  sl_search_jets.minPt                     = 30;
+  sl_search_jets.minBJetPt                 = 30;
+  sl_search_jets.applyJetID                = true;
+  sl_search_jets.cleanJetsMaxDR            = 0.4;
 }
 
 cfgSet::LeptonConfig cfgSet::zl_sel_leptons ("zl_sel_leptons") ;
-cfgSet::LeptonConfig cfgSet::zl_veto_leptons("zl_veto_leptons");
-cfgSet::LeptonConfig cfgSet::zl_cr_leptons  ("zl_cr_leptons")  ;
-cfgSet::LeptonConfig cfgSet::ol_sel_leptons ("ol_sel_leptons") ;
-cfgSet::LeptonConfig cfgSet::ol_veto_leptons("ol_veto_leptons");
+cfgSet::LeptonConfig cfgSet::zl_ctr_leptons  ("zl_ctr_leptons")  ;
+cfgSet::LeptonConfig cfgSet::zl_ctr_sec_leptons  ("zl_ctr_sec_leptons")  ;
+cfgSet::LeptonConfig cfgSet::zl_ctr_diLep_leptons("zl_ctr_diLep_leptons")  ;
+
+cfgSet::LeptonConfig cfgSet::sl_sel_leptons ("sl_sel_leptons") ;
+cfgSet::LeptonConfig cfgSet::sl_sel_sec_leptons("sl_sel_sec_leptons");
 
 void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.minEPt            = 5;
@@ -65,39 +67,44 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::ismt2vetomuon;
   zl_sel_leptons.setConfig();
 
-  zl_veto_leptons = zl_sel_leptons;
- // zl_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetoelectron;
- // zl_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
+  sl_sel_leptons = zl_sel_leptons;
+  sl_sel_leptons.minEPt            = 40;
+  sl_sel_leptons.maxEEta           = 2.1;
+  sl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
+  sl_sel_leptons.minMuPt           = 30;
+  sl_sel_leptons.maxMuEta          = 2.1;
+  sl_sel_leptons.maxMuD0           = 0.02;
+  sl_sel_leptons.maxMuDz           = 0.1;
+  sl_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
 
-  ol_sel_leptons = zl_sel_leptons;
-  ol_sel_leptons.minEPt            = 40;
-  ol_sel_leptons.maxEEta           = 2.1;
-  ol_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
-  ol_sel_leptons.minMuPt           = 30;
-  ol_sel_leptons.maxMuEta          = 2.1;
-  ol_sel_leptons.maxMuD0           = 0.02;
-  ol_sel_leptons.maxMuDz           = 0.1;
-  ol_sel_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
 
-  zl_cr_leptons = ol_sel_leptons;
-  zl_cr_leptons.minEPt             = 15;
-  zl_cr_leptons.minMuPt            = 10;
-  zl_cr_leptons.maxED0             = 0.02;
-  zl_cr_leptons.maxEDz             = 0.1;
 
-  ol_veto_leptons = zl_sel_leptons;
-  ol_veto_leptons.minEPt            = 5;
-  ol_veto_leptons.maxEEta           = 2.4;
-  ol_veto_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetopogelectron;
-  ol_veto_leptons.minMuPt           = 5;
-  ol_veto_leptons.maxMuEta          = 2.4;
-  ol_veto_leptons.maxMuD0           = 0.1;
-  ol_veto_leptons.maxMuDz           = 0.5;
-  ol_veto_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
+  sl_sel_sec_leptons = zl_sel_leptons;
+  sl_sel_sec_leptons.minEPt            = 5;
+  sl_sel_sec_leptons.maxEEta           = 2.4;
+  sl_sel_sec_leptons.selectedElectron  = &ucsbsusy::ElectronF::isvetopogelectron;
+  sl_sel_sec_leptons.minMuPt           = 5;
+  sl_sel_sec_leptons.maxMuEta          = 2.4;
+  sl_sel_sec_leptons.maxMuD0           = 0.1;
+  sl_sel_sec_leptons.maxMuDz           = 0.5;
+  sl_sel_sec_leptons.selectedMuon      = &ucsbsusy::MuonF::isvetomuon;
+
+  zl_ctr_leptons = sl_sel_leptons;
+  zl_ctr_leptons.minEPt            = 30.0;
+  zl_ctr_leptons.maxMuEta          = 2.4;
+
+  zl_ctr_sec_leptons = sl_sel_sec_leptons;
+
+  zl_ctr_diLep_leptons = sl_sel_leptons;
+  zl_ctr_diLep_leptons.minEPt             = 15;
+  zl_ctr_diLep_leptons.minMuPt            = 10;
+  zl_ctr_diLep_leptons.maxEEta = 2.5;
+  zl_ctr_diLep_leptons.maxEEta = 2.4;
+
 }
 
 cfgSet::TrackConfig cfgSet::zl_veto_tracks("zl_veto_tracks");
-cfgSet::TrackConfig cfgSet::ol_veto_tracks("ol_veto_tracks");
+cfgSet::TrackConfig cfgSet::sl_veto_tracks("sl_veto_tracks");
 
 void cfgSet::loadDefaultTrackConfigurations() {
   zl_veto_tracks.minPt     = 10;
@@ -107,15 +114,15 @@ void cfgSet::loadDefaultTrackConfigurations() {
   zl_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ismvavetotau;
   zl_veto_tracks.setConfig();
 
-  ol_veto_tracks = zl_veto_tracks;
-  ol_veto_tracks.minPt     = 5;
-  ol_veto_tracks.maxDz     = -1;
-  ol_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ismvavetotau;
-  ol_veto_tracks.setConfig();
+  sl_veto_tracks = zl_veto_tracks;
+  sl_veto_tracks.minPt     = 5;
+  sl_veto_tracks.maxDz     = -1;
+  sl_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ismvavetotau;
+  sl_veto_tracks.setConfig();
 }
 
 cfgSet::TauConfig cfgSet::zl_veto_taus("zl_veto_taus");
-cfgSet::TauConfig cfgSet::ol_veto_taus("ol_veto_taus");
+cfgSet::TauConfig cfgSet::sl_veto_taus("sl_veto_taus");
 
 void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.minPt      = 20;
@@ -125,8 +132,8 @@ void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.selected   = &ucsbsusy::TauF::ishpsvetotau;
   zl_veto_taus.setConfig();
 
-  ol_veto_taus = zl_veto_taus;
-  ol_veto_taus.setConfig();
+  sl_veto_taus = zl_veto_taus;
+  sl_veto_taus.setConfig();
 }
 
 cfgSet::PhotonConfig cfgSet::zl_sel_photons("zl_sel_photons");
@@ -173,7 +180,7 @@ cfgSet::ConfigSet cfgSet::zl_search_set;
 cfgSet::ConfigSet cfgSet::zl_lepton_set;
 cfgSet::ConfigSet cfgSet::zl_dilepton_set;
 cfgSet::ConfigSet cfgSet::zl_photon_set;
-cfgSet::ConfigSet cfgSet::ol_search_set;
+cfgSet::ConfigSet cfgSet::sl_search_set;
 
 
 void cfgSet::loadDefaultConfigurations() {
@@ -185,7 +192,7 @@ void cfgSet::loadDefaultConfigurations() {
   loadDefaultCorrections();
 
   zl_search_set.jets            = zl_search_jets;
-  zl_search_set.vetoedLeptons   = zl_veto_leptons;
+  zl_search_set.vetoedLeptons   = zl_sel_leptons;
   zl_search_set.selectedLeptons = zl_sel_leptons;
   zl_search_set.vetoedTracks    = zl_veto_tracks;
   zl_search_set.vetoedTaus      = zl_veto_taus;
@@ -199,24 +206,24 @@ void cfgSet::loadDefaultConfigurations() {
   zl_lepton_set.corrections     = standardCorrections;
 
   zl_dilepton_set.jets            = zl_dilepton_jets;
-  zl_dilepton_set.selectedLeptons = zl_cr_leptons;
+  zl_dilepton_set.selectedLeptons = zl_ctr_diLep_leptons;
   zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
   zl_dilepton_set.vetoedTaus      = zl_veto_taus;
   zl_dilepton_set.corrections     = standardCorrections;
 
   zl_photon_set.jets            = zl_photon_jets;
-  zl_photon_set.vetoedLeptons   = zl_veto_leptons;
+  zl_photon_set.vetoedLeptons   = zl_sel_leptons;
   zl_photon_set.vetoedTracks    = zl_veto_tracks;
   zl_photon_set.vetoedTaus      = zl_veto_taus;
   zl_photon_set.selectedPhotons = zl_sel_photons;
   zl_photon_set.corrections     = standardCorrections;
 
-  ol_search_set.jets            = ol_search_jets;
-  ol_search_set.selectedLeptons = ol_sel_leptons;
-  ol_search_set.vetoedLeptons   = ol_veto_leptons;
-  ol_search_set.vetoedTracks    = ol_veto_tracks;
-  ol_search_set.vetoedTaus      = ol_veto_taus;
-  ol_search_set.corrections     = standardCorrections;
+  sl_search_set.jets            = sl_search_jets;
+  sl_search_set.selectedLeptons = sl_sel_leptons;
+  sl_search_set.vetoedLeptons   = sl_sel_sec_leptons;
+  sl_search_set.vetoedTracks    = sl_veto_tracks;
+  sl_search_set.vetoedTaus      = sl_veto_taus;
+  sl_search_set.corrections     = standardCorrections;
 }
 
 void cfgSet::setJSONFile(const TString jsonfile) {
@@ -228,8 +235,8 @@ void cfgSet::setJSONFile(const TString jsonfile) {
   zl_dilepton_set.jsonProcessing = new JSONProcessing(jsonfile);
   zl_photon_set.jsonFile = jsonfile;
   zl_photon_set.jsonProcessing = new JSONProcessing(jsonfile);
-  ol_search_set.jsonFile = jsonfile;
-  ol_search_set.jsonProcessing = new JSONProcessing(jsonfile);
+  sl_search_set.jsonFile = jsonfile;
+  sl_search_set.jsonProcessing = new JSONProcessing(jsonfile);
 }
 
 

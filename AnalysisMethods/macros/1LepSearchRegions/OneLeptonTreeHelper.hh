@@ -19,7 +19,7 @@ using namespace ucsbsusy;
 cfgSet::ConfigSet pars1lep(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
-  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
   //cfg.jets.cleanJetsvVetoedLeptons = true;
   return cfg;
 
