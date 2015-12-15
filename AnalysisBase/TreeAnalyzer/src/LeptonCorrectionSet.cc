@@ -78,23 +78,31 @@ void TnPCorr::getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCo
   float annulus = lep->annulusactivity();
   if     (id==11 && elCorrType == NONE) {wt     = 1.0; return; }
   else if(id==13 && muCorrType == NONE) {vetoWt = 1.0; return; }
-  float sf    = 1.0;
-  float sfer  = 0.0;
-  float eff   = 1.0;
+  float sfid     = 1.0;
+  float sfiso    = 1.0;
+  float sfuncid  = 0.0;
+  float sfunciso = 0.0;
+  float eff      = 1.0;
   if(id==11){
-    sf   = getElIDValue(pt,eta) * getElIsoValue(pt,annulus);
-    sfer = getError(getElIDError(pt,eta), getElIsoError(pt,annulus));
-    eff  = getElMCEffValue(pt,annulus);
+    sfid     = getElIDValue(pt,eta);
+    sfiso    = getElIsoValue(pt,annulus);
+    sfuncid  = getElIDError(pt,eta);
+    sfunciso = getElIsoError(pt,annulus);
+    eff      = getElMCEffValue(pt,annulus);
   }
   else if(id==13) {
-    sf   = getMuIDValue(pt,eta) * getMuIsoValue(pt,annulus);
-    sfer = getError(getMuIDError(pt,eta), getMuIsoError(pt,annulus));
-    eff  = getMuMCEffValue(pt,annulus);
+    sfid     = getMuIDValue(pt,eta);
+    sfiso    = getMuIsoValue(pt,annulus);
+    sfuncid  = sfid *0.01;
+    sfunciso = sfiso*0.01;
+    eff      = getMuMCEffValue(pt,annulus);
   }
-  if     (id==11 && elCorrType == UP  ) sf += sfer;
-  else if(id==11 && elCorrType == DOWN) sf -= sfer;
-  else if(id==13 && muCorrType == UP  ) sf += sfer;
-  else if(id==13 && muCorrType == DOWN) sf -= sfer;
+  float sf  = sfid*sfiso;
+  float unc = getError(sfuncid,sfunciso);
+  if     (id==11 && elCorrType == UP  ) sf += unc;
+  else if(id==11 && elCorrType == DOWN) sf -= unc;
+  else if(id==13 && muCorrType == UP  ) sf += unc;
+  else if(id==13 && muCorrType == DOWN) sf -= unc;
   wt     = sf;
   vetoWt = (1.0-eff*sf)/(1.0-eff);
 }
