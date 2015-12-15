@@ -37,6 +37,7 @@ public :
   void refresh();
 
   void pushToTree(); //push changes made to the momentum back to the tree
+  void addRecoJet(const RecoJetF * inJet); //add a reco jet to the collection
 public:
   // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
   std::vector<float>* jetpt_;
@@ -83,6 +84,9 @@ public:
   //the actual jet collection
   RecoJetFCollection recoJets;
   GenJetFCollection  genJets;
+
+private:
+  void addRecoJetToObjectList(const int iJ);
 };
 
 }

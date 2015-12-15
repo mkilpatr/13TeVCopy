@@ -19,39 +19,39 @@ const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
 
 //--------------------------------------------------------------------------------------------------
 JetReader::JetReader() : BaseReader(){
-  jetpt_       = new vector<float>;
-  jeteta_      = new vector<float>;
-  jetphi_      = new vector<float>;
-  jetmass_     = new vector<float>;
-  jetptraw_    = new vector<float>;
-  jetpuId_     = new vector<float>;
-  jetlooseId_  = new vector<bool >;
-  jettightId_  = new vector<bool >;
-  jetcsv_      = new vector<float>;
-  jetarea_     = new vector<float>;
-  jetgenindex_ = new vector<int16  >;
+  jetpt_            = new vector<float>;
+  jeteta_           = new vector<float>;
+  jetphi_           = new vector<float>;
+  jetmass_          = new vector<float>;
+  jetptraw_         = new vector<float>;
+  jetpuId_          = new vector<float>;
+  jetlooseId_       = new vector<bool >;
+  jettightId_       = new vector<bool >;
+  jetcsv_           = new vector<float>;
+  jetarea_          = new vector<float>;
+  jetgenindex_      = new vector<int16  >;
   jetuncertainty_   = new vector<float>;
-  genjetpt_    = new vector<float>;
-  genjeteta_   = new vector<float>;
-  genjetphi_   = new vector<float>;
-  genjetmass_  = new vector<float>;
-  genjetflavor_   = new vector<size8>;
-  jetbetaStar_= new vector<float>;
-  jetqgl_     = new vector<float>;
-  jetptD_     = new vector<float>;
-  jetaxis1_   = new vector<float>;
-  jetaxis2_   = new vector<float>;
-  jetMult_    = new vector<size16  >;
-  jetcharge_  = new vector<float>;
-  jetpullrap_ = new vector<float>;
-  jetpullphi_ = new vector<float>;
-  genjetptD_  = new vector<float>;
-  genjetaxis1_= new vector<float>;
-  genjetaxis2_= new vector<float>;
-  genjetMult_ = new vector<size16  >;
-  genjetcharge_  = new vector<float>;
-  genjetpullrap_ = new vector<float>;
-  genjetpullphi_ = new vector<float>;
+  genjetpt_         = new vector<float>;
+  genjeteta_        = new vector<float>;
+  genjetphi_        = new vector<float>;
+  genjetmass_       = new vector<float>;
+  genjetflavor_     = new vector<size8>;
+  jetbetaStar_      = new vector<float>;
+  jetqgl_           = new vector<float>;
+  jetptD_           = new vector<float>;
+  jetaxis1_         = new vector<float>;
+  jetaxis2_         = new vector<float>;
+  jetMult_          = new vector<size16  >;
+  jetcharge_        = new vector<float>;
+  jetpullrap_       = new vector<float>;
+  jetpullphi_       = new vector<float>;
+  genjetptD_        = new vector<float>;
+  genjetaxis1_      = new vector<float>;
+  genjetaxis2_      = new vector<float>;
+  genjetMult_       = new vector<size16  >;
+  genjetcharge_     = new vector<float>;
+  genjetpullrap_    = new vector<float>;
+  genjetpullphi_    = new vector<float>;
   genAssocPrtIndex_ = new std::vector<size16>;
   genAssocJetIndex_ = new std::vector<size16>;
   genAssocCont_     = new std::vector<int8>  ;
@@ -138,15 +138,51 @@ void JetReader::refresh(){
     recoJets.clear();
     recoJets.reserve(jetpt_->size());
     for(unsigned int iJ = 0; iJ < jetpt_->size(); ++iJ){
-     GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
-      recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
-                                  (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
-                                  (*jetlooseId_)[iJ], matchedGen);
+      addRecoJetToObjectList(iJ);
     }
     std::sort(recoJets.begin(),recoJets.end(),PhysicsUtilities::greaterPT<RecoJetF>());
   }
   if(options_ & LOADGEN)
     std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
+
+}
+//--------------------------------------------------------------------------------------------------
+void JetReader::addRecoJetToObjectList(const int iJ){
+
+  GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
+   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
+                               (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
+                               (*jetlooseId_)[iJ], matchedGen);
+
+}
+//--------------------------------------------------------------------------------------------------
+void JetReader::addRecoJet(const RecoJetF * inJet){
+  //first get the index...we will add it the end of the list
+  int index = jetpt_->size();
+  //THen add all to all of the vectors
+  jetpt_         ->push_back(inJet->pt());
+  jeteta_        ->push_back(inJet->eta());
+  jetphi_        ->push_back(inJet->phi());
+  jetmass_       ->push_back(inJet->mass());
+  jetptraw_      ->push_back(inJet->pt_raw());
+  jetpuId_       ->push_back(1);
+  jetlooseId_    ->push_back(inJet->looseid());
+  jettightId_    ->push_back(1);
+  jetcsv_        ->push_back(inJet->csv());
+  jetarea_       ->push_back(0);
+  jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );
+  jetuncertainty_->push_back(inJet->uncertainty());
+  jetbetaStar_   ->push_back(0);
+  jetqgl_        ->push_back(-1);
+  jetptD_        ->push_back(0);
+  jetaxis1_      ->push_back(0);
+  jetaxis2_      ->push_back(0);
+  jetMult_       ->push_back(0);
+  jetcharge_     ->push_back(0);
+  jetpullrap_    ->push_back(0);
+  jetpullphi_    ->push_back(0);
+
+  addRecoJetToObjectList(index);
 
 }
 

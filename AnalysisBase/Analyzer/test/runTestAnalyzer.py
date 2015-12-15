@@ -92,6 +92,7 @@ JECUNCFILE = 'data/JEC/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt'
 if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in options.inputFiles[0] :
     print 'Running on FastSim'
     ISFASTSIM = True
+    JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     if 'RunIISpring15FSPremix' in options.inputFiles[0] :
@@ -233,7 +234,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=False  #use external JECs (sqlite file)
+usePrivateSQlite=ISFASTSIM  #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections.
 
@@ -250,6 +251,8 @@ if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
     era="Summer15_25nsV6_DATA" if ISDATA else "Summer15_25nsV6_MC"
+    if ISFASTSIM :
+        era="MCRUN2_74_V9"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
     print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,

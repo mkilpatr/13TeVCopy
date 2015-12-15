@@ -120,20 +120,20 @@ void getTrend(TFile* iF){
 #endif
 
 
-void GetJetRes(const TString inFile="qcd_jetRes.root", const TString treeName = "Events", const TString outFile = "resOut.root")
+void GetJetRes(const TString inFile="jetResSkim_orig.root", const TString treeName = "Events", const TString outFile = "resCoreOut.root")
 {
-//  TFile * oF = new TFile(outFile,"recreate");
+  TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();
-//  TFile * mf = new TFile(inFile,"read");
-//  TTree * mt =0;
-//  mf->GetObject(treeName,mt);
+  TFile * mf = new TFile(inFile,"read");
+  TTree * mt =0;
+  mf->GetObject(treeName,mt);
 //
-//  getRes(mt,oF);
+  getRes(mt,oF);
 
-  TFile * of = new TFile(outFile,"read");
-  if(of){
-    getTrend(of);
-  }
+//  TFile * of = new TFile(outFile,"read");
+//  if(of){
+//    getTrend(of);
+//  }
 
 //  TFile * f = new TFile("ak4JetResTrends.root","read");
 //  const QuickRefold::TF1Container * a;

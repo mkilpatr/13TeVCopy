@@ -107,8 +107,8 @@ using namespace std;
       cut = TString::Format("genjetpt >= %f && genjetrank <= 1 && %s",jetPTs[iP],FLVS[iF].Data() );
     }
 //    TString weight = "puWeight*smearWeight";
-//    TString weight = "puWeight";
-    TString weight = "1.0";
+    TString weight = "puWeight";
+//    TString weight = "1.0";
     TH1F * hD  = getHistogram(tree,resPlot,iF == 0 ? "light" : "b",cut,0,&weight);
     if(hD == 0) continue;
 
@@ -175,7 +175,7 @@ using namespace std;
 #endif
 
 
-void GetJetResForTailSmear(const TString inFile="qcd_jetRes.root", const TString treeName = "Events", const TString outFile = "resOut.root")
+void GetJetResForTailSmear(const TString inFile="jetResSkim_lead2_orig.root", const TString treeName = "Events", const TString outFile = "resTailOut.root")
 {
   TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();
