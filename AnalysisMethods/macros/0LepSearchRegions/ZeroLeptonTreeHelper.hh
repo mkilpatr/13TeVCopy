@@ -100,7 +100,6 @@ struct TreeFiller {
   size i_ngoodgenmu;
   size i_ngoodgenele;
   size i_npromptgentau;
-  size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
   size i_nfjsd60   ;
@@ -286,7 +285,6 @@ struct TreeFiller {
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
     i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
     i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
-    i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_nfjsd60        = data->add<int>("","nfjsd60","I",0);
@@ -430,7 +428,7 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
-    data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nvetolep, ana->nSelLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
     for(auto i: ana->selectedLeptons){
@@ -439,7 +437,6 @@ struct TreeFiller {
     }
     data->fill<int  >(i_nvetomu, nVetoMu);
     data->fill<int  >(i_nvetolele, nVetoEle);
-    data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
 
     int ncttstd    = 0;
