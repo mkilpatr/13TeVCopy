@@ -22,30 +22,30 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.defaultCSV                = defaults::CSV_MEDIUM;
   zl_search_jets.applyJetID                = true;
   zl_search_jets.applyAdHocPUCorr          = false;
-  zl_search_jets.cleanJetsvSelectedLeptons = false;
-  zl_search_jets.cleanJetsvVetoedLeptons   = false;
-  zl_search_jets.cleanJetsvSelectedPhotons = false;
-  zl_search_jets.cleanJetsvVetoedTracks    = false;
+  zl_search_jets.cleanJetsvLeptons         = false;
+  zl_search_jets.cleanJetsvSecondaryLeptons= false;
+  zl_search_jets.cleanJetsvPhotons         = false;
+  zl_search_jets.cleanJetsvTracks          = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
   zl_search_jets.setConfig();
 
   zl_photon_jets = zl_search_jets;
-  zl_photon_jets.cleanJetsvSelectedPhotons = true;
+  zl_photon_jets.cleanJetsvPhotons = true;
 
   zl_lepton_jets = zl_search_jets;
-  zl_lepton_jets.cleanJetsvSelectedLeptons = false;
-  zl_lepton_jets.cleanJetsvVetoedTracks    = false;
+  zl_lepton_jets.cleanJetsvLeptons   = false;
+  zl_lepton_jets.cleanJetsvTracks    = false;
 
   zl_dilepton_jets = zl_search_jets;
-  zl_dilepton_jets.cleanJetsvSelectedLeptons = true;
+  zl_dilepton_jets.cleanJetsvLeptons = true;
 
   sl_search_jets = zl_search_jets;
-  sl_search_jets.cleanJetsvSelectedLeptons = true;
-  sl_search_jets.cleanJetsvVetoedLeptons   = false;
-  sl_search_jets.minPt                     = 30;
-  sl_search_jets.minBJetPt                 = 30;
-  sl_search_jets.applyJetID                = true;
-  sl_search_jets.cleanJetsMaxDR            = 0.4;
+  sl_search_jets.cleanJetsvLeptons = true;
+  sl_search_jets.cleanJetsvSecondaryLeptons   = false;
+  sl_search_jets.minPt                        = 30;
+  sl_search_jets.minBJetPt                    = 30;
+  sl_search_jets.applyJetID                   = true;
+  sl_search_jets.cleanJetsMaxDR               = 0.4;
 }
 
 cfgSet::LeptonConfig cfgSet::zl_sel_leptons ("zl_sel_leptons") ;

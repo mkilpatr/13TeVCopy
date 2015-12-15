@@ -558,8 +558,8 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   qgv_search_set.jets.maxEta =  5.0;
   qgv_search_set.jets.minBJetPt  = 20.0;
   qgv_search_set.jets.maxBJetEta =  5.0;
-  qgv_search_set.jets.cleanJetsvSelectedPhotons = true;
-  qgv_search_set.jets.cleanJetsvSelectedLeptons = true;
+  qgv_search_set.jets.cleanJetsvPhotons = true;
+  qgv_search_set.jets.cleanJetsvLeptons = true;
 
   qgv_search_set.leptons.selectedMuon = (&MuonF::isgoodpogmuon);
   qgv_search_set.leptons.minMuPt  = 10.0;

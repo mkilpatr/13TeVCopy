@@ -93,7 +93,7 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
 
   cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_search_set;
-  pars.jets.cleanJetsvSelectedLeptons = true;
+  pars.jets.cleanJetsvLeptons = true;
   pars.leptons = cfgSet::zl_ctr_diLep_leptons;
 
 

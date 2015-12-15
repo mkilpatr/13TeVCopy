@@ -48,10 +48,10 @@ namespace cfgSet {
 
     bool  applyJetID               ;
     bool  applyAdHocPUCorr         ;
-    bool  cleanJetsvSelectedLeptons;
-    bool  cleanJetsvVetoedLeptons  ;
-    bool  cleanJetsvSelectedPhotons;
-    bool  cleanJetsvVetoedTracks   ;
+    bool  cleanJetsvLeptons;
+    bool  cleanJetsvSecondaryLeptons  ;
+    bool  cleanJetsvPhotons;
+    bool  cleanJetsvTracks   ;
     float cleanJetsMaxDR           ;
     signed int JES                 ;
 
@@ -64,10 +64,10 @@ namespace cfgSet {
       defaultCSV    (-1),
       applyJetID    (false),
       applyAdHocPUCorr         (false),
-      cleanJetsvSelectedLeptons(false),
-      cleanJetsvVetoedLeptons  (false),
-      cleanJetsvSelectedPhotons(false),
-      cleanJetsvVetoedTracks  (false),
+      cleanJetsvLeptons(false),
+      cleanJetsvSecondaryLeptons  (false),
+      cleanJetsvPhotons(false),
+      cleanJetsvTracks  (false),
       cleanJetsMaxDR           (-1),
       JES                      (0)
     {};
@@ -83,10 +83,10 @@ namespace cfgSet {
       os << "The JES variation is " << a.JES << std::endl;
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
-      if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
-      if(a.cleanJetsvVetoedLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
-      if(a.cleanJetsvSelectedPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
-      if(a.cleanJetsvVetoedTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
+      if(a.cleanJetsvLeptons) os << "Cleaning Jets vs. leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. leptons is disabled" << std::endl;
+      if(a.cleanJetsvSecondaryLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
+      if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
+      if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
       return os;
     };

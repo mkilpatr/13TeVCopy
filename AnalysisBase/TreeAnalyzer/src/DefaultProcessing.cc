@@ -128,7 +128,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
 
   vector<bool> vetoJet(allJets.size(),false);
 
-  if(conf.cleanJetsvSelectedLeptons) {
+  if(conf.cleanJetsvLeptons) {
     if(selectedLeptons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
 
@@ -141,7 +141,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
     }
   }
 
-  if(conf.cleanJetsvVetoedLeptons) {
+  if(conf.cleanJetsvSecondaryLeptons) {
     if(vetoedLeptons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
 
@@ -154,7 +154,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
     }
   }
 
-  if(conf.cleanJetsvSelectedPhotons) {
+  if(conf.cleanJetsvPhotons) {
     if(selectedPhotons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do cleaning but have not given a list to clean with!");
 
@@ -168,7 +168,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
   }
 
 
-  if(conf.cleanJetsvVetoedTracks) {
+  if(conf.cleanJetsvTracks) {
     if(vetoedTracks == 0)
       throw std::invalid_argument("config::selectJets(): You want to do track cleaning but have not given a track list to clean!");
 

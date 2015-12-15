@@ -62,7 +62,7 @@ void preselectionSkimmer_1Lep(string fileName,  string treeName = "TestAnalyzer/
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   cfg.jets.minPt = 20;
   cfg.jets.minBJetPt = 20;
-  cfg.jets.cleanJetsvVetoedLeptons = true;
+  cfg.jets.cleanJetsvSecondaryLeptons = true;
 
   //get the output name
   TString prefix(fileName);
