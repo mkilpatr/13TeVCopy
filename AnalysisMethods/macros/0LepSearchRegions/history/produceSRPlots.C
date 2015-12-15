@@ -216,8 +216,8 @@ public:
     ++eventPlots;
 
     eventPlots("incl__"   ,true);
-    eventPlots("nMuE__"   ,nVetoedLeptons == 0);
-    eventPlots("nMuETau__",nVetoedLeptons == 0 && nVetoedTaus == 0);
+    eventPlots("nMuE__"   ,nSecondaryLeptons == 0);
+    eventPlots("nMuETau__",nSecondaryLeptons == 0 && nVetoedTaus == 0);
 
     ++eventPlots;
     eventPlots("nJ20_geq4__",true);

@@ -43,7 +43,7 @@ public:
     bool passTrig = (triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ) || (triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
     if(!passTrig) return false;
 
-    if(nVetoedLeptons != 2) return false;
+    if(nSecondaryLeptons != 2) return false;
     if(nSelLeptons != 2) return false;
     if(selectedLeptons[0]->pt() < 20) return false;
     if(selectedLeptons[1]->pt() < (selectedLeptons[1]->iselectron() ? 15 : 10)  ) return false;

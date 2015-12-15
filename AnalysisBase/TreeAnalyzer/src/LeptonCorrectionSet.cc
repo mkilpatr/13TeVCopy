@@ -130,7 +130,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }
 
     bool ishighptmu = false, ishighptele = false;
-    for(auto* i : ana->vetoedLeptons) {
+    for(auto* i : ana->secondaryLeptons) {
       if(fabs(i->pdgid()) == 11) {
         nSelectedElectrons++;
         if(i->pt() > 20.0) ishighptele = true;

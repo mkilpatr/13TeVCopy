@@ -35,7 +35,7 @@ public:
   virtual bool fillEvent() {
 
     if(nJets < 2) return false;
-    if(nSelLeptons == 0 || nVetoedLeptons > 2) return false;
+    if(nSelLeptons == 0 || nSecondaryLeptons > 2) return false;
     return true;
   }
 

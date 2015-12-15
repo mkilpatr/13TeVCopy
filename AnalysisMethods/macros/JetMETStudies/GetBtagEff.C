@@ -461,8 +461,8 @@ void getUnc()
 //    TString WGT[] = {"weight*puWeight*btagWeight*lepvetoweight * ((nvetolep==0 && nvetohpstaus==0) || (ismc && (ngoodgenele>0 || ngoodgenmu>0 || npromptgentau>0)))",
 //                     "weight*puWeight*btagWeight*lepselweight * (nvetolep>0 && absdphilepw<1)",""};
 
-    TString WGT[] = {"weight*btagWeight * (nsellep==0 && nvetohpstaus==0)",
-                     "weight*btagWeight * (nsellep>0 && mtlepmet<100)",""};
+    TString WGT[] = {"weight*btagWeight * (nvetolep==0 && nvetohpstaus==0)",
+                     "weight*btagWeight * (nvetolep>0 && mtlepmet<100)",""};
 
     TString SEL = "(passcscflt) && (passeebadscflt) && (passhbheflt) && (met>250 && j1pt>75 && j2pt>75 && njets>=5 && nlbjets>=2 && nbjets>=1 && dphij12met>1 && dphij3met>0.5 && mtcsv12met>175)";
 

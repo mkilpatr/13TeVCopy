@@ -161,7 +161,7 @@ public:
 
     met_      = met->pt();
     nvetotau_ = nVetoHPSTaus;
-    nvetolep_ = nVetoedLeptons;
+    nvetolep_ = nSecondaryLeptons;
     nselelep_ = nSelLeptons;
     njets_    = int(jets.size());
     nbjets_   = int(bJets.size());
@@ -211,8 +211,8 @@ public:
     dphij2met_  = fabs(PhysicsUtilities::deltaPhi(*jets[1], *met));
     dphij12met_ = min(dphij1met_,dphij2met_);
 
-    if(vetoedLeptons.size()>=2) {
-      auto lep2 = vetoedLeptons[1];
+    if(secondaryLeptons.size()>=2) {
+      auto lep2 = secondaryLeptons[1];
       lep2pt_   = lep2->pt();
       lep2eta_  = lep2->eta();
       dilepinvmass_ = (lep1->p4() + lep2->p4()).mass();

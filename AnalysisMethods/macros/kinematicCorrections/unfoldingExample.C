@@ -51,7 +51,7 @@ public:
     bool passTrig = isMC() ? triggerflag & kHLT_IsoTkMu24_eta2p1_v1 :  triggerflag & kHLT_IsoTkMu24_eta2p1_v2;
     if(!passTrig) return false;
     //leptons
-    if(nSelLeptons != 1 || nVetoedLeptons != 1) return false;
+    if(nSelLeptons != 1 || nSecondaryLeptons != 1) return false;
     if(selectedLeptons[0]->iselectron()) return false;
     if(nBJets < 2) return false;
     if(jets[0]->pt() < 60) return false;

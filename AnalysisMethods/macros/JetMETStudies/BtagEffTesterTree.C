@@ -77,7 +77,7 @@ public:
     if(nJets < 5) passBaseline = false;
     if(nBJets < 1) passBaseline = false;
     if(nVetoedTracks > 0) passBaseline = false;
-    if(nVetoedLeptons > 0) passBaseline = false;
+    if(nSecondaryLeptons > 0) passBaseline = false;
 
     float dphij1met = 0.0, dphij2met = 0.0, dphij12met = 0.0, dphij3met = 0.0;
     if(jets.size() > 0) {

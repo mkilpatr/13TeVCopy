@@ -179,7 +179,7 @@ void Analyzer::runEvent()
   float wgt = evtInfoReader.weight;
   ScaleFactor = wgt;
 
-  if(nVetoedLeptons > 1) return; // no more than 1 lep passing veto
+  if(nSecondaryLeptons > 1) return; // no more than 1 lep passing veto
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
     
  lep1eta = selectedLeptons[0]->eta();

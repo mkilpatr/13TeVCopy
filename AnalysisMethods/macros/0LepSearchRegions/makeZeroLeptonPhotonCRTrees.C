@@ -79,14 +79,14 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       metNoHF->setP4(metNoHF->p4() + pho->p4());
       // clean vetoedLeptons vs recoPhoton
       double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDRDeref(*pho,vetoedLeptons,nearDR,0.4,-1,0,vetoedLeptons.size());
+      int near = PhysicsUtilities::findNearestDRDeref(*pho,secondaryLeptons,nearDR,0.4,-1,0,secondaryLeptons.size());
       if(near >= 0){
         vector<LeptonF*> tmpLeptons;
-        for (int iL = 0; iL < vetoedLeptons.size(); ++iL) {
-          if (iL != near) tmpLeptons.push_back(vetoedLeptons.at(iL));
+        for (int iL = 0; iL < secondaryLeptons.size(); ++iL) {
+          if (iL != near) tmpLeptons.push_back(secondaryLeptons.at(iL));
         }
-        vetoedLeptons = tmpLeptons;
-        nVetoedLeptons = vetoedLeptons.size();
+        secondaryLeptons = tmpLeptons;
+        nSecondaryLeptons = secondaryLeptons.size();
       }
       // clean vetoedTracks vs recoPhoton
       nearDR = 0;

@@ -21,9 +21,9 @@ public:
   virtual bool fillEvent() {
 
     if(nSelLeptons < 1) return false;
-    if(nVetoedLeptons != 2) return false;
-    if(vetoedLeptons[0]->pt() < 20) return false;
-    if(vetoedLeptons[1]->pt() < (vetoedLeptons[1]->iselectron() ? 15 : 10)  ) return false;
+    if(nSecondaryLeptons != 2) return false;
+    if(secondaryLeptons[0]->pt() < 20) return false;
+    if(secondaryLeptons[1]->pt() < (secondaryLeptons[1]->iselectron() ? 15 : 10)  ) return false;
 
     return true;
   }

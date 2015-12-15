@@ -45,7 +45,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nPU               (0),
     rho               (0),
     nSelLeptons       (0),
-    nVetoedLeptons    (0),
+    nSecondaryLeptons    (0),
     nVetoedTracks     (0),
     nJets             (0),
     nBJets            (0),
@@ -330,7 +330,7 @@ void BaseTreeAnalyzer::processVariables()
 
   allLeptons.clear();
   selectedLeptons.clear();
-  vetoedLeptons.clear();
+  secondaryLeptons.clear();
   if(muonReader.isLoaded() || electronReader.isLoaded()){
     allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
     if(electronReader.isLoaded())
@@ -345,10 +345,10 @@ void BaseTreeAnalyzer::processVariables()
       cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.leptons);
 
     if(configSet.secondaryLeptons.isConfig())
-      cfgSet::selectLeptons(vetoedLeptons, allLeptons, configSet.secondaryLeptons);
+      cfgSet::selectLeptons(secondaryLeptons, allLeptons, configSet.secondaryLeptons);
   }
   nSelLeptons = selectedLeptons.size();
-  nVetoedLeptons = vetoedLeptons.size();
+  nSecondaryLeptons = secondaryLeptons.size();
 
   vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
@@ -368,7 +368,7 @@ void BaseTreeAnalyzer::processVariables()
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
     if(configSet.jets.JES) jetCorrector.shiftJES(defaultJets->recoJets, met);
-    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
+    cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&secondaryLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();

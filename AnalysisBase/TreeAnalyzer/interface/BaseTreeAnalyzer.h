@@ -147,7 +147,7 @@ public:
     float nPU;
     float rho;
     int   nSelLeptons;
-    int   nVetoedLeptons;
+    int   nSecondaryLeptons;
     int   nVetoedTracks;
     int   nJets;
     int   nBJets;
@@ -163,7 +163,7 @@ public:
     bool       goodvertex ;
     std::vector<LeptonF*>        allLeptons        ;
     std::vector<LeptonF*>        selectedLeptons   ;
-    std::vector<LeptonF*>        vetoedLeptons     ;
+    std::vector<LeptonF*>        secondaryLeptons  ;
     std::vector<PFCandidateF*>   vetoedTracks      ;
     std::vector<TauF*>           vetoedTaus        ;
     std::vector<PhotonF*>        selectedPhotons   ;
