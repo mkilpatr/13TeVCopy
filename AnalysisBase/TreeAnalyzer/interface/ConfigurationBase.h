@@ -321,21 +321,21 @@ namespace cfgSet {
   //The collection of default configs
   struct ConfigSet{
     JetConfig       jets           ;
-    LeptonConfig    selectedLeptons;
-    LeptonConfig    vetoedLeptons  ;
-    TrackConfig     vetoedTracks   ;
-    TauConfig       vetoedTaus     ;
-    PhotonConfig    selectedPhotons;
+    LeptonConfig    leptons;
+    LeptonConfig    secondaryLeptons  ;
+    TrackConfig     tracks   ;
+    TauConfig       taus     ;
+    PhotonConfig    photons;
     CorrectionConfig corrections    ;
     TString         jsonFile       ;
     JSONProcessing* jsonProcessing ;
     ConfigSet() :
       jets            (),
-      selectedLeptons (),
-      vetoedLeptons   (),
-      vetoedTracks    (),
-      vetoedTaus      (),
-      selectedPhotons (),
+      leptons (),
+      secondaryLeptons   (),
+      tracks    (),
+      taus      (),
+      photons (),
       corrections     (),
       jsonFile(""),
       jsonProcessing(0)

@@ -41,10 +41,10 @@ void DiLeptonSkimmer(string fileName,  string treeName = "TestAnalyzer/Events", 
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
-  cfg.selectedLeptons.minMuPt  = 10;
-  cfg.selectedLeptons.maxMuEta = 2.4;
-  cfg.selectedLeptons.minEPt  = 10;
-  cfg.selectedLeptons.maxEEta = 2.4;
+  cfg.leptons.minMuPt  = 10;
+  cfg.leptons.maxMuEta = 2.4;
+  cfg.leptons.minEPt  = 10;
+  cfg.leptons.maxEEta = 2.4;
 
   //get the output name
   TString prefix(fileName);

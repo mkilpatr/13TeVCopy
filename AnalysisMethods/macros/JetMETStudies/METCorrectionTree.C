@@ -194,10 +194,10 @@ void METCorrectionTree(string fileName,  string treeName = "Events", string outP
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile("/home/nmccoll/test/CMSSW_7_4_7/src/data/JSON/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
-  cfg.selectedLeptons.minMuPt  = 10;
-  cfg.selectedLeptons.maxMuEta = 2.4;
-  cfg.selectedLeptons.minEPt  = 10;
-  cfg.selectedLeptons.maxEEta = 2.4;
+  cfg.leptons.minMuPt  = 10;
+  cfg.leptons.maxMuEta = 2.4;
+  cfg.leptons.minEPt  = 10;
+  cfg.leptons.maxEEta = 2.4;
   cfg.jets.minPt = 20;
   cfg.jets.maxEta= 5;
   cfg.jets.minBJetPt = 20;

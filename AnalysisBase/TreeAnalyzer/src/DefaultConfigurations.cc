@@ -192,37 +192,37 @@ void cfgSet::loadDefaultConfigurations() {
   loadDefaultCorrections();
 
   zl_search_set.jets            = zl_search_jets;
-  zl_search_set.vetoedLeptons   = zl_sel_leptons;
-  zl_search_set.selectedLeptons = zl_sel_leptons;
-  zl_search_set.vetoedTracks    = zl_veto_tracks;
-  zl_search_set.vetoedTaus      = zl_veto_taus;
+  zl_search_set.secondaryLeptons= zl_sel_leptons;
+  zl_search_set.leptons         = zl_sel_leptons;
+  zl_search_set.tracks          = zl_veto_tracks;
+  zl_search_set.taus            = zl_veto_taus;
   zl_search_set.corrections     = standardCorrections;
 
   zl_lepton_set.jets            = zl_lepton_jets;
-  zl_lepton_set.selectedLeptons = zl_sel_leptons;
+  zl_lepton_set.leptons         = zl_sel_leptons;
   zl_lepton_set.corrections     = standardCorrections;
-  zl_lepton_set.vetoedLeptons   = zl_sel_leptons;
-  zl_lepton_set.vetoedTracks    = zl_veto_tracks;
+  zl_lepton_set.secondaryLeptons= zl_sel_leptons;
+  zl_lepton_set.tracks          = zl_veto_tracks;
   zl_lepton_set.corrections     = standardCorrections;
 
   zl_dilepton_set.jets            = zl_dilepton_jets;
-  zl_dilepton_set.selectedLeptons = zl_ctr_diLep_leptons;
-  zl_dilepton_set.vetoedTracks    = zl_veto_tracks;
-  zl_dilepton_set.vetoedTaus      = zl_veto_taus;
+  zl_dilepton_set.leptons         = zl_ctr_diLep_leptons;
+  zl_dilepton_set.tracks          = zl_veto_tracks;
+  zl_dilepton_set.taus            = zl_veto_taus;
   zl_dilepton_set.corrections     = standardCorrections;
 
   zl_photon_set.jets            = zl_photon_jets;
-  zl_photon_set.vetoedLeptons   = zl_sel_leptons;
-  zl_photon_set.vetoedTracks    = zl_veto_tracks;
-  zl_photon_set.vetoedTaus      = zl_veto_taus;
-  zl_photon_set.selectedPhotons = zl_sel_photons;
+  zl_photon_set.secondaryLeptons= zl_sel_leptons;
+  zl_photon_set.tracks          = zl_veto_tracks;
+  zl_photon_set.taus            = zl_veto_taus;
+  zl_photon_set.photons         = zl_sel_photons;
   zl_photon_set.corrections     = standardCorrections;
 
   sl_search_set.jets            = sl_search_jets;
-  sl_search_set.selectedLeptons = sl_sel_leptons;
-  sl_search_set.vetoedLeptons   = sl_sel_sec_leptons;
-  sl_search_set.vetoedTracks    = sl_veto_tracks;
-  sl_search_set.vetoedTaus      = sl_veto_taus;
+  sl_search_set.leptons         = sl_sel_leptons;
+  sl_search_set.secondaryLeptons= sl_sel_sec_leptons;
+  sl_search_set.tracks          = sl_veto_tracks;
+  sl_search_set.taus            = sl_veto_taus;
   sl_search_set.corrections     = standardCorrections;
 }
 

@@ -64,8 +64,8 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
   pars = cfgSet::zl_search_set;
   pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
   pars.jets.cleanJetsvSelectedLeptons = true;
-  pars.selectedLeptons = cfgSet::zl_ctr_leptons;
-  pars.vetoedLeptons = cfgSet::zl_ctr_sec_leptons;
+  pars.leptons = cfgSet::zl_ctr_leptons;
+  pars.secondaryLeptons = cfgSet::zl_ctr_sec_leptons;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 

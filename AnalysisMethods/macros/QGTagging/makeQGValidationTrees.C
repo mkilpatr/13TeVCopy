@@ -547,8 +547,8 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
   cfgSet::ConfigSet qgv_search_set = cfgSet::zl_search_set;;
   //qgv_search_set.jets            = cfgSet::zl_search_jets;
-  qgv_search_set.selectedLeptons = cfgSet::zl_ctr_leptons;
-  qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
+  qgv_search_set.leptons = cfgSet::zl_ctr_leptons;
+  qgv_search_set.photons = cfgSet::zl_sel_photons;
   //qgv_search_set.corrections     = cfgSet::standardCorrections;
   qgv_search_set.corrections.eventCorrectionFile = TString::Format("%s/src/data/corrections/eventCorr_allData_600.root",getenv("CMSSW_BASE"));
 
@@ -561,16 +561,16 @@ void makeQGValidationTrees( TString sname            = "jetht2" // sample name
   qgv_search_set.jets.cleanJetsvSelectedPhotons = true;
   qgv_search_set.jets.cleanJetsvSelectedLeptons = true;
 
-  qgv_search_set.selectedLeptons.selectedMuon = (&MuonF::isgoodpogmuon);
-  qgv_search_set.selectedLeptons.minMuPt  = 10.0;
-  qgv_search_set.selectedLeptons.maxMuEta =  5.0;
-  qgv_search_set.selectedLeptons.selectedElectron = (&ElectronF::isgoodpogelectron);
-  qgv_search_set.selectedLeptons.minEPt  = 10.0;
-  qgv_search_set.selectedLeptons.maxEEta =  5.0;
+  qgv_search_set.leptons.selectedMuon = (&MuonF::isgoodpogmuon);
+  qgv_search_set.leptons.minMuPt  = 10.0;
+  qgv_search_set.leptons.maxMuEta =  5.0;
+  qgv_search_set.leptons.selectedElectron = (&ElectronF::isgoodpogelectron);
+  qgv_search_set.leptons.minEPt  = 10.0;
+  qgv_search_set.leptons.maxEEta =  5.0;
 
   //qgv_search_set.selectedPhotons = cfgSet::zl_sel_photons;
-  qgv_search_set.selectedPhotons.minPt  = 10.0;
-  qgv_search_set.selectedPhotons.maxEta =  5.0;
+  qgv_search_set.photons.minPt  = 10.0;
+  qgv_search_set.photons.maxEta =  5.0;
 
   string    treeName = "";
   if (isMC) treeName = "Events";

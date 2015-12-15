@@ -48,7 +48,7 @@ void ThreeLeptonSkimmer(string fileName,  string treeName = "TestAnalyzer/Events
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet pars = cfgSet::zl_dilepton_set;
-  pars.selectedLeptons = cfgSet::zl_sel_leptons;
+  pars.leptons = cfgSet::zl_sel_leptons;
 
 
   //get the output name

@@ -66,11 +66,11 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   clog <<"Loaded configurations: " << endl;
   if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
-  if(configSet.selectedLeptons.isConfig()) clog << configSet.selectedLeptons <<" ";
-  if(configSet.vetoedLeptons  .isConfig()) clog << configSet.vetoedLeptons   <<" ";
-  if(configSet.vetoedTracks   .isConfig()) clog << configSet.vetoedTracks    <<" ";
-  if(configSet.vetoedTaus     .isConfig()) clog << configSet.vetoedTaus      <<" ";
-  if(configSet.selectedPhotons.isConfig()) clog << configSet.selectedPhotons <<" ";
+  if(configSet.leptons.isConfig()) clog << configSet.leptons <<" ";
+  if(configSet.secondaryLeptons  .isConfig()) clog << configSet.secondaryLeptons   <<" ";
+  if(configSet.tracks   .isConfig()) clog << configSet.tracks    <<" ";
+  if(configSet.taus     .isConfig()) clog << configSet.taus      <<" ";
+  if(configSet.photons.isConfig()) clog << configSet.photons <<" ";
   if(configSet.corrections.isConfig())     clog << configSet.corrections     <<" ";
  
   clog << endl;
@@ -189,7 +189,7 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
     }
     case cfgSet::PFCANDS : {
       int defaultOptions = PFCandidateReader::defaultOptions;
-      if(configSet.vetoedTracks.isConfig() && !configSet.vetoedTracks.mtPresel )
+      if(configSet.tracks.isConfig() && !configSet.tracks.mtPresel )
         defaultOptions = PFCandidateReader::LOADRECO | PFCandidateReader::FILLOBJ | PFCandidateReader::LOADTAUVETODPHI;
       reader.load(&pfcandReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PFCANDS : branchName );
       break;
@@ -341,27 +341,27 @@ void BaseTreeAnalyzer::processVariables()
        allLeptons.push_back(&muon);
     std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
-    if(configSet.selectedLeptons.isConfig())
-      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.selectedLeptons);
+    if(configSet.leptons.isConfig())
+      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.leptons);
 
-    if(configSet.vetoedLeptons.isConfig())
-      cfgSet::selectLeptons(vetoedLeptons, allLeptons, configSet.vetoedLeptons);
+    if(configSet.secondaryLeptons.isConfig())
+      cfgSet::selectLeptons(vetoedLeptons, allLeptons, configSet.secondaryLeptons);
   }
   nSelLeptons = selectedLeptons.size();
   nVetoedLeptons = vetoedLeptons.size();
 
   vetoedTracks.clear();
-  if(pfcandReader.isLoaded() && configSet.vetoedTracks.isConfig())
-    cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.vetoedTracks);
+  if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
+    cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.tracks);
   nVetoedTracks = vetoedTracks.size();
 
-  if(photonReader.isLoaded() && configSet.selectedPhotons.isConfig())
-    cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.selectedPhotons);
+  if(photonReader.isLoaded() && configSet.photons.isConfig())
+    cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.photons);
 
   // must not preceed selectLeptons
   vetoedTaus.clear();
-  if(tauReader.isLoaded() && configSet.vetoedTaus.isConfig())
-    cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.vetoedTaus);
+  if(tauReader.isLoaded() && configSet.taus.isConfig())
+    cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.taus);
   nVetoHPSTaus = vetoedTaus.size();
 
   jets.clear(); bJets.clear(); nonBJets.clear();
