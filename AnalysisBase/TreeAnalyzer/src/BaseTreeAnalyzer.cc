@@ -341,11 +341,12 @@ void BaseTreeAnalyzer::processVariables()
        allLeptons.push_back(&muon);
     std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
+    std::vector<LeptonF*> nonSelectedLeptons(0);
     if(configSet.leptons.isConfig())
-      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.leptons);
+      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.leptons,&nonSelectedLeptons);
 
     if(configSet.secondaryLeptons.isConfig())
-      cfgSet::selectLeptons(secondaryLeptons, allLeptons, configSet.secondaryLeptons);
+      cfgSet::selectLeptons(secondaryLeptons, configSet.leptons.isConfig() ? nonSelectedLeptons : allLeptons, configSet.secondaryLeptons);
   }
   nSelLeptons = selectedLeptons.size();
   nSecondaryLeptons = secondaryLeptons.size();

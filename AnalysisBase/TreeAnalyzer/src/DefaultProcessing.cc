@@ -65,7 +65,7 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
     return boolVal;
 }
 
-void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf){
+void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");
 
@@ -74,8 +74,9 @@ void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std
   for(auto* lepton : allLeptons){
     if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, conf): isSelElectron(*(ElectronF*)lepton, conf))
       selectedLeptons.push_back(lepton);
+    else if(nonSelectedLeptons)
+      nonSelectedLeptons->push_back(lepton);
   }
-
 }
 
 void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const MomentumF* met, const TrackConfig& conf){
