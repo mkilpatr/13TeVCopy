@@ -433,7 +433,7 @@ struct TreeFiller {
     data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
-    for(auto i: ana->vetoedLeptons){
+    for(auto i: ana->selectedLeptons){
 		  if(fabs(i->pdgid()) == 11) nVetoEle++;
 		  if(fabs(i->pdgid()) == 13) nVetoMu++;
     }
