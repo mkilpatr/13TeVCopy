@@ -35,10 +35,10 @@ namespace ucsbsusy {
 
   class TnPCorr : public Correction {
     public:
-      TnPCorr(TString corrName, TString tnpElFileName, TString tnpMuFileName);
+      TnPCorr(TString corrName, TString tnpElFileName, TString tnpMuFileName, TString tnpMCEffElFileName, TString tnpMCEffMuFileName );
       virtual ~TnPCorr();
-      double getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
-      double getEvtWeight(const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      void getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      void getEvtWeight(float &wt, float &vetoWt, const std::vector<LeptonF*>& leptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType, bool getVetoWt=false ) const;
       virtual float getElValue(float pt, float eta) const { return corrHistEl->GetBinContent(corrHistEl->GetXaxis()->FindFixBin(pt)
                                                                                             ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
       virtual float getMuValue(float pt, float eta) const { return corrHistMu->GetBinContent(corrHistMu->GetXaxis()->FindFixBin(pt)
@@ -47,11 +47,23 @@ namespace ucsbsusy {
                                                                                             ,corrHistEl->GetYaxis()->FindFixBin(eta)); }
       virtual float getMuError(float pt, float eta) const { return corrHistMu->GetBinError  (corrHistMu->GetXaxis()->FindFixBin(pt)
                                                                                             ,corrHistMu->GetYaxis()->FindFixBin(eta)); }
+      virtual float getElVetoValue(float pt, float eta) const { return vetoHistEl->GetBinContent(vetoHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                                ,vetoHistEl->GetYaxis()->FindFixBin(eta)); }
+      virtual float getMuVetoValue(float pt, float eta) const { return vetoHistMu->GetBinContent(vetoHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                                ,vetoHistMu->GetYaxis()->FindFixBin(eta)); }
+      virtual float getElVetoError(float pt, float eta) const { return vetoHistEl->GetBinError  (vetoHistEl->GetXaxis()->FindFixBin(pt)
+                                                                                                ,vetoHistEl->GetYaxis()->FindFixBin(eta)); }
+      virtual float getMuVetoError(float pt, float eta) const { return vetoHistMu->GetBinError  (vetoHistMu->GetXaxis()->FindFixBin(pt)
+                                                                                                ,vetoHistMu->GetYaxis()->FindFixBin(eta)); }
     protected:
       TFile* fileEl;
       TFile* fileMu;
+      TFile* fileVetoEl;
+      TFile* fileVetoMu;
       TH2F*  corrHistEl;
       TH2F*  corrHistMu;
+      TH2F*  vetoHistEl;
+      TH2F*  vetoHistMu;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
@@ -66,15 +78,16 @@ namespace ucsbsusy {
         USE_HPSTAUS   = (1 << 4)
       }; 
 
-      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}
+      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1), tnpVetoWeight(1) {}
       virtual ~LeptonCorrectionSet() {}
-      virtual void load(TString fileName, TString tnpElFileName, TString tnpMuFileName, int correctionOptions = NULLOPT);
+      virtual void load(TString fileName, TString tnpElFileName, TString tnpMuFileName, TString tnpMCEffElFileName, TString tnpMCEffMuFileName, int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
       float getVetoLepWeight()     const { return vetoLepWeight; }
       float getSelLepWeight()      const { return selLepWeight;  }
       void  setUseHPSTaus(bool setHPS)   { useHPS = setHPS;      }
-      float getTnPLepWeight()      const { return tnpEvtWeight; }
+      float getTnPLepWeight()      const { return tnpEvtWeight;  }
+      float getTnPVetoWeight()     const { return tnpVetoWeight; }
 
     private :
       LepCorr* lepCorr;
@@ -84,6 +97,7 @@ namespace ucsbsusy {
       float selLepWeight;
       bool  useHPS;
       float tnpEvtWeight;
+      float tnpVetoWeight;
   };
 
 } /* namespace ucsbsusy */

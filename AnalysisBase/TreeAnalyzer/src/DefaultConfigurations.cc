@@ -154,6 +154,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
   standardCorrections.tnpElCorrectionFile      =  TString::Format("%s/src/data/corrections/tnpElCorr_1L.root",CMSSW_BASE);
   standardCorrections.tnpMuCorrectionFile      =  TString::Format("%s/src/data/corrections/tnpMuCorr_1L.root",CMSSW_BASE);
+  standardCorrections.tnpMCEffElFile           =  TString::Format("%s/src/data/corrections/tnpMCEffEl.root",CMSSW_BASE);
+  standardCorrections.tnpMCEffMuFile           =  TString::Format("%s/src/data/corrections/tnpMCEffMu.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
 

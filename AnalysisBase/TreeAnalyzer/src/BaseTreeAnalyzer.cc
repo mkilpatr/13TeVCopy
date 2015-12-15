@@ -124,6 +124,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       leptonCorrections.load(configSet.corrections.leptonCorrectionFile
                             ,configSet.corrections.tnpElCorrectionFile
                             ,configSet.corrections.tnpMuCorrectionFile
+                            ,configSet.corrections.tnpMCEffElFile
+                            ,configSet.corrections.tnpMCEffMuFile
                             ,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);
     }

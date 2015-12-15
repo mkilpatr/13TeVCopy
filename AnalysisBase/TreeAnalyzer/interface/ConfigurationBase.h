@@ -231,6 +231,8 @@ namespace cfgSet {
     TString leptonCorrectionFile;
     TString tnpElCorrectionFile;
     TString tnpMuCorrectionFile;
+    TString tnpMCEffElFile;
+    TString tnpMCEffMuFile;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
 
@@ -296,6 +298,8 @@ namespace cfgSet {
           os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
              << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
           os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+          os << "Getting MC eff from  " << a.tnpMCEffElFile.Data()
+             << " and " << a.tnpMCEffMuFile.Data() << std::endl;
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
