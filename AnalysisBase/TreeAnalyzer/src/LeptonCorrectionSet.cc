@@ -24,13 +24,13 @@ TnPCorr::TnPCorr(TString corrName, LEPSEL lepSel) : Correction(corrName)
 
   if(lepSel==MT2VETO) {
     fileIdMu  = TFile::Open(baseDir+"TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root","read");
-    fileIsoMu = TFile::Open(baseDir+"TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root","read");
+    fileIsoMu = TFile::Open(baseDir+"TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_activity_pt.root","read");
     if(!fileIdMu ) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu ID file could not be found!");
     if(!fileIsoMu) throw std::invalid_argument("LepHistogramCorrection::LepHistogramCorrection: mu Iso file could not be found!");
     elIDHistName  = "CutBasedVeto";
     elIsoHistName = "MiniIso0p1_vs_RelActivity";
     muIDHistName  = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass";
-    muIsoHistName = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass";
+    muIsoHistName = "SFmap";
   } // MT2Veto
   else if(lepSel==GOODPOG) {
     fileIdMu  = TFile::Open(baseDir+"tnpMuCorr_1L.root","read");
@@ -84,12 +84,12 @@ void TnPCorr::getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCo
   if(id==11){
     sf   = getElIDValue(pt,eta) * getElIsoValue(pt,annulus);
     sfer = getError(getElIDError(pt,eta), getElIsoError(pt,annulus));
-    eff  = getElMCEffValue(pt,eta);
+    eff  = getElMCEffValue(pt,annulus);
   }
   else if(id==13) {
     sf   = getMuIDValue(pt,eta) * getMuIsoValue(pt,eta);
-    sfer = getError(getMuIDError(pt,eta), getMuIsoError(pt,eta));
-    eff  = getMuMCEffValue(pt,eta);
+    sfer = getError(getMuIDError(pt,eta), getMuIsoError(pt,annulus));
+    eff  = getMuMCEffValue(pt,annulus);
   }
   if     (id==11 && elCorrType == UP  ) sf += sfer;
   else if(id==11 && elCorrType == DOWN) sf -= sfer;
@@ -99,7 +99,7 @@ void TnPCorr::getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCo
   vetoWt = (1.0-eff*sf)/(1.0-eff);
 }
 
-float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType, bool getVetoWt ) const {
+float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
   // store gen leptons for matching
   std::vector<const GenParticleF*> genEl_;
   std::vector<const GenParticleF*> genMu_;
@@ -124,7 +124,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
       int iL = lep->index();
       bool isSelectedLep = false;
       for(auto* sLep : selectedLeptons) {
-        if(iL==sLep->index()) isSelectedLep = true;
+        if(iL==sLep->index() && lep->pdgid()==sLep->pdgid()) isSelectedLep = true;
       }
       if(isSelectedLep) weight *= tmpWt;
       else              weight *= tmpVetoWt;

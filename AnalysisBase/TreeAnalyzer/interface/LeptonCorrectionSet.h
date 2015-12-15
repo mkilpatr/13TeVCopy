@@ -39,7 +39,7 @@ namespace ucsbsusy {
       TnPCorr(TString corrName, LEPSEL lepSel);
       virtual ~TnPCorr();
       void getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
-      float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType, bool getVetoWt=false ) const;
+      float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType) const;
       virtual float pickBin(int bin, int nBins) const { if(bin<1)     return 1;
                                                         if(bin>nBins) return nBins;
                                                         return bin; }
