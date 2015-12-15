@@ -87,7 +87,7 @@ void TnPCorr::getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCo
     eff  = getElMCEffValue(pt,annulus);
   }
   else if(id==13) {
-    sf   = getMuIDValue(pt,eta) * getMuIsoValue(pt,eta);
+    sf   = getMuIDValue(pt,eta) * getMuIsoValue(pt,annulus);
     sfer = getError(getMuIDError(pt,eta), getMuIsoError(pt,annulus));
     eff  = getMuMCEffValue(pt,annulus);
   }
