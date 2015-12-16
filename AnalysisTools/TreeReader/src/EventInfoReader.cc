@@ -126,3 +126,11 @@ void EventInfoReader::refresh()
     massPar3 = massparams->at(2);
 
 }
+
+void EventInfoReader::pushToTree() {
+  met_pt = met.pt();
+  met_phi = met.phi();
+
+  if(genevtweight)
+    xsecweight = evtweight/genevtweight;
+}

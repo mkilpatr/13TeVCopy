@@ -25,6 +25,7 @@ namespace ucsbsusy {
 
       void	load(TreeReader *treeReader, int options=0, std::string branchName="");
       void	refresh();
+      void pushToTree();
 
       unsigned int  run;
       unsigned int  lumi;

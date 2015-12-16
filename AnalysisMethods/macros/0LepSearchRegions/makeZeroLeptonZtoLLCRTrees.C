@@ -107,6 +107,7 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
 
   cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_dilepton_set;
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 //  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 //  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
 

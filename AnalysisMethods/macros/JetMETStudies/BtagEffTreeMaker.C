@@ -8,11 +8,11 @@
 using namespace std;
 using namespace ucsbsusy;
 
-#define TESTMODE
+//#define TESTMODE
 
 class Copier : public TreeCopierManualBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,isMCTree,pars),
+  Copier(string fileName, string treeName, string outFileName, size rSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,rSeed,isMCTree,pars),
   i_process     (0),
   i_passBaseline(0),
   i_weight      (0),
@@ -32,21 +32,7 @@ public:
   }
 
   //--------------------------------------------------------------------------------------------------
-  void analyze(int reportFrequency = 10000, int numEvents = -1)
-  {
-    loadVariables();
-    isLoaded_ = true;
-    setupTree();
-    book();
-    data.book(treeWriter_);
-    while(reader.nextEvent(reportFrequency)){
-      isProcessed_ = false;
-      if(numEvents >= 0 && getEventNumber() >= numEvents) return;
-      processVariables();
-      data.reset();
-      fillEvent();
-    }
-  }
+  virtual BaseEventAnalyzer * setupEventAnalyzer() override {return new CopierFillYourselfEventAnalyzer();}
 
   virtual bool fillEvent() {
 
@@ -74,11 +60,12 @@ public:
     if(met->pt() < 175) passBaseline = false;
     if(nJets < 2 || jets[1]->pt() < 75 ) passBaseline = false;
     if(nJets < 5) passBaseline = false;
+    if(!passBaseline) return false;
 
     data.fill<unsigned int>(i_process,process);
     data.fill<bool>(i_passBaseline,passBaseline);
     data.fill<float>(i_weight,weight);
-    data.fill<float>(i_puWeight,eventCorrections.getPUWeight());
+    data.fill<float>(i_puWeight,eventCorrections.getTruePUWeight());
 
 
     for(const auto* j : jets ){
@@ -112,9 +99,8 @@ public:
       data.fill<float>(i_pt  ,j->pt() );
       data.fill<float>(i_absEta  ,j->absEta() );
       data.fill<float>(i_csv  ,j->csv() );
-      data.fill<unsigned int>(i_flavor  ,(j->genJet() && j->genJet()->pt() > 10)  ? j->genJet()->flavor() : JetFlavorInfo::numJetFlavors );
-      outFile_->cd();
-      treeWriter_->fill();
+      data.fill<unsigned int>(i_flavor  ,(j->genJet())  ? j->genJet()->flavor() : JetFlavorInfo::numJetFlavors );
+      fillFillingTree();
     }
 
 #ifdef TESTMODE
@@ -155,7 +141,7 @@ public:
 
 #endif
 
-void BtagEffTreeMaker(string fileName,  string treeName = "Events", string outPostfix ="btagEff", bool isMC = true) {
+void BtagEffTreeMaker(string fileName, int fileIndex = -1,  string treeName = "Events", string outPostfix ="btagEff",  bool isMC = true) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
@@ -166,14 +152,13 @@ void BtagEffTreeMaker(string fileName,  string treeName = "Events", string outPo
   cfg.corrections.heavyBTagCorrType = DOWN;
   #endif
 
-
   //get the output name
   TString prefix(fileName);
   prefix.Remove(0,prefix.Last('/') + 1);
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
-  TString outName = TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str());
+  TString outName = fileIndex < 0 ? TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str()) : TString::Format("%s_%i_%s.root",prefix.Data(),fileIndex,outPostfix.c_str());
 
-  Copier a(fileName,treeName,outName.Data(),isMC, &cfg);
+  Copier a(fileName,treeName,outName.Data(),fileIndex +2,isMC, &cfg);
 
   a.analyze();
 }

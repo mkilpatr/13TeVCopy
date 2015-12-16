@@ -95,6 +95,7 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   pars = cfgSet::zl_search_set;
   pars.jets.cleanJetsvSelectedLeptons = true;
   pars.selectedLeptons = cfgSet::ol_sel_leptons;
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
   pars.selectedLeptons.minEPt = 15.0;
   pars.selectedLeptons.maxEEta = 2.5;
   pars.selectedLeptons.minMuPt = 10.0;
