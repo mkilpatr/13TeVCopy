@@ -68,10 +68,10 @@ void cfgSet::loadDefaultLeptonConfigurations() {
   zl_sel_leptons.setConfig();
 
   sl_sel_leptons = zl_sel_leptons;
-  sl_sel_leptons.minEPt            = 40;
-  sl_sel_leptons.maxEEta           = 2.1;
+  sl_sel_leptons.minEPt            = 20;
+  sl_sel_leptons.maxEEta           = 1.4442;
   sl_sel_leptons.selectedElectron  = &ucsbsusy::ElectronF::isgoodpogelectron;
-  sl_sel_leptons.minMuPt           = 30;
+  sl_sel_leptons.minMuPt           = 20;
   sl_sel_leptons.maxMuEta          = 2.1;
   sl_sel_leptons.maxMuD0           = 0.02;
   sl_sel_leptons.maxMuDz           = 0.1;
@@ -91,11 +91,17 @@ void cfgSet::loadDefaultLeptonConfigurations() {
 
   zl_ctr_leptons = sl_sel_leptons;
   zl_ctr_leptons.minEPt            = 30.0;
+  zl_ctr_leptons.maxEEta           = 2.1;
+  zl_ctr_leptons.minMuPt           = 30;
   zl_ctr_leptons.maxMuEta          = 2.4;
+  zl_ctr_leptons.selectedMuon      = &ucsbsusy::MuonF::isgoodpogmuon;
+
 
   zl_ctr_sec_leptons = sl_sel_sec_leptons;
+  zl_ctr_sec_leptons.selectedElectron = &ucsbsusy::ElectronF::isvetoloosepogelectron;
 
-  zl_ctr_diLep_leptons = sl_sel_leptons;
+
+  zl_ctr_diLep_leptons = zl_ctr_leptons;
   zl_ctr_diLep_leptons.minEPt             = 15;
   zl_ctr_diLep_leptons.minMuPt            = 10;
   zl_ctr_diLep_leptons.maxEEta = 2.5;
@@ -115,9 +121,10 @@ void cfgSet::loadDefaultTrackConfigurations() {
   zl_veto_tracks.setConfig();
 
   sl_veto_tracks = zl_veto_tracks;
-  sl_veto_tracks.minPt     = 5;
-  sl_veto_tracks.maxDz     = -1;
-  sl_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ismvavetotau;
+  sl_veto_tracks.mtPresel  = false;
+  sl_veto_tracks.minPt     = 10;
+  sl_veto_tracks.maxDz     = 0.1;
+  sl_veto_tracks.selected  = &ucsbsusy::PFCandidateF::ischargedhadron;
   sl_veto_tracks.setConfig();
 }
 
@@ -133,6 +140,8 @@ void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.setConfig();
 
   sl_veto_taus = zl_veto_taus;
+  sl_veto_taus.requireOppositeQToSelLepton = true;
+  sl_veto_taus.selected   = &ucsbsusy::TauF::isgoodpogtau;
   sl_veto_taus.setConfig();
 }
 

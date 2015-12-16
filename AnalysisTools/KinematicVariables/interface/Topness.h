@@ -14,6 +14,7 @@
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 #include "AnalysisTools/DataFormats/interface/Lepton.h"
 #include "AnalysisTools/DataFormats/interface/Jet.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 using namespace ucsbsusy;
 
