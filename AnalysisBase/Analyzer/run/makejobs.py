@@ -61,6 +61,7 @@ xsecs = []
 datasets = []
 totnposevents = []
 totnnegevents = []
+xsecfiles = []
 
 with open(args.input,"r") as f :
     for line in f :
@@ -71,6 +72,10 @@ with open(args.input,"r") as f :
         samples.append(content[1])
         xsecs.append(content[2])
         datasets.append(content[3])
+        if len(content) > 4 :
+            xsecfiles.append(content[4])
+        else :
+            xsecfiles.append("NONE")
 
 eos="/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
@@ -129,12 +134,12 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root","_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\"\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\"\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {outname} {outdir} $workdir\n""".format(
-                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nevts=totnevents[isam], outname=outfilename, outdir=args.outdir
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {outname} {outdir} $workdir\n""".format(
+                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
@@ -144,9 +149,8 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 199
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -160,7 +164,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir,name=samples[isam], j=ifile))
@@ -345,7 +349,6 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 199
 Executable              = {runscript}{stype}.sh
 Arguments               = {cfg} {infile} {outputdir} {outputname} {maxevents} {skipevents} {workdir}
 Output                  = logs/{sname}_{num}.out
@@ -369,6 +372,7 @@ rm submit.cmd""".format(
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" %(args.jobdir, samples[isam], ijob))
+#request_memory          = 199
 
 
     script.close()
