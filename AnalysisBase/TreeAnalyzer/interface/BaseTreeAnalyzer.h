@@ -27,7 +27,6 @@
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
-#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 
 
@@ -128,7 +127,6 @@ public:
     FatJetReader        fatJetPuppiReader   ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
-    JetCorrector        jetCorrector        ;
 
 
   public:
