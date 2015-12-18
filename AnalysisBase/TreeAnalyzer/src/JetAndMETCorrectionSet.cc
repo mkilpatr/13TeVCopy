@@ -73,6 +73,30 @@ void JetResolutionCorr::correctJetsAndMET(const double resSF, std::vector<RecoJe
 
 }
 
+void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const {
+  if(corrType == NONE || corrType == NOMINAL) return;
+
+  // Not bothering to correct the SumEt
+
+  CartLorentzVector metvec;
+  metvec.SetPxPyPzE(met.px(),met.py(),met.pz(),met.E());
+  for(auto& j : jets) {
+    if(j.uncertainty() <= 0.0) continue;
+    metvec.SetPx(metvec.px() + j.px());
+    metvec.SetPy(metvec.py() + j.py());
+    double JESFactor = 1.0;
+    if(corrType == UP)
+      JESFactor += j.uncertainty();
+    else if (corrType == DOWN)
+      JESFactor -= j.uncertainty();
+    j.setP4(JESFactor*j.p4());
+    metvec.SetPx(metvec.px() - j.px());
+    metvec.SetPy(metvec.py() - j.py());
+  }
+  std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
+  met.setP4(CylLorentzVectorF(metvec.pt(), metvec.eta(), metvec.phi(), 0.0));
+}
+
 
 float METScaleCorr::scaleCorr(float trueMETPT) const {
   double x = std::min(std::max(20.0,double(trueMETPT)),300.0);
@@ -148,7 +172,7 @@ CylLorentzVectorF METNoHFResCorr::getCorrectedMET(const CylLorentzVectorF& trueB
 
 
 }
-JetAndMETCorrectionSet::JetAndMETCorrectionSet(): metScale(0),metResolution(0), jetResolution(0), metNoHFScale(0), metNoHFResolution(0)
+JetAndMETCorrectionSet::JetAndMETCorrectionSet(): metScale(0),metResolution(0), jetResolution(0), jetScale(0), metNoHFScale(0), metNoHFResolution(0)
 ,originalMET(new MomentumF),correctedMET(new MomentumF),originalMETNoHF(new MomentumF),correctedMETNoHF(new MomentumF),
 trueBosons(new CylLorentzVectorF),trueMET(new CylLorentzVectorF)
 {}
@@ -178,6 +202,10 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
   if(options_ & JETRESOLUTION){
     jetResolution = new JetResolutionCorr(randomGenerator,jetResolutionFile);
     corrections.push_back(jetResolution);
+  }
+  if(options_ & JETSCALE){
+    jetScale = new JetScaleCorr();
+    corrections.push_back(jetScale);
   }
 }
 
@@ -264,6 +292,12 @@ void JetAndMETCorrectionSet::correctJetResolution(const BaseTreeAnalyzer * ana, 
   if(!jetResolution) return;
   if(!ana->isMC()) return;
   jetResolution->correctJetsAndMET(ana->getAnaCfg().corrections.jetResCorr,jets,met);
+}
+
+void JetAndMETCorrectionSet::correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met){
+  if(!jetScale) return;
+  if(!ana->isMC()) return;
+  jetScale->correctJetsAndMET(ana->getAnaCfg().corrections.jetScaleCorr,jets,met);
 }
 
 MomentumF JetAndMETCorrectionSet::getCorrectedMET() const {return *correctedMET;}
