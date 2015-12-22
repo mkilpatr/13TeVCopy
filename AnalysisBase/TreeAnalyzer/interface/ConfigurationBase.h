@@ -53,7 +53,6 @@ namespace cfgSet {
     bool  cleanJetsvSelectedPhotons;
     bool  cleanJetsvVetoedTracks   ;
     float cleanJetsMaxDR           ;
-    signed int JES                 ;
 
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
@@ -68,8 +67,7 @@ namespace cfgSet {
       cleanJetsvVetoedLeptons  (false),
       cleanJetsvSelectedPhotons(false),
       cleanJetsvVetoedTracks  (false),
-      cleanJetsMaxDR           (-1),
-      JES                      (0)
+      cleanJetsMaxDR           (-1)
     {};
     virtual ~JetConfig() {};
 
@@ -80,7 +78,6 @@ namespace cfgSet {
       os << "The min jet pt is "<< a.minBJetPt <<std::endl;
       os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
       os << "The default CSV is "<< a.defaultCSV <<std::endl;
-      os << "The JES variation is " << a.JES << std::endl;
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
       if(a.cleanJetsvSelectedLeptons) os << "Cleaning Jets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Leptons is disabled" << std::endl;
@@ -229,8 +226,11 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
-    TString tnpElCorrectionFile;
-    TString tnpMuCorrectionFile;
+    //TString tnpElCorrectionFile;
+    //TString tnpMuCorrectionFile;
+    //TString tnpMCEffElFile;
+    //TString tnpMCEffMuFile;
+    ucsbsusy::TnPCorr::LEPSEL tnpLepSel;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
 
@@ -244,6 +244,8 @@ namespace cfgSet {
     TString jetResFile;
     double  jetResCorr;
 
+    ucsbsusy::CORRTYPE jetScaleCorr;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
@@ -255,7 +257,8 @@ namespace cfgSet {
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
-        jetResCorr(1)
+        jetResCorr(1),
+        jetScaleCorr(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -292,10 +295,20 @@ namespace cfgSet {
         else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
-        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
-          os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
-             << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
-          os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP) {
+          //os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
+          //   << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
+          //os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+          //os << "Getting MC eff from  " << a.tnpMCEffElFile.Data()
+          //   << " and " << a.tnpMCEffMuFile.Data() << std::endl; // tnpLepSel
+          os << "Applying TnP lepton corrections using selection for ";
+          switch(a.tnpLepSel) {
+          case ucsbsusy::TnPCorr::MT2VETO : os << "MT2 veto "     ; break;
+          case ucsbsusy::TnPCorr::GOODPOG : os << "good POG veto "; break;
+          default                         : os << "no "           ; break;
+          }
+          os << " leptons" << std::endl;
+        }
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
@@ -309,6 +322,8 @@ namespace cfgSet {
           os << "METScale ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESOLUTION)
           os << "METResolution ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETSCALE)
+          os << "JetScale ("<< a.jetScaleCorr<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION)
           os << "JetResolution ("<< a.jetResCorr<<")";
         os << std::endl;

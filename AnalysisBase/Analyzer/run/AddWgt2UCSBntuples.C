@@ -17,12 +17,20 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), eeBadSCJSON(new cfgSet::JSONProcessing()), cscBeamHaloJSON(new cfgSet::JSONProcessing()) {
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), eeBadSCJSON(new cfgSet::JSONProcessing()), cscBeamHaloJSON(new cfgSet::JSONProcessing()), xsecFile(0), xsecLookup(0) {
     if(!isMC()) {
       TString ee_bad_sc_txtfile = TString::Format("%s/src/data/JSON/ecalscn1043093_Dec01.txt", getenv("CMSSW_BASE"));
       eeBadSCJSON->addRunLumiEventFile(ee_bad_sc_txtfile);
       TString csc_beam_halo_txtfile = TString::Format("%s/src/data/JSON/csc2015_Dec01.txt", getenv("CMSSW_BASE"));
       cscBeamHaloJSON->addRunLumiEventFile(csc_beam_halo_txtfile);
+    }
+    else {
+      if(inputFile != "" && inputFile != "NONE") {
+        xsecFile = new TFile(TString::Format("%s/src/data/xsecs/%s",getenv("CMSSW_BASE"),inputFile.c_str()));
+        assert(xsecFile);
+        xsecLookup = (TH1D*)xsecFile->Get("xsecs");
+        assert(xsecLookup);
+      }
     }
   }
 
@@ -48,6 +56,10 @@ public:
   void processVariables() {
     isProcessed_ = true;
     genwgtsign = isMC() && evtInfoReader.genweight < 0 ? -1.0 : 1.0;
+    if(xsecLookup) {
+      xsec = xsecLookup->Interpolate(evtInfoReader.massPar1);
+      xsecweight = !isMC() ? 1. : (lumi * xsec * 1000 / ( nPos > 0 ? (nPos + nNeg) : float(getEntries())  ));
+    }
   }
 
   bool fillEvent() {
@@ -57,6 +69,10 @@ public:
       return true;
     }
     data.fill<float>(iGenWeight, genwgtsign / (1.0 - (2.0*(nNeg/(nPos+nNeg)))));
+    if(xsecLookup) {
+      data.fill<float>(iXSec, xsec);
+      data.fill<float>(iXSWeight, xsecweight);
+    }
     return true;
   }
 
@@ -71,6 +87,8 @@ public:
   double nPos;
   double nNeg;
 
+  double lumi;
+
   defaults::Process process;
   defaults::DataReco datareco;
   float xsecweight;
@@ -79,6 +97,9 @@ public:
 
   cfgSet::JSONProcessing* eeBadSCJSON;
   cfgSet::JSONProcessing* cscBeamHaloJSON;
+
+  TFile* xsecFile;
+  TH1D*  xsecLookup;
 
 };
 
@@ -94,7 +115,7 @@ public:
  */
 //AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,0,"TestAnalyzer/Events","wgt")
 
-void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed") {
+void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "") {
 
   //get the output name
   TString outName(fileName);
@@ -121,13 +142,14 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
     if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
   }
 
-  Copier a(fileName,treeName,outName.Data(),isMC,nPosEvents,nNegEvents);
+  Copier a(fileName,treeName,outName.Data(),isMC,nPosEvents,nNegEvents,xsecFile);
 
   //set weight and process
   a.xsecweight  = !isMC ? 1. : (lumi * crossSection *1000 / ( nPosEvents > 0 ? (nPosEvents + nNegEvents) : float(a.getEntries())  ));
-  a.xsec    = !isMC ? 1. : crossSection;
-  a.process = process;
-  a.datareco = datareco;
+  a.xsec        = !isMC ? 1. : crossSection;
+  a.lumi        = lumi;
+  a.process     = process;
+  a.datareco    = datareco;
 
   if (isMC) clog << "Copying  "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and xsec weight "<< a.xsecweight << " with fraction of negative weight events " << nNegEvents/(nPosEvents+nNegEvents) << " into file "<< outName << endl;
   else      clog << "Copying  "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] << " into file " << outName << endl;

@@ -52,7 +52,7 @@ public :
 
   //cout the momentum
   friend std::ostream& operator<<(std::ostream& os, const Momentum<CoordSystem>& m){
-    os << "("<<m.pt()<<","<<m.eta()<<","<<m.phi()<<")";
+    os << "("<<m.pt()<<","<<m.eta()<<","<<m.phi()<<","<<m.mass()<<")";
     return os;
   }
 

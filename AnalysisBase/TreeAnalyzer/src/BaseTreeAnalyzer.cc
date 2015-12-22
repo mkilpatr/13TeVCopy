@@ -10,7 +10,6 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
-#include "AnalysisBase/TreeAnalyzer/interface/JetCorrections.h"
 
 using namespace std;
 using namespace ucsbsusy;
@@ -121,10 +120,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&eventCorrections);
     }
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
-      leptonCorrections.load(configSet.corrections.leptonCorrectionFile
-                            ,configSet.corrections.tnpElCorrectionFile
-                            ,configSet.corrections.tnpMuCorrectionFile
-                            ,configSet.corrections.leptonCorrections);
+      leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.corrections.tnpLepSel,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
@@ -135,9 +131,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
-  
-    jetCorrector.setJES(configSet.jets.JES);
-    }
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName)
@@ -284,8 +278,10 @@ void BaseTreeAnalyzer::processVariables()
       jetAndMETCorrections.processMET(this);
       (*met) = jetAndMETCorrections.getCorrectedMET();
       (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
-      if(defaultJets && defaultJets->isLoaded())
+      if(defaultJets && defaultJets->isLoaded()) {
+        jetAndMETCorrections.correctJetScale(this,defaultJets->recoJets,*met);
         jetAndMETCorrections.correctJetResolution(this,defaultJets->recoJets,*met);
+      }
     }
   }
 
@@ -367,7 +363,6 @@ void BaseTreeAnalyzer::processVariables()
   jets.clear(); bJets.clear(); nonBJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
-    if(configSet.jets.JES) jetCorrector.shiftJES(defaultJets->recoJets, met);
     cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&vetoedLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
   }
   nJets    = jets.size();

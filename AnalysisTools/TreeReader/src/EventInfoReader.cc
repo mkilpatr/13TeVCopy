@@ -48,6 +48,7 @@ EventInfoReader::EventInfoReader()
   datrec = 0;
   datareco = defaults::MC;
   metfilterbitpass = new vector<bool>;
+  massparams = new vector<size16>;
   hbheIsoFlt = false;
   hbheFltR2Loose = false;
   hbheFltR2Tight = false;
@@ -55,6 +56,9 @@ EventInfoReader::EventInfoReader()
   cscBeamHaloFlt = false;
   eeBadSCFlt = false;
   eeBadSC4Flt = false;
+  massPar1 = 0;
+  massPar2 = 0;
+  massPar3 = 0;
 
 }
 
@@ -86,6 +90,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
   treeReader->setBranchAddress(branchName,"genweight", &genweight);
   treeReader->setBranchAddress(branchName,"genqscale", &genqscale);
+  treeReader->setBranchAddress(branchName,"massparams", &massparams);
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"datareco", &datrec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
@@ -110,8 +115,15 @@ void EventInfoReader::refresh()
   datareco = static_cast<defaults::DataReco>(datrec);
   evtweight = xsecweight * genevtweight;
 
-  cscFlt     = metfilterbitpass->at(2);
-  eeBadSCFlt = metfilterbitpass->at(8);
+  cscFlt     = metfilterbitpass->size() ? metfilterbitpass->at(2) : true;
+  eeBadSCFlt = metfilterbitpass->size() ? metfilterbitpass->at(8) : true;
+
+  if(massparams->size() > 0)
+    massPar1 = massparams->at(0);
+  if(massparams->size() > 1)
+    massPar2 = massparams->at(1);
+  if(massparams->size() > 2)
+    massPar3 = massparams->at(2);
 
 }
 

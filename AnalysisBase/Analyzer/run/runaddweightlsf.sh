@@ -9,9 +9,10 @@ totposevents=$6
 totnegevents=$7
 treename=$8
 suffix=$9
-outputname=${10}
-outputdir=${11}
-scramdir=${12}
+xsecfile=${10}
+outputname=${11}
+outputdir=${12}
+scramdir=${13}
 
 workdir=`pwd`
 
@@ -28,7 +29,7 @@ cd $workdir
 cp ${scramdir}/${runmacro} .
 cp ${scramdir}/rootlogon.C .
 
-root -l -b -q $runmacro+\(\"${filename}\",\"${process}\",$xsec,$lumi,$totposevents,$totnegevents,\"${treename}\",\"${suffix}\"\)
+root -l -b -q $runmacro+\(\"${filename}\",\"${process}\",$xsec,$lumi,$totposevents,$totnegevents,\"${treename}\",\"${suffix}\",\"${xsecfile}\"\)
 
 status=`echo $?`
 echo "Status = $status"
