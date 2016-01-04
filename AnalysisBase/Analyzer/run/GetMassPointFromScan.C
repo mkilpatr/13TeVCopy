@@ -55,7 +55,7 @@ void GetMassPointFromScan(const TString infilename,
   TTree* outtree = chain->CloneTree(0);
 
   float weight = 0;
-  outtree->Branch("wgtXSec",&weight,"F");
+  outtree->Branch("wgtXSec",&weight,"wgtXSec/F");
 
   int nevents = chain->GetEntries();
 
