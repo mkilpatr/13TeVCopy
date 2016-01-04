@@ -28,8 +28,6 @@ void GetMassPointFromScan(const TString infilename,
   while(getline(ifs,line)) { infilenames.push_back(TString(line)); }
   ifs.close();
 
-  TTree::SetMaxTreeSize(kMaxLong64);
-
   TChain* chain = new TChain("Events");
 
   for(const auto fname : infilenames) {
