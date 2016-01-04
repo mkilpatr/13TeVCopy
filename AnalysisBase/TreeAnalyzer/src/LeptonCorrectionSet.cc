@@ -104,7 +104,8 @@ void TnPCorr::getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCo
   else if(id==13 && muCorrType == UP  ) sf += unc;
   else if(id==13 && muCorrType == DOWN) sf -= unc;
   wt     = sf;
-  vetoWt = (1.0-eff*sf)/(1.0-eff);
+  vetoWt = eff < 1.0 ? (1.0-eff*sf)/(1.0-eff) : (1.0 - 0.99999*sf)/(1.0 - 0.99999); // don't want to divide by zero
+  if (vetoWt < -10.0) vetoWt = 1.0;    // or large negative weights ... need to treat these cases better
 }
 
 float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {

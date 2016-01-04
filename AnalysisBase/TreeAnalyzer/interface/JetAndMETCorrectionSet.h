@@ -55,6 +55,14 @@ private:
   const QuickRefold::TF1Container * jetResolution;
 };
 
+class JetScaleCorr : public Correction {
+public:
+  JetScaleCorr() : Correction("JetScale") {}
+  ~JetScaleCorr() {}
+
+  void correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const;
+};
+
 class METScaleCorr : public Correction {
 public:
   METScaleCorr() : Correction("METScale") {}
@@ -92,12 +100,14 @@ public:
                           , METSCALE              = (1 <<  0)   ///< Correct MET Scale
                           , METRESOLUTION         = (1 <<  1)   ///< Correct MET Resolution
                           , JETRESOLUTION         = (1 <<  2)   ///< Correct jet Resolution
+                          , JETSCALE              = (1 <<  3)   ///< Correct jet Scale
   };
   JetAndMETCorrectionSet();
   virtual ~JetAndMETCorrectionSet();
   virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "", TRandom3 * randomGenerator = 0);
   virtual void processMET(const BaseTreeAnalyzer * ana);
   virtual void correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
+  virtual void correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
   virtual void processCorrection(const BaseTreeAnalyzer * ana) {}; //does not apply to this guy, must process corrections when he wants
 
   //individual accessors
@@ -112,6 +122,7 @@ private:
   METScaleCorr * metScale;
   METResCorr * metResolution;
   JetResolutionCorr * jetResolution;
+  JetScaleCorr * jetScale;
 
   METNoHFScaleCorr * metNoHFScale;
   METNoHFResCorr * metNoHFResolution;
