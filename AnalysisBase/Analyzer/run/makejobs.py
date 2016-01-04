@@ -16,7 +16,7 @@ gROOT.SetBatch(True)
 # if you want to split the merged output into multiple files (for large samples), add the --splitmerge option, you'll be asked how many merged files you want and how many input files you want to merge per output file
 # a script called submitmerge.sh will be produced which will contain the commands needed to run the merging
 # to run the postprocessing (adding cross section weights), run ./makejobs.py --postprocess -o </path/to/dir/with/merged/files> -c <conffile> -t <condor|lsf|interactive>
-# to break up an SMS scan into the individual mass points, run e.g. ./makejobs.py --makegrid --inputdir </path/to/dir/with/postprocessed/files> -o </path/to/dir/with/final/files> -t condor
+# to break up an SMS scan into the individual mass points, run ./makejobs.py --makegrid --inputdir </path/to/dir/with/postprocessed/files> -o </path/to/dir/with/final/files> -t <condor|lsf|interactive> --postsuffix postproc
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
 parser.add_argument("--makegrid", dest="makegrid", action='store_true', help="Make jobs for producing mass grid from SMS scans. [Default: False]")
@@ -109,7 +109,7 @@ if args.makegrid :
                 prefix = "root://cmseos:1094/"
         mstopmin = sample.split('_')[1][:3]
         mstopmax = sample.split('_')[1][5:] if sample.split('_')[1].find('to') > -1 else mstopmin
-        infiles = ['/'.join([prefix,f]) for f in filelist]
+        infiles = [prefix+f for f in filelist]
         files[sample] = infiles
         for mstop in range(int(mstopmin), int(mstopmax)+args.mstopsteps, args.mstopsteps) :
             mlspmax = mstop - 175
