@@ -2,8 +2,8 @@
 #define ANALYSISBASE_TREEANALYZER_CONFIGURATIONBASE_H
 
 
-#include "AnalysisTools/DataFormats/interface/Electron.h"
-#include "AnalysisTools/DataFormats/interface/Muon.h"
+
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 #include "AnalysisTools/DataFormats/interface/Tau.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
@@ -88,49 +88,6 @@ namespace cfgSet {
       if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
       if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
-      return os;
-    };
-  };
-
-  class LeptonConfig : public BaseConfig {
-  public:
-
-    float   minEPt     ;
-    float   maxEEta    ;
-    float   maxED0     ;
-    float   maxEDz     ;
-    bool    (ucsbsusy::ElectronF::*selectedElectron)() const;
-
-    float   minMuPt     ;
-    float   maxMuEta    ;
-    float   maxMuD0     ;
-    float   maxMuDz     ;
-    bool    (ucsbsusy::MuonF::*selectedMuon)() const;
-
-    LeptonConfig(TString inName = "NULL") :BaseConfig(inName),
-      minEPt  (-1),
-      maxEEta (-1),
-      maxED0  (-1),
-      maxEDz  (-1),
-      selectedElectron(0),
-      minMuPt         (-1),
-      maxMuEta        (-1),
-      maxMuD0         (-1),
-      maxMuDz         (-1),
-      selectedMuon(0)
-    {};
-    virtual ~LeptonConfig() {};
-
-    friend std::ostream& operator<<(std::ostream& os, const LeptonConfig& a){
-      os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "The min electron Pt is "<< a.minEPt <<std::endl;
-      os << "The max electron eta is "<< a.maxEEta <<std::endl;
-      os << "The electron max D0 is "<< a.maxED0 <<std::endl;
-      os << "The electron max Dz "<< a.maxEDz <<std::endl;
-      os << "The min muon pt is "<< a.minMuPt <<std::endl;
-      os << "The max muon eta is "<< a.maxMuEta <<std::endl;
-      os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
-      os << "The muon max Dz "<< a.maxMuDz <<std::endl;
       return os;
     };
   };
@@ -321,8 +278,10 @@ namespace cfgSet {
   //The collection of default configs
   struct ConfigSet{
     JetConfig       jets           ;
-    LeptonConfig    leptons;
-    LeptonConfig    secondaryLeptons  ;
+    LeptonSelection::Electron electrons;
+    LeptonSelection::Muon     muons;
+    LeptonSelection::Electron secondaryElectrons;
+    LeptonSelection::Muon     secondaryMuons;
     TrackConfig     tracks   ;
     TauConfig       taus     ;
     PhotonConfig    photons;
@@ -331,8 +290,10 @@ namespace cfgSet {
     JSONProcessing* jsonProcessing ;
     ConfigSet() :
       jets            (),
-      leptons (),
-      secondaryLeptons   (),
+      electrons (),
+      muons   (),
+      secondaryElectrons (),
+      secondaryMuons   (),
       tracks    (),
       taus      (),
       photons (),
