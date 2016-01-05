@@ -91,7 +91,9 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
+
   cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 
   TTbarCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(10000);

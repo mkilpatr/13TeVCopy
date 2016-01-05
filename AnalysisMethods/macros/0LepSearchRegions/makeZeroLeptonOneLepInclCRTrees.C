@@ -63,7 +63,9 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
 
   cfgSet::ConfigSet pars = pars0lepCR(json);
   pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
-  pars.jets.cleanJetsvLeptons = true;
+
+  pars.jets.cleanJetsvSelectedLeptons = true;
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 

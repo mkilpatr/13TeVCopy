@@ -59,6 +59,7 @@ namespace ucsbsusy {
       defaults::DataReco datareco;
 
       std::vector<bool>          * metfilterbitpass;
+      std::vector<size16>        * massparams;
 
       bool hbheIsoFlt;
       bool hbheFltR2Loose;
@@ -67,6 +68,9 @@ namespace ucsbsusy {
       bool cscBeamHaloFlt;
       bool eeBadSCFlt;
       bool eeBadSC4Flt;
+      int  massPar1;
+      int  massPar2;
+      int  massPar3;
 
       MomentumF    met;
       MomentumF    metNoHF;

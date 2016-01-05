@@ -105,8 +105,9 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
 
+  cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 //  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 //  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
 
