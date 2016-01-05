@@ -6,35 +6,35 @@
 
 //-------------- ID and ISO evaluating functions ------------------------------//
 namespace ElectronID {
-  bool inclusive      (const ucsbsusy::ElectronF* lep) {return true;}
-  bool vetoNoIso      (const ucsbsusy::ElectronF* lep) {return lep->isvetoid();}
-  bool looseNoIso     (const ucsbsusy::ElectronF* lep) {return lep->islooseid();}
-  bool mediumNoIso    (const ucsbsusy::ElectronF* lep) {return lep->ismediumid();}
-  bool veto           (const ucsbsusy::ElectronF* lep) {return lep->isvetoelectron();}
-  bool loose          (const ucsbsusy::ElectronF* lep) {return lep->islooseelectron();}
-  bool medium         (const ucsbsusy::ElectronF* lep) {return lep->ismediumelectron();}
-  bool tight          (const ucsbsusy::ElectronF* lep) {return lep->istightelectron();}
+  inline bool inclusive      (const ucsbsusy::ElectronF* lep) {return true;}
+  inline bool vetoNoIso      (const ucsbsusy::ElectronF* lep) {return lep->isvetoid();}
+  inline bool looseNoIso     (const ucsbsusy::ElectronF* lep) {return lep->islooseid();}
+  inline bool mediumNoIso    (const ucsbsusy::ElectronF* lep) {return lep->ismediumid();}
+  inline bool veto           (const ucsbsusy::ElectronF* lep) {return lep->isvetoelectron();}
+  inline bool loose          (const ucsbsusy::ElectronF* lep) {return lep->islooseelectron();}
+  inline bool medium         (const ucsbsusy::ElectronF* lep) {return lep->ismediumelectron();}
+  inline bool tight          (const ucsbsusy::ElectronF* lep) {return lep->istightelectron();}
 }
 
 namespace ElectronISO {
-  bool inclusive     (const ucsbsusy::ElectronF* lep) {return true;}
-  bool looseMini     (const ucsbsusy::ElectronF* lep) {return lep->miniiso()<0.2;}
-  bool medMini       (const ucsbsusy::ElectronF* lep) {return lep->miniiso()<0.1;}
-  bool tightRel      (const ucsbsusy::ElectronF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.15;}
+  inline bool inclusive     (const ucsbsusy::ElectronF* lep) {return true;}
+  inline bool looseMini     (const ucsbsusy::ElectronF* lep) {return lep->miniiso()<0.2;}
+  inline bool medMini       (const ucsbsusy::ElectronF* lep) {return lep->miniiso()<0.1;}
+  inline bool tightRel      (const ucsbsusy::ElectronF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.15;}
 }
 
 namespace MuonID {
-  bool inclusive      (const ucsbsusy::MuonF* lep) {return true;}
-  bool loose          (const ucsbsusy::MuonF* lep) {return lep->isloosemuon();}
-  bool medium         (const ucsbsusy::MuonF* lep) {return lep->ismediummuon();}
-  bool tight          (const ucsbsusy::MuonF* lep) {return lep->istightmuon();}
+  inline bool inclusive      (const ucsbsusy::MuonF* lep) {return true;}
+  inline bool loose          (const ucsbsusy::MuonF* lep) {return lep->isloosemuon();}
+  inline bool medium         (const ucsbsusy::MuonF* lep) {return lep->ismediummuon();}
+  inline bool tight          (const ucsbsusy::MuonF* lep) {return lep->istightmuon();}
 }
 
 namespace MuonISO {
-  bool inclusive     (const ucsbsusy::MuonF* lep) {return true;}
-  bool looseMini     (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.2;}
-  bool medMini       (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.1;}
-  bool medRel        (const ucsbsusy::MuonF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.20;}
+  inline bool inclusive     (const ucsbsusy::MuonF* lep) {return true;}
+  inline bool looseMini     (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.2;}
+  inline bool medMini       (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.1;}
+  inline bool medRel        (const ucsbsusy::MuonF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.20;}
 }
 
 
@@ -50,13 +50,13 @@ namespace LeptonSelection {
     float maxETA;
     float maxD0;
     float maxDz;
-    bool (ElectronID::*passID)(const ucsbsusy::ElectronF* lep);
-    bool (ElectronISO::*passISO)(const ucsbsusy::ElectronF* lep);
+    bool (*passID)(const ucsbsusy::ElectronF* lep);
+    bool (*passISO)(const ucsbsusy::ElectronF* lep);
     ElectronType type;
     bool isConfig;
     Electron() : minPT(-1),maxETA(-1),maxD0(-1),maxDz(-1),passID(&ElectronID::inclusive),passISO(&ElectronISO::inclusive),type(NONE_ELE),isConfig(false){}
-    Electron(float minPT, float maxETA, float maxD0, float maxDZ, bool (ElectronID::*passID)(const ucsbsusy::ElectronF* lep),
-        bool (ElectronISO::*passISO)(const ucsbsusy::ElectronF* lep), ElectronType type = NONE_ELE ) :
+    Electron(float minPT, float maxETA, float maxD0, float maxDz, bool (*passID)(const ucsbsusy::ElectronF* lep),
+        bool (*passISO)(const ucsbsusy::ElectronF* lep), ElectronType type = NONE_ELE ) :
           minPT(minPT),maxETA(maxETA),maxD0(maxD0),maxDz(maxDz),passID(passID),passISO(passISO),type(type),isConfig(true){}
     friend std::ostream& operator<<(std::ostream& os, const Electron& a);
   };
@@ -65,13 +65,13 @@ namespace LeptonSelection {
     float maxETA;
     float maxD0;
     float maxDz;
-    bool (MuonID::*passID)(const ucsbsusy::MuonF* lep);
-    bool (MuonISO::*passISO)(const ucsbsusy::MuonF* lep);
+    bool (*passID)(const ucsbsusy::MuonF* lep);
+    bool (*passISO)(const ucsbsusy::MuonF* lep);
     MuonType type;
     bool isConfig;
     Muon() : minPT(-1),maxETA(-1),maxD0(-1),maxDz(-1),passID(&MuonID::inclusive),passISO(&MuonISO::inclusive), type(NONE_MU),isConfig(false){}
-    Muon(float minPT, float maxETA, float maxD0, float maxDZ, bool (MuonID::*passID)(const ucsbsusy::MuonF* lep),
-        bool (MuonISO::*passISO)(const ucsbsusy::MuonF* lep), MuonType type = NONE_MU ) :
+    Muon(float minPT, float maxETA, float maxD0, float maxDz, bool (*passID)(const ucsbsusy::MuonF* lep),
+        bool (*passISO)(const ucsbsusy::MuonF* lep), MuonType type = NONE_MU ) :
           minPT(minPT),maxETA(maxETA),maxD0(maxD0),maxDz(maxDz),passID(passID),passISO(passISO),type(type),isConfig(true){}
     friend std::ostream& operator<<(std::ostream& os, const Muon& a);
   };

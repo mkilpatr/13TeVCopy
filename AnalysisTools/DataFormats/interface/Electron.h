@@ -23,12 +23,12 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), isveto_(false), isvetoid_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false){}
+      Electron() : scEta_(0), r9_(0), isveto_(false),  isloose_(false), ismedium_(false), istight_(false),isvetoid_(false), islooseid_(false),  ismediumid_(false){Lepton<CoordSystem>::setPdgId(11);Lepton<CoordSystem>::setIsElectron(true);}
 
       template <class InputCoordSystem>
       Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) :
-		Lepton<InputCoordSystem>(inMomentum, inIndex),
-					 scEta_(0), r9_(0), isveto_(false), isvetoid_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false) {setPdgId(11);setIsElectron(true);}
+		Lepton<CoordSystem>(inMomentum, inIndex),
+					 scEta_(0), r9_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isvetoid_(false), islooseid_(false),  ismediumid_(false) {Lepton<CoordSystem>::setPdgId(11);Lepton<CoordSystem>::setIsElectron(true);}
 
       ~Electron() {}
 

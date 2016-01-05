@@ -23,12 +23,12 @@ namespace ucsbsusy {
   {
 
     public :
-	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {}
+	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
 
       template <class InputCoordSystem>
 	Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) :
-    Lepton<InputCoordSystem>(inMomentum, inIndex),
-			     isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {setPdgId(13);setIsMuon(true);}
+    Lepton<CoordSystem>(inMomentum, inIndex),
+			     isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
     
     ~Muon() {}
 

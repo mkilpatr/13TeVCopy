@@ -46,10 +46,6 @@ namespace ucsbsusy {
       std::vector<unsigned long>  *	hpsid;
 
       TauFCollection    taus;
-
-    private :
-      LeptonId* tauId;
-
   };
 
 }

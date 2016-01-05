@@ -70,7 +70,7 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
 }
 
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
-  if(!electronConf.isConfig() || !muonConf.isConfig)
+  if(!electronConf.isConfig || !muonConf.isConfig)
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");
 
   selectedLeptons.clear();
