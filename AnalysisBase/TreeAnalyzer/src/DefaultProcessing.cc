@@ -18,16 +18,20 @@ bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, 
   return false;
 }
 
-bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf){
-  if(conf.maxED0 > 0 && fabs(electron.d0()) >= conf.maxED0) return false;
-  if(conf.maxEDz > 0 && fabs(electron.dz()) >= conf.maxEDz) return false;
-  return (electron.pt() > conf.minEPt && fabs(electron.eta()) < conf.maxEEta && (electron.*conf.selectedElectron)());
+bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonSelection::Electron& conf){
+  if(conf.maxD0 > 0 && fabs(electron.d0()) >= conf.maxD0) return false;
+  if(conf.maxDz > 0 && fabs(electron.dz()) >= conf.maxDz) return false;
+  if(electron.pt() <= conf.minPT) return false;
+  if(electron.absEta() >= conf.maxETA) return false;
+  return (*conf.passID)(&electron) && (*conf.passISO)(&electron);
 }
 
-bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonConfig& conf){
-  if(conf.maxMuD0 > 0 && fabs(muon.d0()) >= conf.maxMuD0) return false;
-  if(conf.maxMuDz > 0 && fabs(muon.dz()) >= conf.maxMuDz) return false;
-  return (muon.pt() > conf.minMuPt && fabs(muon.eta()) < conf.maxMuEta && (muon.*conf.selectedMuon)());
+bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonSelection::Muon& conf){
+  if(conf.maxD0 > 0 && fabs(muon.d0()) >= conf.maxD0) return false;
+  if(conf.maxDz > 0 && fabs(muon.dz()) >= conf.maxDz) return false;
+  if(muon.pt() <= conf.minPT) return false;
+  if(muon.absEta() >= conf.maxETA) return false;
+  return (*conf.passID)(&muon) && (*conf.passISO)(&muon);
 }
 
 bool cfgSet::isSelTrack(ucsbsusy::PFCandidateF& track, const ucsbsusy::MomentumF* met, const TrackConfig& conf){
@@ -65,14 +69,14 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
     return boolVal;
 }
 
-void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
-  if(!conf.isConfig())
+void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
+  if(!electronConf.isConfig() || !muonConf.isConfig)
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");
 
   selectedLeptons.clear();
 
   for(auto* lepton : allLeptons){
-    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, conf): isSelElectron(*(ElectronF*)lepton, conf))
+    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, muonConf): isSelElectron(*(ElectronF*)lepton, electronConf))
       selectedLeptons.push_back(lepton);
     else if(nonSelectedLeptons)
       nonSelectedLeptons->push_back(lepton);
