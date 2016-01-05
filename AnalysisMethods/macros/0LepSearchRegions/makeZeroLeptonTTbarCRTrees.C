@@ -30,7 +30,7 @@ class TTbarCRAnalyzer : public ZeroLeptonAnalyzer {
 
       // selections: exactly two opposite flavor leptons, inv mass > 10
       passTTbarSel = false;
-      if(selectedLeptons.size() == 2){
+      if(nPrimaryLeptons >= 0 && nSelLeptons == 2){
         auto lep0 = selectedLeptons.at(0);
         auto lep1 = selectedLeptons.at(1);
         if (lep0->q() != lep1->q()){
@@ -91,11 +91,7 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep(json);
-  pars = cfgSet::zl_search_set;
-  pars.jets.cleanJetsvLeptons = true;
-  pars.leptons = cfgSet::zl_ctr_diLep_leptons;
-
+  cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
 
   TTbarCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(10000);

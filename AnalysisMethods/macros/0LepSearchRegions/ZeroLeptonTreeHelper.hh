@@ -31,6 +31,13 @@ cfgSet::ConfigSet pars0lepCR(TString json) {
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
+cfgSet::ConfigSet pars0lepDiLepCR(TString json) {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile(json);
+  cfgSet::ConfigSet cfg = cfgSet::zl_dilepton_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
+  return cfg;
+}
 
 cfgSet::ConfigSet pars0LepPhoton(TString json) {
   cfgSet::loadDefaultConfigurations();

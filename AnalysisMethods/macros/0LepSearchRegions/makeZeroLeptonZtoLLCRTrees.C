@@ -36,7 +36,7 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
       // selections: exactly two same flavor leptons, inv mass in (80, 100)
       passZtoLLSel = false;
-      if(selectedLeptons.size() != 2)
+      if(nPrimaryLeptons == 0 || nSelLeptons != 2)
         return;
 
       auto lep0 = selectedLeptons.at(0);
@@ -105,10 +105,7 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep(json);
-  pars = cfgSet::zl_dilepton_set;
-  pars.leptons.maxEEta           = 2.1;
-  pars.leptons.maxMuEta          = 2.1;
+  cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
 
 //  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
 //  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
