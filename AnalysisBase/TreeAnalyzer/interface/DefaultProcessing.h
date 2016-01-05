@@ -23,7 +23,7 @@ namespace cfgSet{
 
   void selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsbsusy::RecoJetF*>* bJets, std::vector<ucsbsusy::RecoJetF*>* nonBJets,
 		  ucsbsusy::RecoJetFCollection& allJets, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, 
-		  const std::vector<ucsbsusy::LeptonF*>* vetoedLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons, 
+      const std::vector<ucsbsusy::LeptonF*>* primaryLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons,
 		  const std::vector<ucsbsusy::PFCandidateF*>* vetoedTracks, const JetConfig&  conf);
 
   double adHocPUCorr(double pt,double eta,double area, double rho);

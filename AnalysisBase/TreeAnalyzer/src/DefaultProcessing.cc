@@ -122,7 +122,7 @@ void cfgSet::selectPhotons(std::vector<ucsbsusy::PhotonF*>& selectedPhotons, ucs
 
 void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsbsusy::RecoJetF*>* bJets, std::vector<ucsbsusy::RecoJetF*>* nonBJets,
 			ucsbsusy::RecoJetFCollection& allJets, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, 
-			const std::vector<ucsbsusy::LeptonF*>* vetoedLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons, 
+			const std::vector<ucsbsusy::LeptonF*>* primaryLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons,
 			const std::vector<ucsbsusy::PFCandidateF*>* vetoedTracks, const JetConfig&  conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectJets(): You want to do selecting but have not yet configured the selection!");
@@ -133,24 +133,11 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
 
   vector<bool> vetoJet(allJets.size(),false);
 
-  if(conf.cleanJetsvLeptons) {
-    if(selectedLeptons == 0)
+  if(conf.cleanJetsvLeptons){
+    auto cleanLeptons = conf.ignoreSeconaryLeptonsWhenCleaning ? primaryLeptons : selectedLeptons;
+    if(cleanLeptons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
-
-    for(const auto* glep : *selectedLeptons) {
-      double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
-      if(near >= 0){
-        vetoJet[near] = true;
-      }
-    }
-  }
-
-  if(conf.cleanJetsvSecondaryLeptons) {
-    if(vetoedLeptons == 0)
-      throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
-
-    for(const auto* glep : *vetoedLeptons) {
+    for(const auto* glep : *cleanLeptons) {
       double nearDR = 0;
       int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
       if(near >= 0){

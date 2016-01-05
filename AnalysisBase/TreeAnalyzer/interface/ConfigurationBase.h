@@ -49,7 +49,7 @@ namespace cfgSet {
     bool  applyJetID               ;
     bool  applyAdHocPUCorr         ;
     bool  cleanJetsvLeptons;
-    bool  cleanJetsvSecondaryLeptons  ;
+    bool  ignoreSeconaryLeptonsWhenCleaning  ;
     bool  cleanJetsvPhotons;
     bool  cleanJetsvTracks   ;
     float cleanJetsMaxDR           ;
@@ -64,10 +64,10 @@ namespace cfgSet {
       applyJetID    (false),
       applyAdHocPUCorr         (false),
 
-      cleanJetsvSelectedLeptons(false),
-      cleanJetsvVetoedLeptons  (false),
-      cleanJetsvSelectedPhotons(false),
-      cleanJetsvVetoedTracks  (false),
+      cleanJetsvLeptons(false),
+      ignoreSeconaryLeptonsWhenCleaning  (false),
+      cleanJetsvPhotons(false),
+      cleanJetsvTracks  (false),
       cleanJetsMaxDR           (-1)
 
     {};
@@ -83,7 +83,7 @@ namespace cfgSet {
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
       if(a.cleanJetsvLeptons) os << "Cleaning Jets vs. leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. leptons is disabled" << std::endl;
-      if(a.cleanJetsvSecondaryLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
+      if(a.ignoreSeconaryLeptonsWhenCleaning) os << "Ignoring secondary leptons when cleaning jets" <<std::endl;
       if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
       if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;

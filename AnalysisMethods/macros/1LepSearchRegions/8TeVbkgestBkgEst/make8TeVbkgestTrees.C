@@ -323,7 +323,6 @@ void make8TeVbkgestTrees( TString sname            = "ttbar_0" // sample name
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet pars = cfgSet::sl_search_set;
-  pars.jets.cleanJetsvSecondaryLeptons = true;
 
   string treeName = isMC ? "Events" : "TestAnalyzer/Events";
   Analyze a(fullname, treeName, isMC, &pars, sname, outputdir);

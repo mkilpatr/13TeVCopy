@@ -23,7 +23,7 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.applyJetID                = true;
   zl_search_jets.applyAdHocPUCorr          = false;
   zl_search_jets.cleanJetsvLeptons         = false;
-  zl_search_jets.cleanJetsvSecondaryLeptons= false;
+  zl_search_jets.ignoreSeconaryLeptonsWhenCleaning= false;
   zl_search_jets.cleanJetsvPhotons         = false;
   zl_search_jets.cleanJetsvTracks          = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
@@ -41,7 +41,7 @@ void cfgSet::loadDefaultJetConfigurations() {
 
   sl_search_jets = zl_search_jets;
   sl_search_jets.cleanJetsvLeptons = true;
-  sl_search_jets.cleanJetsvSecondaryLeptons   = false;
+  sl_search_jets.ignoreSeconaryLeptonsWhenCleaning   = true;
   sl_search_jets.minPt                        = 30;
   sl_search_jets.minBJetPt                    = 30;
   sl_search_jets.applyJetID                   = true;
