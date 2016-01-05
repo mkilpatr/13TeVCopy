@@ -245,7 +245,6 @@ void run() {
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   cfg.jets.minPt = 20;
   cfg.jets.minBJetPt = 20;
-  cfg.jets.cleanJetsvSecondaryLeptons = true;
 
 //  TString MCFileName = "MC_extraskim.root";
   TString MCFileName = "MC_extraSkim.root";

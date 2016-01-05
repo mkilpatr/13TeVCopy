@@ -12,7 +12,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       ZeroLeptonAnalyzer(fileName, treeName, outfileName,randomSeed, isMCTree, pars) {}
 
     bool fillEvent() {
-      if(nSelLeptons!=1)      return false;
+      if(nPrimaryLeptons!=1)      return false;
+      if(nSecondaryLeptons !=0 )      return false;
       MomentumF* lep = new MomentumF(selectedLeptons.at(0)->p4());
       MomentumF* metn = new MomentumF(met->p4() + lep->p4());
       if(metn->pt() < metcut_) return false;

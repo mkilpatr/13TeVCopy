@@ -14,10 +14,14 @@ gROOT.SetBatch(True)
 # then, submit jobs using ./submitall.sh
 # to run the merging after the ntupling is done, run ./makejobs.py --runmerge --inputdir </path/to/dir/with/unmerged/files> -o </path/to/dir/with/merged/files>
 # if you want to split the merged output into multiple files (for large samples), add the --splitmerge option, you'll be asked how many merged files you want and how many input files you want to merge per output file
-# a script called runmerge.sh will be produced which will contain the commands needed to run the merging
+# a script called submitmerge.sh will be produced which will contain the commands needed to run the merging
 # to run the postprocessing (adding cross section weights), run ./makejobs.py --postprocess -o </path/to/dir/with/merged/files> -c <conffile> -t <condor|lsf|interactive>
+# to break up an SMS scan into the individual mass points, run ./makejobs.py --makegrid --inputdir </path/to/dir/with/postprocessed/files> -o </path/to/dir/with/final/files> -t <condor|lsf|interactive> --postsuffix postproc
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
+parser.add_argument("--makegrid", dest="makegrid", action='store_true', help="Make jobs for producing mass grid from SMS scans. [Default: False]")
+parser.add_argument("--mstopsteps", dest="mstopsteps", type=int, default=25, help="Step size in m(stop) in GeV for making grid. [Default: 25]")
+parser.add_argument("--mlspsteps", dest="mlspsteps", type=int, default=25, help="Step size in m(lsp) in GeV for making grid. [Default: 25]")
 parser.add_argument("--postprocess", dest="postprocess", action='store_true', help="Run postprocessing instead of job submission. [Default: False]")
 parser.add_argument("--treename", dest="treename", default="TestAnalyzer/Events", help="Name of trees in merged input files, needed for postprocessing. [Default: TestAnalyzer/Events]")
 parser.add_argument("--lumi", dest="lumi", type=float, default=1., help="Integrated luminosity to be used for calculating cross section weights in postprocessing. [Default: 1.]")
@@ -40,7 +44,6 @@ parser.add_argument("-l", "--splittype", dest="splittype", default="file", choic
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
 parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das","local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
 parser.add_argument("-e", "--redir", dest="redir", default="", help="Url of redirector to be added to file names. [Default: None (will be determined by xrootd config)]")
-#parser.print_help()
 args = parser.parse_args()
 
 def get_num_events(filelist,prefix='',wgtsign=1,treename='TestAnalyzer/Events'):
@@ -61,6 +64,7 @@ xsecs = []
 datasets = []
 totnposevents = []
 totnnegevents = []
+xsecfiles = []
 
 with open(args.input,"r") as f :
     for line in f :
@@ -71,12 +75,129 @@ with open(args.input,"r") as f :
         samples.append(content[1])
         xsecs.append(content[2])
         datasets.append(content[3])
+        if len(content) > 4 :
+            xsecfiles.append(content[4])
+        else :
+            xsecfiles.append("NONE")
 
 eos="/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
 os.system("mkdir -p %s" % args.jobdir)
 
-if args.postprocess : 
+if args.makegrid :
+    if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
+        os.system("%s mkdir -p %s" % (eos,args.outdir))
+    else :
+        os.system("mkdir -p %s" % args.outdir)
+
+    masspoints = []
+    files = {}
+    prefix = ""
+    snames = {}
+    for sample in samples :
+        filelist = []
+        snames[sample] = []
+        if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
+            cmd = ("%s find -f %s | egrep '%s(-ext|)(_[0-9]+|)_ntuple_%s.root'" % (eos,args.outdir,sample,args.postsuffix))
+            ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            result = ps.communicate()
+            filelist = result[0].rstrip('\n').split('\n')
+            prefix = "root://eoscms/"
+        else :
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext|)(_[0-9]+|)_ntuple_%s.root' % (sample,args.postsuffix), f)]
+            if args.inputdir.startswith("/eos/uscms/store/user") :
+                prefix = "root://cmseos:1094/"
+        mstopmin = sample.split('_')[1][:3]
+        mstopmax = sample.split('_')[1][5:] if sample.split('_')[1].find('to') > -1 else mstopmin
+        infiles = [prefix+f for f in filelist]
+        files[sample] = infiles
+        for mstop in range(int(mstopmin), int(mstopmax)+args.mstopsteps, args.mstopsteps) :
+            mlspmax = mstop - 175
+            for mlsp in range(0, mlspmax+args.mlspsteps, args.mlspsteps) :
+                snames[sample].append('_'.join(['T2tt',str(mstop),str(mlsp)]))
+                masspoints.append(('_').join(['T2tt',str(mstop),str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join(['T2tt',str(mstop),'1']))
+    
+    print 'Creating submission file: submit_makegrid.sh'
+    script = open('submit_makegrid.sh','w')
+    script.write("""#!/bin/bash
+outputdir={outputdir}
+runmacro=GetMassPointFromScan.C
+prefix={prefix}
+suffix={suffix}
+""".format(outputdir=args.outdir, prefix=prefix, suffix=args.postsuffix))
+    
+    if args.submittype == 'lsf' or args.submittype == 'condor' :
+        script.write("""
+workdir=$CMSSW_BASE
+runscript=runmakegrid{stype}.sh
+
+if [ ! "$CMSSW_BASE" ]; then
+  echo "-------> error: define cms environment."
+  exit 1
+fi
+
+cp GetMassPointFromScan.C $workdir
+cp rootlogon.C $workdir
+
+echo "$runscript $runmacro $workdir $outputdir"
+""".format(stype=args.submittype))
+    
+    for sample in samples :
+        for masspoint in snames[sample] :
+            submitfile = '%s/filelist_%s.txt' % (args.jobdir, masspoint)
+            with open(submitfile,'w') as f :
+                f.write('\n'.join(files[sample]))
+            outfilename = '_'.join([masspoint,'ntuple',args.postsuffix+'.root'])
+            if int(masspoint.split('_')[2]) == 0 :
+                outfilename = outfilename.replace('_0_','_1_')
+            if args.submittype == 'interactive' :
+                script.write("""root -l -q -b $runmacro+\(\\"{infile}\\",\\"{outfile}\\",{mstop},{mlsp}\)\nmv {outfile} {outdir}/\n""".format(
+                infile=submitfile, outfile=outfilename, mstop=int(masspoint.split('_')[1]), mlsp=int(masspoint.split('_')[2]), outdir=args.outdir
+                ))
+            elif args.submittype == 'lsf' :
+                script.write("""cp {jobdir}/{infile} $workdir\nbsub -q {queue} $runscript $runmacro {infile} {outfile} {mstop} {mlsp} {outdir} $workdir\n""".format(
+                jobdir=args.jobdir, queue=args.queue, infile=submitfile.split('/')[1], outfile=outfilename, mstop=int(masspoint.split('_')[-1]), mlsp=int(masspoint.split('_')[2]), outdir=args.outdir
+                ))
+            elif args.submittype == 'condor' :
+                os.system("mkdir -p %s/logs" % args.jobdir)
+                jobscript = open('%s/submit_%s_makegrid.sh' % (args.jobdir, masspoint),'w')
+                jobscript.write("""
+cat > submit.cmd <<EOF
+universe                = vanilla
+Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
+request_disk            = 10000000
+Executable              = runmakegridcondor.sh
+Arguments               = {macro} {infile} {outfile} {mstop} {mlsp} {outdir} {workdir}
+Output                  = logs/{sname}_makegrid.out
+Error                   = logs/{sname}_makegrid.err
+Log                     = logs/{sname}_makegrid.log
+use_x509userproxy       = true
+initialdir              = {jobdir}
+Should_Transfer_Files   = YES
+transfer_input_files    = {workdir}/{macro},{workdir}/{infile},{workdir}/rootlogon.C
+WhenToTransferOutput    = ON_EXIT
+Queue
+EOF
+
+condor_submit submit.cmd;
+rm submit.cmd""".format(
+                macro="GetMassPointFromScan.C", infile=submitfile.split('/')[-1], outfile=outfilename, mstop=int(masspoint.split('_')[1]), mlsp=int(masspoint.split('_')[2]), outdir=args.outdir, workdir="${CMSSW_BASE}", jobdir=args.jobdir, sname=masspoint
+                ))
+                jobscript.close()
+                script.write("cp {jobdir}/{infile} $workdir\n./{jobdir}/submit_{sname}_makegrid.sh\n".format(jobdir=args.jobdir, infile=submitfile.split('/')[-1], sname=masspoint))
+                os.system("chmod +x %s/submit_%s_makegrid.sh" %(args.jobdir,masspoint))
+    
+    
+    script.close()
+    os.system("chmod +x submit_makegrid.sh")
+    
+    print "Done!"
+    
+    print ', '.join(p for p in masspoints) 
+
+    exit()
+
+elif args.postprocess : 
     files = []
     prefix = ""
     for isam in range(len(samples)) :
@@ -129,12 +250,12 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root","_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\"\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\"\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {outname} {outdir} $workdir\n""".format(
-                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nevts=totnevents[isam], outname=outfilename, outdir=args.outdir
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {outname} {outdir} $workdir\n""".format(
+                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
@@ -144,9 +265,8 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 199
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -160,7 +280,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir,name=samples[isam], j=ifile))
@@ -345,7 +465,6 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 199
 Executable              = {runscript}{stype}.sh
 Arguments               = {cfg} {infile} {outputdir} {outputname} {maxevents} {skipevents} {workdir}
 Output                  = logs/{sname}_{num}.out
@@ -369,6 +488,7 @@ rm submit.cmd""".format(
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" %(args.jobdir, samples[isam], ijob))
+#request_memory          = 199
 
 
     script.close()

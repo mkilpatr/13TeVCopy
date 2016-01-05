@@ -2,8 +2,8 @@
 #define ANALYSISBASE_TREEANALYZER_CONFIGURATIONBASE_H
 
 
-#include "AnalysisTools/DataFormats/interface/Electron.h"
-#include "AnalysisTools/DataFormats/interface/Muon.h"
+
+#include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 #include "AnalysisTools/DataFormats/interface/Tau.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
@@ -49,11 +49,10 @@ namespace cfgSet {
     bool  applyJetID               ;
     bool  applyAdHocPUCorr         ;
     bool  cleanJetsvLeptons;
-    bool  cleanJetsvSecondaryLeptons  ;
+    bool  ignoreSeconaryLeptonsWhenCleaning  ;
     bool  cleanJetsvPhotons;
     bool  cleanJetsvTracks   ;
     float cleanJetsMaxDR           ;
-    signed int JES                 ;
 
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
@@ -64,12 +63,13 @@ namespace cfgSet {
       defaultCSV    (-1),
       applyJetID    (false),
       applyAdHocPUCorr         (false),
+
       cleanJetsvLeptons(false),
-      cleanJetsvSecondaryLeptons  (false),
+      ignoreSeconaryLeptonsWhenCleaning  (false),
       cleanJetsvPhotons(false),
       cleanJetsvTracks  (false),
-      cleanJetsMaxDR           (-1),
-      JES                      (0)
+      cleanJetsMaxDR           (-1)
+
     {};
     virtual ~JetConfig() {};
 
@@ -80,57 +80,13 @@ namespace cfgSet {
       os << "The min jet pt is "<< a.minBJetPt <<std::endl;
       os << "The max bJet eta is "<< a.maxBJetEta <<std::endl;
       os << "The default CSV is "<< a.defaultCSV <<std::endl;
-      os << "The JES variation is " << a.JES << std::endl;
       if(a.applyJetID) os << "Apply JetID enabled" <<std::endl; else os << "Apply JetID disabled" << std::endl;
       if(a.applyAdHocPUCorr) os << "Applying AdHoc PU Correction" <<std::endl; else os << "No AdHoc PU Correction Applied" << std::endl;
       if(a.cleanJetsvLeptons) os << "Cleaning Jets vs. leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. leptons is disabled" << std::endl;
-      if(a.cleanJetsvSecondaryLeptons) os << "Cleaning Jets vs. Vetoed Leptons is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Leptons is disabled" << std::endl;
+      if(a.ignoreSeconaryLeptonsWhenCleaning) os << "Ignoring secondary leptons when cleaning jets" <<std::endl;
       if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
       if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
-      return os;
-    };
-  };
-
-  class LeptonConfig : public BaseConfig {
-  public:
-
-    float   minEPt     ;
-    float   maxEEta    ;
-    float   maxED0     ;
-    float   maxEDz     ;
-    bool    (ucsbsusy::ElectronF::*selectedElectron)() const;
-
-    float   minMuPt     ;
-    float   maxMuEta    ;
-    float   maxMuD0     ;
-    float   maxMuDz     ;
-    bool    (ucsbsusy::MuonF::*selectedMuon)() const;
-
-    LeptonConfig(TString inName = "NULL") :BaseConfig(inName),
-      minEPt  (-1),
-      maxEEta (-1),
-      maxED0  (-1),
-      maxEDz  (-1),
-      selectedElectron(0),
-      minMuPt         (-1),
-      maxMuEta        (-1),
-      maxMuD0         (-1),
-      maxMuDz         (-1),
-      selectedMuon(0)
-    {};
-    virtual ~LeptonConfig() {};
-
-    friend std::ostream& operator<<(std::ostream& os, const LeptonConfig& a){
-      os << "Printing out lepton selection information" << std::endl;//<< a.jetCollection <<std::endl;
-      os << "The min electron Pt is "<< a.minEPt <<std::endl;
-      os << "The max electron eta is "<< a.maxEEta <<std::endl;
-      os << "The electron max D0 is "<< a.maxED0 <<std::endl;
-      os << "The electron max Dz "<< a.maxEDz <<std::endl;
-      os << "The min muon pt is "<< a.minMuPt <<std::endl;
-      os << "The max muon eta is "<< a.maxMuEta <<std::endl;
-      os << "The muon max D0 is "<< a.maxMuD0 <<std::endl;
-      os << "The muon max Dz "<< a.maxMuDz <<std::endl;
       return os;
     };
   };
@@ -229,8 +185,11 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
-    TString tnpElCorrectionFile;
-    TString tnpMuCorrectionFile;
+    //TString tnpElCorrectionFile;
+    //TString tnpMuCorrectionFile;
+    //TString tnpMCEffElFile;
+    //TString tnpMCEffMuFile;
+    ucsbsusy::TnPCorr::LEPSEL tnpLepSel;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
 
@@ -244,6 +203,8 @@ namespace cfgSet {
     TString jetResFile;
     double  jetResCorr;
 
+    ucsbsusy::CORRTYPE jetScaleCorr;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
@@ -255,7 +216,8 @@ namespace cfgSet {
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
-        jetResCorr(1)
+        jetResCorr(1),
+        jetScaleCorr(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -292,10 +254,20 @@ namespace cfgSet {
         else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
-        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP)
-          os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
-             << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
-          os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+        if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP) {
+          //os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
+          //   << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
+          //os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
+          //os << "Getting MC eff from  " << a.tnpMCEffElFile.Data()
+          //   << " and " << a.tnpMCEffMuFile.Data() << std::endl; // tnpLepSel
+          os << "Applying TnP lepton corrections using selection for ";
+          switch(a.tnpLepSel) {
+          case ucsbsusy::TnPCorr::MT2VETO : os << "MT2 veto "     ; break;
+          case ucsbsusy::TnPCorr::GOODPOG : os << "good POG veto "; break;
+          default                         : os << "no "           ; break;
+          }
+          os << " leptons" << std::endl;
+        }
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying PU corrections from " << a.puCorrectionFile.Data() <<" -> ";
@@ -309,6 +281,8 @@ namespace cfgSet {
           os << "METScale ";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESOLUTION)
           os << "METResolution ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETSCALE)
+          os << "JetScale ("<< a.jetScaleCorr<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION)
           os << "JetResolution ("<< a.jetResCorr<<")";
         os << std::endl;
@@ -321,8 +295,10 @@ namespace cfgSet {
   //The collection of default configs
   struct ConfigSet{
     JetConfig       jets           ;
-    LeptonConfig    leptons;
-    LeptonConfig    secondaryLeptons  ;
+    LeptonSelection::Electron electrons;
+    LeptonSelection::Muon     muons;
+    LeptonSelection::Electron secondaryElectrons;
+    LeptonSelection::Muon     secondaryMuons;
     TrackConfig     tracks   ;
     TauConfig       taus     ;
     PhotonConfig    photons;
@@ -331,8 +307,10 @@ namespace cfgSet {
     JSONProcessing* jsonProcessing ;
     ConfigSet() :
       jets            (),
-      leptons (),
-      secondaryLeptons   (),
+      electrons (),
+      muons   (),
+      secondaryElectrons (),
+      secondaryMuons   (),
       tracks    (),
       taus      (),
       photons (),

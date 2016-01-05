@@ -254,9 +254,7 @@ void makeZeroLeptonTTZtoLLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep(json);
-  pars = cfgSet::zl_dilepton_set;
-  pars.leptons = cfgSet::zl_sel_leptons;
+  cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
 
   pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
 

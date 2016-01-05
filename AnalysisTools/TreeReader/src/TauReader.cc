@@ -27,7 +27,6 @@ TauReader::TauReader() : BaseReader(){
   dxyerr         = new  vector<float>         ;
   dxysig         = new  vector<float>         ;
   hpsid          = new  vector<unsigned long>;
-  tauId          = new  LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------

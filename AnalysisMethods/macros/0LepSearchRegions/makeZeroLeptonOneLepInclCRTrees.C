@@ -30,7 +30,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
 
     bool fillEvent() {
-      if(nSelLeptons != 1)                  return false;
+      if(nPrimaryLeptons != 1)                  return false;
+      if(nSecondaryLeptons != 0)                  return false;
       if(!goodvertex)                       return false;
       filler.fillEventInfo(&data, this);
       if(isMC()) filler.fillGenInfo  (&data, 0, genJets, false);
@@ -60,12 +61,11 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep(json);
-  pars = cfgSet::zl_search_set;
+  cfgSet::ConfigSet pars = pars0lepCR(json);
   pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
-  pars.jets.cleanJetsvLeptons = true;
-  pars.leptons = cfgSet::zl_ctr_leptons;
-  pars.secondaryLeptons = cfgSet::zl_ctr_sec_leptons;
+
+  pars.jets.cleanJetsvSelectedLeptons = true;
+  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 

@@ -16,15 +16,6 @@ namespace cfgSet {
 
   void loadDefaultJetConfigurations();
 
-  extern LeptonConfig zl_sel_leptons ;
-  extern LeptonConfig zl_ctr_leptons;
-  extern LeptonConfig zl_ctr_sec_leptons;
-  extern LeptonConfig zl_ctr_diLep_leptons;
-  extern LeptonConfig sl_sel_leptons ;
-  extern LeptonConfig sl_sel_sec_leptons;
-
-  void loadDefaultLeptonConfigurations();
-
   extern TrackConfig zl_veto_tracks;
   extern TrackConfig sl_veto_tracks;
 
