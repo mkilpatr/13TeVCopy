@@ -45,6 +45,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nPU               (0),
     rho               (0),
     nSelLeptons       (0),
+    nPrimaryLeptons    (0),
     nSecondaryLeptons    (0),
     nVetoedTracks     (0),
     nJets             (0),
@@ -66,8 +67,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   clog <<"Loaded configurations: " << endl;
   if(configSet.jsonProcessing)             clog << "Applying JSON file: " << configSet.jsonFile << endl;
   if(configSet.jets           .isConfig()) clog << configSet.jets  <<" ";
-  if(configSet.leptons.isConfig()) clog << configSet.leptons <<" ";
-  if(configSet.secondaryLeptons  .isConfig()) clog << configSet.secondaryLeptons   <<" ";
+  if(configSet.electrons.isConfig)          clog << "Selected electron config:"  << endl << configSet.electrons <<" ";
+  if(configSet.muons.isConfig)              clog << "Selected muon config:"      << endl << configSet.muons     <<" ";
+  if(configSet.secondaryElectrons.isConfig) clog << "Secondary electron config:" << endl << configSet.secondaryElectrons <<" ";
+  if(configSet.secondaryMuons.isConfig)     clog << "Secondary muon config:"     << endl << configSet.secondaryMuons <<" ";
   if(configSet.tracks   .isConfig()) clog << configSet.tracks    <<" ";
   if(configSet.taus     .isConfig()) clog << configSet.taus      <<" ";
   if(configSet.photons.isConfig()) clog << configSet.photons <<" ";
@@ -330,6 +333,7 @@ void BaseTreeAnalyzer::processVariables()
 
   allLeptons.clear();
   selectedLeptons.clear();
+  primaryLeptons.clear();
   secondaryLeptons.clear();
   if(muonReader.isLoaded() || electronReader.isLoaded()){
     allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
@@ -341,14 +345,24 @@ void BaseTreeAnalyzer::processVariables()
        allLeptons.push_back(&muon);
     std::sort(allLeptons.begin(), allLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
 
-    std::vector<LeptonF*> nonSelectedLeptons(0);
-    if(configSet.leptons.isConfig())
-      cfgSet::selectLeptons(selectedLeptons, allLeptons, configSet.leptons,&nonSelectedLeptons);
+    std::vector<LeptonF*> nonPrimaryLeptons(0);
+    if(configSet.electrons.isConfig || configSet.muons.isConfig)
+      cfgSet::selectLeptons(primaryLeptons, allLeptons, configSet.electrons,configSet.muons,&nonPrimaryLeptons);
 
-    if(configSet.secondaryLeptons.isConfig())
-      cfgSet::selectLeptons(secondaryLeptons, configSet.leptons.isConfig() ? nonSelectedLeptons : allLeptons, configSet.secondaryLeptons);
+    if(configSet.secondaryElectrons.isConfig || configSet.secondaryMuons.isConfig)
+      cfgSet::selectLeptons(secondaryLeptons, (configSet.electrons.isConfig || configSet.muons.isConfig) ? nonPrimaryLeptons : allLeptons,
+          configSet.secondaryElectrons,configSet.secondaryMuons);
   }
+
+  for(auto* lep : primaryLeptons)
+    selectedLeptons.push_back(lep);
+  for(auto* lep : secondaryLeptons)
+    selectedLeptons.push_back(lep);
+  std::sort(selectedLeptons.begin(), selectedLeptons.end(), PhysicsUtilities::greaterPTDeref<LeptonF>());
+
+
   nSelLeptons = selectedLeptons.size();
+  nPrimaryLeptons = primaryLeptons.size();
   nSecondaryLeptons = secondaryLeptons.size();
 
   vetoedTracks.clear();

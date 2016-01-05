@@ -147,6 +147,7 @@ public:
     float nPU;
     float rho;
     int   nSelLeptons;
+    int   nPrimaryLeptons;
     int   nSecondaryLeptons;
     int   nVetoedTracks;
     int   nJets;
@@ -161,9 +162,10 @@ public:
     MomentumF* puppimet   ;
     MomentumF* genmet     ;
     bool       goodvertex ;
-    std::vector<LeptonF*>        allLeptons        ;
-    std::vector<LeptonF*>        selectedLeptons   ;
-    std::vector<LeptonF*>        secondaryLeptons  ;
+    std::vector<LeptonF*>        allLeptons        ; //All leptons in the tree w/o selection
+    std::vector<LeptonF*>        selectedLeptons   ; //All leptons that pass either the primary or secondary selection
+    std::vector<LeptonF*>        primaryLeptons    ; //All leptons that pass the primary (tighter) selection
+    std::vector<LeptonF*>        secondaryLeptons  ; //All leptons that pass the secondary (looser) selection but do not pass the primary selection
     std::vector<PFCandidateF*>   vetoedTracks      ;
     std::vector<TauF*>           vetoedTaus        ;
     std::vector<PhotonF*>        selectedPhotons   ;
