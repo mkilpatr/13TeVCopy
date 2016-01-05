@@ -96,7 +96,7 @@ Muon zl_ctr_sLep_muons(
                             0.02,
                             0.1,
                             &MuonID ::medium,
-                            &MuonISO::medRel,
+                            &MuonISO::medMini,
                             ZL_CTR_MU);
 Muon zl_ctr_sLep_sec_muons(
                              5,

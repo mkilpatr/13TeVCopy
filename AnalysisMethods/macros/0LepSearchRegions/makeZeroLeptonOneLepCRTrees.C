@@ -70,7 +70,7 @@ void makeZeroLeptonOneLepCRTrees(TString sname = "ttbar_onelepcr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lepCR(json);
+  cfgSet::ConfigSet pars = pars0lep(json);
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex + 2, isMC, &pars);
 
