@@ -690,20 +690,20 @@ struct TreeFiller {
     float sfcttcandminmass_       = -9.;
 
     unsigned int sfncttpass_ = 0;
-    float sftoppasspt_       = -9.; 
-    float sftoppasseta_      = -9.;
+    float sfcttpasspt_       = -9.;
+    float sfcttpasseta_      = -9.;
 
     unsigned int sfnfjcand_ = 0;   
-    float sffjcandpt_       = -9.; 
+    float sffjcandpt_       = -9.;
     float sffjcandeta_      = -9.;
 
     unsigned int sfntopsdpass_ = 0;
     float sftopsdpasspt_       = -9.; 
-    float sdtopsdpasseta_      = -9.;
+    float sftopsdpasseta_      = -9.;
 
     unsigned int sfnwsdpass_ = 0;
     float sfwsdpasspt_       = -9.;
-    float sdwsdpasseta_      = -9.;
+    float sfwsdpasseta_      = -9.;
 
 
 
@@ -734,8 +734,8 @@ struct TreeFiller {
       if (indxctt<99) {
 	sfncttcand_             = 1;
 	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt(); 
-	sfcandeta_              = ana->cttTops[indxctt]->p4().eta();
-	sfcttcandrawmass_       = ana->cttTops[indxctt]->RawMass();
+	sfcttcandeta_           = ana->cttTops[indxctt]->p4().eta();
+	sfcttcandrawmass_       = ana->cttTops[indxctt]->topRawMass();
 	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
 	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
 	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
@@ -748,7 +748,7 @@ struct TreeFiller {
 
 	if (passCTTSelection(ana->cttTops[indxctt])) { 
 	  sfncttpass_   = 1;
-	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
+	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt();
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
       }     
       
@@ -767,7 +767,7 @@ struct TreeFiller {
 
       if (indxfj<99) {
 	sfnfjcand_   = 1;
-	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt(); 
+	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt();
 	sffjcandeta_ = ana->fatJets[indxfj]->p4().eta();
 	
 	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],120.,220.)) { 
@@ -775,7 +775,7 @@ struct TreeFiller {
 	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
 
-	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],60.,100000.)) {
 	  sfnwsdpass_   = 1;
 	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
@@ -826,7 +826,7 @@ struct TreeFiller {
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
 	if (passCTTSelection(ana->cttTops[indxctt])) { 
-	  ncttpass_     = 1;
+	  sfncttpass_     = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
 	
@@ -858,7 +858,7 @@ struct TreeFiller {
 	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
 
-	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],60.,100000.)) {
 	  sfnwsdpass_   = 1;
 	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
