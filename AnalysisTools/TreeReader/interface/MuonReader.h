@@ -59,10 +59,6 @@ namespace ucsbsusy {
       std::vector<float> *	annulus;
 
       MuonFCollection muons;
-
-    private :
-      LeptonId* muonId;
-
   };
 
 }
