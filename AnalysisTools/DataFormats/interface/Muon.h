@@ -23,28 +23,12 @@ namespace ucsbsusy {
   {
 
     public :
-	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false), isgoodpogmuon_(false), isgoodmediumpogmuon_(false), isgoodpogmuonid_(false), istightisomuon_(false), ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false), isminiisovetomuon_(false), ismt2vetomuon_(false), ismt2vetomuonid_(false), isvetomuon_(false) {}
+	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {}
 
       template <class InputCoordSystem>
-	Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
-	     int inIndex = -1, int inPdgid = 13, int inCharge = 0,
-	     float inD0 = 0, float inDz = 0,
-	     float inPfdbetaiso = 0, float inMvaiso = 0,
-	     float inMiniiso=0, float inPtrel = 0, float inPtratio = 0,
-	     bool inIsloose = false, bool inIsMedium = false,
-	     bool inIsTight = false, bool inIspf = false,
-	     bool inIsglobal = false, bool inIstracker = false,	
-	     bool inIsstandalone = false) :
-    Lepton<InputCoordSystem>(inMomentum, inIndex,
-			     inPdgid, inCharge, inD0, inDz,
-			     inPfdbetaiso, inMvaiso, inMiniiso, inPtrel, inPtratio), 
-      isloose_(inIsloose), ismedium_(inIsMedium),
-      istight_(inIsTight), ispf_(inIspf),
-      isglobal_(inIsglobal), istracker_(inIstracker),
-      isstandalone_(inIsstandalone), isgoodpogmuon_(false), isgoodmediumpogmuon_(false),
-      isgoodpogmuonid_(false), istightisomuon_(false),
-      ismvavetomuon_(false), ismultiisovetomuonl_(false), ismultiisovetomuonvl_(false),
-      isminiisovetomuon_(false), ismt2vetomuon_(false), ismt2vetomuonid_(false), isvetomuon_(false) {}
+	Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) :
+    Lepton<InputCoordSystem>(inMomentum, inIndex),
+			     isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {setPdgId(13);setIsMuon(true);}
     
     ~Muon() {}
 
@@ -55,17 +39,6 @@ namespace ucsbsusy {
       bool	isglobal() 	       const { return isglobal_;	    }
       bool	istracker()            const { return istracker_;	    }
       bool	isstandalone() 	       const { return isstandalone_;	    }
-      bool	isgoodpogmuon()        const { return isgoodpogmuon_;       }
-      bool  isgoodmediumpogmuon()        const { return isgoodmediumpogmuon_;       }
-      bool  isgoodpogmuonid()      const { return isgoodpogmuonid_;       }
-      bool  istightisomuon()       const { return istightisomuon_;      }
-      bool	ismvavetomuon()        const { return ismvavetomuon_;       }
-      bool	ismultiisovetomuonl()  const { return ismultiisovetomuonl_; }
-      bool	ismultiisovetomuonvl() const { return ismultiisovetomuonvl_;}
-      bool  isminiisovetomuon()    const { return isminiisovetomuon_; }
-      bool  ismt2vetomuon()        const { return ismt2vetomuon_; }
-      bool  ismt2vetomuonid()      const { return ismt2vetomuonid_; }
-      bool      isvetomuon()           const { return isvetomuon_;          }
 
       void	setIsLoose(bool newType)	   { isloose_ = newType;		}
       void	setIsMedium(bool newType)	   { ismedium_ = newType;		}
@@ -74,17 +47,6 @@ namespace ucsbsusy {
       void	setIsGlobal(bool newType)	   { isglobal_ = newType;		}
       void	setIsTracker(bool newType)	   { istracker_ = newType;		}
       void	setIsStandalone(bool newType)	   { isstandalone_ = newType;	}
-      void	setIsGoodPOGMuon(bool flag)	   { isgoodpogmuon_ = flag;	}
-      void  setIsGoodMediumPOGMuon(bool flag)    { isgoodmediumpogmuon_ = flag; }
-      void  setIsGoodPOGMuonId(bool flag)  { isgoodpogmuonid_ = flag; }
-      void  setIsTightIsoMuon(bool flag)   { istightisomuon_ = flag; }
-      void	setIsMVAVetoMuon(bool flag)	   { ismvavetomuon_ = flag;	}
-      void	setIsMultiIsoVetoMuonL(bool flag)  { ismultiisovetomuonl_  = flag; }
-      void	setIsMultiIsoVetoMuonVL(bool flag) { ismultiisovetomuonvl_ = flag; }
-      void  setIsMiniIsoVetoMuon(bool flag)    { isminiisovetomuon_    = flag; }
-      void  setIsMT2VetoMuon(bool flag)        { ismt2vetomuon_        = flag; }
-      void  setIsMT2VetoMuonId(bool flag)      { ismt2vetomuonid_      = flag; }
-      void      setIsVetoMuon(bool flag)           { isvetomuon_ = flag;   }
 
     protected :
       bool	isloose_;
@@ -94,17 +56,6 @@ namespace ucsbsusy {
       bool	isglobal_;
       bool	istracker_;
       bool	isstandalone_;
-      bool	isgoodpogmuon_;
-      bool  isgoodmediumpogmuon_;
-      bool  isgoodpogmuonid_;
-      bool  istightisomuon_;
-      bool	ismvavetomuon_;
-      bool	ismultiisovetomuonl_;
-      bool	ismultiisovetomuonvl_;
-      bool  isminiisovetomuon_;
-      bool  ismt2vetomuon_;
-      bool  ismt2vetomuonid_;
-      bool	isvetomuon_;
 
   };
 
