@@ -176,23 +176,39 @@ struct TreeFiller {
   size i_dileppt   ;
   size i_dilepeta  ;
   size i_dilepmass ;
-  size i_bclose2lep;
-  size i_ntopcand  ;
-  size i_ntoppass  ;
-  size i_topcandpt ;
-  size i_topcandeta;
-  size i_toppasspt ;
-  size i_toppasseta;
-  size i_topcandrawmass;
-  size i_topcandtrimmedmass;
-  size i_topcandprunedmass;
-  size i_topcandsoftdropmass;
-  size i_topcandcmstoptagmass;
-  size i_topcandtau1;
-  size i_topcandtau2;
-  size i_topcandtau3;
-  size i_topcandnsubjets;
-  size i_topcandminmass;
+
+  // below is for top / w tagging and SF extraction
+  size i_sfbclose2lep;
+  size i_sfncttcand  ;
+  size i_sfcttcandpt ;
+  size i_sfcttcandeta;
+  size i_sfcttcandrawmass;
+  size i_sfcttcandtrimmedmass;
+  size i_sfcttcandprunedmass;
+  size i_sfcttcandsoftdropmass;
+  size i_sfcttcandcmstoptagmass;
+  size i_sfcttcandtau1;
+  size i_sfcttcandtau2;
+  size i_sfcttcandtau3;
+  size i_sfcttcandnsubjets;
+  size i_sfcttcandminmass;
+  size i_sfncttpass  ;
+  size i_sfcttpasspt ;
+  size i_sfcttpasseta;
+  size i_sfnfjcand  ;
+  size i_sffjcandpt ;
+  size i_sffjcandeta;
+  size i_sfntopsdpass  ;
+  size i_sftopsdpasspt ;
+  size i_sftopsdpasseta;
+  size i_sfnwsdpass  ;
+  size i_sfwsdpasspt ;
+  size i_sfwsdpasseta;
+  size i_wcandmass;
+  size i_wcandpt;
+  size i_wcandeta;
+  size i_wpasspt;
+  size i_wpasseta;
 
   bool passCTTSelection(CMSTopF* ctt) {
     return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
@@ -362,23 +378,38 @@ struct TreeFiller {
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepeta       = data->add<float>("","dilepeta","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
-    i_bclose2lep     = data->add<bool>("","bclose2lep","O",0);
-    i_ntopcand       = data->add<unsigned int>("","ntopcand","i",0);
-    i_ntoppass       = data->add<unsigned int>("","ntoppass","i",0);
-    i_topcandpt      = data->add<float>("","topcandpt","F",0);
-    i_topcandeta     = data->add<float>("","topcandeta","F",0);
-    i_toppasspt      = data->add<float>("","toppasspt","F",0);
-    i_toppasseta     = data->add<float>("","toppasseta","F",0);
-    i_topcandrawmass       = data->add<float>("","topcandrawmass","F",0);
-    i_topcandtrimmedmass   = data->add<float>("","topcandtrimmedmass","F",0);
-    i_topcandprunedmass    = data->add<float>("","topcandprunedmass","F",0);
-    i_topcandsoftdropmass  = data->add<float>("","topcandsoftdropmass","F",0);
-    i_topcandcmstoptagmass = data->add<float>("","topcandcmstoptagmass","F",0);
-    i_topcandtau1 = data->add<float>("","topcandtau1","F",0);
-    i_topcandtau2 = data->add<float>("","topcandtau2","F",0);
-    i_topcandtau3 = data->add<float>("","topcandtau3","F",0);
-    i_topcandnsubjets = data->add<int>("","topcandnsubjets","I",0);
-    i_topcandminmass = data->add<float>("","topcandminmass","F",0);
+
+    i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
+    i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
+    i_sfcttcandpt      = data->add<float>("","sfcttcandpt","F",0);
+    i_sfcttcandeta     = data->add<float>("","sfcttcandeta","F",0);
+    i_sfcttcandrawmass       = data->add<float>("","sfcttcandrawmass","F",0);
+    i_sfcttcandtrimmedmass   = data->add<float>("","sfcttcandtrimmedmass","F",0);
+    i_sfcttcandprunedmass    = data->add<float>("","sfcttcandprunedmass","F",0);
+    i_sfcttcandsoftdropmass  = data->add<float>("","sfcttcandsoftdropmass","F",0);
+    i_sfcttcandcmstoptagmass = data->add<float>("","sfcttcandcmstoptagmass","F",0);
+    i_sfcttcandtau1 = data->add<float>("","sfcttcandtau1","F",0);
+    i_sfcttcandtau2 = data->add<float>("","sfcttcandtau2","F",0);
+    i_sfcttcandtau3 = data->add<float>("","sfcttcandtau3","F",0);
+    i_sfcttcandnsubjets = data->add<int>("","sfcttcandnsubjets","I",0);
+    i_sfcttcandminmass = data->add<float>("","sfcttcandminmass","F",0);
+    i_sfncttpass       = data->add<unsigned int>("","sfncttpass","i",0);
+    i_sfcttpasspt      = data->add<float>("","sfcttpasspt","F",0);
+    i_sfcttpasseta     = data->add<float>("","sfcttpasseta","F",0);
+    i_sfnfjcand       = data->add<unsigned int>("","sfnfjcand","i",0);
+    i_sffjcandpt      = data->add<float>("","sffjcandpt","F",0);
+    i_sffjcandeta     = data->add<float>("","sffjcandeta","F",0);
+    i_sfntopsdpass       = data->add<unsigned int>("","sfntopsdpass","i",0);
+    i_sftopsdpasspt      = data->add<float>("","sftopsdpasspt","F",0);
+    i_sftopsdpasseta     = data->add<float>("","sftopsdpasseta","F",0);
+    i_sfnwsdpass       = data->add<unsigned int>("","sfnwsdpass","i",0);
+    i_sfwsdpasspt      = data->add<float>("","sfwsdpasspt","F",0);
+    i_sfwsdpasseta     = data->add<float>("","sfwsdpasseta","F",0);
+    i_wcandmass = data->addMulti<float>("","wcandmass",0);
+    i_wcandpt   = data->addMulti<float>("","wcandpt",0);
+    i_wcandeta  = data->addMulti<float>("","wcandeta",0);
+    i_wpasspt   = data->addMulti<float>("","wpasspt",0);
+    i_wpasseta  = data->addMulti<float>("","wpasseta",0);
 
   }
 
@@ -639,22 +670,38 @@ struct TreeFiller {
 
   void fillTopTagInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets) {
 
-    bool bClose2Lep_ = false;    
-    unsigned int ntopcand_ = 0;   
-    unsigned int ntoppass_ = 0;
-    float topCandPt_ = -9.; float topCandEta_ = -9.;
-    float topPassPt_ = -9.; float topPassEta_ = -9.;
+    bool sfbclose2lep_ = false;    
+    unsigned int sfncttcand_      = 0;   
+    float sfcttcandpt_            = -9.; 
+    float sfcttcandeta_           = -9.;
+    float sfcttcandrawmass_       = -9.;
+    float sfcttcandtrimmedmass_   = -9.;
+    float sfcttcandprunedmass_    = -9.;
+    float sfcttcandsoftdropmass_  = -9.;
+    float sfcttcandcmstoptagmass_ = -9.;
+    float sfcttcandtau1_          = -9.;
+    float sfcttcandtau2_          = -9.;
+    float sfcttcandtau3_          = -9.;
+    int sfcttcandnsubjets_        = -1;
+    float sfcttcandminmass_       = -9.;
 
-    float topcandrawmass_       = -9.;
-    float topcandtrimmedmass_   = -9.;
-    float topcandprunedmass_    = -9.;
-    float topcandsoftdropmass_  = -9.;
-    float topcandcmstoptagmass_ = -9.;
-    float topcandtau1_ = -9.;
-    float topcandtau2_ = -9.;
-    float topcandtau3_ = -9.;
-    int topcandnsubjets_ = -1;
-    float topcandminmass_ = -9.;
+    unsigned int sfncttpass_ = 0;
+    float sftoppasspt_       = -9.; 
+    float sftoppasseta_      = -9.;
+
+    unsigned int sfnfjcand_ = 0;   
+    float sffjcandpt_       = -9.; 
+    float sffjcandeta_      = -9.;
+
+    unsigned int sfntopsdpass_ = 0;
+    float sftopsdpasspt_       = -9.; 
+    float sdtopsdpasseta_      = -9.;
+
+    unsigned int sfnwsdpass_ = 0;
+    float sfwsdpasspt_       = -9.;
+    float sdwsdpasseta_      = -9.;
+
+
 
     
     vector<LorentzVector> csvmjets;
@@ -668,36 +715,70 @@ struct TreeFiller {
 
     if (ana->nSelLeptons == 0) {
 
-      unsigned int countTopTags = 0;
-      unsigned int indx = 99;
+      // do it for ctt fatjets
+      unsigned int countctttags = 0;
+      unsigned int indxctt = 99;
       for (auto* ctt : ana->cttTops) {
 
-	float maxFatJetPt_ = -1.;
-	float fatJetPt_ = ctt->p4().pt();
-	if (fatJetPt_>maxFatJetPt_) { indx = countTopTags; }
+	float maxcttpt_ = -1.;
+	float cttpt_ = ctt->p4().pt();
+	if (cttpt_>maxcttpt_) { indxctt = countctttags; }
 	
-	++countTopTags; 
+	++countctttags; 
       }
 
-      if (indx<99) {
-	ntopcand_ = 1;
-	topCandPt_ = ana->cttTops[indx]->p4().pt(); topCandEta_ = ana->cttTops[indx]->p4().eta();
-	topcandrawmass_ = ana->cttTops[indx]->topRawMass();
-	topcandtrimmedmass_ = ana->cttTops[indx]->topTrimmedMass();
-	topcandprunedmass_ = ana->cttTops[indx]->topPrunedMass();
-	topcandsoftdropmass_ = ana->cttTops[indx]->topSoftDropMass();
-	topcandcmstoptagmass_ = ana->cttTops[indx]->topCmsTopTagMass(); 
-	topcandtau1_ = ana->cttTops[indx]->topTau1();
-	topcandtau2_ = ana->cttTops[indx]->topTau2();
-	topcandtau3_ = ana->cttTops[indx]->topTau3();
-	topcandnsubjets_ = ana->cttTops[indx]->topNsubJets();
-	topcandminmass_ = ana->cttTops[indx]->topMinMass();
+      if (indxctt<99) {
+	sfncttcand_             = 1;
+	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt(); 
+	sfcandeta_              = ana->cttTops[indxctt]->p4().eta();
+	sfcttcandrawmass_       = ana->cttTops[indxctt]->RawMass();
+	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
+	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
+	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
+	sfcttcandcmstoptagmass_ = ana->cttTops[indxctt]->topCmsTopTagMass(); 
+	sfcttcandtau1_          = ana->cttTops[indxctt]->topTau1();
+	sfcttcandtau2_          = ana->cttTops[indxctt]->topTau2();
+	sfcttcandtau3_          = ana->cttTops[indxctt]->topTau3();
+	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
+	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indx])) { 
-	  ntoppass_ = 1;
-	  topPassPt_ = ana->cttTops[indx]->p4().pt(); topPassEta_ = ana->cttTops[indx]->p4().eta(); }
+	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	  sfncttpass_   = 1;
+	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
+	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
       }     
       
+
+      // do it for ak8 fatjets
+      unsigned int countfjtags = 0;
+      unsigned int indxfj = 99;
+      for (auto* fj : ana->fatJets) {
+
+	float maxfjpt_ = -1.;
+	float fjpt_ = fj->p4().pt();
+	if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	
+	++countfjtags; 
+      }
+
+      if (indxfj<99) {
+	sfnfjcand_   = 1;
+	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt(); 
+	sffjcandeta_ = ana->fatJets[indxfj]->p4().eta();
+	
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],120.,220.)) { 
+	  sfntopsdpass_   = 1;
+	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
+	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
+
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	  sfnwsdpass_   = 1;
+	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
+	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
+
+      }
+
+
     } // end of zero leptons
 
 
@@ -705,65 +786,128 @@ struct TreeFiller {
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(0)->p4());
 
       for (unsigned int i0=0; i0<csvmjets.size(); ++i0) {
-	float dRLepBJet_ = PhysicsUtilities::deltaR(*lep,csvmjets[i0]);
-	if (dRLepBJet_<(3.14/2.)) { bClose2Lep_ = true; } 
+	float drlepbjet_ = PhysicsUtilities::deltaR(*lep,csvmjets[i0]);
+	if (drlepbjet_<(3.14/2.)) { sfbclose2lep_ = true; } 
       }
 
-      unsigned int countTopTags = 0;
-      unsigned int indx = 99;
+      // do it for ctt tags
+      unsigned int countctttags = 0;
+      unsigned int indxctt = 99;
       for (auto* ctt : ana->cttTops) {
 
-	float dRLepCTT_ = PhysicsUtilities::deltaR(*lep,ctt->p4());
-	float maxFatJetPt_ = -1.;
+	float drlepctt_ = PhysicsUtilities::deltaR(*lep,ctt->p4());
+	float maxcttpt_ = -1.;
 
-	if (dRLepCTT_>=(3.14/2.)) { 
-	  float fatJetPt_ = ctt->p4().pt();
-	  if (fatJetPt_>maxFatJetPt_) { indx = countTopTags; }
+	if (drlepctt_>=(3.14/2.)) { 
+	  float cttpt_ = ctt->p4().pt();
+	  if (cttpt_>maxcttpt_) { indxctt = countctttags; }
 	}
-
-	++countTopTags; 
+	
+	++countctttags; 
       }
       
-      if (indx<99) { 
-	ntopcand_ = 1;
-	topCandPt_ = ana->cttTops[indx]->p4().pt(); topCandEta_ = ana->cttTops[indx]->p4().eta();
-	topcandrawmass_ = ana->cttTops[indx]->topRawMass();
-	topcandtrimmedmass_ = ana->cttTops[indx]->topTrimmedMass();
-	topcandprunedmass_ = ana->cttTops[indx]->topPrunedMass();
-	topcandsoftdropmass_ = ana->cttTops[indx]->topSoftDropMass();
-	topcandcmstoptagmass_ = ana->cttTops[indx]->topCmsTopTagMass();
-	topcandtau1_ = ana->cttTops[indx]->topTau1();
-	topcandtau2_ = ana->cttTops[indx]->topTau2();
-	topcandtau3_ = ana->cttTops[indx]->topTau3();
-	topcandnsubjets_ = ana->cttTops[indx]->topNsubJets();
-	topcandminmass_ = ana->cttTops[indx]->topMinMass();
+      if (indxctt<99) { 
+	sfncttcand_             = 1;
+	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt(); 
+	sfcttcandeta_           = ana->cttTops[indxctt]->p4().eta();
+	sfcttcandrawmass_       = ana->cttTops[indxctt]->topRawMass();
+	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
+	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
+	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
+	sfcttcandcmstoptagmass_ = ana->cttTops[indxctt]->topCmsTopTagMass();
+	sfcttcandtau1_          = ana->cttTops[indxctt]->topTau1();
+	sfcttcandtau2_          = ana->cttTops[indxctt]->topTau2();
+	sfcttcandtau3_          = ana->cttTops[indxctt]->topTau3();
+	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
+	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indx])) { 
-	  ntoppass_ = 1;
-	  topPassPt_ = ana->cttTops[indx]->p4().pt(); topPassEta_ = ana->cttTops[indx]->p4().eta(); }
+	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	  ncttpass_     = 1;
+	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
+	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
 	
       }     
       
+      // do it for ak8 fatjets
+      unsigned int countfjtags = 0;
+      unsigned int indxfj = 99;
+      for (auto* fj : ana->fatJets) {
+
+	float drlepfj_ = PhysicsUtilities::deltaR(*lep,fj->p4());
+	float maxfjpt_ = -1.;
+
+	if (drlepfj_>=(3.14/2.)) { 
+	  float fjpt_ = fj->p4().pt();
+	  if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	}
+	
+	++countfjtags; 
+      }
+
+      if (indxfj<99) {
+	sfnfjcand_   = 1;
+	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt(); 
+	sffjcandeta_ = ana->fatJets[indxfj]->p4().eta();
+	
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],120.,220.)) { 
+	  sfntopsdpass_   = 1;
+	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
+	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
+
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	  sfnwsdpass_   = 1;
+	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
+	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
+
+      }
+
+
+
     } // end of at least one lepton
     
 
-    data->fill<bool>(i_bclose2lep, bClose2Lep_);
-    data->fill<unsigned int>(i_ntopcand, ntopcand_);
-    data->fill<unsigned int>(i_ntoppass, ntoppass_);
-    data->fill<float>(i_topcandpt, topCandPt_);
-    data->fill<float>(i_topcandrawmass, topcandrawmass_);
-    data->fill<float>(i_topcandtrimmedmass, topcandtrimmedmass_);
-    data->fill<float>(i_topcandprunedmass, topcandprunedmass_);
-    data->fill<float>(i_topcandsoftdropmass, topcandsoftdropmass_);
-    data->fill<float>(i_topcandcmstoptagmass, topcandcmstoptagmass_);
-    data->fill<float>(i_topcandtau1, topcandtau1_);
-    data->fill<float>(i_topcandtau2, topcandtau2_);
-    data->fill<float>(i_topcandtau3, topcandtau3_);
-    data->fill<int>(i_topcandnsubjets, topcandnsubjets_);
-    data->fill<float>(i_topcandminmass, topcandminmass_);
-    data->fill<float>(i_topcandeta, topCandEta_);
-    data->fill<float>(i_toppasspt, topPassPt_);
-    data->fill<float>(i_toppasseta, topPassEta_);
+    data->fill<bool>(i_sfbclose2lep           , sfbclose2lep_);
+    data->fill<unsigned int>(i_sfncttcand     , sfncttcand_);
+    data->fill<float>(i_sfcttcandpt           , sfcttcandpt_);
+    data->fill<float>(i_sfcttcandeta          , sfcttcandeta_);
+    data->fill<float>(i_sfcttcandrawmass      , sfcttcandrawmass_);
+    data->fill<float>(i_sfcttcandtrimmedmass  , sfcttcandtrimmedmass_);
+    data->fill<float>(i_sfcttcandprunedmass   , sfcttcandprunedmass_);
+    data->fill<float>(i_sfcttcandsoftdropmass , sfcttcandsoftdropmass_);
+    data->fill<float>(i_sfcttcandcmstoptagmass, sfcttcandcmstoptagmass_);
+    data->fill<float>(i_sfcttcandtau1         , sfcttcandtau1_);
+    data->fill<float>(i_sfcttcandtau2         , sfcttcandtau2_);
+    data->fill<float>(i_sfcttcandtau3         , sfcttcandtau3_);
+    data->fill<int>(i_sfcttcandnsubjets       , sfcttcandnsubjets_);
+    data->fill<float>(i_sfcttcandminmass      , sfcttcandminmass_);
+    data->fill<unsigned int>(i_sfncttpass     , sfncttpass_);
+    data->fill<float>(i_sfcttpasspt           , sfcttpasspt_);
+    data->fill<float>(i_sfcttpasseta          , sfcttpasseta_);
+    data->fill<unsigned int>(i_sfnfjcand     , sfnfjcand_);
+    data->fill<float>(i_sffjcandpt           , sffjcandpt_);
+    data->fill<float>(i_sffjcandeta          , sffjcandeta_);
+    data->fill<unsigned int>(i_sfntopsdpass  , sfntopsdpass_);
+    data->fill<float>(i_sftopsdpasspt        , sftopsdpasspt_);
+    data->fill<float>(i_sftopsdpasseta       , sftopsdpasseta_);
+    data->fill<unsigned int>(i_sfnwsdpass    , sfnwsdpass_);
+    data->fill<float>(i_sfwsdpasspt          , sfwsdpasspt_);
+    data->fill<float>(i_sfwsdpasseta         , sfwsdpasseta_);
+
+
+    for(auto* fj : ana->fatJets) {
+
+      data->fillMulti<float>(i_wcandmass, fj->fjSoftDropMass());
+      data->fillMulti<float>(i_wcandpt  , fj->p4().pt());
+      data->fillMulti<float>(i_wcandeta , fj->p4().eta());
+
+      if (passSoftDropTaggerFJ(fj,60.,100000.)) {
+
+        data->fillMulti<float>(i_wpasspt  , fj->p4().pt());
+        data->fillMulti<float>(i_wpasseta , fj->p4().eta());
+      }
+
+    }
+
     
   } // end of fillTopTagInfo
 
