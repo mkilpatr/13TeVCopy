@@ -12,6 +12,7 @@
 #include "AnalysisTools/DataFormats/interface/Lepton.h"
 #include "AnalysisTools/DataFormats/interface/GenParticle.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+#include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 
 
 namespace ucsbsusy {
@@ -36,7 +37,9 @@ namespace ucsbsusy {
   class TnPCorr : public Correction {
     public:
       enum LEPSEL {MT2VETO, GOODPOG};
-      TnPCorr(TString corrName);
+      TnPCorr(TString corrName,
+              LeptonSelection::ElectronType elSel, LeptonSelection::ElectronType secElSel,
+              LeptonSelection::MuonType     muSel, LeptonSelection::MuonType     secMuSel);
       virtual ~TnPCorr();
       void getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
       float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType) const;
@@ -102,7 +105,10 @@ namespace ucsbsusy {
 
       LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}
       virtual ~LeptonCorrectionSet() {}
-      virtual void load(TString fileName, int correctionOptions = NULLOPT);
+      virtual void load(TString fileName,
+                        LeptonSelection::ElectronType elSel, LeptonSelection::ElectronType secElSel,
+                        LeptonSelection::MuonType     muSel, LeptonSelection::MuonType     secMuSel,
+                        int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
       float getVetoLepWeight()     const { return vetoLepWeight; }

@@ -135,7 +135,7 @@ namespace LeptonSelection {
                              -1,
                              &ElectronID ::mediumNoIso,
                              &ElectronISO::medMini,
-                             NONE_ELE);
+                             SL_SEL_ELE);
   Electron sl_sel_sec_electrons (
                                5,
                              2.4,
@@ -143,7 +143,7 @@ namespace LeptonSelection {
                               -1,
                               &ElectronID ::vetoNoIso,
                               &ElectronISO::looseMini,
-                              NONE_ELE);
+                              SL_SEL_SEC_ELE);
   Muon sl_sel_muons(
                                20,
                               2.1,
@@ -151,7 +151,7 @@ namespace LeptonSelection {
                               0.1,
                               &MuonID ::medium,
                               &MuonISO::medMini,
-                              NONE_MU);
+                              SL_SEL_MU);
   Muon sl_sel_sec_muons(
                                5,
                               2.4,
@@ -159,7 +159,7 @@ namespace LeptonSelection {
                               0.5,
                               &MuonID ::loose,
                               &MuonISO::looseMini,
-                              NONE_MU);
+                              SL_SEL_SEC_MU);
 
 }
 
