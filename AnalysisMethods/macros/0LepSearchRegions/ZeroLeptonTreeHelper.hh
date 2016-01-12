@@ -103,6 +103,9 @@ struct TreeFiller {
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
+  size i_ncttstd_dphimet;
+  size i_nctt_rawmassonly;
+  size i_nctt_rawmassonly_dphimet;
   size i_nfjsd60   ;
   size i_nfjpr60   ;
   size i_chhpt     ;
@@ -305,6 +308,9 @@ struct TreeFiller {
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_ncttstd_dphimet = data->add<int>("", "ncttstd_dphimet", "I", 0);
+    i_nctt_rawmassonly=data->add<int>("","nctt_rawmassonly", "I", 0);
+    i_nctt_rawmassonly_dphimet=data->add<int>("","nctt_rawmassonly_dphimet", "I", 0);
     i_nfjsd60        = data->add<int>("","nfjsd60","I",0);
     i_nfjpr60        = data->add<int>("","nfjpr60","I",0);
     i_chhpt          = data->addMulti<float>("","chhpt",0);
@@ -489,6 +495,10 @@ struct TreeFiller {
 
     }
     data->fill<int  >(i_ncttstd   , ncttstd   );
+    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    data->fill<int>(i_nctt_rawmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
+    data->fill<int>(i_nctt_rawmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+
 
     int nfjsd60_   = 0;
     int nfjpr60_   = 0;
