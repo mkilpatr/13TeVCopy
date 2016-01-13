@@ -191,15 +191,6 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   if(passIdIso)   wt = sfid * sfiso;
   else if(passId) wt = sfid * (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999)); // don't want to divide by zero in case sf=1
   else            wt = failIdWt * (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999));
-
-  //if(abs(wt)>10.0) {
-  //  std::cout << "lep=" << id << " wt=" << wt << "\t" << passIdIso << " " << passId << "\tpt=" << pt << "\teta=" << eta << "\tactv=" << annulus
-  //            << "\tsfid=" << sfid << "\tsfiso=" << sfiso << "\teffid=" << effid << "\teffiso=" << effiso
-  //            << "\twtId=" << (effid<1.0 ? (1.0-effid*sfid)/(1.0-effid) : (1.0-0.99999*sfid)/(1.0-0.99999))
-  //            << "\twtIso=" << (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999))
-  //            << std::endl;
-  //}
-
   if (wt < -10.0) wt = 1.0;    // or large negative weights ... need to treat these cases better
   return wt;
 }
@@ -243,7 +234,6 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   for(auto* lep : genMu_) {
     double nearDR = 0;
     int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-    //int near = PhysicsUtilities::findNearestDRDeref(*p, ana->selectedLeptons, nearDR, 0.4, 0, &vetos_);
     if(near >= 0) weight *= getGenLepWeight(lep,muCorrType);
   }
   return weight;
