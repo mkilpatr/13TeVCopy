@@ -159,7 +159,7 @@ class LimitConfig:
         limits.append(signal+': no limit found..')
       else:
         output = self.getLimit(rootFile,False)
-        #print signal, ':\n', output
+        print signal, ':\n', output
         tempLimit = ''
         for line in output[0].split('\n'): 
           if 'Expected 50' in line: 
@@ -174,6 +174,7 @@ class LimitConfig:
         hexpdown.Fill(mstop,mlsp,limit['-1'])
         hexpup.Fill(mstop,mlsp,limit['+1'])
         hxsecexp.Fill(mstop,mlsp,xseclimit)
+        print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
 
     outfile.cd()
     hexp.Write()
@@ -181,7 +182,7 @@ class LimitConfig:
     hexpup.Write()
     hxsecexp.Write()
     outfile.Close()
-    os.popen('root -l -q -b makeScanPlots.C')
+    os.system('root -l -q -b makeScanPlots.C')
        
     # print the results
     print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5

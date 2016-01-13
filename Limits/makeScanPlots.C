@@ -5,23 +5,21 @@
 #endif
 
 TGraph DrawContours(TGraph2D &g2, int color, int style,
-                    TLegend *leg = nullptr, const string &name = ""){
+                    TLegend *leg = 0, const string &name = ""){
   TGraph out;
   TH2D* hist = g2.GetHistogram();
   TVirtualHistPainter* histptr = hist->GetPainter();
   TList *l = g2.GetContourList(1.);
   TList *l2 = histptr->GetContourList(1.);
-  if(l == nullptr) {
+  if(!l)
     return out;
-  }
-  if(l2 == nullptr) {
+  if(!l2)
     return out;
-  }
   bool added = false;
   int max_points = -1;
   for(int i = 0; i < l->GetSize(); ++i){
     TGraph *g = static_cast<TGraph*>(l->At(i));
-    if(g == nullptr) {
+    if(g == 0) {
       continue;
     }
     int n_points = g->GetN();
@@ -33,7 +31,7 @@ TGraph DrawContours(TGraph2D &g2, int color, int style,
     g->SetLineStyle(style);
     g->SetLineWidth(5);
     g->Draw("L same");
-    if(!added && leg != nullptr && name != ""){
+    if(!added && leg && name != ""){
       leg->AddEntry(g, name.c_str(), "l");
       added = true;
     }
@@ -86,6 +84,7 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
         expdown.push_back(hexpdown->GetBinContent(ibinx, ibiny));
         expup.push_back(hexpup->GetBinContent(ibinx, ibiny));
         expxsec.push_back(hxsecexp->GetBinContent(ibinx, ibiny));
+        printf("MStop: %4.2f, MLSP: %4.2f, Limit: %4.2f, (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f\n", mstops.back(), mlsps.back(), exp.back(), expup.back(), expdown.back(), expxsec.back());
       }
     }
   }
@@ -103,11 +102,12 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
   double bin_size = 12.5;
   int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/bin_size))));
   int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/bin_size))));
+  printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
   glim.SetNpx(nxbins);
   glim.SetNpy(nybins);
 
   TH2D *hlim = glim.GetHistogram();
-  if(hlim == nullptr) throw runtime_error("Could not retrieve histogram");
+  if(!hlim) throw runtime_error("Could not retrieve histogram");
   hlim->SetTitle(";m_{stop} [GeV];m_{LSP} [GeV]");
 
   TCanvas c("","",800,800);
