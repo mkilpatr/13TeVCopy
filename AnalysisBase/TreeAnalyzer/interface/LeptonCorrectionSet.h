@@ -38,22 +38,23 @@ namespace ucsbsusy {
     public:
       enum LEPSEL {MT2VETO, GOODPOG};
       TnPCorr(TString corrName,
-              LeptonSelection::ElectronType elSel, LeptonSelection::ElectronType secElSel,
-              LeptonSelection::MuonType     muSel, LeptonSelection::MuonType     secMuSel);
+              const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
+              const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel);
       virtual ~TnPCorr();
-      void getLepWeight(float &wt, float &vetoWt, LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      float getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
+      float getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType ) const;
       float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType) const;
       virtual float pickBin(int bin, int nBins) const { if(bin<1)     return 1;
                                                         if(bin>nBins) return nBins;
                                                         return bin; }
-      virtual float getElIDValue(float x, float y) const { return HistIDEl->GetBinContent(pickBin(HistIDEl->GetXaxis()->FindFixBin(x), HistIDEl->GetNbinsX())
-                                                                                         ,pickBin(HistIDEl->GetYaxis()->FindFixBin(y), HistIDEl->GetNbinsY()) ); }
-      virtual float getMuIDValue(float x, float y) const { return HistIDMu->GetBinContent(pickBin(HistIDMu->GetXaxis()->FindFixBin(x), HistIDMu->GetNbinsX())
-                                                                                         ,pickBin(HistIDMu->GetYaxis()->FindFixBin(y), HistIDMu->GetNbinsY()) ); }
-      virtual float getElIDError(float x, float y) const { return HistIDEl->GetBinError  (pickBin(HistIDEl->GetXaxis()->FindFixBin(x), HistIDEl->GetNbinsX())
-                                                                                         ,pickBin(HistIDEl->GetYaxis()->FindFixBin(y), HistIDEl->GetNbinsY()) ); }
-      virtual float getMuIDError(float x, float y) const { return HistIDMu->GetBinError  (pickBin(HistIDMu->GetXaxis()->FindFixBin(x), HistIDMu->GetNbinsX())
-                                                                                         ,pickBin(HistIDMu->GetYaxis()->FindFixBin(y), HistIDMu->GetNbinsY()) ); }
+      virtual float getElIDValue(float x, float y) const { return HistIdEl->GetBinContent(pickBin(HistIdEl->GetXaxis()->FindFixBin(x), HistIdEl->GetNbinsX())
+                                                                                         ,pickBin(HistIdEl->GetYaxis()->FindFixBin(y), HistIdEl->GetNbinsY()) ); }
+      virtual float getMuIDValue(float x, float y) const { return HistIdMu->GetBinContent(pickBin(HistIdMu->GetXaxis()->FindFixBin(x), HistIdMu->GetNbinsX())
+                                                                                         ,pickBin(HistIdMu->GetYaxis()->FindFixBin(y), HistIdMu->GetNbinsY()) ); }
+      virtual float getElIDError(float x, float y) const { return HistIdEl->GetBinError  (pickBin(HistIdEl->GetXaxis()->FindFixBin(x), HistIdEl->GetNbinsX())
+                                                                                         ,pickBin(HistIdEl->GetYaxis()->FindFixBin(y), HistIdEl->GetNbinsY()) ); }
+      virtual float getMuIDError(float x, float y) const { return HistIdMu->GetBinError  (pickBin(HistIdMu->GetXaxis()->FindFixBin(x), HistIdMu->GetNbinsX())
+                                                                                         ,pickBin(HistIdMu->GetYaxis()->FindFixBin(y), HistIdMu->GetNbinsY()) ); }
       virtual float getElIsoValue(float x, float y) const { return HistIsoEl->GetBinContent(pickBin(HistIsoEl->GetXaxis()->FindFixBin(x), HistIsoEl->GetNbinsX())
                                                                                            ,pickBin(HistIsoEl->GetYaxis()->FindFixBin(y), HistIsoEl->GetNbinsY()) ); }
       virtual float getMuIsoValue(float x, float y) const { return HistIsoMu->GetBinContent(pickBin(HistIsoMu->GetXaxis()->FindFixBin(x), HistIsoMu->GetNbinsX())
@@ -62,33 +63,43 @@ namespace ucsbsusy {
                                                                                            ,pickBin(HistIsoEl->GetYaxis()->FindFixBin(y), HistIsoEl->GetNbinsY()) ); }
       virtual float getMuIsoError(float x, float y) const { return HistIsoMu->GetBinError  (pickBin(HistIsoMu->GetXaxis()->FindFixBin(x), HistIsoMu->GetNbinsX())
                                                                                            ,pickBin(HistIsoMu->GetYaxis()->FindFixBin(y), HistIsoMu->GetNbinsY()) ); }
-      virtual float getMuD0DZValue(float x, float y) const { return HistIsoMu->GetBinContent(pickBin(HistD0DZMu->GetXaxis()->FindFixBin(x), HistD0DZMu->GetNbinsX())
-                                                                                            ,pickBin(HistD0DZMu->GetYaxis()->FindFixBin(y), HistD0DZMu->GetNbinsY()) ); }
-      virtual float getMuD0DZError(float x, float y) const { return HistIsoMu->GetBinError  (pickBin(HistD0DZMu->GetXaxis()->FindFixBin(x), HistD0DZMu->GetNbinsX())
-                                                                                            ,pickBin(HistD0DZMu->GetYaxis()->FindFixBin(y), HistD0DZMu->GetNbinsY()) ); }
-      virtual float getElMCEffValue(float x, float y) const { return HistMCVetoEffEl->GetBinContent(pickBin(HistMCVetoEffEl->GetXaxis()->FindFixBin(x), HistMCVetoEffEl->GetNbinsX())
-                                                                                                   ,pickBin(HistMCVetoEffEl->GetYaxis()->FindFixBin(y), HistMCVetoEffEl->GetNbinsY()) ); }
-      virtual float getMuMCEffValue(float x, float y) const { return HistMCVetoEffMu->GetBinContent(pickBin(HistMCVetoEffMu->GetXaxis()->FindFixBin(x), HistMCVetoEffMu->GetNbinsX())
-                                                                                                   ,pickBin(HistMCVetoEffMu->GetYaxis()->FindFixBin(y), HistMCVetoEffMu->GetNbinsY()) ); }
-      virtual float getElMCEffError(float x, float y) const { return HistMCVetoEffEl->GetBinError  (pickBin(HistMCVetoEffEl->GetXaxis()->FindFixBin(x), HistMCVetoEffEl->GetNbinsX())
-                                                                                                   ,pickBin(HistMCVetoEffEl->GetYaxis()->FindFixBin(y), HistMCVetoEffEl->GetNbinsY()) ); }
-      virtual float getMuMCEffError(float x, float y) const { return HistMCVetoEffMu->GetBinError  (pickBin(HistMCVetoEffMu->GetXaxis()->FindFixBin(x), HistMCVetoEffMu->GetNbinsX())
-                                                                                                   ,pickBin(HistMCVetoEffMu->GetYaxis()->FindFixBin(y), HistMCVetoEffMu->GetNbinsY()) ); }
+      virtual float getElMCIdEffValue(float x, float y) const { return HistMCVetoIdEffEl->GetBinContent(pickBin(HistMCVetoIdEffEl->GetXaxis()->FindFixBin(x), HistMCVetoIdEffEl->GetNbinsX())
+                                                                                                       ,pickBin(HistMCVetoIdEffEl->GetYaxis()->FindFixBin(y), HistMCVetoIdEffEl->GetNbinsY()) ); }
+      virtual float getMuMCIdEffValue(float x, float y) const { return HistMCVetoIdEffMu->GetBinContent(pickBin(HistMCVetoIdEffMu->GetXaxis()->FindFixBin(x), HistMCVetoIdEffMu->GetNbinsX())
+                                                                                                       ,pickBin(HistMCVetoIdEffMu->GetYaxis()->FindFixBin(y), HistMCVetoIdEffMu->GetNbinsY()) ); }
+      virtual float getElMCIdEffError(float x, float y) const { return HistMCVetoIdEffEl->GetBinError  (pickBin(HistMCVetoIdEffEl->GetXaxis()->FindFixBin(x), HistMCVetoIdEffEl->GetNbinsX())
+                                                                                                       ,pickBin(HistMCVetoIdEffEl->GetYaxis()->FindFixBin(y), HistMCVetoIdEffEl->GetNbinsY()) ); }
+      virtual float getMuMCIdEffError(float x, float y) const { return HistMCVetoIdEffMu->GetBinError  (pickBin(HistMCVetoIdEffMu->GetXaxis()->FindFixBin(x), HistMCVetoIdEffMu->GetNbinsX())
+                                                                                                       ,pickBin(HistMCVetoIdEffMu->GetYaxis()->FindFixBin(y), HistMCVetoIdEffMu->GetNbinsY()) ); }
+      virtual float getElMCIsoEffValue(float x, float y) const { return HistMCVetoIsoEffEl->GetBinContent(pickBin(HistMCVetoIsoEffEl->GetXaxis()->FindFixBin(x), HistMCVetoIsoEffEl->GetNbinsX())
+                                                                                                         ,pickBin(HistMCVetoIsoEffEl->GetYaxis()->FindFixBin(y), HistMCVetoIsoEffEl->GetNbinsY()) ); }
+      virtual float getMuMCIsoEffValue(float x, float y) const { return HistMCVetoIsoEffMu->GetBinContent(pickBin(HistMCVetoIsoEffMu->GetXaxis()->FindFixBin(x), HistMCVetoIsoEffMu->GetNbinsX())
+                                                                                                         ,pickBin(HistMCVetoIsoEffMu->GetYaxis()->FindFixBin(y), HistMCVetoIsoEffMu->GetNbinsY()) ); }
+      virtual float getElMCIsoEffError(float x, float y) const { return HistMCVetoIsoEffEl->GetBinError  (pickBin(HistMCVetoIsoEffEl->GetXaxis()->FindFixBin(x), HistMCVetoIsoEffEl->GetNbinsX())
+                                                                                                         ,pickBin(HistMCVetoIsoEffEl->GetYaxis()->FindFixBin(y), HistMCVetoIsoEffEl->GetNbinsY()) ); }
+      virtual float getMuMCIsoEffError(float x, float y) const { return HistMCVetoIsoEffMu->GetBinError  (pickBin(HistMCVetoIsoEffMu->GetXaxis()->FindFixBin(x), HistMCVetoIsoEffMu->GetNbinsX())
+                                                                                                         ,pickBin(HistMCVetoIsoEffMu->GetYaxis()->FindFixBin(y), HistMCVetoIsoEffMu->GetNbinsY()) ); }
       virtual float getError(float a, float b, float c=0) const { return sqrt(a*a+b*b+c*c); }
     protected:
+      LeptonSelection::Electron elConf;
+      LeptonSelection::Muon     muConf;
+      LeptonSelection::Electron elConfNoIso;
+      LeptonSelection::Muon     muConfNoIso;
       TFile* fileEl;
       TFile* fileIdMu;
       TFile* fileIsoMu;
-      TFile* fileD0DZMu;
-      TFile* fileMCVetoEffEl;
-      TFile* fileMCVetoEffMu;
-      TH2F*  HistIDEl;
-      TH2F*  HistIDMu;
+      TFile* fileMCVetoIdEffEl;
+      TFile* fileMCVetoIdEffMu;
+      TFile* fileMCVetoIsoEffEl;
+      TFile* fileMCVetoIsoEffMu;
+      TH2F*  HistIdEl;
+      TH2F*  HistIdMu;
       TH2F*  HistIsoEl;
       TH2F*  HistIsoMu;
-      TH2F*  HistD0DZMu;
-      TH2F*  HistMCVetoEffEl;
-      TH2F*  HistMCVetoEffMu;
+      TH2F*  HistMCVetoIdEffEl;
+      TH2F*  HistMCVetoIdEffMu;
+      TH2F*  HistMCVetoIsoEffEl;
+      TH2F*  HistMCVetoIsoEffMu;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
@@ -106,8 +117,8 @@ namespace ucsbsusy {
       LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}
       virtual ~LeptonCorrectionSet() {}
       virtual void load(TString fileName,
-                        LeptonSelection::ElectronType elSel, LeptonSelection::ElectronType secElSel,
-                        LeptonSelection::MuonType     muSel, LeptonSelection::MuonType     secMuSel,
+                        const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
+                        const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel,
                         int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
