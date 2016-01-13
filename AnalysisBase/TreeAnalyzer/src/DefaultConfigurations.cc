@@ -160,9 +160,14 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
 
-  standardCorrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::NULLOPT;
+  standardCorrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL;
   standardCorrections.jetResCorr               = 1;
   standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends.root",CMSSW_BASE);
+
+  standardCorrections.jetResTailFile           = TString::Format("%s/src/data/corrections/qcdJetRespTailCorr.root",CMSSW_BASE);
+  standardCorrections.jetResTailCorrType       = ucsbsusy::NOMINAL;
+
+
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);

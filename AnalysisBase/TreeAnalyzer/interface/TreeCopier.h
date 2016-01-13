@@ -19,7 +19,7 @@ class CopierEventAnalyzer : public BaseEventAnalyzer {
 public:
   CopierEventAnalyzer() {};
   virtual ~CopierEventAnalyzer() {};
-  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
 };
 
 
@@ -27,7 +27,7 @@ class CopierFillYourselfEventAnalyzer : public BaseEventAnalyzer {
 public:
   CopierFillYourselfEventAnalyzer() {};
   virtual ~CopierFillYourselfEventAnalyzer() {};
-  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
 };
 
 
@@ -193,7 +193,7 @@ public:
   public:
     FlattenCopierEventAnalyzer() {};
     virtual ~FlattenCopierEventAnalyzer() {};
-    virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+    virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
   };
 
 

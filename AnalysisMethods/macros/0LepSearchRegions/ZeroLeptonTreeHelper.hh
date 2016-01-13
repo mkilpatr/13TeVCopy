@@ -55,6 +55,7 @@ struct TreeFiller {
   size i_pu50NSWeight  ;
   size i_truePUWeight;
   size i_btagWeight;
+  size i_qcdRespTailWeight;
   size i_normWeight;
   size i_passtrige ;
   size i_passtrigmu;
@@ -103,6 +104,9 @@ struct TreeFiller {
   size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
+  size i_ncttstd_dphimet;
+  size i_nctt_rawmassonly;
+  size i_nctt_rawmassonly_dphimet;
   size i_nfjsd60   ;
   size i_nfjpr60   ;
   size i_chhpt     ;
@@ -154,6 +158,7 @@ struct TreeFiller {
   size i_dphij2met ;
   size i_dphij12met;
   size i_dphij3met ;
+  size i_dphij4met ;
   size i_mtcsv1met ;
   size i_mtcsv2met ;
   size i_mtcsv12met;
@@ -257,6 +262,7 @@ struct TreeFiller {
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
+    i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_normWeight     = data->add<float>("","normWeight","F",0);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
@@ -305,6 +311,9 @@ struct TreeFiller {
     i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
+    i_ncttstd_dphimet = data->add<int>("", "ncttstd_dphimet", "I", 0);
+    i_nctt_rawmassonly=data->add<int>("","nctt_rawmassonly", "I", 0);
+    i_nctt_rawmassonly_dphimet=data->add<int>("","nctt_rawmassonly_dphimet", "I", 0);
     i_nfjsd60        = data->add<int>("","nfjsd60","I",0);
     i_nfjpr60        = data->add<int>("","nfjpr60","I",0);
     i_chhpt          = data->addMulti<float>("","chhpt",0);
@@ -356,6 +365,7 @@ struct TreeFiller {
     i_dphij2met      = data->add<float>("","dphij2met","F",0);
     i_dphij12met     = data->add<float>("","dphij12met","F",0);
     i_dphij3met      = data->add<float>("","dphij3met","F",3);
+    i_dphij4met      = data->add<float>("","dphij4met","F",3);
     i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
     i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
@@ -423,6 +433,7 @@ struct TreeFiller {
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
+    data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoMu22 : false));
@@ -489,6 +500,10 @@ struct TreeFiller {
 
     }
     data->fill<int  >(i_ncttstd   , ncttstd   );
+    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    data->fill<int>(i_nctt_rawmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
+    data->fill<int>(i_nctt_rawmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+
 
     int nfjsd60_   = 0;
     int nfjpr60_   = 0;
@@ -686,20 +701,20 @@ struct TreeFiller {
     float sfcttcandminmass_       = -9.;
 
     unsigned int sfncttpass_ = 0;
-    float sftoppasspt_       = -9.; 
-    float sftoppasseta_      = -9.;
+    float sfcttpasspt_       = -9.;
+    float sfcttpasseta_      = -9.;
 
     unsigned int sfnfjcand_ = 0;   
-    float sffjcandpt_       = -9.; 
+    float sffjcandpt_       = -9.;
     float sffjcandeta_      = -9.;
 
     unsigned int sfntopsdpass_ = 0;
     float sftopsdpasspt_       = -9.; 
-    float sdtopsdpasseta_      = -9.;
+    float sftopsdpasseta_      = -9.;
 
     unsigned int sfnwsdpass_ = 0;
     float sfwsdpasspt_       = -9.;
-    float sdwsdpasseta_      = -9.;
+    float sfwsdpasseta_      = -9.;
 
 
 
@@ -730,8 +745,8 @@ struct TreeFiller {
       if (indxctt<99) {
 	sfncttcand_             = 1;
 	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt(); 
-	sfcandeta_              = ana->cttTops[indxctt]->p4().eta();
-	sfcttcandrawmass_       = ana->cttTops[indxctt]->RawMass();
+	sfcttcandeta_           = ana->cttTops[indxctt]->p4().eta();
+	sfcttcandrawmass_       = ana->cttTops[indxctt]->topRawMass();
 	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
 	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
 	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
@@ -744,7 +759,7 @@ struct TreeFiller {
 
 	if (passCTTSelection(ana->cttTops[indxctt])) { 
 	  sfncttpass_   = 1;
-	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
+	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt();
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
       }     
       
@@ -763,7 +778,7 @@ struct TreeFiller {
 
       if (indxfj<99) {
 	sfnfjcand_   = 1;
-	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt(); 
+	sffjcandpt_  = ana->fatJets[indxfj]->p4().pt();
 	sffjcandeta_ = ana->fatJets[indxfj]->p4().eta();
 	
 	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],120.,220.)) { 
@@ -771,7 +786,7 @@ struct TreeFiller {
 	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
 
-	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],60.,100000.)) {
 	  sfnwsdpass_   = 1;
 	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
@@ -822,7 +837,7 @@ struct TreeFiller {
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
 	if (passCTTSelection(ana->cttTops[indxctt])) { 
-	  ncttpass_     = 1;
+	  sfncttpass_     = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
 	
@@ -854,7 +869,7 @@ struct TreeFiller {
 	  sftopsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sftopsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
 
-	if (passSoftDropTaggerFJ(ana->fatJets[indxfj]),60.,100000.) { 
+	if (passSoftDropTaggerFJ(ana->fatJets[indxfj],60.,100000.)) {
 	  sfnwsdpass_   = 1;
 	  sfwsdpasspt_  = ana->fatJets[indxfj]->p4().pt(); 
 	  sfwsdpasseta_ = ana->fatJets[indxfj]->p4().eta(); }
@@ -956,6 +971,9 @@ struct TreeFiller {
       data->fill<float>(i_j3pt, jets[2]->pt());
       data->fill<float>(i_j3eta, jets[2]->eta());
       data->fill<float>(i_dphij3met, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
+    }
+    if(jets.size() > 3){
+      data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
     }
 
     vector<RecoJetF*> jetsCSVranked;

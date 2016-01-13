@@ -30,26 +30,37 @@ import commands
 import os
 import sys 
 import time 
+import array
+import argparse
 from ConfigParser import SafeConfigParser
-from ROOT import gROOT,TFile,TTree,TH1D
+from ROOT import gROOT,TFile,TTree,TH1D,TH2D,TChain,TGraph2D
 gROOT.SetBatch(True)
 
 def main():
+  parser = argparse.ArgumentParser(description='Produce or print limits based on existing datacards')
+  parser.add_argument("-p", "--print", dest="printLimits", action='store_true', help="Print last set of limits/significances calculated. [Default: False]")
+  parser.add_argument("-f", "--fill", dest="fillAsymptoticLimits", action='store_true', help="Fill root files with results of asymptotic limit calculations for all signal points. [Default: False]")
+  parser.add_argument("-c", "--config", dest="configFile", default='dc_0l_setup.conf', help="Config file to be run with. [Default: dc_0l_setup.conf]")
+  args = parser.parse_args()
+
   # to get the config file
-  configFile = 'dc_0l_setup.conf'
-  args = sys.argv[1:] 
-  if len(args)>=1:
-    configFile = args[0]
-  if os.path.exists(configFile):
-    print 'running with config file', configFile
+  if os.path.exists(args.configFile):
+    print 'running with config file', args.configFile
   else:
-    print 'you are trying to use a config file ('+configFile+') that does not exist!'
+    print 'you are trying to use a config file ('+args.configFile+') that does not exist!'
     sys.exit(1)
+
   configparser = SafeConfigParser()
   configparser.optionxform = str
   
-  limconfig = LimitConfig(configFile,configparser)
-  limconfig.runLimits()
+  limconfig = LimitConfig(args.configFile,configparser)
+
+  if args.printLimits :
+      limconfig.printLimits()
+  elif args.fillAsymptoticLimits :
+      limconfig.fillAsymptoticLimits()
+  else :
+      limconfig.runLimits()
   
 class LimitConfig:
   # setup
@@ -63,15 +74,120 @@ class LimitConfig:
     self.signals        = config_parser.get('signals','samples').replace(' ','').split(',') 
   
   
-  def getLimit(self,rootFile):
+  def getLimit(self,rootFile,getMean=False,limit={}):
     file = TFile(rootFile)
-    tree = file.Get('limit')
-    htmp = TH1D('htmp','htmp',1,0,10000)
-    mean = htmp.GetMean()
-    #error = htmp.GetError()
-    #output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
-    output = 'mean=' + str(mean) + '\n'
-    return output
+    output = ''
+    if getMean :
+      tree = file.Get('limit')
+      htmp = TH1D('htmp','htmp',1,0,10000)
+      tree.Project('htmp','limit')
+      mean = htmp.GetMean()
+      error = htmp.GetError()
+      output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
+      #output = 'mean=' + str(mean) + '\n'
+    else :
+      tree = TChain('limit')
+      tree.Add(rootFile)
+      for entry in tree :
+        output += 'Expected %4.2f %% : r < %4.2f \n' % ((100.0*entry.quantileExpected) , entry.limit)
+        if 0.1 < entry.quantileExpected < 0.2 :
+          limit['-1'] = entry.limit
+        elif 0.4 < entry.quantileExpected < 0.6 :
+          limit['0'] = entry.limit
+        elif 0.8 < entry.quantileExpected < 0.9 :
+          limit['+1'] = entry.limit
+    return (output,limit)
+
+  def printLimits(self):
+    limits = []
+    currentDir = os.getcwd()
+    for signal in self.signals :
+      outputLocation = os.path.join(currentDir,self.limitdir,signal)
+      rootFile = ''
+      dummyFiles = os.listdir(outputLocation)
+      for df in dummyFiles:
+        if 'higgsCombine' in df: rootFile = os.path.join(currentDir,self.limitdir,signal,df)
+      if rootFile=='':
+        limits.append(signal+': no limit found..')
+      else:
+        output = self.getLimit(rootFile,False)
+        #print signal, ':\n', output
+        tempLimit = ''
+        for line in output[0].split('\n'): 
+          if 'Expected 50' in line: 
+            tempLimit = line.replace('Expected',signal+' expected') 
+        limits.append( tempLimit )
+
+    # print the results
+    print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
+    print '\n'.join(limits)
+    print '\n'
+
+  def fillAsymptoticLimits(self):
+    limits = []
+    currentDir = os.getcwd()
+    xsecfilename = ('../data/xsecs/stop.root')
+    xsecfile = TFile(xsecfilename)
+    xsechist = TH2D()
+    xsechist = xsecfile.Get('xsecs')
+    outfile = TFile('results_T2tt.root','RECREATE')
+    maxmstop = 0.0
+    minmstop = 0.0
+    maxmlsp  = 0.0
+    minmlsp  = 0.0
+    for signal in self.signals :
+      mstop = int(signal.split('_')[1])
+      mlsp = int(signal.split('_')[2])
+      if mstop > maxmstop : maxmstop = mstop
+      if mstop > maxmstop : maxmstop = mstop
+      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
+      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
+    nbinsx = int((maxmstop - minmstop)/12.5)
+    nbinsy = int((maxmlsp - minmlsp)/12.5)
+
+    hexp = TH2D('hexp','',34,150,1000,20,0,500)
+    hexpup = TH2D('hexpup','',34,150,1000,20,0,500)
+    hexpdown = TH2D('hexpdown','',34,150,1000,20,0,500)
+    hxsecexp = TH2D('hxsecexp','',34,150,1000,20,0,500)
+    for signal in self.signals :
+      outputLocation = os.path.join(currentDir,self.limitdir,signal)
+      rootFile = ''
+      dummyFiles = os.listdir(outputLocation)
+      for df in dummyFiles:
+        if 'higgsCombine' in df: rootFile = os.path.join(currentDir,self.limitdir,signal,df)
+      if rootFile=='':
+        limits.append(signal+': no limit found..')
+      else:
+        output = self.getLimit(rootFile,False)
+        print signal, ':\n', output
+        tempLimit = ''
+        for line in output[0].split('\n'): 
+          if 'Expected 50' in line: 
+            tempLimit = line.replace('Expected',signal+' expected') 
+        limits.append( tempLimit )
+        mstop = int(signal.split('_')[1])
+        mlsp = int(signal.split('_')[2])
+        limit = output[1]
+        xsec = xsechist.Interpolate(mstop)
+        xseclimit = xsec * limit['0']
+        hexp.Fill(mstop,mlsp,limit['0'])
+        hexpdown.Fill(mstop,mlsp,limit['-1'])
+        hexpup.Fill(mstop,mlsp,limit['+1'])
+        hxsecexp.Fill(mstop,mlsp,xseclimit)
+        print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
+
+    outfile.cd()
+    hexp.Write()
+    hexpdown.Write()
+    hexpup.Write()
+    hxsecexp.Write()
+    outfile.Close()
+    os.system('root -l -q -b makeScanPlots.C')
+       
+    # print the results
+    print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
+    print '\n'.join(limits)
+    print '\n'
 
   # for each signal, combine the datacards for it, run the
   # chosen limit method, then print the significances for
@@ -121,6 +237,7 @@ class LimitConfig:
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
+        print runLimitsCommand, '\n' # keep this in some kind of log file?
         output = commands.getoutput(runLimitsCommand)
         print output # maybe redirect this to some kind of log file?
         
@@ -169,7 +286,7 @@ class LimitConfig:
         if rootFile=='':
           significances.append(signal+': no significance found..')
         else:
-          significances.append( signal + ': ' + self.getLimit(rootFile) )
+          significances.append( signal + ': ' + self.getLimit(rootFile,True)[0] )
       
       # === HybridNew method
       elif self.limitmethod=='HybridNew':

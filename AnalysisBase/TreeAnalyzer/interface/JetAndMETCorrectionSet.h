@@ -36,6 +36,11 @@ template <class CoordSystem>
 class RecoJet;
 typedef RecoJet<CylLorentzCoordF> RecoJetF;
 typedef std::vector<RecoJetF> RecoJetFCollection;
+template <class CoordSystem>
+class GenJet;
+typedef GenJet<CylLorentzCoordF> GenJetF;
+class JetReader;
+
 
 class JetResolutionCorr : public Correction {
 public:
@@ -61,6 +66,18 @@ public:
   ~JetScaleCorr() {}
 
   void correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const;
+};
+
+class RespTailCorr : public HistogramCorrection {
+public:
+  RespTailCorr(TString inputFile) : HistogramCorrection("RespTailCorr",inputFile), mmResp(-1),mmInd(-1)  {}
+  ~RespTailCorr() {}
+
+  void process(const std::vector<RecoJetF>& jets, const std::vector<GenJetF>& genJets, const MomentumF& met);
+  float getWeight(CORRTYPE corrType) const;
+  float mmResp; // reco/gen pt of most mis-measured jet
+  int mmInd; //index (as returned from .index() ) of that jet
+
 };
 
 class METScaleCorr : public Correction {
@@ -101,14 +118,17 @@ public:
                           , METRESOLUTION         = (1 <<  1)   ///< Correct MET Resolution
                           , JETRESOLUTION         = (1 <<  2)   ///< Correct jet Resolution
                           , JETSCALE              = (1 <<  3)   ///< Correct jet Scale
+                          , QCDRESPTAIL           = (1 <<  4)   ///< Correct response tail in QCD
   };
   JetAndMETCorrectionSet();
   virtual ~JetAndMETCorrectionSet();
-  virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "", TRandom3 * randomGenerator = 0);
+  virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "",TString jetResponseTailFile ="", TRandom3 * randomGenerator = 0);
   virtual void processMET(const BaseTreeAnalyzer * ana);
   virtual void correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
   virtual void correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
+  void processRespTail(const BaseTreeAnalyzer * ana, const JetReader& jetReader, const MomentumF& met);
   virtual void processCorrection(const BaseTreeAnalyzer * ana) {}; //does not apply to this guy, must process corrections when he wants
+
 
   //individual accessors
   MomentumF getCorrectedMET() const;
@@ -117,12 +137,16 @@ public:
   MomentumF getCorrectedMETNoHF() const;
   MomentumF getOriginalMETNoHF() const;
 
+  float getQCDRespTailWeight() const {return respTailWeight;}
+  const RespTailCorr * getQCDRespTailCorrector() const {return  respTail;}
+
 private:
   //Correction list
   METScaleCorr * metScale;
   METResCorr * metResolution;
   JetResolutionCorr * jetResolution;
   JetScaleCorr * jetScale;
+  RespTailCorr * respTail;
 
   METNoHFScaleCorr * metNoHFScale;
   METNoHFResCorr * metNoHFResolution;
@@ -135,6 +159,8 @@ private:
 
   CylLorentzVectorF * trueBosons; //direction of the correction
   CylLorentzVectorF * trueMET; //neutrinos from EWK bosons or LSPs
+
+  float respTailWeight;
 };
 
 
