@@ -98,7 +98,7 @@ public:
   virtual void runOneInstance(BaseTreeAnalyzer * analyzer);
   virtual bool doAnything() const {return doAnything_;}
   virtual bool canSmearEvent(BaseTreeAnalyzer * analyzer) const {return doAnything() && analyzer->evtInfoReader.process == defaults::QCD;}
-  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents);
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents= -1, int startEvent =-1);
 
   JetRespSmear::SmearOptions smearOptions;
   TFile * respFile;
@@ -120,7 +120,7 @@ public:
   virtual void fillSmearingWeights(TreeCopier * analyzer);
 
   virtual void runOneInstance(BaseTreeAnalyzer * analyzer);
-  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents);
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents, int startEvent = -1);
 
   size i_smearWeight ;
   size i_bootstrapWeight ;

@@ -15,14 +15,19 @@ using namespace std;
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
-void BaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents){
-  clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<endl;
+void BaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents, int startEvent){
+  clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events";
+  if(startEvent >= 0 ) clog << ", starting with event: "<< startEvent;
+  clog <<endl;
   ana->loadVariables();
   ana->setLoaded(true);
-
+  if(startEvent >= 0 ){
+    ana->setEventNumber(startEvent);
+    if(numEvents >= 0 ) numEvents += startEvent;
+  }
   while(ana->nextEvent(reportFrequency)){
     ana->setProcessed(false);
-    if(numEvents >= 0 && ana->getEventNumber() >= numEvents) return;
+    if(numEvents >= 0 && ana->getEventNumber() >= numEvents+1) return;
     if(!ana->processData()) continue;
     ana->processVariables();
     ana->runEvent();
@@ -231,9 +236,9 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
   }
 }
 //--------------------------------------------------------------------------------------------------
-void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents) {
+void BaseTreeAnalyzer::analyze(int reportFrequency, int numEvents, int startEvent) {
   auto * evtAna = setupEventAnalyzer();
-  evtAna->analyzeEvent(this,reportFrequency,numEvents);
+  evtAna->analyzeEvent(this,reportFrequency,numEvents,startEvent);
   delete evtAna;
 }
 //--------------------------------------------------------------------------------------------------
