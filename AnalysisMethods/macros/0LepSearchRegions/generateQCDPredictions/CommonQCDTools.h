@@ -93,10 +93,10 @@ void readRegionInfoFile(map <string, vector <cutInfo> >& p_CutInfoMap, TString p
 
 void generateRegionInfoMap(map <TString, RegionInfo>& p_RegionInfoMap, map <string, vector <cutInfo> >& p_CutInfoMap) {
   RegionInfo tempInfo;
-  if(run_on_htmht){
-    tempInfo.CR.common_CI.defn += " && passdijetmet";
-  }
   for(int i_common = 0; i_common < p_CutInfoMap["common_CR"].size(); i_common++){
+    if(run_on_htmht){
+      p_CutInfoMap["common_CR"][i_common].defn += " && passdijetmet";
+    }
     for(int i_MET = 0; i_MET < p_CutInfoMap["MET_Cut_CR"].size(); i_MET++){
       for(int i_Nj = 0; i_Nj < p_CutInfoMap["nJets_Cut_CR"].size(); i_Nj++){
         for(int i_MT = 0; i_MT < p_CutInfoMap["MT_Cut_CR"].size(); i_MT++){
@@ -107,7 +107,7 @@ void generateRegionInfoMap(map <TString, RegionInfo>& p_RegionInfoMap, map <stri
                   for(int i_Nbl = 0; i_Nbl < p_CutInfoMap["nlBjets_Cut_CR"].size(); i_Nbl++){
                     for(int i_Nb = 0; i_Nb < p_CutInfoMap["nBjets_Cut_CR"].size(); i_Nb++){
                       for(int i_Nt = 0; i_Nt < p_CutInfoMap["nTtags_Cut_CR"].size(); i_Nt++){
-                        tempInfo.CR.common_CI  = p_CutInfoMap["common_CR"][i_common];
+                        tempInfo.common_CI     = p_CutInfoMap["common_CR"][i_common];
                         tempInfo.CR.MET_CI     = p_CutInfoMap["MET_Cut_CR"][i_MET];
                         tempInfo.CR.nJets_CI   = p_CutInfoMap["nJets_Cut_CR"][i_Nj];
                         tempInfo.CR.MT_CI      = p_CutInfoMap["MT_Cut_CR"][i_MT];
@@ -118,15 +118,14 @@ void generateRegionInfoMap(map <TString, RegionInfo>& p_RegionInfoMap, map <stri
                         tempInfo.CR.nlBjets_CI = p_CutInfoMap["nlBjets_Cut_CR"][i_Nbl];
                         tempInfo.CR.nBjets_CI  = p_CutInfoMap["nBjets_Cut_CR"][i_Nb];
                         tempInfo.CR.nTtags_CI  = p_CutInfoMap["nTtags_Cut_CR"][i_Nt];
-                        tempInfo.uniqueName = "CR_" + tempInfo.CR.getName();
+                        tempInfo.uniqueName = "CR_" + tempInfo.getName_CR();
                         if(p_CutInfoMap["nBjets_Cut_TR"].size() == 0){
                             p_RegionInfoMap[tempInfo.uniqueName] = tempInfo;
                             cout << tempInfo.uniqueName << endl;
                             cout << p_RegionInfoMap[tempInfo.uniqueName].getDefn_CR() << endl;
                         }
                         for(int j_nBjets = 0; j_nBjets < p_CutInfoMap["nBjets_Cut_TR"].size(); j_nBjets++){
-                          tempInfo.uniqueName = "CR_" + tempInfo.CR.getName() + "_TR" + p_CutInfoMap["nBjets_Cut_TR"][j_nBjets].name;
-                          tempInfo.TR.common_CI  = tempInfo.CR.common_CI;
+                          tempInfo.uniqueName = "CR_" + tempInfo.getName_CR() + "_TR" + p_CutInfoMap["nBjets_Cut_TR"][j_nBjets].name;
                           tempInfo.TR.MET_CI     = tempInfo.CR.MET_CI;
                           tempInfo.TR.nJets_CI   = tempInfo.CR.nJets_CI;
                           tempInfo.TR.MT_CI      = tempInfo.CR.MT_CI;
@@ -137,7 +136,6 @@ void generateRegionInfoMap(map <TString, RegionInfo>& p_RegionInfoMap, map <stri
                           tempInfo.TR.nlBjets_CI = tempInfo.CR.nlBjets_CI;
                           tempInfo.TR.nBjets_CI  = p_CutInfoMap["nBjets_Cut_TR"][j_nBjets];
                           tempInfo.TR.nTtags_CI  = tempInfo.CR.nTtags_CI;
-                          tempInfo.SR.common_CI  = tempInfo.CR.common_CI;
                           tempInfo.SR.MET_CI     = tempInfo.TR.MET_CI;
                           tempInfo.SR.nJets_CI   = tempInfo.TR.nJets_CI;
                           tempInfo.SR.MT_CI      = tempInfo.TR.MT_CI;
@@ -151,6 +149,8 @@ void generateRegionInfoMap(map <TString, RegionInfo>& p_RegionInfoMap, map <stri
                           p_RegionInfoMap[tempInfo.uniqueName] = tempInfo;
                           cout << tempInfo.uniqueName << endl;
                           cout << p_RegionInfoMap[tempInfo.uniqueName].getDefn_CR() << endl;
+                          cout << p_RegionInfoMap[tempInfo.uniqueName].getDefn_TR() << endl;
+                          cout << p_RegionInfoMap[tempInfo.uniqueName].getDefn_SR() << endl;
                         }
                       }
                     }
