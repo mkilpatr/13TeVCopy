@@ -35,10 +35,20 @@ RefoldCorrection::RefoldCorrection(TString corrName, TFile * file) : Correction(
   if(!corr) throw std::invalid_argument("RefoldCorrection::RefoldCorrection: Corrector could not be found!");
 }
 
-HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1) {
+HistogramCorrection::HistogramCorrection(TString corrName, TFile * file) : Correction(corrName),targetBin(1),inputFile(0) {
   if(!file) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: file could not be found!");
   corrHist = (TH1F*)(file->Get(name) );
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
+}
+HistogramCorrection::HistogramCorrection(TString corrName, TString fileName) : Correction(corrName),targetBin(1) {
+  std::clog << "Loading file: "<< fileName << std::endl;
+  inputFile = TFile::Open(fileName,"read");
+  if(!inputFile) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: file could not be found!");
+  corrHist = (TH1F*)(inputFile->Get(name) );
+  if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
+}
+HistogramCorrection::~HistogramCorrection() {
+  if(inputFile) inputFile->Close();
 }
 
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}

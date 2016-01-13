@@ -40,14 +40,19 @@ protected:
 class HistogramCorrection : public Correction {
 public:
   HistogramCorrection(TString corrName, TFile * file);
+  HistogramCorrection(TString corrName, TString fileName);
+  ~HistogramCorrection();
   void setTargetBin(unsigned int a) {targetBin = a;}
-  void setAxis(float value) { targetBin = corrHist->FindBin(value); }
+  void setAxis(float value) const { targetBin = corrHist->FindFixBin(value); }
+  void setAxisNoUnderOver(float value) const { targetBin = std::min(std::max(corrHist->FindFixBin(value),1),corrHist->GetNbinsX());  }
   virtual float get() const { return corrHist->GetBinContent(targetBin);}
   virtual float getError() const { return corrHist->GetBinError(targetBin);}
   TH1F* getHist()        { return corrHist; }
 protected:
-TH1F* corrHist;
-unsigned int targetBin;
+  mutable unsigned int targetBin;
+  TFile * inputFile;
+  TH1F* corrHist;
+
 };
 
 class CorrectionSet {

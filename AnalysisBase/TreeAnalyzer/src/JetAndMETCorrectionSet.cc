@@ -71,6 +71,7 @@ void JetResolutionCorr::correctJetsAndMET(const double resSF, std::vector<RecoJe
      met.p4() -= j.p4();
   }
 
+  std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
 }
 
 void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const {
@@ -97,6 +98,45 @@ void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& j
   met.setP4(CylLorentzVectorF(metvec.pt(), metvec.eta(), metvec.phi(), 0.0));
 }
 
+void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<GenJetF>& genJets, const MomentumF& met){
+
+  float MM = -1;
+  int ind = -1;
+  float resp = -1;
+  for(unsigned int iG = 0; iG < genJets.size() && iG < 3; ++iG  ){
+    if(genJets[iG].pt() == 0) break;
+    float fpt = -1;
+    for(const auto& rJ : jets)
+      if(rJ.genJet() == &genJets[iG]){
+        fpt = rJ.pt();
+        break;
+      }
+    if(fpt < 0 )  fpt = 9.5; //for the cases with no reco jet due to being below thresh
+    if(MM < 0 ||  TMath::Abs(fpt - genJets[iG].pt()) > MM){
+      ind = genJets[iG].index();
+      resp =  fpt/genJets[iG].pt();
+      MM = TMath::Abs(fpt - genJets[iG].pt());
+    }
+  }
+
+  if(ind >= 0){
+    mmResp = resp;
+    mmInd = ind;
+  } else {
+    mmResp = -1;
+    mmInd = -1;
+  }
+}
+float RespTailCorr::getWeight(CORRTYPE corrType) const {
+  setAxisNoUnderOver(  mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
+  switch (corrType) {
+    case NONE: return 1;
+    case NOMINAL: return  get();
+    case UP:      return int(targetBin) == corrHist->GetNbinsX() ?  get() - getError() : get() + getError();
+    case DOWN:    return int(targetBin) == corrHist->GetNbinsX() ?  get() + getError() : get() - getError();
+    default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+  }
+}
 
 float METScaleCorr::scaleCorr(float trueMETPT) const {
   double x = std::min(std::max(20.0,double(trueMETPT)),300.0);
@@ -174,7 +214,7 @@ CylLorentzVectorF METNoHFResCorr::getCorrectedMET(const CylLorentzVectorF& trueB
 }
 JetAndMETCorrectionSet::JetAndMETCorrectionSet(): metScale(0),metResolution(0), jetResolution(0), jetScale(0), metNoHFScale(0), metNoHFResolution(0)
 ,originalMET(new MomentumF),correctedMET(new MomentumF),originalMETNoHF(new MomentumF),correctedMETNoHF(new MomentumF),
-trueBosons(new CylLorentzVectorF),trueMET(new CylLorentzVectorF)
+trueBosons(new CylLorentzVectorF),trueMET(new CylLorentzVectorF),respTailWeight(1)
 {}
 JetAndMETCorrectionSet::~JetAndMETCorrectionSet(){
   delete originalMET;
@@ -184,7 +224,7 @@ JetAndMETCorrectionSet::~JetAndMETCorrectionSet(){
   delete trueBosons;
   delete trueMET;
 }
-void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFile,TRandom3 * randomGenerator)
+void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFile,TString jetResponseTailFile,TRandom3 * randomGenerator)
 {
   loadSimple("JetAndMET",correctionOptions);
   if(options_ & METSCALE){
@@ -206,6 +246,10 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
   if(options_ & JETSCALE){
     jetScale = new JetScaleCorr();
     corrections.push_back(jetScale);
+  }
+  if(options_ & QCDRESPTAIL){
+    respTail = new RespTailCorr(jetResponseTailFile);
+    corrections.push_back(respTail);
   }
 }
 
@@ -299,6 +343,14 @@ void JetAndMETCorrectionSet::correctJetScale(const BaseTreeAnalyzer * ana, RecoJ
   if(!ana->isMC()) return;
   jetScale->correctJetsAndMET(ana->getAnaCfg().corrections.jetScaleCorr,jets,met);
 }
+
+void JetAndMETCorrectionSet::processRespTail(const BaseTreeAnalyzer * ana, const JetReader& jetReader, const MomentumF& met) {
+  if(!respTail) return;
+  if(ana->process != defaults::QCD){ respTailWeight = 1; return;}
+  respTail->process(jetReader.recoJets,jetReader.genJets,met);
+  respTailWeight = respTail->getWeight(ana->getAnaCfg().corrections.jetResTailCorrType);
+}
+
 
 MomentumF JetAndMETCorrectionSet::getCorrectedMET() const {return *correctedMET;}
 MomentumF JetAndMETCorrectionSet::getOriginalMET() const {return *originalMET;}

@@ -246,6 +246,11 @@ namespace cfgSet {
 
     ucsbsusy::CORRTYPE jetScaleCorr;
 
+
+    TString jetResTailFile;
+    ucsbsusy::CORRTYPE jetResTailCorrType;
+
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
@@ -258,7 +263,9 @@ namespace cfgSet {
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
         jetResCorr(1),
-        jetScaleCorr(ucsbsusy::NONE)
+        jetScaleCorr(ucsbsusy::NONE),
+        jetResTailFile(1),
+        jetResTailCorrType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -326,6 +333,8 @@ namespace cfgSet {
           os << "JetScale ("<< a.jetScaleCorr<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION)
           os << "JetResolution ("<< a.jetResCorr<<")";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL)
+          os << "QCDJetRespTail ("<< a.jetResTailCorrType<<")";
         os << std::endl;
       }
       return os;

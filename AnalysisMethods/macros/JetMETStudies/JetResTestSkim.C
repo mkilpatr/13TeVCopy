@@ -42,6 +42,10 @@ public:
 
   i_weight    (0),
   i_puWeight  (0),
+  i_bTagWeight    (0),
+  i_nomTailWeight (0),
+  i_upTailWeight  (0),
+  i_downTailWeight(0),
 
   i_evtN              (0),
   i_fileN             (0),
@@ -212,10 +216,20 @@ public:
 
       data.fill<float>(i_leadLoss_res            ,leadGenMatchInd >= 0 ? defaultJets->recoJets[leadGenMatchInd].pt()/defaultJets->genJets[leadGenInd].pt() : 0);
       data.fill<unsigned int>(i_leadLoss_recorank,leadGenMatchInd >= 0 ? leadGenMatchInd : 99);
+
+//      cout << (leadGenInd >= 0 ? leadGenInd : 99) <<" "<< (leadGenMatchInd >= 0 ? defaultJets->recoJets[leadGenMatchInd].pt()/defaultJets->genJets[leadGenInd].pt() : 0)
+//          <<" "<< jetAndMETCorrections.getQCDRespTailCorrector()->mmInd <<" "<< jetAndMETCorrections.getQCDRespTailCorrector()->mmResp
+//          <<" "<< jetAndMETCorrections.getQCDRespTailWeight()  <<" "<< jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(UP) <<" "<< jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(DOWN)<<endl;
+
     }
 
-    data.fill<float>(i_weight    ,weight);
-    data.fill<float>(i_puWeight  ,eventCorrections.getPUWeight());
+    data.fill<float>(i_weight          ,weight);
+    data.fill<float>(i_puWeight        ,eventCorrections.getPUWeight());
+    data.fill<float>(i_bTagWeight      ,bTagCorrections.getBTagByEvtWeight());
+    data.fill<float>(i_nomTailWeight   ,jetAndMETCorrections.getQCDRespTailWeight());
+    data.fill<float>(i_upTailWeight    ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(UP));
+    data.fill<float>(i_downTailWeight  ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(DOWN));
+
 
     for(auto i : *oldWeights)
       data.fillMulti<ucsbsusy::size8>(i_bs,i);
@@ -261,6 +275,10 @@ public:
 
     i_weight      = data.add<float>("","weight"                                  ,"F",0);
     i_puWeight      = data.add<float>("","puWeight"                              ,"F",0);
+    i_bTagWeight      = data.add<float>("","bTagWeight"                              ,"F",0);
+    i_nomTailWeight   = data.add<float>("","nomTailWeight"                              ,"F",0);
+    i_upTailWeight    = data.add<float>("","upTailWeight"                              ,"F",0);
+    i_downTailWeight  = data.add<float>("","downTailWeight"                              ,"F",0);
     i_bs            = data.addMulti<ucsbsusy::size8>("","bootstrapWeight"           ,0);
     i_evtN                = data.add<unsigned int>("","evtN"                              ,"i",0);
     i_fileN               = data.add<ucsbsusy::size8>("","fileN"                              ,"b",0);
@@ -303,6 +321,10 @@ public:
 
   size i_weight            ;
   size i_puWeight          ;
+  size i_bTagWeight        ;
+  size i_nomTailWeight     ;
+  size i_upTailWeight      ;
+  size i_downTailWeight    ;
   size i_evtN              ;
   size i_fileN             ;
   size i_passcscbeamhaloflt;
@@ -326,6 +348,7 @@ void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Eve
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfg.corrections.jetResTailCorrType = NOMINAL;
 
   //get the output name
   TString prefix(fileName);
