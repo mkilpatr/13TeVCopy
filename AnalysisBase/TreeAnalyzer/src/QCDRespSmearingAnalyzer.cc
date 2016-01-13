@@ -259,12 +259,21 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     }
 
     //its a missing jet...or just below 10 GeV
+    double testMet = 0;
+    if(rJI < 0 ){
+      testMet = (met->p4() -  gJ->p4()).pt() ;
+    } else {
+      testMet = (met->p4() + (*recoJets)[rJI].p4() -    gJ->p4()).pt();
+    }
+    double deltaMet = testMet - met->pt() ;
+    if( deltaMet > met->pt() + 100  && deltaMet > .55*gJ->pt())continue;
+
+
     if(rJI < 0 ){
       rJI = recoJets->size();
       RecoJetF newJet(ucsbsusy::CylLorentzVectorF(9.5, gJ->eta(), gJ->phi(),gJ->mass()), -1,
           0, 9.5, 0,
           1, const_cast<ucsbsusy::GenJetF*>(gJ));
-
       analyzer->defaultJets->addRecoJet(&newJet);
     }
     RecoJetF * rJ = &(*recoJets)[rJI];
