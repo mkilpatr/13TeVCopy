@@ -158,6 +158,7 @@ struct TreeFiller {
   size i_dphij2met ;
   size i_dphij12met;
   size i_dphij3met ;
+  size i_dphij4met ;
   size i_mtcsv1met ;
   size i_mtcsv2met ;
   size i_mtcsv12met;
@@ -364,6 +365,7 @@ struct TreeFiller {
     i_dphij2met      = data->add<float>("","dphij2met","F",0);
     i_dphij12met     = data->add<float>("","dphij12met","F",0);
     i_dphij3met      = data->add<float>("","dphij3met","F",3);
+    i_dphij4met      = data->add<float>("","dphij4met","F",3);
     i_mtcsv1met      = data->add<float>("","mtcsv1met","F",0);
     i_mtcsv2met      = data->add<float>("","mtcsv2met","F",0);
     i_mtcsv12met     = data->add<float>("","mtcsv12met","F",0);
@@ -969,6 +971,9 @@ struct TreeFiller {
       data->fill<float>(i_j3pt, jets[2]->pt());
       data->fill<float>(i_j3eta, jets[2]->eta());
       data->fill<float>(i_dphij3met, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
+    }
+    if(jets.size() > 3){
+      data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
     }
 
     vector<RecoJetF*> jetsCSVranked;
