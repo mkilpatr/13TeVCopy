@@ -128,8 +128,7 @@ void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<
   }
 }
 float RespTailCorr::getWeight(CORRTYPE corrType) const {
-  if(mmInd < 0) return 1;
-  setAxisNoUnderOver( mmResp);
+  setAxisNoUnderOver(  mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
   switch (corrType) {
     case NONE: return 1;
     case NOMINAL: return  get();
