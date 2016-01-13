@@ -57,6 +57,7 @@ struct TreeFiller {
   size i_btagWeight;
   size i_qcdRespTailWeight;
   size i_normWeight;
+  size i_topptWeight;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtrige17e12;
@@ -264,6 +265,7 @@ struct TreeFiller {
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_normWeight     = data->add<float>("","normWeight","F",0);
+    i_topptWeight    = data->add<float>("","topptWeight","F",1);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
     i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
@@ -435,6 +437,7 @@ struct TreeFiller {
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
+    data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoMu22 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
