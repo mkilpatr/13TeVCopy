@@ -259,12 +259,21 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     }
 
     //its a missing jet...or just below 10 GeV
+    double testMet = 0;
+    if(rJI < 0 ){
+      testMet = (met->p4() -  gJ->p4()).pt() ;
+    } else {
+      testMet = (met->p4() + (*recoJets)[rJI].p4() -    gJ->p4()).pt();
+    }
+    double deltaMet = testMet - met->pt() ;
+    if( deltaMet > met->pt() + 100  && deltaMet > .55*gJ->pt())continue;
+
+
     if(rJI < 0 ){
       rJI = recoJets->size();
       RecoJetF newJet(ucsbsusy::CylLorentzVectorF(9.5, gJ->eta(), gJ->phi(),gJ->mass()), -1,
           0, 9.5, 0,
           1, const_cast<ucsbsusy::GenJetF*>(gJ));
-
       analyzer->defaultJets->addRecoJet(&newJet);
     }
     RecoJetF * rJ = &(*recoJets)[rJI];
@@ -369,17 +378,22 @@ void QCDRespSmearingBaseEventAnalyzer::runOneInstance(BaseTreeAnalyzer * ana){
 }
 
 
-void QCDRespSmearingBaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana,int reportFrequency = 10000, int numEvents = -1)
+void QCDRespSmearingBaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana,int reportFrequency, int numEvents, int startEvent)
 {
-  std::clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events"  <<std::endl;
+  std::clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events";
+  if(startEvent >= 0 ) std::clog << ", starting with event: "<< startEvent;
+  std::clog <<std::endl;
 
   setupSmearing(ana);
   ana->loadVariables();
   ana->setLoaded(true);
-
+  if(startEvent >= 0 ){
+    ana->setEventNumber(startEvent);
+    if(numEvents >= 0 ) numEvents += startEvent;
+  }
   while(ana->nextEvent(reportFrequency)){
     ana->setProcessed(false);
-    if(numEvents >= 0 && ana->getEventNumber() >= numEvents) return;
+    if(numEvents >= 0 && ana->getEventNumber() >= numEvents +1) return;
     if(!ana->processData()) continue;
     if(canSmearEvent(ana))
       applySmearing(ana);
@@ -417,9 +431,13 @@ void QCDRespSmearingCopierEventAnalyzer::runOneInstance(BaseTreeAnalyzer * analy
 }
 
 
-void QCDRespSmearingCopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents){
+void QCDRespSmearingCopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents, int startEvent){
   TreeCopier * newAna = dynamic_cast<TreeCopier*>(ana);
   if (newAna==0) throw std::invalid_argument("TreeCopierEventAnalyzer::analyzeEvent: Can only be used in an analyzer that inherits from TreeCopier!");
+
+  std::clog << "Running over " << (numEvents < 0 ? "all" : TString::Format("at most %i",numEvents).Data()) << " events";
+  if(startEvent >= 0 ) std::clog << ", starting with event: "<< startEvent;
+  std::clog <<std::endl;
 
   setupSmearing(ana);
   newAna->loadVariables();
@@ -428,9 +446,13 @@ void QCDRespSmearingCopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, in
   newAna->book();
   bookSmearingWeights(newAna);
   newAna->bookFillingTree();
+  if(startEvent >= 0 ){
+    ana->setEventNumber(startEvent);
+    if(numEvents >= 0 ) numEvents += startEvent;
+  }
   while(newAna->nextEvent(reportFrequency)){
     newAna->setProcessed(false);
-    if(numEvents >= 0 && newAna->getEventNumber() >= numEvents) return;
+    if(numEvents >= 0 && newAna->getEventNumber() >= numEvents +1) return;
     if(canSmearEvent(ana))
       applySmearing(ana);
     else

@@ -115,6 +115,135 @@ public:
     return h;
   }
 
+  TH1F*  getTFAndCov(TTree* tree,TString numSelection,TString numWeight, TString denSelection,TString denWeight, TString histSampleName = ""){
+
+      sampleName = histSampleName;
+      TTreeFormula *varFormula = new TTreeFormula("form2",plotInfo->var, tree);
+
+      selection = numSelection;
+      weight = numWeight;
+      TString nameN = getFullName();
+      TString selN = getSelString();
+      TH1F * hN = plotInfo->getHistogram(nameN);
+      hN->Sumw2();
+
+      TTreeFormula *selNFormula = new TTreeFormula("form1",selN, tree);
+
+      selection = denSelection;
+      weight = denWeight;
+      TString nameD = getFullName();
+      TString selD = getSelString();
+      TH1F * hD = plotInfo->getHistogram(nameD);
+      hD->Sumw2();
+
+      TTreeFormula *selDFormula = new TTreeFormula("form2",selD, tree);
+
+
+      vector<TTreeFormula *> bootFormulas(nBootStraps);
+
+      TH2F *hbN = 0;
+      TH2F *hbD = 0;
+
+      if(nBootStraps){
+        TString nameS = plotInfo->name += "_bN";
+        hbN  = plotInfo->getHistogram2D(nameS,nBootStraps);
+        nameS = plotInfo->name += "_bD";
+        hbD  = plotInfo->getHistogram2D(nameS,nBootStraps);
+
+        for(unsigned int iB = 0; iB < nBootStraps; ++iB){
+          bootFormulas[iB] = new TTreeFormula(TString::Format("boostForm_%u",iB),TString::Format("bootstrapWeight[%u]",iB), tree);
+        }
+      }
+
+
+      int nEntries = tree->GetEntries();
+      for (int i= 0;i<nEntries;i++) {
+       tree->GetEntry(i);
+       double var      = varFormula->EvalInstance();
+       double weightN   = selNFormula->EvalInstance();
+       double weightD   = selDFormula->EvalInstance();
+       if(weightD == 0 && weightN == 0) continue;
+
+       if(weightN) hN->Fill(var,weightN);
+       if(weightD) hD->Fill(var,weightD);
+
+       for(unsigned int iB = 0; iB < nBootStraps; ++iB){
+         bootFormulas[iB]->GetNdata();
+         double bootWeight = bootFormulas[iB]->EvalInstance();
+         if(bootWeight && weightN)
+           hbN->Fill(var,iB,weightN*bootWeight);
+         if(bootWeight && weightD)
+           hbD->Fill(var,iB,weightD*bootWeight);
+       }
+      }
+
+     delete selNFormula;
+     delete selDFormula;
+     delete varFormula;
+     for(unsigned int iB = 0; iB < nBootStraps; ++iB)
+       delete bootFormulas[iB];
+
+     if(underOverflow){
+       PlotTools::toUnderflow(hN);
+       PlotTools::toOverflow(hN);
+       PlotTools::toUnderflow(hD);
+       PlotTools::toOverflow(hD);
+       if(nBootStraps){
+         PlotTools::toUnderflowX(hbN);
+         PlotTools::toOverflowX(hbN);
+         PlotTools::toUnderflowX(hbD);
+         PlotTools::toOverflowX(hbD);
+       }
+     }
+
+     hN->Divide(hD);
+
+     if(nBootStraps){
+       hbN->Divide(hbD);
+  //     new TCanvas();
+  //     hb->Draw("COLZ");
+
+       vector<double> means(hbN->GetNbinsX() +2,0);
+       vector<vector<double> > meanSqs(hbN->GetNbinsX() +2, vector<double>(hbN->GetNbinsX() +2,0)      );
+
+       for(unsigned int iBS = 0; iBS < nBootStraps; ++iBS){
+         for(unsigned int iB = 0; iB <= hbN->GetNbinsX() +1; ++iB){
+           means[iB] += hbN->GetBinContent(iB,iBS+1);
+           for(unsigned int iB2 = 0; iB2 <= hbN->GetNbinsX() +1; ++iB2){
+             meanSqs[iB][iB2] += hbN->GetBinContent(iB,iBS+1)*hbN->GetBinContent(iB2,iBS+1);
+           }
+         }
+       }
+
+       vector<vector<double> > covMatrix(hbN->GetNbinsX() +2, vector<double>(hbN->GetNbinsX() +2,0)      );
+       for(unsigned int iB = 0; iB <= hbN->GetNbinsX() +1; ++iB){
+         for(unsigned int iB2 = 0; iB2 <= hbN->GetNbinsX() +1; ++iB2){
+           covMatrix[iB][iB2] = meanSqs[iB][iB2]/double(nBootStraps) - (means[iB]/double(nBootStraps) )*(means[iB2]/double(nBootStraps)) ;
+           cout << covMatrix[iB][iB2] <<" ";
+         }
+         cout << endl;
+       }
+       cout << endl <<"Norm!"<<endl;
+       for(unsigned int iB = 0; iB <= hbN->GetNbinsX() +1; ++iB){
+         for(unsigned int iB2 = 0; iB2 <= hbN->GetNbinsX() +1; ++iB2){
+           cout << TString::Format("%.2f",(covMatrix[iB][iB] == 0 ? 0 : covMatrix[iB][iB2]/covMatrix[iB][iB])) << " ";
+         }
+         cout << endl;
+       }
+
+       cout << endl;
+
+
+
+       for(unsigned int iB = 0; iB <= hbN->GetNbinsX() +1; ++iB){
+         hN->SetBinError(iB,TMath::Sqrt(covMatrix[iB][iB]) );
+       }
+       delete hbN;
+       delete hbD;
+     }
+
+     return hN;
+    }
 
   TH1F*  getHistogramManual(TTree* tree,TString numSelection,TString numWeight, TString denSelection,TString denWeight, TString histSampleName = ""){
 

@@ -18,7 +18,7 @@ enum RUNTYPE {ORIG, GLOBAL, CONSTW, GRANW};
 
 class Copier : public TreeCopierManualBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double window, int type) :    TreeCopierManualBranches(fileName,treeName,outFileName,randSeed,isMCTree,pars),
+  Copier(string fileName, string treeName, string outFileName, size randSeed, bool isMCTree, cfgSet::ConfigSet * pars, double window, int type) :   TreeCopierManualBranches(fileName,treeName,outFileName,randSeed,isMCTree,pars),
     window(window),
     type(RUNTYPE(type)),
   i_met  (0),
@@ -29,7 +29,10 @@ public:
   i_ht   (0),
   i_dPhi (0),
   i_dPhi3(0),
+  i_dPhi4(0),
   i_mtB  (0),
+  i_nEMu (0),
+  i_nTau (0),
   i_leadLoss_pt      (0),
   i_leadLoss_eta     (0),
   i_leadLoss_flavor  (0),
@@ -38,7 +41,20 @@ public:
   i_leadLoss_recorank(0),
 
   i_weight    (0),
-  i_puWeight  (0)
+  i_puWeight  (0),
+
+  i_evtN              (0),
+  i_fileN             (0),
+  i_passcscbeamhaloflt(0),
+  i_passeebadscflt    (0),
+  i_passeebadsc4flt   (0),
+  i_passhbheisoflt    (0),
+  i_passhbhefltloose  (0),
+  i_passhbheflttight  (0),
+
+  oldWeights(0),
+  i_bs(0),
+  randSeed(randSeed)
   {
   };
   virtual ~Copier() {};
@@ -49,39 +65,45 @@ public:
     load(cfgSet::EVTINFO);
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
     load(cfgSet::CMSTOPS);
+    load(cfgSet::ELECTRONS);
+    load(cfgSet::MUONS);
+    load(cfgSet::PFCANDS);
+
+    oldWeights = new std::vector<size8>;
+    setBranchAddress("","bootstrapWeight",&oldWeights,false);
 
   }
 
-  virtual BaseEventAnalyzer * setupEventAnalyzer() override {
-    QCDRespSmearingCopierEventAnalyzer * ana = new  QCDRespSmearingCopierEventAnalyzer();
-    ana->smearOptions.minWindow = 0.01;
-    ana->smearOptions.maxWindow = window;
-    ana->smearOptions.nSmears = 100;
-    ana->smearOptions.nSmearJets = 2;
-    ana->smearOptions.nBootstraps = 50;
-
-    switch(type){
-    case ORIG:
-      ana->smearOptions.nSmears = 0;
-      ana->smearOptions.nBootstraps = 0;
-      break;
-    case GLOBAL:
-      ana->smearOptions.winType = JetRespSmear::FLAT;
-      ana->smearOptions.doFlatSampling = false;
-      ana->smearOptions.maxWindow = 10;
-      break;
-    case CONSTW:
-      ana->smearOptions.winType = JetRespSmear::FLAT;
-      ana->smearOptions.doFlatSampling = false;
-      break;
-    case GRANW:
-      ana->smearOptions.winType = JetRespSmear::LINEAR_GRANULATED;
-      ana->smearOptions.doFlatSampling = true;
-      break;
-    }
-
-    return ana;
-  }
+//  virtual BaseEventAnalyzer * setupEventAnalyzer() override {
+//    QCDRespSmearingCopierEventAnalyzer * ana = new  QCDRespSmearingCopierEventAnalyzer();
+//    ana->smearOptions.minWindow = 0.01;
+//    ana->smearOptions.maxWindow = window;
+//    ana->smearOptions.nSmears = 100;
+//    ana->smearOptions.nSmearJets = 2;
+//    ana->smearOptions.nBootstraps = 50;
+//
+//    switch(type){
+//    case ORIG:
+//      ana->smearOptions.nSmears = 0;
+//      ana->smearOptions.nBootstraps = 0;
+//      break;
+//    case GLOBAL:
+//      ana->smearOptions.winType = JetRespSmear::FLAT;
+//      ana->smearOptions.doFlatSampling = false;
+//      ana->smearOptions.maxWindow = 10;
+//      break;
+//    case CONSTW:
+//      ana->smearOptions.winType = JetRespSmear::FLAT;
+//      ana->smearOptions.doFlatSampling = false;
+//      break;
+//    case GRANW:
+//      ana->smearOptions.winType = JetRespSmear::LINEAR_GRANULATED;
+//      ana->smearOptions.doFlatSampling = true;
+//      break;
+//    }
+//
+//    return ana;
+//  }
 
 
   bool passCTTSelection(CMSTopF* ctt) {
@@ -108,7 +130,7 @@ public:
 
 
   bool fillEvent() {
-    if(met->pt() < 175) return false;
+    if(met->pt() < 150) return false;
     if(jets.size() < 2 || jets[1]->pt() < 75) return false;
 
 
@@ -119,11 +141,13 @@ public:
       if(j->csv() > defaults::CSV_LOOSE)  nlbs++;
     }
 
-    float dPhi  = 0;
-    float dPhi3 = 0;
+    float dPhi  = 10;
+    float dPhi3 = 10;
+    float dPhi4 = 10;
     if(jets.size()) dPhi = PhysicsUtilities::absDeltaPhi(*jets[0],*met);
     if(jets.size() > 1) dPhi = min(float(PhysicsUtilities::absDeltaPhi(*jets[1],*met)),dPhi);
     if(jets.size() > 2) dPhi3 = PhysicsUtilities::absDeltaPhi(*jets[2],*met);
+    if(jets.size() > 3) dPhi4 = PhysicsUtilities::absDeltaPhi(*jets[3],*met);
 
     vector<RecoJetF*> jetsCSVranked;
     rankedByCSV(jets,jetsCSVranked);
@@ -146,7 +170,10 @@ public:
     data.fill<float>(i_ht     , ht);
     data.fill<float>(i_dPhi   ,dPhi);
     data.fill<float>(i_dPhi3  ,dPhi3);
+    data.fill<float>(i_dPhi4  ,dPhi4);
     data.fill<float>(i_mtB   ,min(mtcsv1met,mtcsv2met));
+    data.fill<unsigned int>(i_nEMu   ,nSelLeptons);
+    data.fill<unsigned int>(i_nTau   ,nVetoedTracks);
 
 
     if(window < 0){
@@ -190,6 +217,20 @@ public:
     data.fill<float>(i_weight    ,weight);
     data.fill<float>(i_puWeight  ,eventCorrections.getPUWeight());
 
+    for(auto i : *oldWeights)
+      data.fillMulti<ucsbsusy::size8>(i_bs,i);
+
+    data.fill<unsigned int>(i_evtN, evtInfoReader.event);
+    data.fill<ucsbsusy::size8>(i_fileN, randSeed);
+    data.fill<bool>(i_passcscbeamhaloflt, evtInfoReader.cscBeamHaloFlt);
+    data.fill<bool>(i_passeebadscflt,evtInfoReader.eeBadSCFlt);
+    data.fill<bool>(i_passeebadsc4flt,evtInfoReader.eeBadSC4Flt);
+    data.fill<bool>(i_passhbheisoflt,evtInfoReader.hbheIsoFlt);
+    data.fill<bool>(i_passhbhefltloose,evtInfoReader.hbheFltR2Loose);
+    data.fill<bool>(i_passhbheflttight,evtInfoReader.hbheFltR2Tight);
+
+
+
     return true;
   }
 
@@ -204,7 +245,10 @@ public:
     i_ht       = data.add<float>("","ht"                       ,"F",0);
     i_dPhi     = data.add<float>("","dPhi"                     ,"F",0);
     i_dPhi3     = data.add<float>("","dPhi3"                   ,"F",0);
+    i_dPhi4     = data.add<float>("","dPhi4"                   ,"F",0);
     i_mtB      = data.add<float>("","mtB"                      ,"F",0);
+    i_nEMu     = data.add<float>("","nEMu"                     ,"i",0);
+    i_nTau     = data.add<float>("","nTau"                     ,"i",0);
 
     if(window < 0){
     i_leadLoss_pt        = data.add<float>("","leadLoss_pt"                      ,"F",0);
@@ -217,6 +261,17 @@ public:
 
     i_weight      = data.add<float>("","weight"                                  ,"F",0);
     i_puWeight      = data.add<float>("","puWeight"                              ,"F",0);
+    i_bs            = data.addMulti<ucsbsusy::size8>("","bootstrapWeight"           ,0);
+    i_evtN                = data.add<unsigned int>("","evtN"                              ,"i",0);
+    i_fileN               = data.add<ucsbsusy::size8>("","fileN"                              ,"b",0);
+    i_passcscbeamhaloflt = data.add<bool>("","passcscbeamhaloflt","O",0);
+    i_passeebadscflt = data.add<bool>("","passeebadscflt","O",0);
+    i_passeebadsc4flt = data.add<bool>("","passeebadsc4flt","O",0);
+    i_passhbheisoflt  = data.add<bool>("","passhbheisoflt","O",0);
+    i_passhbhefltloose    = data.add<bool>("","passhbhefltloose","O",0);
+    i_passhbheflttight    = data.add<bool>("","passhbheflttight","O",0);
+
+
 
   }
 
@@ -232,7 +287,10 @@ public:
   size i_nT        ;
   size i_dPhi      ;
   size i_dPhi3     ;
+  size i_dPhi4     ;
   size i_mtB       ;
+  size i_nEMu      ;
+  size i_nTau      ;
 
   size i_leadLoss_pt          ;
   size i_leadLoss_eta         ;
@@ -243,10 +301,20 @@ public:
 
 
 
-  size i_weight     ;
-  size i_puWeight    ;
+  size i_weight            ;
+  size i_puWeight          ;
+  size i_evtN              ;
+  size i_fileN             ;
+  size i_passcscbeamhaloflt;
+  size i_passeebadscflt    ;
+  size i_passeebadsc4flt   ;
+  size i_passhbheisoflt    ;
+  size i_passhbhefltloose  ;
+  size i_passhbheflttight  ;
 
-
+  std::vector<size8>*  oldWeights;
+  size i_bs     ;
+  int randSeed;
 
 };
 

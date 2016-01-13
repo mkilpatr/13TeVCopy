@@ -263,13 +263,14 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    TString smearFiles[] = {"jetResTest_smear_win0p5Flat_skimmed.root","jetResTest_smear_all_skimmed.root",""};
 //    TString smearNames[] = {"W_{smear} = 0.01-0.5","Classic smearing",""};
 
-        TString smearFiles[] = {"jetResTest_smear_win0p5Flat.root","jetResTest_smear_0p3.root","jetResTest_smear_all.root",""};
-        TString smearNames[] = {"W_{smear} = 0.01-0.5","W_{smear} = 0.3","Classic smearing",""};
+//        TString smearFiles[] = {"jetResTest_smear_win0p5Flat.root","jetResTest_smear_0p3.root","jetResTest_smear_all.root",""};
+//        TString smearNames[] = {"W_{smear} = 0.01-0.5","W_{smear} = 0.3","Classic smearing",""};
 
 //    TString smearFiles[] = {"jetResTest_smear_0p3.root","jetResTest_smear_old_0p3.root",""};
 //    TString smearNames[] = {"W_{smear} = 0.01-0.5","W_{smear} = old 0.01-0.5",""};
 
-
+    TString smearFiles[] = {"qcd_resTest_smear_skimmed.root","qcd_resTest_smearWithExtraCut_skimmed.root","qcd_resTest_smear2_skimmed.root","qcd_resTest_smear2WithExtraCut_skimmed.root",""};
+    TString smearNames[] = {"Smear","Smear++","Smear2","Smear2++",""};
 
 
     vector<TTree*> smearTrees;
@@ -280,16 +281,25 @@ void compSimp(TTree * oTree,TTree * sTree){
       smearTrees.push_back(st);
     }
 
-    TString preForm = "nJ";
-    TString presel = "met >= 175";
+//    TString preForm = "nJ";
+//    TString presel = "met >= 175";
 //    TString sel1[] = {"nJ >= 2","nJ >= 5",""};
 //    TString sel2[] = {"nB == 0","nB == 1","nB == 1 && nBl >=2","nB >= 2",""};
-    TString sel1[] = {"nJ >= 5",""};
-    TString sel2[] = {"nB >= 0",""};
+//    TString sel1[] = {"nJ >= 5",""};
+//    TString sel2[] = {"nB >= 0",""};
+
+
+
+    TString preForm = "mtB";
+    TString presel = "met >= 250 && nJ >= 5 && nBl >=2  && nB >= 1 && nBl >=2 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+    TString sel1[] = {"dPhi < .15","dPhi > .5","dPhi > .5 && dPhi3 > .5",""};
+    TString sel2[] = {"nB == 1","nB >= 2",""};
 
 //    TString preForm = "mtB";
-//    TString presel = "met >= 175 && nJ >= 5";
-//    TString sel1[] = {"mtB >= 175",""};
+//    TString presel = "met >= 150 && nJ >= 5 && mtB >= 175";
+//    TString sel1[] = {"dPhi < .15 && dPhi3 > .5","dPhi > 1&& dPhi3 > .5",""};
+//    TString sel2[] = {"nB == 1 && nBl >=2","nB >= 2",""};
+
 //    TString sel2[] = {"nB == 0","nB == 1","nB == 1 && nBl >=2","nB >= 2",""};
 
 //    TString preForm = "nT";
@@ -325,8 +335,8 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    TString sel2[] = {"dPhi3 < .15 && dPhi > 1","dPhi3 > .5 && dPhi > 1",""};
 
 //
-    double bins[] = {175,200,225,250,275,300,325,350,400,500,600,700,800};
-    double nBinsX = 12;
+    double bins[] = {150,175,200,225,250,275,300,325,350,400,500,600,700,800};
+    double nBinsX = 13;
 
 
 //    double bins[] = {200,250,300,400,500,600,800};
@@ -356,7 +366,7 @@ void compSimp(TTree * oTree,TTree * sTree){
 
 
 
-    TString weight = "weight*smearWeight";
+    TString weight = "weight*puWeight";
 
 
 
@@ -403,8 +413,11 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    TString smearFiles[] = {"jetResTest_smear_win0p5Flat_skimmed.root","jetResTest_smear_all_skimmed.root",""};
 //    TString smearNames[] = {"Original","W_{smear} = scaled flat","W_{smear} = All",""};
 
-    TString smearFiles[] = {"jetResTest_smear_win0p5Flat_skimmed.root","","jetResTest_smear_all_skimmed.root",""};
-    TString smearNames[] = {"Original","W_{smear} = 0.01-0.5","Classic smearing",""};
+//    TString smearFiles[] = {"jetResTest_smear_win0p5Flat_skimmed.root","","jetResTest_smear_all_skimmed.root",""};
+//    TString smearNames[] = {"Original","W_{smear} = 0.01-0.5","Classic smearing",""};
+
+    TString smearFiles[] = {"qcd_resTest_smear.root",""};
+    TString smearNames[] = {"W_{smear} = 0.01-0.5",""};
 
     vector<TTree*> smearTrees;
     smearTrees.push_back(oTree);
@@ -424,16 +437,16 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    TString sel1[] = {"nB == 1 && nBl >=2","nB >= 2",""};
 
 
-    TString preForm = "TF_all";
-    TString presel = "met >= 200 && nJ >= 5 && nBl >=2 && mtB >= 175 && nB >= 1 && nBl >=2";
-    TString denPreSel = "dPhi < .15 && dPhi3 > .5";
-    TString numPreSel = "dPhi > 1 && dPhi3 > .5";
+    TString preForm = "TF_all_nJ2";
+    TString presel = "met >= 150 && nJ >= 2 && nBl >=2 && mtB >= 175 && nB >= 1 && nBl >=2";
+    TString denPreSel = "dPhi < .15 && (dPhi3 > .5 || dPhi3 == 0)";
+    TString numPreSel = "dPhi > 1 && (dPhi3 > .5 || dPhi3 == 0)";
 
     TString selNum[] = {"nB == 1 && nT == 0","nB >= 2 && nT == 0","nB == 1 && nT >= 1","nB >= 2 && nT >= 1",""};
     TString selDen[] = {"nT == 0","nT == 0","nT >= 1","nT >= 1",""};
 
-    double bins[] = {200,250,300,400,500,600,800};
-    double nBinsX = 6;
+    double bins[] = {150,175,200,250,300,400,500,600,800};
+    double nBinsX = 8;
     HistogramGetter histG("met","met","#slash{E}_{T} [GeV]", nBinsX,bins);
 
 //    double bins[] = {75,100,125,150,175,200,250,300,400,500,600,800};
@@ -441,7 +454,7 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    HistogramGetter histG("met","met","#slash{E}_{T} [GeV]", nBinsX,bins);
 
 
-    TString weight = "weight*smearWeight";
+    TString weight = "weight";
 
 
       for(unsigned int iS1 = 0; selNum[iS1][0]; ++iS1){
@@ -455,11 +468,11 @@ void compSimp(TTree * oTree,TTree * sTree){
         for(unsigned int iT = 0; iT < smearTrees.size(); ++iT){
           if(iT != 0) histG.nBootStraps = 50;
           else histG.nBootStraps = 0;
-
+//
           TH1F * hSN = histG.getHistogramManual(smearTrees[iT],numSelelection,weight,denSelelction,weight,TString::Format("ratio_%u",iT));
 
-//          TH1F * hSN = histG.getHistogramManual(smearTrees[iT],numSelelection,weight,TString::Format("num_%u",iT));
-//          TH1F * hSD = histG.getHistogramManual(smearTrees[iT],denSelelction,weight,TString::Format("den_%u",iT));
+//          TH1F * hSN = histG.getHistogram(smearTrees[iT],numSelelection,weight,TString::Format("num_%u",iT));
+//          TH1F * hSD = histG.getHistogram(smearTrees[iT],denSelelction,weight,TString::Format("den_%u",iT));
 //          hSN->Divide(hSD);
           plot->addHist(hSN,smearNames[iT],"",colorGetter(iT),0,colorGetter(iT));
         }
@@ -626,10 +639,161 @@ void compSimp(TTree * oTree,TTree * sTree){
 
 }
 
+
+
+void checkLepEff() {
+  TString smearFiles[] = {"qcd_resTest_orig.root","qcd_resTest_smear.root",""};
+  TString smearNames[] = {"Original","W_{smear} = 0.01-0.5",""};
+
+  vector<TTree*> smearTrees;
+  for(unsigned int iT = 0; smearFiles[iT][0]; ++iT){
+    TFile * sf = new TFile(smearFiles[iT],"read");
+    TTree * st =0;
+    sf->GetObject("Events",st);
+    smearTrees.push_back(st);
+  }
+
+  TString preForm = "noEMuEff";
+  TString numSel = "nEMu == 0";
+  TString denSel = "nEMu >= 0";
+
+//  TString preForm = "noEMuTauEff";
+//  TString numSel = "nEMu == 0 && nTau == 0";
+//  TString denSel = "nEMu == 0";
+
+  TString presel = "met >= 150 && nJ >= 5 && nBl >=2 && nB >= 1 && nBl >=2 && dPhi3 > .5";
+  TString sels[] = {"nB == 1 && nT == 0 && mtB >= 175","nB >= 2 && nT == 0 && mtB >= 175","nB == 1 && nT >= 1 && mtB >= 175","nB >= 2 && nT >= 1 && mtB >= 175",
+                    "nB == 1 && nT == 0 && mtB  < 175","nB >= 2 && nT == 0 && mtB  < 175","nB == 1 && nT >= 1 && mtB  < 175","nB >= 2 && nT >= 1 && mtB  < 175"
+      ,""};
+  TString sel2[] = {"dPhi < .15","dPhi > 1" ,"" };
+
+
+
+
+  double bins[] = {150,175,200,250,300,400,500,600,800};
+  double nBinsX = 8;
+  HistogramGetter histG("met","met","#slash{E}_{T} [GeV]", nBinsX,bins);
+
+  TString weight = "weight*puWeight";
+
+
+  for(unsigned int iS1 = 0; sels[iS1][0]; ++iS1){
+    TString title = TString::Format("%s",sels[iS1].Data());
+    TString name = TString::Format("testSmear_%s_%u",preForm.Data(),iS1);
+
+    Plot * plot = new Plot(name,title,"","Efficiency");
+    int index = 0;
+    for(unsigned int iS2 = 0; sel2[iS2][0]; ++iS2){
+      TString denSelelction = TString::Format("%s && %s && %s && %s",presel.Data(),denSel.Data(),sels[iS1].Data(),sel2[iS2].Data());
+      TString numSelelection = TString::Format("%s && %s && %s && %s",presel.Data(),numSel.Data(),sels[iS1].Data(),sel2[iS2].Data());
+
+      for(unsigned int iT = 0; iT < smearTrees.size(); ++iT){
+          TString drawName = TString::Format("%s, %s",smearNames[iT].Data(), sel2[iS2].Data());
+          TH1F * hSN = 0;
+          if(iT != 0){
+            histG.nBootStraps = 50;
+            hSN = histG.getHistogramManual(smearTrees[iT],numSelelection,weight,denSelelction,weight,TString::Format("ratio_%u",iT));
+          } else {
+            histG.nBootStraps = 0;
+            hSN = histG.getHistogram(smearTrees[iT],numSelelection,weight,TString::Format("num_%u",iT));
+            TH1F * hSD = histG.getHistogram(smearTrees[iT],denSelelction,weight,TString::Format("den_%u",iT));
+            hSN->Divide(hSN,hSD,1,1,"b");
+          }
+
+        plot->addHist(hSN,drawName,"",colorGetter(index),0,colorGetter(index));
+        index++;
+      }
+    }
+    plot->setXTitle(histG.plotInfo->xTitle);
+    TCanvas * c = new TCanvas;
+    plot->setYRange(0.,1.);
+    plot->draw(c,true,"png");
+    cout << title << endl;
+
+
+  }
+
+
+
+
+}
+
+
+void compCorrTF(){
+
+  TString smearFiles[] = {"qcd_resTest_smearWithExtraCut_skimmed.root",""};
+  TString smearNames[] = {"W_{smear} = 0.01-0.5 DPhi4 Yield",""};
+
+//  TString smearFiles[] = {"qcd_resTest_orig.root",""};
+//  TString smearNames[] = {"Orig",""};
+
+  vector<TTree*> smearTrees;
+  for(unsigned int iT = 0; smearFiles[iT][0]; ++iT){
+    TFile * sf = new TFile(smearFiles[iT],"read");
+    TTree * st =0;
+    sf->GetObject("Events",st);
+    smearTrees.push_back(st);
+  }
+
+
+
+
+  TString preForm = "NumTF2";
+  TString presel = "met >= 250 && nJ >= 5 && nBl >=2  && nB >= 1 && nBl >=2 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  TString denPreSel = "dPhi < .15";
+  TString numPreSel = "dPhi > .5 && dPhi3 > .5 && dPhi4 > .5";
+
+  TString selNum[] = {"nB == 1 && nT == 0 && mtB < 175 ","nB >= 2 && nT == 0 && mtB < 175","nB == 1 && nT >= 1 && mtB < 175","nB >= 2 && nT >= 1 && mtB < 175",
+                      "nB == 1 && nT == 0 && mtB >= 175 ","nB >= 2 && nT == 0 && mtB >= 175","nB == 1 && nT >= 1 && mtB >= 175","nB >= 2 && nT >= 1 && mtB >= 175",""};
+//  TString selDen[] = {"nB == 1 && nT == 0 && mtB < 175 ","nB >= 2 && nT == 0 && mtB < 175","nB == 1 && nT >= 1 && mtB < 175","nB >= 2 && nT >= 1 && mtB < 175",
+//                      "nB == 1 && nT == 0 && mtB >= 175 ","nB >= 2 && nT == 0 && mtB >= 175","nB == 1 && nT >= 1 && mtB >= 175","nB >= 2 && nT >= 1 && mtB >= 175",""};
+  TString selDen[] = {"nT == 0 && mtB < 175","nT == 0 && mtB < 175","nT >= 1 && mtB < 175","nT >= 1 && mtB < 175",
+                       "nT == 0 && mtB >= 175","nT == 0 && mtB >= 175","nT >= 1 && mtB >= 175","nT >= 1 && mtB >= 175",""};
+
+
+//  TString selNum[] = {
+//                      "nB == 1 && nT == 0 && mtB >= 175",""};
+//  TString selDen[] = {
+//                       "nT == 0 && mtB >= 175",""};
+
+
+  double bins[] = {250,300,400,500,600,800};
+  double nBinsX = 5;
+  HistogramGetter histG("met","met","#slash{E}_{T} [GeV]", nBinsX,bins);
+
+
+
+  TString weight = "weight*puWeight";
+
+
+    for(unsigned int iS1 = 0; selNum[iS1][0]; ++iS1){
+      TString title = TString::Format("%s",selNum[iS1].Data());
+      TString name = TString::Format("testSmear_%s_%u",preForm.Data(),iS1);
+      TString denSelelction = TString::Format("%s && %s && %s",presel.Data(),selDen[iS1].Data(),denPreSel.Data());
+      TString numSelelection = TString::Format("%s && %s && %s",presel.Data(),selNum[iS1].Data(),numPreSel.Data());
+
+      Plot * plot = new Plot(name,title,"","SR/CR");
+
+      for(unsigned int iT = 0; iT < smearTrees.size(); ++iT){
+        histG.nBootStraps = 50;
+//        TH1F * hSN = histG.getTFAndCov(smearTrees[iT],numSelelection,weight,denSelelction,weight,TString::Format("ratio_%u",iT));
+        TH1F * hSN = histG.getHistogramManual(smearTrees[iT],numSelelection,weight,TString::Format("num_%u",iT));
+        plot->addHist(hSN,smearNames[iT],"",colorGetter(iT),0,colorGetter(iT));
+      }
+      plot->setXTitle(histG.plotInfo->xTitle);
+      plot->setYRange(0.,0.30);
+      TCanvas * c = new TCanvas;
+      plot->draw(c,false,"png");
+      cout << title << endl;
+    }
+}
+
+
+
 #endif
 
 
-void TestTailSmear(const TString origFile="qcd_jetRes.root",const TString smearFile="qcd_jetRes.root", const TString treeName = "Events")
+void TestTailSmear(const TString origFile="qcd_resTest_orig.root",const TString smearFile="qcd_jetRes.root", const TString treeName = "Events")
 {
 
   StyleTools::SetStyle();
@@ -645,8 +809,11 @@ void TestTailSmear(const TString origFile="qcd_jetRes.root",const TString smearF
 //  studyMETSources(ot);
 //  compSimp(ot,st);
 //  compMulti(ot);
-  compMultiTF(ot);
+//  compMultiTF(ot);
 //  compBreakdown(ot);
+
+//  checkLepEff();
+  compCorrTF();
 
 //  TFile * of = new TFile(outFile,"read");
 //

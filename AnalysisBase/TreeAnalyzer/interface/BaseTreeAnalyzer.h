@@ -35,7 +35,7 @@ class BaseEventAnalyzer {
 public:
   BaseEventAnalyzer() {};
   virtual ~BaseEventAnalyzer() {};
-  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1);
+  virtual void analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
 };
 
 
@@ -57,11 +57,11 @@ public:
 
     // Load a non-reader variable from the tree
     template<typename varType>
-    void setBranchAddress(const TString branchName, varType **var, bool require = false, bool verbose = true)
-      { reader.setBranchAddress(branchName,var,false,true); }
+    void setBranchAddress(const std::string  branchName,const std::string varName, varType **var, bool require = false, bool verbose = true)
+      { reader.setBranchAddress(branchName,varName,var,false,true); }
     template<typename varType>
-    void setBranchAddress(const TString branchName, varType *var, bool require = false, bool verbose = true)
-      { reader.setBranchAddress(branchName,var,false,true); }
+    void setBranchAddress(const std::string  branchName, const std::string varName, varType *var, bool require = false, bool verbose = true)
+      { reader.setBranchAddress(branchName,varName,var,false,true); }
 
   public:
     //--------------------------------------------------------------------------------------------------
@@ -74,8 +74,10 @@ public:
     //load the next event
     bool nextEvent(const int reportFrequency)  {return reader.nextEvent(reportFrequency);}
 
+    void setEventNumber(const int newEventNumber) {reader.eventNumber = newEventNumber;}
+
     // Base function that runs the standard process
-    virtual void analyze(int reportFrequency = 10000, int numEvents = -1);
+    virtual void analyze(int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
 
     // Sub processes that can be overloaded
     virtual void loadVariables();       //load variables
