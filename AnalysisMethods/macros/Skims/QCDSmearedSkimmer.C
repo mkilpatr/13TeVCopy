@@ -28,7 +28,9 @@ public:
   }
 
   virtual BaseEventAnalyzer * setupEventAnalyzer() override {
-    return  new  QCDRespSmearingCopierEventAnalyzer();
+    auto * smearer = new  QCDRespSmearingCopierEventAnalyzer();
+//    smearer->smearOptions.maxWindow = 1.0;
+    return smearer;
   }
 
 };
@@ -36,7 +38,7 @@ public:
 
 #endif
 
-void QCDSmearedSkimmer(string fileName, int fileIndex = -1,  string treeName = "Events", string outPostfix ="qcdSmearSkim", bool isMC = true) {
+void QCDSmearedSkimmer(string fileName, int fileIndex = -1,  string treeName = "Events", string outPostfix ="qcdSmearSkim", bool isMC = true, int startEvent =-1, int maxEvents = -1) {
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
@@ -49,5 +51,5 @@ void QCDSmearedSkimmer(string fileName, int fileIndex = -1,  string treeName = "
 
   Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg);
 
-  a.analyze(10000,-1);
+  a.analyze(10000,maxEvents,startEvent);
 }
