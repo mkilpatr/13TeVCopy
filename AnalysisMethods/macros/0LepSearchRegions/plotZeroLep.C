@@ -7,7 +7,7 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
                  const TString inputdir="/eos/uscms/store/user/vdutta/13TeV/trees/121815",
                  const TString outputdir="plots_0lep",
                  const double  sigscale = 50,
-                 const bool    plotlog = true,
+                 const bool    plotlog = false,
                  const TString lumistr  = "2.137",
                  const TString format = "pdf")
 {
