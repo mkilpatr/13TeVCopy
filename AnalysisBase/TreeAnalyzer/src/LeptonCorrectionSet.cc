@@ -84,6 +84,8 @@ TnPCorr::TnPCorr(TString corrName,
     muConfNoIso.passISO = &MuonISO::inclusive;
     muConfNoIso.minPT  = 5.0;
     muConfNoIso.maxETA = 2.4;
+    minMuPt  = muConf.minPT;
+    maxMuEta = muConf.maxETA;
 
     TString muIdFileName, muIsoFileName, muMCVetoIdEffFileName, muMCVetoIsoEffFileName;
     TString muIdHistName, muIsoHistName, muMCVetoIdEffHistName, muMCVetoIsoEffHistName;
@@ -173,7 +175,8 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     effiso   = getElMCIsoEffValue(pt,annulus);
     if(cfgSet::isSelElectron(*(ElectronF*)lep, elConfNoIso)) passId    = true;
     if(cfgSet::isSelElectron(*(ElectronF*)lep, elConf)     ) passIdIso = true;
-    failIdWt = (effid<1.0 ? (1.0-effid*sfid)/(1.0-effid) : (1.0-0.99999*sfid)/(1.0-0.99999));
+    if(failIdWt>1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electron ID eff is >=1!");
+    failIdWt = (1.0-effid*sfid)/(1.0-effid);
   }
   else if(id==13) {
     sfid      = getMuIDValue(pt,eta);
@@ -189,10 +192,13 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   else if(id==11 && elCorrType == DOWN) { sfid -= sfuncid; sfiso -= sfunciso; }
   else if(id==13 && muCorrType == UP  ) { sfid += sfuncid; sfiso += sfunciso; }
   else if(id==13 && muCorrType == DOWN) { sfid -= sfuncid; sfiso -= sfunciso; }
-  if(passIdIso)   wt = sfid * sfiso;
-  else if(passId) wt = sfid * (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999)); // don't want to divide by zero in case sf=1
-  else            wt = failIdWt;
-  if (wt < -10.0) wt = 1.0;    // or large negative weights ... need to treat these cases better
+  if(passIdIso) wt = sfid * sfiso;
+  else if(passId) {
+    if(effiso>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Iso eff is >=1!");
+    wt = sfid * (1.0-effiso*sfiso)/(1.0-effiso);
+  }
+  else wt = failIdWt;
+  if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
   return wt;
 }
 
@@ -200,12 +206,15 @@ float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType ) co
   if(muCorrType == NONE) return 1.0;
   float pt  = lep->pt();
   float eta = lep->absEta();
+  if     (pt<minMuPt)   return 1.0;
+  else if(eta>maxMuEta) return 1.0;
   float sf      = getMuIDValue(pt,eta);
   float sfunc   = sf  *0.01;
   float eff     = getMuMCIdEffValue(pt,eta);
   if     (muCorrType == UP  ) sf += sfunc;
   else if(muCorrType == DOWN) sf -= sfunc;
-  return (eff<1.0 ? (1.0-eff*sf)/(1.0-eff) : (1.0-0.99999*sf)/(1.0-0.99999)); // don't want to divide by zero in case sf=1
+  if(eff>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muon ID eff is >=1!");
+  return (1.0-eff*sf)/(1.0-eff);
 }
 
 

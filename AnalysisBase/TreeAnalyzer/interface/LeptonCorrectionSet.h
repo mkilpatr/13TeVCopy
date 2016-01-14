@@ -100,6 +100,8 @@ namespace ucsbsusy {
       TH2F*  HistMCVetoIdEffMu;
       TH2F*  HistMCVetoIsoEffEl;
       TH2F*  HistMCVetoIsoEffMu;
+      float minMuPt;
+      float maxMuEta;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
