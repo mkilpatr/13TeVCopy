@@ -235,7 +235,8 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   for(auto* lep : genMu_) {
     double nearDR = 0;
     int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-    if(near<0 || !cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType);
+    if(near<0) weight *= getGenLepWeight(lep,muCorrType);
+    else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType);
   }
   return weight;
 }
