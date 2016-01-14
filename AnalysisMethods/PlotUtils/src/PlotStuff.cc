@@ -507,6 +507,8 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
   Plot *plot = new Plot(name, title, xtitle, ytitle);
   plot->outputdir = outputdir_;
   gSystem->mkdir(outputdir_, true);
+  if(config_.usepoisson) plot->setUsePoisson();
+  if(config_.uncband) plot->setPlotStackUncertainty();
 
   double max = 0.0;
   int maxbin = 0;
