@@ -36,7 +36,9 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fLumiText("#sqrt{s} = 13 TeV, L = 4 fb^{-1}"),
   fChanText(""),
   fHeaderX(0.54),
-  fHeaderY(0.92)
+  fHeaderY(0.92),
+  fUsePoisson(false),
+  fPlotStackUncertainty(false)
 {
   counter++;
 }
@@ -769,6 +771,87 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
 }
 
+TGraphAsymmErrors* Plot::getAsymmErrors(TH1F* h){
+  TGraphAsymmErrors* gr = new TGraphAsymmErrors(h);
+  const double alpha = 1 - 0.6827;
+  for(int ibin = 0; ibin < gr->GetN(); ++ibin) {
+    int dN = gr->GetY()[ibin];
+    double L =  (dN == 0) ? 0  : (ROOT::Math::gamma_quantile(alpha/2,dN,1.));
+    double U =  ROOT::Math::gamma_quantile_c(alpha/2,dN+1,1) ;
+    gr->SetPointEYhigh(ibin, U - double(dN));
+    gr->SetPointEYlow(ibin, double(dN)- L);
+  }
+  return gr;
+}
+
+TGraphAsymmErrors* Plot::getRatioAsymmErrors(TH1F* hD, TH1F* hM) {
+
+  TGraphAsymmErrors* gr = new TGraphAsymmErrors(hD);
+  for(int ibin = 0; ibin < gr->GetN(); ++ibin) {
+    int dN = gr->GetY()[ibin];
+    double mN = hM->GetBinContent(ibin+1);
+    double mE = hM->GetBinError(ibin+1);
+    double eL = 0, eH = 0;
+    gr->SetPoint(ibin, gr->GetX()[ibin], double(dN)/mN);
+    getRatioUpDownErrors(dN, mN, mE, eL, eH);
+    gr->SetPointEYhigh(ibin, eH);
+    gr->SetPointEYlow(ibin, eL);
+  }
+  return gr;
+
+}
+
+void Plot::getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double& eH){
+  if(mN <= 0) return;
+  if(dN < 0)  return;
+
+  const double alpha = 1 - 0.6827;
+  static TRandom3 * rand = new TRandom3(1234);
+
+  TH1 * h = new TH1F("h","h",10000,0,10);
+  TH1 * hL = new TH1F("hL","hL",10000,0,10);
+
+  for(unsigned int i = 0; i < 100000; ++i){
+    double ndL = 0;
+    for(int iD = 0; iD < dN; ++iD){
+      ndL -= TMath::Log(rand->Uniform());
+    }
+    double nd = ndL -  TMath::Log(rand->Uniform());
+    double nm = rand->Gaus(mN,mE);
+    if(nm < 0) nm = fabs(nm);
+    h->Fill(nd/nm);
+    hL->Fill(ndL/nm);
+  }
+
+  double integral = h->Integral(0,-1);
+  bool foundL = false;
+  bool foundH = false;
+
+  for(int iB = 0; iB <= h->GetNbinsX() + 1; ++iB){
+    if(!foundL && dN){
+      if(hL->Integral(0,iB)/integral >= alpha/2 ){
+        foundL = true;
+        eL =  hL->GetBinCenter(iB);
+      }
+    }
+    if(!foundH){
+      if(h->Integral(iB,-1)/integral <alpha/2 ){
+        foundH = true;
+        eH =  h->GetBinCenter(iB);
+      }
+    }
+  }
+  if(foundH)
+    eH = eH - double(dN)/mN;
+  else eH = 10;
+  if(dN) {
+    assert(foundL);
+    eL = double(dN)/mN - eL;
+  }
+  delete h;
+  delete hL;
+}
+
 void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 {
   c->cd();
@@ -780,7 +863,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p1->SetLeftMargin  (0.18);
   p1->SetTopMargin   (0.10);
   p1->SetRightMargin (0.07);
-  p1->SetBottomMargin(0.03);  
+  p1->SetBottomMargin(0.04);  
   p1->Draw();
   if(fLogy) p1->SetLogy();
   p1->cd();
@@ -798,7 +881,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     }
   
     if(fStack) {
-      hMC = (TH1F*)fStack->GetStack()->Last();
+      hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
     }
   }
 
@@ -810,6 +893,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   hData->SetMarkerSize(1.3);
   hData->SetMarkerStyle(20);
   hData->SetLineWidth(3);
+  hData->SetTitleOffset(0.30,"Y");
 
   TH1F *h00 = (TH1F*)hData->Clone("data0");
 
@@ -825,19 +909,38 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     }
     fStack->SetTitle(fTitle);
     fStack->Draw("hist");
-    fStack->GetXaxis()->SetLabelOffset(0.20);
-    fStack->GetYaxis()->SetTitle(fYTitle);
-    if(fYmin < fYmax) fStack->GetYaxis()->SetRangeUser(fYmin,fYmax);
-    else fStack->GetYaxis()->SetRangeUser(0,1.1*ymax);
-    fStack->GetYaxis()->SetTitleSize(0.055);
-    fStack->Draw("histsame");
-  } 
+    fStack->GetHistogram()->GetXaxis()->SetLabelOffset(0.20);
+    fStack->GetHistogram()->GetYaxis()->SetLabelSize(0.05);
+    fStack->GetHistogram()->GetYaxis()->SetTitle(fYTitle);
+    if(fYmin < fYmax) fStack->GetHistogram()->GetYaxis()->SetRangeUser(fYmin,fYmax);
+    else fStack->GetHistogram()->GetYaxis()->SetRangeUser(0,1.1*ymax);
+    fStack->GetHistogram()->GetYaxis()->SetTitleOffset(1.0);
+    fStack->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+    fStack->Draw("hist");
+  }
 
-  h00->Draw("same");
+  if(fPlotStackUncertainty) {
+    hMC->SetFillColor(kBlue);
+    hMC->SetFillStyle(3013);
+    hMC->SetLineStyle(0);
+    hMC->SetLineWidth(0);
+    hMC->SetMarkerSize(0);
+    hMC->Draw("E2same");
+  }
+
+
+  if(fUsePoisson) {
+    TGraphAsymmErrors* gr = getAsymmErrors(h00);
+    gr->SetMarkerStyle(20);
+    gr->Draw("PZsame");
+  } else {
+    h00->Draw("same");
+  }
 
   p1->RedrawAxis();
 
   if(fLeg) {
+    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
@@ -855,11 +958,12 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   TH1F *h3 = (TH1F*)hData->Clone("data3"); 
 
-  h3->SetTitleSize  (0.12,"Y");
-  h3->SetTitleOffset(0.60,"Y");
-  h3->SetTitleSize  (0.12,"X");
-  h3->SetLabelSize  (0.10,"X");
-  h3->SetLabelSize  (0.08,"Y");
+  h3->SetTitleSize  (0.16,"Y");
+  h3->SetTitleOffset(0.45,"Y");
+  h3->SetTitleOffset(0.75,"X");
+  h3->SetTitleSize  (0.16,"X");
+  h3->SetLabelSize  (0.12,"X");
+  h3->SetLabelSize  (0.12,"Y");
   h3->GetYaxis()->SetTitleFont(62);
   h3->GetYaxis()->CenterTitle(kTRUE);
   h3->GetXaxis()->SetTitleFont(62);
@@ -867,7 +971,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
   //h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}} - 1");
-  h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}}");
+  h3->GetYaxis()->SetTitle("N_{obs}/N_{exp}");
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
@@ -876,13 +980,20 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   l->SetLineColor(kBlack);
 
   //h3->Add(hMC, -1.);
-  h3->Divide(hMC);
-  h3->GetYaxis()->SetRangeUser(0.0,2.0);
-
-  h3->DrawCopy("P");  
-  h3->Draw("Psame");
+  if(fUsePoisson) {
+    TGraphAsymmErrors* ratio = getRatioAsymmErrors(h3, hMC);
+    h3->GetYaxis()->SetRangeUser(0.001,1.999);
+    h3->Draw("AXIS");
+    ratio->Draw("PZsame");
+  } else {
+    h3->Divide(hMC);
+    h3->GetYaxis()->SetRangeUser(0.001,1.999);
+    h3->DrawCopy("P");  
+    h3->Draw("Psame");
+  }
   l->Draw("same");
 
+  p2->RedrawAxis("G");
   c->cd();
 
   // Add header and lumi text
@@ -1187,6 +1298,17 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
 	fStack->GetYaxis()->SetTitle(fYTitle);	
         fStack->Draw("hist");	 
       } 
+      if(fPlotStackUncertainty) {
+        TH1F* hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
+        hMC->SetFillColor(kBlue);
+        hMC->SetFillStyle(3013);
+        hMC->SetLineStyle(0);
+        hMC->SetLineWidth(0);
+        hMC->SetMarkerSize(0);
+        hMC->Draw("E2same");
+        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+      }
+
     }
         
     for(uint i=0; i<vHists.size(); i++) {
