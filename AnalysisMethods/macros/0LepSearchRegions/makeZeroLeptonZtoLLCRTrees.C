@@ -16,8 +16,11 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
     size i_origmet = 0;
     size i_origmetnohf = 0;
     size i_iselectron = 0;
+    size i_passTrig = 0;
 
+    bool  passTrig = false;
     bool  passZtoLLSel = false;
+    bool  iselectron;
     float origMET = 0;
     float origMETNoHF = 0;
 
@@ -27,6 +30,7 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       i_origmet           = data.add<float>("","origmet","F",0);
       i_origmetnohf       = data.add<float>("","origmetnohf","F",0);
       i_iselectron        = data.add<bool>("", "iselectron", "O", 0);
+      i_passTrig          = data.add<bool>("", "passTrig", "O", 0);
     }
 
     void processVariables(){
@@ -69,6 +73,20 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
         nVetoedTracks = vetoedTracks.size();
       }
 
+      iselectron = lep0->iselectron();
+
+      // avoid picking up same event twice
+      if (process==defaults::DATA_DOUBLEEG){
+        passTrig = triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+      }else if (process==defaults::DATA_DOUBLEMU){
+        passTrig = (triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ)
+            && (!(triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ));
+      }else if (isMC()){
+        passTrig = iselectron ? (triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ) :
+            (triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+      }
+
+
     }
 
 
@@ -80,7 +98,8 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
       data.fill<float>(i_origmet, origMET);
       data.fill<float>(i_origmetnohf, origMETNoHF);
-      data.fill<bool>(i_iselectron, selectedLeptons.front()->iselectron());
+      data.fill<bool>(i_iselectron, iselectron);
+      data.fill<bool>(i_passTrig, passTrig);
       return true;
     }
 

@@ -77,28 +77,23 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       // add photon to met
       met->setP4(met->p4() + pho->p4());
       metNoHF->setP4(metNoHF->p4() + pho->p4());
+
       // clean leptons vs recoPhoton
-      double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDRDeref(*pho,selectedLeptons,nearDR,0.4,-1,0,selectedLeptons.size());
-      if(near >= 0){
-        vector<LeptonF*> tmpLeptons;
-        for (int iL = 0; iL < selectedLeptons.size(); ++iL) {
-          if (iL != near) tmpLeptons.push_back(selectedLeptons.at(iL));
-        }
-        selectedLeptons = tmpLeptons;
-        nSelectedLeptons = selectedLeptons.size();
+      vector<LeptonF*> tmpLeptons;
+      for (auto *lep : selectedLeptons){
+        if (PhysicsUtilities::deltaR2(*pho, *lep)>0.16) tmpLeptons.push_back(lep);
       }
+      selectedLeptons = tmpLeptons;
+      nSelLeptons = selectedLeptons.size();
+
       // clean vetoedTracks vs recoPhoton
-      nearDR = 0;
-      near = PhysicsUtilities::findNearestDRDeref(*pho,vetoedTracks,nearDR,0.4,-1,0,vetoedTracks.size());
-      if(near >= 0){
-        vector<PFCandidateF*> tmpTracks;
-        for (int iT = 0; iT < vetoedTracks.size(); ++iT) {
-          if (iT != near) tmpTracks.push_back(vetoedTracks.at(iT));
-        }
-        vetoedTracks = tmpTracks;
-        nVetoedTracks = vetoedTracks.size();
+      vector<PFCandidateF*> tmpTracks;
+      for (auto *trk : vetoedTracks){
+        if (PhysicsUtilities::deltaR2(*pho, *trk)>0.16) tmpTracks.push_back(trk);
       }
+      vetoedTracks = tmpTracks;
+      nVetoedTracks = vetoedTracks.size();
+
       if (!isMC()) return; // end of data
 
       // fill genjets
