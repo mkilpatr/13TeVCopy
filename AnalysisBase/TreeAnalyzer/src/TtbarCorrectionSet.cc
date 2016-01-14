@@ -37,6 +37,7 @@ void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     //topPTWeight = topPTCorr->get();
     // ===
     float top1PTWeight = 1.;
+    float top2PTWeight = 1.;
     if (top1->pt()>400.) { top1PTWeight = exp(0.199-0.00166*400.); } else { top1PTWeight = exp(0.199-0.00166*top1->pt()); }
     if (top2->pt()>400.) { top2PTWeight = exp(0.199-0.00166*400.); } else { top2PTWeight = exp(0.199-0.00166*top2->pt()); }
     topPTWeight = sqrt(top1PTWeight*top2PTWeight);
