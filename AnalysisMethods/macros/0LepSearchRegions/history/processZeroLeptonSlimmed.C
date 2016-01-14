@@ -80,7 +80,7 @@ class Analyzer : public BaseTreeAnalyzer {
     outtree->Branch( "caGen_J0pt"        , &caGenJ0pt       ,     "caGen_J0pt/F" );
     outtree->Branch( "caGen_NB"          , &caGenNB         ,       "caGen_NB/I" );
 
-    outtree->Branch( "nVetoedLeptons"       , &nVetoedLeptons       , "nVetoedLeptons/I" );
+    outtree->Branch( "nVetoedLeptons"       , &nSecondaryLeptons       , "nVetoedLeptons/I" );
     outtree->Branch( "nVetoedTaus"          , &nVetoedTaus          ,    "nVetoedTaus/I" );
     outtree->Branch( "nSelLeptons"          , &nSelLeptons       ,       "nSelLeptons/I" );
     outtree->Branch( "isSingleE"        , &isSingleE      ,   "isSingleE/O" );

@@ -55,7 +55,7 @@ public:
 
     eventPlots.rewind();
     eventPlots("incl__",true);
-    eventPlots("noEMuTau__",nVetoedLeptons == 0 && nVetoedTaus == 0);
+    eventPlots("noEMuTau__",nSecondaryLeptons == 0 && nVetoedTaus == 0);
 
     ++eventPlots;
 

@@ -31,6 +31,13 @@ cfgSet::ConfigSet pars0lepCR(TString json) {
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
+cfgSet::ConfigSet pars0lepDiLepCR(TString json) {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile(json);
+  cfgSet::ConfigSet cfg = cfgSet::zl_dilepton_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
+  return cfg;
+}
 
 cfgSet::ConfigSet pars0LepPhoton(TString json) {
   cfgSet::loadDefaultConfigurations();
@@ -57,6 +64,7 @@ struct TreeFiller {
   size i_btagWeight;
   size i_qcdRespTailWeight;
   size i_normWeight;
+  size i_topptWeight;
   size i_passtrige ;
   size i_passtrigmu;
   size i_passtrige17e12;
@@ -101,12 +109,11 @@ struct TreeFiller {
   size i_ngoodgenmu;
   size i_ngoodgenele;
   size i_npromptgentau;
-  size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
   size i_ncttstd_dphimet;
-  size i_nctt_rawmassonly;
-  size i_nctt_rawmassonly_dphimet;
+  size i_nctt_cttmassonly;
+  size i_nctt_cttmassonly_dphimet;
   size i_nfjsd60   ;
   size i_nfjpr60   ;
   size i_chhpt     ;
@@ -216,7 +223,7 @@ struct TreeFiller {
   size i_wpasseta;
 
   bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
+    return (ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
   } 
 
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
@@ -264,6 +271,7 @@ struct TreeFiller {
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_normWeight     = data->add<float>("","normWeight","F",0);
+    i_topptWeight    = data->add<float>("","topptWeight","F",1);
     i_passtrige      = data->add<bool>("","passtrige","O",0);
     i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
     i_passtrige17e12 = data->add<bool >("","passtrige17e12","O",0);
@@ -308,12 +316,11 @@ struct TreeFiller {
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
     i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
     i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
-    i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_ncttstd_dphimet = data->add<int>("", "ncttstd_dphimet", "I", 0);
-    i_nctt_rawmassonly=data->add<int>("","nctt_rawmassonly", "I", 0);
-    i_nctt_rawmassonly_dphimet=data->add<int>("","nctt_rawmassonly_dphimet", "I", 0);
+    i_nctt_cttmassonly=data->add<int>("","nctt_cttmassonly", "I", 0);
+    i_nctt_cttmassonly_dphimet=data->add<int>("","nctt_cttmassonly_dphimet", "I", 0);
     i_nfjsd60        = data->add<int>("","nfjsd60","I",0);
     i_nfjpr60        = data->add<int>("","nfjpr60","I",0);
     i_chhpt          = data->addMulti<float>("","chhpt",0);
@@ -435,6 +442,7 @@ struct TreeFiller {
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
+    data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());
     data->fill<bool >(i_passtrige,  ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
     data->fill<bool >(i_passtrigmu, ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoMu22 : false));
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
@@ -472,16 +480,15 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
-    data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nvetolep, ana->nSelLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
-    for(auto i: ana->vetoedLeptons){
+    for(auto i: ana->selectedLeptons){
 		  if(fabs(i->pdgid()) == 11) nVetoEle++;
 		  if(fabs(i->pdgid()) == 13) nVetoMu++;
     }
     data->fill<int  >(i_nvetomu, nVetoMu);
     data->fill<int  >(i_nvetolele, nVetoEle);
-    data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
 
     int ncttstd    = 0;
@@ -501,8 +508,8 @@ struct TreeFiller {
     }
     data->fill<int  >(i_ncttstd   , ncttstd   );
     data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
-    data->fill<int>(i_nctt_rawmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
-    data->fill<int>(i_nctt_rawmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    data->fill<int>(i_nctt_cttmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
+    data->fill<int>(i_nctt_cttmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
 
 
     int nfjsd60_   = 0;

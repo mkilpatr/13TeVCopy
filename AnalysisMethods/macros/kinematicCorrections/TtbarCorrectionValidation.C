@@ -71,7 +71,7 @@ public:
     bool passTrig = isMC() ? triggerflag & kHLT_IsoTkMu24_eta2p1_v1 :  triggerflag & kHLT_IsoTkMu24_eta2p1_v2;
     if(!passTrig) return;
 
-    if(nSelLeptons != 1 || nVetoedLeptons != 1) return; //single lepton selection
+    if(nSelLeptons != 1 || nSecondaryLeptons != 1) return; //single lepton selection
     if(selectedLeptons[0]->iselectron()) return; //only muons
 //    if(nJets < 3) return; //three jets
     if(nBJets < 2) return; //two b-jets
@@ -131,13 +131,13 @@ public:
     eventPlots("other__", !classified);
 
     ++eventPlots;
-    bool passSingleLep = nSelLeptons == 1 && nVetoedLeptons == 1 && nBJets >= 2 && jets[0]->pt() >= 60;
-    bool passDoubleLep = nVetoedLeptons == 2 && nBJets>= 1 && nJets >=2 ;
-    if(passDoubleLep && vetoedLeptons[0]->iselectron() == vetoedLeptons[1]->iselectron() ){
-      if((vetoedLeptons[0]->p4()+ vetoedLeptons[1]->p4()).mass() < 100 ) passDoubleLep = false;
+    bool passSingleLep = nSelLeptons == 1 && nSecondaryLeptons == 1 && nBJets >= 2 && jets[0]->pt() >= 60;
+    bool passDoubleLep = nSecondaryLeptons == 2 && nBJets>= 1 && nJets >=2 ;
+    if(passDoubleLep && secondaryLeptons[0]->iselectron() == secondaryLeptons[1]->iselectron() ){
+      if((secondaryLeptons[0]->p4()+ secondaryLeptons[1]->p4()).mass() < 100 ) passDoubleLep = false;
     }
-    eventPlots("e__", passSingleLep && vetoedLeptons[0]->iselectron() && passETrig);
-    eventPlots("mu__", passSingleLep && vetoedLeptons[0]->ismuon() && passMuTrig);
+    eventPlots("e__", passSingleLep && secondaryLeptons[0]->iselectron() && passETrig);
+    eventPlots("mu__", passSingleLep && secondaryLeptons[0]->ismuon() && passMuTrig);
     eventPlots("ll__", passDoubleLep && passDiLepTrig);
 
 
@@ -150,7 +150,7 @@ public:
     eventPlots.fill(ht,weight,"ht","H_{T}",70,0,700,prefix);
 
 
-    double mt = JetKinematics::transverseMass(*vetoedLeptons[0],*met);
+    double mt = JetKinematics::transverseMass(*secondaryLeptons[0],*met);
     eventPlots.fill(mt,weight,"mt","m_{T}",40,0,400,prefix);
 
     for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
@@ -173,15 +173,15 @@ public:
     }
 
     eventPlots.fill(met->pt(),weight,"met",";#slash{E}_{T}",40,0,400,prefix);
-    eventPlots.fill(vetoedLeptons[0]->pt(),weight,"lepton1",";lepton 1 p_{T}",40,0,400,prefix);
-    if(nVetoedLeptons > 1){
-      eventPlots.fill(vetoedLeptons[1]->pt(),weight,"lepton2",";lepton 2 p_{T}",40,0,400,prefix);
-      eventPlots.fill((vetoedLeptons[0]->p4() + vetoedLeptons[1]->p4()).mass(),weight,"diLepMass",";M_{ll}",40,0,400,prefix);
-      eventPlots.fill((vetoedLeptons[0]->p4() + vetoedLeptons[1]->p4()).pt(),weight,"diLepPt",";ll p_{T}",40,0,400,prefix);
+    eventPlots.fill(secondaryLeptons[0]->pt(),weight,"lepton1",";lepton 1 p_{T}",40,0,400,prefix);
+    if(nSecondaryLeptons > 1){
+      eventPlots.fill(secondaryLeptons[1]->pt(),weight,"lepton2",";lepton 2 p_{T}",40,0,400,prefix);
+      eventPlots.fill((secondaryLeptons[0]->p4() + secondaryLeptons[1]->p4()).mass(),weight,"diLepMass",";M_{ll}",40,0,400,prefix);
+      eventPlots.fill((secondaryLeptons[0]->p4() + secondaryLeptons[1]->p4()).pt(),weight,"diLepPt",";ll p_{T}",40,0,400,prefix);
     }
 
     CylLorentzVectorF metplepton = met->p4();
-    metplepton += vetoedLeptons[0]->p4();
+    metplepton += secondaryLeptons[0]->p4();
     eventPlots.fill(metplepton.pt(),weight,"metplepton",";W p_{T}",40,0,400,prefix);
 
 
@@ -245,7 +245,6 @@ void run() {
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
   cfg.jets.minPt = 20;
   cfg.jets.minBJetPt = 20;
-  cfg.jets.cleanJetsvVetoedLeptons = true;
 
 //  TString MCFileName = "MC_extraskim.root";
   TString MCFileName = "MC_extraSkim.root";

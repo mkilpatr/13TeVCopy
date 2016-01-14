@@ -237,8 +237,8 @@ void processZeroLepton(      TString sname      = "ttbar" // sample name
   //Load up search configuration
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
-  cfg.vetoedLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
-  cfg.vetoedLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
+  cfg.secondaryLeptons.selectedMuon = (&MuonF::ismultiisovetomuonl);
+  cfg.secondaryLeptons.selectedElectron = (&ElectronF::ismultiisovetoelectronl);
 
 
   //Create analyzer

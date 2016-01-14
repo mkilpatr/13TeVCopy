@@ -277,21 +277,21 @@ void Analyzer::runEvent()
   if(ngoodleps<1) return;
   // if(ngoodleps!=1) return;
   //  if(nVetoedLeptons>0) return;
-  if(ngoodleps<2 && nVetoedLeptons>0){
-    lep2_pdgid=-vetoedLeptons.at(0)->pdgid()*vetoedLeptons.at(0)->q();
-    lep2_pt=vetoedLeptons.at(0)->pt();
-    lep2_eta=vetoedLeptons.at(0)->eta();
-    lep2_phi=vetoedLeptons.at(0)->phi();
-    lep2_mass=vetoedLeptons.at(0)->mass(); 
+  if(ngoodleps<2 && nSecondaryLeptons>0){
+    lep2_pdgid=-secondaryLeptons.at(0)->pdgid()*secondaryLeptons.at(0)->q();
+    lep2_pt=secondaryLeptons.at(0)->pt();
+    lep2_eta=secondaryLeptons.at(0)->eta();
+    lep2_phi=secondaryLeptons.at(0)->phi();
+    lep2_mass=secondaryLeptons.at(0)->mass(); 
     lep2_passVeto=kTRUE;
-    lep2_d0=vetoedLeptons.at(0)->d0();
-    lep2_dz=vetoedLeptons.at(0)->dz();
-    lep2_MiniIso=vetoedLeptons.at(0)->miniiso();
+    lep2_d0=secondaryLeptons.at(0)->d0();
+    lep2_dz=secondaryLeptons.at(0)->dz();
+    lep2_MiniIso=secondaryLeptons.at(0)->miniiso();
   }
 
   ngoodjets = nJets;
   ngoodbtags = nBJets;
-  nvetoleps = nVetoedLeptons;
+  nvetoleps = nSecondaryLeptons;
   pfmet = met->pt();
   pfmet_phi = met->phi();
   run2=run;
@@ -407,7 +407,7 @@ void Analyzer::runEvent()
   mt_met_lep=sqrt(2*pfmet*lep->Et()*(1-cos(lep->phi()-pfmet_phi)));
 
 // KILL VETO LEPS
-  if(nVetoedLeptons > 1) return; // no more than 1 lep passing veto
+  if(nSecondaryLeptons > 1) return; // no more than 1 lep passing veto
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
 
 // PRINTOUTS
@@ -451,7 +451,7 @@ void make1lbabies(TString sname = "T2tt_650_325",               // sample name
 
 // load one lepton default configs
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
 
   // Declare analyzer
   Analyzer a(fullname, "Events", fileindex+2, isMC, &cfg, sname, outputdir);

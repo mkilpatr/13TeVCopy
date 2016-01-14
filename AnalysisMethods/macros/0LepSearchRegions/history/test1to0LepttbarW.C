@@ -110,7 +110,7 @@ public:
 //    }
 
 
-    bool pass0LepPresel = (selectedLeptons.size() == 0 && nVetoedTaus == 0 && nVetoedLeptons == 0) && (cutMET.pt() >= 200 && nJets >= 5 && nBJets >= 1);
+    bool pass0LepPresel = (selectedLeptons.size() == 0 && nVetoedTaus == 0 && nSecondaryLeptons == 0) && (cutMET.pt() >= 200 && nJets >= 5 && nBJets >= 1);
     bool pass0LepLoosePresel  (cutMET.pt() >= 200 && nJets >= 5 && nBJets >= 1);
 
 

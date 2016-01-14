@@ -27,7 +27,6 @@ TauReader::TauReader() : BaseReader(){
   dxyerr         = new  vector<float>         ;
   dxysig         = new  vector<float>         ;
   hpsid          = new  vector<unsigned long>;
-  tauId          = new  LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -70,7 +69,7 @@ void TauReader::refresh(){
       taus.back().setDxyErr(dxyerr->at(iL));
       taus.back().setDxySig(dxysig->at(iL));
       taus.back().setHPSId(hpsid->at(iL));
-      taus.back().setIsGoodPOGTau(tauId->passTauId((&taus.back())));
+      taus.back().setIsGoodPOGTau((hpsid->at(iL) & kMediumIsoDB3Hits)>0 && ((hpsid->at(iL) & kDecayMode)>0));
       taus.back().setIsHPSVetoTau((hpsid->at(iL) & kLooseIsoDB3Hits)>0 && ((hpsid->at(iL) & kDecayMode)>0));
     }
   }

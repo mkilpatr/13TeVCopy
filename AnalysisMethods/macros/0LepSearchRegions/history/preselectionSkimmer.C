@@ -54,7 +54,7 @@ public:
     if(nJets < 4 && pickyJets.size() < 4) return false;
 
     //no leptons
-    if(nVetoedLeptons + nVetoedTaus > 0) return false;
+    if(nSecondaryLeptons + nVetoedTaus > 0) return false;
 
     return true;
   }

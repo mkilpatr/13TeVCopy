@@ -161,7 +161,7 @@ public:
 
     met_      = met->pt();
     nvetotau_ = nVetoHPSTaus;
-    nvetolep_ = nVetoedLeptons;
+    nvetolep_ = nSecondaryLeptons;
     nselelep_ = nSelLeptons;
     njets_    = int(jets.size());
     nbjets_   = int(bJets.size());
@@ -211,8 +211,8 @@ public:
     dphij2met_  = fabs(PhysicsUtilities::deltaPhi(*jets[1], *met));
     dphij12met_ = min(dphij1met_,dphij2met_);
 
-    if(vetoedLeptons.size()>=2) {
-      auto lep2 = vetoedLeptons[1];
+    if(secondaryLeptons.size()>=2) {
+      auto lep2 = secondaryLeptons[1];
       lep2pt_   = lep2->pt();
       lep2eta_  = lep2->eta();
       dilepinvmass_ = (lep1->p4() + lep2->p4()).mass();
@@ -322,8 +322,7 @@ void make8TeVbkgestTrees( TString sname            = "ttbar_0" // sample name
   //cfgSet::setJSONFile("/uscms/home/mullin/nobackup/stuff2015/CMSSW_7_4_7/src/data/JSON/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt");
 
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet pars = cfgSet::ol_search_set;
-  pars.jets.cleanJetsvVetoedLeptons = true;
+  cfgSet::ConfigSet pars = cfgSet::sl_search_set;
 
   string treeName = isMC ? "Events" : "TestAnalyzer/Events";
   Analyze a(fullname, treeName, isMC, &pars, sname, outputdir);

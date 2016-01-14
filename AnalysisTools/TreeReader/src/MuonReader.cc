@@ -39,7 +39,6 @@ MuonReader::MuonReader() : BaseReader(){
   ptrel        = new vector<float>;
   ptratio      = new vector<float>;
   annulus      = new vector<float>;
-  muonId       = new LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -87,7 +86,6 @@ void MuonReader::refresh(){
     muons.reserve(pt->size());
     for(unsigned int iL = 0; iL < pt->size(); ++iL){
       muons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
-      muons.back().setIsMuon(true);
       muons.back().setCharge(q->at(iL));
       muons.back().setD0(d0->at(iL));
       muons.back().setDz(dz->at(iL));
@@ -104,15 +102,6 @@ void MuonReader::refresh(){
       muons.back().setPtRel(ptrel->at(iL));
       muons.back().setPtRatio(ptratio->at(iL));
       muons.back().setAnnulusActivity(annulus->at(iL));
-      muons.back().setIsGoodPOGMuon(muonId->passMuonId((&muons.back()), muonId->MEDIUM));
-      muons.back().setIsGoodPOGMuonId(muonId->passMuonId((&muons.back()), muonId->MEDIUMID));
-      muons.back().setIsTightIsoMuon(muonId->passMuonId((&muons.back()), muonId->TIGHT));
-      muons.back().setIsVetoMuon(muonId->passMuonId((&muons.back()), muonId->VETO));
-      muons.back().setIsMultiIsoVetoMuonL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoL));
-      muons.back().setIsMultiIsoVetoMuonVL(muonId->passMuonId((&muons.back()), muonId->MultiIsoVetoVL));
-      muons.back().setIsMiniIsoVetoMuon(muonId->passMuonId((&muons.back()), muonId->MiniIsoVeto));
-      muons.back().setIsMT2VetoMuon(muonId->passMuonId((&muons.back()), muonId->MT2Veto));
-      muons.back().setIsMT2VetoMuonId(muonId->passMuonId((&muons.back()), muonId->MT2VetoId));
     }
   }
 }

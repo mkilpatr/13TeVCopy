@@ -21,9 +21,9 @@ public:
   virtual bool fillEvent() {
 
     if(nSelLeptons < 1) return false;
-    if(nVetoedLeptons != 2) return false;
-    if(vetoedLeptons[0]->pt() < 20) return false;
-    if(vetoedLeptons[1]->pt() < (vetoedLeptons[1]->iselectron() ? 15 : 10)  ) return false;
+    if(nSecondaryLeptons != 2) return false;
+    if(secondaryLeptons[0]->pt() < 20) return false;
+    if(secondaryLeptons[1]->pt() < (secondaryLeptons[1]->iselectron() ? 15 : 10)  ) return false;
 
     return true;
   }
@@ -41,10 +41,10 @@ void DiLeptonSkimmer(string fileName,  string treeName = "TestAnalyzer/Events", 
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
-  cfg.selectedLeptons.minMuPt  = 10;
-  cfg.selectedLeptons.maxMuEta = 2.4;
-  cfg.selectedLeptons.minEPt  = 10;
-  cfg.selectedLeptons.maxEEta = 2.4;
+  cfg.leptons.minMuPt  = 10;
+  cfg.leptons.maxMuEta = 2.4;
+  cfg.leptons.minEPt  = 10;
+  cfg.leptons.maxEEta = 2.4;
 
   //get the output name
   TString prefix(fileName);

@@ -29,9 +29,8 @@ ElectronReader::ElectronReader() : BaseReader(){
   dz           = new vector<float> ;
   sip3d        = new vector<float> ;
   pfdbetaiso   = new vector<float> ;
-  //mvaidnontrig = new vector<float> ;
-  //mvaidtrig    = new vector<float> ;
   isveto       = new vector<bool>  ;
+  isvetoid     = new vector<bool>  ;
   isloose      = new vector<bool>  ;
   ismedium     = new vector<bool>  ;
   ismediumid   = new vector<bool>  ;
@@ -41,7 +40,6 @@ ElectronReader::ElectronReader() : BaseReader(){
   ptrel        = new vector<float>;
   ptratio      = new vector<float>;
   annulus      = new vector<float> ;
-  eleId        = new LeptonId();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -66,12 +64,11 @@ void ElectronReader::load(TreeReader *treeReader, int options, string branchName
     treeReader->setBranchAddress(branchName , "dz"              , &dz          , true);
     treeReader->setBranchAddress(branchName , "sip3d"           , &sip3d       , true);
     treeReader->setBranchAddress(branchName , "pfdbetaiso"      , &pfdbetaiso  , true);
-    //treeReader->setBranchAddress(branchName , "mvaidnontrig"    , &mvaidnontrig, true);
-    //treeReader->setBranchAddress(branchName , "mvaidtrig"       , &mvaidtrig   , true);
     treeReader->setBranchAddress(branchName , "vetoid"          , &isveto      , true);
     treeReader->setBranchAddress(branchName , "looseid"         , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"        , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"         , &istight     , true);
+    treeReader->setBranchAddress(branchName , "passVetoIDOnly"  , &isvetoid    , true);
     treeReader->setBranchAddress(branchName , "passMediumIDOnly", &ismediumid  , true);
     treeReader->setBranchAddress(branchName , "passLooseIDOnly" , &islooseid   , true);
     treeReader->setBranchAddress(branchName , "miniisoeacorr"   , &miniiso     , true);
@@ -93,36 +90,26 @@ void ElectronReader::refresh(){
     electrons.reserve(pt->size());
     for(unsigned int iL = 0; iL < pt->size(); ++iL){
       electrons.emplace_back(CylLorentzVectorF(pt->at(iL),eta->at(iL),phi->at(iL),mass->at(iL)),iL);
-      electrons.back().setIsElectron(true);
       electrons.back().setCharge(q->at(iL));
-      electrons.back().setSCEta(scEta->at(iL));
-      electrons.back().setR9(r9->at(iL));
       electrons.back().setD0(d0->at(iL));
       electrons.back().setDz(dz->at(iL));
       electrons.back().setSip3d(sip3d->at(iL));
       electrons.back().setPFDBetaIso(pfdbetaiso->at(iL));
-      //electrons.back().setMVAIDNonTrig(mvaidnontrig->at(iL));
-      //electrons.back().setMVAIDTrig(mvaidtrig->at(iL));
-      electrons.back().setIsVeto(isveto->at(iL));
-      electrons.back().setIsLoose(isloose->at(iL));
-      electrons.back().setIsLooseId(islooseid->at(iL));
-      electrons.back().setIsMedium(ismedium->at(iL));
-      electrons.back().setIsMediumId(ismediumid->at(iL));
-      electrons.back().setIsTight(istight->at(iL));
       electrons.back().setMiniIso(miniiso->at(iL));
       electrons.back().setPtRel(ptrel->at(iL));
       electrons.back().setPtRatio(ptratio->at(iL));
       electrons.back().setAnnulusActivity(annulus->at(iL));
-      electrons.back().setIsGoodPOGElectron(eleId->passElectronId((&electrons.back()), eleId->MEDIUM));
-      electrons.back().setIsGoodPOGElectronId(eleId->passElectronId((&electrons.back()), eleId->MEDIUMID));
-      electrons.back().setIsVetoPOGElectron(eleId->passElectronId((&electrons.back()), eleId->LOOSE));
-      electrons.back().setIsTightIsoElectron(eleId->passElectronId((&electrons.back()), eleId->TIGHT));
-      electrons.back().setIsMVAVetoElectron(eleId->passElectronId((&electrons.back()), eleId->MVAVeto));
-      electrons.back().setIsMultiIsoVetoElectronL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoL));
-      electrons.back().setIsMultiIsoVetoElectronVL(eleId->passElectronId((&electrons.back()), eleId->MultiIsoVetoVL));
-      electrons.back().setIsMiniIsoVetoelectron(eleId->passElectronId((&electrons.back()), eleId->MiniIsoVeto));
-      electrons.back().setIsMT2VetoElectron(eleId->passElectronId((&electrons.back()), eleId->MT2Veto));
-      electrons.back().setIsMT2VetoElectronId(eleId->passElectronId((&electrons.back()), eleId->MT2VetoId));
+
+      electrons.back().setSCEta(scEta->at(iL));
+      electrons.back().setR9(r9->at(iL));
+      electrons.back().setIsVeto(isveto->at(iL));
+      electrons.back().setIsLoose(isloose->at(iL));
+      electrons.back().setIsMedium(ismedium->at(iL));
+      electrons.back().setIsTight(istight->at(iL));
+      electrons.back().setIsVetoId(isvetoid->at(iL));
+      electrons.back().setIsLooseId(islooseid->at(iL));
+      electrons.back().setIsMediumId(ismediumid->at(iL));
+
     }
   }
 }
