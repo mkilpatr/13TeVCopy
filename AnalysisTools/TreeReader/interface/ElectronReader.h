@@ -46,9 +46,8 @@ namespace ucsbsusy {
       std::vector<float> *	dz;
       std::vector<float> *	sip3d;
       std::vector<float> *	pfdbetaiso;
-      std::vector<float> *	mvaidnontrig;
-      std::vector<float> *	mvaidtrig;
       std::vector<bool>  *	isveto;
+      std::vector<bool>  *  isvetoid;
       std::vector<bool>  *	isloose;
       std::vector<bool>  *	ismedium;
       std::vector<bool>  *      ismediumid;
@@ -60,9 +59,6 @@ namespace ucsbsusy {
       std::vector<float> *      annulus;
 
       ElectronFCollection electrons;
-
-    private :
-      LeptonId* eleId;
 
   };
 

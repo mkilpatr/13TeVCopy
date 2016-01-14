@@ -99,7 +99,7 @@ public :
 
     // clean vetoedLeptons
     NVetoLeps = 0;
-    for (auto &l : vetoedLeptons){
+    for (auto &l : secondaryLeptons){
       if (PhysicsUtilities::deltaR2(*l, *boson) < 0.16) continue;
       ++NVetoLeps;
     }

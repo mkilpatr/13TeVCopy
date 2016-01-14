@@ -53,7 +53,7 @@ public:
 //    if(vars.dPhiMET12 < .5 || vars.dPhiMET3 < .3) return;
 //    if(vars.nTightBTags == 0) return;
     if(nJets < 6) return;
-    if(nVetoedLeptons + nVetoedTaus > 0) return;
+    if(nSecondaryLeptons + nVetoedTaus > 0) return;
 
     eventPlots.rewind();
     bool                          classified    = false;

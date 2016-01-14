@@ -179,7 +179,7 @@ void Analyzer::runEvent()
   float wgt = evtInfoReader.weight;
   ScaleFactor = wgt;
 
-  if(nVetoedLeptons > 1) return; // no more than 1 lep passing veto
+  if(nSecondaryLeptons > 1) return; // no more than 1 lep passing veto
   if(nSelLeptons != 1) return; // want exactly 1 lep passing selection
     
  lep1eta = selectedLeptons[0]->eta();
@@ -435,7 +435,7 @@ void singleLeptonLeptonSync(TString sname = "test",               // sample name
 
 // load one lepton default configs
   cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
 //  cfg.jets.jetCollection = cfgSet::PICKYJETS; // to override ak4jets with pickyjets
 
   // Declare analyzer

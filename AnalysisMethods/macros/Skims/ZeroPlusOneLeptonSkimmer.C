@@ -33,8 +33,8 @@ public:
 
     MomentumF cutMET = *met;
 
-    if(vetoedLeptons.size())
-      met->p4() += vetoedLeptons[0]->p4();
+    if(secondaryLeptons.size())
+      met->p4() += secondaryLeptons[0]->p4();
 
     if(cutMET.pt() < 200 && met->pt() < 200) return false;
 

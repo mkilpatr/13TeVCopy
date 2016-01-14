@@ -18,16 +18,20 @@ bool cfgSet::isSelBJet   (const ucsbsusy::RecoJetF& jet, const JetConfig& conf, 
   return false;
 }
 
-bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonConfig& conf){
-  if(conf.maxED0 > 0 && fabs(electron.d0()) >= conf.maxED0) return false;
-  if(conf.maxEDz > 0 && fabs(electron.dz()) >= conf.maxEDz) return false;
-  return (electron.pt() > conf.minEPt && fabs(electron.eta()) < conf.maxEEta && (electron.*conf.selectedElectron)());
+bool cfgSet::isSelElectron(const ucsbsusy::ElectronF& electron, const LeptonSelection::Electron& conf){
+  if(conf.maxD0 > 0 && fabs(electron.d0()) >= conf.maxD0) return false;
+  if(conf.maxDz > 0 && fabs(electron.dz()) >= conf.maxDz) return false;
+  if(electron.pt() <= conf.minPT) return false;
+  if(electron.absEta() >= conf.maxETA) return false;
+  return (*conf.passID)(&electron) && (*conf.passISO)(&electron);
 }
 
-bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonConfig& conf){
-  if(conf.maxMuD0 > 0 && fabs(muon.d0()) >= conf.maxMuD0) return false;
-  if(conf.maxMuDz > 0 && fabs(muon.dz()) >= conf.maxMuDz) return false;
-  return (muon.pt() > conf.minMuPt && fabs(muon.eta()) < conf.maxMuEta && (muon.*conf.selectedMuon)());
+bool cfgSet::isSelMuon(const ucsbsusy::MuonF& muon, const LeptonSelection::Muon& conf){
+  if(conf.maxD0 > 0 && fabs(muon.d0()) >= conf.maxD0) return false;
+  if(conf.maxDz > 0 && fabs(muon.dz()) >= conf.maxDz) return false;
+  if(muon.pt() <= conf.minPT) return false;
+  if(muon.absEta() >= conf.maxETA) return false;
+  return (*conf.passID)(&muon) && (*conf.passISO)(&muon);
 }
 
 bool cfgSet::isSelTrack(ucsbsusy::PFCandidateF& track, const ucsbsusy::MomentumF* met, const TrackConfig& conf){
@@ -65,17 +69,18 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
     return boolVal;
 }
 
-void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonConfig& conf){
-  if(!conf.isConfig())
+void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
+  if(!electronConf.isConfig || !muonConf.isConfig)
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");
 
   selectedLeptons.clear();
 
   for(auto* lepton : allLeptons){
-    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, conf): isSelElectron(*(ElectronF*)lepton, conf))
+    if (lepton->ismuon() ? isSelMuon(*(MuonF*)lepton, muonConf): isSelElectron(*(ElectronF*)lepton, electronConf))
       selectedLeptons.push_back(lepton);
+    else if(nonSelectedLeptons)
+      nonSelectedLeptons->push_back(lepton);
   }
-
 }
 
 void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const MomentumF* met, const TrackConfig& conf){
@@ -117,7 +122,7 @@ void cfgSet::selectPhotons(std::vector<ucsbsusy::PhotonF*>& selectedPhotons, ucs
 
 void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsbsusy::RecoJetF*>* bJets, std::vector<ucsbsusy::RecoJetF*>* nonBJets,
 			ucsbsusy::RecoJetFCollection& allJets, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, 
-			const std::vector<ucsbsusy::LeptonF*>* vetoedLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons, 
+			const std::vector<ucsbsusy::LeptonF*>* primaryLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons,
 			const std::vector<ucsbsusy::PFCandidateF*>* vetoedTracks, const JetConfig&  conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectJets(): You want to do selecting but have not yet configured the selection!");
@@ -128,11 +133,11 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
 
   vector<bool> vetoJet(allJets.size(),false);
 
-  if(conf.cleanJetsvSelectedLeptons) {
-    if(selectedLeptons == 0)
+  if(conf.cleanJetsvLeptons){
+    auto cleanLeptons = conf.ignoreSeconaryLeptonsWhenCleaning ? primaryLeptons : selectedLeptons;
+    if(cleanLeptons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
-
-    for(const auto* glep : *selectedLeptons) {
+    for(const auto* glep : *cleanLeptons) {
       double nearDR = 0;
       int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
       if(near >= 0){
@@ -141,20 +146,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
     }
   }
 
-  if(conf.cleanJetsvVetoedLeptons) {
-    if(vetoedLeptons == 0)
-      throw std::invalid_argument("config::selectJets(): You want to do lepton cleaning but have not given a lepton list to clean!");
-
-    for(const auto* glep : *vetoedLeptons) {
-      double nearDR = 0;
-      int near = PhysicsUtilities::findNearestDR(*glep,allJets,nearDR,conf.cleanJetsMaxDR,conf.minPt,0,allJets.size());
-      if(near >= 0){
-        vetoJet[near] = true;
-      }
-    }
-  }
-
-  if(conf.cleanJetsvSelectedPhotons) {
+  if(conf.cleanJetsvPhotons) {
     if(selectedPhotons == 0)
       throw std::invalid_argument("config::selectJets(): You want to do cleaning but have not given a list to clean with!");
 
@@ -168,7 +160,7 @@ void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsb
   }
 
 
-  if(conf.cleanJetsvVetoedTracks) {
+  if(conf.cleanJetsvTracks) {
     if(vetoedTracks == 0)
       throw std::invalid_argument("config::selectJets(): You want to do track cleaning but have not given a track list to clean!");
 

@@ -23,95 +23,46 @@ namespace ucsbsusy {
   {
 
     public :
-      Electron() : scEta_(0), r9_(0), mvaidnontrig_(0), mvaidtrig_(0), isveto_(false), isloose_(false), ismedium_(false), ismediumid_(false), islooseid_(false), istight_(false), isgoodpogelectron_(false), isgoodpogelectronid_(false), isvetopogelectron_(false), istightisoelectron_(false), ismvavetoelectron_(false), ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false), isminiisovetoelectron_(false), ismt2vetoelectron_(false), ismt2vetoelectronid_(false) {}
+      Electron() : scEta_(0), r9_(0), isveto_(false),  isloose_(false), ismedium_(false), istight_(false),isvetoid_(false), islooseid_(false),  ismediumid_(false){Lepton<CoordSystem>::setPdgId(11);Lepton<CoordSystem>::setIsElectron(true);}
 
       template <class InputCoordSystem>
-      Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
-		int inIndex = -1, int inPdgid = 11, int inCharge = 0,
-		float inD0 = 0, float inDz = 0, float inPfdbetaiso = 0, float inMvaiso = 0, 
-  	        float inMiniiso=0, float inPtrel = 0, float inPtratio = 0,
-		float inSCEta = 0, float inR9 = 0, 
-		float inMvaidnontrig = 0, float inMvaidtrig = 0,
-		bool inIsveto = false, bool inIsloose = false,
-		bool inIsmedium = false, bool inIstight = false) : 
-		Lepton<InputCoordSystem>(inMomentum, inIndex, inPdgid,
-					 inCharge, inD0, inDz, inPfdbetaiso, inMvaiso, inMiniiso, inPtrel, inPtratio),
-		scEta_(inSCEta), r9_(inR9),
-		mvaidnontrig_(inMvaidnontrig), mvaidtrig_(inMvaidtrig),
-		isveto_(inIsveto), isloose_(inIsloose),
-		ismedium_(inIsmedium), istight_(inIstight),
-		isgoodpogelectron_(false), isgoodpogelectronid_(false), isvetopogelectron_(false),
-		istightisoelectron_(false), ismvavetoelectron_(false),
-                ismultiisovetoelectronl_(false), ismultiisovetoelectronvl_(false),
-                isminiisovetoelectron_(false),
-                ismt2vetoelectron_(false), ismt2vetoelectronid_(false)  {}
+      Electron(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) :
+		Lepton<CoordSystem>(inMomentum, inIndex),
+					 scEta_(0), r9_(0), isveto_(false), isloose_(false), ismedium_(false), istight_(false), isvetoid_(false), islooseid_(false),  ismediumid_(false) {Lepton<CoordSystem>::setPdgId(11);Lepton<CoordSystem>::setIsElectron(true);}
 
       ~Electron() {}
 
       float	scEta() 		   const { return scEta_;	}
       float	r9() 			   const { return r9_;		}
-      float	mvaidnontrig() 		   const { return mvaidnontrig_;	}
-      float	mvaidtrig() 		   const { return mvaidtrig_;	}
       bool      isvetoelectron()           const { return isveto_; }
       bool	islooseelectron() 	   const { return isloose_;	}
       bool	ismediumelectron() 	   const { return ismedium_;	}
       bool	istightelectron() 	   const { return istight_;	}
-      bool	isgoodpogelectron() 	   const { return isgoodpogelectron_;	}
-      bool  isgoodpogelectronid()    const { return isgoodpogelectronid_; }
-      bool	isvetopogelectron() 	   const { return isvetopogelectron_;	}
-      bool  istightisoelectron()     const { return istightisoelectron_; }
-      bool	ismvavetoelectron() 	   const { return ismvavetoelectron_;	}
-      bool	ismultiisovetoelectronl()  const { return ismultiisovetoelectronl_;	}
-      bool	ismultiisovetoelectronvl() const { return ismultiisovetoelectronvl_; }
-      bool      isminiisovetoelectron()    const { return isminiisovetoelectron_; }
-      bool      ismt2vetoelectron()        const { return ismt2vetoelectron_; }
-      bool      ismt2vetoelectronid()      const { return ismt2vetoelectronid_; }
-      bool      ismediumid()               const { return ismediumid_;     }
+      bool      isvetoid()               const { return isvetoid_;     }
       bool      islooseid()                const { return islooseid_;     }
+      bool      ismediumid()               const { return ismediumid_;     }
 
 
-      void	setSCEta(float newSCEta)	{ scEta_ = newSCEta;	}
-      void	setR9(float newR9)		{ r9_ = newR9;		}
-      void	setMVAIDNonTrig(float newID)	{ mvaidnontrig_ = newID;}
-      void	setMVAIDTrig(float newID)	{ mvaidtrig_ = newID;	}
-      void      setIsVeto(bool newType)         { isveto_ = newType; }
-      void	setIsLoose(bool newType)	{ isloose_ = newType;	}
-      void	setIsMediumId(bool newType)	{ ismediumid_ = newType;	}
-      void      setIsLooseId(bool newType)      { islooseid_ = newType;        }
-      void	setIsMedium(bool newType)              { ismedium_ = newType;	}
-      void	setIsTight(bool newType)               { istight_ = newType;	}
-      void	setIsGoodPOGElectron(bool flag)        { isgoodpogelectron_ = flag;	}
-      void  setIsGoodPOGElectronId(bool flag)      { isgoodpogelectronid_ = flag; }
-      void	setIsVetoPOGElectron(bool flag)        { isvetopogelectron_ = flag;	}
-      void  setIsTightIsoElectron(bool flag)       { istightisoelectron_ = flag; }
-      void	setIsMVAVetoElectron(bool flag)	       { ismvavetoelectron_ = flag;	}
-      void	setIsMultiIsoVetoElectronL(bool flag)  { ismultiisovetoelectronl_  = flag; }
-      void	setIsMultiIsoVetoElectronVL(bool flag) { ismultiisovetoelectronvl_ = flag; }
-      void      setIsMiniIsoVetoelectron(bool flag)    { isminiisovetoelectron_    = flag; }
-      void      setIsMT2VetoElectron(bool flag)        { ismt2vetoelectron_ = flag;        }
-      void      setIsMT2VetoElectronId(bool flag)      { ismt2vetoelectronid_ = flag;        }
+      void  setSCEta(float newSCEta)  { scEta_ = newSCEta;  }
+      void  setR9(float newR9)    { r9_ = newR9;    }
+      void  setIsVeto(bool newType)         { isveto_ = newType; }
+      void  setIsLoose(bool newType)  { isloose_ = newType; }
+      void  setIsMedium(bool newType)              { ismedium_ = newType; }
+      void  setIsTight(bool newType)               { istight_ = newType;  }
+      void  setIsVetoId(bool newType) { isvetoid_ = newType;  }
+      void  setIsMediumId(bool newType) { ismediumid_ = newType;  }
+      void  setIsLooseId(bool newType)      { islooseid_ = newType;        }
 
     protected :
       float	scEta_;
       float	r9_;
-      float	mvaidnontrig_;
-      float	mvaidtrig_;
       bool      isveto_;
-      bool	isloose_;
-      bool	ismedium_;
-      bool	ismediumid_;
+      bool  isloose_;
+      bool  ismedium_;
+      bool  istight_;
+      bool      isvetoid_;
       bool      islooseid_;
-      bool	istight_;
-      bool	isgoodpogelectron_;
-      bool  isgoodpogelectronid_;
-      bool	isvetopogelectron_;
-      bool  istightisoelectron_;
-      bool	ismvavetoelectron_;
-      bool	ismultiisovetoelectronl_;
-      bool	ismultiisovetoelectronvl_;
-      bool      isminiisovetoelectron_;
-      bool      ismt2vetoelectron_;
-      bool      ismt2vetoelectronid_;
+      bool	ismediumid_;
 
   };
 
