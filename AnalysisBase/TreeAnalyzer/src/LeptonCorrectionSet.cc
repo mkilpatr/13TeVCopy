@@ -12,37 +12,59 @@ TnPCorr::TnPCorr(TString corrName,
 {
   bool loadElectrons = false;
   if(elSel.type != LeptonSelection::NONE_ELE) {
-    if(secElSel.type == LeptonSelection::NONE_ELE || elSel.type == secElSel.type) {
+    if(secElSel.type == LeptonSelection::NONE_ELE) {
       loadElectrons = true;
-      elConf = elSel;
+      elConf    = elSel;
+      elConfKin = elSel;
+    }
+    else if(elSel.type == secElSel.type){
+      loadElectrons = true;
+      elConf    = elSel;
+      elConfKin = elSel;
+      if(secElSel.minPT  < elConfKin.minPT ) elConfKin.minPT  = secElSel.minPT;
+      if(secElSel.maxETA > elConfKin.maxETA) elConfKin.maxETA = secElSel.maxETA;
     }
     else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electrons and secondaryElectrons need to be the same type for these corrections!");
   }
   else if(secElSel.type != LeptonSelection::NONE_ELE) {
     loadElectrons = true;
-    elConf = secElSel;
+    elConf    = secElSel;
+    elConfKin = secElSel;
   }
 
   bool loadMuons = false;
   if(muSel.type != LeptonSelection::NONE_MU) {
-    if(secMuSel.type == LeptonSelection::NONE_MU || muSel.type == secMuSel.type) {
+    if(secMuSel.type == LeptonSelection::NONE_MU) {
       loadMuons = true;
-      muConf = muSel;
+      muConf    = muSel;
+      muConfKin = muSel;
+    }
+    else if(muSel.type == secMuSel.type){
+      loadMuons = true;
+      muConf    = muSel;
+      muConfKin = muSel;
+      if(secMuSel.minPT  < muConfKin.minPT ) muConfKin.minPT  = secMuSel.minPT;
+      if(secMuSel.maxETA > muConfKin.maxETA) muConfKin.maxETA = secMuSel.maxETA;
     }
     else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muons and secondaryMuons need to be the same type for these corrections!");
   }
   else if(secMuSel.type != LeptonSelection::NONE_MU) {
     loadMuons = true;
-    muConf = secMuSel;
+    muConf    = secMuSel;
+    muConfKin = secMuSel;
   }
+  elConfKin.passID  = &ElectronID::inclusive;
+  elConfKin.passISO = &ElectronISO::inclusive;
+  muConfKin.passID  = &MuonID::inclusive;
+  muConfKin.passISO = &MuonISO::inclusive;
 
   TString baseDir = TString::Format("%s/src/data/corrections/",getenv("CMSSW_BASE"));
 
   if(loadElectrons) {
     elConfNoIso = elConf;
     elConfNoIso.passISO = &ElectronISO::inclusive;
-    elConfNoIso.minPT  = 5.0;
-    elConfNoIso.maxETA = 2.5;
+    elConfNoIso.minPT  = elConfKin.minPT  ;
+    elConfNoIso.maxETA = elConfKin.maxETA ;
 
     TString elFileName                 , elMCVetoIdEffFileName, elMCVetoIsoEffFileName;
     TString elIdHistName, elIsoHistName, elMCVetoIdEffHistName, elMCVetoIsoEffHistName;
@@ -82,10 +104,8 @@ TnPCorr::TnPCorr(TString corrName,
   if(loadMuons) {
     muConfNoIso = muConf;
     muConfNoIso.passISO = &MuonISO::inclusive;
-    muConfNoIso.minPT  = 5.0;
-    muConfNoIso.maxETA = 2.4;
-    minMuPt  = muConf.minPT;
-    maxMuEta = muConf.maxETA;
+    muConfNoIso.minPT  = muConfKin.minPT  ;
+    muConfNoIso.maxETA = muConfKin.maxETA ;
 
     TString muIdFileName, muIsoFileName, muMCVetoIdEffFileName, muMCVetoIsoEffFileName;
     TString muIdHistName, muIsoHistName, muMCVetoIdEffHistName, muMCVetoIsoEffHistName;
@@ -155,14 +175,14 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   float annulus = lep->annulusactivity();
   if     (id==11 && elCorrType == NONE) return wt;
   else if(id==13 && muCorrType == NONE) return wt;
-  else if(id==11 && ( (elConf.maxD0>0 && abs(lep->d0())>elConf.maxD0) || (elConf.maxDz>0 && abs(lep->dz())>elConf.maxDz) )) return wt;
-  else if(id==13 && ( (muConf.maxD0>0 && abs(lep->d0())>muConf.maxD0) || (muConf.maxDz>0 && abs(lep->dz())>muConf.maxDz) )) return wt;
-  float sfid      = 1.0;
-  float sfiso     = 1.0;
-  float sfuncid   = 0.0;
-  float sfunciso  = 0.0;
-  float effid     = 1.0;
-  float effiso    = 1.0;
+  else if(id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
+  else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
+  float sfid     = 1.0;
+  float sfiso    = 1.0;
+  float sfuncid  = 0.0;
+  float sfunciso = 0.0;
+  float effid    = 1.0;
+  float effiso   = 1.0;
   bool passId    = false;
   bool passIdIso = false;
   float failIdWt = 1.0;
@@ -206,8 +226,8 @@ float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType ) co
   if(muCorrType == NONE) return 1.0;
   float pt  = lep->pt();
   float eta = lep->absEta();
-  if     (pt<minMuPt)   return 1.0;
-  else if(eta>maxMuEta) return 1.0;
+  if     (pt <muConfKin.minPT)  return 1.0;
+  else if(eta>muConfKin.maxETA) return 1.0;
   float sf      = getMuIDValue(pt,eta);
   float sfunc   = sf  *0.01;
   float eff     = getMuMCIdEffValue(pt,eta);

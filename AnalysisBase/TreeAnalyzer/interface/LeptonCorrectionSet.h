@@ -85,6 +85,8 @@ namespace ucsbsusy {
       LeptonSelection::Muon     muConf;
       LeptonSelection::Electron elConfNoIso;
       LeptonSelection::Muon     muConfNoIso;
+      LeptonSelection::Electron elConfKin;
+      LeptonSelection::Muon     muConfKin;
       TFile* fileEl;
       TFile* fileIdMu;
       TFile* fileIsoMu;
@@ -100,8 +102,6 @@ namespace ucsbsusy {
       TH2F*  HistMCVetoIdEffMu;
       TH2F*  HistMCVetoIsoEffEl;
       TH2F*  HistMCVetoIsoEffMu;
-      float minMuPt;
-      float maxMuEta;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
