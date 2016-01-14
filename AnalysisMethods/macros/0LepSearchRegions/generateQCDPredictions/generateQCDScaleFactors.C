@@ -10,8 +10,10 @@ bool run_on_htmht;
 const int numJR_bins = 20;
 const int JR_min_bin = 0.;
 const int JR_max_bin = 1.;
-const int numJR_RB_bins = 3;
-double JR_RB_bins[numJR_RB_bins] = { 0., .5, 1. };
+//const int numJR_RB_bins = 3;
+//double JR_RB_bins[numJR_RB_bins] = { 0., .5, 1. };
+const int numJR_RB_bins = 4;
+double JR_RB_bins[numJR_RB_bins] = { 0., .3, .6, 1. };
 float non_QCD_MC_Uncertainty = 0.5;
 
 void generateScaleFactors(ofstream& p_Outfile, TH1F* p_Data_Hist, TH1F* p_QCD_Hist_nMM, TH1F* p_QCD_Hist_MM, float& SnMM, float& SnMM_E, float& SMM, float& SMM_E);
@@ -19,6 +21,7 @@ void generateScaleFactors(ofstream& p_Outfile, TH1F* p_Data_Hist, TH1F* p_QCD_Hi
 void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF.conf",
                              TString inputdir    = "../../run/plots_15_12_21/",
                              TString p_outputdir = "QCD_ScaleFactor_Plots",
+//                             TString p_outputdir = "QCD_ScaleFactor_Plots_bJets",
                              TString p_format  = "pdf",
                              bool p_run_on_htmht = true){
   format = p_format;
@@ -33,6 +36,9 @@ void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF
   TString confFile_qcd  = "confFiles/run0lep_qcd_only.conf";
   TString wgtVar = intLum + "*weight";
   outputdir = p_outputdir + (which_ht.Sizeof() == 1 ? "" : "_") + which_ht;
+  if(!outputdir.Contains("bJets")){
+    outputdir += Form("_%dbins", numJR_RB_bins - 1);
+  }
   gSystem->mkdir(outputdir, true);
 
   vector <TString> sampleNames, sampleLabels;
@@ -46,7 +52,6 @@ void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF
   map <TString, PlotStuff*> plots_qcd;
   readRegionInfoFile(cutInfoMap, regionConfFile_SF);
   generateRegionInfoMap(regionInfoMap, cutInfoMap);
-
   for(map_YI_iter = regionInfoMap.begin(); map_YI_iter != regionInfoMap.end(); map_YI_iter++){
     plots[map_YI_iter->first] = new PlotStuff(confFile, inputdir, outputdir);
     plots[map_YI_iter->first]->setPlotSource(PlotStuff::TREES);
@@ -76,10 +81,28 @@ void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF
     plots_qcd[map_YI_iter->first]->setTreeFileSuffix("_tree.root");
     plots_qcd[map_YI_iter->first]->setAddSigScaleTxt(false);
     plots_qcd[map_YI_iter->first]->setWgtVar(wgtVar);
-    cout << "adding CR plot with def:  " << map_YI_iter->second.getDefn_CR() << " to plot file:  " << plots[map_YI_iter->first]->outfileName() << endl;
-    plots[map_YI_iter->first]->addTreeVar(    map_YI_iter->second.uniqueName + "_CR_JR",      "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR(),                                    "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
-    plots_qcd[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + "_CR_JR_gt_5", "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR() + " && jetMMMTrueResponsePt > 0.5", "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
-    plots_qcd[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + "_CR_JR_lt_5", "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR() + " && jetMMMTrueResponsePt < 0.5", "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
+    if(outputdir.Contains("bJets")){
+//      map_YI_iter->second.common_CI.defn += " && jetPsR_isMbJet";
+      map_YI_iter->second.common_CI.defn += " && !jetPsR_isLbJet";
+    }
+    cout << "adding CR plot with def:  " << map_YI_iter->second.getDefn_CR() << " to plot file:  " << plots_qcd[map_YI_iter->first]->outfileName() << endl;
+    plots[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + "_CR_JR", "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR(), "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
+    for(int i = 0; i < numJR_RB_bins - 1; i++){
+      TString jetResponse_selName, jetResponse_selDefn;
+      if(i != numJR_RB_bins - 2){
+        jetResponse_selName = Form("_CR_JR_%g_to_%g", JR_RB_bins[i], JR_RB_bins[i + 1]);
+        jetResponse_selDefn = Form(" && jetMMMTrueResponsePt > %g && jetMMMTrueResponsePt < %g", JR_RB_bins[i], JR_RB_bins[i + 1]);
+      } else {
+        jetResponse_selName = Form("_CR_JR_ge_%g", JR_RB_bins[i]);
+        jetResponse_selDefn = Form(" && jetMMMTrueResponsePt >= %g", JR_RB_bins[i]);
+      }
+      if(outputdir.Contains("bJets")){
+        plots_qcd[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + jetResponse_selName + "_isb_eq_1", "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR() + jetResponse_selDefn + " && jetPsR_isGbJet",  "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
+        plots_qcd[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + jetResponse_selName + "_isb_eq_0", "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR() + jetResponse_selDefn + " && !jetPsR_isGbJet", "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
+      } else {
+        plots_qcd[map_YI_iter->first]->addTreeVar(map_YI_iter->second.uniqueName + jetResponse_selName, "jetMMMPseudoResponsePt", map_YI_iter->second.getDefn_CR() + jetResponse_selDefn, "PseudoResponse_{MMM}", numJR_bins, JR_min_bin, JR_max_bin);
+      }
+    }
     plots[map_YI_iter->first]->plot(); 
     plots_qcd[map_YI_iter->first]->plot(); 
     int dataPosition = -1, qcdPosition = -1;
@@ -97,10 +120,6 @@ void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF
     vector <int>    forTheStack_Colors, forTheQCDOnlyStack_Colors;
     for(int i = 0, counter = 0; i < sampleNames.size(); i++){
       CR_Hists.push_back((TH1F*)infile->Get(map_YI_iter->second.uniqueName + "_CR_JR_" + sampleNames[i]));
-    }
-    CR_QCD_Hists.push_back((TH1F*)infile_qcd->Get(map_YI_iter->second.uniqueName + "_CR_JR_gt_5_" + sampleNames[qcdPosition]));
-    CR_QCD_Hists.push_back((TH1F*)infile_qcd->Get(map_YI_iter->second.uniqueName + "_CR_JR_lt_5_" + sampleNames[qcdPosition]));
-    for(int i = 0, counter = 0; i < sampleNames.size(); i++){
       if(i != qcdPosition){
         forTheStack_Hists.push_back((TH1F*)CR_Hists[i]->Clone());
         if(i != dataPosition){
@@ -114,53 +133,74 @@ void generateQCDScaleFactors(TString regionConfFile_SF = "confFiles/regionInfoSF
         counter++;
       }
     }
-
-    TH1F* data_only_Hist_CR   = (TH1F*)CR_Hists[dataPosition]->Clone();
-    TH1F* qcd_Hist_JR_gt_5_CR = (TH1F*)CR_QCD_Hists[0]->Clone();
-    TH1F* qcd_Hist_JR_lt_5_CR = (TH1F*)CR_QCD_Hists[1]->Clone();
+    forTheQCDOnlyStack_Hists.push_back((TH1F*)CR_Hists[dataPosition]->Clone());
+    forTheQCDOnlyStack_Names.push_back(sampleNames[dataPosition]);
+    forTheQCDOnlyStack_Colors.push_back(sampleColors[dataPosition]);
+    forTheQCDOnlyStack_Labels.push_back(sampleLabels[dataPosition] + " - nonQCD MC");
     for(int i = 0; i < forTheStack_Hists.size(); i++){
       if(i != dataPosition){
-        data_only_Hist_CR->Add(forTheStack_Hists[i], -1);
+        forTheQCDOnlyStack_Hists[0]->Add(forTheStack_Hists[i], -1);
       }
     }
-//we no longer want to normalize qcd to data
-//    float data_qcd_SF = data_only_Hist_CR->Integral(0, data_only_Hist_CR->GetNbinsX() + 1) / CR_Hists[qcdPosition]->Integral(0, CR_Hists[qcdPosition]->GetNbinsX() + 1);
-//    qcd_Hist_JR_gt_5_CR->Scale(data_qcd_SF);
-//    qcd_Hist_JR_lt_5_CR->Scale(data_qcd_SF);
-    forTheStack_Hists.push_back((TH1F*)qcd_Hist_JR_gt_5_CR->Clone());
-    forTheStack_Hists.push_back((TH1F*)qcd_Hist_JR_lt_5_CR->Clone());
-    forTheStack_Names.push_back(sampleNames[qcdPosition] + "_JR_gt_5");
-    forTheStack_Names.push_back(sampleNames[qcdPosition] + "_JR_lt_5");
-    forTheStack_Colors.push_back(sampleColors[qcdPosition] + 1);
-    forTheStack_Colors.push_back(sampleColors[qcdPosition] - 1);
-    forTheStack_Labels.push_back(sampleLabels[qcdPosition] + " JR > 0.5");
-    forTheStack_Labels.push_back(sampleLabels[qcdPosition] + " JR < 0.5");
+    forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)forTheQCDOnlyStack_Hists[0]->Rebin(numJR_RB_bins - 1, TString(forTheQCDOnlyStack_Hists[0]->GetName())   + "_RB", JR_RB_bins));
+    for(int i = 0, counter = 0; i < numJR_RB_bins - 1; i++){
+      TString jetResponse_selName, jetResponse_selDefn;
+      if(i != numJR_RB_bins - 2){
+        jetResponse_selName = Form("_CR_JR_%g_to_%g", JR_RB_bins[i], JR_RB_bins[i + 1]);
+        jetResponse_selDefn = Form(" %g < JR < %g", JR_RB_bins[i], JR_RB_bins[i + 1]);
+      } else {
+        jetResponse_selName = Form("_CR_JR_ge_%g", JR_RB_bins[i]);
+        jetResponse_selDefn = Form(" JR >= %g", JR_RB_bins[i]);
+      }
+      if(outputdir.Contains("bJets")){
+        CR_QCD_Hists.push_back((TH1F*)infile_qcd->Get(map_YI_iter->second.uniqueName + jetResponse_selName + "_isb_eq_1_" + sampleNames[qcdPosition]));
+        CR_QCD_Hists.push_back((TH1F*)infile_qcd->Get(map_YI_iter->second.uniqueName + jetResponse_selName + "_isb_eq_0_" + sampleNames[qcdPosition]));
+        forTheStack_Hists.push_back((TH1F*)CR_QCD_Hists[counter]->Clone());
+        forTheStack_Hists.push_back((TH1F*)CR_QCD_Hists[counter + 1]->Clone());
+        forTheStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName + "_isb_eq_1");
+        forTheStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName + "_isb_eq_0");
+        forTheStack_Colors.push_back(sampleColors[qcdPosition] + counter);
+        forTheStack_Colors.push_back(sampleColors[qcdPosition] + counter + 1);
+        forTheStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn + " && is b");
+        forTheStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn + " && is not b");
+        forTheQCDOnlyStack_Hists.push_back((TH1F*)CR_QCD_Hists[counter]->Clone());
+        forTheQCDOnlyStack_Hists.push_back((TH1F*)CR_QCD_Hists[counter + 1]->Clone());
+        forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)CR_QCD_Hists[counter]->Rebin(numJR_RB_bins - 1, TString(CR_QCD_Hists[counter]->GetName()) + "_RB", JR_RB_bins));
+        forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)CR_QCD_Hists[counter + 1]->Rebin(numJR_RB_bins - 1, TString(CR_QCD_Hists[counter + 1]->GetName()) + "_RB", JR_RB_bins));
+        forTheQCDOnlyStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName + "_isb_eq_1");
+        forTheQCDOnlyStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName + "_isb_eq_0");
+        forTheQCDOnlyStack_Colors.push_back(sampleColors[qcdPosition] + counter);
+        forTheQCDOnlyStack_Colors.push_back(sampleColors[qcdPosition] + counter + 1);
+        forTheQCDOnlyStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn + " && is b");
+        forTheQCDOnlyStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn + " && is not b");
+        counter += 2;
+      } else {
+        CR_QCD_Hists.push_back((TH1F*)infile_qcd->Get(map_YI_iter->second.uniqueName + jetResponse_selName + "_" + sampleNames[qcdPosition]));
+        forTheStack_Hists.push_back((TH1F*)CR_QCD_Hists[i]->Clone());
+        forTheStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName);
+        forTheStack_Colors.push_back(sampleColors[qcdPosition] + i);
+        forTheStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn);
+        forTheQCDOnlyStack_Hists.push_back((TH1F*)CR_QCD_Hists[i]->Clone());
+        forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)CR_QCD_Hists[i]->Rebin(numJR_RB_bins - 1, TString(CR_QCD_Hists[i]->GetName()) + "_RB", JR_RB_bins));
+        forTheQCDOnlyStack_Names.push_back(sampleNames[qcdPosition] + jetResponse_selName);
+        forTheQCDOnlyStack_Colors.push_back(sampleColors[qcdPosition] + i);
+        forTheQCDOnlyStack_Labels.push_back(sampleLabels[qcdPosition] + jetResponse_selDefn);
+      }
+    }
     for(int i = 0; i < forTheStack_Hists.size(); i ++){
       forTheStack_Hists_RB.push_back((TH1F*)forTheStack_Hists[i]->Rebin(numJR_RB_bins - 1, TString(forTheStack_Hists[i]->GetName()) + "_RB", JR_RB_bins));
     }
-    forTheQCDOnlyStack_Hists.push_back((TH1F*)data_only_Hist_CR->Clone());
-    forTheQCDOnlyStack_Hists.push_back((TH1F*)qcd_Hist_JR_gt_5_CR->Clone());
-    forTheQCDOnlyStack_Hists.push_back((TH1F*)qcd_Hist_JR_lt_5_CR->Clone());
-    forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)data_only_Hist_CR->Rebin(  numJR_RB_bins - 1, TString(data_only_Hist_CR->GetName())   + "_RB", JR_RB_bins));
-    forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)qcd_Hist_JR_gt_5_CR->Rebin(numJR_RB_bins - 1, TString(qcd_Hist_JR_gt_5_CR->GetName()) + "_RB", JR_RB_bins));
-    forTheQCDOnlyStack_Hists_RB.push_back((TH1F*)qcd_Hist_JR_lt_5_CR->Rebin(numJR_RB_bins - 1, TString(qcd_Hist_JR_lt_5_CR->GetName()) + "_RB", JR_RB_bins));
-    forTheQCDOnlyStack_Names.push_back(sampleNames[dataPosition]);
-    forTheQCDOnlyStack_Names.push_back(sampleNames[qcdPosition] + "_JR_gt_5");
-    forTheQCDOnlyStack_Names.push_back(sampleNames[qcdPosition] + "_JR_lt_5");
-    forTheQCDOnlyStack_Colors.push_back(sampleColors[dataPosition]);
-    forTheQCDOnlyStack_Colors.push_back(sampleColors[qcdPosition] + 1);
-    forTheQCDOnlyStack_Colors.push_back(sampleColors[qcdPosition] - 1);
-    forTheQCDOnlyStack_Labels.push_back(sampleLabels[dataPosition] + " - nonQCD MC");
-    forTheQCDOnlyStack_Labels.push_back(sampleLabels[qcdPosition] + " JR > 0.5");
-    forTheQCDOnlyStack_Labels.push_back(sampleLabels[qcdPosition] + " JR < 0.5");
+
     createStackPlotWithRatio(map_YI_iter->second.uniqueName + "_Stack",        "Control Region Yields", forTheStack_Names, forTheStack_Labels, forTheStack_Colors, forTheStack_Hists);
     createStackPlotWithRatio(map_YI_iter->second.uniqueName + "_Stack_RB",     "Control Region Yields", forTheStack_Names, forTheStack_Labels, forTheStack_Colors, forTheStack_Hists_RB, numJR_RB_bins - 1, JR_RB_bins);
     createStackPlotWithRatio(map_YI_iter->second.uniqueName + "_Stack_Sub",    "Control Region Yields", forTheQCDOnlyStack_Names, forTheQCDOnlyStack_Labels, forTheQCDOnlyStack_Colors, forTheQCDOnlyStack_Hists);
     createStackPlotWithRatio(map_YI_iter->second.uniqueName + "_Stack_Sub_RB", "Control Region Yields", forTheQCDOnlyStack_Names, forTheQCDOnlyStack_Labels, forTheQCDOnlyStack_Colors, forTheQCDOnlyStack_Hists_RB, numJR_RB_bins - 1, JR_RB_bins);
 
-    float SF_MM = -1, SF_nMM = -1, SF_MM_E = -1, SF_nMM_E = -1;
-    ofstream outfile(outputdir + "/" + map_YI_iter->second.uniqueName + ".txt", std::ofstream::out);
-    generateScaleFactors(outfile, data_only_Hist_CR, qcd_Hist_JR_gt_5_CR, qcd_Hist_JR_lt_5_CR, SF_nMM, SF_nMM_E, SF_MM, SF_MM_E);
+    if(numJR_RB_bins == 3){
+      float SF_MM = -1, SF_nMM = -1, SF_MM_E = -1, SF_nMM_E = -1;
+      ofstream outfile(outputdir + "/" + map_YI_iter->second.uniqueName + ".txt", std::ofstream::out);
+      generateScaleFactors(outfile, forTheQCDOnlyStack_Hists[0], forTheQCDOnlyStack_Hists[2], forTheQCDOnlyStack_Hists[1], SF_nMM, SF_nMM_E, SF_MM, SF_MM_E);
+    }
   }
 }
 

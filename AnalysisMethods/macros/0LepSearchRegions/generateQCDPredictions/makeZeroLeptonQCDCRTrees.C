@@ -32,6 +32,9 @@ public :
   size i_jetMMMPseudoResponsePt = 0;
   size i_jetMMMTrueResponsePt   = 0;
   size i_jetMMMResponsePt       = 0;
+  size i_jetPsR_isGbJet         = 0;
+  size i_jetPsR_isMbJet         = 0;
+  size i_jetPsR_isLbJet         = 0;
   size i_jet1ResponsePt         = 0;
   size i_jet2ResponsePt         = 0;
   size i_jet3ResponsePt         = 0;
@@ -86,6 +89,9 @@ public :
     i_jetMMMPseudoResponsePt = data.add<float>     ("", "jetMMMPseudoResponsePt", "F", 0);
     i_jetMMMTrueResponsePt   = data.add<float>     ("", "jetMMMTrueResponsePt",   "F", 0);
     i_jetMMMResponsePt       = data.add<float>     ("", "jetMMMResponsePt",       "F", 0);
+    i_jetPsR_isGbJet         = data.add<bool>      ("", "jetPsR_isGbJet",         "O", 0);
+    i_jetPsR_isMbJet         = data.add<bool>      ("", "jetPsR_isMbJet",         "O", 0);
+    i_jetPsR_isLbJet         = data.add<bool>      ("", "jetPsR_isLbJet",         "O", 0);
     i_jet1ResponsePt         = data.add<float>     ("", "jet1ResponsePt",         "F", 0);
     i_jet2ResponsePt         = data.add<float>     ("", "jet2ResponsePt",         "F", 0);
     i_jet3ResponsePt         = data.add<float>     ("", "jet3ResponsePt",         "F", 0);
@@ -223,6 +229,11 @@ public :
       double pseudoGenPT = (met->p4() + jets[jetNearMETInd]->p4()).pt();
       MMPseudoResp = pseudoGenPT > 0 ? jets[jetNearMETInd]->pt()/ pseudoGenPT : 999;
       MMTrueResp   = jets[jetNearMETInd]->genJet() && jets[jetNearMETInd]->genJet()->pt() > 0 ? jets[jetNearMETInd]->pt() / jets[jetNearMETInd]->genJet()->pt() : 999;
+      data.fill<bool>(i_jetPsR_isMbJet, jets[jetNearMETInd]->csv() > defaults::CSV_MEDIUM);
+      data.fill<bool>(i_jetPsR_isLbJet, jets[jetNearMETInd]->csv() > defaults::CSV_LOOSE);
+      if(jets[jetNearMETInd]->genJet()){
+        data.fill<bool>(i_jetPsR_isGbJet, fabs(jets[jetNearMETInd]->genJet()->flavor()) == JetFlavorInfo::b_jet);
+      }
     }
     data.fill<float>(i_jetMMMPseudoResponsePt, MMPseudoResp);
     data.fill<float>(i_jetMMMTrueResponsePt,   MMTrueResp);
@@ -242,21 +253,19 @@ bool pairCompare_lt(const pair<float, int>& firstElem, const pair<float, int>& s
 //void makeZeroLeptonQCDCRTrees(TString sname = "jetht",
 //            const int fileindex = 0,
 //            const bool isMC = false,
-//            const TString fname = "/store/user/bora/Stop13TeV/231015/jetht-2015d-05oct15_5_ntuple_postproc.root",
+//            const TString fname = "/eos/uscms/store/user/hqu/13TeV/271115/merged/jetht-2015d-05oct15_9_ntuple_postproc.root",
 void makeZeroLeptonQCDCRTrees(TString sname = "QCD",
             const int fileindex = 0,
             const bool isMC = true,
-            const TString fname = "/uscms/home/nmccoll/nobackup/2011-04-15-susyra2/Work7/skimmer/smearedQCDSkim/qcd_ht2000toinf_1_ntuple_postproc_6_p4_qcdSmearSkim.root",
-//            const double xsec = 1.0,
+//            const TString fname = "/eos/uscms/store/user/hqu/13TeV/271115/merged/qcd_ht300to500_9_ntuple_postproc_27_qcdSmearSkim.root",
+            const TString fname = "/eos/uscms/store/user/hqu/13TeV/271115/merged/qcd_ht2000toinf_1_ntuple_postproc_6_p1_qcdSmearSkim.root",
             const TString outputdir = "trees",
-//            const TString fileprefix = "root://cmseos.fnal.gov/",
             const TString fileprefix = "",
             const TString json = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON_v3.txt")
 {
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
   if(fileindex > -1) sname += TString::Format("_%d", fileindex);
-//  if(isMC) printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix + fname;
 
@@ -264,7 +273,7 @@ void makeZeroLeptonQCDCRTrees(TString sname = "QCD",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
   cfgSet::ConfigSet pars = pars0lep(json);
-  pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
+  pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root", cfgSet::CMSSW_BASE);
 //  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::JETRESOLUTION;
 //  pars.corrections.jetResCorr = 1.25;
 //  pars.jets.applyJetMisMeasurement = .1;

@@ -75,6 +75,13 @@ class DatacardConfig:
             self.compactbinlist.append(label)
             self.binmap[label] = bin
 
+        # combine bins if so desired
+        for binlist in config_parser.get('combine_bins','bins').replace(' ','').split(';') :
+            combinebins = binlist.replace(' ','').split(',')
+            if len(combinebins) > 1 :
+                self.combineBins(self.allbins, self.compactbinlist, self.binmap, combinebins)
+        
+
         # define signal region
         self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,'signal',self.allbins,self.compactbinlist,self.binmap)
 
@@ -103,6 +110,11 @@ class DatacardConfig:
                 crbinlabel += self.getBinName(bin,True)
                 crcompactbinlist.append(crbinlabel)
                 crbinmap[crbinlabel] = bin
+            for binlist in config_parser.get('combine_bins',cr+'_bins').replace(' ','').split(';') :
+                combinebins = binlist.replace(' ','').split(',')
+                if len(combinebins) > 1 :
+                    self.combineBins(crallbins, crcompactbinlist, crbinmap, combinebins)
+        
             if crinput[0] == 'ext' :
                 self.extcontrolregions[cr] = FitRegion(crinput[1],crinput[2].split(','),label,wgtexpr,selection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
             else :
@@ -258,6 +270,8 @@ class DatacardConfig:
             for signal in self.signals:
                 sigFile = os.path.join( self.treebase, signal+self.filesuffix )
                 nSig    = self.getNumEvents(sigFile, bins, fitregion.weight, False, fitregion.selection)
+                if nSig == 0.0 :
+                    nSig = 0.00000001
 
                 # put signal numbers into the placeholders in the template datacard
                 fdatacard = open(templateFile,'r')
@@ -293,6 +307,58 @@ class DatacardConfig:
                         cut.append(cuts[icut+1][:-1]) if cuts[icut+1][-1:] == '+' else cut.append(cuts[icut+1])
                     allBinCombos.append(bin[:]+[cut])
         return allBinCombos
+
+
+    def combineBins(self, allbins, compactbinlist, binmap, combinebins):
+        combinebinlist = []
+        for binlabel in combinebins :
+            combinebinlist.append(binmap[binlabel])
+
+        varindices = {}
+        for index in range(len(combinebinlist[0])) :
+            varindices[combinebinlist[0][index][0]] = index
+
+        combinebinedges = {}
+        for bins in combinebinlist :
+            for ivar in range(len(bins)) :
+                var = bins[ivar][0]
+                lowedge = bins[ivar][1]
+                if not combinebinedges.has_key(var) :
+                    combinebinedges[var] = [lowedge]
+                if not lowedge in combinebinedges[var] :
+                    combinebinedges[var].append(lowedge)
+                else :
+                    if len(bins[ivar]) == 2 :
+                        combinebinedges[var].remove(lowedge)
+                if len(bins[ivar]) > 2 :
+                    highedge = bins[ivar][2]
+                    if not highedge in combinebinedges[var] :
+                        combinebinedges[var].append(highedge)
+                if len(combinebinedges[var]) == 3 :
+                    combinebinedges[var].pop(1)
+        newbins = []
+        for var,binedges in combinebinedges.iteritems() :
+            binedges.insert(0,var)
+            newbins.insert(varindices[var], binedges)
+
+        firstbin = True
+        indices_to_remove = []
+        for bins in allbins :
+            if bins in combinebinlist :
+                if firstbin :
+                    allbins[allbins.index(bins)] = newbins
+                    firstbin = False
+                    binlabel = binmap.keys()[binmap.values().index(bins)]
+                    binmap[binlabel] = newbins
+                else :
+                    indices_to_remove.append(allbins.index(bins))
+                    binlabel = binmap.keys()[binmap.values().index(bins)]
+                    binmap.pop(binlabel)
+
+        for index in sorted(indices_to_remove, reverse=True) :
+            allbins.pop(index)
+            compactbinlist.pop(index)
+
 
     def getCutString(self,bins):
         """Converts list of variables and bins into a cutstring
@@ -390,6 +456,7 @@ class DatacardConfig:
     def compileUncertainties(self):
         """Get list of all uncertainty names and values and samples to which they must be applied
         """
+        print '\n~~~Compiling uncertainty list~~~\n'
         with open('%s/%s' % (self.setupbase,self.uncdefinitions),'r') as f :
             for line in f :
                 if line.startswith('#') or line.startswith('%') or line.strip()=='' :
@@ -425,6 +492,7 @@ class DatacardConfig:
                                     continue
                                 self.uncertainties[sampuncname] = Uncertainty(sampuncname,type)
                                 self.uncnames.append(sampuncname)
+        print '\n~~~Filling uncertainty values~~~\n'
         self.fillUncertaintyValues()
         if self.printuncs :
             # printout for debugging
