@@ -195,7 +195,7 @@ void Analyzer::runEvent() {
 	  scaleFactor = weight;
 	  npv         = nPV;
 	  nVetoTau    = nVetoedTracks;
-	  nVetoLep    = nVetoedLeptons;
+	  nVetoLep    = nSecondaryLeptons;
 	  nbjets	  = nBJets;
 	  for (UInt_t i=0; i<cttTops.size(); ++i)
 		  if( ApplyCTTSelection(cttTops.at(i)))

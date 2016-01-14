@@ -26,7 +26,7 @@ public:
     cleanJets(&ak4Reader,ak4Jets,0,0);
     vars.processVariables(this,&ak4Reader,ak4Jets,jets,met);
     if(!vars.passPreselction) return false;
-    if(nVetoedLeptons + nVetoedTaus > 0) return false;
+    if(nSecondaryLeptons + nVetoedTaus > 0) return false;
 
     data.fill<float>(met_pt          ,float(vars.met_pt         ));
     data.fill<int  >(nJ20            ,int  (vars.nJ20           ));

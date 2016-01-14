@@ -31,6 +31,13 @@ cfgSet::ConfigSet pars0lepCR(TString json) {
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
   return cfg;
 }
+cfgSet::ConfigSet pars0lepDiLepCR(TString json) {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile(json);
+  cfgSet::ConfigSet cfg = cfgSet::zl_dilepton_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
+  return cfg;
+}
 
 cfgSet::ConfigSet pars0LepPhoton(TString json) {
   cfgSet::loadDefaultConfigurations();
@@ -102,7 +109,6 @@ struct TreeFiller {
   size i_ngoodgenmu;
   size i_ngoodgenele;
   size i_npromptgentau;
-  size i_nsellep   ;
   size i_nctt      ;
   size i_ncttstd   ;
   size i_ncttstd_dphimet;
@@ -310,7 +316,6 @@ struct TreeFiller {
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
     i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
     i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
-    i_nsellep        = data->add<int>("","nsellep","I",0);
     i_nctt           = data->add<int>("","nctt","I",0);
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_ncttstd_dphimet = data->add<int>("", "ncttstd_dphimet", "I", 0);
@@ -475,16 +480,15 @@ struct TreeFiller {
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
-    data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nvetolep, ana->nSelLeptons);
 
     int nVetoEle = 0; int nVetoMu = 0;
-    for(auto i: ana->vetoedLeptons){
+    for(auto i: ana->selectedLeptons){
 		  if(fabs(i->pdgid()) == 11) nVetoEle++;
 		  if(fabs(i->pdgid()) == 13) nVetoMu++;
     }
     data->fill<int  >(i_nvetomu, nVetoMu);
     data->fill<int  >(i_nvetolele, nVetoEle);
-    data->fill<int  >(i_nsellep, ana->nSelLeptons);
     data->fill<int  >(i_nctt, ana->cttTops.size());
 
     int ncttstd    = 0;

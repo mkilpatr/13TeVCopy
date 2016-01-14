@@ -55,7 +55,7 @@ public:
     int nTPICKY = 0;
     for(auto* j : bJets) if(isTightBJet(*j)) nTPICKY++;
     if(nTPICKY == 0) return false;
-    if(nVetoedLeptons + nVetoedTaus > 0) return false;
+    if(nSecondaryLeptons + nVetoedTaus > 0) return false;
 
     // -------------  Return corral info from the event
     corralReader.getCORRALData(&genParticleReader,&pickyJetReader,nPV);
