@@ -42,7 +42,7 @@ TnPCorr::TnPCorr(TString corrName,
     elConfNoIso = elConf;
     elConfNoIso.passISO = &ElectronISO::inclusive;
     elConfNoIso.minPT  = 5.0;
-    elConfNoIso.maxETA = 2.4;
+    elConfNoIso.maxETA = 2.5;
 
     TString elFileName                 , elMCVetoIdEffFileName, elMCVetoIsoEffFileName;
     TString elIdHistName, elIsoHistName, elMCVetoIdEffHistName, elMCVetoIsoEffHistName;
@@ -153,7 +153,8 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   float annulus = lep->annulusactivity();
   if     (id==11 && elCorrType == NONE) return wt;
   else if(id==13 && muCorrType == NONE) return wt;
-  else if(id==13 && (lep->d0()>muConf.maxD0 || lep->dz()>muConf.maxDz) ) return wt;
+  else if(id==11 && ( (elConf.maxD0>0 && abs(lep->d0())>elConf.maxD0) || (elConf.maxDz>0 && abs(lep->dz())>elConf.maxDz) )) return wt;
+  else if(id==13 && ( (muConf.maxD0>0 && abs(lep->d0())>muConf.maxD0) || (muConf.maxDz>0 && abs(lep->dz())>muConf.maxDz) )) return wt;
   float sfid      = 1.0;
   float sfiso     = 1.0;
   float sfuncid   = 0.0;
@@ -190,7 +191,7 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   else if(id==13 && muCorrType == DOWN) { sfid -= sfuncid; sfiso -= sfunciso; }
   if(passIdIso)   wt = sfid * sfiso;
   else if(passId) wt = sfid * (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999)); // don't want to divide by zero in case sf=1
-  else            wt = failIdWt * (effiso<1.0 ? (1.0-effiso*sfiso)/(1.0-effiso) : (1.0-0.99999*sfiso)/(1.0-0.99999));
+  else            wt = failIdWt;
   if (wt < -10.0) wt = 1.0;    // or large negative weights ... need to treat these cases better
   return wt;
 }
@@ -230,11 +231,11 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
     if(near >= 0) weight *= getLepWeight(lep,elCorrType,muCorrType);
   }
   std::vector<const LeptonF*> recMu_;
-  for(const auto* lep : selectedLeptons) if(lep->pdgid()==13) recMu_.push_back(lep);
+  for(const auto* lep : allLeptons) if(lep->pdgid()==13) recMu_.push_back(lep);
   for(auto* lep : genMu_) {
     double nearDR = 0;
     int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-    if(near >= 0) weight *= getGenLepWeight(lep,muCorrType);
+    if(near<0 || !cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType);
   }
   return weight;
 }
