@@ -93,7 +93,6 @@ void makeZeroLeptonTTbarCRTrees(TString sname = "doubleeg-2015b-reminiaod",
 
 
   cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
-  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
 
   TTbarCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(10000);

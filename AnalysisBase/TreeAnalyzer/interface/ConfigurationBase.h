@@ -185,11 +185,6 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
-    //TString tnpElCorrectionFile;
-    //TString tnpMuCorrectionFile;
-    //TString tnpMCEffElFile;
-    //TString tnpMCEffMuFile;
-    ucsbsusy::TnPCorr::LEPSEL tnpLepSel;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
 
@@ -255,18 +250,7 @@ namespace cfgSet {
           os << "VARY_DOWN " << std::endl;
         os << std::endl;
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP) {
-          //os << "Applying tnp lepton corrections from " << a.tnpElCorrectionFile.Data()
-          //   << " and " << a.tnpMuCorrectionFile.Data() <<" -> ";
-          //os << "TNP el("<<corrTypeName(a.tnpElCorrType)<<") mu("<<corrTypeName(a.tnpMuCorrType)<<")" << std::endl;
-          //os << "Getting MC eff from  " << a.tnpMCEffElFile.Data()
-          //   << " and " << a.tnpMCEffMuFile.Data() << std::endl; // tnpLepSel
-          os << "Applying TnP lepton corrections using selection for ";
-          switch(a.tnpLepSel) {
-          case ucsbsusy::TnPCorr::MT2VETO : os << "MT2 veto "     ; break;
-          case ucsbsusy::TnPCorr::GOODPOG : os << "good POG veto "; break;
-          default                         : os << "no "           ; break;
-          }
-          os << " leptons" << std::endl;
+          os << "Applying TnP lepton corrections using selected leptons"<< std::endl;
         }
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
