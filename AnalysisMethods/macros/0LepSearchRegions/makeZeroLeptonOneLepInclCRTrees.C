@@ -62,12 +62,11 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
 
   cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_search_set;
-  pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
   pars.jets.cleanJetsvSelectedLeptons = true;
   pars.selectedLeptons = cfgSet::ol_sel_leptons;
   pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
   pars.selectedLeptons.minEPt = 30.0;
-  pars.selectedLeptons.maxEEta = 2.1;
+  pars.selectedLeptons.maxEEta = 2.5;
   pars.selectedLeptons.maxED0 = 0.02;
   pars.selectedLeptons.maxEDz = 0.1;
   pars.selectedLeptons.minMuPt = 30.0;
