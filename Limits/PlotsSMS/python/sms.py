@@ -13,14 +13,14 @@ class sms():
         # model name
         self.modelname = "T2tt"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}";
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}";
         # scan range to plot
         self.Xmin = 200.
-        self.Xmax = 950.
+        self.Xmax = 900.
         self.Ymin = 0.
-        self.Ymax = 500.
-        self.Zmin = 0.001
-        self.Zmax = 2.
+        self.Ymax = 400.
+        self.Zmin = 0.02
+        self.Zmax = 100.
         # produce sparticle
         self.sParticle = "m_{#tilde{t}} [GeV]"
         # LSP
