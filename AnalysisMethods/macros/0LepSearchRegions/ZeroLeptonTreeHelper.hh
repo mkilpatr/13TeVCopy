@@ -182,6 +182,8 @@ struct TreeFiller {
   size i_dileppt   ;
   size i_dilepeta  ;
   size i_dilepmass ;
+  size i_gentop1pt;
+  size i_gentop2pt;
 
   // below is for top / w tagging and SF extraction
   size i_sfbclose2lep;
@@ -390,6 +392,8 @@ struct TreeFiller {
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepeta       = data->add<float>("","dilepeta","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
+    i_gentop1pt      = data->add<float>("","gentoppt1","F",0);
+    i_gentop2pt      = data->add<float>("","gentoppt2","F",0);
 
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
@@ -642,10 +646,14 @@ struct TreeFiller {
     data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
     data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
 
+    std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
     if(isMC) {
       for(auto* p : ana->genParts) {
         const GenParticleF * genPartMom = 0;
+
+	if (abs(p->pdgId())==6) { float tmppt_ = p->p4().pt(); gentoppt_.push_back(tmppt_); }
+
         if (p->numberOfMothers()>0) 
           genPartMom = p->mother(0);
         else
@@ -668,6 +676,18 @@ struct TreeFiller {
     data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
     data->fill<int  >(i_ngoodgenele, nGoodGenEle);
     data->fill<int  >(i_npromptgentau, nPromptTaus);
+
+
+    float gentop1pt_ = 0.;
+    float gentop2pt_ = 0.;
+    if (gentoppt_.size()>1) {
+      if (gentoppt_[0]>=gentoppt_[1]) { gentop1pt_ = gentoppt_[0]; gentop2pt_ = gentoppt_[1]; }
+      else                            { gentop1pt_ = gentoppt_[1]; gentop2pt_ = gentoppt_[0]; }
+    }
+
+    data->fill<float>(i_gentop1pt, gentop1pt_);
+    data->fill<float>(i_gentop2pt, gentop2pt_);
+
   }
 
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
