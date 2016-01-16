@@ -30,6 +30,8 @@
 #include <TList.h>
 #include <TBox.h>
 #include <TLatex.h>
+#include <TRandom3.h>
+#include <Math/QuantFuncMathCore.h>
 #include <vector>
 #include <assert.h>
 #include "AnalysisMethods/PlotUtils/interface/StyleTools.hh"
@@ -163,6 +165,12 @@ class Plot {
     void setGridy(bool value=1)              { fGridy = value; }             // toggle grid lines from y-axis ticks
     void rebin(int ngroup)                   { fRebin = ngroup; }            // 1D histogram re-bin
     void showStats(int show=111)             { fShowStats = show; }          // display statistics
+    void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
+    void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
+
+    TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
+    TGraphAsymmErrors* getRatioAsymmErrors(TH1F* hnum, TH1F* hden);
+    void getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double& eH);
 
     // Accessors
     TString  getName()   { return fName; }
@@ -195,6 +203,8 @@ class Plot {
     double fStatsX, fStatsY;              // x,y coordinates of top left corner of stats box
     TString fLumiText, fChanText;         // text to display in header
     double fHeaderX, fHeaderY;            // x,y coordinates of bottom left corner of header box
+    bool fUsePoisson;                     // Poisson error bars for data
+    bool fPlotStackUncertainty;           // Add uncertainty band to stacked hists
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
   

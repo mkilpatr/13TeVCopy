@@ -30,7 +30,8 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
 
 
     bool fillEvent() {
-      if(nSelLeptons != 1)                  return false;
+      if(nPrimaryLeptons != 1)                  return false;
+      if(nSecondaryLeptons != 0)                  return false;
       if(!goodvertex)                       return false;
       filler.fillEventInfo(&data, this);
       if(isMC()) filler.fillGenInfo  (&data, 0, genJets, false);
@@ -60,19 +61,9 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lep(json);
-  pars = cfgSet::zl_search_set;
-  pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
+  cfgSet::ConfigSet pars = pars0lepCR(json);
+
   pars.jets.cleanJetsvSelectedLeptons = true;
-  pars.selectedLeptons = cfgSet::ol_sel_leptons;
-  pars.corrections.tnpLepSel = TnPCorr::GOODPOG;
-  pars.selectedLeptons.minEPt = 30.0;
-  pars.selectedLeptons.maxEEta = 2.1;
-  pars.selectedLeptons.maxED0 = 0.02;
-  pars.selectedLeptons.maxEDz = 0.1;
-  pars.selectedLeptons.minMuPt = 30.0;
-  pars.selectedLeptons.maxMuEta = 2.4;
-  pars.vetoedLeptons = cfgSet::ol_veto_leptons;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 

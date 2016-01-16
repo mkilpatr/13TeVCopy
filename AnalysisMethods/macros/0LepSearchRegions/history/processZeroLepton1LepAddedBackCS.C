@@ -185,7 +185,7 @@ void Analyzer::runEvent()
 {
 
   //  if ( (nSelLeptons!=1) || (nVetoedLeptons>nSelLeptons) || (nJets<=3)) return;
-  if ( (nSelLeptons==0) || (nVetoedLeptons<nSelLeptons) || (nJets<=3)) return;
+  if ( (nSelLeptons==0) || (nSecondaryLeptons<nSelLeptons) || (nJets<=3)) return;
 
   float wgt    = evtInfoReader.weight;
 

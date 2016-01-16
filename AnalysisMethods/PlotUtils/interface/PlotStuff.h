@@ -189,6 +189,8 @@ class PlotStuff {
         bool                   make_integral;
         bool                   reverse_integral_dir;
         bool                   plotratio;
+        bool                   usepoisson;
+        bool                   uncband;
         bool                   tabulateeffs;
 
         PlotConfig() :
@@ -235,6 +237,8 @@ class PlotStuff {
           make_integral(false),
           reverse_integral_dir(false),
           plotratio(false),
+          usepoisson(false),
+          uncband(false),
           tabulateeffs(false)
         {}
 
@@ -375,6 +379,10 @@ class PlotStuff {
     void     setRatioPlot(bool plotratio = true) { config_.plotratio = plotratio; }
     // Scale backgrounds to data (when plotting data vs MC)
     void     setScaleToData(bool scaletodata = true) { config_.scaletodata = scaletodata; }
+    // Use Poisson error bars for data
+    void     setUsePoisson() { config_.usepoisson = true; }
+    // Plot uncertainty band on stacked MC
+    void     setUncertaintyBand() { config_.uncband = true; }
     // Add efficiencies to yields table
     void     setTabulateEffs(bool tabulateeffs = true) { config_.tabulateeffs = tabulateeffs; }
 

@@ -19,7 +19,7 @@ using namespace ucsbsusy;
 cfgSet::ConfigSet pars1lep(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
-  cfgSet::ConfigSet cfg = cfgSet::ol_search_set;
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
   //cfg.jets.cleanJetsvVetoedLeptons = true;
   return cfg;
 
@@ -128,7 +128,7 @@ struct TreeFiller {
     data->fill<float>(i_met,      ana->met->pt());
     data->fill<float>(i_metnohf,  ana->metNoHF->pt());
     data->fill<int  >(i_npv,      ana->nPV);
-    data->fill<int  >(i_nvetolep, ana->nVetoedLeptons);
+    data->fill<int  >(i_nvetolep, ana->nSecondaryLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoHPSTaus);
   }
 
@@ -275,7 +275,7 @@ class OneLeptonAnalyzer : public TreeCopierManualBranches {
     bool fillEvent() {
 
       if(nSelLeptons != 1)    return false;
-      if(nVetoedLeptons > 1)  return false;
+      if(nSecondaryLeptons > 1)  return false;
       if(met->pt() < metcut_) return false;
       if(nJets < minnjets_)   return false;
       if(nBJets < minnbjets_) return false;
