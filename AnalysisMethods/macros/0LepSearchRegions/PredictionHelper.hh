@@ -8,9 +8,9 @@ namespace BkgPrediction {
   enum SysVar { NOMINAL, VARUP, VARDOWN, NONE };
 
   const int NBINS          = 5;
-  const int NBINS_NT1      = 2;
+  const int NBINS_NT1      = 5;
   double metbins[NBINS+1]         = {250.0, 300.0, 400.0, 500.0, 600.0, 1000.0};
-  double metbins_nt1[NBINS_NT1+1] = {300.0, 400.0, 1000.0};
+  double metbins_nt1[NBINS_NT1+1] = {250.0, 300.0, 400.0, 500.0, 600.0, 1000.0};
 
   map<TString,TString> sel;
   typedef map<TString,TString> BinMap;

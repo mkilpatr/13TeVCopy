@@ -4,36 +4,44 @@
 
 using namespace BkgPrediction;
 
-void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/011416",
-                     const TString outputdir   = "plots_bkgest/lostlep",
-                     const TString srconf      = "plotting/run0lepbkgpred.conf",
-                     const TString lumistr     = "2.137",
-                     const TString region      = "sr",
-                     const TString format      = "pdf",
-                     const bool    dolownj     = false,
-                     const bool    dotnp       = true,
-                     vector<TString> vars      = {""}, //{"lep","btag","mistag","jes","pu"},
-                     const bool    plotlog     = false)
+void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/011416",
+                       const TString outputdir   = "plots_bkgest/zinv",
+                       const TString srconf      = "plotting/run0lepbkgpred.conf",
+                       const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
+                       const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
+                       const TString lumistr     = "2.137",
+                       const TString region      = "sr",
+                       const TString format      = "pdf",
+                       const bool    dolownj     = false,
+                       vector<TString> vars      = {""}, //"lep","btag","mistag","jes","pu"},
+                       const bool    plotlog     = false)
 {
   gSystem->mkdir(outputdir, true);
 
   TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
-  TString lepvetowgt = dotnp ? basewgt + "*leptnpweight*lepvetoweight" : basewgt + "*lepvetoweight";
-  TString lepselwgt  = dotnp ? basewgt + "*leptnpweight" : basewgt + "*lepselweight";
+  TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
+  TString lepselwgt  = basewgt + "*leptnpweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["vetoes"]       = dotnp ? " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))" : " && ((nvetolep==0 && nvetotau==0) || (ismc && (ngoodgenele>0 || ngoodgenmu>0 || npromptgentau>0)))";
-  sel["lepsel"]       = " && nvetolep>0";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
+  sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
+  sel["vetoes"]       = " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij123inv"]  = " && dphij12met<0.15";
-  sel["lepcrsel"]     = " && nvetolep>0 && mtlepmet<100";
+  sel["phocr"]        = sel["trigpho"] + sel["njets"] + sel["dphij123"];
+  sel["zllcr"]        = sel["trigzll"] + sel["njets"];
+  sel["zlloffcr"]     = sel["trigzlloff"] + sel["njets"];
   sel["sr"]           = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123"];
-  sel["lepcr"]        = sel["trig"] + sel["lepcrsel"] + sel["njets"]    + sel["dphij123"];
+  sel["nt0"]          = " && ncttstd==0";
+  sel["nt1"]          = " && ncttstd>0";
   sel["lowmt"]        = " && mtcsv12met<=175";
   sel["nt0_highmt"]   = " && ncttstd==0 && mtcsv12met>175";
   sel["nt1_highmt"]   = " && ncttstd>0 && mtcsv12met>175";
+  sel["nb1"]          = " && nbjets==1";
+  sel["nb2"]          = " && nbjets>=2";
   sel["nb1_lowmt"]    = " && nbjets==1 && mtcsv12met<=175";
   sel["nb2_lowmt"]    = " && nbjets>=2 && mtcsv12met<=175";
   sel["nb1_nt0_highmt"]   = " && nbjets==1 && ncttstd==0 && mtcsv12met>175";
@@ -43,7 +51,7 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
 
 
   TFile* srpred = 0;
-  TString outfilename = outputdir + "/lostleppred.root";
+  TString outfilename = outputdir + "/znunupred.root";
 
   for(unsigned int i = 0; i < vars.size(); ++i) {
     auto var = vars[i];
@@ -78,11 +86,16 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
       }
 
       TString inputdir    = sysvar == NOMINAL ? defaultdir : defaultdir + "/" + suffix;
+      TString inputdirphotoncr(inputdir);
+      inputdirphotoncr.ReplaceAll(defaultdir, defaultdir + "/photoncr");
+      TString inputdirzllcr(inputdir);
+      inputdirzllcr.ReplaceAll(defaultdir, defaultdir + "/zllcr");
 
       if(suffix != "") suffix.Prepend("_");
 
       PlotStuff* plots0l    = setupPlots(srconf,    inputdir, outputdir, lepvetowgt, plotlog, format, lumistr, "output_0l"+suffix+".root");
-      PlotStuff* plotslepcr = setupPlots(srconf,    inputdir, outputdir, lepselwgt, plotlog, format, lumistr, "output_lepcr"+suffix+".root");
+      PlotStuff* plotsphocr = setupPlots(phocrconf, inputdirphotoncr, outputdir, basewgt, plotlog, format, lumistr, "output_phocr.root");
+      PlotStuff* plotszllcr = setupPlots(zllcrconf, inputdirzllcr, outputdir, lepselwgt, plotlog, format, lumistr, "output_zllcr.root");
 
       cout << "Plotting 0lepton region" << endl;
 
@@ -112,30 +125,52 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
         file->Close();
       }
 
-      cout << "Plotting 1lepton region" << endl;
+      cout << "Plotting photon region" << endl;
 
-      plotslepcr->addTreeVar("met_lepcr_nbgeq1_lowmt",        "met",         sel["lepcr"] + sel["lowmt"],                    "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plotslepcr->addTreeVar("met_lepcr_nbgeq1_nt0_highmt",   "met",         sel["lepcr"] + sel["nt0_highmt"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plotslepcr->addTreeVar("met_lepcr_nbgeq1_nt1_highmt",   "met",         sel["lepcr"] + sel["nt1_highmt"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt",         "met",         sel["phocr"],                                      "#slash{E}_{T} [GeV]", NBINS, metbins);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt",        "met",         sel["phocr"] + sel["lowmt"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_nt0_nomt",     "met",         sel["phocr"] + sel["nt0"],         "#slash{E}_{T} [GeV]", NBINS, metbins);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_nt0_highmt",   "met",         sel["phocr"] + sel["nt0_highmt"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_nt1_nomt",     "met",         sel["phocr"] + sel["nt1"],                         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+      plotsphocr->addTreeVar("met_phocr_nbgeq1_nt1_highmt",   "met",         sel["phocr"] + sel["nt1_highmt"],  "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
 
-      plotslepcr->plot();
+      plotsphocr->plot();
+
+      cout << "Plotting zll region" << endl;
+
+      plotszllcr->addTreeVar("met_zllcr_nb1",         "met",         sel["zllcr"] + sel["nb1"],      "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+      plotszllcr->addTreeVar("met_zllcr_nb2",         "met",         sel["zllcr"] + sel["nb2"],      "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+      plotszllcr->addTreeVar("met_zllcr_nbgeq1",      "met",         sel["zllcr"],                   "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+
+      plotszllcr->addTreeVar("met_zllcr_offz_nb1",    "met",         sel["zlloffcr"] + sel["nb1"],   "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+      plotszllcr->addTreeVar("met_zllcr_offz_nb2",    "met",         sel["zlloffcr"] + sel["nb2"],   "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+      plotszllcr->addTreeVar("met_zllcr_offz_nbgeq1", "met",         sel["zlloffcr"],                "#slash{E}_{T} [GeV]", 1, 100., 1000.0);
+
+      plotszllcr->plot();
 
       cout << "Setting up prediction" << endl;
 
       TFile* file0l      = new TFile(plots0l->outfileName());
-      TFile* filelepcr   = new TFile(plotslepcr->outfileName());
+      TFile* filephocr      = new TFile(plotsphocr->outfileName());
+      TFile* filezllcr      = new TFile(plotszllcr->outfileName());
 
-      BinMap  lepcrtosr;
+      BinMap  phocrtosr, zllcrtosr;
 
       vector<TString> srbins = {"nb1_lowmt", "nb2_lowmt", "nb1_nt0_highmt", "nb2_nt0_highmt", "nb1_nt1_highmt", "nb2_nt1_highmt"};
-      lepcrtosr["nb1_lowmt"]      = "nbgeq1_lowmt";
-      lepcrtosr["nb2_lowmt"]      = "nbgeq1_lowmt";
-      lepcrtosr["nb1_nt0_highmt"] = "nbgeq1_nt0_highmt";
-      lepcrtosr["nb2_nt0_highmt"] = "nbgeq1_nt0_highmt";
-      lepcrtosr["nb1_nt1_highmt"] = "nbgeq1_nt1_highmt";
-      lepcrtosr["nb2_nt1_highmt"] = "nbgeq1_nt1_highmt";
+      phocrtosr["nb1_lowmt"]      = "nbgeq1_lowmt";
+      phocrtosr["nb2_lowmt"]      = "nbgeq1_lowmt";
+      phocrtosr["nb1_nt0_highmt"] = "nbgeq1_nt0_highmt";
+      phocrtosr["nb2_nt0_highmt"] = "nbgeq1_nt0_highmt";
+      phocrtosr["nb1_nt1_highmt"] = "nbgeq1_nt1_highmt";
+      phocrtosr["nb2_nt1_highmt"] = "nbgeq1_nt1_highmt";
+      zllcrtosr["nb1_lowmt"]      = "nb1";
+      zllcrtosr["nb2_lowmt"]      = "nb2";
+      zllcrtosr["nb1_nt0_highmt"] = "nb1";
+      zllcrtosr["nb2_nt0_highmt"] = "nb2";
+      zllcrtosr["nb1_nt1_highmt"] = "nb1";
+      zllcrtosr["nb2_nt1_highmt"] = "nb2";
 
-      TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
+      TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
 
       if(!srpred) srpred = new TFile(outfilename,"RECREATE");
       else srpred = new TFile(outfilename,"UPDATE");
@@ -152,16 +187,16 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
         cout << "VARYING DOWN " << var.Data() << endl;
       cout << "~~~~~~~~~~~~~~~~~~" << endl;
 
-      lostlep->GetXaxis()->SetTitle("Search region");
+      znunu->GetXaxis()->SetTitle("Search region");
 
-      for(int ibin = 1; ibin < lostlep->GetNbinsX()+1; ++ibin) {
-        cout << "Bin " << ibin << ": "  << lostlep->GetBinContent(ibin) << " +/- " << lostlep->GetBinError(ibin) << endl;
+      for(int ibin = 1; ibin < znunu->GetNbinsX()+1; ++ibin) {
+        cout << "Bin " << ibin << ": "  << znunu->GetBinContent(ibin) << " +/- " << znunu->GetBinError(ibin) << endl;
       }
 
       if(sysvar == NOMINAL)
-        lostlep->Write("lostlep_pred_sr");
+        znunu->Write("znunu_pred_sr");
       else 
-        lostlep->Write("lostlep_pred_sr"+suffix);
+        znunu->Write("znunu_pred_sr"+suffix);
 
       srpred->Close();
     }
@@ -173,16 +208,16 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
   srpred->cd();
 
   vector<TH1F*> histstodraw;
-  TH1F* nominal = (TH1F*)srpred->Get("lostlep_pred_sr");
+  TH1F* nominal = (TH1F*)srpred->Get("znunu_pred_sr");
   names.push_back(nominal->GetName());
   labels.push_back("Prediction #pm #sigma_{stat}");
   histstodraw.push_back(nominal);
 
   if(vars.size() && vars[0] != "") {
     for(auto var : vars) {
-      TH1F* varup = (TH1F*)srpred->Get(TString("lostlep_pred_sr_"+var+"up").Data());
-      TH1F* vardown = (TH1F*)srpred->Get(TString("lostlep_pred_sr_"+var+"down").Data());
-      TH1F* varhist = getVarHist(histstodraw.back(), varup, vardown, "lostlep_pred_sr_var"+var);
+      TH1F* varup = (TH1F*)srpred->Get(TString("znunu_pred_sr_"+var+"up").Data());
+      TH1F* vardown = (TH1F*)srpred->Get(TString("znunu_pred_sr_"+var+"down").Data());
+      TH1F* varhist = getVarHist(histstodraw.back(), varup, vardown, "znunu_pred_sr_var"+var);
       varhist->Write();
       //names.push_back(varhist->GetName());
       //labels.push_back("#pm #sigma_{"+var+"}");
@@ -212,7 +247,7 @@ void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/1
   plots->setHeaderPosition(0.2, 0.93);
   plots->setMaxScale(2.0);  
 
-  plots->addCompSet("lostleppred",names,labels);
+  plots->addCompSet("znunupred",names,labels);
 
   plots->plot();
 
