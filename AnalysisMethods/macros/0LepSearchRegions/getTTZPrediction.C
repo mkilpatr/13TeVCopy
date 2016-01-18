@@ -4,8 +4,8 @@
 
 using namespace BkgPrediction;
 
-void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/011416",
-                      const TString outputdir   = "plots_bkgest/qcd",
+void getTTZPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/011416",
+                      const TString outputdir   = "plots_bkgest/ttz",
                       const TString srconf      = "plotting/run0lepbkgpred.conf",
                       const TString lumistr     = "2.137",
                       const TString region      = "sr",
@@ -16,19 +16,14 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
   TString lepvetowgt =  basewgt + "*leptnpweight*lepvetoweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["vetoes"]       = " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
-  sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
-  sel["dphij123inv"]  = " && dphij12met<0.15";
   sel["sr"]           = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123"];
-  sel["srnovetoes"]   = sel["trig"] + sel["njets"]    + sel["dphij123"];
-  sel["qcdcr"]        = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123inv"];
-  sel["qcdcrnovetoes"]= sel["trig"] + sel["njets"]    + sel["dphij123inv"];
   sel["lowmt"]        = " && mtcsv12met<=175";
   sel["nt0_highmt"]   = " && ncttstd==0 && mtcsv12met>175";
   sel["nt1_highmt"]   = " && ncttstd>0 && mtcsv12met>175";
@@ -41,7 +36,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
 
 
   TFile* srpred = 0;
-  TString outfilename = outputdir + "/qcdpred.root";
+  TString outfilename = outputdir + "/ttzpred.root";
 
   for(unsigned int i = 0; i < vars.size(); ++i) {
     auto var = vars[i];
@@ -91,26 +86,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
       plots0l->addTreeVar("met_sr_nb1_nt1_highmt",                "met",         sel["sr"] + sel["nb1_nt1_highmt"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
       plots0l->addTreeVar("met_sr_nb2_nt1_highmt",                "met",         sel["sr"] + sel["nb2_nt1_highmt"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
 
-      plots0l->addTreeVar("met_qcdcr_nbgeq1_lowmt",        "met",         sel["qcdcr"] + sel["lowmt"],                    "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0l->addTreeVar("met_qcdcr_nbgeq1_nt0_highmt",   "met",         sel["qcdcr"] + sel["nt0_highmt"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0l->addTreeVar("met_qcdcr_nbgeq1_nt1_highmt",   "met",         sel["qcdcr"] + sel["nt1_highmt"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
-
       plots0l->plot();
-
-      cout << "Plotting 0lepton region with no vetoes" << endl;
-
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb1_lowmt",            "met",         sel["srnovetoes"] + sel["nb1_lowmt"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb2_lowmt",            "met",         sel["srnovetoes"] + sel["nb2_lowmt"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb1_nt0_highmt",       "met",         sel["srnovetoes"] + sel["nb1_nt0_highmt"], "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb2_nt0_highmt",       "met",         sel["srnovetoes"] + sel["nb2_nt0_highmt"], "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb1_nt1_highmt",       "met",         sel["srnovetoes"] + sel["nb1_nt1_highmt"], "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
-      plots0lnovetoes->addTreeVar("met_srnovetoes_nb2_nt1_highmt",       "met",         sel["srnovetoes"] + sel["nb2_nt1_highmt"], "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
-
-      plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_lowmt",      "met",         sel["qcdcrnovetoes"] + sel["lowmt"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_nt0_highmt", "met",         sel["qcdcrnovetoes"] + sel["nt0_highmt"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-      plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_nt1_highmt", "met",         sel["qcdcrnovetoes"] + sel["nt1_highmt"],  "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
-
-      plots0lnovetoes->plot();
 
       if(!dolownj) {
         TString rmcmd = "rm " + outputdir + "/met_sr*." + format;
@@ -127,38 +103,15 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
         }
         file->Write();
         file->Close();
-        TFile* filenovetoes      = TFile::Open(plots0lnovetoes->outfileName(),"UPDATE");
-        TIter nextkey2(gDirectory->GetListOfKeys());
-        while(TKey *key = (TKey*)nextkey2()) {
-          TObject *obj = key->ReadObj();
-          if(TString(obj->GetName()).Contains("_sr_") && TString(obj->GetName()).Contains("_data")) {
-            TString rmstr(obj->GetName());
-            rmstr += ";*";
-            filenovetoes->Delete(rmstr.Data());
-          }
-        }
-        filenovetoes->Write();
-        filenovetoes->Close();
       }
 
       cout << "Setting up prediction" << endl;
 
       TFile* file0l         = new TFile(plots0l->outfileName());
-      TFile* file0lnovetoes = new TFile(plots0lnovetoes->outfileName());
-
-      BinMap  qcdcrtosr;
 
       vector<TString> srbins = {"nb1_lowmt", "nb2_lowmt", "nb1_nt0_highmt", "nb2_nt0_highmt", "nb1_nt1_highmt", "nb2_nt1_highmt"};
-      qcdcrtosr["nb1_lowmt"]      = "nbgeq1_lowmt";
-      qcdcrtosr["nb2_lowmt"]      = "nbgeq1_lowmt";
-      qcdcrtosr["nb1_nt0_highmt"] = "nbgeq1_nt0_highmt";
-      qcdcrtosr["nb2_nt0_highmt"] = "nbgeq1_nt0_highmt";
-      qcdcrtosr["nb1_nt1_highmt"] = "nbgeq1_nt1_highmt";
-      qcdcrtosr["nb2_nt1_highmt"] = "nbgeq1_nt1_highmt";
 
-      vector<TString> bkgsamples = {"ttbarplusw","znunu","ttZ"};
-
-      TH1F* qcd        = getQCDPred (file0l, file0lnovetoes, "sr", "qcdcr", srbins, qcdcrtosr, bkgsamples);
+      TH1F* ttz        = getTTZPred(file0l, "sr", srbins);
 
       if(!srpred) srpred = new TFile(outfilename,"RECREATE");
       else srpred = new TFile(outfilename,"UPDATE");
@@ -175,16 +128,16 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
         cout << "VARYING DOWN " << var.Data() << endl;
       cout << "~~~~~~~~~~~~~~~~~~" << endl;
 
-      qcd->GetXaxis()->SetTitle("Search region");
+      ttz->GetXaxis()->SetTitle("Search region");
 
-      for(int ibin = 1; ibin < qcd->GetNbinsX()+1; ++ibin) {
-        cout << "Bin " << ibin << ": "  << qcd->GetBinContent(ibin) << " +/- " << qcd->GetBinError(ibin) << endl;
+      for(int ibin = 1; ibin < ttz->GetNbinsX()+1; ++ibin) {
+        cout << "Bin " << ibin << ": "  << ttz->GetBinContent(ibin) << " +/- " << ttz->GetBinError(ibin) << endl;
       }
 
       if(sysvar == NOMINAL)
-        qcd->Write("qcd_pred_sr");
+        ttz->Write("ttz_pred_sr");
       else 
-        qcd->Write("qcd_pred_sr"+suffix);
+        ttz->Write("ttz_pred_sr"+suffix);
 
       srpred->Close();
     }
@@ -196,16 +149,16 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
   srpred->cd();
 
   vector<TH1F*> histstodraw;
-  TH1F* nominal = (TH1F*)srpred->Get("qcd_pred_sr");
+  TH1F* nominal = (TH1F*)srpred->Get("ttz_pred_sr");
   names.push_back(nominal->GetName());
   labels.push_back("Prediction #pm #sigma_{stat}");
   histstodraw.push_back(nominal);
 
   if(vars.size() && vars[0] != "") {
     for(auto var : vars) {
-      TH1F* varup = (TH1F*)srpred->Get(TString("qcd_pred_sr_"+var+"up").Data());
-      TH1F* vardown = (TH1F*)srpred->Get(TString("qcd_pred_sr_"+var+"down").Data());
-      TH1F* varhist = getVarHist(histstodraw.back(), varup, vardown, "qcd_pred_sr_var"+var);
+      TH1F* varup = (TH1F*)srpred->Get(TString("ttz_pred_sr_"+var+"up").Data());
+      TH1F* vardown = (TH1F*)srpred->Get(TString("ttz_pred_sr_"+var+"down").Data());
+      TH1F* varhist = getVarHist(histstodraw.back(), varup, vardown, "ttz_pred_sr_var"+var);
       varhist->Write();
       //names.push_back(varhist->GetName());
       //labels.push_back("#pm #sigma_{"+var+"}");
@@ -235,7 +188,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
   plots->setHeaderPosition(0.2, 0.93);
   plots->setMaxScale(2.0);  
 
-  plots->addCompSet("qcdpred",names,labels);
+  plots->addCompSet("ttzpred",names,labels);
 
   plots->plot();
 
