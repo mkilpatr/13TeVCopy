@@ -10,65 +10,93 @@
 
 
 namespace ucsbsusy {
-JetResolutionCorr::JetResolutionCorr(TRandom3 * inRandGen, TString jetResFileName, TString jetResName)
+JetResolutionCorr::JetResolutionCorr(TRandom3 * inRandGen, TString jetResFileName,TString jetResCorrFileName )
 : Correction("JetResolution"), randGen(inRandGen) {
-  std::clog << "     Loading Jet Resolutions: "<< jetResName <<" from file: "<< jetResFileName << std::endl;
+  std::clog << "     Loading Jet Resolutions: "<< "AK4ResTrend" <<" from file: "<< jetResFileName << std::endl;
   jetResolutionFile = TFile::Open(jetResFileName,"read");
   if(!jetResolutionFile) throw std::invalid_argument("JetResolutionCorr::JetResolutionCorr: Res file not found!");
-  jetResolution = (const QuickRefold::TF1Container*)(jetResolutionFile->Get(jetResName) );
-  if(!jetResolution) throw std::invalid_argument("JetResolutionCorr::JetResolutionCorr: Jet resolution file could not be found!");
+  jetResolution = (const QuickRefold::TF1Container*)(jetResolutionFile->Get("AK4ResTrend") );
+  if(!jetResolution) throw std::invalid_argument("JetResolutionCorr::JetResolutionCorr: Jet resolution could not be found!");
+
+  std::clog << "     Loading Jet Resolution corrections: "<< "AK4ResCorr" <<" from file: "<< jetResCorrFileName << std::endl;
+  jetResolutionCorrFile = TFile::Open(jetResCorrFileName,"read");
+  if(!jetResolutionCorrFile) throw std::invalid_argument("JetResolutionCorr::JetResolutionCorr: Res corr file not found!");
+  jetResolutionCorr = (const TH1*)(jetResolutionCorrFile->Get("AK4ResCorr") );
+  if(!jetResolutionCorr) throw std::invalid_argument("JetResolutionCorr::JetResolutionCorr: Jet resolution corr could not be found!");
 }
 
 JetResolutionCorr::~JetResolutionCorr(){
   if(jetResolutionFile) jetResolutionFile->Close();
   delete jetResolutionFile;
+  if(jetResolutionCorrFile) jetResolutionCorrFile->Close();
+  delete jetResolutionCorrFile;
 }
 
-bool JetResolutionCorr::getCorrectedPT(const double gausWidth, const RecoJetF& jet, double& newPT) const {
+bool JetResolutionCorr::getCorrectedPT(const CORRTYPE corrType, const float rho, const RecoJetF& jet, double& newPT) const {
   newPT = jet.pt();
 
   //base cuts
   if(jet.pt() < 10) return false;
 
-  double absEta, pt;
+  double eta, pt;
+      eta = jet.eta();
+      pt = jet.pt();
 
-  //if the gen jet is above 20 gev we use its properties
-  if(jet.genJet() && jet.genJet()->pt() > 20 ){
-    absEta = jet.genJet()->absEta();
-    pt = jet.genJet()->pt();
-  } else {
-    absEta = jet.absEta();
-    pt = jet.pt();
+//  //if the gen jet is above 20 gev we use its properties
+//  if(jet.genJet() && jet.genJet()->pt() > 20 ){
+//    eta = jet.genJet()->eta();
+//    pt = jet.genJet()->pt();
+//  } else {
+//    eta = jet.eta();
+//    pt = jet.pt();
+//  }
+  jetResolution->setBin(0,eta);
+  jetResolution->setBin(1,rho);
+  double res = jetResolution->eval(pt);
+  int corrBin = std::min(std::max(jetResolutionCorr->FindFixBin(TMath::Abs(eta)),1),jetResolutionCorr->GetNbinsX());
+  double corr = 0;
+  switch(corrType){
+    case NOMINAL: corr = jetResolutionCorr->GetBinContent(corrBin); break;
+    case UP: corr = jetResolutionCorr->GetBinContent(corrBin)+jetResolutionCorr->GetBinError(corrBin); break;
+    case DOWN: corr = jetResolutionCorr->GetBinContent(corrBin)-jetResolutionCorr->GetBinError(corrBin); break;
+    default: corr = 0;
   }
-
-  double sigma = jetResolution->getValue(absEta).Eval(std::min(std::max(pt,20.0),1000.0));
 
   double rndNum = 10;
   while(TMath::Abs(rndNum) > 3 ){ //only allow three sigma fluctuations
     rndNum = randGen->Gaus(0,1);
   }
 
-  newPT += rndNum*gausWidth*sigma*pt;
+  newPT += pt*(TMath::Sqrt(corr*corr -1)*res);
   if(newPT < 0) newPT = 0;
+
+//  std::cout << rho <<" "<< pt<< " "<< eta <<" "<< res<<" "<< corr<<" "<< newPT;
 
   return true;
 }
 
-void JetResolutionCorr::correctJetsAndMET(const double resSF, std::vector<RecoJetF>& jets, MomentumF& met) const {
-  if(resSF < 1) throw std::invalid_argument("JetResolutionCorr::correctJetsAndMET: resSF must be greater than 1!");
-  if(resSF == 1) return;
-
-  double resWidth = TMath::Sqrt(resSF*resSF -1);
+void JetResolutionCorr::correctJetsAndMET(const CORRTYPE corrType, const double rho, std::vector<RecoJetF>& jets, MomentumF& met) const {
+  switch (corrType) {
+    case NONE: return;
+    case NOMINAL:
+    case UP:
+    case DOWN:
+    break;
+    default: throw std::invalid_argument("JetResolutionCorr::correctJetsAndMET: Not a valid correction type!");
+  }
+//  std::cout << "New Event: " <<met.pt() << std::endl;
 
   for(auto& j : jets){
     double newPT;
-    if(!getCorrectedPT(resWidth,j,newPT)) continue;
+    if(!getCorrectedPT(corrType,rho,j,newPT)) continue;
 
      met.p4() += j.p4();
      CylLorentzVectorF newMom( newPT < 0 ? 0 : newPT, j.eta(), j.phi(), newPT < 0 ? 0 : newPT*j.mass() /j.pt());
      j.setP4(newMom);
 
      met.p4() -= j.p4();
+
+//     std::cout <<" ->"<< met.pt() << std::endl;
   }
 
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
@@ -224,7 +252,7 @@ JetAndMETCorrectionSet::~JetAndMETCorrectionSet(){
   delete trueBosons;
   delete trueMET;
 }
-void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFile,TString jetResponseTailFile,TRandom3 * randomGenerator)
+void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFile,TString jetResolutionCorrFile,TString jetResponseTailFile,TRandom3 * randomGenerator)
 {
   loadSimple("JetAndMET",correctionOptions);
   if(options_ & METSCALE){
@@ -240,7 +268,7 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
     corrections.push_back(metNoHFResolution);
   }
   if(options_ & JETRESOLUTION){
-    jetResolution = new JetResolutionCorr(randomGenerator,jetResolutionFile);
+    jetResolution = new JetResolutionCorr(randomGenerator,jetResolutionFile, jetResolutionCorrFile);
     corrections.push_back(jetResolution);
   }
   if(options_ & JETSCALE){
@@ -335,7 +363,7 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
 void JetAndMETCorrectionSet::correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met){
   if(!jetResolution) return;
   if(!ana->isMC()) return;
-  jetResolution->correctJetsAndMET(ana->getAnaCfg().corrections.jetResCorr,jets,met);
+  jetResolution->correctJetsAndMET(ana->getAnaCfg().corrections.jetResCorrType,ana->rho,jets,met);
 }
 
 void JetAndMETCorrectionSet::correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met){

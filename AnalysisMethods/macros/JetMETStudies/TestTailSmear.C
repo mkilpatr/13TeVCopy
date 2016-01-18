@@ -269,8 +269,12 @@ void compSimp(TTree * oTree,TTree * sTree){
 //    TString smearFiles[] = {"jetResTest_smear_0p3.root","jetResTest_smear_old_0p3.root",""};
 //    TString smearNames[] = {"W_{smear} = 0.01-0.5","W_{smear} = old 0.01-0.5",""};
 
-    TString smearFiles[] = {"qcd_resTest_smear_skimmed.root","qcd_resTest_smearWithExtraCut_skimmed.root","qcd_resTest_smear2_skimmed.root","qcd_resTest_smear2WithExtraCut_skimmed.root",""};
-    TString smearNames[] = {"Smear","Smear++","Smear2","Smear2++",""};
+//    TString smearFiles[] = {"qcd_resTest_smear_skimmed.root","qcd_resTest_smearWithExtraCut_skimmed.root","qcd_resTest_smear2_skimmed.root","qcd_resTest_smear2WithExtraCut_skimmed.root",""};
+//    TString smearNames[] = {"Smear","Smear++","Smear2","Smear2++",""};
+
+
+        TString smearFiles[] = {"qcd_resTest_orig.root","qcd_resTest_orig_corr.root","qcd_resTest_orig_corrUp.root","qcd_resTest_orig_corrDown.root",""};
+        TString smearNames[] = {"Orig","Corr","Up","Down",""};
 
 
     vector<TTree*> smearTrees;
@@ -281,19 +285,19 @@ void compSimp(TTree * oTree,TTree * sTree){
       smearTrees.push_back(st);
     }
 
-//    TString preForm = "nJ";
-//    TString presel = "met >= 175";
-//    TString sel1[] = {"nJ >= 2","nJ >= 5",""};
+    TString preForm = "nJ";
+    TString presel = "met >= 150";
+    TString sel1[] = {"nJ >= 2","nJ >= 5",""};
 //    TString sel2[] = {"nB == 0","nB == 1","nB == 1 && nBl >=2","nB >= 2",""};
-//    TString sel1[] = {"nJ >= 5",""};
+    TString sel2[] = {"dPhi < .15","dPhi > .5","dPhi > .5 && dPhi3 > .5 && dPhi4 > .5",""};
 //    TString sel2[] = {"nB >= 0",""};
 
 
 
-    TString preForm = "mtB";
-    TString presel = "met >= 250 && nJ >= 5 && nBl >=2  && nB >= 1 && nBl >=2 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-    TString sel1[] = {"dPhi < .15","dPhi > .5","dPhi > .5 && dPhi3 > .5",""};
-    TString sel2[] = {"nB == 1","nB >= 2",""};
+//    TString preForm = "mtB";
+//    TString presel = "met >= 250 && nJ >= 5 && nBl >=2  && nB >= 1 && nBl >=2 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+//    TString sel1[] = {"dPhi < .15","dPhi > .5","dPhi > .5 && dPhi3 > .5",""};
+//    TString sel2[] = {"nB == 1","nB >= 2",""};
 
 //    TString preForm = "mtB";
 //    TString presel = "met >= 150 && nJ >= 5 && mtB >= 175";
@@ -387,7 +391,7 @@ void compSimp(TTree * oTree,TTree * sTree){
         histG.nBootStraps = 0;
         TH1F * hO = histG.getHistogram(oTree,selection,weight,"Original");
 
-        plot->addHist(hO,"Original","",1,0,1);
+//        plot->addHist(hO,"Original","",1,0,1);
         for(unsigned int iT = 0; iT < smearTrees.size(); ++iT){
 //          histG.nBootStraps = 50;
 //          TH1F * hS = histG.getHistogramManual(smearTrees[iT],selection,weight,TString::Format("smear_%u",iT));
@@ -397,7 +401,7 @@ void compSimp(TTree * oTree,TTree * sTree){
         plot->setLogy();
         plot->setXTitle(histG.plotInfo->xTitle);
         TCanvas * c = new TCanvas;
-        plot->drawRatios(c,0,true,"png");
+        plot->drawRatios(c,1,true,"png");
 //        o->Add(c);
 
         cout << title << endl;
@@ -789,6 +793,132 @@ void compCorrTF(){
 }
 
 
+void getTFAndVariations(){
+
+
+  TString name = "W_{smear} = 0.01-0.5";
+  TFile * sf = new TFile("qcd_resTest_smearWithExtraCut_updatedCTT_skimmed.root","read");
+  TTree * st =0;
+  sf->GetObject("Events",st);
+
+
+
+
+
+
+  TString preForm = "TFComp";
+  TString presel = "met >= 250 && nJ >= 5 && nBl >=2  && nB >= 1 && nBl >=2 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  TString denPreSel = "(dPhi < .15)";
+  TString numPreSel = "dPhi > .5 && dPhi3 > .5 && dPhi4 > .5";
+
+  TString selNumName[] = {"1_0_0","2_0_0",
+                      "1_0_175 ","2_0_175","1_1_175","2_1_175",""};
+
+  TString selNum[] = {"nB == 1 && mtB < 175","nB >= 2 && mtB < 175",
+                      "nB == 1 && nT == 0 && mtB >= 175 ","nB >= 2 && nT == 0 && mtB >= 175","nB == 1 && nT >= 1 && mtB >= 175","nB >= 2 && nT >= 1 && mtB >= 175",""};
+//  TString selDen[] = {"nB == 1 && nT == 0 && mtB < 175 ","nB >= 2 && nT == 0 && mtB < 175","nB == 1 && nT >= 1 && mtB < 175","nB >= 2 && nT >= 1 && mtB < 175",
+//                      "nB == 1 && nT == 0 && mtB >= 175 ","nB >= 2 && nT == 0 && mtB >= 175","nB == 1 && nT >= 1 && mtB >= 175","nB >= 2 && nT >= 1 && mtB >= 175",""};
+  TString selDen[] = {"mtB < 175","mtB < 175",
+                       "nT == 0 && mtB >= 175","nT == 0 && mtB >= 175","nT >= 1 && mtB >= 175","nT >= 1 && mtB >= 175",""};
+
+
+//  TString selNum[] = {
+//                      "nB == 1 && nT == 0 && mtB >= 175",""};
+//  TString selDen[] = {
+//                       "nT == 0 && mtB >= 175",""};
+
+
+  double bins[] = {250,300,400,500,600,800};
+  double nBinsX = 5;
+  HistogramGetter histG("met","met","#slash{E}_{T} [GeV]", nBinsX,bins);
+
+  vector<TString> binNames;
+  vector<double> TF;
+  vector<double> TFUnc;
+  vector<double> jetTailUncUp;
+  vector<double> jetTailUncDown;
+
+  TString weight = "weight*puWeight*bTagWeight";
+//  TString extraWeight[] = {"1.0","nomTailWeight","upTailWeight","downTailWeight",""};
+//  TString extraWeightNames[] = {"STD","Nominal","Up","Down",""};
+//  bool computeBootStrap[] = {false,true,false,false};
+
+  TString extraWeight[] = {"nomTailWeight","upTailWeight","downTailWeight",""};
+  TString extraWeightNames[] = {"Nominal","Up","Down",""};
+  bool computeBootStrap[] = {true,false,false};
+
+
+
+    for(unsigned int iS1 = 0; selNum[iS1][0]; ++iS1){
+      TString title = TString::Format("%s",selNum[iS1].Data());
+      TString name = TString::Format("testSmear_%s_%u",preForm.Data(),iS1);
+      TString denSelelction = TString::Format("%s && %s && %s",presel.Data(),selDen[iS1].Data(),denPreSel.Data());
+      TString numSelelection = TString::Format("%s && %s && %s",presel.Data(),selNum[iS1].Data(),numPreSel.Data());
+
+      Plot * plot = new Plot(name,title,"","SR/CR");
+
+      for(unsigned int iB =0; iB < nBinsX; ++iB){
+        binNames.push_back(TString::Format("bin_%.0f_%s",bins[iB],selNumName[iS1].Data()));
+      }
+
+      for(unsigned int iT = 0; iT < extraWeight[iT][0]; ++iT){
+        TString newWeight = TString::Format("%s*%s",weight.Data(),extraWeight[iT].Data());
+        TH1F * hSN = 0;
+        if(computeBootStrap[iT] ){
+          histG.nBootStraps = 50;
+          hSN = histG.getTFAndCov(st,numSelelection,newWeight,denSelelction,newWeight,TString::Format("ratio_%u",iT));
+        } else {
+          histG.nBootStraps = 0;
+          hSN = histG.getHistogram(st,numSelelection,newWeight,TString::Format("num_%u",iT));
+          TH1F * hSD = histG.getHistogram(st,denSelelction,newWeight,TString::Format("num_%u",iT));
+          hSN->Divide(hSD);
+          for(unsigned int iB = 0; iB <= hSN->GetNbinsX(); ++iB)
+            hSN->SetBinError(iB,0.0);
+        }
+
+        if(extraWeightNames[iT] == "Nominal")
+          for(unsigned int iB =0; iB < nBinsX; ++iB){
+            TF.push_back(hSN->GetBinContent(iB+1));
+            TFUnc.push_back((hSN->GetBinError(iB+1)/hSN->GetBinContent(iB+1)) + 1  );
+          }
+        if(extraWeightNames[iT] == "Up")
+          for(unsigned int iB =0; iB < nBinsX; ++iB){
+            jetTailUncUp.push_back(hSN->GetBinContent(iB+1));
+//            cout << hSN->GetBinContent(iB+1) << " "<<endl;
+          }
+        if(extraWeightNames[iT] == "Down")
+          for(unsigned int iB =0; iB < nBinsX; ++iB){
+            jetTailUncDown.push_back(hSN->GetBinContent(iB+1));
+//            jetTailUnc[iB] = jetTailUnc[iB]/TF[iB] + 1;
+//            cout << hSN->GetBinContent(iB+1) << " " <<TF[iB] << " "<< jetTailUnc[iB] <<endl;
+          }
+
+        plot->addHist(hSN,extraWeightNames[iT],"",colorGetter(iT),0,colorGetter(iT));
+
+
+
+      }
+      plot->setXTitle(histG.plotInfo->xTitle);
+      plot->setYRange(0.,0.15);
+      TCanvas * c = new TCanvas;
+      plot->draw(c,true,"png");
+      cout << title << endl;
+    }
+
+    for(unsigned int iB = 0; iB < TF.size(); ++iB)
+      cout << binNames[iB] <<"\t" << "TF"<< "\tQCD\t" << TF[iB] <<endl;
+    cout << endl <<endl;
+    for(unsigned int iB = 0; iB < TF.size(); ++iB)
+      cout << binNames[iB] <<"\t" << "TFUnc"<< "\tQCD\t" << TFUnc[iB] <<endl;
+    cout << endl <<endl;
+    for(unsigned int iB = 0; iB < TF.size(); ++iB)
+      cout << binNames[iB] <<"\t" << "RespTail"<< "\tQCD\t" << ((jetTailUncUp[iB] - jetTailUncDown[iB])  /(2*TF[iB]) + 1 ) <<endl;
+    cout << endl <<endl;
+
+}
+
+
+
 
 #endif
 
@@ -808,12 +938,13 @@ void TestTailSmear(const TString origFile="qcd_resTest_orig.root",const TString 
 //  comp(ot,st);
 //  studyMETSources(ot);
 //  compSimp(ot,st);
-//  compMulti(ot);
+  compMulti(ot);
 //  compMultiTF(ot);
 //  compBreakdown(ot);
 
 //  checkLepEff();
-  compCorrTF();
+//  compCorrTF();
+//  getTFAndVariations();
 
 //  TFile * of = new TFile(outFile,"read");
 //
