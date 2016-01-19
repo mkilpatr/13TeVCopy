@@ -154,8 +154,5 @@ void makeZeroLeptonQCDTrees(TString sname = "htmht",
   TString treeName = "Events";
   ZeroLeptonQCDAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
-  a.analyze(1000000,1000);
-
-  //a.analyze(10000,100000);
-
+  a.analyze(1000000);
 }
