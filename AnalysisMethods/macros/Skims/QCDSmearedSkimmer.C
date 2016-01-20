@@ -19,8 +19,8 @@ public:
   }
 
   virtual bool fillEvent() {
-    if(met->pt() < 150) return false;
-    if(nJets < 2 || jets[0]->pt() < 75) return false;
+    if(met->pt() < 100) return false;
+//    if(nJets < 2 || jets[0]->pt() < 75) return false;
     return true;
   }
 
@@ -29,7 +29,6 @@ public:
 
   virtual BaseEventAnalyzer * setupEventAnalyzer() override {
     auto * smearer = new  QCDRespSmearingCopierEventAnalyzer();
-//    smearer->smearOptions.maxWindow = 1.0;
     return smearer;
   }
 
@@ -42,6 +41,7 @@ void QCDSmearedSkimmer(string fileName, int fileIndex = -1,  string treeName = "
 
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfg.corrections.jetResCorrType = ucsbsusy::NONE;
 
   //get the output name
   TString prefix(fileName);

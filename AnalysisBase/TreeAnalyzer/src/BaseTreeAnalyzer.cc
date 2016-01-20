@@ -136,7 +136,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
-      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResTailFile,randGen);
+      jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResCorrFile,configSet.corrections.jetResTailFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
   }

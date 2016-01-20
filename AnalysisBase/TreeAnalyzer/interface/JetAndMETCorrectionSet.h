@@ -44,20 +44,22 @@ class JetReader;
 
 class JetResolutionCorr : public Correction {
 public:
-  JetResolutionCorr(TRandom3 * inRandGen, TString jetResFileName, TString jetResName = "AK4ResTrend" );
+  JetResolutionCorr(TRandom3 * inRandGen, TString jetResFileName,TString jetResCorrFileName );
   ~JetResolutionCorr();
 
   //return false if below threshold
   //Note, this is the width of the gaussian = sqrt(c^2 -1)
-  bool getCorrectedPT(const double gausWidth, const RecoJetF& jet, double& newPT) const;
+  bool getCorrectedPT(const CORRTYPE corrType, const float rho, const RecoJetF& jet, double& newPT) const;
 
   //resSF is the ratio of resolutions, aka c
-  void correctJetsAndMET(const double resSF, std::vector<RecoJetF>& jets, MomentumF& met) const;
+  void correctJetsAndMET(const CORRTYPE corrType, const double rho, std::vector<RecoJetF>& jets, MomentumF& met) const;
 
 private:
   TRandom3 * randGen;
   TFile * jetResolutionFile;
   const QuickRefold::TF1Container * jetResolution;
+  TFile * jetResolutionCorrFile;
+  const TH1 * jetResolutionCorr;
 };
 
 class JetScaleCorr : public Correction {
@@ -122,7 +124,7 @@ public:
   };
   JetAndMETCorrectionSet();
   virtual ~JetAndMETCorrectionSet();
-  virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "",TString jetResponseTailFile ="", TRandom3 * randomGenerator = 0);
+  virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "",TString jetResolutionCorrFile = "",TString jetResponseTailFile ="", TRandom3 * randomGenerator = 0);
   virtual void processMET(const BaseTreeAnalyzer * ana);
   virtual void correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
   virtual void correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);

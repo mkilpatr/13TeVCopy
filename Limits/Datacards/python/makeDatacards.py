@@ -3,10 +3,11 @@ import os
 import sys
 import re
 import time
+import ast
 from shutil import copy  
 from ConfigParser import SafeConfigParser
 from collections import OrderedDict
-from ROOT import gROOT,TFile,TTree,TH1,TH1D,Double
+from ROOT import gROOT,TFile,TTree,TH1,TH1D,TH2D,Double
 from math import sqrt
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2(True)
@@ -50,6 +51,7 @@ class DatacardConfig:
         self.printuncs      = config_parser.getboolean('config','printuncertainties')
         self.has_data       = config_parser.getboolean('config','havedata')
         self.blind_sr       = config_parser.getboolean('config','blindsr')
+        self.scalesigtoacc  = config_parser.getboolean('config','scalesigtoacc')
         self.saveoverwrites = config_parser.getboolean('config','saveoverwrites')
         self.signals        = config_parser.get('signals','samples').replace(' ','').split(',')
         self.backgrounds    = config_parser.get('backgrounds','samples').replace(' ','').split(',')
@@ -83,7 +85,7 @@ class DatacardConfig:
         
 
         # define signal region
-        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,'signal',self.allbins,self.compactbinlist,self.binmap)
+        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,self.weightname,self.basesel,'signal',self.allbins,self.compactbinlist,self.binmap)
 
         # fill mapping of signal region bins to control region bins
         self.srtocrbinmaps = {}
@@ -93,10 +95,12 @@ class DatacardConfig:
         self.extcontrolregions = {}
         self.fitcontrolregions = {}
         for cr in config_parser.options('control_regions') :
-            crinput  = config_parser.get('control_regions',cr).replace(' ','').split(';')
-            label    = crinput[1].split('_')[-1]
-            wgtexpr  = crinput[3] if len(crinput) > 3 else self.weightname
-            selection = crinput[4] if len(crinput) > 4 else self.basesel
+            crinput  = ast.literal_eval(config_parser.get('control_regions',cr))
+            label    = crinput['dataFile'].split('_')[-1]
+            wgtexpr  = crinput['crwgt'] if crinput.has_key('crwgt') else self.weightname
+            selection = crinput['crsel'] if crinput.has_key('crsel') else self.basesel
+            srwgtexpr  = crinput['srwgt'] if crinput.has_key('srwgt') else self.weightname
+            srselection = crinput['srsel'] if crinput.has_key('srsel') else self.basesel
             crvarnames = []
             crbinedges = []
             for var in config_parser.options(cr+'_bins') :
@@ -115,10 +119,10 @@ class DatacardConfig:
                 if len(combinebins) > 1 :
                     self.combineBins(crallbins, crcompactbinlist, crbinmap, combinebins)
         
-            if crinput[0] == 'ext' :
-                self.extcontrolregions[cr] = FitRegion(crinput[1],crinput[2].split(','),label,wgtexpr,selection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+            if crinput['type'] == 'ext' :
+                self.extcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,srwgtexpr,srselection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
             else :
-                self.fitcontrolregions[cr] = FitRegion(crinput[1],crinput[2].split(','),label,wgtexpr,selection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+                self.fitcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,srwgtexpr,srselection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
 
         # load uncertainty files
         if not self.usedummyuncs:
@@ -133,7 +137,7 @@ class DatacardConfig:
     # then the signal points are looped to get the sig numbers.
     def produceDatacards(self):
         if os.path.exists(self.datacarddir) :
-            print 'WARNING!', self.datacarddir, 'already exists!'
+            print '\nWARNING!', self.datacarddir, 'already exists!'
             if self.saveoverwrites :
                 t = time.localtime()
                 moveStr = '_moveTime'+str(t.tm_year)+'-'+str(t.tm_mon)+'-'+str(t.tm_mday)+'-'+str(t.tm_hour*10000+t.tm_min*100+t.tm_sec)
@@ -155,7 +159,7 @@ class DatacardConfig:
     def writeDatacards(self,fitregion):
         """Write out datacards for given fit region, one per for each defined bin and signal point
         """
-        print 'making datacards for ',fitregion.type,' region ',fitregion.label
+        print '\n~~~Making datacards for ',fitregion.type,' region ',fitregion.label,'~~~'
         # loop over all bins
         ibin = -1
         for bins in fitregion.allbins :
@@ -174,9 +178,9 @@ class DatacardConfig:
 
             # compute data yield if applicable
             datayield = 0
-            if self.has_data and not self.blind_sr :
+            if self.has_data and not (self.blind_sr and fitregion.type == 'signal') :
                 dataFile = os.path.join( self.treebase, fitregion.dataname + self.filesuffix )
-                datayield = self.getNumEvents(dataFile,bins,self.weightname,True)
+                datayield = self.getNumEvents(dataFile,bins,fitregion.weight,0,fitregion.selection)
 
             # lines to replace placeholders for current bin's template datacard
             # placeholders are left for signal numbers
@@ -193,19 +197,21 @@ class DatacardConfig:
             for background in fitregion.backgrounds :
                 ibkg+=1
                 bkgFile = os.path.join( self.treebase, background+self.filesuffix )
-                lineSBBin    += str(ibin).ljust(self.yieldwidth)
                 if fitregion.type == 'control' :
                     background = background.split('_')[0]
+                    if ibkg > 0 :
+                        continue
+                lineSBBin    += str(ibin).ljust(self.yieldwidth)
                 lineProcess1 += background.ljust(self.yieldwidth)
                 lineProcess2 += str(ibkg+1).ljust(self.yieldwidth)
-                nevts = self.getNumEvents(bkgFile, bins, fitregion.weight, False, fitregion.selection)
+                nevts = self.getNumEvents(bkgFile, bins, fitregion.weight, 1, fitregion.selection)
                 for frname,fr in self.extcontrolregions.iteritems() :
                     if background == fr.backgrounds[0] :
                          for uncname,unc in self.uncertainties.iteritems() :
                              if uncname.split('_')[0] == frname and unc.type == 'gmN' :
-                                 nevts *= float(unc.cr_nevts[binLabel]['data']/unc.cr_nevts[binLabel]['mc'])
+                                 nevts = float(unc.cr_nevts[binLabel]['data']*unc.cr_nevts[binLabel]['mcsr']/unc.cr_nevts[binLabel]['mc'])
                                  if unc.cr_nevts[binLabel]['mcsub'] > 0.0 :
-                                     nevts *= (1.0 - unc.cr_nevts[binLabel]['mcsub']/float(unc.cr_nevts[binLabel]['data']))
+                                     nevts *= (1.0 - unc.cr_nevts[binLabel]['mcsub'])/float(unc.cr_nevts[binLabel]['data'])
                                  break
                          break
                 nBkgEvts.append(nevts)
@@ -224,6 +230,8 @@ class DatacardConfig:
                 for background in fitregion.backgrounds :
                     if fitregion.type == 'control' :
                         background = background.split('_')[0]
+                        if ibkg > -1 :
+                            continue
                     ibkg += 1
                     lineSysSig += '-\t'
                     lineSysBkg += 'sys'+background+'bin'+str(ibin)+'\tlnN\t-\t'
@@ -242,7 +250,7 @@ class DatacardConfig:
                 for uncname,unc in self.uncertainties.iteritems() :
                     if not unc.vals.has_key(binLabel) and not unc.vals.has_key('all') :
                         continue
-                    backgrounds = [b.split('_')[0] if fitregion.type=='control' else b for b in fitregion.backgrounds]
+                    backgrounds = [fitregion.backgrounds[0].split('_')[0]] if fitregion.type=='control' else [b for b in fitregion.backgrounds]
                     uncline = self.getUncertaintyLine(uncname,unc,binLabel,backgrounds,nBkgEvts)
                     lineSys += uncline
                     if not uncline == '' :
@@ -250,9 +258,9 @@ class DatacardConfig:
 
             # put current lines into the placeholders in the template datacard
             templateDatacard = templateDatacard.replace('IMAX'    ,'1'         ) # need to change if more bins are put into one datacard
-            templateDatacard = templateDatacard.replace('JMAX'    ,str(len(fitregion.backgrounds))  )
+            templateDatacard = templateDatacard.replace('JMAX'    ,str(1 if fitregion.type=='control' else len(fitregion.backgrounds))  )
             templateDatacard = templateDatacard.replace('KMAX'    ,str(nUncs)  )
-            templateDatacard = templateDatacard.replace('BKGLIST' ,', '.join([b.split('_')[0] if fitregion.type=='control' else b for b in fitregion.backgrounds]) )
+            templateDatacard = templateDatacard.replace('BKGLIST' ,', '.join([fitregion.backgrounds[0].split('_')[0]] if fitregion.type=='control' else [b for b in fitregion.backgrounds]) )
             templateDatacard = templateDatacard.replace('SBIN'    ,lineSBin    )
             templateDatacard = templateDatacard.replace('SOBS'    ,lineSObs    )
             templateDatacard = templateDatacard.replace('SBBIN'   ,lineSBBin   )
@@ -269,7 +277,7 @@ class DatacardConfig:
             # now loop through the signal files to get the actual datacards
             for signal in self.signals:
                 sigFile = os.path.join( self.treebase, signal+self.filesuffix )
-                nSig    = self.getNumEvents(sigFile, bins, fitregion.weight, False, fitregion.selection)
+                nSig    = self.getNumEvents(sigFile, bins, fitregion.weight, 2, fitregion.selection)
                 if nSig == 0.0 :
                     nSig = 0.00000001
 
@@ -379,13 +387,13 @@ class DatacardConfig:
         name = self.getBinName(bins,False) + '.txt'
         return name
     
-    def getNumEvents(self,filename,bins,wgtexpr,isdata=False,basestr=''):
+    def getNumEvents(self,filename,bins,wgtexpr,process=1,basestr=''):
         """Returns the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
         """
         cutstr = self.basesel if basestr == '' else basestr
         cutstr += self.getCutString(bins)
         projectvar = bins[0][0]
-        if not isdata :
+        if process > 0 :
             cutstr = '('+str(self.lumiscale)+'*'+wgtexpr+'*('+cutstr+'))'
 
         file = TFile(filename)
@@ -394,23 +402,41 @@ class DatacardConfig:
         tree.Project('htmp',projectvar,cutstr)
         rate = htmp.Integral(0,2)
 
-        if isdata :
+        if process == 0 :
             return int(rate)
+
+        if process == 2 and self.scalesigtoacc :
+            mstop = int(filename.split('_')[-3])
+            xsecfile = TFile('../data/xsecs/stop.root')
+            xsechist = TH1D()
+            xsechist = xsecfile.Get('xsecs')
+            xsec = xsechist.Interpolate(mstop)
+            rate = rate/xsec
+
         return max([rate,0])
     
-    def getNumEventsError(self,filename,bins,wgtexpr,isdata=False,basestr=''):
+    def getNumEventsError(self,filename,bins,wgtexpr,process=1,basestr=''):
         """Returns the error on the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
         """
         cutstr = self.basesel if basestr == '' else basestr
         cutstr += self.getCutString(bins)
         projectvar = bins[0][0]
-        if not isdata :
+        if process > 0 :
             cutstr = '('+str(self.lumiscale)+'*'+wgtexpr+'*('+cutstr+'))'
 
         file = TFile(filename)
         tree = file.Get(self.treename)
         htmp = TH1D('htmp','htmp',1,0,10000)
         tree.Project('htmp',projectvar,cutstr)
+
+        if process == 2 and self.scalesigtoacc :
+            mstop = int(filename.split('_')[-3])
+            xsecfile = TFile('../data/xsecs/stop.root')
+            xsechist = TH2D()
+            xsechist = xsecfile.Get('xsecs')
+            xsec = xsechist.Interpolate(mstop)
+            htmp.Divide(xsec)
+
         error = Double()
         rate = htmp.IntegralAndError(0,2,error)
 
@@ -456,7 +482,7 @@ class DatacardConfig:
     def compileUncertainties(self):
         """Get list of all uncertainty names and values and samples to which they must be applied
         """
-        print '\n~~~Compiling uncertainty list~~~\n'
+        print '\n~~~Compiling uncertainty list~~~'
         with open('%s/%s' % (self.setupbase,self.uncdefinitions),'r') as f :
             for line in f :
                 if line.startswith('#') or line.startswith('%') or line.strip()=='' :
@@ -492,7 +518,7 @@ class DatacardConfig:
                                     continue
                                 self.uncertainties[sampuncname] = Uncertainty(sampuncname,type)
                                 self.uncnames.append(sampuncname)
-        print '\n~~~Filling uncertainty values~~~\n'
+        print '\n~~~Filling uncertainty values~~~'
         self.fillUncertaintyValues()
         if self.printuncs :
             # printout for debugging
@@ -504,6 +530,7 @@ class DatacardConfig:
         """Get values of each designated uncertainty
         """
         for file in self.uncvalfiles :
+            print 'Opening ',file
             with open('%s/%s' % (self.setupbase,file),'r') as f :
                 for line in f :
                     if line.startswith('#') or line.startswith('%') or line.strip()=='' :
@@ -524,6 +551,7 @@ class DatacardConfig:
                     uncVal   = None
                     if len(entries)>=4:
                         uncVal = entries[3]
+                    cryields_bins_filled = {}
                     for i in range(len(binnames)):
                         binname = binnames[i]
                         uncname = uncnames[i]
@@ -549,20 +577,50 @@ class DatacardConfig:
                                     crnevts = 0
                                     datafile = os.path.join( self.treebase, cr.dataname + self.filesuffix )
                                     mcfileadd= os.path.join( self.treebase, cr.backgrounds[0] + self.filesuffix )
-                                    mcfilesub= os.path.join( self.treebase, cr.backgrounds[1] + self.filesuffix ) if len(cr.backgrounds) > 1 else ''
+                                    mcfilesr = os.path.join( self.treebase, cr.backgrounds[2] + self.filesuffix )
+                                    mcfilesub= os.path.join( self.treebase, cr.backgrounds[1] + self.filesuffix ) if cr.backgrounds[1] != '' else ''
                                     srbin = self.binmap[binname]
                                     crbin = cr.binmap[cr.srtocrbinmap[binname]]
-                                    if self.has_data :
-                                        crnevts = self.getNumEvents(datafile, crbin, cr.weight, True, cr.selection)
-                                    else :
-                                        crnevts = int(self.getNumEvents(datafile, crbin, cr.weight, False, cr.selection)) 
                                     if not unc.cr_nevts.has_key(binname):
                                         unc.cr_nevts[binname] = {}
-                                    unc.cr_nevts[binname]['data'] = max(crnevts, 1)
-                                    unc.cr_nevts[binname]['mc']   = max(self.getNumEvents(mcfileadd, crbin, cr.weight, False, cr.selection), 0.00000001)
-                                    unc.cr_nevts[binname]['mcsub'] = max(self.getNumEvents(mcfilesub, crbin, cr.weight, False, cr.selection), 0.00000001) if mcfilesub != '' else 0.0
+                                    unc.cr_nevts[binname]['mcsr']  = max(self.getNumEvents(mcfilesr, srbin, cr.orweight, 1, cr.orselection), 0.00000001)
+                                    if cryields_bins_filled.has_key(cr.srtocrbinmap[binname]) :
+                                        unc.cr_nevts[binname]['data'] = cryields_bins_filled[cr.srtocrbinmap[binname]]['data']
+                                        unc.cr_nevts[binname]['mc'] = cryields_bins_filled[cr.srtocrbinmap[binname]]['mc']
+                                        unc.cr_nevts[binname]['mcsub'] = cryields_bins_filled[cr.srtocrbinmap[binname]]['mcsub']
+                                    else :
+                                        if self.has_data :
+                                            crnevts = self.getNumEvents(datafile, crbin, cr.weight, 0, cr.selection)
+                                        else :
+                                            crnevts = int(self.getNumEvents(datafile, crbin, cr.weight, 1, cr.selection)) 
+                                        unc.cr_nevts[binname]['data'] = max(crnevts, 1)
+                                        unc.cr_nevts[binname]['mc']   = max(self.getNumEvents(mcfileadd, crbin, cr.weight, 1, cr.selection), 0.00000001)
+                                        unc.cr_nevts[binname]['mcsub'] = max(self.getNumEvents(mcfilesub, crbin, cr.weight, 1, cr.selection), 0.00000001) if mcfilesub != '' else 0.0
                                     unc.vals[binname][samp] = -1
                                     unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
+                                    if not cryields_bins_filled.has_key(cr.srtocrbinmap[binname]) : 
+                                        cryields_bins_filled[cr.srtocrbinmap[binname]] = unc.cr_nevts[binname]
+                                elif unc.type == 'lnU' :
+                                    crname = uncname.split('_')[0]
+                                    if not self.fitcontrolregions.has_key(crname) :
+                                        continue
+                                    cr = self.fitcontrolregions[crname]
+                                    crbin = cr.binmap[cr.srtocrbinmap[binname]] if self.binmap.has_key(binname) else cr.binmap[binname]
+                                    datafile = os.path.join( self.treebase, cr.dataname + self.filesuffix )
+                                    crnevts = 0
+                                    if self.has_data :
+                                        crnevts = self.getNumEvents(datafile, crbin, cr.weight, 0, cr.selection)
+                                    else :
+                                        crnevts = int(self.getNumEvents(datafile, crbin, cr.weight, 1, cr.selection))
+                                    crnevts = max(crnevts, 1)
+                                    unc.vals[binname][samp] = float(uncVal) if uncVal else 2
+                                    if not self.has_data or self.blind_sr :
+                                        unc.vals[binname][samp] = 1 + sqrt(crnevts)/crnevts
+                                        unc.type = 'lnN'
+                                    if self.binmap.has_key(binname) :
+                                        unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
+                                    elif not cr.binmap.has_key(binname) :
+                                        continue
                                 else :
                                     if binname=='all' or uncVal:
                                         unc.vals[binname][samp] = float(uncVal)
@@ -578,8 +636,8 @@ class DatacardConfig:
                                             srfile = os.path.join( self.treebase, samp             +self.filesuffix )
                                             srbin = self.binmap[binname]
                                             crbin = cr.binmap[cr.srtocrbinmap[binname]]
-                                            (srevts,srunc) = self.getNumEventsError(srfile, srbin, cr.weight, False )
-                                            (crevts,crunc) = self.getNumEventsError(crfileadd, crbin, cr.weight, False, cr.selection)
+                                            (srevts,srunc) = self.getNumEventsError(srfile, srbin, cr.weight, 1 )
+                                            (crevts,crunc) = self.getNumEventsError(crfileadd, crbin, cr.weight, 1, cr.selection)
                                             #if crfilesub != '' :
                                             #    (crsubevts,crsubunc) = self.getNumEventsError(crfilesub, crbin, cr.weight, False, cr.selection)
                                             #    crunc *= crunc
@@ -614,7 +672,7 @@ class DatacardConfig:
                                                 mcfile = mcfile.replace(samp, sampname)
                                             else :
                                                 bin = self.binmap[binname]
-                                            (mcevts,mcunc) = self.getNumEventsError(mcfile, bin, cr.weight, False, selection)
+                                            (mcevts,mcunc) = self.getNumEventsError(mcfile, bin, cr.weight, 1, selection)
                                             if not mcevts==0 :
                                                 unc.vals[binname][samp] = 1 + (mcunc/mcevts)
 
@@ -665,12 +723,14 @@ class DatacardConfig:
         return uncline
 
 class FitRegion:
-    def __init__(self,dataname,backgrounds,label,weight,selection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
+    def __init__(self,dataname,backgrounds,label,weight,selection,orweight,orselection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
         self.dataname       = dataname
         self.backgrounds    = backgrounds
         self.label          = label
         self.weight         = weight
         self.selection      = selection
+        self.orweight       = orweight
+        self.orselection    = orselection
         self.type           = type
         self.allbins        = allbins
         self.compactbinlist = compactbinlist

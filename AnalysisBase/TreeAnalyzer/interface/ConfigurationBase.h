@@ -196,7 +196,8 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE lightBTagCorrType;
 
     TString jetResFile;
-    double  jetResCorr;
+    TString jetResCorrFile;
+    ucsbsusy::CORRTYPE jetResCorrType;
 
     ucsbsusy::CORRTYPE jetScaleCorr;
 
@@ -216,7 +217,7 @@ namespace cfgSet {
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
-        jetResCorr(1),
+        jetResCorrType(ucsbsusy::NONE),
         jetScaleCorr(ucsbsusy::NONE),
         jetResTailFile(1),
         jetResTailCorrType(ucsbsusy::NONE)
@@ -275,7 +276,7 @@ namespace cfgSet {
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETSCALE)
           os << "JetScale ("<< a.jetScaleCorr<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION)
-          os << "JetResolution ("<< a.jetResCorr<<")";
+          os << "JetResolution ("<< a.jetResCorrType<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL)
           os << "QCDJetRespTail ("<< a.jetResTailCorrType<<")";
         os << std::endl;

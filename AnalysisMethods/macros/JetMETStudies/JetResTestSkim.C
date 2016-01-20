@@ -7,7 +7,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/QCDRespSmearingAnalyzer.h"
 
-
+#include <TObjectTable.h>
 using namespace std;
 using namespace ucsbsusy;
 
@@ -61,7 +61,7 @@ public:
   randSeed(randSeed)
   {
   };
-  virtual ~Copier() {};
+  virtual ~Copier() { delete oldWeights;};
 
 
 
@@ -111,8 +111,9 @@ public:
 
 
   bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->topRawMass() > 140.0 && ctt->topRawMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3);
+    return (ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
   }
+
 
 
 
@@ -134,8 +135,10 @@ public:
 
 
   bool fillEvent() {
-    if(met->pt() < 150) return false;
+    if(!goodvertex) return false;
+    if(met->pt() < 200) return false;
     if(jets.size() < 2 || jets[1]->pt() < 75) return false;
+    if(jets.size() < 5) return false;
 
 
     float ht = 0;
@@ -349,6 +352,9 @@ void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Eve
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   cfg.corrections.jetResTailCorrType = NOMINAL;
+  cfg.corrections.jetResCorrType = NOMINAL;
+  cfg.corrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL | ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION;
+//  cfg.corrections.jetResCorrType = DOWN;
 
   //get the output name
   TString prefix(fileName);
@@ -358,7 +364,7 @@ void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Eve
 
   Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg, window,type);
 
-  a.analyze(1000);
+  a.analyze(10000);
 }
 
 
