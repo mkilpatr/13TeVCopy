@@ -64,11 +64,17 @@ void JetResolutionCorr::correctJetsAndMET(const double resSF, std::vector<RecoJe
     double newPT;
     if(!getCorrectedPT(resWidth,j,newPT)) continue;
 
-     met.p4() += j.p4();
+	if (newPT > 15)
+	{
+		met.p4() += j.p4();
+	}
      CylLorentzVectorF newMom( newPT < 0 ? 0 : newPT, j.eta(), j.phi(), newPT < 0 ? 0 : newPT*j.mass() /j.pt());
      j.setP4(newMom);
 
-     met.p4() -= j.p4();
+	 if (j.pt() > 15)
+	 {
+		met.p4() -= j.p4();
+	 }
   }
 
 }
@@ -82,16 +88,20 @@ void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& j
   metvec.SetPxPyPzE(met.px(),met.py(),met.pz(),met.E());
   for(auto& j : jets) {
     if(j.uncertainty() <= 0.0) continue;
-    metvec.SetPx(metvec.px() + j.px());
-    metvec.SetPy(metvec.py() + j.py());
     double JESFactor = 1.0;
     if(corrType == UP)
       JESFactor += j.uncertainty();
     else if (corrType == DOWN)
       JESFactor -= j.uncertainty();
+	if ((JESFactor * j.pt()) > 15) {
+		metvec.SetPx(metvec.px() + j.px());
+		metvec.SetPy(metvec.py() + j.py());
+	}
     j.setP4(JESFactor*j.p4());
-    metvec.SetPx(metvec.px() - j.px());
-    metvec.SetPy(metvec.py() - j.py());
+	if (j.pt() > 15) {
+		metvec.SetPx(metvec.px() - j.px());
+		metvec.SetPy(metvec.py() - j.py());
+	}
   }
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
   met.setP4(CylLorentzVectorF(metvec.pt(), metvec.eta(), metvec.phi(), 0.0));
