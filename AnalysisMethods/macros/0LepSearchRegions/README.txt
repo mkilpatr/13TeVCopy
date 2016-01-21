@@ -10,7 +10,9 @@ Currently there are config files to create all the unput files under plotting (r
 ./process.py -p ../0LepSearchRegions -m makeZeroLeptonSRTrees.C -c plotting/run_Signals.conf -t condor -o [your path]/signals
 (2) Merge trees:
 ./mergeTrees.py -c ../0LepSearchRegions/plotting/run_Photon.conf -i [your path]/photoncr/pieces -o [your path]/photoncr
-... (Similar for other CR/SR trees. For signal trees, just move them to [your path].)
+./mergeTrees.py -c ../0LepSearchRegions/plotting/run_ZtoLL.conf -i [your path]/zllcr/pieces -o [your path]/zllcr
+./mergeTrees.py -c ../0LepSearchRegions/plotting/run_0LSR.conf -i [your path]/sr/pieces -o [your path]/sr
+For signal trees, just move them to [your path].
 (3) Rename and link trees:
 ./rename.sh [your path]
 
