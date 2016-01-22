@@ -1064,8 +1064,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
       TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
 
-    const double metcut_   = 175.0 ;
+    const double metcut_   = 200.0 ;
     const int    minnjets_ =   2   ;
+    const double minj2pt_  = 75.0  ;
 
     TreeFiller filler;
 
@@ -1084,10 +1085,11 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(met->pt() < metcut_  ) return false;
       if(nJets     < minnjets_) return false;
+      if(jets.at(1)->pt() < minj2pt_)  return false;
 
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
-      filler.fillTopTagInfo(&data,this, jets);
+//      filler.fillTopTagInfo(&data,this, jets);
       return true;
     }
 
