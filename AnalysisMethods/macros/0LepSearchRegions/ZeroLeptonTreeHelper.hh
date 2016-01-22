@@ -596,6 +596,9 @@ struct TreeFiller {
     }
 
     if(ana->nSelLeptons > 0) {
+
+      randomLepton = ana->getRndGen()->Uniform(0,ana->selectedLeptons.size()); 
+
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
       MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );

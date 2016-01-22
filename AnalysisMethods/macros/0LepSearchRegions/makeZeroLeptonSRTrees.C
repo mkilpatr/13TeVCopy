@@ -24,7 +24,7 @@ void makeZeroLeptonSRTrees(TString sname = "htmht",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep(json);
 
-  pars.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
+  pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
   // disable JetID for signal samples
   if (sname.Contains("T2tt")) pars.jets.applyJetID = false;
