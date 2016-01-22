@@ -131,7 +131,46 @@ namespace BkgPrediction {
     }
     cout << endl;
 
-    TH1F* lostlep_pred = (TH1F*)lostlep_tf->Clone("lostlep_pred_" + region);
+    TF1* tffit = new TF1("TFfit_nb2_nt1","pol0",25,30);
+    tffit->SetLineColor(kBlue+2);
+    tffit->SetLineWidth(3);
+    lostlep_tf->Fit(tffit,"FE","",25,30);
+
+    InitHist(lostlep_tf, "Search region", "TF^{LLB}(1LCR->SR)", kRed+2);
+    lostlep_tf->SetLineColor(kRed+2);
+    lostlep_tf->SetMarkerColor(kRed+2);
+    lostlep_tf->GetYaxis()->SetRangeUser(0.0, 1.0);
+    lostlep_tf->SetMarkerSize(1.3);
+
+    TCanvas* tfcanv = MakeCanvas("c","",800,600);
+
+    tfcanv->cd();
+
+    lostlep_tf->Draw("EFUNC");
+
+    TH1F* lostlep_tf_mod = (TH1F*)lostlep_tf->Clone("lostlep_tf_mod");
+
+    for(int ibin = 26; ibin < 31; ++ibin) {
+      cout << "Bin " << ibin << ": " << lostlep_tf->GetBinContent(ibin) << " +/- " << lostlep_tf->GetBinError(ibin);
+      double relunc = lostlep_tf->GetBinError(ibin)/lostlep_tf->GetBinContent(ibin);
+      lostlep_tf_mod->SetBinContent(ibin, tffit->Eval(lostlep_tf->GetXaxis()->GetBinCenter(ibin)));
+      lostlep_tf_mod->SetBinError(ibin, relunc * lostlep_tf_mod->GetBinContent(ibin));
+      cout << " set to " << lostlep_tf_mod->GetBinContent(ibin) << " +/- " << lostlep_tf_mod->GetBinError(ibin) << endl;
+    }
+    cout << endl;
+
+    InitHist(lostlep_tf_mod, "Search region", "TF^{LLB}(1LCR->SR)", kBlue+2);
+    lostlep_tf_mod->SetLineColor(kBlue+2);
+    lostlep_tf_mod->SetMarkerColor(kBlue+2);
+    lostlep_tf_mod->GetYaxis()->SetRangeUser(0.0, 1.0);
+    lostlep_tf_mod->SetMarkerSize(1.3);
+
+    tfcanv->cd();
+
+    lostlep_tf_mod->Draw("Esame");
+    tfcanv->SaveAs("llb_tfs.pdf");
+
+    TH1F* lostlep_pred = (TH1F*)lostlep_tf_mod->Clone("lostlep_pred_" + region);
     lostlep_pred->Multiply(data_cr);
 
     cout << "\nLost lepton prediction: ";
@@ -144,7 +183,7 @@ namespace BkgPrediction {
 
   }
 
-  TH1F* getQCDPred(TFile* file, TFile* filenovetoes, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap, vector<TString> bkgsamples) {
+  TH1F* getQCDPred(TFile* file, TFile* filenovetoes, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap, vector<TString> bkgsamples, TString bkgsubsuffix = "") {
 
     cout << "\nGetting the QCD prediction in the " << region << " region. CR label is " << crname << endl;
 
@@ -156,10 +195,20 @@ namespace BkgPrediction {
     }
     TH1F* qcd_cr = getSRHist(filenovetoes, "qcd", crname+"novetoes", crbins);
     TH1F* data_cr = getSRHist(file, "data", crname, crbins);
+    removeZeroes(data_cr);
+
     TH1F* data_less_nonqcd_cr = (TH1F*)data_cr->Clone("data_less_nonqcd_" + crname);
     for(auto sname : bkgsamples) {
       if(sname == "qcd" || sname == "data") continue;
       TH1F* mc_cr = getSRHist(file, sname, crname, crbins);
+      if(bkgsubsuffix.Contains("up")) {
+        cout << "Scaling Non-QCD component by 1.2" << endl;
+        mc_cr->Scale(1.2);
+      }
+      else if(bkgsubsuffix.Contains("down")) {
+        cout << "Scaling Non-QCD component by 0.8" << endl;
+        mc_cr->Scale(0.8);
+      }
       data_less_nonqcd_cr->Add(mc_cr, -1);
     }
 
@@ -218,7 +267,7 @@ namespace BkgPrediction {
     return RZ;
   }
 
-  TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezllcr, const TString region, const TString phocrname, const TString zllcrname, vector<TString> bins, BinMap phocrtosrmap, BinMap zllcrtosrmap) {
+  TH1F* getZPred(TFile* file0l, TFile* filephocr, TFile* filezllcr, const TString region, const TString phocrname, const TString zllcrname, vector<TString> bins, BinMap phocrtosrmap, BinMap zllcrtosrmap, bool applyextrz = true) {
 
     cout << "\nGetting the Z prediction in the " << region << " region. CR labels are " << phocrname << ", " << zllcrname << endl;
 
@@ -280,23 +329,25 @@ namespace BkgPrediction {
     }
     cout << endl;
 
-    double sf_1b = zll_sf->GetBinContent(1);
-    double sf_2b = zll_sf->GetBinContent(2);
-    double sf_1b_unc = zll_sf->GetBinError(1);
-    double sf_2b_unc = zll_sf->GetBinError(2);
+    if(applyextrz) {
+      double sf_1b = zll_sf->GetBinContent(1);
+      double sf_2b = zll_sf->GetBinContent(2);
+      double sf_1b_unc = zll_sf->GetBinError(1);
+      double sf_2b_unc = zll_sf->GetBinError(2);
 
-    for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
-      double bincontent = znunu_pred->GetBinContent(ibin);
-      double binerror = znunu_pred->GetBinError(ibin);
-      int whichbin = int((ibin-1)/NBINS);
-      if(bins[whichbin].Contains("nb1")) {
-        cout << "Bin " << ibin << "(" << bins[whichbin] << "), using SF_1b = " << sf_1b << endl;
-        znunu_pred->SetBinContent(ibin, bincontent * sf_1b);
-        znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_1b_unc*sf_1b_unc/(sf_1b*sf_1b)) + (binerror*binerror/(bincontent*bincontent))));
-      } else {
-        cout << "Bin " << ibin << "(" << bins[whichbin] << "), using SF_2b = " << sf_2b << endl;
-        znunu_pred->SetBinContent(ibin, bincontent * sf_2b);
-        znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_2b_unc*sf_2b_unc/(sf_2b*sf_2b)) + (binerror*binerror/(bincontent*bincontent))));
+      for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
+        double bincontent = znunu_pred->GetBinContent(ibin);
+        double binerror = znunu_pred->GetBinError(ibin);
+        int whichbin = int((ibin-1)/NBINS);
+        if(bins[whichbin].Contains("nb1")) {
+          cout << "Bin " << ibin << "(" << bins[whichbin] << "), using SF_1b = " << sf_1b << endl;
+          znunu_pred->SetBinContent(ibin, bincontent * sf_1b);
+          znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_1b_unc*sf_1b_unc/(sf_1b*sf_1b)) + (binerror*binerror/(bincontent*bincontent))));
+        } else {
+          cout << "Bin " << ibin << "(" << bins[whichbin] << "), using SF_2b = " << sf_2b << endl;
+          znunu_pred->SetBinContent(ibin, bincontent * sf_2b);
+          znunu_pred->SetBinError(ibin, znunu_pred->GetBinContent(ibin) * sqrt((sf_2b_unc*sf_2b_unc/(sf_2b*sf_2b)) + (binerror*binerror/(bincontent*bincontent))));
+        }
       }
     }
 

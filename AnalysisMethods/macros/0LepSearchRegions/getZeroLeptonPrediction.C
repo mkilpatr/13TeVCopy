@@ -5,7 +5,7 @@
 using namespace BkgPrediction;
 
 void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/121815",
-                             const TString outputdir   = "plots_bkgest_011416/lownj",
+                             const TString outputdir   = "plots_bkgest_011416/sryields",
                              const TString var         = "",
                              const TString srconf      = "plotting/run0lepbkgpred.conf",
                              const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
@@ -15,7 +15,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
                              const TString region      = "sr",
                              //const TString region      = "srlownj",
                              const TString format      = "pdf",
-                             const bool    dolownj     = true,
+                             const bool    dolownj     = false,
                              const bool    usettzsf    = false,
                              const unsigned int sysvar = NOMINAL,
                              const bool    plotlog     = false)
@@ -263,7 +263,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots->setPlotType(PlotStuff::DATAMC);
   plots->setFormat(format);
   plots->setYTitle("Events");
-  //plots->setLogy();
+  plots->setLogy();
   plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.2f fb^{-1}",stof(string(lumistr.Data()))),"");
   plots->setHeaderPosition(0.16, 0.93);
   plots->setColor("lostlep_pred_sr",StyleTools::color_ttbar);
