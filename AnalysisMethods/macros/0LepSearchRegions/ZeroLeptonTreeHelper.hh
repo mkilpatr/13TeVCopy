@@ -190,6 +190,11 @@ struct TreeFiller {
   size i_dilepmass ;
   size i_gentop1pt;
   size i_gentop2pt;
+  size i_meff;
+  size i_dphitopmet;
+  size i_metovsqrtht;
+  size i_toppt;
+  size i_httwoleadfatjet;
 
   // below is for top / w tagging and SF extraction
   size i_sfbclose2lep;
@@ -399,6 +404,11 @@ struct TreeFiller {
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
     i_gentop1pt      = data->add<float>("","gentoppt1","F",0);
     i_gentop2pt      = data->add<float>("","gentoppt2","F",0);
+    i_meff           = data->add<float>("","meff","F",0);
+    i_dphitopmet     = data->add<float>("","dphitopmet","F",0);
+    i_metovsqrtht    = data->add<float>("","metovsqrtht","F",0);
+    i_toppt          = data->add<float>("","toppt","F",0);
+    i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
 
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
@@ -514,6 +524,16 @@ struct TreeFiller {
     data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
     data->fill<int>(i_nctt_cttmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
     data->fill<int>(i_nctt_cttmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    if (topsPass.size()>0) { 
+      data->fill<float>(i_toppt,topsPass[0].Pt()); 
+      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(topsPass[0], *ana->met))); 
+    } 
+    else { 
+      data->fill<float>(i_toppt,0.); 
+      data->fill<float>(i_dphitopmet,0); 
+    }
+    
+    if (topCands.size()>1) { data->fill<float>(i_httwoleadfatjet,(topCands[0].Pt()+topCands[1].Pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
 
     int nfjsd60_   = 0;
@@ -980,6 +1000,9 @@ struct TreeFiller {
     data->fill<float>(i_ht,   JetKinematics::ht(jets, 20.0, 2.4));
     data->fill<float>(i_ht30, JetKinematics::ht(jets, 30.0, 2.4));
     data->fill<float>(i_ht40, JetKinematics::ht(jets, 40.0, 2.4));
+    data->fill<float>(i_meff, JetKinematics::ht(jets, 20.0, 2.4)+(met->pt()));
+    data->fill<float>(i_metovsqrtht, (met->pt())/(sqrt(JetKinematics::ht(jets, 20.0, 2.4))));
+
 
     float dphij1met = 0.0, dphij2met = 0.0;
     if(jets.size() > 0) {
