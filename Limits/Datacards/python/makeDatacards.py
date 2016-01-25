@@ -29,6 +29,17 @@ def main():
     dcconfig = DatacardConfig(configFile,configparser)
     dcconfig.produceDatacards()
 
+def natural_sort(list, key=lambda s:s):
+    """
+    Sort the list into natural alphanumeric order.
+    https://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort
+    """
+    def get_alphanum_key_func(key):
+        convert = lambda text: int(text) if text.isdigit() else text
+        return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
+    sort_key = get_alphanum_key_func(key)
+    list.sort(key=sort_key)
+
 class DatacardConfig:
     # setup
     def __init__(self,conf_file,config_parser):
@@ -176,16 +187,9 @@ class DatacardConfig:
             templateDatacard  = fdatacard.read()
             fdatacard.close()
 
-            # compute data yield if applicable
-            datayield = 0
-            if self.has_data and not (self.blind_sr and fitregion.type == 'signal') :
-                dataFile = os.path.join( self.treebase, fitregion.dataname + self.filesuffix )
-                datayield = self.getNumEvents(dataFile,bins,fitregion.weight,0,fitregion.selection)
-
             # lines to replace placeholders for current bin's template datacard
             # placeholders are left for signal numbers
             lineSBin     = 'bin'.ljust(self.yieldwidth)         + str(ibin)  
-            lineSObs     = 'observation'.ljust(self.yieldwidth) + str(datayield)
             lineSBBin    = 'bin'.ljust(self.yieldwidth)         + str(ibin).ljust(self.yieldwidth)
             lineProcess1 = 'process'.ljust(self.yieldwidth)     + 'signal'.ljust(self.yieldwidth)
             lineProcess2 = 'process'.ljust(self.yieldwidth)     + '0'.ljust(self.yieldwidth)
@@ -216,6 +220,16 @@ class DatacardConfig:
                          break
                 nBkgEvts.append(nevts)
                 lineRate     += str(nevts).ljust(self.yieldwidth)
+
+            # compute data yield if applicable
+            datayield = 0
+            if self.has_data and not (self.blind_sr and fitregion.type == 'signal') :
+                dataFile = os.path.join( self.treebase, fitregion.dataname + self.filesuffix )
+                datayield = self.getNumEvents(dataFile,bins,fitregion.weight,0,fitregion.selection)
+            else :
+                datayield = int(sum(nBkgEvts))
+
+            lineSObs     = 'observation'.ljust(self.yieldwidth) + str(datayield)
 
             # fill uncertainties
             # for now ignore differences in systematics for different signal samples
@@ -343,7 +357,12 @@ class DatacardConfig:
                     if not highedge in combinebinedges[var] :
                         combinebinedges[var].append(highedge)
                 if len(combinebinedges[var]) == 3 :
+                    # need sorting to ensure removing the value in between
+                    natural_sort(combinebinedges[var])
                     combinebinedges[var].pop(1)
+                if not combinebinedges[var]:
+                    # need this if it is the highest bin in "var", but we are not merging in "var"
+                    combinebinedges[var] = [lowedge]
         newbins = []
         for var,binedges in combinebinedges.iteritems() :
             binedges.insert(0,var)

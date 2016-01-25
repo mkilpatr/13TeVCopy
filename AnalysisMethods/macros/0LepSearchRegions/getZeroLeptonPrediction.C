@@ -29,15 +29,15 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
-  sel["trigzlloff"]   = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
+  sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
   sel["lepsel"]       = " && nvetolep>0";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
-  sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5";
-  sel["dphij3"]       = " && dphij3met>0.5";
+  sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
+  sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij123inv"]  = " && dphij12met<0.15";
   sel["lepcrsel"]     = " && nvetolep>0 && mtlepmet<100";
   sel["sr"]           = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123"];
