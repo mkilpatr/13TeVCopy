@@ -8,7 +8,7 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
                  const TString outputdir="plots_0lep",
                  const double  sigscale = 50,
                  const bool    plotlog = false,
-                 const TString lumistr  = "2.137",
+                 const TString lumistr  = "2.262",
                  const TString format = "pdf")
 {
 

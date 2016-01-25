@@ -9,7 +9,7 @@ void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta
                        const TString srconf      = "plotting/run0lepbkgpred.conf",
                        const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
                        const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
-                       const TString lumistr     = "2.137",
+                       const TString lumistr     = "2.262",
                        const TString region      = "sr",
                        const TString format      = "pdf",
                        const bool    dolownj     = false,
@@ -26,7 +26,7 @@ void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta
   sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
   sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
-  sel["vetoes"]       = " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))";
+  sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";

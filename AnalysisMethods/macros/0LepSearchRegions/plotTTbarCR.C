@@ -8,7 +8,7 @@ void plotTTbarCR(const TString conffile ="plotting/plotttbarcr_emu.conf",
                  const TString outputdir="plots_ttbarcr/1211/e#mu",
                  const TString channel  ="e#mu",
                  const bool    plotlog  = false,
-                 const TString lumistr  = "2.137",
+                 const TString lumistr  = "2.262",
                  const TString format   = "png")
 {
 
