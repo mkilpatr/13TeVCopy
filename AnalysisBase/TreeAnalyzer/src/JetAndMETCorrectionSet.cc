@@ -130,6 +130,7 @@ void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<
 
   float MM = -1;
   int ind = -1;
+  int flv = -1;
   float resp = -1;
   for(unsigned int iG = 0; iG < genJets.size() && iG < 3; ++iG  ){
     if(genJets[iG].pt() == 0) break;
@@ -144,25 +145,40 @@ void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<
       ind = genJets[iG].index();
       resp =  fpt/genJets[iG].pt();
       MM = TMath::Abs(fpt - genJets[iG].pt());
+      flv = genJets[iG].flavor();
     }
   }
 
   if(ind >= 0){
     mmResp = resp;
     mmInd = ind;
+    mmFlv = flv;
   } else {
     mmResp = -1;
     mmInd = -1;
+    mmFlv = -1;
   }
 }
 float RespTailCorr::getWeight(CORRTYPE corrType) const {
-  setAxisNoUnderOver(  mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
-  switch (corrType) {
-    case NONE: return 1;
-    case NOMINAL: return  get();
-    case UP:      return int(targetBin) == corrHist->GetNbinsX() ?  get() - getError() : get() + getError();
-    case DOWN:    return int(targetBin) == corrHist->GetNbinsX() ?  get() + getError() : get() - getError();
-    default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+  setXAxisNoUnderOver(   mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
+  setYAxisNoUnderOver(  mmFlv !=4  ?   1 : 2); //If none was found, use the correction for light jet
+
+  if(targetBinY == 1){
+    switch (corrType) {
+      case NONE: return 1;
+      case NOMINAL: return  get();
+      case UP:      return int(targetBinX) == corrHist->GetNbinsX()  ?  get() - getError() : get() + getError();
+      case DOWN:    return int(targetBinX) == corrHist->GetNbinsX()  ?  get() + getError() : get() - getError();
+      default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+    }
+  } else {
+    switch (corrType) {
+      case NONE: return 1;
+      case NOMINAL: return  get();
+      case UP:      return int(targetBinX) >= corrHist->GetNbinsX()  -1 ?  get() - getError() : get() + getError();
+      case DOWN:    return int(targetBinX) >= corrHist->GetNbinsX()  -1 ?  get() + getError() : get() - getError();
+      default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+    }
   }
 }
 
