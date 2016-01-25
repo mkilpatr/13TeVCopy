@@ -50,6 +50,21 @@ HistogramCorrection::HistogramCorrection(TString corrName, TString fileName) : C
 HistogramCorrection::~HistogramCorrection() {
   if(inputFile) inputFile->Close();
 }
+Histogram2DCorrection::Histogram2DCorrection(TString corrName, TFile * file) : Correction(corrName),targetBinX(1),targetBinY(1),inputFile(0) {
+  if(!file) throw std::invalid_argument("Histogram2DCorrection::Histogram2DCorrection: file could not be found!");
+  corrHist = (TH2F*)(file->Get(name) );
+  if(!corrHist) throw std::invalid_argument("Histogram2DCorrection::Histogram2DCorrection: Histogram could not be found!");
+}
+Histogram2DCorrection::Histogram2DCorrection(TString corrName, TString fileName) : Correction(corrName),targetBinX(1),targetBinY(1) {
+  std::clog << "Loading file: "<< fileName << std::endl;
+  inputFile = TFile::Open(fileName,"read");
+  if(!inputFile) throw std::invalid_argument("Histogram2DCorrection::Histogram2DCorrection: file could not be found!");
+  corrHist = (TH2F*)(inputFile->Get(name) );
+  if(!corrHist) throw std::invalid_argument("Histogram2DCorrection::Histogram2DCorrection: Histogram could not be found!");
+}
+Histogram2DCorrection::~Histogram2DCorrection() {
+  if(inputFile) inputFile->Close();
+}
 
 CorrectionSet::CorrectionSet() : file(0), options_(0)  {}
 

@@ -54,6 +54,27 @@ protected:
   TH1F* corrHist;
 
 };
+class Histogram2DCorrection : public Correction {
+public:
+  Histogram2DCorrection(TString corrName, TFile * file);
+  Histogram2DCorrection(TString corrName, TString fileName);
+  ~Histogram2DCorrection();
+  void setTargetBinX(unsigned int a) {targetBinX = a;}
+  void setTargetBinY(unsigned int a) {targetBinY = a;}
+  void setXAxis(float value) const { targetBinX = corrHist->GetXaxis()->FindFixBin(value); }
+  void setYAxis(float value) const { targetBinY = corrHist->GetYaxis()->FindFixBin(value); }
+  void setXAxisNoUnderOver(float value) const { targetBinX = std::min(std::max(corrHist->GetXaxis()->FindFixBin(value),1),corrHist->GetNbinsX());  }
+  void setYAxisNoUnderOver(float value) const { targetBinY = std::min(std::max(corrHist->GetYaxis()->FindFixBin(value),1),corrHist->GetNbinsY());  }
+  virtual float get() const { return corrHist->GetBinContent(targetBinX,targetBinY);}
+  virtual float getError() const { return corrHist->GetBinError(targetBinX,targetBinY);}
+  TH2F* getHist()        { return corrHist; }
+protected:
+  mutable unsigned int targetBinX;
+  mutable unsigned int targetBinY;
+  TFile * inputFile;
+  TH2F* corrHist;
+
+};
 
 class CorrectionSet {
 public:

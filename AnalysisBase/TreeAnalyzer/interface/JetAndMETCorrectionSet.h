@@ -70,16 +70,16 @@ public:
   void correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const;
 };
 
-class RespTailCorr : public HistogramCorrection {
+class RespTailCorr : public Histogram2DCorrection {
 public:
-  RespTailCorr(TString inputFile) : HistogramCorrection("RespTailCorr",inputFile), mmResp(-1),mmInd(-1)  {}
+  RespTailCorr(TString inputFile) : Histogram2DCorrection("RespTailCorr",inputFile), mmResp(-1),mmInd(-1),mmFlv(-1)  {}
   ~RespTailCorr() {}
 
   void process(const std::vector<RecoJetF>& jets, const std::vector<GenJetF>& genJets, const MomentumF& met);
   float getWeight(CORRTYPE corrType) const;
   float mmResp; // reco/gen pt of most mis-measured jet
   int mmInd; //index (as returned from .index() ) of that jet
-
+  int mmFlv; //flavor of that jet
 };
 
 class METScaleCorr : public Correction {
