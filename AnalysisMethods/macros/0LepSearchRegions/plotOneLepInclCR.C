@@ -9,7 +9,7 @@ void plotOneLepInclCR(const TString conffile="plotting/plot1lepcr_mu.conf",    /
                       const TString channel="#mu",   // e
                       const double  sigscale = -1,
                       const bool    plotlog = false,
-                      const TString lumistr = "578",
+                      const TString lumistr = "2.262",
                       const TString format = "png")
 {
 
@@ -28,8 +28,8 @@ void plotOneLepInclCR(const TString conffile="plotting/plot1lepcr_mu.conf",    /
   plots->setFormat(format);
   if(plotlog)
     plots->setLogy();
-  plots->setWgtVar(lumistr+"*0.001*weight*puWeight");
-  plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr + " pb^{-1}",channel);
+  plots->setWgtVar(lumistr+"*weight*puWeight");
+  plots->setHeaderText("#sqrt{s} = 13 TeV",lumistr + " fb^{-1}",channel);
   plots->setHeaderPosition(0.2, 0.93);
 
   map<TString,TString> sel;

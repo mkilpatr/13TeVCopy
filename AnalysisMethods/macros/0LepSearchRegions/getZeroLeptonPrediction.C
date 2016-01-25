@@ -11,7 +11,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
                              const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
                              const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
                              const TString ttzcrconf   = "plotting/runttzcrbkgpred.conf",
-                             const TString lumistr     = "2.137",
+                             const TString lumistr     = "2.262",
                              const TString region      = "sr",
                              //const TString region      = "srlownj",
                              const TString format      = "pdf",
@@ -33,7 +33,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["trigzll"]      = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
   sel["trigzlloff"]   = "passjson && ((iselectron && passtrige17e12) || (!iselectron && (passtrigmu17mu8 || passtrigmu17tkmu8))) && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
-  sel["vetoes"]       = " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))";
+  sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
   sel["lepsel"]       = " && nvetolep>0";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5";

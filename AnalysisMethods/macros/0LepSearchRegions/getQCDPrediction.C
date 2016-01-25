@@ -7,7 +7,7 @@ using namespace BkgPrediction;
 void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/011416",
                       const TString outputdir   = "plots_bkgest/qcd",
                       const TString srconf      = "plotting/run0lepbkgpred.conf",
-                      const TString lumistr     = "2.137",
+                      const TString lumistr     = "2.262",
                       const TString region      = "sr",
                       const TString format      = "pdf",
                       const bool    dolownj     = false,
@@ -20,7 +20,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/
   TString lepvetowgt =  basewgt + "*leptnpweight*lepvetoweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["vetoes"]       = " && ((nvetolep==0 && nvetotau==0) || (ismc && npromptgentau>0))";
+  sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
