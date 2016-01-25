@@ -19,9 +19,13 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       i_pseudoResp           (0),
       i_pseudoRespCSV        (0),
       i_pseudoRespPseudoGenPT(0),
+      i_pseudoRespPassFilter (0),
       i_upTailWeight         (0),
-      i_downTailWeight       (0)
-
+      i_downTailWeight       (0),
+      i_upBTagLightWeight         (0),
+      i_upBTagHeavyWeight         (0),
+      i_maxMuPT     (0),
+      i_removeMuFrac(0)
   {}
 
     virtual ~ZeroLeptonQCDAnalyzer() {delete savedSmearWeights;}
@@ -45,8 +49,14 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       i_pseudoResp             = data.add<float>("","pseudoResp","F",0);
       i_pseudoRespCSV          = data.add<float>("","pseudoRespCSV","F",0);
       i_pseudoRespPseudoGenPT  = data.add<float>("","pseudoRespPseudoGenPT","F",0);
+      i_pseudoRespPassFilter   = data.add<bool>("","pseudoRespPassFilter","O",0);
       i_upTailWeight           = data.add<float>("","upTailWeight","F",0);
       i_downTailWeight         = data.add<float>("","downTailWeight","F",0);
+      i_upBTagLightWeight      = data.add<float>("","upBTagLightWeight","F",0);
+      i_upBTagHeavyWeight      = data.add<float>("","upBTagHeavyWeight","F",0);
+      i_maxMuPT                = data.add<float>("","maxMuPT","F",0);
+      i_removeMuFrac           = data.add<float>("","removeMuFrac","F",0);
+
 
     }
 
@@ -76,30 +86,74 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
 
       //pseudo response info
       int jetNearMETInd = -1, MMJetDPhi = -1;
-      for(unsigned int iJ = 0; iJ < jets.size() && iJ < 2; ++iJ){
-        double dPhi = PhysicsUtilities::absDeltaPhi(*jets[iJ],*met);
+      for(unsigned int iJ = 0; iJ < defaultJets->recoJets.size() && iJ < 3; ++iJ){
+        double dPhi = PhysicsUtilities::absDeltaPhi(defaultJets->recoJets[iJ],*met);
         if(MMJetDPhi < 0 || dPhi < MMJetDPhi){
           MMJetDPhi     = dPhi;
           jetNearMETInd = iJ;
         }
       }
       assert(jetNearMETInd >= 0);
-      double pseudoGenPT = (met->p4() + jets[jetNearMETInd]->p4()).pt();
-      double MMPseudoResp = pseudoGenPT > 0 ? jets[jetNearMETInd]->pt()/ pseudoGenPT : 999;
+      const auto* pJ = &defaultJets->recoJets[jetNearMETInd];
+      //There was a higher pt, filtered rank!
+      bool passFilter  = jets.size() > jetNearMETInd &&  pJ->index() == jets[jetNearMETInd]->index();
+
+
+      double pseudoGenPT = (met->p4() + pJ->p4()).pt();
+      double MMPseudoResp = pseudoGenPT > 0 ? pJ->pt()/ pseudoGenPT : 999;
 
 
       data.fill<float> (i_pseudoResp           ,MMPseudoResp);
-      data.fill<float> (i_pseudoRespCSV        ,jets[jetNearMETInd]->csv());
+      data.fill<float> (i_pseudoRespCSV        ,pJ->csv());
       data.fill<float> (i_pseudoRespPseudoGenPT,pseudoGenPT);
+      data.fill<bool> (i_pseudoRespPassFilter,passFilter);
 
 
       //extra weights for syst. studies
       data.fill<float>(i_upTailWeight    ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(UP));
       data.fill<float>(i_downTailWeight  ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(DOWN));
 
+      //re-calculate b-tag SF
+      {
+        bool isTTBARLike = false;
+        if(process == defaults::TTBAR || process == defaults::SINGLE_T || process == defaults::TTZ || process == defaults::TTW )
+          isTTBARLike = true;
+        data.fill<float>(i_upBTagLightWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(jets,UP,NOMINAL,isTTBARLike)));
+        data.fill<float>(i_upBTagHeavyWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(jets,NOMINAL,UP,isTTBARLike)));
+      }
+
       //copy the bootstrapweights
       for(auto i : *savedSmearWeights)
         data.fillMulti<ucsbsusy::size8>(i_bs,i);
+
+      //filter
+      float maxMuPT      = -1;
+      float removeMuFrac = -10;
+      const LeptonF * testMu = 0;
+      for(const auto* m : allLeptons){
+        if(m->iselectron()) continue;
+        testMu = m;
+        break;
+      }
+      if(testMu && met->pt() > 0){
+        maxMuPT = testMu->pt();
+        bool withinJet = false;
+        for(unsigned int iJ = 0; iJ < jets.size() && iJ < 2; ++iJ){
+          if(PhysicsUtilities::deltaR(*jets[iJ],*testMu) < .4 ){
+            withinJet = true;
+            break;
+          }
+        }
+        if(withinJet && PhysicsUtilities::absDeltaPhi(met->p4(),testMu->p4()) > 2.6){
+          auto metNoLep = met->p4();
+          metNoLep += testMu->p4();
+          removeMuFrac = 1 - metNoLep.pt()/met->pt();
+        }
+      }
+      data.fill<float>(i_maxMuPT,maxMuPT);
+      data.fill<float>(i_removeMuFrac,removeMuFrac);
+
+
 
 
 
@@ -119,8 +173,14 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
     size i_pseudoResp           ;
     size i_pseudoRespCSV        ;
     size i_pseudoRespPseudoGenPT;
+    size i_pseudoRespPassFilter ;
     size i_upTailWeight   ;
     size i_downTailWeight;
+    size i_upBTagLightWeight   ;
+    size i_upBTagHeavyWeight   ;
+
+    size i_maxMuPT     ;
+    size i_removeMuFrac;
 
 
 };
@@ -148,8 +208,8 @@ void makeZeroLeptonQCDTrees(TString sname = "htmht",
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep(json);
   pars.corrections.jetResTailCorrType = NOMINAL;
-  pars.corrections.jetResCorrType = NOMINAL;
-  pars.corrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL | ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION;
+  pars.corrections.jetResCorrType = ucsbsusy::NONE;
+  pars.corrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL;
 
   TString treeName = "Events";
   ZeroLeptonQCDAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
