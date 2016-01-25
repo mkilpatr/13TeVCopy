@@ -37,9 +37,9 @@ vector<TH1F*> getRatios(vector<TH1F*> num_hists, vector<TH1F*> den_hists, bool c
   return ratios;
 }
 
-void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep_1211",
-                       const TString outputdir = "plots_lepeffs_1211/lepcorrs",
-                       const TString lumistr = "2137",
+void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13TeV/trees/012216",
+                       const TString outputdir = "plots_lepeffs_0125/lepcorrs",
+                       const TString lumistr = "2262",
                        const bool    plotlog = false,
                        const TString format = "png")
 {
@@ -48,10 +48,10 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
 
   map<TString,TString> sel;
   sel["trig"]       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["base"]       = sel["trig"] + " && met>200 && j2pt>75 && njets>=2 && nlbjets>=2 && nbjets>=1";
-  sel["inclcr"]     = sel["base"] + " && dphij12met>0.4 && dphij3met>0.4";
+  sel["base"]       = sel["trig"] + " && met>250 && j2pt>75 && njets>=5 && nlbjets>=2 && nbjets>=1";
+  sel["inclcr"]     = sel["base"] + " && dphij12met>0.4 && dphij3met>0.4 && dphij4met>0.4";
   sel["inclcrnomu"] = sel["inclcr"] + " && nvetomu==0";
-  sel["inclcrnoemu"]= sel["inclcrnomu"] + " && nvetolele==0";
+  sel["inclcrnoemu"]= sel["inclcr"] + " && nvetolep==0";
   sel["genele"]     = " && ngoodgenele>0";
   sel["genmu"]      = " && ngoodgenmu>0";
   sel["gentau"]     = " && npromptgentau>0";
@@ -60,8 +60,8 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
   sel["nogentau"]   = " && npromptgentau==0";
   sel["mucr"]       = sel["inclcr"] + " && nvetomu>0";
   sel["elecr"]      = sel["inclcr"] + " && nvetomu==0 && nvetolele>0";
-  sel["taucr"]      = sel["inclcr"] + " && nvetomu==0 && nvetolele==0 && nvetotau>0";
-  sel["hpstaucr"]   = sel["inclcr"] + " && nvetomu==0 && nvetolele==0 && nvetohpstaus>0";
+  sel["taucr"]      = sel["inclcr"] + " && nvetolep==0 && nvetotau>0";
+  sel["hpstaucr"]   = sel["inclcr"] + " && nvetolep==0 && nvetohpstaus>0";
 
   TFile* datafile = new TFile(inputdir+"/data_tree.root");
   TTree* datatree = (TTree*)datafile->Get("Events");
@@ -71,7 +71,7 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
   TTree* mctree = (TTree*)mcfile->Get("Events");
   assert(mctree);
 
-  TString wgtexpr = lumistr + "*0.001*weight*truePUWeight";
+  TString wgtexpr = lumistr + "*0.001*weight*truePUWeight*btagWeight";
 
   vector<TH1F*> data_incl, data_sel, data_sel_nobins;
   vector<TH1F*> mc_incl, mc_sel;
@@ -89,7 +89,7 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
   int nbins = 2, nhpsbins = 1;
 
   data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_mu", 1, dummybins));
-  data_incl.push_back       (getHist(datatree, sel["inclcrnomu"],  "data_incl_ele", 1, dummybins));
+  data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_ele", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_tau", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_hpstau", 1, dummybins));
   data_sel.push_back        (getHist(datatree, sel["mucr"],     "data_sel_mu", nbins, ptbins, "1.0", "mupt[0]"));
@@ -147,7 +147,12 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
 
   for(unsigned int i = 0; i < sf.size(); ++i) {
     TH1F* h = (TH1F*)eff_term[i]->Clone(TString::Format("corr_%d",i));
-    h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1));
+    cout << "\n Data/MC SF:" << sf[i]->Integral(0, sf[i]->GetNbinsX()+1) << endl;
+    for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {
+      cout << "\nEFF_TERM in bin " << ibin << ": " << h->GetBinContent(ibin) << " +/- " << h->GetBinError(ibin) << endl;
+      cout << "\nFAKE_TERM in bin " << ibin << ": " << fake_term[i]->GetBinContent(ibin) << " +/- " << fake_term[i]->GetBinError(ibin) << endl;
+    }
+    h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1));
     h->Add(fake_term[i], -1);
     corr.push_back(h);
     for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {
@@ -171,7 +176,7 @@ void getLepCorrections(const TString inputdir = "../0LepSearchRegions/trees_0lep
     mc_nogenlep_sel_nobins[i]->Write();
 
     // Cross check overall efficiencies/SFs
-    // NB: this assumes the normalization SF from the specific CRl for each lepton flavor. So this number will be different from the numbers we save for the actual correction. But it's a good cross-check to get an idea of the actual data/MC efficiency SF
+    // NB: this assumes the normalization SF from the specific CRl for each lepton flavor. So this number might be different from the numbers we save for the actual correction. But it's a good cross-check to get an idea of the actual data/MC efficiency SF
     TH1F* h2 = (TH1F*)data_eff[i]->Clone(TString::Format("corr2_%d",i));
     h2->Divide(mc_eff[i]);
     h2->Add(mc_fake[i], -1);
