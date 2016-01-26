@@ -59,14 +59,14 @@ namespace BkgPrediction {
 
   }
 
-  void removeZeroes(TH1F* hist) {
+  void removeZeroes(TH1F* hist, double setVal = 1, double setUnc = 0.8) {
 
     for(int ibin = 1; ibin < hist->GetNbinsX()+1; ++ibin) {
       double bincontent = hist->GetBinContent(ibin);
       double binerror = hist->GetBinError(ibin);
       if(bincontent == 0.0) {
-        hist->SetBinContent(ibin, 1);
-        hist->SetBinError(ibin, 0.8);
+        hist->SetBinContent(ibin, setVal);
+        hist->SetBinError(ibin, setUnc);
         cout << "\nBin " << ibin << " for " << hist->GetName() << " had " << bincontent << " +/- " << binerror << "; set to " << hist->GetBinContent(ibin) << " +/- " << hist->GetBinError(ibin) << endl;
       }
     }
@@ -138,7 +138,8 @@ namespace BkgPrediction {
     TH1F* lostlep_cr = getSRHist(filelepcr, "ttbarplusw", crname, crbins);
     TH1F* data_cr = getSRHist(filelepcr, "data", crname, crbins);
 
-    removeZeroes(data_cr);
+//    For bins with zero event, set to 0.001 +/- 1.8.
+    removeZeroes(data_cr, 0.001, 1.8);
 
     TH1F* lostlep_tf = (TH1F*)lostlep_sr->Clone("lostlep_tf_" + region);
     lostlep_tf->Divide(lostlep_cr);

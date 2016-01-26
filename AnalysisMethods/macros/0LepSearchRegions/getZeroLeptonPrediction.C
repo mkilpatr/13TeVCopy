@@ -183,7 +183,9 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt_highnj",      "met",        sel["phocr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
   plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_mednj_nt0",  "met",        sel["phocr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
   plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_highnj_nt0", "met",        sel["phocr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1_int",    "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1",        "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+//  integrating in met
+//  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1_int",    "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
 
   plotsphocr->plot();
 
@@ -244,7 +246,10 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   lepcrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
   lepcrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
 
-  phocrtosr = lepcrtosr;
+  phocrtosr = qcdcrtosr;
+//  integrating in met
+//  phocrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
+//  phocrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
 
   for (const auto &bin : srbins)      zllcrtosr[bin] = bin.Contains("nb1") ? "nb1" : "nb2";
 
@@ -303,7 +308,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots->setHeaderPosition(0.16, 0.93);
   plots->setColor("lostlep_pred_sr",StyleTools::color_ttbar);
   plots->setMaxScale(2.0);
-//  plots->setCanvasSize(1000, 600);
+  plots->setCanvasSize(1000, 600);
 
   vector<TString> labels, names;
   if(dolownj || dolowmet) {
