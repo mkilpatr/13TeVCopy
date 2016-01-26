@@ -167,16 +167,16 @@ float RespTailCorr::getWeight(CORRTYPE corrType) const {
     switch (corrType) {
       case NONE: return 1;
       case NOMINAL: return  get();
-      case UP:      return int(targetBinX) == corrHist->GetNbinsX()  ?  get() - getError() : get() + getError();
-      case DOWN:    return int(targetBinX) == corrHist->GetNbinsX()  ?  get() + getError() : get() - getError();
+      case UP:      return int(targetBinX) == 1  ?  get() + getError() : get() - getError();
+      case DOWN:    return int(targetBinX) == 1  ?  get() - getError() : get() + getError();
       default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
     }
   } else {
     switch (corrType) {
       case NONE: return 1;
       case NOMINAL: return  get();
-      case UP:      return int(targetBinX) >= corrHist->GetNbinsX()  -1 ?  get() - getError() : get() + getError();
-      case DOWN:    return int(targetBinX) >= corrHist->GetNbinsX()  -1 ?  get() + getError() : get() - getError();
+      case UP:      return int(targetBinX) <= 2 ?  get() + getError() : get() - getError();
+      case DOWN:    return int(targetBinX) <= 2 ?  get() - getError() : get() + getError();
       default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
     }
   }
