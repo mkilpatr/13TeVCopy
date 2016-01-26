@@ -17,6 +17,11 @@ namespace BkgPrediction {
 //  double metbins[NBINS+1]         = {200, 225, 250.0, 300.0, 400.0, 500.0, 600.0};
 //  double metbins_nt1[NBINS_NT1+1] = {200.0, 400.0, 1000.0};
 
+//  const int NBINS          = 1;
+//  const int NBINS_NT1      = 1;
+//  double metbins[NBINS+1]         = {200, 250};
+//  double metbins_nt1[NBINS_NT1+1] = {200, 250};
+
   map<TString,TString> sel;
   typedef map<TString,TString> BinMap;
 
@@ -54,14 +59,14 @@ namespace BkgPrediction {
 
   }
 
-  void removeZeroes(TH1F* hist) {
+  void removeZeroes(TH1F* hist, double setVal = 1, double setUnc = 0.8) {
 
     for(int ibin = 1; ibin < hist->GetNbinsX()+1; ++ibin) {
       double bincontent = hist->GetBinContent(ibin);
       double binerror = hist->GetBinError(ibin);
       if(bincontent == 0.0) {
-        hist->SetBinContent(ibin, 1);
-        hist->SetBinError(ibin, 0.8);
+        hist->SetBinContent(ibin, setVal);
+        hist->SetBinError(ibin, setUnc);
         cout << "\nBin " << ibin << " for " << hist->GetName() << " had " << bincontent << " +/- " << binerror << "; set to " << hist->GetBinContent(ibin) << " +/- " << hist->GetBinError(ibin) << endl;
       }
     }
@@ -95,10 +100,18 @@ namespace BkgPrediction {
     srhist->Sumw2();
     int srbin = 1;
 
-    for(auto* h : srhists) {
+    for(unsigned ibin = 0; ibin < bins.size(); ++ibin) {
+      auto *h = srhists.at(ibin);
+      bool isIntegrated = bins.at(ibin).Contains("_int");
+      double val, err;
+      if(isIntegrated) val = h->IntegralAndError(1, h->GetNbinsX(), err);
       for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {
-        srhist->SetBinContent(srbin, h->GetBinContent(ibin));
-        srhist->SetBinError(srbin, h->GetBinError(ibin));
+        if (!isIntegrated) {
+          val = h->GetBinContent(ibin);
+          err = h->GetBinError(ibin);
+        }
+        srhist->SetBinContent(srbin, val);
+        srhist->SetBinError(srbin, err);
         srbin++;
       }
     }
@@ -125,7 +138,8 @@ namespace BkgPrediction {
     TH1F* lostlep_cr = getSRHist(filelepcr, "ttbarplusw", crname, crbins);
     TH1F* data_cr = getSRHist(filelepcr, "data", crname, crbins);
 
-    removeZeroes(data_cr);
+//    For bins with zero event, set to 0.001 +/- 1.8.
+    removeZeroes(data_cr, 0.001, 1.8);
 
     TH1F* lostlep_tf = (TH1F*)lostlep_sr->Clone("lostlep_tf_" + region);
     lostlep_tf->Divide(lostlep_cr);
@@ -238,6 +252,8 @@ namespace BkgPrediction {
         nomtbin.ReplaceAll("_lowmt","_nomt");
       else if (nomtbin.Contains("_highmt"))
         nomtbin.ReplaceAll("_highmt","_nomt");
+      if(nomtbin.Contains("_int"))
+        nomtbin.ReplaceAll("_int", "");
       phocrnomtbins.push_back(nomtbin);
       zllcrbins.push_back(zllcrtosrmap[bin]);
     }
@@ -252,9 +268,10 @@ namespace BkgPrediction {
     cout << "\nData yield in Photon CR before mtb cut: " << data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) << endl;
     cout << "\nMC yield in Photon CR before mtb cut: " << photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1) << endl;
 
-    photon_phocr->Scale(data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) / photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1));
-
     cout << "\nData yield in Photon CR after mtb cut: " << data_phocr->Integral(0, data_phocr->GetNbinsX()+1) << endl;
+    cout << "\nMC yield in Photon CR after mtb cut: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
+
+    photon_phocr->Scale(data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) / photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1));
     cout << "\nMC yield in Photon CR after normalizing to data: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
 
     removeZeroes(data_phocr);

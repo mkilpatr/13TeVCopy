@@ -864,7 +864,7 @@ void PlotStuff::plot()
   assert(hist2dplotnames_.size() == hists2d_.size());
   assert(graphplotnames_.size()  == graphs_.size());
 
-  canvas_ = MakeCanvas("plotc","plotc",600,600);
+  canvas_ = MakeCanvas("plotc","plotc",config_.canvaswidth,config_.canvasheight);
 
   for(auto& histvec : hists_) {
     auto ihist = &histvec - &hists_[0];
