@@ -140,7 +140,7 @@ struct TreeFiller {
   size i_ngenbjets ;
   size i_njets     ;
   size i_njets30   ;
-  size i_njets60   ;
+  size i_njets75   ;
   size i_nbjets    ;
   size i_nbjets30  ;
   size i_nlbjets   ;
@@ -354,7 +354,7 @@ struct TreeFiller {
     i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
     i_njets          = data->add<int>("","njets","I",0);
     i_njets30        = data->add<int>("","njets30","I",0);
-    i_njets60        = data->add<int>("","njets60","I",0);
+    i_njets75        = data->add<int>("","njets75","I",0);
     i_nbjets         = data->add<int>("","nbjets","I",0);
     i_nbjets30       = data->add<int>("","nbjets30","I",0);
     i_nlbjets        = data->add<int>("","nlbjets","I",0);
@@ -979,10 +979,10 @@ struct TreeFiller {
 
   void fillJetInfo(TreeWriterData* data, vector<RecoJetF*> jets, vector<RecoJetF*> bjets, MomentumF* met) {
 
-    int njets60 = 0, njets30 = 0;
+    int njets75 = 0, njets30 = 0;
     int ntbjets = 0, nmbjets = 0, nlbjets = 0, nbjets30 = 0;
     for(auto* j : jets) {
-      if(j->pt() > 60.0) njets60++;
+      if(j->pt() > 75.0) njets75++;
       if(j->pt() > 30.0) njets30++;
       if(j->csv() > defaults::CSV_LOOSE)  nlbjets++;
       if(j->csv() > defaults::CSV_MEDIUM) nmbjets++;
@@ -991,7 +991,7 @@ struct TreeFiller {
     }
     data->fill<int>(i_njets,    int(jets.size()));
     data->fill<int>(i_njets30,  njets30);
-    data->fill<int>(i_njets60,  njets60);
+    data->fill<int>(i_njets75,  njets75);
     data->fill<int>(i_nbjets,   int(bjets.size()));
     data->fill<int>(i_nbjets30, nbjets30);
     data->fill<int>(i_nlbjets,  nlbjets);
