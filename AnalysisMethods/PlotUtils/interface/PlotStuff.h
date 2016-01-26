@@ -177,8 +177,8 @@ class PlotStuff {
         double                 minlogscale;
         double                 maxlogscale;
         bool                   logy;
-        bool                   canvasheight;
-        bool                   canvaswidth;
+        double                 canvasheight;
+        double                 canvaswidth;
         double                 tablelumi;
         SelMap                 selmap;
         ColorMap               colormap;
