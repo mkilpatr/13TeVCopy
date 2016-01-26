@@ -17,6 +17,11 @@ namespace BkgPrediction {
 //  double metbins[NBINS+1]         = {200, 225, 250.0, 300.0, 400.0, 500.0, 600.0};
 //  double metbins_nt1[NBINS_NT1+1] = {200.0, 400.0, 1000.0};
 
+//  const int NBINS          = 1;
+//  const int NBINS_NT1      = 1;
+//  double metbins[NBINS+1]         = {200, 250};
+//  double metbins_nt1[NBINS_NT1+1] = {200, 250};
+
   map<TString,TString> sel;
   typedef map<TString,TString> BinMap;
 
@@ -95,10 +100,18 @@ namespace BkgPrediction {
     srhist->Sumw2();
     int srbin = 1;
 
-    for(auto* h : srhists) {
+    for(unsigned ibin = 0; ibin < bins.size(); ++ibin) {
+      auto *h = srhists.at(ibin);
+      bool isIntegrated = bins.at(ibin).Contains("_int");
+      double val, err;
+      if(isIntegrated) val = h->IntegralAndError(1, h->GetNbinsX(), err);
       for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {
-        srhist->SetBinContent(srbin, h->GetBinContent(ibin));
-        srhist->SetBinError(srbin, h->GetBinError(ibin));
+        if (!isIntegrated) {
+          val = h->GetBinContent(ibin);
+          err = h->GetBinError(ibin);
+        }
+        srhist->SetBinContent(srbin, val);
+        srhist->SetBinError(srbin, err);
         srbin++;
       }
     }
@@ -238,6 +251,8 @@ namespace BkgPrediction {
         nomtbin.ReplaceAll("_lowmt","_nomt");
       else if (nomtbin.Contains("_highmt"))
         nomtbin.ReplaceAll("_highmt","_nomt");
+      if(nomtbin.Contains("_int"))
+        nomtbin.ReplaceAll("_int", "");
       phocrnomtbins.push_back(nomtbin);
       zllcrbins.push_back(zllcrtosrmap[bin]);
     }
@@ -252,9 +267,10 @@ namespace BkgPrediction {
     cout << "\nData yield in Photon CR before mtb cut: " << data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) << endl;
     cout << "\nMC yield in Photon CR before mtb cut: " << photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1) << endl;
 
-    photon_phocr->Scale(data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) / photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1));
-
     cout << "\nData yield in Photon CR after mtb cut: " << data_phocr->Integral(0, data_phocr->GetNbinsX()+1) << endl;
+    cout << "\nMC yield in Photon CR after mtb cut: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
+
+    photon_phocr->Scale(data_phocr_nomtb->Integral(0, data_phocr_nomtb->GetNbinsX()+1) / photon_phocr_nomtb->Integral(0, photon_phocr_nomtb->GetNbinsX()+1));
     cout << "\nMC yield in Photon CR after normalizing to data: " << photon_phocr->Integral(0, photon_phocr->GetNbinsX()+1) << endl;
 
     removeZeroes(data_phocr);
