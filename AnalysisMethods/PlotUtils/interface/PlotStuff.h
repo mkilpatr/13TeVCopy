@@ -177,6 +177,8 @@ class PlotStuff {
         double                 minlogscale;
         double                 maxlogscale;
         bool                   logy;
+        bool                   canvasheight;
+        bool                   canvaswidth;
         double                 tablelumi;
         SelMap                 selmap;
         ColorMap               colormap;
@@ -231,6 +233,8 @@ class PlotStuff {
           minlogscale(.8),
           maxlogscale(20.),
           logy(false),
+          canvasheight(600),
+          canvaswidth(600),
           tablelumi(4000.),
           colormap(DefaultColors()),
           plotoverflow(1),
@@ -369,6 +373,8 @@ class PlotStuff {
     void     setMaxLogScale(double maxlogscale) { config_.maxlogscale = maxlogscale; }
     // Make log plots
     void     setLogy() { config_.logy = true; }
+    // Set canvas size
+    void     setCanvasSize(double width, double height) { config_.canvaswidth = width; config_.canvasheight = height; }
     // Customize color for a particular sample
     void     setColor(TString sname, unsigned int color) { config_.colormap[sname] = color; }
     // Set option for plotting overflow bin by default
