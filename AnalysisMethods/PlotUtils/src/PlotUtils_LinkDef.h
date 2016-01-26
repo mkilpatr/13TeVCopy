@@ -3,9 +3,7 @@
 #include "../interface/PlotROCCurves.h"
 #include "../interface/EffPlotTools.hh"
 #include "../interface/PlotStuff.h"
-
-//#include "../interface/Refold.h"
-//#include "../interface/MakeRefold.h"
+#include "../interface/SFGetter.hh"
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -37,6 +35,10 @@
 #pragma link C++ namespace PlotTools;
 #pragma link C++ function PlotTools::initSamples;
 
+#pragma link C++ namespace SFGetter;
+#pragma link C++ class SFGetter::PseudoMatrixGausGenerator;
+#pragma link C++ class SFGetter::PseudoMatrixBootstrapGenerator;
+#pragma link C++ class SFGetter::MatrixSolver;
 
 #pragma link C++ class Sample ;
 

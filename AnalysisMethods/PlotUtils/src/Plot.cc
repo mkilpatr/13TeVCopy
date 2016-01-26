@@ -804,14 +804,22 @@ TGraphAsymmErrors* Plot::getRatioAsymmErrors(TH1F* hD, TH1F* hM) {
 void Plot::getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double& eH){
   if(mN <= 0) return;
   if(dN < 0)  return;
+  eL = 0;
+  eH = 0;
+
+  if(mN <= 0) return;
+  if(dN < 0)  return;
 
   const double alpha = 1 - 0.6827;
   static TRandom3 * rand = new TRandom3(1234);
 
-  TH1 * h = new TH1F("h","h",10000,0,10);
-  TH1 * hL = new TH1F("hL","hL",10000,0,10);
+  const int nEntries = 10000;
+  vector<float> h;
+  h.reserve(nEntries);
+  vector<float> hL;
+  hL.reserve(nEntries);
 
-  for(unsigned int i = 0; i < 100000; ++i){
+  for(unsigned int i = 0; i < nEntries; ++i){
     double ndL = 0;
     for(int iD = 0; iD < dN; ++iD){
       ndL -= TMath::Log(rand->Uniform());
@@ -819,37 +827,20 @@ void Plot::getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double
     double nd = ndL -  TMath::Log(rand->Uniform());
     double nm = rand->Gaus(mN,mE);
     if(nm < 0) nm = fabs(nm);
-    h->Fill(nd/nm);
-    hL->Fill(ndL/nm);
+    h.push_back(nd/nm);
+    hL.push_back(ndL/nm);
   }
 
-  double integral = h->Integral(0,-1);
-  bool foundL = false;
-  bool foundH = false;
 
-  for(int iB = 0; iB <= h->GetNbinsX() + 1; ++iB){
-    if(!foundL && dN){
-      if(hL->Integral(0,iB)/integral >= alpha/2 ){
-        foundL = true;
-        eL =  hL->GetBinCenter(iB);
-      }
-    }
-    if(!foundH){
-      if(h->Integral(iB,-1)/integral <alpha/2 ){
-        foundH = true;
-        eH =  h->GetBinCenter(iB);
-      }
-    }
-  }
-  if(foundH)
-    eH = eH - double(dN)/mN;
-  else eH = 10;
-  if(dN) {
-    assert(foundL);
-    eL = double(dN)/mN - eL;
-  }
-  delete h;
-  delete hL;
+
+  if(dN){
+      std::sort(hL.begin(), hL.end());
+      eL = hL[int( double(nEntries)*alpha/2  )];
+      eL = double(dN)/mN - eL;
+   }
+  std::sort(h.begin(), h.end());
+  eH = h[int( double(nEntries)* (1 - alpha/2)  )];
+  eH = eH - double(dN)/mN;
 }
 
 void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
