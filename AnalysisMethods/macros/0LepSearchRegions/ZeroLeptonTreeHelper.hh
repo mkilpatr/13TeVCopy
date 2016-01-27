@@ -783,11 +783,11 @@ struct TreeFiller {
       // do it for ctt fatjets
       unsigned int countctttags = 0;
       unsigned int indxctt = 99;
+      float maxcttpt_ = -1.;
       for (auto* ctt : ana->cttTops) {
 
-	float maxcttpt_ = -1.;
 	float cttpt_ = ctt->p4().pt();
-	if (cttpt_>maxcttpt_) { indxctt = countctttags; }
+	if (cttpt_>maxcttpt_) { indxctt = countctttags; maxcttpt_ = cttpt_;}
 	
 	++countctttags; 
       }
@@ -817,11 +817,11 @@ struct TreeFiller {
       // do it for ak8 fatjets
       unsigned int countfjtags = 0;
       unsigned int indxfj = 99;
+      float maxfjpt_ = -1.;
       for (auto* fj : ana->fatJets) {
 
-	float maxfjpt_ = -1.;
 	float fjpt_ = fj->p4().pt();
-	if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	if (fjpt_>maxfjpt_) { indxfj = countfjtags; maxfjpt_ = fjpt_;}
 	
 	++countfjtags; 
       }
@@ -858,14 +858,14 @@ struct TreeFiller {
       // do it for ctt tags
       unsigned int countctttags = 0;
       unsigned int indxctt = 99;
+      float maxcttpt_ = -1.;
       for (auto* ctt : ana->cttTops) {
 
 	float drlepctt_ = PhysicsUtilities::deltaR(*lep,ctt->p4());
-	float maxcttpt_ = -1.;
 
 	if (drlepctt_>=(3.14/2.)) { 
 	  float cttpt_ = ctt->p4().pt();
-	  if (cttpt_>maxcttpt_) { indxctt = countctttags; }
+	  if (cttpt_>maxcttpt_) { indxctt = countctttags; maxcttpt_ = cttpt_;}
 	}
 	
 	++countctttags; 
@@ -896,14 +896,14 @@ struct TreeFiller {
       // do it for ak8 fatjets
       unsigned int countfjtags = 0;
       unsigned int indxfj = 99;
+      float maxfjpt_ = -1.;
       for (auto* fj : ana->fatJets) {
 
 	float drlepfj_ = PhysicsUtilities::deltaR(*lep,fj->p4());
-	float maxfjpt_ = -1.;
 
 	if (drlepfj_>=(3.14/2.)) { 
 	  float fjpt_ = fj->p4().pt();
-	  if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	  if (fjpt_>maxfjpt_) { indxfj = countfjtags; maxfjpt_ = fjpt_;}
 	}
 	
 	++countfjtags; 
