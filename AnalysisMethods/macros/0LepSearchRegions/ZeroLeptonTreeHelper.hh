@@ -57,6 +57,7 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_systweights;
   size i_ismc      ;
   size i_puWeight  ;
   size i_pu50NSWeight  ;
@@ -93,6 +94,7 @@ struct TreeFiller {
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
+  size i_distoppt  ;
   size i_lepvetoweight;
   size i_lepselweight;
   size i_leptnpweight;
@@ -272,6 +274,7 @@ struct TreeFiller {
     i_event          = data->add<unsigned int>("","event","i",0);
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
+    i_systweights    = data->addMulti<float>("","systweights",0);
     i_puWeight       = data->add<float>("","puWeight","F",0);
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
@@ -307,6 +310,7 @@ struct TreeFiller {
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
+    i_distoppt       = data->add<float>("","distoppt","F",0);
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
@@ -450,6 +454,9 @@ struct TreeFiller {
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<bool >(i_ismc, ana->isMC());
     data->fill<float>(i_weight, ana->weight);
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
@@ -675,8 +682,14 @@ struct TreeFiller {
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
+    GenParticleF * stop1 = 0;
+    GenParticleF * stop2 = 0;
     if(isMC) {
       for(auto* p : ana->genParts) {
+        if(ParticleInfo::isA(ParticleInfo::p_stop1, p) and !stop1)
+          stop1 = p;
+        else if(ParticleInfo::isA(ParticleInfo::p_stop1, p) and !stop2)
+          stop2 = p;
         const GenParticleF * genPartMom = 0;
 
 	if (abs(p->pdgId())==6) { float tmppt_ = p->p4().pt(); gentoppt_.push_back(tmppt_); }
@@ -698,6 +711,10 @@ struct TreeFiller {
           if(!lepDecay)
             nPromptTaus++;
         }
+      }
+      if(stop1 && stop2) {
+        MomentumF* distop = new MomentumF(stop1->p4() + stop2->p4());
+        data->fill<float>(i_distoppt, distop->pt());
       }
     }
     data->fill<int  >(i_ngoodgenmu, nGoodGenMu);

@@ -138,7 +138,7 @@ TH1F* Plot::addOverFlow(TH1F* h, unsigned int overflowopt)
 
 }
 
-void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!item)
@@ -155,6 +155,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
     hist->SetLineColor(linecolor);
 
   hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
 
   if(!fLeg)
     fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
@@ -172,7 +173,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
 
 }
 
-void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!f)
@@ -180,11 +181,11 @@ void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, i
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
+  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
 
 }
 
-void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!item)
@@ -203,6 +204,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
     hist->SetLineColor(linecolor);
 
   hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
 
   if(!fLeg)
     fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
@@ -220,7 +222,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
 
 }
 
-void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!f)
@@ -228,7 +230,7 @@ void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString lab
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
+  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
 
 }
 
@@ -1304,7 +1306,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         
     for(uint i=0; i<vHists.size(); i++) {
       TH1F *h = vHists[i];              
-      h->SetLineWidth(3);
+      //h->SetLineWidth(3);
       char opt[100];
       sprintf(opt,"same%s",vHistOpts[i].Data());
       h->Draw(opt);
