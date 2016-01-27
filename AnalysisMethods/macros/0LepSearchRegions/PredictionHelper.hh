@@ -173,23 +173,42 @@ namespace BkgPrediction {
       cout << "\nCR bin for " << bin << ": " << crtosrmap[bin] << endl;
       crbins.push_back(crtosrmap[bin]);
     }
+    TH1F* qcd_cr_withvetoes = getSRHist(file, "qcd", crname, crbins);
     TH1F* qcd_cr = getSRHist(filenovetoes, "qcd", crname+"novetoes", crbins);
     TH1F* data_cr = getSRHist(file, "data", crname, crbins);
     TH1F* data_less_nonqcd_cr = (TH1F*)data_cr->Clone("data_less_nonqcd_" + crname);
+
+    TH1F* nonqcd_cr = (TH1F*)data_cr->Clone("nonqcd_" + crname);
+
+    for(int ibin = 1; ibin < nonqcd_cr->GetNbinsX()+1; ++ibin) {
+      nonqcd_cr->SetBinContent(ibin,0);
+    }
+
     for(auto sname : bkgsamples) {
       if(sname == "qcd" || sname == "data") continue;
       TH1F* mc_cr = getSRHist(file, sname, crname, crbins);
-      data_less_nonqcd_cr->Add(mc_cr, -1);
+      nonqcd_cr->Add(mc_cr);
+    }
+    TH1F* nonqcd_sf_cr = (TH1F*)data_cr->Clone("nonqcd_sf_" + crname);
+
+    for(int ibin = 1; ibin < nonqcd_sf_cr->GetNbinsX()+1; ++ibin) {
+      double dY = data_cr->GetBinContent(ibin) < 10 ? qcd_cr_withvetoes->GetBinContent(ibin) + nonqcd_cr->GetBinContent(ibin) : data_cr->GetBinContent(ibin);
+      if(dY <= 0) dY = 1;
+      double r = nonqcd_cr->GetBinContent(ibin)/dY;
+      nonqcd_sf_cr->SetBinContent(ibin, 1 - r);
+      nonqcd_sf_cr->SetBinError(ibin,r);
     }
 
-    removeNegatives(data_less_nonqcd_cr);
-    removeZeroes(data_less_nonqcd_cr);
-
-    cout << "\nData - non-QCD MC in QCD CR: ";
-    for(int ibin = 1; ibin < data_less_nonqcd_cr->GetNbinsX()+1; ++ibin) {
-      cout << data_less_nonqcd_cr->GetBinContent(ibin) << " +/- " << data_less_nonqcd_cr->GetBinError(ibin) << "\t";
+    cout << "\nData SF for contamination in QCD CR: ";
+    for(int ibin = 1; ibin < nonqcd_sf_cr->GetNbinsX()+1; ++ibin) {
+      cout << nonqcd_sf_cr->GetBinContent(ibin) << " +/- " << nonqcd_sf_cr->GetBinError(ibin) << "\t";
     }
     cout << endl;
+    removeNegatives(data_less_nonqcd_cr);
+    removeZeroes(data_less_nonqcd_cr);
+    data_less_nonqcd_cr->Multiply(nonqcd_sf_cr);
+
+
 
     TH1F* qcd_tf = (TH1F*)qcd_sr->Clone("qcd_tf_" + region);
     qcd_tf->Divide(qcd_cr);
