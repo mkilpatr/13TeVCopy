@@ -86,10 +86,10 @@ class Plot {
     void draw(TCanvas *c, bool doSave=false, TString format="png");
   
     // Adding a histogram/graph to the plot. Overflow options: 0=no overflow, 1=add overflow content to last bin, 2=add extra bin with overflow contents
-    void addHist(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
-    void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
-    void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
-    void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0);
+    void addHist(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
+    void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
+    void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
+    void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
     void addHist2D(TH2F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addHist2DScaled(TH2F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);

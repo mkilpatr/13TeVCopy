@@ -567,7 +567,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else {
-            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 1, config_.plotoverflow);
+            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 11, config_.plotoverflow, 5);
           }
         } else {
           if(config_.scaletodata)
@@ -578,7 +578,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         }
       }
 
-      if(plot->getStack()->GetMaximum() > max) {
+      if(plot->getStack() && plot->getStack()->GetMaximum() > max) {
         max = plot->getStack()->GetMaximum();
         maxbin = plot->getStackMaxBin();
       }
