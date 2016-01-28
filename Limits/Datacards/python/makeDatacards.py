@@ -465,7 +465,7 @@ class DatacardConfig:
       """Function to get dummy uncertanties. 
       """
       if procname=='sig' :
-          return 1.5
+          return 1.1
       else :
           return 1.3
       return '-'

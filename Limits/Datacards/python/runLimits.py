@@ -241,7 +241,8 @@ class LimitConfig:
       
       # === Asymptotic
       if self.limitmethod=='AsymptoticLimits':
-        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 --rMin 0 --rMax 10 -n '+signal
+        #runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 --rMin 0 --rMax 10 -n '+signal
+        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected --rMin 0 --rMax 10 -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
