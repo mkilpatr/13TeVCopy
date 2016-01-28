@@ -574,7 +574,17 @@ class DatacardConfig:
                     for i in range(len(binnames)):
                         binname = binnames[i]
                         uncname = uncnames[i]
+                        hasunc  = False
                         if not self.uncertainties.has_key(uncname) :
+                            for name,unc in self.uncertainties.iteritems() :
+                                if name in uncname :
+                                    self.uncertainties[uncname] = Uncertainty(uncname,unc.type)
+                                    self.uncnames.append(uncname)
+                                    hasunc = True
+                                    break
+                        else :
+                            hasunc = True
+                        if not hasunc :
                             if self.printuncs :
                                 print 'Didn\'t find uncertainty ',uncname
                             continue
