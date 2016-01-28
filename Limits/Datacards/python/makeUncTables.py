@@ -16,50 +16,54 @@ def main():
     sys.exit(1)
   inDir = args[0]
   
-  print '\n\n\n', '='*5, 'Making LLB unc table...', '\n\n'
-  print makeTable(inDir,'ttbarplusw')
-  print '\n\n\n', '='*5, 'Making Znunu unc table...', '\n\n'
-  print makeTable(inDir,'znunu')
-  print '\n\n\n', '='*5, 'Making ttZ unc table...', '\n\n'
-  print makeTable(inDir,'ttz')
+  for k in sorted(ps.keys()) : 
+    print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
+    print makeTable(inDir,k)
   print '\n\n\n'
 
 binsB   = (1,2)
 binsMet = (250,300,400,500,600)
-ps = {'signal':2, 'ttbarplusw':3, 'znunu':4, 'ttz':5}
+ps = {'ttbarplusw':3, 'znunu':4, 'ttz':5, 'qcd':6}
 sources = {
-  "ttbarplusw" : [('corr_l'               , 'Lepton/tau veto'        ),
-                  ('eff_b_heavy'          , 'B-tagging: heavy flavor'),
-                  ('eff_b_light'          , 'b-tagging: light flavor'),
-                  ('lostlep_bin_onelepcr' , 'data statistics (CR)'   ),
-                  ('mcstat_ttbarplusw_bin', 'Monte Carlo statistics' ),
-                  ('pu'                   , 'Pileup reweighting'     ),
-                  ('scale_j'              , 'Jet energy scale'       ),
-                  ('ttbarNorm'            , '\\ttbar normalization'  ),
-                  ('wjetsNorm'            , '\\W+jets normalization' ),
+  'ttbarplusw' : [('corr_l'               , 'Lepton veto'                ),
+                  ('corr_tau'             , 'Tau veto'                   ),
+                  ('eff_b_heavy'          , '\cPqb-tagging: heavy flavor'),
+                  ('eff_b_light'          , '\cPqb-tagging: light flavor'),
+                  ('pu'                   , 'Pileup reweighting'         ),
+                  ('scale_j'              , 'Jet energy scale'           ),
+                  ('ttbarNorm'            , '\\ttbar normalization'      ),
+                  ('wjetsNorm'            , '\\W+jets normalization'     ),
+                  ('lostlep_bin_onelepcr' , 'Data statistics (CR)'       ),
+                  ('mcstat_ttbarplusw_bin', 'Monte Carlo statistics (SR)'),
   ],
-  "znunu" : [('corr_l'                        , 'Lepton/tau veto'                     ),
-             ('eff_b_heavy'                   , 'B-tagging: heavy flavor'             ),
-             ('eff_b_light'                   , 'b-tagging: light flavor'             ),
-             ('pu'                            , 'Pileup reweighting'                  ),
-             ('scale_j'                       , 'Jet energy scale'                    ),
-             ('zfromgamma_mcstat_bin'         , 'Monte Carlo statistics (SR)'         ),
-             ('zfromgamma_mcstat_bin_photoncr', 'Monte Carlo statistics (CR)'         ),
-             ('zfromgamma_stat_bin_photoncr'  , 'data statistics (CR)'                ),
-             ('znunu_rzunc_1b'                , '$R_{\\cPZ}$ \\met extrapolation (1B)'),
-             ('znunu_rzunc_2b'                , '$R_{\\cPZ}$ \\met extrapolation (2B)'),
+  'znunu' : [('corr_l'                        , 'Lepton veto'                ),
+             ('eff_b_heavy'                   , '\cPqb-tagging: heavy flavor'),
+             ('eff_b_light'                   , '\cPqb-tagging: light flavor'),
+             ('pu'                            , 'Pileup reweighting'         ),
+             ('scale_j'                       , 'Jet energy scale'           ),
+             ('znunu_rzunc'                   , '$R_{\\cPZ}$'                ),
+             ('zfromgamma_stat_bin_photoncr'  , 'Data statistics (CR)'       ),
+             ('zfromgamma_mcstat_bin'         , 'Monte Carlo statistics (SR)'),
+             ('zfromgamma_mcstat_bin_photoncr', 'Monte Carlo statistics (CR)'),
   ],
-  "ttz" : [('corr_l'        , 'Lepton/tau veto'        ),
-           ('eff_b_heavy'   , 'B-tagging: heavy flavor'),
-           ('eff_b_light'   , 'b-tagging: light flavor'),
-           ('lumi'          , 'Luminosity'             ),
-           ('mcstat_ttZ_bin', 'Monte Carlo statistics' ),
-           ('pu'            , 'Pileup reweighting'     ),
-           ('scale_j'       , 'Jet energy scale'       ),
-           ('ttZ_pdfunc'    , 'pdf uncertanty'         ),
-           ('ttZ_scaleunc'  , '\\ttZ~scale'            ),
-           ('ttZNorm'       , '\\ttZ~normalization'    ),
-  ] 
+  'ttz' : [('corr_l'        , 'Lepton veto'                ),
+           ('eff_b_heavy'   , '\cPqb-tagging: heavy flavor'),
+           ('eff_b_light'   , '\cPqb-tagging: light flavor'),
+           ('lumi'          , 'Luminosity'                 ),
+           ('pu'            , 'Pileup reweighting'         ),
+           ('scale_j'       , 'Jet energy scale'           ),
+           ('ttZ_pdfunc'    , 'Pdf uncertanty'             ),
+           ('ttZ_scaleunc'  , '\\ttZ~scale'                ),
+           ('ttZNorm'       , '\\ttZ~normalization'        ),
+           ('mcstat_ttZ_bin', 'Monte Carlo statistics (SR)'),
+  ],
+  'qcd' : [('corr_tau'          , 'Tau veto'                   ),
+           ('eff_b_heavy'       , '\cPqb-tagging: heavy flavor'),
+           ('eff_b_light'       , '\cPqb-tagging: light flavor'),
+           ('pu'                , 'Pileup reweighting'         ),
+           ('qcd_jetresptailunc', 'Jet response tail'          ),
+           ('qcd_stat_bin_qcdcr', 'Monte Carlo statistics (SR)'),
+  ]
 }
 
 def makeTable(inDir,bkg):
@@ -105,7 +109,7 @@ def getUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr=''):
     if s == '-' : return s
     if s == '0' : return '0\\%'
     n = float(ul[2])
-    u = sqrt(n*float(s))/n
+    u = sqrt(n)/n
   u *= 100
   if u>0 : u += 0.5
   else   : u -= 0.5
