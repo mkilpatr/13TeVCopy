@@ -21,6 +21,25 @@ vector<TString> binlabels = {"bin_250_5_1_0_0", "bin_300_5_1_0_0", "bin_400_5_1_
                              "bin_250_5_1_1_175", "bin_300_5_1_1_175", "bin_400_5_1_1_175", "bin_500_5_1_1_175", "bin_600_5_1_1_175",
                              "bin_250_5_2_1_175", "bin_300_5_2_1_175", "bin_400_5_2_1_175", "bin_500_5_2_1_175", "bin_600_5_2_1_175"};
 
+vector<TString> plotlabels {
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600",
+    "[250, 300]", "[300, 400]", "[400, 500]", "[500, 600]", ">600"
+};
+
+void setBinLabels(TH1 *h, const vector<TString>& labels){
+  for (unsigned i=0; i<binlabels.size() && i<h->GetNbinsX(); ++i){
+    h->GetXaxis()->SetBinLabel(i+1, labels.at(i));
+  }
+}
+
 void addSysUnc(TH1F* nominal, TH1F* varup, TH1F* vardown, TString name, TString procname, int sysopt = 1)
 {
 
@@ -75,6 +94,7 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     TFile* file = new TFile(inputFileName);
     TH1F* hbkg = (TH1F*)file->Get(bkg + histSuffix);
     assert(hbkg);
+    setBinLabels(hbkg, plotlabels);
     nomhists.push_back(hbkg);
     if(ibkg == 0) {
       bkgtotal = (TH1F*)hbkg->Clone("bkgtotal");
@@ -117,6 +137,7 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     auto sig = sigs[isig];
     TH1F* hsig = (TH1F*)sigfile->Get(sig + histSuffix);
     assert(hsig);
+    setBinLabels(hsig, plotlabels);
     sighists.push_back(hsig);
   }
 
@@ -141,11 +162,11 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
 
   TCanvas* mycanv = StyleTools::MakeCanvas("myc","",800,600);
 
-  Plot* plot_sr1 = new Plot("sryields_lowmt_mednj","","Search region","Events");
-  Plot* plot_sr2 = new Plot("sryields_lowmt_highnj","","Search region","Events");
-  Plot* plot_sr3 = new Plot("sryields_highmt_nt0_mednj","","Search region","Events");
-  Plot* plot_sr4 = new Plot("sryields_highmt_nt0_highnj","","Search region","Events");
-  Plot* plot_sr5 = new Plot("sryields_highmt_nt1","","Search region","Events");
+  Plot* plot_sr1 = new Plot("sryields_lowmt_mednj","","#slash{E}_{T} [GeV]","Events");
+  Plot* plot_sr2 = new Plot("sryields_lowmt_highnj","","#slash{E}_{T} [GeV]","Events");
+  Plot* plot_sr3 = new Plot("sryields_highmt_nt0_mednj","","#slash{E}_{T} [GeV]","Events");
+  Plot* plot_sr4 = new Plot("sryields_highmt_nt0_highnj","","#slash{E}_{T} [GeV]","Events");
+  Plot* plot_sr5 = new Plot("sryields_highmt_nt1","","#slash{E}_{T} [GeV]","Events");
   for(unsigned int ibkg = 0; ibkg < bkgs.size(); ++ibkg) {
     plot_sr1->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
     plot_sr2->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
