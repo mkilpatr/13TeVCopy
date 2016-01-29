@@ -744,6 +744,7 @@ class DatacardConfig:
                 hasEntry = True
             elif isglobal and unc.vals['all'].has_key(background) :
                 uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
+                hasEntry = True
             else :
                 uncline += '-'.ljust(self.uncwidth)
         uncline += '\n'
