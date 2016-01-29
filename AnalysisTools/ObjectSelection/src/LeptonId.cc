@@ -129,7 +129,7 @@ Muon zl_ctr_diLep_sec_muons(
 //-------------- Single lepton Muons + Electrons ------------------------------//
 namespace LeptonSelection {
   Electron sl_sel_electrons (
-                             30,
+                             20,
                              1.4442,
                              -1,
                              -1,
@@ -149,7 +149,7 @@ namespace LeptonSelection {
                               2.1,
                               0.02,
                               0.1,
-                              &MuonID ::medium,
+                              &MuonID ::tight,
                               &MuonISO::medMini,
                               SL_SEL_MU);
   Muon sl_sel_sec_muons(
