@@ -907,6 +907,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     fStack->GetHistogram()->GetYaxis()->SetTitle(fYTitle);
     if(fYmin < fYmax) fStack->GetHistogram()->GetYaxis()->SetRangeUser(fYmin,fYmax);
     else fStack->GetHistogram()->GetYaxis()->SetRangeUser(0,1.1*ymax);
+    if(fXmin < fXmax) fStack->GetHistogram()->GetXaxis()->SetRangeUser(fXmin,fXmax);
     fStack->GetHistogram()->GetYaxis()->SetTitleOffset(1.0);
     fStack->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
     fStack->Draw("hist");
@@ -933,11 +934,23 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p1->RedrawAxis();
 
   if(fLeg) {
-    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+//    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
   }
+
+  // Draw lines
+  for(uint i=0; i<fLines.size(); i++)
+    fLines[i]->Draw();
+
+  // Draw Boxes
+  for(uint i=0; i<fBoxes.size(); i++)
+    fBoxes[i]->Draw();
+
+  // Draw textboxes
+  for(uint i=0; i<fTextBoxes.size(); i++)
+    fTextBoxes[i]->Draw();
 
   c->cd();
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
@@ -950,6 +963,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p2->cd();
 
   TH1F *h3 = (TH1F*)hData->Clone("data3"); 
+  if(fXmin < fXmax) {
+    h3->GetXaxis()->SetRangeUser(fXmin,fXmax);
+  }
 
   h3->SetTitleSize  (0.16,"Y");
   h3->SetTitleOffset(0.45,"Y");
@@ -968,6 +984,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
+  if(fXmin < fXmax) { xmin=fXmin; xmax=fXmax; }
   TLine *l = new TLine(xmin,1,xmax,1);
   l->SetLineWidth(3);
   l->SetLineColor(kBlack);
@@ -1299,7 +1316,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         hMC->SetLineWidth(0);
         hMC->SetMarkerSize(0);
         hMC->Draw("E2same");
-        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+//        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
       }
 
     }
