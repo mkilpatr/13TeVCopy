@@ -688,8 +688,8 @@ class DatacardConfig:
                                             mcfile = os.path.join( self.treebase, samp+self.filesuffix )
                                             selection = self.basesel
                                             bin = None
+                                            cr = None
                                             if not binname.split('_')[1].isdigit() :
-                                                cr = None
                                                 for fcr in self.fitcontrolregions.values() :
                                                     if fcr.label == binname.split('_')[1] :
                                                         cr = fcr
@@ -702,9 +702,14 @@ class DatacardConfig:
                                                 mcfile = mcfile.replace(samp, sampname)
                                             else :
                                                 bin = self.binmap[binname]
+                                                cr = self.signalregion
                                             (mcevts,mcunc) = self.getNumEventsError(mcfile, bin, cr.weight, 1, selection)
                                             if not mcevts==0 :
-                                                unc.vals[binname][samp] = 1 + (mcunc/mcevts)
+                                                if mcunc > mcevts :
+                                                    print 'Warning! %s has %s uncertainty %4.2f in bin %s, setting to 100' % (samp,uncname,100.0*mcunc/mcevts,binname)
+                                                    unc.vals[binname][samp] = 2.0
+                                                else :
+                                                    unc.vals[binname][samp] = 1 + (mcunc/mcevts)
 
                                     
 
