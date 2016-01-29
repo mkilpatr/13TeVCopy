@@ -41,8 +41,8 @@ namespace ucsbsusy {
               const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
               const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel);
       virtual ~TnPCorr();
-      float getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const;
-      float getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType ) const;
+      float getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, float &D, float &dD, float &ED, float &dED, float &S, float &dS, float &ES, float &dES, bool &passId, bool &passIdIso ) const;
+      float getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, float &D, float &dD, float &E, float &dE ) const;
       float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType) const;
       virtual float pickBin(int bin, int nBins) const { if(bin<1)     return 1;
                                                         if(bin>nBins) return nBins;
