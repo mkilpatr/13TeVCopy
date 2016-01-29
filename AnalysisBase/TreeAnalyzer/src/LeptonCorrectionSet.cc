@@ -365,7 +365,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
     } // gen muons
   } // muCorrType != NONE
   float unc = 0;
-  if(nLeps==0) return 1.0;
+  if(nLeps==0) unc = 0.0;
   else if(nLeps==1) {
     if(passIdIso1)   unc = D1*S1*sqrt(dD1*dD1/(D1*D1) + dS1*dS1/(S1*S1));
     else if(passId1) unc = sqrt(fail2(ES1,S1)*dD1*dD1 + D1*D1*dfaildE2(ES1)*dES1*dES1 + D1*D1*dfaildsf2(ES1,S1)*dS1*dS1);
