@@ -42,6 +42,7 @@ void getSTDTreesAndNames(vector<pair<TTree*,TreeType> >& trees){
 }
 const TString METPresel = "passjson && passeebadscflt && passhbhefltloose && passcscbeamhaloflt && passeebadsc4flt && passhbheisoflt && passdijetmet && met >= 250 && j2pt >= 75";
 const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
+const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";
 
 void getRegion(){
 //  TString presel = TString::Format("%s && nvetolep == 0", METPresel.Data());
@@ -401,8 +402,12 @@ void prepareTrees() {
     tI->SetBranchStatus("njets",1);
     tI->SetBranchStatus("nbjets",1);
     tI->SetBranchStatus("nlbjets",1);
-    tI->SetBranchStatus("dphicsv12met",1);
+    tI->SetBranchStatus("mtcsv12met",1);
     tI->SetBranchStatus("mtlepmet",1);
+    tI->SetBranchStatus("qcdRespTailWeight",1);
+    tI->SetBranchStatus("upTailWeight",1);
+    tI->SetBranchStatus("downTailWeight",1);
+
     TFile * fO = new TFile(pre +"_skimmed.root","recreate");
     fO->cd();
     TTree * tO = tI->CopyTree(METPresel);
@@ -410,7 +415,7 @@ void prepareTrees() {
     fO->Close();
   };
 
-//  for(unsigned int iT = 0; trees[iT][0]; ++iT)proc(trees[iT]);
+  for(unsigned int iT = 0; trees[iT][0]; ++iT)proc(trees[iT]);
 
   auto proc2 = [](TString pre){
     TFile * fI = new TFile(pre +"_skimmed.root","Read");
@@ -423,7 +428,7 @@ void prepareTrees() {
     fO->Close();
   };
 
-//  for(unsigned int iT = 0; trees[iT][0]; ++iT)proc2(trees[iT]);
+  for(unsigned int iT = 0; trees[iT][0]; ++iT)proc2(trees[iT]);
 
 
   auto proc3 = [](TString pre){
@@ -464,6 +469,19 @@ void prepareTrees() {
   proc3("pieces/qcd_tree");
 
 
+  auto proc4 = [](TString pre){
+    TFile * fI = new TFile(pre +"_skimmed.root","Read");
+    TTree *tI =0;
+    fI->GetObject("Events",tI);
+    TFile * fO = new TFile(pre +"_skimmed_baseline.root","recreate");
+    fO->cd();
+    TTree * tO = tI->CopyTree(BaselineExtraCuts);
+    tO->Write();
+    fO->Close();
+  };
+
+  for(unsigned int iT = 0; trees[iT][0]; ++iT)proc4(trees[iT]);
+
 }
 
 #endif
@@ -473,8 +491,8 @@ void GetTailSF()
 {
 
   StyleTools::SetStyle();
-//  prepareTrees();
-  doFullExtraction();
+  prepareTrees();
+//  doFullExtraction();
 //  getRegion();
 //  checkContamination();
 //  getSFs();
