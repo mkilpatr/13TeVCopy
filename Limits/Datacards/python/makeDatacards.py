@@ -261,7 +261,8 @@ class DatacardConfig:
                 lineSys += lineSysSig + '\n' + lineSysBkg
             else :
             # fill uncertainties according to values defined in uncertainty config files
-                for uncname,unc in self.uncertainties.iteritems() :
+                for uncname in sorted(self.uncertainties.keys()) :
+                    unc = self.uncertainties[uncname]
                     if not unc.vals.has_key(binLabel) and not unc.vals.has_key('all') :
                         continue
                     backgrounds = [fitregion.backgrounds[0].split('_')[0]] if fitregion.type=='control' else [b for b in fitregion.backgrounds]
@@ -739,7 +740,7 @@ class DatacardConfig:
                 if unc.type == 'gmN' :
                     uncline += ('%6.5f' % float(nbkgevts[ibkg]/float(unc.cr_nevts[binlabel]['data']))).ljust(self.uncwidth)
                 else :
-                    uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)                        
+                    uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)
                 hasEntry = True
             elif isglobal and unc.vals['all'].has_key(background) :
                 uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
