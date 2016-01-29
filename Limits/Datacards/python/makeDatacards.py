@@ -740,19 +740,10 @@ class DatacardConfig:
                 if unc.type == 'gmN' :
                     uncline += ('%6.5f' % float(nbkgevts[ibkg]/float(unc.cr_nevts[binlabel]['data']))).ljust(self.uncwidth)
                 else :
-                    if unc.vals[binlabel][background]-1 > 1 :
-                        print 'uncertainty for bin', uncline.split()[0], 'is', str(int((unc.vals[binlabel][background]-1)*100))+'%', '... setting it to 100%'
-                        uncline += ('%4.2f' % 2.0).ljust(self.uncwidth)
-                    else:
-                        uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)
+                    uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)
                 hasEntry = True
             elif isglobal and unc.vals['all'].has_key(background) :
-                if unc.vals[binlabel][background]-1 > 1 :
-                    print 'uncertainty for bin', uncline.split()[0], 'is', str(int((unc.vals['all'][background]-1)*100))+'%', '... setting it to 100%'
-                    uncline += ('%4.2f' % 2.0).ljust(self.uncwidth)
-                else :
-                    uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
-                hasEntry = True
+                uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
             else :
                 uncline += '-'.ljust(self.uncwidth)
         uncline += '\n'
