@@ -57,6 +57,7 @@ struct TreeFiller {
   size i_lumi      ;
   size i_event     ;
   size i_weight    ;
+  size i_systweights;
   size i_ismc      ;
   size i_puWeight  ;
   size i_pu50NSWeight  ;
@@ -93,6 +94,7 @@ struct TreeFiller {
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
+  size i_distoppt  ;
   size i_lepvetoweight;
   size i_lepselweight;
   size i_leptnpweight;
@@ -140,7 +142,7 @@ struct TreeFiller {
   size i_ngenbjets ;
   size i_njets     ;
   size i_njets30   ;
-  size i_njets60   ;
+  size i_njets75   ;
   size i_nbjets    ;
   size i_nbjets30  ;
   size i_nlbjets   ;
@@ -190,6 +192,11 @@ struct TreeFiller {
   size i_dilepmass ;
   size i_gentop1pt;
   size i_gentop2pt;
+  size i_meff;
+  size i_dphitopmet;
+  size i_metovsqrtht;
+  size i_toppt;
+  size i_httwoleadfatjet;
 
   // below is for top / w tagging and SF extraction
   size i_sfbclose2lep;
@@ -267,6 +274,7 @@ struct TreeFiller {
     i_event          = data->add<unsigned int>("","event","i",0);
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
+    i_systweights    = data->addMulti<float>("","systweights",0);
     i_puWeight       = data->add<float>("","puWeight","F",0);
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
@@ -302,6 +310,7 @@ struct TreeFiller {
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
+    i_distoppt       = data->add<float>("","distoppt","F",0);
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
@@ -349,7 +358,7 @@ struct TreeFiller {
     i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
     i_njets          = data->add<int>("","njets","I",0);
     i_njets30        = data->add<int>("","njets30","I",0);
-    i_njets60        = data->add<int>("","njets60","I",0);
+    i_njets75        = data->add<int>("","njets75","I",0);
     i_nbjets         = data->add<int>("","nbjets","I",0);
     i_nbjets30       = data->add<int>("","nbjets30","I",0);
     i_nlbjets        = data->add<int>("","nlbjets","I",0);
@@ -399,6 +408,11 @@ struct TreeFiller {
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
     i_gentop1pt      = data->add<float>("","gentoppt1","F",0);
     i_gentop2pt      = data->add<float>("","gentoppt2","F",0);
+    i_meff           = data->add<float>("","meff","F",0);
+    i_dphitopmet     = data->add<float>("","dphitopmet","F",0);
+    i_metovsqrtht    = data->add<float>("","metovsqrtht","F",0);
+    i_toppt          = data->add<float>("","toppt","F",0);
+    i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
 
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
@@ -440,6 +454,9 @@ struct TreeFiller {
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<bool >(i_ismc, ana->isMC());
     data->fill<float>(i_weight, ana->weight);
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
@@ -514,6 +531,16 @@ struct TreeFiller {
     data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
     data->fill<int>(i_nctt_cttmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
     data->fill<int>(i_nctt_cttmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    if (topsPass.size()>0) { 
+      data->fill<float>(i_toppt,topsPass[0].Pt()); 
+      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(topsPass[0], *ana->met))); 
+    } 
+    else { 
+      data->fill<float>(i_toppt,0.); 
+      data->fill<float>(i_dphitopmet,0); 
+    }
+    
+    if (topCands.size()>1) { data->fill<float>(i_httwoleadfatjet,(topCands[0].Pt()+topCands[1].Pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
 
     int nfjsd60_   = 0;
@@ -596,6 +623,9 @@ struct TreeFiller {
     }
 
     if(ana->nSelLeptons > 0) {
+
+      randomLepton = ana->getRndGen()->Uniform(0,ana->selectedLeptons.size()); 
+
       MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
       MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
@@ -652,8 +682,14 @@ struct TreeFiller {
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
+    GenParticleF * stop1 = 0;
+    GenParticleF * stop2 = 0;
     if(isMC) {
       for(auto* p : ana->genParts) {
+        if(ParticleInfo::isA(ParticleInfo::p_stop1, p) and !stop1)
+          stop1 = p;
+        else if(ParticleInfo::isA(ParticleInfo::p_stop1, p) and !stop2)
+          stop2 = p;
         const GenParticleF * genPartMom = 0;
 
 	if (abs(p->pdgId())==6) { float tmppt_ = p->p4().pt(); gentoppt_.push_back(tmppt_); }
@@ -675,6 +711,10 @@ struct TreeFiller {
           if(!lepDecay)
             nPromptTaus++;
         }
+      }
+      if(stop1 && stop2) {
+        MomentumF* distop = new MomentumF(stop1->p4() + stop2->p4());
+        data->fill<float>(i_distoppt, distop->pt());
       }
     }
     data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
@@ -760,11 +800,11 @@ struct TreeFiller {
       // do it for ctt fatjets
       unsigned int countctttags = 0;
       unsigned int indxctt = 99;
+      float maxcttpt_ = -1.;
       for (auto* ctt : ana->cttTops) {
 
-	float maxcttpt_ = -1.;
 	float cttpt_ = ctt->p4().pt();
-	if (cttpt_>maxcttpt_) { indxctt = countctttags; }
+	if (cttpt_>maxcttpt_) { indxctt = countctttags; maxcttpt_ = cttpt_;}
 	
 	++countctttags; 
       }
@@ -794,11 +834,11 @@ struct TreeFiller {
       // do it for ak8 fatjets
       unsigned int countfjtags = 0;
       unsigned int indxfj = 99;
+      float maxfjpt_ = -1.;
       for (auto* fj : ana->fatJets) {
 
-	float maxfjpt_ = -1.;
 	float fjpt_ = fj->p4().pt();
-	if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	if (fjpt_>maxfjpt_) { indxfj = countfjtags; maxfjpt_ = fjpt_;}
 	
 	++countfjtags; 
       }
@@ -835,14 +875,14 @@ struct TreeFiller {
       // do it for ctt tags
       unsigned int countctttags = 0;
       unsigned int indxctt = 99;
+      float maxcttpt_ = -1.;
       for (auto* ctt : ana->cttTops) {
 
 	float drlepctt_ = PhysicsUtilities::deltaR(*lep,ctt->p4());
-	float maxcttpt_ = -1.;
 
 	if (drlepctt_>=(3.14/2.)) { 
 	  float cttpt_ = ctt->p4().pt();
-	  if (cttpt_>maxcttpt_) { indxctt = countctttags; }
+	  if (cttpt_>maxcttpt_) { indxctt = countctttags; maxcttpt_ = cttpt_;}
 	}
 	
 	++countctttags; 
@@ -873,14 +913,14 @@ struct TreeFiller {
       // do it for ak8 fatjets
       unsigned int countfjtags = 0;
       unsigned int indxfj = 99;
+      float maxfjpt_ = -1.;
       for (auto* fj : ana->fatJets) {
 
 	float drlepfj_ = PhysicsUtilities::deltaR(*lep,fj->p4());
-	float maxfjpt_ = -1.;
 
 	if (drlepfj_>=(3.14/2.)) { 
 	  float fjpt_ = fj->p4().pt();
-	  if (fjpt_>maxfjpt_) { indxfj = countfjtags; }
+	  if (fjpt_>maxfjpt_) { indxfj = countfjtags; maxfjpt_ = fjpt_;}
 	}
 	
 	++countfjtags; 
@@ -956,10 +996,10 @@ struct TreeFiller {
 
   void fillJetInfo(TreeWriterData* data, vector<RecoJetF*> jets, vector<RecoJetF*> bjets, MomentumF* met) {
 
-    int njets60 = 0, njets30 = 0;
+    int njets75 = 0, njets30 = 0;
     int ntbjets = 0, nmbjets = 0, nlbjets = 0, nbjets30 = 0;
     for(auto* j : jets) {
-      if(j->pt() > 60.0) njets60++;
+      if(j->pt() > 75.0) njets75++;
       if(j->pt() > 30.0) njets30++;
       if(j->csv() > defaults::CSV_LOOSE)  nlbjets++;
       if(j->csv() > defaults::CSV_MEDIUM) nmbjets++;
@@ -968,7 +1008,7 @@ struct TreeFiller {
     }
     data->fill<int>(i_njets,    int(jets.size()));
     data->fill<int>(i_njets30,  njets30);
-    data->fill<int>(i_njets60,  njets60);
+    data->fill<int>(i_njets75,  njets75);
     data->fill<int>(i_nbjets,   int(bjets.size()));
     data->fill<int>(i_nbjets30, nbjets30);
     data->fill<int>(i_nlbjets,  nlbjets);
@@ -977,6 +1017,9 @@ struct TreeFiller {
     data->fill<float>(i_ht,   JetKinematics::ht(jets, 20.0, 2.4));
     data->fill<float>(i_ht30, JetKinematics::ht(jets, 30.0, 2.4));
     data->fill<float>(i_ht40, JetKinematics::ht(jets, 40.0, 2.4));
+    data->fill<float>(i_meff, JetKinematics::ht(jets, 20.0, 2.4)+(met->pt()));
+    data->fill<float>(i_metovsqrtht, (met->pt())/(sqrt(JetKinematics::ht(jets, 20.0, 2.4))));
+
 
     float dphij1met = 0.0, dphij2met = 0.0;
     if(jets.size() > 0) {
@@ -1061,8 +1104,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     ZeroLeptonAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
       TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
 
-    const double metcut_   = 175.0 ;
+    const double metcut_   = 200.0 ;
     const int    minnjets_ =   2   ;
+    const double minj2pt_  = 75.0  ;
 
     TreeFiller filler;
 
@@ -1081,10 +1125,11 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(met->pt() < metcut_  ) return false;
       if(nJets     < minnjets_) return false;
+      if(jets.at(1)->pt() < minj2pt_)  return false;
 
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
-      filler.fillTopTagInfo(&data,this, jets);
+//      filler.fillTopTagInfo(&data,this, jets);
       return true;
     }
 

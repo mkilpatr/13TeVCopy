@@ -90,13 +90,17 @@ void JetResolutionCorr::correctJetsAndMET(const CORRTYPE corrType, const double 
     double newPT;
     if(!getCorrectedPT(corrType,rho,j,newPT)) continue;
 
-     met.p4() += j.p4();
+	if (newPT > 15)
+	{
+		met.p4() += j.p4();
+	}
      CylLorentzVectorF newMom( newPT < 0 ? 0 : newPT, j.eta(), j.phi(), newPT < 0 ? 0 : newPT*j.mass() /j.pt());
      j.setP4(newMom);
 
-     met.p4() -= j.p4();
-
-//     std::cout <<" ->"<< met.pt() << std::endl;
+	 if (j.pt() > 15)
+	 {
+		met.p4() -= j.p4();
+	 }
   }
 
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
@@ -111,16 +115,20 @@ void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& j
   metvec.SetPxPyPzE(met.px(),met.py(),met.pz(),met.E());
   for(auto& j : jets) {
     if(j.uncertainty() <= 0.0) continue;
-    metvec.SetPx(metvec.px() + j.px());
-    metvec.SetPy(metvec.py() + j.py());
     double JESFactor = 1.0;
     if(corrType == UP)
       JESFactor += j.uncertainty();
     else if (corrType == DOWN)
       JESFactor -= j.uncertainty();
+	if ((JESFactor * j.pt()) > 15) {
+		metvec.SetPx(metvec.px() + j.px());
+		metvec.SetPy(metvec.py() + j.py());
+	}
     j.setP4(JESFactor*j.p4());
-    metvec.SetPx(metvec.px() - j.px());
-    metvec.SetPy(metvec.py() - j.py());
+	if (j.pt() > 15) {
+		metvec.SetPx(metvec.px() - j.px());
+		metvec.SetPy(metvec.py() - j.py());
+	}
   }
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
   met.setP4(CylLorentzVectorF(metvec.pt(), metvec.eta(), metvec.phi(), 0.0));
@@ -130,6 +138,7 @@ void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<
 
   float MM = -1;
   int ind = -1;
+  int flv = -1;
   float resp = -1;
   for(unsigned int iG = 0; iG < genJets.size() && iG < 3; ++iG  ){
     if(genJets[iG].pt() == 0) break;
@@ -144,25 +153,40 @@ void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<
       ind = genJets[iG].index();
       resp =  fpt/genJets[iG].pt();
       MM = TMath::Abs(fpt - genJets[iG].pt());
+      flv = genJets[iG].flavor();
     }
   }
 
   if(ind >= 0){
     mmResp = resp;
     mmInd = ind;
+    mmFlv = flv;
   } else {
     mmResp = -1;
     mmInd = -1;
+    mmFlv = -1;
   }
 }
 float RespTailCorr::getWeight(CORRTYPE corrType) const {
-  setAxisNoUnderOver(  mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
-  switch (corrType) {
-    case NONE: return 1;
-    case NOMINAL: return  get();
-    case UP:      return int(targetBin) == corrHist->GetNbinsX() ?  get() - getError() : get() + getError();
-    case DOWN:    return int(targetBin) == corrHist->GetNbinsX() ?  get() + getError() : get() - getError();
-    default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+  setXAxisNoUnderOver(   mmInd < 0  ? 1.0 : mmResp); //If none was found, use the correction for 1.0;
+  setYAxisNoUnderOver(  mmFlv !=4  ?   1 : 2); //If none was found, use the correction for light jet
+
+  if(targetBinY == 1){
+    switch (corrType) {
+      case NONE: return 1;
+      case NOMINAL: return  get();
+      case UP:      return int(targetBinX) == 1  ?  get() + getError() : get() - getError();
+      case DOWN:    return int(targetBinX) == 1  ?  get() - getError() : get() + getError();
+      default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+    }
+  } else {
+    switch (corrType) {
+      case NONE: return 1;
+      case NOMINAL: return  get();
+      case UP:      return int(targetBinX) <= 2 ?  get() + getError() : get() - getError();
+      case DOWN:    return int(targetBinX) <= 2 ?  get() - getError() : get() + getError();
+      default: throw std::invalid_argument("RespTailCorr::getWeight: Not a valid correction type!");
+    }
   }
 }
 

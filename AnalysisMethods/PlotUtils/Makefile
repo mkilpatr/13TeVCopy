@@ -16,15 +16,15 @@ ifeq ($(PLATFORM),macosx)
 CXXFLAGS += -std=c++11
 endif
 
-OBJS = $(LIBDIR)/Plot.o $(LIBDIR)/PlotROCCurves.o $(LIBDIR)/PlotStuff.o $(LIBDIR)/StyleTools.o $(LIBDIR)/PlotUtilsDict.o $(LIBDIR)/EffPlotTools.o $(LIBDIR)/PlotTools.o
+OBJS = $(LIBDIR)/Plot.o $(LIBDIR)/PlotROCCurves.o $(LIBDIR)/PlotStuff.o $(LIBDIR)/StyleTools.o $(LIBDIR)/PlotUtilsDict.o $(LIBDIR)/EffPlotTools.o $(LIBDIR)/PlotTools.o $(LIBDIR)/SFGetter.o
 # INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h $(INTDIR)/PlotStuff.h $(INTDIR)/StyleTools.hh
-INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h  $(INTDIR)/StyleTools.hh $(INTDIR)/EffPlotTools.hh $(INTDIR)/PlotStuff.h $(INTDIR)/PlotTools.hh $(INTDIR)/Sample.hh
+INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h  $(INTDIR)/StyleTools.hh $(INTDIR)/EffPlotTools.hh $(INTDIR)/PlotStuff.h $(INTDIR)/PlotTools.hh $(INTDIR)/SFGetter.hh $(INTDIR)/Sample.hh
 
 libPlotUtils.so: $(OBJS)
 ifeq ($(PLATFORM),macosx)
-	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS) -lTreePlayer
 else
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS) -lTreePlayer
 endif
 
 $(CINTDIR)/PlotUtilsDict.cc: $(INTS) $(SRCDIR)/PlotUtils_LinkDef.h

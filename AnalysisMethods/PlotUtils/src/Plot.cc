@@ -138,7 +138,7 @@ TH1F* Plot::addOverFlow(TH1F* h, unsigned int overflowopt)
 
 }
 
-void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!item)
@@ -155,6 +155,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
     hist->SetLineColor(linecolor);
 
   hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
 
   if(!fLeg)
     fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
@@ -172,7 +173,7 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
 
 }
 
-void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!f)
@@ -180,11 +181,11 @@ void Plot::addHist(TFile *f, TString itemname, TString label, TString drawopt, i
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
+  addHist(item, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
 
 }
 
-void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!item)
@@ -203,6 +204,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
     hist->SetLineColor(linecolor);
 
   hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
 
   if(!fLeg)
     fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
@@ -220,7 +222,7 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
 
 }
 
-void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow)
+void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth)
 {
 
   if(!f)
@@ -228,7 +230,7 @@ void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString lab
 
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
-  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow);
+  addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
 
 }
 
@@ -804,14 +806,22 @@ TGraphAsymmErrors* Plot::getRatioAsymmErrors(TH1F* hD, TH1F* hM) {
 void Plot::getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double& eH){
   if(mN <= 0) return;
   if(dN < 0)  return;
+  eL = 0;
+  eH = 0;
+
+  if(mN <= 0) return;
+  if(dN < 0)  return;
 
   const double alpha = 1 - 0.6827;
   static TRandom3 * rand = new TRandom3(1234);
 
-  TH1 * h = new TH1F("h","h",10000,0,10);
-  TH1 * hL = new TH1F("hL","hL",10000,0,10);
+  const int nEntries = 10000;
+  vector<float> h;
+  h.reserve(nEntries);
+  vector<float> hL;
+  hL.reserve(nEntries);
 
-  for(unsigned int i = 0; i < 100000; ++i){
+  for(unsigned int i = 0; i < nEntries; ++i){
     double ndL = 0;
     for(int iD = 0; iD < dN; ++iD){
       ndL -= TMath::Log(rand->Uniform());
@@ -819,37 +829,20 @@ void Plot::getRatioUpDownErrors(int dN, double mN, double mE, double& eL, double
     double nd = ndL -  TMath::Log(rand->Uniform());
     double nm = rand->Gaus(mN,mE);
     if(nm < 0) nm = fabs(nm);
-    h->Fill(nd/nm);
-    hL->Fill(ndL/nm);
+    h.push_back(nd/nm);
+    hL.push_back(ndL/nm);
   }
 
-  double integral = h->Integral(0,-1);
-  bool foundL = false;
-  bool foundH = false;
 
-  for(int iB = 0; iB <= h->GetNbinsX() + 1; ++iB){
-    if(!foundL && dN){
-      if(hL->Integral(0,iB)/integral >= alpha/2 ){
-        foundL = true;
-        eL =  hL->GetBinCenter(iB);
-      }
-    }
-    if(!foundH){
-      if(h->Integral(iB,-1)/integral <alpha/2 ){
-        foundH = true;
-        eH =  h->GetBinCenter(iB);
-      }
-    }
-  }
-  if(foundH)
-    eH = eH - double(dN)/mN;
-  else eH = 10;
-  if(dN) {
-    assert(foundL);
-    eL = double(dN)/mN - eL;
-  }
-  delete h;
-  delete hL;
+
+  if(dN){
+      std::sort(hL.begin(), hL.end());
+      eL = hL[int( double(nEntries)*alpha/2  )];
+      eL = double(dN)/mN - eL;
+   }
+  std::sort(h.begin(), h.end());
+  eH = h[int( double(nEntries)* (1 - alpha/2)  )];
+  eH = eH - double(dN)/mN;
 }
 
 void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
@@ -914,6 +907,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     fStack->GetHistogram()->GetYaxis()->SetTitle(fYTitle);
     if(fYmin < fYmax) fStack->GetHistogram()->GetYaxis()->SetRangeUser(fYmin,fYmax);
     else fStack->GetHistogram()->GetYaxis()->SetRangeUser(0,1.1*ymax);
+    if(fXmin < fXmax) fStack->GetHistogram()->GetXaxis()->SetRangeUser(fXmin,fXmax);
     fStack->GetHistogram()->GetYaxis()->SetTitleOffset(1.0);
     fStack->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
     fStack->Draw("hist");
@@ -940,11 +934,23 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p1->RedrawAxis();
 
   if(fLeg) {
-    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+//    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
   }
+
+  // Draw lines
+  for(uint i=0; i<fLines.size(); i++)
+    fLines[i]->Draw();
+
+  // Draw Boxes
+  for(uint i=0; i<fBoxes.size(); i++)
+    fBoxes[i]->Draw();
+
+  // Draw textboxes
+  for(uint i=0; i<fTextBoxes.size(); i++)
+    fTextBoxes[i]->Draw();
 
   c->cd();
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
@@ -957,6 +963,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p2->cd();
 
   TH1F *h3 = (TH1F*)hData->Clone("data3"); 
+  if(fXmin < fXmax) {
+    h3->GetXaxis()->SetRangeUser(fXmin,fXmax);
+  }
 
   h3->SetTitleSize  (0.16,"Y");
   h3->SetTitleOffset(0.45,"Y");
@@ -975,6 +984,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
+  if(fXmin < fXmax) { xmin=fXmin; xmax=fXmax; }
   TLine *l = new TLine(xmin,1,xmax,1);
   l->SetLineWidth(3);
   l->SetLineColor(kBlack);
@@ -1306,14 +1316,14 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         hMC->SetLineWidth(0);
         hMC->SetMarkerSize(0);
         hMC->Draw("E2same");
-        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+//        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
       }
 
     }
         
     for(uint i=0; i<vHists.size(); i++) {
       TH1F *h = vHists[i];              
-      h->SetLineWidth(3);
+      //h->SetLineWidth(3);
       char opt[100];
       sprintf(opt,"same%s",vHistOpts[i].Data());
       h->Draw(opt);

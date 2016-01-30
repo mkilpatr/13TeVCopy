@@ -370,6 +370,7 @@ void BaseTreeAnalyzer::processVariables()
   vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
     cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.tracks);
+  std::sort(vetoedTracks.begin(), vetoedTracks.end(), PhysicsUtilities::greaterPTDeref<PFCandidateF>());
   nVetoedTracks = vetoedTracks.size();
 
   if(photonReader.isLoaded() && configSet.photons.isConfig())

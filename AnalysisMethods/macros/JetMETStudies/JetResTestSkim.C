@@ -7,7 +7,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/QCDRespSmearingAnalyzer.h"
 
-
+#include <TObjectTable.h>
 using namespace std;
 using namespace ucsbsusy;
 
@@ -61,7 +61,7 @@ public:
   randSeed(randSeed)
   {
   };
-  virtual ~Copier() {};
+  virtual ~Copier() { delete oldWeights;};
 
 
 
@@ -135,8 +135,10 @@ public:
 
 
   bool fillEvent() {
-    if(met->pt() < 150) return false;
+    if(!goodvertex) return false;
+    if(met->pt() < 200) return false;
     if(jets.size() < 2 || jets[1]->pt() < 75) return false;
+    if(jets.size() < 5) return false;
 
 
     float ht = 0;
@@ -350,6 +352,8 @@ void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Eve
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   cfg.corrections.jetResTailCorrType = NOMINAL;
+  cfg.corrections.jetResCorrType = NOMINAL;
+  cfg.corrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL | ucsbsusy::JetAndMETCorrectionSet::JETRESOLUTION;
 //  cfg.corrections.jetResCorrType = DOWN;
 
   //get the output name
@@ -360,7 +364,7 @@ void JetResTestSkim(string fileName,  int fileIndex = -1, string treeName = "Eve
 
   Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg, window,type);
 
-  a.analyze(1000);
+  a.analyze(10000);
 }
 
 

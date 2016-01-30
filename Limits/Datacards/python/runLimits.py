@@ -72,6 +72,7 @@ class LimitConfig:
     self.datacarddir    = os.path.join( config_parser.get('config','datacarddir'), self.subdir                      )
     self.limitdir       = os.path.join( config_parser.get('config','limitdir'   ), self.subdir+'_'+self.limitmethod )
     self.signals        = config_parser.get('signals','samples').replace(' ','').split(',') 
+    self.scalesigtoacc  = config_parser.getboolean('config','scalesigtoacc')
   
   
   def getLimit(self,rootFile,getMean=False,limit={}):
@@ -128,7 +129,7 @@ class LimitConfig:
     currentDir = os.getcwd()
     xsecfilename = ('../data/xsecs/stop.root')
     xsecfile = TFile(xsecfilename)
-    xsechist = TH2D()
+    xsechist = TH1D()
     xsechist = xsecfile.Get('xsecs')
     outfile = TFile('results_T2tt.root','RECREATE')
     maxmstop = 0.0
@@ -169,12 +170,19 @@ class LimitConfig:
         mlsp = int(signal.split('_')[2])
         limit = output[1]
         xsec = xsechist.Interpolate(mstop)
-        xseclimit = xsec * limit['0']
-        hexp.Fill(mstop,mlsp,limit['0'])
-        hexpdown.Fill(mstop,mlsp,limit['-1'])
-        hexpup.Fill(mstop,mlsp,limit['+1'])
+        if self.scalesigtoacc :
+            xseclimit = limit['0']
+            hexp.Fill(mstop,mlsp,limit['0']/xsec)
+            hexpdown.Fill(mstop,mlsp,limit['-1']/xsec)
+            hexpup.Fill(mstop,mlsp,limit['+1']/xsec)
+            print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,xseclimit)
+        else :
+            xseclimit = limit['0']*xsec
+            hexp.Fill(mstop,mlsp,limit['0'])
+            hexpdown.Fill(mstop,mlsp,limit['-1'])
+            hexpup.Fill(mstop,mlsp,limit['+1'])
+            print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
         hxsecexp.Fill(mstop,mlsp,xseclimit)
-        print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
 
     outfile.cd()
     hexp.Write()
@@ -233,7 +241,8 @@ class LimitConfig:
       
       # === Asymptotic
       if self.limitmethod=='AsymptoticLimits':
-        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 -n '+signal
+        #runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 --rMin 0 --rMax 10 -n '+signal
+        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected --rMin 0 --rMax 10 -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
