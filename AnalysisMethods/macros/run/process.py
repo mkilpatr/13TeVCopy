@@ -13,7 +13,7 @@ parser.add_argument("-o", "--outdir", dest="outdir", default="${PWD}/plots", hel
 parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help="Shell script to be run by the jobs, [Default: runjobs]")
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
-parser.add_argument("-j", "--json", dest="json", default="Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt", help="json file to use. [Default: Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt]")
+parser.add_argument("-j", "--json", dest="json", default="Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt", help="json file to use. [Default: Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt]")
 #parser.print_help()
 args = parser.parse_args()
 
