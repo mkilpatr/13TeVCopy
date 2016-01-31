@@ -178,8 +178,12 @@ float passIdIso_passIdIso(float S1, float dS1, float D1, float dD1, float S2, fl
   return S1*D1*S2*D2*sqrt(((dS1/S1+dS2/S2)*(dS1/S1+dS2/S2) + (dD1/D1+dD2/D2)*(dD1/D1+dD2/D2)));
 }
 float passIdIso_passIdFailIso(float D1, float dD1, float S1, float dS1, float D2, float dD2, float E2, float dE2, float S2, float dS2) {
+  //std::cout <<   "dSF*2 " << fail2(E2,S2)*( D2*D2*S1*S1*dD1*dD1 + D1*D1*S1*S1*dD2*dD2 + D1*D1*D2*D2*dS1*dS1 + 2*S1*S1*D1*D2*dD1*dD2 )
+  //          << " + " << D1*D1*D2*D2*S1*S1
+  //          << " * ( " << dfaildsf2(E2,S2)*dS2*dS2 << " + " << dfaildE2(E2)*dE2*dE2 << " + " << 2*fail(E2,S2)*dfaildsf(E2,S2)*dS1*dS2/S1 << " )"
+  //          << std::endl;
   return sqrt(( fail2(E2,S2)*( D2*D2*S1*S1*dD1*dD1 + D1*D1*S1*S1*dD2*dD2 + D1*D1*D2*D2*dS1*dS1 + 2*S1*S1*D1*D2*dD1*dD2 )
-             + D1*D1*D2*D2*S1*S1*( dfaildsf2(E2,S2)*dS2*dS2 + dfaildE2(E2)*dE2*dE2 + 2*fail(E2,S2)*dfaildsf(E2,S2)*dS1*dS1 ) ));
+             + D1*D1*D2*D2*S1*S1*( dfaildsf2(E2,S2)*dS2*dS2 + dfaildE2(E2)*dE2*dE2 + 2*fail(E2,S2)*dfaildsf(E2,S2)*dS1*dS2/S1 ) ));
 }
 float passIdIso_failId(float D1, float dD1, float S1, float dS1, float E2, float dE2, float D2, float dD2) {
   return sqrt(( fail2(E2,D2)*( S1*S1*dD1*dD1 + D1*D1*dS1*dS1 )
@@ -293,11 +297,11 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   int nLeps = 0;
   //float D1=1, dD1=0, ED1=.95, dED1=0, S1=1, dS1=0, ES1=.95, dES1=0;
   //float D2=1, dD2=0, ED2=.95, dED2=0, S2=1, dS2=0, ES2=.95, dES2=0;
-  float D1, dD1, ED1, dED1, S1, dS1, ES1, dES1;
-  float D2, dD2, ED2, dED2, S2, dS2, ES2, dES2;
+  float D1=1, dD1=0, ED1=0, dED1=0, S1=1, dS1=0, ES1=0, dES1=0;
+  float D2=1, dD2=0, ED2=0, dED2=0, S2=1, dS2=0, ES2=0, dES2=0;
   float lep1pt=0, lep2pt=0; // use to patch gen muons into pt ordering
   float x,x1,x2,x3,x4,x5,x6,x7; // dummy vars to get weight when
-  bool  y; // we don't need the individual pieces
+  bool  y1,y2;                  // we don't need the individual pieces
   bool passId1, passIdIso1, passId2, passIdIso2;
   float weight = 1.0;
   for(auto* lep : allLeptons) {
@@ -311,8 +315,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
     if     (id==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4);
     else if(id==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4);
     if(near >= 0) {
-      double tmp = getLepWeight(lep,elCorrType,muCorrType,x,x1,x2,x3,x4,x5,x6,x7,y,y);
-      weight *= tmp;
+      weight *= getLepWeight(lep,elCorrType,muCorrType,x,x1,x2,x3,x4,x5,x6,x7,y1,y2);
       //std::cout << "reco wt = " << tmp << "\t\t" << id << std::endl;
       if( (id==11 && (elCorrType==UP || elCorrType==DOWN)) || (id==13 && (muCorrType==UP || muCorrType==DOWN)) ) {
         // this should be ok to vary both electrons and muons at the same
@@ -322,8 +325,8 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
         else if(nLeps==2) { x = getLepWeight(lep,elCorrType,muCorrType,D2,dD2,ED2,dED2,S2,dS2,ES2,dES2,passId2,passIdIso2); lep2pt = lep->pt(); }
         // get this next piece from unmatched gen muons since the loosest muons we
         // as what the SF group used to get the ID SFs save are not as inclusive
-        if(nLeps==1 && id==13 && passId1 && !passIdIso1) --nLeps;
-        if(nLeps==2 && id==13 && passId2 && !passIdIso2) --nLeps;
+        if(nLeps==1 && id==13 && !passId1) --nLeps;
+        if(nLeps==2 && id==13 && !passId2) --nLeps;
       } // get unc for this lep
     } // matched lep to gen lep
   } // allLeptons
@@ -335,8 +338,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
       double nearDR = 0;
       int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
       if(near<0 || !cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) {
-        double tmp = getGenLepWeight(lep,muCorrType,x,x1,x2,x3);
-        weight *= tmp;
+        weight *= getGenLepWeight(lep,muCorrType,x,x1,x2,x3);
         //std::cout << "gen wt = " << tmp << std::endl;
         if(muCorrType==UP || muCorrType==DOWN) {
           // only use this muon for the correction if it's higher pt than any (potential) reco leptons being varried
@@ -368,7 +370,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   if(nLeps==0) unc = 0.0;
   else if(nLeps==1) {
     if(passIdIso1)   unc = D1*S1*sqrt(dD1*dD1/(D1*D1) + dS1*dS1/(S1*S1));
-    else if(passId1) unc = sqrt(fail2(ES1,S1)*dD1*dD1 + D1*D1*dfaildE2(ES1)*dES1*dES1 + D1*D1*dfaildsf2(ES1,S1)*dS1*dS1);
+    else if(passId1) unc = sqrt((fail2(ES1,S1)*dD1*dD1 + D1*D1*dfaildE2(ES1)*dES1*dES1 + D1*D1*dfaildsf2(ES1,S1)*dS1*dS1));
     else             unc = sqrt(dfaildsf2(ED1,D1)*dD1*dD1 + dfaildE2(ED1)*dED1*dED1);
   } // nLeps==1
   else if(nLeps>=2) {
@@ -388,12 +390,13 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
       else             unc = failId_failId(ED1,dED1,D1,dD1,ED2,dED2,D2,dD2);
     }
   } // nLeps>=2
-
-  std::cout << "nLeps = " << nLeps << " IdIso1 " << passIdIso1 << " Id1 " << passId1 << " IdIso2 " << passIdIso2 << " Iso2 " << passId2
-            << " wt = " << weight << "\tunc = " << unc //<< "\n"
-            //<< "                         " << D1 <<"\t"<< dD1 <<"\t"<< ED1 <<"\t"<< dED1 <<"\t"<< S1 <<"\t"<< dS1 <<"\t"<< ES1 <<"\t"<< dES1 << "\n"
-            //<< "                         " << D2 <<"\t"<< dD2 <<"\t"<< ED2 <<"\t"<< dED2 <<"\t"<< S2 <<"\t"<< dS2 <<"\t"<< ES2 <<"\t"<< dES2
+  if(nLeps>0) {
+  std::cout << "allLeps.size=" << allLeptons.size() << " nLeps=" << nLeps << " IdIso1 " << passIdIso1 << " Id1 " << passId1 << " IdIso2 " << passIdIso2 << " Id2 " << passId2
+            << " wt = " << weight << "\tunc = " << unc
+            //<< "\n                         " << D1 <<"\t"<< dD1 <<"\t"<< ED1 <<"\t"<< dED1 <<"\t"<< S1 <<"\t"<< dS1 <<"\t"<< ES1 <<"\t"<< dES1 << "\n"
+            //<<   "                         " << D2 <<"\t"<< dD2 <<"\t"<< ED2 <<"\t"<< dED2 <<"\t"<< S2 <<"\t"<< dS2 <<"\t"<< ES2 <<"\t"<< dES2
             << std::endl;
+  }
   if     ( muCorrType == UP   || elCorrType == UP  ) { weight += unc; }
   else if( muCorrType == DOWN || elCorrType == DOWN) { weight -= unc; }
   return weight;
