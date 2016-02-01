@@ -11,9 +11,11 @@
 namespace ucsbsusy {
 
 
-BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput ) : Correction("BTagByEvtWeight"),
+BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput, bool isFastSim ) : Correction("BTagByEvtWeight"),
     calib(0),
-    corrReaders(COMB +1,
+    effGetter (isFastSim ? &BTagByEvtWeightCorr::getJetFastSimEff : &BTagByEvtWeightCorr::getJetEff),
+    sfGetter  (isFastSim ? &BTagByEvtWeightCorr::getJetFastSimEffSF : &BTagByEvtWeightCorr::getJetEffSF),
+    corrReaders(isFastSim ? 1 : COMB +1,
         std::vector<std::vector<BTagCalibrationReader*> > ( defaults::CSVT+1,
             std::vector<BTagCalibrationReader*>(DOWN+1,0)
         )
@@ -25,18 +27,15 @@ BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput ) : C
   std::clog << "Loading SF File: "<< sfInput;
   calib = new BTagCalibration("csv",sfInput.Data());
 
-  for(unsigned int iM = MUJET; iM <= COMB; ++iM ){
-    std::string measType;
-    switch (iM) {
-    case MUJET:
-      measType = "mujets";
-      break;
-    case COMB:
-      measType = "comb";
-      break;
-    default:
-      throw std::range_error("BTagByEvtWeightCorr::BTagByEvtWeightCorr: Incorrect measurement type!");
-    }
+  std::vector<std::string> measTypes;
+  if(isFastSim) measTypes.push_back("fastsim");
+  else{
+    measTypes.push_back("mujets");
+    measTypes.push_back("comb");
+  }
+
+//  for(unsigned int iM = MUJET; iM <= COMB; ++iM ){
+  for(unsigned int iM = 0; iM < measTypes.size(); ++iM ){
     for(unsigned int iWP = defaults::CSVL; iWP <= defaults::CSVT; ++iWP ){
       for(unsigned int iCT = NOMINAL; iCT <= DOWN; ++iCT ){
         std::string systType;
@@ -53,8 +52,7 @@ BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput ) : C
         default:
           throw std::range_error("BTagByEvtWeightCorr::BTagByEvtWeightCorr: Incorrect syst type!");
         }
-
-        corrReaders[iM][iWP][iCT] = new BTagCalibrationReader(calib,BTagEntry::OperatingPoint(iWP),measType,systType);
+        corrReaders[iM][iWP][iCT] = new BTagCalibrationReader(calib,BTagEntry::OperatingPoint(iWP),measTypes[iM],systType);
       }
     }
   }
@@ -111,6 +109,37 @@ double BTagByEvtWeightCorr::getJetEff(double jetPT, double jetETA, JetFlavorInfo
   return effHisto.GetBinContent( std::max(std::min(effHisto.FindFixBin(jetPT),effHisto.GetNbinsX()), 1)   );
 }
 
+double BTagByEvtWeightCorr::getJetFastSimEff(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const {
+  eff->setBin(TYPE,0  );
+
+  int effFlavor = 0;
+  switch (flavor){
+  case JetFlavorInfo::g_jet:
+  case JetFlavorInfo::ps_g_jet:
+    effFlavor = 3;
+    break;
+  case JetFlavorInfo::uds_jet:
+  case JetFlavorInfo::ps_uds_jet:
+    effFlavor = 2;
+    break;
+  case JetFlavorInfo::c_jet:
+    effFlavor = 1;
+    break;
+  case JetFlavorInfo::b_jet:
+    effFlavor = 0;
+    break;
+  default:
+    effFlavor = 4;
+  }
+
+  eff->setBin(FLAVOR,effFlavor);
+  eff->setBin(ETA,TMath::Abs(jetETA));
+  eff->setBin(WP,wp);
+
+  const TH1F& effHisto = eff->getValue();
+  return effHisto.GetBinContent( std::max(std::min(effHisto.FindFixBin(jetPT),effHisto.GetNbinsX()), 1)   );
+}
+
 double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const {
 
   if(sytType == NONE) return 1;
@@ -126,7 +155,55 @@ double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorIn
   const BTagCalibrationReader * reader = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  COMB : MUJET ] [wp] [sytType];
 
   //Current SFs are only valid between 30-670 GeV
-  return reader->eval(sfFlavor,jetETA,std::max(std::min(jetPT, 669.0),30.0));
+  double newPT = -1;
+  if(sfFlavor == BTagEntry::FLAV_UDSG){
+    if(jetPT < 20) newPT = 20;
+    else if(jetPT > 1000) newPT = 999;
+  } else {
+    if(jetPT < 30) newPT = 30;
+    else if(jetPT > 670) newPT = 669;
+  }
+  if(newPT > 0){
+    if(sytType == DOWN || sytType == UP){
+      const BTagCalibrationReader * readerNominal = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  COMB : MUJET ] [wp] [NOMINAL];
+      return 2*reader->eval(sfFlavor,jetETA,newPT)- readerNominal->eval(sfFlavor,jetETA,newPT);
+    }
+    return reader->eval(sfFlavor,jetETA,newPT);
+  }
+  return reader->eval(sfFlavor,jetETA,jetPT);
+}
+
+double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const {
+
+  if(sytType == NONE) return 1;
+
+  BTagEntry::JetFlavor sfFlavor = BTagEntry::FLAV_UDSG;
+  if(flavor == JetFlavorInfo::c_jet){
+    sfFlavor = BTagEntry::FLAV_C;
+  } else if(flavor == JetFlavorInfo::b_jet){
+    sfFlavor = BTagEntry::FLAV_B;
+  }
+
+  //light jets use combo...b/c use mujets
+  const BTagCalibrationReader * reader = corrReaders[0] [wp] [sytType];
+
+  //If CSV == tight do nothing for light jets
+  if(wp == defaults::CSV_TIGHT && sfFlavor == BTagEntry::FLAV_UDSG) return 1;
+  //IF CSV == tight give b-jet correction for c-jets
+  if(wp == defaults::CSV_TIGHT && sfFlavor == BTagEntry::FLAV_C) sfFlavor = BTagEntry::FLAV_B;
+
+  //Current SFs are only valid between 20-800 GeV
+  double newPT = -1;
+  if(jetPT < 20) newPT = 20;
+  else if(jetPT > 800) newPT = 799;
+  if(newPT > 0){
+    if(sytType == DOWN || sytType == UP){
+      const BTagCalibrationReader * readerNominal = corrReaders[0] [wp] [NOMINAL];
+      return 2*reader->eval(sfFlavor,jetETA,newPT)- readerNominal->eval(sfFlavor,jetETA,newPT);
+    }
+    return reader->eval(sfFlavor,jetETA,newPT);
+  }
+  return reader->eval(sfFlavor,jetETA,jetPT);
 }
 
 
@@ -140,12 +217,12 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
     if(corrType == CORRTYPE::NONE) return 1;
 
     //if iT == -1 low == 100% with no SF;
-    double effL = iT == -1 ? 1 : getJetEff(j->pt(),j->eta(),flavor, defaults::CSVWPs(iT),isTTBARLike  );
-    double sfL =  iT == -1 ? 1 :getJetEffSF(j->pt(),j->eta(),flavor,defaults::CSVWPs(iT), corrType);
+    double effL = iT == -1 ? 1 :  (this->*effGetter)(j->pt(),j->eta(),flavor, defaults::CSVWPs(iT),isTTBARLike  );
+    double sfL =  iT == -1 ? 1 :  (this->*sfGetter)(j->pt(),j->eta(),flavor,defaults::CSVWPs(iT), corrType);
 
     // if iT == CVT, eff Up = 0, with 0 SF
-    double effH = iT == defaults::CSVT  ? 0 : getJetEff(j->pt(),j->eta(),flavor, defaults::CSVWPs(iT+1),isTTBARLike  );
-    double sfH =  iT == defaults::CSVT  ? 0 : getJetEffSF(j->pt(),j->eta(),flavor,defaults::CSVWPs(iT+1), corrType);
+    double effH = iT == defaults::CSVT  ? 0 : (this->*effGetter)(j->pt(),j->eta(),flavor, defaults::CSVWPs(iT+1),isTTBARLike  );
+    double sfH =  iT == defaults::CSVT  ? 0 :  (this->*sfGetter)(j->pt(),j->eta(),flavor,defaults::CSVWPs(iT+1), corrType);
 
     double mcEff = effL - effH;
     double dataEff = effL*sfL - effH*sfH;
@@ -175,7 +252,7 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
       throw std::range_error("BTagByEvtWeightCorr::getJetWeight: > 1 data efficiency!");
     }
 
-
+//    std::cout << corrType <<" -> "<< j->pt() <<" "<< j->absEta() <<" "<< flavor<<" "<<  j->csv()  <<" ("<< effL <<","<<effH<<") ("<< sfL<<","<<sfH<<") "<<dataEff/mcEff<<std::endl;
     return dataEff/mcEff;
   }
 
@@ -183,28 +260,36 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
   return -1;
 }
 
-double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike  ) const {
+
+double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike, double maxETA, double minPT  ) const {
   double btagWeight = 1;
   for(const auto * j : jets){
+    if(j->absEta() > maxETA) continue;
+    if(j->pt() < minPT) continue;
     btagWeight *= getJetWeight(j,lightCorrType,heavyCorrType,isTTBARLike);
   }
   return btagWeight;
 }
 
 
-void BTagCorrectionSet::load(TString effFileName,TString sfFileName,  int correctionOptions)
+void BTagCorrectionSet::load(TString effFileName,TString sfFileName,TString fastSimEffFileName,TString fastSimSfFileName,   int correctionOptions)
 {
   loadSimple("BTagCorrection",correctionOptions);
 
   if(options_ & BYEVTWEIGHT){
-    bTagByEvtWeightCorr = new BTagByEvtWeightCorr(effFileName,sfFileName);
+    bTagByEvtWeightCorr = new BTagByEvtWeightCorr(effFileName,sfFileName,false);
     corrections.push_back(bTagByEvtWeightCorr);
+  }
+  if(options_ & FASTSIMBYEVTWEIGHT){
+    bTagFastSimByEvtWeightCorr = new BTagByEvtWeightCorr(fastSimEffFileName,fastSimSfFileName,true);
+    corrections.push_back(bTagFastSimByEvtWeightCorr);
   }
 }
 
 void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   bTagByEvtWeight =1;
+  bTagFastSimByEvtWeight = 1;
   if(!ana->isMC()) return;
 
   if(options_ & BYEVTWEIGHT){
@@ -212,7 +297,11 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     if(ana->process == defaults::TTBAR || ana->process == defaults::SINGLE_T || ana->process == defaults::TTZ || ana->process == defaults::TTW )
       isTTBARLike = true;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTTBARLike);
+    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTTBARLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
+  }
+  if(options_ & FASTSIMBYEVTWEIGHT){
+    const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+    bTagFastSimByEvtWeight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightFastSimBTagCorrType,cfg.corrections.heavyFastSimBTagCorrType,true,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
 
 }

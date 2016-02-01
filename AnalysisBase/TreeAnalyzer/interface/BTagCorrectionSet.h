@@ -39,18 +39,22 @@ public:
   enum axes {TYPE,FLAVOR,ETA,WP};
   enum meastype {MUJET,COMB};
 
-  BTagByEvtWeightCorr(TString effInput, TString sfInput );
+  BTagByEvtWeightCorr(TString effInput, TString sfInput, bool isFastSim );
   ~BTagByEvtWeightCorr();
 
   double getJetEff(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
+  double getJetFastSimEff(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
   double getJetEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
+  double getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
 
   double getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike  ) const;
-  double getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike  ) const;
+  double getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike, double maxETA, double minPT  ) const;
 
 
 
   BTagCalibration * calib;
+  double (BTagByEvtWeightCorr::*effGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
+  double (BTagByEvtWeightCorr::*sfGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
   std::vector<std::vector<std::vector<BTagCalibrationReader*> > > corrReaders; // [mujet/COMB] [L/M/T] [ Nom/Up/Down]
   TFile * effFile;
   const QuickRefold::TH1FContainer * eff;
@@ -62,25 +66,30 @@ public:
   enum  CorrectionOptions {
                             NULLOPT          = 0
                           , BYEVTWEIGHT      = (1 <<  0)
+                          , FASTSIMBYEVTWEIGHT = (1 << 1)
 
   };
-  BTagCorrectionSet(): bTagByEvtWeightCorr(0), bTagByEvtWeight(1) {}
+  BTagCorrectionSet(): bTagByEvtWeightCorr(0), bTagFastSimByEvtWeightCorr(0), bTagByEvtWeight(1), bTagFastSimByEvtWeight(1) {}
 
   virtual ~BTagCorrectionSet() {};
-  virtual void load(TString effFileName,TString sfFileName, int correctionOptions = NULLOPT);
+  virtual void load(TString effFileName,TString sfFileName,TString fastSimEffFileName,TString fastSimSfFileName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
   float getBTagByEvtWeight() const { return bTagByEvtWeight; }
+  float getBTagFastSimByEvtWeight() const { return bTagFastSimByEvtWeight; }
   const BTagByEvtWeightCorr* getBTagByEvtWeightCorrector() const { return bTagByEvtWeightCorr; }
+  const BTagByEvtWeightCorr* getBTagFastSimByEvtWeightCorrector() const { return bTagFastSimByEvtWeightCorr; }
 
 
 private:
   //Correction list
   BTagByEvtWeightCorr * bTagByEvtWeightCorr;
+  BTagByEvtWeightCorr * bTagFastSimByEvtWeightCorr;
 
   //output values
   float bTagByEvtWeight;
+  float bTagFastSimByEvtWeight;
 };
 
 
