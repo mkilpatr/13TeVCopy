@@ -9,6 +9,7 @@
 #include "TFile.h"
 #include "TMultiGraph.h"
 #include<iostream>
+#include<regex>
 
 using namespace std;
 
@@ -208,6 +209,7 @@ void checkEtaBinning(TString name, TTree * tree){
 
 }
 
+
 void makeEffs(){
   const TString treeName = "Events";
   TFile * lf = new TFile("wz_baseline.root","read");
@@ -369,6 +371,170 @@ void makeEffs(){
 
 
   TFile * f = new TFile("csvEffs.root","recreate");
+  a->Write();
+  f->Close();
+
+
+}
+
+
+void makeFastSimEffs(){
+  const TString treeName = "Events";
+  TFile * lf = new TFile("T2tt_btagEff_baseline.root","read");
+  TTree * lt =0;
+  lf->GetObject(treeName,lt);
+
+  enum axis {TYPE,FLAVOR,ETA,WP};
+  QuickRefold::TH1FContainer * a = new QuickRefold::TH1FContainer("CSVEff",4);
+  a->addAxis(TYPE,"TYPE",1,-.5,0.5);
+  a->addAxis(FLAVOR,"FLAVOR",5,-.5,4.5);// B/C/UDS/G/O
+
+  float jetETAs[] = {0,1.2,2.1,2.4};
+  int nJetETAS = 3;
+  a->addAxis(ETA,"ETA",nJetETAS,jetETAs);
+  a->addAxis(WP,"WP",3,-.5,2.5); // L M T
+  a->stopSetup();
+
+
+
+  double jetPTs[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,650,1000};
+  int nJetPTS = 19;
+
+  double jetPT2s[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT2s = 17;
+
+  double jetPT3s[] = {20,25,30,40,50,60,80,100,120,150,180,220,270,350,450,1000};
+  int nJetPT3s = 15;
+
+  double jetPT4s[] = {20,25,30,40,45,50,60,80,100,120,180,220,1000};
+  int nJetPT4s = 12;
+
+  double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,1000};
+  int nJetPTDoubles = 10;
+
+  double jetPTDoubles2[] = {20,30,40,50,75,100,150,200,300,1000};
+  int nJetPTDoubles2 = 9;
+
+  double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
+  int nJetPTOthers = 8;
+
+  TString CSVSELS[] = {"csv >= 0.605","csv >= 0.890","csv >= 0.970",""};
+  TString CSVNAMES[] = {"Loose","Medium","Tight",""};
+  TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
+  TString FLVNAMES[] = {"B","C","UDS","G","O",""};
+
+  TString weightSel = "weight*puWeight";
+
+
+    TTree * tree = lt;
+    TString name = "T2tt";
+    a->setBin(TYPE,0);
+
+    for(unsigned int iF =0; FLVSELS[iF][0]; ++iF){
+      a->setBin(FLAVOR,iF);
+
+      vector<TH1F*> inclHistos;
+      TH1F*  inclusiveETA = 0;
+      for(unsigned int iE = 0; iE < nJetETAS +1; ++iE){
+        TString sel;
+        if(iE < nJetETAS)
+          sel = TString::Format("( absEta >= %.2f && absEta < %.2f) && %s",jetETAs[iE],jetETAs[iE+1],FLVSELS[iF].Data() );
+        else
+          sel = TString::Format("%s",FLVSELS[iF].Data() );
+
+        TString histName = TString::Format("%s_%s_%i_0",name.Data(),FLVNAMES[iF].Data(), iE );
+
+
+
+        int thisBin = nJetPTS;
+        double* thisBinning = jetPTs;
+
+        if(iF == 4){
+          thisBin =nJetPTOthers;
+          thisBinning =jetPTOthers;
+        } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
+          thisBin =nJetPTDoubles;
+          thisBinning =jetPTDoubles;
+        } else if ( name.BeginsWith("w") && (iF == 2)){
+          thisBin =nJetPTDoubles2;
+          thisBinning =jetPTDoubles2;
+        }else if ( iF == 2 ) {
+          thisBin =nJetPT3s;
+          thisBinning =jetPT3s;
+        }else if ( iF == 3) {
+          thisBin =nJetPT4s;
+          thisBinning =jetPT4s;
+        }else if ( iF == 1) {
+          thisBin =nJetPT4s;
+          thisBinning =jetPT4s;
+        }else if ( iF == 0) {
+          thisBin =nJetPT2s;
+          thisBinning =jetPT2s;
+        }
+        TH1F * hD  = getHistogram(tree,"pt",histName,FLVNAMES[iF],thisBin,thisBinning, sel,0, &weightSel, 0 );
+        inclHistos.push_back(hD);
+      }
+
+      int n = 1;
+      for(unsigned int iC =0; CSVSELS[iC][0]; ++iC){
+        a->setBin(WP,iC);
+        for(unsigned int iE = 0; iE < nJetETAS; ++iE){
+          a->setBin(ETA,(jetETAs[iE] + jetETAs[iE+1] )/2);
+
+          TString sel = TString::Format("( absEta >= %.2f && absEta < %.2f) && %s && %s",jetETAs[iE],jetETAs[iE+1],FLVSELS[iF].Data(), CSVSELS[iC].Data()  );
+
+          if(iF == 4){
+            sel = TString::Format(" %s && %s",FLVSELS[iF].Data(), CSVSELS[iC].Data()  );
+          }
+
+          TString histName = TString::Format("%s_%s_%i_%i",name.Data(),FLVNAMES[iF].Data(), iE,iC+1 );
+
+          int thisBin = nJetPTS;
+          double* thisBinning = jetPTs;
+
+          if(iF == 4){
+            thisBin =nJetPTOthers;
+            thisBinning =jetPTOthers;
+          } else if ( name.BeginsWith("w") && (iF == 0 || iF == 1)){
+            thisBin =nJetPTDoubles;
+            thisBinning =jetPTDoubles;
+          }else if ( name.BeginsWith("w") && (iF == 2)){
+            thisBin =nJetPTDoubles2;
+            thisBinning =jetPTDoubles2;
+            }else if ( iF == 2 ) {
+            thisBin =nJetPT3s;
+            thisBinning =jetPT3s;
+          }else if ( iF == 3) {
+            thisBin =nJetPT4s;
+            thisBinning =jetPT4s;
+          }else if ( iF == 1) {
+            thisBin =nJetPT4s;
+            thisBinning =jetPT4s;
+          }else if ( iF == 0) {
+            thisBin =nJetPT2s;
+            thisBinning =jetPT2s;
+          }
+
+          TH1F * hD  = getHistogram(tree,"pt",histName,FLVNAMES[iF],thisBin,thisBinning,sel,0,&weightSel, iC+1);
+          hD->Divide(hD,iF == 4 ? inclHistos[nJetETAS] : inclHistos[iE],1,1,"b");
+
+          cout << name << " "<< FLVNAMES[iF] <<" "<< CSVNAMES[iC]<<" "<< iE << endl;
+          for(unsigned int iB = 1; iB <= hD->GetNbinsX(); ++iB){
+            cout << hD->GetBinContent(iB)<<" ";
+            if(hD->GetBinContent(iB) == 0 || hD->GetBinContent(iB) > 0.95 || hD->GetBinContent(iB) < .0001 )
+              cout << endl << "ERROR!!!"<<endl;
+          }
+          cout << endl;
+
+          a->setValue(*hD);
+
+        }
+      }
+
+    }
+
+
+  TFile * f = new TFile("csvFastSimEffs.root","recreate");
   a->Write();
   f->Close();
 
@@ -616,6 +782,102 @@ void getUnc()
 
 }
 
+void testCSVCorrections(){
+  std::ifstream inFile ("/Users/nmccoll/Dropbox/13TeVData/corrections/CSV_13TEV_Combined_20_11_2015.csv");
+//  std::ifstream inFile ("/Users/nmccoll/Dropbox/13TeVData/corrections/CSVv2.csv");
+  assert(inFile.is_open());
+
+  std::regex e ("^(\\S+),\\s+\\S+\\s+(\\S+),\\s+(\\S+),\\s+\\S+,\\s+\\S+,\\s+\\S+,\\s+\\S+,\\s+\\S+,\\s+\\S+,\\s+\"(.*)\".*$");
+  std::smatch sm;
+  std::string line;
+
+  std::vector<TFormula*> looseFormulas;
+  std::vector<TString>   looseNames;
+  std::vector<TFormula*> medFormulas;
+  std::vector<TString>   medNames;
+  std::vector<TFormula*> tightFormulas;
+  std::vector<TString>   tightNames;
+  while(getline(inFile,line)){
+  // cout << line<<endl;
+    if (std::regex_match (line,sm,e)){
+      cout <<"--> "<<sm[1]<<" "<<sm[2]<<" "<<sm[3]<<" "<<sm[4]<<endl;
+      if(sm[1] == "0"){
+        looseFormulas.push_back(new TFormula("",TString(sm[4])));
+        looseNames.push_back( sm[3].str()+", "+sm[2].str() );
+      }
+      if(sm[1] == "1"){
+        medFormulas.push_back(new TFormula("",TString(sm[4])));
+        medNames.push_back( sm[3].str()+", "+sm[2].str() );
+      }
+      if(sm[1] == "2"){
+        tightFormulas.push_back(new TFormula("",TString(sm[4])));
+        tightNames.push_back( sm[3].str()+", "+sm[2].str() );
+      }
+    }
+  }
+
+  auto plot = [](TString label,std::vector<TString>& names,std::vector<TFormula*>& formulas ){
+
+    Plot * plot = new Plot(label,"","p_{T}",label);
+    for(unsigned int iF = 0; iF < formulas.size(); ++iF){
+      TH1F * h = new TH1F(TString::Format("%s_%u",label.Data(),iF),"",1000,0,1000);
+      for(float iP = 0; iP < 1000; iP++){
+        h->SetBinContent(h->FindFixBin(iP),formulas[iF]->Eval(iP));
+      }
+      plot->addHist(h,names[iF],"",colorGetter(iF),0,colorGetter(iF));
+    }
+    TCanvas * c = new TCanvas();
+    plot->draw(c,false,"png");
+
+
+
+  };
+
+  plot("Loose",looseNames,looseFormulas);
+  plot("Med",medNames,medFormulas);
+  plot("Tight",tightNames,tightFormulas);
+
+}
+
+
+void Test2(){
+  TFile * f = new TFile("signal_1_tree.root","read");
+  TTree * t = 0;
+  f->GetObject("Events",t);
+
+  vector<TString> weights;
+  weights.push_back("1.0");
+  weights.push_back("upBTagLightWeight");
+  weights.push_back("upBTagHeavyWeight");
+  weights.push_back("btagWeight");
+  weights.push_back("downBTagLightWeight");
+  weights.push_back("downBTagHeavyWeight");
+
+  vector<TString> weights2;
+  weights2.push_back("1.0");
+  weights2.push_back("upBTagFastSimLightWeight");
+  weights2.push_back("upBTagFastSimHeavyWeight");
+  weights2.push_back("btagFastSimWeight");
+  weights2.push_back("downBTagFastSimLightWeight");
+  weights2.push_back("downBTagFastSimHeavyWeight");
+
+  HistogramGetter histG("nBJets","nbjets","nbjets", 3,-0.5,2.5);
+
+
+  auto plot = [&](vector<TString>& inWeights, TString label){
+    Plot * plot = new Plot(label,label,"nBJets","");
+    for(unsigned int iT = 0; iT < inWeights.size();++iT){
+      TH1F * hSN = histG.getHistogram(t,"nlbjets >= 2 && met >= 250 && j2pt >= 2 && njets >= 5",inWeights[iT],TString::Format("tree_%u",iT));
+      plot->addHist(hSN,weights[iT],"",colorGetter(iT),0,colorGetter(iT));
+    }
+    TCanvas * c = new TCanvas();
+    plot->drawRatios(c,0,false,"png");
+  };
+  plot(weights,"std");
+  plot(weights2,"fastsim");
+
+}
+
 
 #endif
 
@@ -627,7 +889,10 @@ void GetBtagEff(const TString inFile="qcd_jetRes.root", const TString name = "zn
   TTree * mt =0;
   mf->GetObject(treeName,mt);
 //  checkSelection(name,mt);
-  checkEtaBinning(name,mt);
+//  checkEtaBinning(name,mt);
+//  testCSVCorrections();
+//  makeFastSimEffs();
+  Test2();
 }
 
 ////producing
