@@ -360,7 +360,7 @@ int colorMap(int procInt){
 
 #endif
 
-void GetTTZNormalization(TString fileName, TString dataFileName = "data.root", TString treeName = "Events")
+void getTTZNormalization(TString fileName, TString dataFileName = "data.root", TString treeName = "Events")
 {
   StyleTools::SetStyle();
     TFile * mf = new TFile(fileName,"read");

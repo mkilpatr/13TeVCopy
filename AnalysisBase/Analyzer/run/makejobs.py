@@ -108,11 +108,11 @@ if args.makegrid :
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         mstopmin = sample.split('_')[1][:3]
-        mstopmax = sample.split('_')[1][5:] if sample.split('_')[1].find('to') > -1 else mstopmin
+        mstopmax = sample.split('_')[1][-3:]
         infiles = [prefix+f for f in filelist]
         files[sample] = infiles
         for mstop in range(int(mstopmin), int(mstopmax)+args.mstopsteps, args.mstopsteps) :
-            mlspmax = mstop - 175
+            mlspmax = mstop
             for mlsp in range(0, mlspmax+args.mlspsteps, args.mlspsteps) :
                 snames[sample].append('_'.join(['T2tt',str(mstop),str(mlsp)]))
                 masspoints.append(('_').join(['T2tt',str(mstop),str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join(['T2tt',str(mstop),'1']))
