@@ -50,9 +50,12 @@ namespace ucsbsusy {
       bool          goodvertex;
       float         genweight;
       float         genqscale;
+      float         xsec;
       float         xsecweight;
       float         genevtweight;
       float         evtweight;
+      float         lhecentralweight;
+      std::vector<float> * systweights;
       size8             proc;
       defaults::Process process;
       size8             datrec;
