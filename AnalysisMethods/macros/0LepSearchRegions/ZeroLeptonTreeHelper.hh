@@ -66,6 +66,7 @@ struct TreeFiller {
   size i_pu50NSWeight  ;
   size i_truePUWeight;
   size i_btagWeight;
+  size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
   size i_normWeight;
   size i_topptWeight;
@@ -282,6 +283,7 @@ struct TreeFiller {
     i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
+    i_btagFastSimWeight     = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_normWeight     = data->add<float>("","normWeight","F",0);
     i_topptWeight    = data->add<float>("","topptWeight","F",1);
@@ -464,6 +466,7 @@ struct TreeFiller {
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
+    data->fill<float>(i_btagFastSimWeight, ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());

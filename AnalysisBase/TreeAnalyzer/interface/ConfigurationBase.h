@@ -196,6 +196,10 @@ namespace cfgSet {
     TString bTagSFFile;
     ucsbsusy::CORRTYPE heavyBTagCorrType;
     ucsbsusy::CORRTYPE lightBTagCorrType;
+    TString bTagFastSimEffFile;
+    TString bTagFastSimSFFile;
+    ucsbsusy::CORRTYPE heavyFastSimBTagCorrType;
+    ucsbsusy::CORRTYPE lightFastSimBTagCorrType;
 
     TString jetResFile;
     TString jetResCorrFile;
@@ -221,6 +225,8 @@ namespace cfgSet {
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
+        heavyFastSimBTagCorrType(ucsbsusy::NONE),
+        lightFastSimBTagCorrType(ucsbsusy::NONE),
         jetResCorrType(ucsbsusy::NONE),
         jetScaleCorr(ucsbsusy::NONE),
         jetResTailFile(1),
@@ -244,9 +250,15 @@ namespace cfgSet {
 
       }
       if(a.bTagCorrections != ucsbsusy::BTagCorrectionSet::NULLOPT){
-        os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
-        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT)
+        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT){
+          os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
           os << "BYEVTWEIGHT H("<<corrTypeName(a.heavyBTagCorrType)<<") L("<<corrTypeName(a.lightBTagCorrType)<<")" << std::endl;
+        }
+        if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT){
+          os << "Applying FastSim bTag corrections from " << a.bTagFastSimEffFile.Data()<<","<<a.bTagFastSimSFFile.Data() <<" -> ";
+          os << "FASTSIMBYEVTWEIGHT H("<<corrTypeName(a.heavyFastSimBTagCorrType)<<") L("<<corrTypeName(a.lightFastSimBTagCorrType)<<")" << std::endl;
+
+        }
         os << std::endl;
       }
 

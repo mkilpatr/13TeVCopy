@@ -40,9 +40,12 @@ EventInfoReader::EventInfoReader()
   goodvertex = false;
   genweight = 1;
   genqscale = 0;
+  xsec = 1;
   xsecweight = 1;
   genevtweight = 1;
   evtweight = 1;
+  lhecentralweight = 1;
+  systweights = new vector<float>;
   proc = 0;
   process = defaults::NUMPROCESSES;
   datrec = 0;
@@ -93,8 +96,11 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"massparams", &massparams);
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"datareco", &datrec);
+  treeReader->setBranchAddress(branchName,"xsection", &xsec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
+  treeReader->setBranchAddress(branchName,"lhecentralweight", &lhecentralweight);
+  treeReader->setBranchAddress(branchName,"systweights", &systweights);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterIso", &hbheIsoFlt);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Loose", &hbheFltR2Loose);

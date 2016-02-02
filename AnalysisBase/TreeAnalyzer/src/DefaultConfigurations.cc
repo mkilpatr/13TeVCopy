@@ -122,13 +122,15 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.jetResTailFile           = TString::Format("%s/src/data/corrections/qcdJetRespTailCorr.root",CMSSW_BASE);
   standardCorrections.jetResTailCorrType       = ucsbsusy::NOMINAL;
 
-
-
-  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT;
+  standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/csvEffs.root",CMSSW_BASE);
   standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
+  standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/csvFastSimEffs.root",CMSSW_BASE);
+  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/CSV_13TEV_Combined_20_11_2015.csv",CMSSW_BASE);
+  standardCorrections.heavyFastSimBTagCorrType        = ucsbsusy::NOMINAL;
+  standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();
 }
 

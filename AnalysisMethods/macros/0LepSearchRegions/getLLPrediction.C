@@ -102,7 +102,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
           lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((1.20*("+sel["iswjets"]+")) + (1.0*("+sel["isnotwjets"]+")))";
           lepselwgt = basewgt + "*leptnpweight*((1.20*("+sel["iswjets"]+")) + (1.0*("+sel["isnotwjets"]+")))";
         } else if (sysvar == VARDOWN) {
-          lepvetowgt = basewgt + "*leptnpweight*((0.80*("+sel["iswjets"]+")) + (1.0*("+sel["isnotwjets"]+")))";
+          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.80*("+sel["iswjets"]+")) + (1.0*("+sel["isnotwjets"]+")))";
           lepselwgt = basewgt + "*leptnpweight*((0.80*("+sel["iswjets"]+")) + (1.0*("+sel["isnotwjets"]+")))";
         }
       }
@@ -111,7 +111,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
           lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((1.20*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
           lepselwgt = basewgt + "*leptnpweight*((1.20*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
         } else if (sysvar == VARDOWN) {
-          lepvetowgt = basewgt + "*leptnpweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
+          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
           lepselwgt = basewgt + "*leptnpweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
         }
       }
