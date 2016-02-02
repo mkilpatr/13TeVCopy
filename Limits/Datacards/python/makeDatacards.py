@@ -108,11 +108,11 @@ class DatacardConfig:
         for cr in config_parser.options('control_regions') :
             crinput  = ast.literal_eval(config_parser.get('control_regions',cr))
             label    = crinput['dataFile'].split('_')[-1]
-            wgtexpr  = crinput['crwgt'] if crinput.has_key('crwgt') else self.weightname
-            selection = crinput['crsel'] if crinput.has_key('crsel') else self.basesel
+            wgtexpr     = crinput['crwgt'] if crinput.has_key('crwgt') else self.weightname
+            selection   = crinput['crsel'] if crinput.has_key('crsel') else self.basesel
             subNormSel  = crinput['crnormsel'] if crinput.has_key('crnormsel') else ''
             subNormWgt  = crinput['crnormwgt'] if crinput.has_key('crnormwgt') else ''
-            srwgtexpr  = crinput['srwgt'] if crinput.has_key('srwgt') else self.weightname
+            srwgtexpr   = crinput['srwgt'] if crinput.has_key('srwgt') else self.weightname
             srselection = crinput['srsel'] if crinput.has_key('srsel') else self.basesel
             crvarnames = []
             crbinedges = []
@@ -306,6 +306,23 @@ class DatacardConfig:
                 datacard  = fdatacard.read()
                 fdatacard.close()
                 datacard = datacard.replace( 'SIGRATE', str(nSig).ljust(self.yieldwidth) )
+                dclines = datacard.split('\n')
+                sigunclines = []
+                for iline in range(len(dclines)) :
+                    line = dclines[iline]
+                    if '$SIG' in line or 'SIGUNC' in line :
+                        uncname = line.split()[0]
+                        # any of the following if cases are problematic!
+                        if not self.uncertainties.has_key(uncname) :
+                            print 'Didn\'t find uncertainty',uncname,'in uncertainty list'
+                        elif not self.uncertainties[uncname].vals.has_key(binLabel) :
+                            print 'Uncertainty',uncname,'not defined for bin',binLabel
+                        elif not self.uncertainties[uncname].vals[binLabel].has_key(signal) :
+                            print 'Uncertainty',uncname,'not filled for',signal,'in bin',binLabel
+                        else :
+                            newline = line.replace('$SIG','signal').replace('SIGUNC','%4.2f' % self.uncertainties[uncname].vals[binLabel][signal])
+                            dclines[iline] = newline
+                datacard = '\n'.join(dclines)
 
                 # save the current datacard
                 datacardSaveLocation = os.path.join( self.datacarddir, signal )
@@ -573,6 +590,9 @@ class DatacardConfig:
                             binlist += cr.compactbinlist
                         binnames = binlist[:]
                         uncnames = [ entries[1]+'_'+bin for bin in binlist ]
+                    samples = entries[2].split(',')
+                    if '$SIG' in entries[1] and entries[2] == 'signal' :
+                        samples = self.signals
                     uncVal   = None
                     if len(entries)>=4:
                         uncVal = entries[3]
@@ -597,7 +617,6 @@ class DatacardConfig:
                         if len(uncname) > self.colwidth :
                             self.colwidth = len(uncname) + 5
                         unc = self.uncertainties[uncname]
-                        samples = entries[2].split(',')
                         for samp in samples :
                             if samp == 'signal' or samp in self.signals or samp in self.backgrounds :
                                 if not unc.vals.has_key(binname) :
@@ -657,9 +676,9 @@ class DatacardConfig:
                                         crnevts = int(self.getNumEvents(datafile, crbin, cr.weight, 1, cr.selection))
                                     crnevts = max(crnevts, 1)
                                     unc.vals[binname][samp] = float(uncVal) if uncVal else 2
-                                    if not self.has_data or self.blind_sr :
-                                        unc.vals[binname][samp] = 1 + sqrt(crnevts)/crnevts
-                                        unc.type = 'lnN'
+                                    #if not self.has_data or self.blind_sr :
+                                    #    unc.vals[binname][samp] = 1 + sqrt(crnevts)/crnevts
+                                    #    unc.type = 'lnN'
                                     if self.binmap.has_key(binname) :
                                         unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
                                     elif not cr.binmap.has_key(binname) :
@@ -674,18 +693,11 @@ class DatacardConfig:
                                                 continue
                                             cr = self.extcontrolregions[crname]
                                             crfileadd = os.path.join( self.treebase, cr.backgrounds[0]+self.filesuffix )
-                                            # uncertainty on subtraction of other backgrounds needs to be put in separately
-                                            #crfilesub = os.path.join( self.treebase, cr.backgrounds[1]+self.filesuffix ) if len(cr.backgrounds) > 1 else ''
                                             srfile = os.path.join( self.treebase, samp             +self.filesuffix )
                                             srbin = self.binmap[binname]
                                             crbin = cr.binmap[cr.srtocrbinmap[binname]]
                                             (srevts,srunc) = self.getNumEventsError(srfile, srbin, cr.weight, 1 )
                                             (crevts,crunc) = self.getNumEventsError(crfileadd, crbin, cr.weight, 1, cr.selection)
-                                            #if crfilesub != '' :
-                                            #    (crsubevts,crsubunc) = self.getNumEventsError(crfilesub, crbin, cr.weight, False, cr.selection)
-                                            #    crunc *= crunc
-                                            #    crunc += crsubunc*crsubunc*crevts*crevts/(crsubevts*crsubevts)
-                                            #    crunc = sqrt(crunc)
                                             crstatuncname = uncname.replace(binname,cr.srtocrbinmap[binname])
                                             if not self.uncertainties.has_key(crstatuncname) :
                                                 self.uncertainties[crstatuncname] = Uncertainty(crstatuncname,unc.type)
@@ -709,10 +721,11 @@ class DatacardConfig:
                                                         selection = cr.selection
                                                         bin = cr.binmap[binname]
                                                         break
-                                                sampname = '_'.join([samp,cr.label])
-                                                if not sampname in cr.backgrounds :
+                                                bkgsampname = '_'.join([samp,cr.label])
+                                                if not bkgsampname in cr.backgrounds and not samp in self.signals :
                                                     continue
-                                                mcfile = mcfile.replace(samp, sampname)
+                                                if not samp in self.signals :
+                                                    mcfile = mcfile.replace(samp, bkgsampname)
                                             else :
                                                 bin = self.binmap[binname]
                                                 cr = self.signalregion
@@ -723,6 +736,8 @@ class DatacardConfig:
                                                     unc.vals[binname][samp] = 2.0
                                                 else :
                                                     unc.vals[binname][samp] = 1 + (mcunc/mcevts)
+                                            else :
+                                                unc.vals[binname][samp] = 2.0
 
                                     
 
@@ -730,7 +745,10 @@ class DatacardConfig:
         """Get line with uncertainty name, type, and values correctly formatted
         """
         isglobal = unc.vals.has_key('all')
-        uncline = unc.label.ljust(self.colwidth)
+        if '$SIG' in unc.label :
+            uncline = unc.label.ljust(self.colwidth-2)
+        else :
+            uncline = unc.label.ljust(self.colwidth)
         uncline += unc.type + ' '
         # don't count uncertainties with no entries for any of the processes
         hasEntry = False
@@ -744,6 +762,9 @@ class DatacardConfig:
             uncline += ' '*self.evtwidth 
         if not isglobal and unc.vals[binlabel].has_key('signal') : 
             uncline += ('%4.2f' % unc.vals[binlabel]['signal']).ljust(self.uncwidth)
+            hasEntry = True
+        elif not isglobal and unc.vals[binlabel].has_key(self.signals[0]) :
+            uncline += ('SIGUNC').ljust(self.uncwidth-2)
             hasEntry = True
         elif isglobal and unc.vals['all'].has_key('signal') :
             uncline += ('%4.2f' % unc.vals['all']['signal']).ljust(self.uncwidth)
