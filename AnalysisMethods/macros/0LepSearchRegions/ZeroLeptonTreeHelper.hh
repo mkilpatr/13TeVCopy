@@ -21,9 +21,6 @@ cfgSet::ConfigSet pars0lep(TString json) {
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
-  //cfg.corrections.tnpMuCorrType = ucsbsusy::CORRTYPE::DOWN;
-  //cfg.corrections.tnpElCorrType = ucsbsusy::CORRTYPE::DOWN;
-  cfg.corrections.leptonCorrections |= ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN;
   return cfg;
 }
 
@@ -459,9 +456,9 @@ struct TreeFiller {
     data->fill<unsigned int>(i_event, ana->event);
     data->fill<bool >(i_ismc, ana->isMC());
     data->fill<float>(i_weight, ana->weight);
-    //for(auto wgt : *ana->evtInfoReader.systweights) {
-    //  data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
-    //}
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
     data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
     data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
