@@ -110,6 +110,10 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
+  //standardCorrections.tnpElIdCorrType          = ucsbsusy::NOMINAL;
+  //standardCorrections.tnpElIsoCorrType         = ucsbsusy::NOMINAL;
+  //standardCorrections.tnpMuIdCorrType          = ucsbsusy::NOMINAL;
+  //standardCorrections.tnpMuIsoCorrType         = ucsbsusy::NOMINAL;
 
   standardCorrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL;
 
