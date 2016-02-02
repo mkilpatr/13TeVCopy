@@ -96,7 +96,7 @@ class DatacardConfig:
         
 
         # define signal region
-        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,self.weightname,self.basesel,'signal',self.allbins,self.compactbinlist,self.binmap)
+        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,self.weightname,self.basesel,'','','signal',self.allbins,self.compactbinlist,self.binmap)
 
         # fill mapping of signal region bins to control region bins
         self.srtocrbinmaps = {}
@@ -110,6 +110,8 @@ class DatacardConfig:
             label    = crinput['dataFile'].split('_')[-1]
             wgtexpr  = crinput['crwgt'] if crinput.has_key('crwgt') else self.weightname
             selection = crinput['crsel'] if crinput.has_key('crsel') else self.basesel
+            subNormSel  = crinput['crnormsel'] if crinput.has_key('crnormsel') else ''
+            subNormWgt  = crinput['crnormwgt'] if crinput.has_key('crnormwgt') else ''
             srwgtexpr  = crinput['srwgt'] if crinput.has_key('srwgt') else self.weightname
             srselection = crinput['srsel'] if crinput.has_key('srsel') else self.basesel
             crvarnames = []
@@ -131,9 +133,9 @@ class DatacardConfig:
                     self.combineBins(crallbins, crcompactbinlist, crbinmap, combinebins)
         
             if crinput['type'] == 'ext' :
-                self.extcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,srwgtexpr,srselection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+                self.extcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,subNormSel,subNormWgt,srwgtexpr,srselection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
             else :
-                self.fitcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,srwgtexpr,srselection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+                self.fitcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,subNormSel,subNormWgt,srwgtexpr,srselection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
 
         # load uncertainty files
         if not self.usedummyuncs:
@@ -210,12 +212,15 @@ class DatacardConfig:
                 lineProcess2 += str(ibkg+1).ljust(self.yieldwidth)
                 nevts = self.getNumEvents(bkgFile, bins, fitregion.weight, 1, fitregion.selection)
                 for frname,fr in self.extcontrolregions.iteritems() :
-                    if background == fr.backgrounds[0] :
+                    if background == fr.backgrounds[2] :
                          for uncname,unc in self.uncertainties.iteritems() :
-                             if uncname.split('_')[0] == frname and unc.type == 'gmN' :
+                             if uncname.split('_')[0] == frname and binLabel in uncname and unc.type == 'gmN' :
                                  nevts = float(unc.cr_nevts[binLabel]['data']*unc.cr_nevts[binLabel]['mcsr']/unc.cr_nevts[binLabel]['mc'])
                                  if unc.cr_nevts[binLabel]['mcsub'] > 0.0 :
-                                     nevts *= (1.0 - unc.cr_nevts[binLabel]['mcsub'])/float(unc.cr_nevts[binLabel]['data'])
+                                     if float(unc.cr_nevts[binLabel]['data']) < 10.0 :
+                                        nevts *= (1.0 - (unc.cr_nevts[binLabel]['mcsub']/(unc.cr_nevts[binLabel]['mc'] + unc.cr_nevts[binLabel]['mcsub'])))
+                                     else :                                           
+                                         nevts *= (1.0 - (unc.cr_nevts[binLabel]['mcsub']/float(unc.cr_nevts[binLabel]['data'])))
                                  break
                          break
                 nBkgEvts.append(nevts)
@@ -388,11 +393,11 @@ class DatacardConfig:
             compactbinlist.pop(index)
 
 
-    def getCutString(self,bins):
+    def getCutString(self,bins,strip = -1):
         """Converts list of variables and bins into a cutstring
         """
         cutstr = ''
-        for ivar in range(len(bins)) :
+        for ivar in range(max(0,strip),len(bins)) :
             var = bins[ivar][0]
             lowcut = bins[ivar][1]
             cutstr += ' && ' + var + ' >= ' + lowcut
@@ -407,11 +412,11 @@ class DatacardConfig:
         name = self.getBinName(bins,False) + '.txt'
         return name
     
-    def getNumEvents(self,filename,bins,wgtexpr,process=1,basestr=''):
+    def getNumEvents(self,filename,bins,wgtexpr,process=1,basestr='', strip = -1):
         """Returns the number of events in the given file for the given bin. All the necessary formatting to get the proper cut string for root is done here. This includes the baseline selection and lumi scaling defined by the user and the cuts to get the current bin.
         """
         cutstr = self.basesel if basestr == '' else basestr
-        cutstr += self.getCutString(bins)
+        cutstr += self.getCutString(bins,strip)
         projectvar = bins[0][0]
         if process > 0 :
             cutstr = '('+str(self.lumiscale)+'*'+wgtexpr+'*('+cutstr+'))'
@@ -626,6 +631,14 @@ class DatacardConfig:
                                         unc.cr_nevts[binname]['data'] = max(crnevts, 1)
                                         unc.cr_nevts[binname]['mc']   = max(self.getNumEvents(mcfileadd, crbin, cr.weight, 1, cr.selection), 0.00000001)
                                         unc.cr_nevts[binname]['mcsub'] = max(self.getNumEvents(mcfilesub, crbin, cr.weight, 1, cr.selection), 0.00000001) if mcfilesub != '' else 0.0
+                                        
+                                        if cr.subNormSel != '' and mcfilesub != '':
+                                            normData = self.getNumEvents(datafile, crbin, cr.subNormWgt, 0, cr.subNormSel,1)
+                                            normSub  =  self.getNumEvents(mcfilesub, crbin, cr.subNormWgt, 1, cr.subNormSel,1)
+                                            normMC   =  self.getNumEvents(mcfileadd, crbin, cr.subNormWgt, 1, cr.subNormSel,1)
+                                            if normData > 0 and normSub + normMC > 0 :
+                                                unc.cr_nevts[binname]['mcsub'] = unc.cr_nevts[binname]['mcsub']* normData/(normSub+normMC)
+                                                
                                     unc.vals[binname][samp] = -1
                                     unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
                                     if not cryields_bins_filled.has_key(cr.srtocrbinmap[binname]) : 
@@ -758,12 +771,14 @@ class DatacardConfig:
         return uncline
 
 class FitRegion:
-    def __init__(self,dataname,backgrounds,label,weight,selection,orweight,orselection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
+    def __init__(self,dataname,backgrounds,label,weight,selection,subNormSel,subNormWgt,orweight,orselection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
         self.dataname       = dataname
         self.backgrounds    = backgrounds
         self.label          = label
         self.weight         = weight
         self.selection      = selection
+        self.subNormSel     = subNormSel
+        self.subNormWgt     = subNormWgt
         self.orweight       = orweight
         self.orselection    = orselection
         self.type           = type
