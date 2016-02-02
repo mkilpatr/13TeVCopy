@@ -185,10 +185,12 @@ namespace cfgSet {
     TString eventCorrectionFile; 
     TString puCorrectionFile;
     TString leptonCorrectionFile;
-    ucsbsusy::CORRTYPE tnpElIdCorrType;
-    ucsbsusy::CORRTYPE tnpElIsoCorrType;
-    ucsbsusy::CORRTYPE tnpMuIdCorrType;
-    ucsbsusy::CORRTYPE tnpMuIsoCorrType;
+    ucsbsusy::CORRTYPE tnpElCorrType;
+    ucsbsusy::CORRTYPE tnpMuCorrType;
+    //ucsbsusy::CORRTYPE tnpElIdCorrType;
+    //ucsbsusy::CORRTYPE tnpElIsoCorrType;
+    //ucsbsusy::CORRTYPE tnpMuIdCorrType;
+    //ucsbsusy::CORRTYPE tnpMuIsoCorrType;
 
 
     int bTagCorrections;
@@ -218,10 +220,12 @@ namespace cfgSet {
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-        tnpElIdCorrType(ucsbsusy::NONE),
-        tnpElIsoCorrType(ucsbsusy::NONE),
-        tnpMuIdCorrType(ucsbsusy::NONE),
-        tnpMuIsoCorrType(ucsbsusy::NONE),
+        tnpElCorrType(ucsbsusy::NONE),
+        tnpMuCorrType(ucsbsusy::NONE),
+        //tnpElIdCorrType(ucsbsusy::NONE),
+        //tnpElIsoCorrType(ucsbsusy::NONE),
+        //tnpMuIdCorrType(ucsbsusy::NONE),
+        //tnpMuIsoCorrType(ucsbsusy::NONE),
         bTagCorrections(ucsbsusy::BTagCorrectionSet::NULLOPT),
         heavyBTagCorrType(ucsbsusy::NONE),
         lightBTagCorrType(ucsbsusy::NONE),
