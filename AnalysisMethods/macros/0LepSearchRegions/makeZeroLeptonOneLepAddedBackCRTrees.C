@@ -23,7 +23,7 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nBJets < 0) return false;
       //      if(fabs(PhysicsUtilities::deltaPhi(*metn, *selectedLeptons[0])) > 1)        return false;
 
-      filler.fillEventInfo(&data, this, 0, true, metn);
+      filler.fillEventInfo(&data, this, true, metn);
       filler.fillJetInfo(&data, jets, bJets, metn);
       return true;
     }
