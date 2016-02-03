@@ -61,13 +61,7 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 }
 
 bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
-    bool boolVal = false;
-    float topRawMass   = top.topRawMass();
-    float inTopMinMass  = top.topMinMass();
-    int   topNsubJets = top.topNsubJets();
-
-    if ( ((topRawMass)>140.) && ((topRawMass)<250.) && ((inTopMinMass)>50.) && ((topNsubJets)>=3) ) { boolVal = true; }
-    return boolVal;
+  return (top.topCmsTopTagMass() > 140.0 && top.topCmsTopTagMass() < 250.0 && top.topMinMass() > 50.0 && top.topNsubJets() >= 3 && top.p4().pt()>=400. && fabs(top.p4().eta())<=2.4);
 }
 
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){

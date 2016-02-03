@@ -101,10 +101,12 @@ cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::NULLOPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
-  standardCorrections.eventCorrections         = ucsbsusy::EventCorrectionSet::PU;
-  standardCorrections.eventCorrectionFile      =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",CMSSW_BASE);
-  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU;
+
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::CTT;
   standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2015d_2137ipb_52bins_69mb.root",CMSSW_BASE);
+  standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
+  standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
+  standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
