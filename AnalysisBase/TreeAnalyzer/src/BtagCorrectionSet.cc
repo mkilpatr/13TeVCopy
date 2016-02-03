@@ -194,8 +194,8 @@ double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetF
 
   //Current SFs are only valid between 20-800 GeV
   double newPT = -1;
-  if(jetPT < 20) newPT = 20;
-  else if(jetPT > 800) newPT = 799;
+  if(jetPT <= 20) newPT = 20;
+  else if(jetPT >= 800) newPT = 799;
   if(newPT > 0){
     if(sytType == DOWN || sytType == UP){
       const BTagCalibrationReader * readerNominal = corrReaders[0] [wp] [NOMINAL];
