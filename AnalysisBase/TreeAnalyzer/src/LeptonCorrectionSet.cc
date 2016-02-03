@@ -173,9 +173,7 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   float pt  = lep->pt();
   float eta = lep->absEta();
   float annulus = lep->annulusactivity();
-  if     (id==11 && elCorrType == NONE) return wt;
-  else if(id==13 && muCorrType == NONE) return wt;
-  else if(id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
+  if     (id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
   else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
   float sfid     = 1.0;
   float sfiso    = 1.0;
@@ -191,11 +189,15 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     sfiso    = getElIsoValue(pt,annulus);
     sfuncid  = getElIDError(pt,eta);
     sfunciso = getElIsoError(pt,annulus);
+    if     (elCorrType  == UP  ) sfid  += sfuncid;
+    else if(elCorrType  == DOWN) sfid  -= sfuncid;
+    if     (elCorrType == UP  ) sfiso += sfunciso;
+    else if(elCorrType == DOWN) sfiso -= sfunciso;
     effid    = getElMCIdEffValue(pt,eta);
     effiso   = getElMCIsoEffValue(pt,annulus);
     if(cfgSet::isSelElectron(*(ElectronF*)lep, elConfNoIso)) passId    = true;
     if(cfgSet::isSelElectron(*(ElectronF*)lep, elConf)     ) passIdIso = true;
-    if(failIdWt>1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electron ID eff is >=1!");
+    if(effid>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electron ID eff is >=1!");
     failIdWt = (1.0-effid*sfid)/(1.0-effid);
   }
   else if(id==13) {
@@ -203,15 +205,16 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     sfiso     = getMuIsoValue(pt,annulus);
     sfuncid   = sfid  *0.01;
     sfunciso  = sfiso *0.01;
+    if     (muCorrType  == UP  ) sfid  += sfuncid;
+    else if(muCorrType  == DOWN) sfid  -= sfuncid;
+    if     (muCorrType == UP  ) sfiso += sfunciso;
+    else if(muCorrType == DOWN) sfiso -= sfunciso;
     //effid    = getMuMCIdEffValue(pt,eta);
     effiso   = getMuMCIsoEffValue(pt,annulus);
     if(cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) passId    = true;
     if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
+    failIdWt = 1.0; // will get this part from gen muons
   }
-  if     (id==11 && elCorrType == UP  ) { sfid += sfuncid; sfiso += sfunciso; }
-  else if(id==11 && elCorrType == DOWN) { sfid -= sfuncid; sfiso -= sfunciso; }
-  else if(id==13 && muCorrType == UP  ) { sfid += sfuncid; sfiso += sfunciso; }
-  else if(id==13 && muCorrType == DOWN) { sfid -= sfuncid; sfiso -= sfunciso; }
   if(passIdIso) wt = sfid * sfiso;
   else if(passId) {
     if(effiso>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Iso eff is >=1!");
@@ -219,26 +222,30 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   }
   else wt = failIdWt;
   if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
+  if(wt >  2.0) wt =  2.0; // also don't want large positive weights
   return wt;
 }
 
 float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType ) const {
-  if(muCorrType == NONE) return 1.0;
   float pt  = lep->pt();
   float eta = lep->absEta();
   if     (pt <muConfKin.minPT)  return 1.0;
   else if(eta>muConfKin.maxETA) return 1.0;
   float sf      = getMuIDValue(pt,eta);
-  float sfunc   = sf  *0.01;
+  float sfunc   = sf  * 0.01;
   float eff     = getMuMCIdEffValue(pt,eta);
   if     (muCorrType == UP  ) sf += sfunc;
   else if(muCorrType == DOWN) sf -= sfunc;
   if(eff>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muon ID eff is >=1!");
-  return (1.0-eff*sf)/(1.0-eff);
+  float wt = (1.0-eff*sf)/(1.0-eff);
+  if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
+  if(wt >  2.0) wt =  2.0; // also don't want large positive weights
+  return wt;
 }
 
 
-float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
+float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
+                            CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
   // store gen leptons for matching
   std::vector<const GenParticleF*> genEl_;
   std::vector<const GenParticleF*> genMu_;
@@ -253,6 +260,8 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   } // genParts
   float weight = 1.0;
   for(auto* lep : allLeptons) {
+    if     (lep->pdgid()==11 && (elCorrType==NONE)) continue;
+    else if(lep->pdgid()==13 && (muCorrType==NONE)) continue;
     double nearDR = 0;
     int near = -1;
     if     (lep->pdgid()==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4);
@@ -261,12 +270,16 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   }
   std::vector<const LeptonF*> recMu_;
   for(const auto* lep : allLeptons) if(lep->pdgid()==13) recMu_.push_back(lep);
-  for(auto* lep : genMu_) {
-    double nearDR = 0;
-    int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-    if(near<0) weight *= getGenLepWeight(lep,muCorrType);
-    else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType);
+  if(muCorrType!=NONE) {
+    for(auto* lep : genMu_) {
+      double nearDR = 0;
+      int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
+      if(near<0) weight *= getGenLepWeight(lep,muCorrType);
+      else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType);
+    }
   }
+  if(weight < -2.0) weight = -2.0; // also don't want large overall
+  if(weight >  2.0) weight =  2.0; // event weight changes
   return weight;
 }
 
@@ -387,7 +400,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & TNP) {
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    tnpEvtWeight = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts,cfg.corrections.tnpElCorrType,cfg.corrections.tnpMuCorrType);
+    tnpEvtWeight = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType);
   }
 
 }
