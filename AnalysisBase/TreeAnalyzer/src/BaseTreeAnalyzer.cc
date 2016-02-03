@@ -56,6 +56,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nBJets            (0),
     nVetoHPSTaus      (0),
     selectedLepton    (0),
+    nSelCTTTops       (0),
     met               (0),
     metNoHF           (0),
     puppimet          (0),
@@ -305,9 +306,14 @@ void BaseTreeAnalyzer::processVariables()
 
 
   if(cmsTopReader.isLoaded()){
+    nSelCTTTops = 0;
+    selectedCTTTops.clear();
     cttTops.clear();
     cttTops.reserve(cmsTopReader.cmsTops.size());
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
+    std::sort(cttTops.begin(), cttTops.end(), PhysicsUtilities::greaterPTDeref<CMSTopF>());
+    for(auto* p : cttTops) if(cfgSet::isSelTaggedTop(*p)) selectedCTTTops.push_back(p);
+    nSelCTTTops = selectedCTTTops.size();
   }
 
   if(fatJetReader.isLoaded()){

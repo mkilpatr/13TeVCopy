@@ -48,8 +48,6 @@ cfgSet::ConfigSet pars0LepPhoton(TString json) {
 }
 
 std::vector<LorentzVector> topsPass;
-std::vector<LorentzVector> topCands;
-
 struct TreeFiller {
 
   TreeFiller() {}
@@ -231,10 +229,6 @@ struct TreeFiller {
   size i_wcandeta;
   size i_wpasspt;
   size i_wpasseta;
-
-  bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
-  } 
 
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
     return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4);
@@ -515,35 +509,28 @@ struct TreeFiller {
     data->fill<int  >(i_nvetolele, nVetoEle);
     data->fill<int  >(i_nctt, ana->cttTops.size());
 
-    int ncttstd    = 0;
-    topCands.clear();
     topsPass.clear();
     for(auto* ctt : ana->cttTops) {
-
-      LorentzVector tmpVecCand; tmpVecCand = ctt->p4();
-      topCands.push_back(tmpVecCand);
-
-      if(passCTTSelection(ctt)) { ncttstd++;
-	LorentzVector tmpVec; tmpVec = ctt->p4();
-	topsPass.push_back(tmpVec);
+      if(cfgSet::isSelTaggedTop(*ctt)) {
+        LorentzVector tmpVec; tmpVec = ctt->p4();
+        topsPass.push_back(tmpVec);
       }
 
-
     }
-    data->fill<int  >(i_ncttstd   , ncttstd   );
-    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    data->fill<int  >(i_ncttstd   , ana->nSelCTTTops   );
+    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return cfgSet::isSelTaggedTop(*ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
     data->fill<int>(i_nctt_cttmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
     data->fill<int>(i_nctt_cttmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
-    if (topsPass.size()>0) { 
-      data->fill<float>(i_toppt,topsPass[0].Pt()); 
-      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(topsPass[0], *ana->met))); 
+    if (ana->nSelCTTTops>0) {
+      data->fill<float>(i_toppt,ana->selectedCTTTops[0]->pt());
+      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(*ana->selectedCTTTops[0], *ana->met)));
     } 
     else { 
       data->fill<float>(i_toppt,0.); 
       data->fill<float>(i_dphitopmet,0); 
     }
     
-    if (topCands.size()>1) { data->fill<float>(i_httwoleadfatjet,(topCands[0].Pt()+topCands[1].Pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
+    if (ana->cttTops.size()>1) { data->fill<float>(i_httwoleadfatjet,(ana->cttTops[0]->pt()+ana->cttTops[1]->pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
 
     int nfjsd60_   = 0;
@@ -828,7 +815,7 @@ struct TreeFiller {
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	if (cfgSet::isSelTaggedTop(*ana->cttTops[indxctt])) {
 	  sfncttpass_   = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt();
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
@@ -907,7 +894,7 @@ struct TreeFiller {
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	if (cfgSet::isSelTaggedTop(*ana->cttTops[indxctt])) {
 	  sfncttpass_     = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
