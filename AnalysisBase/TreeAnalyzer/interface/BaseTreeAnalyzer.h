@@ -153,6 +153,8 @@ public:
     int   nJets;
     int   nBJets;
     int   nVetoHPSTaus;
+    LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
+
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -179,6 +181,7 @@ public:
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
+
 
 
     //--------------------------------------------------------------------------------------------------

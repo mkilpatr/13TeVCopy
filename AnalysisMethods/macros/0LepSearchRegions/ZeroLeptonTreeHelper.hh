@@ -450,7 +450,7 @@ struct TreeFiller {
 
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, int randomLepton = 0, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
@@ -625,16 +625,13 @@ struct TreeFiller {
       }
     }
 
-    if(ana->nSelLeptons > 0) {
-
-      randomLepton = ana->getRndGen()->Uniform(0,ana->selectedLeptons.size()); 
-
-      MomentumF* lep = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4());
-      MomentumF* W = new MomentumF(ana->selectedLeptons.at(randomLepton)->p4() + ana->met->p4());
-      data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(*W, *lep)) );
+    if(ana->selectedLepton) {
+      const auto * lep = ana->selectedLepton;
+      auto WP4 = lep->p4() + ana->met->p4();
+      data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(WP4, *lep)) );
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
-      data->fill<int  >(i_leptonpdgid, ana->selectedLeptons.at(randomLepton)->pdgid());
+      data->fill<int  >(i_leptonpdgid, lep->pdgid());
       bool cleanHt = false;
       float htalonglep = 0;
       for(const auto* jet : ana->jets ){
@@ -645,7 +642,7 @@ struct TreeFiller {
       } // jets
       if(cleanHt) htalonglep -= lep->pt();
       data->fill<float>(i_htalonglep, htalonglep);
-      data->fill<float>(i_annulus, lep->pt() * ana->selectedLeptons.at(randomLepton)->annulusactivity());
+      data->fill<float>(i_annulus,lep->pt() *lep->annulusactivity());
       bool matchtrigmu = false, matchtrige = false;
       for(auto* to : ana->triggerObjects) {
         if((to->filterflags() & kSingleIsoMu22) && (to->pathflags() & kHLT_IsoMu22)) {
@@ -663,15 +660,19 @@ struct TreeFiller {
       data->fill<bool >(i_leptonmatchtrige, matchtrige);
       data->fill<float>(i_mtlepmet, JetKinematics::transverseMass(*lep, *ana->met));
       if(ana->nSelLeptons > 1) {
-        int index2 = (randomLepton==0) ? 1 : 0;
-        auto* lep2 = ana->selectedLeptons.at(index2);
+        const LeptonF * lep2 = 0;
+        for(const auto * tLep : ana->selectedLeptons){
+          if(tLep->index() == lep->index()) continue;
+          lep2 = tLep;
+        }
+        if(lep2==0)throw std::range_error("ZeroLeptonTreeHelper::fillEventInfo: You say you have at least two leptons but I only find one!");
         data->fill<float>(i_lepton2pt, lep2->pt());
         data->fill<float>(i_lepton2eta, lep2->eta());
         data->fill<int  >(i_lepton2pdgid, lep2->pdgid());
-        MomentumF* dilep = new MomentumF(lep->p4() + lep2->p4());
-        data->fill<float>(i_dileppt, dilep->pt());
-        data->fill<float>(i_dilepeta, dilep->eta());
-        data->fill<float>(i_dilepmass, dilep->mass());
+        auto dilepp4 = lep->p4() + lep2->p4();
+        data->fill<float>(i_dileppt, dilepp4.pt());
+        data->fill<float>(i_dilepeta, dilepp4.eta());
+        data->fill<float>(i_dilepmass, dilepp4.mass());
       }
     }
 

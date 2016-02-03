@@ -50,11 +50,12 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     rho               (0),
     nSelLeptons       (0),
     nPrimaryLeptons    (0),
-    nSecondaryLeptons    (0),
+    nSecondaryLeptons  (0),
     nVetoedTracks     (0),
     nJets             (0),
     nBJets            (0),
     nVetoHPSTaus      (0),
+    selectedLepton    (0),
     met               (0),
     metNoHF           (0),
     puppimet          (0),
@@ -337,6 +338,7 @@ void BaseTreeAnalyzer::processVariables()
   selectedLeptons.clear();
   primaryLeptons.clear();
   secondaryLeptons.clear();
+  selectedLepton = 0;
   if(muonReader.isLoaded() || electronReader.isLoaded()){
     allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
     if(electronReader.isLoaded())
@@ -366,6 +368,7 @@ void BaseTreeAnalyzer::processVariables()
   nSelLeptons = selectedLeptons.size();
   nPrimaryLeptons = primaryLeptons.size();
   nSecondaryLeptons = secondaryLeptons.size();
+  if(nSelLeptons > 0) selectedLepton = nSelLeptons == 1 ? selectedLeptons.front() : selectedLeptons[randGen->Uniform(0,nSelLeptons)];
 
   vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
