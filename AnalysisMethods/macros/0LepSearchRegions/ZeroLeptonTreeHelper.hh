@@ -662,7 +662,7 @@ struct TreeFiller {
       if(ana->nSelLeptons > 1) {
         const LeptonF * lep2 = 0;
         for(const auto * tLep : ana->selectedLeptons){
-          if(tLep->index() == lep->index()) continue;
+          if(tLep->index() == lep->index() && tLep->ismuon() == lep->ismuon()) continue;
           lep2 = tLep;
         }
         if(lep2==0)throw std::range_error("ZeroLeptonTreeHelper::fillEventInfo: You say you have at least two leptons but I only find one!");
