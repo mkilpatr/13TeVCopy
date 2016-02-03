@@ -34,6 +34,17 @@ class TruePUCorr : public HistogramCorrection {
     TruePUCorr(TFile* file) : HistogramCorrection("puWeight",file) {}
 };
 
+class CTTCorr : public Correction {
+  public :
+  CTTCorr(TString fileName) ;
+  ~CTTCorr();
+  float process(CORRTYPE effCorrType, CORRTYPE misCorrType, bool isTopLike, double maxGoodTopPT);
+
+  TFile * inputFile;
+  TH1F* effSF;
+  TH1F* mistagSF;
+};
+
 class EventCorrectionSet : public CorrectionSet {
 public:
   enum  CorrectionOptions {
@@ -41,12 +52,13 @@ public:
                           , PU               = (1 <<  0)   ///< Correct PU
                           , TRUEPU           = (1 <<  1)   ///< Correct PU
                           , NORM             = (1 <<  2)   ///< Incl. normalization corrections
+                          , CTT              = (1 <<  3)   ///< CTT top tagging
 
   };
- EventCorrectionSet(): puCorr50NS(0), puCorr(0), truePUCorr(0), puWeight(1), pu50NSWeight(1), truePUWeight(1), normWeight(1) {}
+ EventCorrectionSet(): puCorr50NS(0), puCorr(0), truePUCorr(0), cttCorr(0), puWeight(1), pu50NSWeight(1), truePUWeight(1), normWeight(1),cttWeight(1) {}
 
   virtual ~EventCorrectionSet() {};
-  virtual void load(TString fileName, int correctionOptions = NULLOPT);
+  virtual void load(TString fileName, TString cttCorrName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
@@ -54,18 +66,21 @@ public:
   float getTruePUWeight() const {return truePUWeight;}
   float get50NSPUWeight() const {return pu50NSWeight;}
   float getNormWeight() const {return normWeight;}
+  float getCTTWeight() const {return cttWeight;}
 
 private:
   //Correction list
   PUCorr50NS * puCorr50NS;
   PUCorr * puCorr;
   TruePUCorr * truePUCorr;
+  CTTCorr * cttCorr;
 
   //output values
   float puWeight;
   float pu50NSWeight;
   float truePUWeight;
   float normWeight;
+  float cttWeight;
 
 };
 
