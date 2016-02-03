@@ -123,10 +123,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
     }
-    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
-      if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT)
-        eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.puCorrections);
+    if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){

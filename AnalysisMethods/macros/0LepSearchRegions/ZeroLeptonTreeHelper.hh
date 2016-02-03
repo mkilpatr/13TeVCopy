@@ -57,9 +57,8 @@ struct TreeFiller {
   size i_weight    ;
   size i_systweights;
   size i_ismc      ;
-  size i_puWeight  ;
-  size i_pu50NSWeight  ;
   size i_truePUWeight;
+  size i_cttWeight;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
@@ -270,9 +269,8 @@ struct TreeFiller {
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_systweights    = data->addMulti<float>("","systweights",0);
-    i_puWeight       = data->add<float>("","puWeight","F",0);
-    i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
+    i_cttWeight      = data->add<float>("","cttWeight","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight     = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
@@ -453,9 +451,8 @@ struct TreeFiller {
     for(auto wgt : *ana->evtInfoReader.systweights) {
       data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
     }
-    data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
-    data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
+    data->fill<float>(i_cttWeight,       ana->eventCorrections.getCTTWeight());
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight, ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
