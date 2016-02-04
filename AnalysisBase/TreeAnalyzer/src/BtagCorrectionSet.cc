@@ -299,7 +299,7 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTTBARLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
-  if(options_ & FASTSIMBYEVTWEIGHT){
+  if((options_ & FASTSIMBYEVTWEIGHT) && (ana->process == defaults::SIGNAL)  ){
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bTagFastSimByEvtWeight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightFastSimBTagCorrType,cfg.corrections.heavyFastSimBTagCorrType,true,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
