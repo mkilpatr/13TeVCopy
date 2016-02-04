@@ -36,7 +36,7 @@ namespace BkgPrediction {
     if(plotlog)
       plots->setLogy();
     plots->setWgtVar(wgtvar);
-    plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.2f fb^{-1}",stof(string(lumistr.Data()))),"");
+    plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"");
     plots->setHeaderPosition(0.2, 0.93);
     plots->setOutfile(outfilename);
     plots->setWriteHists();
