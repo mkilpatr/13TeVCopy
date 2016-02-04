@@ -82,6 +82,7 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
+  size i_isfastsim;
 //  size i_passcscflt; // to be added back later
   size i_passcscbeamhaloflt;
   size i_passeebadscflt;
@@ -294,6 +295,7 @@ struct TreeFiller {
     i_passtright900  = data->add<bool>("","passtright900","O",0); 
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
+    i_isfastsim      = data->add<bool>("","isfastsim","O",0);
 //    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
     i_passcscbeamhaloflt = data->add<bool>("","passcscbeamhaloflt","O",0);
     i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
@@ -475,6 +477,7 @@ struct TreeFiller {
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
     data->fill<bool >(i_passtright900, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
+    data->fill<bool >(i_isfastsim,     ana->process==defaults::SIGNAL);
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();  
