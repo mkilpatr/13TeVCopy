@@ -61,11 +61,13 @@ void makeZeroLeptonOneLepInclCRTrees(TString sname = "ww2l",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::ConfigSet pars = pars0lepCR(json);
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile(json);
+  cfgSet::ConfigSet cfg = cfgSet::sl_search_set;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
+  cfg.corrections.leptonCorrections = ucsbsusy::LeptonCorrectionSet::NULLOPT;
 
-  pars.jets.cleanJetsvSelectedLeptons = true;
-
-  OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
+  OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &cfg);
 
   a.analyze(100000);
 
