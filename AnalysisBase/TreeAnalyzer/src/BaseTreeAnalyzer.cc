@@ -56,6 +56,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nBJets            (0),
     nVetoHPSTaus      (0),
     selectedLepton    (0),
+    nSelCTTTops       (0),
     met               (0),
     metNoHF           (0),
     puppimet          (0),
@@ -122,10 +123,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
     }
-    if(configSet.corrections.eventCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.eventCorrectionFile,configSet.corrections.eventCorrections);
-      if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT)
-        eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.puCorrections);
+    if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
+      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
@@ -305,9 +304,14 @@ void BaseTreeAnalyzer::processVariables()
 
 
   if(cmsTopReader.isLoaded()){
+    nSelCTTTops = 0;
+    selectedCTTTops.clear();
     cttTops.clear();
     cttTops.reserve(cmsTopReader.cmsTops.size());
     for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
+    std::sort(cttTops.begin(), cttTops.end(), PhysicsUtilities::greaterPTDeref<CMSTopF>());
+    for(auto* p : cttTops) if(cfgSet::isSelTaggedTop(*p)) selectedCTTTops.push_back(p);
+    nSelCTTTops = selectedCTTTops.size();
   }
 
   if(fatJetReader.isLoaded()){

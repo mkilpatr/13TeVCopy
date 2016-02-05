@@ -16,9 +16,9 @@ ifeq ($(PLATFORM),macosx)
 CXXFLAGS += -std=c++11
 endif
 
-OBJS = $(LIBDIR)/Plot.o $(LIBDIR)/PlotROCCurves.o $(LIBDIR)/PlotStuff.o $(LIBDIR)/StyleTools.o $(LIBDIR)/PlotUtilsDict.o $(LIBDIR)/EffPlotTools.o $(LIBDIR)/PlotTools.o $(LIBDIR)/SFGetter.o
+OBJS = $(LIBDIR)/Plot.o $(LIBDIR)/PlotROCCurves.o $(LIBDIR)/PlotStuff.o $(LIBDIR)/StyleTools.o $(LIBDIR)/PlotUtilsDict.o $(LIBDIR)/EffPlotTools.o $(LIBDIR)/PlotTools.o $(LIBDIR)/SFGetter.o $(LIBDIR)/HistogramGetter.o
 # INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h $(INTDIR)/PlotStuff.h $(INTDIR)/StyleTools.hh
-INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h  $(INTDIR)/StyleTools.hh $(INTDIR)/EffPlotTools.hh $(INTDIR)/PlotStuff.h $(INTDIR)/PlotTools.hh $(INTDIR)/SFGetter.hh $(INTDIR)/Sample.hh
+INTS = $(INTDIR)/Plot.hh $(INTDIR)/PlotROCCurves.h  $(INTDIR)/StyleTools.hh $(INTDIR)/EffPlotTools.hh $(INTDIR)/PlotStuff.h $(INTDIR)/PlotTools.hh $(INTDIR)/SFGetter.hh $(INTDIR)/Sample.hh $(INTDIR)/HistogramGetter.hh
 
 libPlotUtils.so: $(OBJS)
 ifeq ($(PLATFORM),macosx)

@@ -294,12 +294,12 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & BYEVTWEIGHT){
     bool isTTBARLike = false;
-    if(ana->process == defaults::TTBAR || ana->process == defaults::SINGLE_T || ana->process == defaults::TTZ || ana->process == defaults::TTW )
+    if(ana->process == defaults::TTBAR || ana->process == defaults::SINGLE_T || ana->process == defaults::TTZ || ana->process == defaults::TTW || ana->process == defaults::SIGNAL )
       isTTBARLike = true;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTTBARLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
-  if(options_ & FASTSIMBYEVTWEIGHT){
+  if((options_ & FASTSIMBYEVTWEIGHT) && (ana->process == defaults::SIGNAL)  ){
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bTagFastSimByEvtWeight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightFastSimBTagCorrType,cfg.corrections.heavyFastSimBTagCorrType,true,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }

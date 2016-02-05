@@ -182,8 +182,13 @@ namespace cfgSet {
     int jetAndMETCorrections;
 
     TString ttbarCorrectionFile;
-    TString eventCorrectionFile; 
+    TString eventCorrectionFile;
+    TString cttCorrectionFile;
     TString puCorrectionFile;
+    ucsbsusy::CORRTYPE cttEffSFType;
+    ucsbsusy::CORRTYPE cttMistagSFType;
+
+
     TString leptonCorrectionFile;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
@@ -220,6 +225,8 @@ namespace cfgSet {
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        cttEffSFType(ucsbsusy::NONE),
+        cttMistagSFType(ucsbsusy::NONE),
         tnpElCorrType(ucsbsusy::NONE),
         tnpMuCorrType(ucsbsusy::NONE),
         //tnpElIdCorrType(ucsbsusy::NONE),
@@ -250,6 +257,8 @@ namespace cfgSet {
           os << "PU ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
           os << "NORM ";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::CTT)
+          os << " CTT Eff("<< a.cttEffSFType <<") Mistag("<<a.cttMistagSFType<<")";
         os << std::endl;
 
       }

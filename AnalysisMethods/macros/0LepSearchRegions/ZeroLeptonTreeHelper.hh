@@ -48,8 +48,6 @@ cfgSet::ConfigSet pars0LepPhoton(TString json) {
 }
 
 std::vector<LorentzVector> topsPass;
-std::vector<LorentzVector> topCands;
-
 struct TreeFiller {
 
   TreeFiller() {}
@@ -59,9 +57,8 @@ struct TreeFiller {
   size i_weight    ;
   size i_systweights;
   size i_ismc      ;
-  size i_puWeight  ;
-  size i_pu50NSWeight  ;
   size i_truePUWeight;
+  size i_cttWeight;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
@@ -85,6 +82,7 @@ struct TreeFiller {
   size i_passtright900; 
   size i_passjson  ;
   size i_passdijetmet;
+  size i_isfastsim;
 //  size i_passcscflt; // to be added back later
   size i_passcscbeamhaloflt;
   size i_passeebadscflt;
@@ -232,10 +230,6 @@ struct TreeFiller {
   size i_wpasspt;
   size i_wpasseta;
 
-  bool passCTTSelection(CMSTopF* ctt) {
-    return (ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->topMinMass() > 50.0 && ctt->topNsubJets() >= 3 && ctt->p4().pt()>=400. && fabs(ctt->p4().eta())<=2.4);
-  } 
-
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
     return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4);
   } 
@@ -276,9 +270,8 @@ struct TreeFiller {
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_systweights    = data->addMulti<float>("","systweights",0);
-    i_puWeight       = data->add<float>("","puWeight","F",0);
-    i_pu50NSWeight   = data->add<float>("","pu50NSWeight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
+    i_cttWeight      = data->add<float>("","cttWeight","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight     = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
@@ -302,6 +295,7 @@ struct TreeFiller {
     i_passtright900  = data->add<bool>("","passtright900","O",0); 
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
+    i_isfastsim      = data->add<bool>("","isfastsim","O",0);
 //    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
     i_passcscbeamhaloflt = data->add<bool>("","passcscbeamhaloflt","O",0);
     i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
@@ -459,9 +453,8 @@ struct TreeFiller {
     for(auto wgt : *ana->evtInfoReader.systweights) {
       data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
     }
-    data->fill<float>(i_puWeight,    ana->eventCorrections.getPUWeight());
-    data->fill<float>(i_pu50NSWeight,    ana->eventCorrections.get50NSPUWeight());
     data->fill<float>(i_truePUWeight,    ana->eventCorrections.getTruePUWeight());
+    data->fill<float>(i_cttWeight,       ana->eventCorrections.getCTTWeight());
     data->fill<float>(i_btagWeight, ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight, ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
@@ -484,6 +477,7 @@ struct TreeFiller {
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false)); 
     data->fill<bool >(i_passtright900, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT900 : false)); 
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
+    data->fill<bool >(i_isfastsim,     ana->process==defaults::SIGNAL);
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();  
@@ -515,35 +509,28 @@ struct TreeFiller {
     data->fill<int  >(i_nvetolele, nVetoEle);
     data->fill<int  >(i_nctt, ana->cttTops.size());
 
-    int ncttstd    = 0;
-    topCands.clear();
     topsPass.clear();
     for(auto* ctt : ana->cttTops) {
-
-      LorentzVector tmpVecCand; tmpVecCand = ctt->p4();
-      topCands.push_back(tmpVecCand);
-
-      if(passCTTSelection(ctt)) { ncttstd++;
-	LorentzVector tmpVec; tmpVec = ctt->p4();
-	topsPass.push_back(tmpVec);
+      if(cfgSet::isSelTaggedTop(*ctt)) {
+        LorentzVector tmpVec; tmpVec = ctt->p4();
+        topsPass.push_back(tmpVec);
       }
 
-
     }
-    data->fill<int  >(i_ncttstd   , ncttstd   );
-    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return passCTTSelection(ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
+    data->fill<int  >(i_ncttstd   , ana->nSelCTTTops   );
+    data->fill<int>(i_ncttstd_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [this, ana](CMSTopF *ctt){return cfgSet::isSelTaggedTop(*ctt) && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
     data->fill<int>(i_nctt_cttmassonly, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4;}));
     data->fill<int>(i_nctt_cttmassonly_dphimet, std::count_if(ana->cttTops.begin(), ana->cttTops.end(), [ana](CMSTopF *ctt){return ctt->topCmsTopTagMass() > 140.0 && ctt->topCmsTopTagMass() < 250.0 && ctt->pt()>=400 && fabs(ctt->eta())<=2.4 && fabs(PhysicsUtilities::deltaPhi(*ctt, *ana->met)>0.8);}));
-    if (topsPass.size()>0) { 
-      data->fill<float>(i_toppt,topsPass[0].Pt()); 
-      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(topsPass[0], *ana->met))); 
+    if (ana->nSelCTTTops>0) {
+      data->fill<float>(i_toppt,ana->selectedCTTTops[0]->pt());
+      data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(*ana->selectedCTTTops[0], *ana->met)));
     } 
     else { 
       data->fill<float>(i_toppt,0.); 
       data->fill<float>(i_dphitopmet,0); 
     }
     
-    if (topCands.size()>1) { data->fill<float>(i_httwoleadfatjet,(topCands[0].Pt()+topCands[1].Pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
+    if (ana->cttTops.size()>1) { data->fill<float>(i_httwoleadfatjet,(ana->cttTops[0]->pt()+ana->cttTops[1]->pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
 
     int nfjsd60_   = 0;
@@ -828,7 +815,7 @@ struct TreeFiller {
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	if (cfgSet::isSelTaggedTop(*ana->cttTops[indxctt])) {
 	  sfncttpass_   = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt();
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }
@@ -907,7 +894,7 @@ struct TreeFiller {
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
-	if (passCTTSelection(ana->cttTops[indxctt])) { 
+	if (cfgSet::isSelTaggedTop(*ana->cttTops[indxctt])) {
 	  sfncttpass_     = 1;
 	  sfcttpasspt_  = ana->cttTops[indxctt]->p4().pt(); 
 	  sfcttpasseta_ = ana->cttTops[indxctt]->p4().eta(); }

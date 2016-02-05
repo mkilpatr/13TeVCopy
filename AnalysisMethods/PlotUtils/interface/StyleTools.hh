@@ -65,6 +65,7 @@ namespace StyleTools {
   
   TCanvas* newAlbum(Int_t numItems, const Char_t* name, const Char_t* title, Int_t width, Int_t height, Int_t rows, Int_t columns);
   TCanvas* drawAll(TObjArray* plots, TString name);
+  int colorGetter(int counter); //For when you need quick new colors!
 
 };
 
