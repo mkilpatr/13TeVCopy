@@ -96,7 +96,7 @@ class DatacardConfig:
         
 
         # define signal region
-        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,self.weightname,self.basesel,'','','signal',self.allbins,self.compactbinlist,self.binmap)
+        self.signalregion = FitRegion('data',self.backgrounds,'sr',self.weightname,self.basesel,self.weightname,self.basesel,'','','','signal',self.allbins,self.compactbinlist,self.binmap)
 
         # fill mapping of signal region bins to control region bins
         self.srtocrbinmaps = {}
@@ -110,6 +110,7 @@ class DatacardConfig:
             label    = crinput['dataFile'].split('_')[-1]
             wgtexpr     = crinput['crwgt'] if crinput.has_key('crwgt') else self.weightname
             selection   = crinput['crsel'] if crinput.has_key('crsel') else self.basesel
+            crSubSel    = crinput['crsubsel'] if crinput.has_key('crsubsel') else ''
             subNormSel  = crinput['crnormsel'] if crinput.has_key('crnormsel') else ''
             subNormWgt  = crinput['crnormwgt'] if crinput.has_key('crnormwgt') else ''
             srwgtexpr   = crinput['srwgt'] if crinput.has_key('srwgt') else self.weightname
@@ -133,9 +134,9 @@ class DatacardConfig:
                     self.combineBins(crallbins, crcompactbinlist, crbinmap, combinebins)
         
             if crinput['type'] == 'ext' :
-                self.extcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,subNormSel,subNormWgt,srwgtexpr,srselection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+                self.extcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,crSubSel,subNormSel,subNormWgt,srwgtexpr,srselection,'external',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
             else :
-                self.fitcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,subNormSel,subNormWgt,srwgtexpr,srselection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
+                self.fitcontrolregions[cr] = FitRegion(crinput['dataFile'],crinput['mcFiles'],label,wgtexpr,selection,crSubSel,subNormSel,subNormWgt,srwgtexpr,srselection,'control',crallbins,crcompactbinlist,crbinmap,self.srtocrbinmaps[label])
 
         # load uncertainty files
         if not self.usedummyuncs:
@@ -217,10 +218,7 @@ class DatacardConfig:
                              if uncname.split('_')[0] == frname and binLabel in uncname and unc.type == 'gmN' :
                                  nevts = float(unc.cr_nevts[binLabel]['data']*unc.cr_nevts[binLabel]['mcsr']/unc.cr_nevts[binLabel]['mc'])
                                  if unc.cr_nevts[binLabel]['mcsub'] > 0.0 :
-                                     if float(unc.cr_nevts[binLabel]['data']) < 10.0 :
-                                        nevts *= (1.0 - (unc.cr_nevts[binLabel]['mcsub']/(unc.cr_nevts[binLabel]['mc'] + unc.cr_nevts[binLabel]['mcsub'])))
-                                     else :                                           
-                                         nevts *= (1.0 - (unc.cr_nevts[binLabel]['mcsub']/float(unc.cr_nevts[binLabel]['data'])))
+                                     nevts *= unc.cr_nevts[binLabel]['mcsub']
                                  break
                          break
                 nBkgEvts.append(nevts)
@@ -651,12 +649,20 @@ class DatacardConfig:
                                         unc.cr_nevts[binname]['mc']   = max(self.getNumEvents(mcfileadd, crbin, cr.weight, 1, cr.selection), 0.00000001)
                                         unc.cr_nevts[binname]['mcsub'] = max(self.getNumEvents(mcfilesub, crbin, cr.weight, 1, cr.selection), 0.00000001) if mcfilesub != '' else 0.0
                                         
+                                        #Normalize the subtracted MC
                                         if cr.subNormSel != '' and mcfilesub != '':
                                             normData = self.getNumEvents(datafile, crbin, cr.subNormWgt, 0, cr.subNormSel,1)
                                             normSub  =  self.getNumEvents(mcfilesub, crbin, cr.subNormWgt, 1, cr.subNormSel,1)
                                             normMC   =  self.getNumEvents(mcfileadd, crbin, cr.subNormWgt, 1, cr.subNormSel,1)
                                             if normData > 0 and normSub + normMC > 0 :
-                                                unc.cr_nevts[binname]['mcsub'] = unc.cr_nevts[binname]['mcsub']* normData/(normSub+normMC)
+                                                unc.cr_nevts[binname]['mcsub'] = unc.cr_nevts[binname]['mcsub']* normData/(normSub+normMC)                                        
+                                        #Get the subtraction correction
+                                        if unc.cr_nevts[binname]['mcsub'] > 0 :
+                                            if unc.cr_nevts[binname]['data'] < 10 :
+                                                tempMC = self.getNumEvents(mcfileadd, crbin, cr.weight, 1, cr.crSubSel)
+                                                unc.cr_nevts[binname]['mcsub'] = (1.0 - (unc.cr_nevts[binname]['mcsub']/(tempMC + unc.cr_nevts[binname]['mcsub'])))
+                                            else :                                                
+                                                unc.cr_nevts[binname]['mcsub'] = (1.0 - (unc.cr_nevts[binname]['mcsub']/float(unc.cr_nevts[binname]['data'])))                                            
                                                 
                                     unc.vals[binname][samp] = -1
                                     unc.label = uncname.replace(binname,cr.srtocrbinmap[binname])
@@ -792,12 +798,13 @@ class DatacardConfig:
         return uncline
 
 class FitRegion:
-    def __init__(self,dataname,backgrounds,label,weight,selection,subNormSel,subNormWgt,orweight,orselection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
+    def __init__(self,dataname,backgrounds,label,weight,selection,crSubSel,subNormSel,subNormWgt,orweight,orselection,type,allbins,compactbinlist,binmap,srtocrbinmap={}):
         self.dataname       = dataname
         self.backgrounds    = backgrounds
         self.label          = label
         self.weight         = weight
         self.selection      = selection
+        self.crSubSel       = crSubSel
         self.subNormSel     = subNormSel
         self.subNormWgt     = subNormWgt
         self.orweight       = orweight
