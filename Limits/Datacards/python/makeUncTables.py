@@ -56,7 +56,7 @@ sources = {
            ('scale_j'           , 'Jet energy scale'          ),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    ),
            ('qcd_jetresptailunc', 'Jet response tail'         ),
-           ('qcd_tfstatunc_bin' , 'Transfer factor'           ),
+           ('qcd_tfstatunc'     , 'Transfer factor'           ),
            ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
   ]
 } # sources
@@ -121,7 +121,7 @@ def getFileName(inDir,met,nj,nb,nt,mtb,cr='',sig='') :
 # get and properly format the number for the given bkg, bin
 def getUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr='',sig='') :
   if unc == 'lumi' : return '4.6\\%'
-  u = getRawUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr='')
+  u = getRawUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr)
   if u == '-' : return u
   return str(int(round(u*100,0)))+'\\%'
 

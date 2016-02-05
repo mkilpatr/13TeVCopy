@@ -61,7 +61,7 @@ sources = {
            ('scale_j'           , 'Jet energy scale'          , 'syst'),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    , 'syst'),
            ('qcd_jetresptailunc', 'Jet response tail'         , 'syst'),
-           ('qcd_tfstatunc_bin' , 'Transfer factor'           , 'stat'),
+           ('qcd_tfstatunc'     , 'Transfer factor'           , 'stat'),
            ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      , 'stat'),
   ]
 } # sources
@@ -183,8 +183,9 @@ def makeCrChunk(inDir,nj,nb,mtb,nt,cr) :
 
 # SR yield/unc table chunk for a given bin in (njets, mtb, ntops)
 def makeChunk(inDir,nj,nb,mtb,nt,cr='') :
-  s = chunkHeader(nj,nb,mtb,nt,2)
-  if cr != '' : s = s.replace('multicolumn{7}','multicolumn{2}')
+  column = 7 if cr=='' else 2
+  s = chunkHeader(nj,nb,mtb,nt,column)
+  #if cr != '' : s = s.replace('multicolumn{7}','multicolumn{2}')
   for binMet in binsMet : 
     if cr != '' and nt==1 :
       if binMet[0] != 250 : continue
