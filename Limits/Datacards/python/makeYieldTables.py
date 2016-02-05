@@ -77,7 +77,7 @@ def main() :
   for sig in signals :
     if not sig in xsec.keys() : 
       xsec[sig] = getXsec(sig)*1000 # pb->fb (lumi is in 1/fb)
-  print '\n', 'using xsecs:', xsec
+  #print '\n', 'using xsecs:', xsec
   
   # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
   print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
@@ -94,20 +94,20 @@ def main() :
   print '\n\n\n'
 
 # piece together chunks for the SR yields
-def makeTable(inDir,cr='') : 
+def makeTable(inDir) : 
   s  = '\\hline\n'
-  s += '\\met [GeV] &  T2tt(700,1) & T2tt(600,200) & \\ttbar, \\W+jets & \\znunu & QCD & \\ttZ \\\\ \n'
+  s += '\\met [GeV]  &  \\ttbar, \\W+jets  &  \\znunu  &  QCD  &  \\ttZ  &  total SM  &  $N_{\\rm data}$  \\\\ \n'
   s += '\\hline\n'
-  s += makeChunk(inDir,5,1,  0,0,cr)
-  s += makeChunk(inDir,5,2,  0,0,cr)
-  s += makeChunk(inDir,7,1,  0,0,cr)
-  s += makeChunk(inDir,7,2,  0,0,cr)
-  s += makeChunk(inDir,5,1,175,0,cr)
-  s += makeChunk(inDir,5,2,175,0,cr)
-  s += makeChunk(inDir,7,1,175,0,cr)
-  s += makeChunk(inDir,7,2,175,0,cr)
-  s += makeChunk(inDir,5,1,175,1,cr)
-  s += makeChunk(inDir,5,2,175,1,cr)
+  s += makeChunk(inDir,5,1,  0,0)
+  s += makeChunk(inDir,5,2,  0,0)
+  s += makeChunk(inDir,7,1,  0,0)
+  s += makeChunk(inDir,7,2,  0,0)
+  s += makeChunk(inDir,5,1,175,0)
+  s += makeChunk(inDir,5,2,175,0)
+  s += makeChunk(inDir,7,1,175,0)
+  s += makeChunk(inDir,7,2,175,0)
+  s += makeChunk(inDir,5,1,175,1)
+  s += makeChunk(inDir,5,2,175,1)
   s += '\\hline\n'
   return s
 
@@ -170,32 +170,32 @@ def makeEffChunk(inDir,lumi,nj,mtb,nt,cr='') :
 # CR yield/unc table chunk for a given bin in (njets, mtb, ntops)
 def makeCrChunk(inDir,nj,nb,mtb,nt,cr) :
   s = chunkHeader(nj,nb,mtb,nt,3)
-  s = s.replace('multicolumn{7}','multicolumn{3}')
   for binMet in binsMet :
     if nt==1 :
       if binMet[0] != 250 : continue
       s += '$>$250'
     else : s += binMet[1]
     s += ' & ' + str(getDataYield(inDir,'ttbarplusw',binMet[0],nj,nb,nt,mtb,cr))
-    s += ' & ' + getBinYieldUncs(inDir,'ttbarplusw',binMet[0],nj,nb,nt,mtb,cr)
+    s += ' & ' + getBinYieldUncs(inDir,'ttbarplusw',binMet[0],nj,nb,nt,mtb,cr)[0]
     s += ' \\\\ \n'
   return s
 
 # SR yield/unc table chunk for a given bin in (njets, mtb, ntops)
-def makeChunk(inDir,nj,nb,mtb,nt,cr='') :
-  column = 7 if cr=='' else 2
-  s = chunkHeader(nj,nb,mtb,nt,column)
-  #if cr != '' : s = s.replace('multicolumn{7}','multicolumn{2}')
+def makeChunk(inDir,nj,nb,mtb,nt) :
+  s = chunkHeader(nj,nb,mtb,nt,7) #.replace('{7}{c}{','{7}{c}{ \\multirow{2}{*}{').replace('} \\\\','} } \\\\ \\multicolumn{7}{c}{}  \\\\')
   for binMet in binsMet : 
-    if cr != '' and nt==1 :
-      if binMet[0] != 250 : continue
-      s += '$>$250'
-    else : s += binMet[1] 
-    for sigpoint in signals :
-      s += ' & ' + str(round(getYield(inDir,sigpoint,binMet[0],nj,nb,nt,mtb,cr,sigpoint),2))
+    s += binMet[1] 
+    #for sigpoint in signals :
+    #  s += ' & ' + str(round(getYield(inDir,sigpoint,binMet[0],nj,nb,nt,mtb,'',sigpoint),2))
+    n = 0
+    e = 0
     for bkg in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
-      if cr != '' and bkg != 'ttbarplusw' : continue
-      s += ' & ' + getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,cr)
+      (tn,te) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')[1]
+      n += tn
+      e += te**2
+      s += ' & ' + str(round(tn,2)) + ' $\\pm$ ' + str(round(te,2))
+    s += ' & ' + str(round(n,2)) + ' $\\pm$ ' + str(round(sqrt(e),2))
+    s += ' & ' + str(getDataYield(inDir,'',binMet[0],nj,nb,nt,mtb,'',''))
     s += ' \\\\ \n'
   return s
 
@@ -211,15 +211,20 @@ def getTotalEvents(inDir,sig) :
 
 # return the yield +/- stat +/- syst for the given process in the given bin
 def getBinYieldUncs(inDir,process,met,nj,nb,nt,mtb,cr='',sig='') :
+  if cr=='' and process == 'ttbarplusw' : 
+    inDir = inDir.replace('unblind_obs','setratetopred')
   y = getYield(inDir,process,met,nj,nb,nt,mtb,cr,sig)
   stat = 0
   syst = 0
+  stsy = 0
   for unc in sources[(process if cr=='' else cr)] :
     if unc[2] == 'stat' : stat += getUncSquared(inDir,unc[0],process,met,nj,nb,nt,mtb,cr,sig)
     if unc[2] == 'syst' : syst += getUncSquared(inDir,unc[0],process,met,nj,nb,nt,mtb,cr,sig)
+    stsy += getUncSquared(inDir,unc[0],process,met,nj,nb,nt,mtb,cr,sig)
   stat = sqrt(stat) * y
   syst = sqrt(syst) * y
-  return str(round(y,2)) + ' $\\pm$ ' + str(round(stat,2)) + ' (stat.) $\\pm$ ' + str(round(syst,2)) + ' (syst.)' 
+  stsy = sqrt(stsy) * y
+  return ( str(round(y,2))+' $\\pm$ '+str(round(stat,2))+' (stat.) $\\pm$ '+str(round(syst,2))+' (syst.)', (y,stsy) ) 
 
 # get the yield for the given bin
 # if met<0, inDir is assumed to be the full path+filename
