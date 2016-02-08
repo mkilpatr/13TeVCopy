@@ -633,3 +633,9 @@ TCanvas* StyleTools::drawAll(TObjArray* plots, TString name)
   canvas->Update();
   return canvas;
 }
+
+int StyleTools::colorGetter(int counter){
+  int color = counter+1;
+  if(color>= 10) color++;
+  return color;
+}
