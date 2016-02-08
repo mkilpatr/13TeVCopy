@@ -141,6 +141,39 @@ namespace BkgPrediction {
 //    For bins with zero event, set to 0.001 +/- 1.8.
     removeZeroes(data_cr, 0.001, 1.8);
 
+    TH1F* datamc_sf = (TH1F*)data_cr->Clone("datamc_sf_" + region);
+    datamc_sf->Divide(lostlep_cr);
+
+    cout << "\nCR SF: ";
+    for(int ibin = 1; ibin < datamc_sf->GetNbinsX()+1; ++ibin) {
+      cout << datamc_sf->GetBinContent(ibin) << " +/- " << datamc_sf->GetBinError(ibin) << "\t";
+    }
+    cout << endl;
+
+    for(int intbin = datamc_sf->GetNbinsX()-9; intbin < datamc_sf->GetNbinsX()+1; ++intbin) {
+      double binerr = datamc_sf->GetBinError(intbin);
+      int nt0bin1 = 0, nt0bin2 = 0;
+      cout << "SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+      bool havent0data = (data_cr->GetBinContent(intbin-20) + data_cr->GetBinContent(intbin-10)) > 0.003;
+      if(havent0data) {
+        nt0bin1 = intbin-20;
+        nt0bin2 = intbin-10;
+      } else {
+        nt0bin1 = intbin-21;
+        nt0bin2 = intbin-11;
+      }
+      double data_nt0 = data_cr->GetBinContent(nt0bin1) + data_cr->GetBinContent(nt0bin2);
+      double data_unc_nt0 = sqrt((data_cr->GetBinError(nt0bin1)*data_cr->GetBinError(nt0bin1)) + (data_cr->GetBinError(nt0bin2)*data_cr->GetBinError(nt0bin2)));
+      double mc_nt0 = lostlep_cr->GetBinContent(nt0bin1) + lostlep_cr->GetBinContent(nt0bin2);
+      double mc_unc_nt0 = sqrt((lostlep_cr->GetBinError(nt0bin1)*lostlep_cr->GetBinError(nt0bin1)) + (lostlep_cr->GetBinError(nt0bin2)*lostlep_cr->GetBinError(nt0bin2)));
+      double relunc = sqrt(pow((data_unc_nt0/data_nt0),2) + pow((mc_unc_nt0/mc_nt0),2));
+      cout << "Combined nTop 0 yields from bins " << nt0bin1 << ", " << nt0bin2 << ": Data = " << data_nt0 << " +/- " << data_unc_nt0 << ", MC = " << mc_nt0 << " +/- " << mc_unc_nt0 << "; SF = " << data_nt0/mc_nt0 << " +/- " << relunc*data_nt0/mc_nt0 << endl;
+      cout << "Adding relative uncertainty of " << relunc << " from corresponding nt0 bin" << endl;
+      relunc *= datamc_sf->GetBinContent(intbin);
+      datamc_sf->SetBinError(intbin, sqrt((binerr*binerr) + (relunc*relunc)));
+      cout << "New SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+    }
+
     TH1F* lostlep_tf = (TH1F*)lostlep_sr->Clone("lostlep_tf_" + region);
     lostlep_tf->Divide(lostlep_cr);
 
@@ -153,13 +186,17 @@ namespace BkgPrediction {
     TH1F* lostlep_pred = (TH1F*)lostlep_tf->Clone("lostlep_pred_" + region);
     lostlep_pred->Multiply(data_cr);
 
+    TH1F* lostlep_pred_2 = (TH1F*)datamc_sf->Clone("lostlep_pred_2_" + region);
+    lostlep_pred_2->Multiply(lostlep_sr);
+
     cout << "\nLost lepton prediction: ";
     for(int ibin = 1; ibin < lostlep_pred->GetNbinsX()+1; ++ibin) {
-      cout << lostlep_pred->GetBinContent(ibin) << " +/- " << lostlep_pred->GetBinError(ibin) << "\t";
+      cout << lostlep_pred->GetBinContent(ibin) << " +/- " << lostlep_pred->GetBinError(ibin) << "; \t";
+      cout << lostlep_pred_2->GetBinContent(ibin) << " +/- " << lostlep_pred_2->GetBinError(ibin) << "\t";
     }
     cout << endl;
 
-    return lostlep_pred;
+    return lostlep_pred_2;
 
   }
 
