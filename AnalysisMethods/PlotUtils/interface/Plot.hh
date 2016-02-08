@@ -30,6 +30,7 @@
 #include <TList.h>
 #include <TBox.h>
 #include <TLatex.h>
+#include <TRegexp.h>
 #include <TRandom3.h>
 #include <Math/QuantFuncMathCore.h>
 #include <vector>
