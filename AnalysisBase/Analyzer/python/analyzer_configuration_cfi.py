@@ -32,6 +32,7 @@ nominal_configuration = cms.PSet(
                                       crossSection     = cms.double (-99),                      #Input process cross section
                                       totalEvents      = cms.int32  (-99),                      #Total number of ecents in the sample
                                       crossSectionScaling     = cms.double (1),                 #Luminosity to scale to (given the cross section and total events)
+                                      printLHERunInfo  = cms.untracked.bool(False),
 
                                   Gen = cms.untracked.PSet(
                                       isFilled            = cms.untracked.bool(True),

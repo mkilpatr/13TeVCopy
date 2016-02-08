@@ -7,7 +7,7 @@
 using namespace ucsbsusy;
 using namespace std;
 
-const bool ucsbsusy::PhysicsAnalyzer::PRINTLHERUNINFO = false; // if you need to print out available LHE info for systematics
+//const bool ucsbsusy::PhysicsAnalyzer::PRINTLHERUNINFO = false; // if you need to print out available LHE info for systematics
 
 
 //--------------------------------------------------------------------------------------------------
@@ -15,6 +15,8 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 : BaseAnalyzer(iConfig)
 , isRealData          (iConfig.getParameter<int             >("isData"                 ))
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
+, printLHERunInfo     (iConfig.getUntrackedParameter<bool   >("printLHERunInfo",false))
+, lheInfoTag          (iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("lheEvtInfo"))
 // ---- Configure event information
 , eventInfo           (0)
 , ak4Jets             (0)
@@ -54,12 +56,12 @@ void PhysicsAnalyzer::beginJob() {}
 void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
 {
 
-  if(!PRINTLHERUNINFO) return;
+  if(!printLHERunInfo) return;
 
   edm::Handle<LHERunInfoProduct> lheruninfo;
   typedef std::vector<LHERunInfoProduct::Header>::const_iterator headers_const_iterator;
 
-  run.getByLabel( "externalLHEProducer", lheruninfo );
+  run.getByLabel( lheInfoTag, lheruninfo );
   LHERunInfoProduct myLHERunInfoProduct = *(lheruninfo.product());
 
   for (headers_const_iterator iter=myLHERunInfoProduct.headers_begin(); iter!=myLHERunInfoProduct.headers_end(); iter++){
