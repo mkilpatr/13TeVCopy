@@ -26,7 +26,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   gSystem->mkdir(outputdir+ext, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*cttWeight";
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
@@ -132,7 +132,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   plots0lnovetoes->plot();
 
-  if(!(dolownj || dolowmet)) {
+  if(!(true || dolownj || dolowmet)) {
     TString rmcmd = "rm " + outputdir + "/met_sr*." + format;
     gSystem->Exec(rmcmd.Data());
     TFile* file      = TFile::Open(plots0l->outfileName(),"UPDATE");
@@ -255,7 +255,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   vector<TString> qcdbkgsamples = {"ttbarplusw","znunu","ttZ"};
 
-  TH1F* data           = (dolownj || dolowmet) ? getSRHist (file0l, "data", "sr",      srbins) : 0;
+  TH1F* data           = (true || dolownj || dolowmet) ? getSRHist (file0l, "data", "sr",      srbins) : 0;
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
   TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
   TH1F* qcd            = getQCDPred (file0l, file0lnovetoes, "sr", "qcdcr", srbins, qcdcrtosr, qcdbkgsamples);
@@ -273,7 +273,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   cout << "\n-----------------------" << endl;
   cout << "Saving Final Prediction" << endl;
   cout << "For " << region << " region" << endl;
-  if(dolownj || dolowmet) cout << "Data \t || LostLep \t | Znunu \t | QCD \t | ttZ \t || Total Bkg." << endl;
+  if(true || dolownj || dolowmet) cout << "Data \t || LostLep \t | Znunu \t | QCD \t | ttZ \t || Total Bkg." << endl;
   else cout << "LostLep \t | Znunu \t | QCD \t | ttZ \t || Total Bkg." << endl;
 
   lostlep->GetXaxis()->SetTitle("Search region");
@@ -282,7 +282,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
     double nkgtot = lostlep->GetBinContent(ibin) + znunu->GetBinContent(ibin) + qcd->GetBinContent(ibin) + ttz->GetBinContent(ibin);
     double nbkgtotuncsq = pow(lostlep->GetBinError(ibin),2) + pow(znunu->GetBinError(ibin),2) + pow(qcd->GetBinError(ibin),2) + pow(ttz->GetBinError(ibin),2);
     cout << "Bin " << ibin << endl;
-    if(dolownj || dolowmet) cout << data->GetBinContent(ibin) << " +/- " << data->GetBinError(ibin) << "\t || ";
+    if(true || dolownj || dolowmet) cout << data->GetBinContent(ibin) << " +/- " << data->GetBinError(ibin) << "\t || ";
     cout << lostlep->GetBinContent(ibin) << " +/- " << lostlep->GetBinError(ibin) << "\t | ";
     cout << znunu->GetBinContent(ibin) << " +/- " << znunu->GetBinError(ibin) << "\t | ";
     cout << qcd->GetBinContent(ibin) << " +/- " << qcd->GetBinError(ibin) << "\t | ";
@@ -290,7 +290,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
     cout << nkgtot << " +/- " << sqrt(nbkgtotuncsq) << endl;
   }
 
-  if(dolownj || dolowmet) data->Write();
+  if(true || dolownj || dolowmet) data->Write();
   lostlep->Write();
   znunu->Write();
   qcd->Write();
@@ -311,7 +311,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots->setCanvasSize(1000, 600);
 
   vector<TString> labels, names;
-  if(dolownj || dolowmet) {
+  if(true || dolownj || dolowmet) {
     plots->setRatioPlot();
     labels = {"Data", "t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu", "t#bar{t}/W"};
     names = {"data_sr", "ttZ_pred_sr", "qcd_pred_sr", "znunu_pred_sr", "lostlep_pred_sr"};

@@ -183,20 +183,20 @@ namespace BkgPrediction {
     }
     cout << endl;
 
-    TH1F* lostlep_pred = (TH1F*)lostlep_tf->Clone("lostlep_pred_" + region);
-    lostlep_pred->Multiply(data_cr);
+    TH1F* lostlep_pred_0 = (TH1F*)lostlep_tf->Clone("lostlep_pred_0_" + region);
+    lostlep_pred_0->Multiply(data_cr);
 
-    TH1F* lostlep_pred_2 = (TH1F*)datamc_sf->Clone("lostlep_pred_2_" + region);
-    lostlep_pred_2->Multiply(lostlep_sr);
+    TH1F* lostlep_pred = (TH1F*)datamc_sf->Clone("lostlep_pred_" + region);
+    lostlep_pred->Multiply(lostlep_sr);
 
     cout << "\nLost lepton prediction: ";
-    for(int ibin = 1; ibin < lostlep_pred->GetNbinsX()+1; ++ibin) {
-      cout << lostlep_pred->GetBinContent(ibin) << " +/- " << lostlep_pred->GetBinError(ibin) << "; \t";
-      cout << lostlep_pred_2->GetBinContent(ibin) << " +/- " << lostlep_pred_2->GetBinError(ibin) << "\t";
+    for(int ibin = 1; ibin < lostlep_pred_0->GetNbinsX()+1; ++ibin) {
+      cout << lostlep_pred_0->GetBinContent(ibin) << " +/- " << lostlep_pred_0->GetBinError(ibin) << "; \t";
+      cout << lostlep_pred->GetBinContent(ibin) << " +/- " << lostlep_pred->GetBinError(ibin) << "\t";
     }
     cout << endl;
 
-    return lostlep_pred_2;
+    return lostlep_pred;
 
   }
 
