@@ -739,8 +739,6 @@ class DatacardConfig:
                                             else :
                                                 unc.vals[binname][samp] = 2.0
 
-                                    
-
     def getUncertaintyLine(self,uncname,unc,binlabel,backgrounds,nbkgevts):
         """Get line with uncertainty name, type, and values correctly formatted
         """
@@ -767,7 +765,10 @@ class DatacardConfig:
             uncline += ('SIGUNC').ljust(self.uncwidth-2)
             hasEntry = True
         elif isglobal and unc.vals['all'].has_key('signal') :
-            uncline += ('%4.2f' % unc.vals['all']['signal']).ljust(self.uncwidth)
+            if 'lumi' in unc.label :
+                uncline += ('%4.3f' % unc.vals['all']['signal']).ljust(self.uncwidth)
+            else :
+                uncline += ('%4.2f' % unc.vals['all']['signal']).ljust(self.uncwidth)
             hasEntry = True
         else :
             uncline += '-'.ljust(self.uncwidth)
@@ -782,7 +783,10 @@ class DatacardConfig:
                     uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)
                 hasEntry = True
             elif isglobal and unc.vals['all'].has_key(background) :
-                uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
+                if 'lumi' in unc.label :
+                    uncline += ('%4.3f' % unc.vals['all'][background]).ljust(self.uncwidth)
+                else :
+                    uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
                 hasEntry = True
             else :
                 uncline += '-'.ljust(self.uncwidth)
