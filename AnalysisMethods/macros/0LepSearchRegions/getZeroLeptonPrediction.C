@@ -4,10 +4,11 @@
 
 using namespace BkgPrediction;
 
-void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/vdutta/13TeV/trees/121815",
-                             const TString outputdir   = "plots_bkgest_011416/srpred",
+void getZeroLeptonPrediction(const TString defaultdir  = "root://cmseos:1094//store/user/vdutta/13TeV/trees/012216",
+                             const TString outputdir   = "plots_bkgest_test/srpred",
                              const bool    dolownj     = false,
                              const bool    dolowmet    = false,
+                             const bool    intBbins    = true,
                              const bool    plotlog     = true,
                              const TString var         = "",
                              const TString srconf      = "plotting/run0lepbkgpred.conf",
@@ -103,11 +104,25 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots0l->addTreeVar("met_sr_highmt_nt1_nb1",              "met",        sel["sr"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
   plots0l->addTreeVar("met_sr_highmt_nt1_nb2",              "met",        sel["sr"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
 
-  plots0l->addTreeVar("met_qcdcr_nbgeq1_lowmt_mednj",       "met",        sel["qcdcr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0l->addTreeVar("met_qcdcr_nbgeq1_lowmt_highnj",      "met",        sel["qcdcr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdcr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdcr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_nt1",        "met",        sel["qcdcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  if(intBbins) {
+    plots0l->addTreeVar("met_qcdcr_nbgeq1_lowmt_mednj",       "met",        sel["qcdcr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_nbgeq1_lowmt_highnj",      "met",        sel["qcdcr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdcr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdcr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_nbgeq1_highmt_nt1",        "met",        sel["qcdcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
+  else {
+    plots0l->addTreeVar("met_qcdcr_lowmt_mednj_nb1",             "met",        sel["qcdcr"] + sel["lowmt_mednj_nb1"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_lowmt_mednj_nb2",             "met",        sel["qcdcr"] + sel["lowmt_mednj_nb2"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_lowmt_highnj_nb1",            "met",        sel["qcdcr"] + sel["lowmt_highnj_nb1"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_lowmt_highnj_nb2",            "met",        sel["qcdcr"] + sel["lowmt_highnj_nb2"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_highmt_mednj_nt0_nb1",        "met",        sel["qcdcr"] + sel["highmt_mednj_nt0_nb1"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_highmt_mednj_nt0_nb2",        "met",        sel["qcdcr"] + sel["highmt_mednj_nt0_nb2"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_highmt_highnj_nt0_nb1",       "met",        sel["qcdcr"] + sel["highmt_highnj_nt0_nb1"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_highmt_highnj_nt0_nb2",       "met",        sel["qcdcr"] + sel["highmt_highnj_nt0_nb2"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0l->addTreeVar("met_qcdcr_highmt_nt1_nb1",              "met",        sel["qcdcr"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plots0l->addTreeVar("met_qcdcr_highmt_nt1_nb2",              "met",        sel["qcdcr"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
 
   plots0l->plot();
 
@@ -124,11 +139,25 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots0lnovetoes->addTreeVar("met_srnovetoes_highmt_nt1_nb1",              "met",        sel["srnovetoes"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
   plots0lnovetoes->addTreeVar("met_srnovetoes_highmt_nt1_nb2",              "met",        sel["srnovetoes"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
 
-  plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_lowmt_mednj",       "met",        sel["qcdcrnovetoes"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_lowmt_highnj",      "met",        sel["qcdcrnovetoes"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdcrnovetoes"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdcrnovetoes"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_nt1",        "met",        sel["qcdcrnovetoes"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  if(intBbins) {
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_lowmt_mednj",       "met",        sel["qcdcrnovetoes"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_lowmt_highnj",      "met",        sel["qcdcrnovetoes"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdcrnovetoes"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdcrnovetoes"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_nbgeq1_highmt_nt1",        "met",        sel["qcdcrnovetoes"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
+  else {
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_lowmt_mednj_nb1",             "met",        sel["qcdcrnovetoes"] + sel["lowmt_mednj_nb1"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_lowmt_mednj_nb2",             "met",        sel["qcdcrnovetoes"] + sel["lowmt_mednj_nb2"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_lowmt_highnj_nb1",            "met",        sel["qcdcrnovetoes"] + sel["lowmt_highnj_nb1"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_lowmt_highnj_nb2",            "met",        sel["qcdcrnovetoes"] + sel["lowmt_highnj_nb2"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_mednj_nt0_nb1",        "met",        sel["qcdcrnovetoes"] + sel["highmt_mednj_nt0_nb1"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_mednj_nt0_nb2",        "met",        sel["qcdcrnovetoes"] + sel["highmt_mednj_nt0_nb2"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_highnj_nt0_nb1",       "met",        sel["qcdcrnovetoes"] + sel["highmt_highnj_nt0_nb1"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_highnj_nt0_nb2",       "met",        sel["qcdcrnovetoes"] + sel["highmt_highnj_nt0_nb2"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_nt1_nb1",              "met",        sel["qcdcrnovetoes"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plots0lnovetoes->addTreeVar("met_qcdcrnovetoes_highmt_nt1_nb2",              "met",        sel["qcdcrnovetoes"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
 
   plots0lnovetoes->plot();
 
@@ -163,29 +192,68 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   cout << "Plotting 1lepton region" << endl;
 
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1_lowmt_mednj",       "met",        sel["lepcr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1_lowmt_highnj",      "met",        sel["lepcr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["lepcr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_highnj_nt0", "met",        sel["lepcr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_nt1_int",    "met",        sel["lepcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  if(intBbins) {
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_lowmt_mednj",       "met",        sel["lepcr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_lowmt_highnj",      "met",        sel["lepcr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["lepcr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_highnj_nt0", "met",        sel["lepcr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_nt1_int",    "met",        sel["lepcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
+  else {
+    plotslepcr->addTreeVar("met_lepcr_lowmt_mednj_nb1",             "met",        sel["lepcr"] + sel["lowmt_mednj_nb1"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_lowmt_mednj_nb2",             "met",        sel["lepcr"] + sel["lowmt_mednj_nb2"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_lowmt_highnj_nb1",            "met",        sel["lepcr"] + sel["lowmt_highnj_nb1"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_lowmt_highnj_nb2",            "met",        sel["lepcr"] + sel["lowmt_highnj_nb2"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_highmt_mednj_nt0_nb1",        "met",        sel["lepcr"] + sel["highmt_mednj_nt0_nb1"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_highmt_mednj_nt0_nb2",        "met",        sel["lepcr"] + sel["highmt_mednj_nt0_nb2"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_highmt_highnj_nt0_nb1",       "met",        sel["lepcr"] + sel["highmt_highnj_nt0_nb1"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_highmt_highnj_nt0_nb2",       "met",        sel["lepcr"] + sel["highmt_highnj_nt0_nb2"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotslepcr->addTreeVar("met_lepcr_highmt_nt1_nb1_int",          "met",        sel["lepcr"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plotslepcr->addTreeVar("met_lepcr_highmt_nt1_nb2_int",          "met",        sel["lepcr"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
 
   plotslepcr->plot();
 
   cout << "Plotting photon region" << endl;
 
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_mednj",        "met",        sel["phocr"] + sel["mednj"],                 "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_highnj",       "met",        sel["phocr"] + sel["highnj"],                "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_mednj_nt0",    "met",        sel["phocr"] + sel["mednj"] + sel["nt0"],    "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_highnj_nt0",   "met",        sel["phocr"] + sel["highnj"] + sel["nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_nt1",          "met",        sel["phocr"] + sel["nt1"],                   "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  if(intBbins) {
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_mednj",        "met",        sel["phocr"] + sel["mednj"],                 "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_highnj",       "met",        sel["phocr"] + sel["highnj"],                "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_mednj_nt0",    "met",        sel["phocr"] + sel["mednj"] + sel["nt0"],    "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_highnj_nt0",   "met",        sel["phocr"] + sel["highnj"] + sel["nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_nomt_nt1",          "met",        sel["phocr"] + sel["nt1"],                   "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
 
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt_mednj",       "met",        sel["phocr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt_highnj",      "met",        sel["phocr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_mednj_nt0",  "met",        sel["phocr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_highnj_nt0", "met",        sel["phocr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
-  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1",        "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
-//  integrating in met
-//  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1_int",    "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt_mednj",       "met",        sel["phocr"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_lowmt_highnj",      "met",        sel["phocr"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_mednj_nt0",  "met",        sel["phocr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_highnj_nt0", "met",        sel["phocr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1",        "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  //  integrating in met
+  //  plotsphocr->addTreeVar("met_phocr_nbgeq1_highmt_nt1_int",    "met",        sel["phocr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
+  else {
+    plotsphocr->addTreeVar("met_phocr_nomt_mednj_nb1",            "met",        sel["phocr"] + sel["mednj"] + sel["nb1"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_mednj_nb2",            "met",        sel["phocr"] + sel["mednj"] + sel["nb2"],               "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_highnj_nb1",           "met",        sel["phocr"] + sel["highnj"] + sel["nb1"],              "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_highnj_nb2",           "met",        sel["phocr"] + sel["highnj"] + sel["nb2"],              "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_mednj_nt0_nb1",        "met",        sel["phocr"] + sel["mednj"] + sel["nt0"] + sel["nb1"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_mednj_nt0_nb2",        "met",        sel["phocr"] + sel["mednj"] + sel["nt0"] + sel["nb2"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_highnj_nt0_nb1",       "met",        sel["phocr"] + sel["highnj"] + sel["nt0"] + sel["nb1"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_highnj_nt0_nb2",       "met",        sel["phocr"] + sel["highnj"] + sel["nt0"] + sel["nb2"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_nomt_nt1_nb1",              "met",        sel["phocr"] + sel["nt1"] + sel["nb1"],                 "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plotsphocr->addTreeVar("met_phocr_nomt_nt1_nb2",              "met",        sel["phocr"] + sel["nt1"] + sel["nb2"],                 "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+
+    plotsphocr->addTreeVar("met_phocr_lowmt_mednj_nb1",             "met",        sel["phocr"] + sel["lowmt_mednj_nb1"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_lowmt_mednj_nb2",             "met",        sel["phocr"] + sel["lowmt_mednj_nb2"],       "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_lowmt_highnj_nb1",            "met",        sel["phocr"] + sel["lowmt_highnj_nb1"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_lowmt_highnj_nb2",            "met",        sel["phocr"] + sel["lowmt_highnj_nb2"],      "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_highmt_mednj_nt0_nb1",        "met",        sel["phocr"] + sel["highmt_mednj_nt0_nb1"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_highmt_mednj_nt0_nb2",        "met",        sel["phocr"] + sel["highmt_mednj_nt0_nb2"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_highmt_highnj_nt0_nb1",       "met",        sel["phocr"] + sel["highmt_highnj_nt0_nb1"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_highmt_highnj_nt0_nb2",       "met",        sel["phocr"] + sel["highmt_highnj_nt0_nb2"], "#slash{E}_{T} [GeV]", NBINS, metbins);
+    plotsphocr->addTreeVar("met_phocr_highmt_nt1_nb1",              "met",        sel["phocr"] + sel["highmt_nt1_nb1"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    plotsphocr->addTreeVar("met_phocr_highmt_nt1_nb2",              "met",        sel["phocr"] + sel["highmt_nt1_nb2"],        "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+  }
 
   plotsphocr->plot();
 
@@ -231,25 +299,48 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
         "highmt_mednj_nt0_nb1", "highmt_mednj_nt0_nb2", "highmt_highnj_nt0_nb1", "highmt_highnj_nt0_nb2",
         "highmt_nt1_nb1", "highmt_nt1_nb2"};
 
-  qcdcrtosr["lowmt_mednj_nb1"]        = "nbgeq1_lowmt_mednj";
-  qcdcrtosr["lowmt_mednj_nb2"]        = "nbgeq1_lowmt_mednj";
-  qcdcrtosr["lowmt_highnj_nb1"]       = "nbgeq1_lowmt_highnj";
-  qcdcrtosr["lowmt_highnj_nb2"]       = "nbgeq1_lowmt_highnj";
-  qcdcrtosr["highmt_mednj_nt0_nb1"]   = "nbgeq1_highmt_mednj_nt0";
-  qcdcrtosr["highmt_mednj_nt0_nb2"]   = "nbgeq1_highmt_mednj_nt0";
-  qcdcrtosr["highmt_highnj_nt0_nb1"]  = "nbgeq1_highmt_highnj_nt0";
-  qcdcrtosr["highmt_highnj_nt0_nb2"]  = "nbgeq1_highmt_highnj_nt0";
-  qcdcrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1";
-  qcdcrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1";
+  if(intBbins) {
+    qcdcrtosr["lowmt_mednj_nb1"]        = "nbgeq1_lowmt_mednj";
+    qcdcrtosr["lowmt_mednj_nb2"]        = "nbgeq1_lowmt_mednj";
+    qcdcrtosr["lowmt_highnj_nb1"]       = "nbgeq1_lowmt_highnj";
+    qcdcrtosr["lowmt_highnj_nb2"]       = "nbgeq1_lowmt_highnj";
+    qcdcrtosr["highmt_mednj_nt0_nb1"]   = "nbgeq1_highmt_mednj_nt0";
+    qcdcrtosr["highmt_mednj_nt0_nb2"]   = "nbgeq1_highmt_mednj_nt0";
+    qcdcrtosr["highmt_highnj_nt0_nb1"]  = "nbgeq1_highmt_highnj_nt0";
+    qcdcrtosr["highmt_highnj_nt0_nb2"]  = "nbgeq1_highmt_highnj_nt0";
+    qcdcrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1";
+    qcdcrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1";
 
-  lepcrtosr = qcdcrtosr;
-  lepcrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
-  lepcrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
+    lepcrtosr = qcdcrtosr;
+    lepcrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
+    lepcrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
 
-  phocrtosr = qcdcrtosr;
-//  integrating in met
-//  phocrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
-//  phocrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
+    phocrtosr = qcdcrtosr;
+    // integrating in met
+    // phocrtosr["highmt_nt1_nb1"]         = "nbgeq1_highmt_nt1_int";
+    // phocrtosr["highmt_nt1_nb2"]         = "nbgeq1_highmt_nt1_int";
+  }
+  else {
+    qcdcrtosr["lowmt_mednj_nb1"]        = "lowmt_mednj_nb1"       ;
+    qcdcrtosr["lowmt_mednj_nb2"]        = "lowmt_mednj_nb2"       ;
+    qcdcrtosr["lowmt_highnj_nb1"]       = "lowmt_highnj_nb1"      ;
+    qcdcrtosr["lowmt_highnj_nb2"]       = "lowmt_highnj_nb2"      ;
+    qcdcrtosr["highmt_mednj_nt0_nb1"]   = "highmt_mednj_nt0_nb1"  ;
+    qcdcrtosr["highmt_mednj_nt0_nb2"]   = "highmt_mednj_nt0_nb2"  ;
+    qcdcrtosr["highmt_highnj_nt0_nb1"]  = "highmt_highnj_nt0_nb1" ;
+    qcdcrtosr["highmt_highnj_nt0_nb2"]  = "highmt_highnj_nt0_nb2" ;
+    qcdcrtosr["highmt_nt1_nb1"]         = "highmt_nt1_nb1"        ;
+    qcdcrtosr["highmt_nt1_nb2"]         = "highmt_nt1_nb2"        ;
+
+    lepcrtosr = qcdcrtosr;
+    lepcrtosr["highmt_nt1_nb1"]         = "highmt_nt1_nb1_int";
+    lepcrtosr["highmt_nt1_nb2"]         = "highmt_nt1_nb2_int";
+
+    phocrtosr = qcdcrtosr;
+    // integrating in met
+    // phocrtosr["highmt_nt1_nb1"]         = "highmt_nt1_nb1_int";
+    // phocrtosr["highmt_nt1_nb2"]         = "highmt_nt1_nb2_int";
+  }
 
   for (const auto &bin : srbins)      zllcrtosr[bin] = bin.Contains("nb1") ? "nb1" : "nb2";
 
