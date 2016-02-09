@@ -357,7 +357,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   TString fname = "srpred";
   if(dolownj) fname += "_lownj";
   if(dolowmet) fname += "_lowmet";
-  TFile* srpred = new TFile(outputdir + "/" + fname+ext+".root","RECREATE");
+  TString outputfilename = outputdir + "/" + fname+ext+".root";
+  TFile* srpred = new TFile(outputfilename,"RECREATE");
   srpred->cd();
 
   cout << "\n-----------------------" << endl;
@@ -427,4 +428,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   delete plots;
 
+  // update output root file with full uncertainty
+  TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
+  gSystem->Exec(cmd.Data());
 }

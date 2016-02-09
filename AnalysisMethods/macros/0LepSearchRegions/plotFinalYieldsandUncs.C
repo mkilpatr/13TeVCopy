@@ -10,7 +10,7 @@ vector<TString> rawbkgs = {"ttZ","qcd","ttbarplusw","znunu"};
 vector<TString> sigs = {"T2tt_700_1","T2tt_600_200"};
 vector<TString> labels = {"t#bar{t}Z","QCD","t#bar{t}/W","Z#rightarrow#nu#nu"};
 vector<TString> siglabels = {"T2tt(700,1)","T2tt(600,200)"};
-const TString unc_name = "unc_sr";
+const TString unc_name = "bkgtotal_unc_sr";
 
 vector<TString> binlabels = {"bin_250_5_1_0_0", "bin_300_5_1_0_0", "bin_400_5_1_0_0", "bin_500_5_1_0_0", "bin_600_5_1_0_0",
                              "bin_250_5_2_0_0", "bin_300_5_2_0_0", "bin_400_5_2_0_0", "bin_500_5_2_0_0", "bin_600_5_2_0_0",
