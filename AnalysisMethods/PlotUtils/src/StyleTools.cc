@@ -339,12 +339,14 @@ void StyleTools::SetTDRStyle()
   tdrStyle->SetHatchesLineWidth(5);
   tdrStyle->SetHatchesSpacing(0.05);
 
+  tdrStyle->SetLineStyleString(11,"20 10");
+
   tdrStyle->cd();
 
   return;
 }
 
-void CMS_lumi(TPad* pad, int iPeriod, int iPosX)
+void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX)
 {
 
   // Global variables
@@ -361,7 +363,7 @@ void CMS_lumi(TPad* pad, int iPeriod, int iPosX)
   float lumiTextSize     = 0.6;
   float lumiTextOffset   = 0.2;
   float cmsTextSize      = 0.75;
-  //float cmsTextOffset    = 0.1;  // only used in outOfFrame version
+  float cmsTextOffset    = 0.11; //0.1;  // only used in outOfFrame version
 
   float relPosX    = 0.045;
   float relPosY    = 0.035;
@@ -390,7 +392,7 @@ void CMS_lumi(TPad* pad, int iPeriod, int iPosX)
   if( iPosX/10==1 ) alignX_=1;
   if( iPosX/10==2 ) alignX_=2;
   if( iPosX/10==3 ) alignX_=3;
-  //if( iPosX == 0  ) relPosX = 0.12;
+  if( iPosX == 0  ) relPosX = cmsTextOffset;
   int align_ = 10*alignX_ + alignY_;
 
   float H = pad->GetWh();

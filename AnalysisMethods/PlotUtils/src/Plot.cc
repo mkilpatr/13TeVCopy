@@ -40,7 +40,8 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fHeaderY(0.92),
   fUsePoisson(false),
   fPlotRatioUncertaintyBand(false),
-  fPlotStackUncertainty(false)
+  fPlotStackUncertainty(false),
+  fDrawCMSLumi(false)
 {
   counter++;
 }
@@ -164,9 +165,10 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);
 
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
     fLeg->AddEntry(hist,label,"PL");
   } else {
+    hist->SetMarkerSize(0);
     if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
     else              fLeg->AddEntry(hist,label,"L");
   }
@@ -213,9 +215,10 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);
 
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
     fLeg->AddEntry(hist,label,"PL");
   } else {
+    hist->SetMarkerSize(0);
     if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
     else              fLeg->AddEntry(hist,label,"L");
   }
@@ -792,6 +795,10 @@ TGraphAsymmErrors* Plot::getAsymmErrors(TH1F* h){
     double U =  ROOT::Math::gamma_quantile_c(alpha/2,dN+1,1) ;
     gr->SetPointEYhigh(ibin, U - double(dN));
     gr->SetPointEYlow(ibin, double(dN)- L);
+    if(dN == 0) {
+      gr->SetPointEXlow(ibin, 0);
+      gr->SetPointEXhigh(ibin, 0);
+    }
   }
   return gr;
 }
@@ -865,9 +872,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   std::vector<TString> vHistOpts;
 
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
-  p1->SetLeftMargin  (0.18);
+  p1->SetLeftMargin  (0.16);
   p1->SetTopMargin   (0.10);
-  p1->SetRightMargin (0.07);
+  p1->SetRightMargin (0.02);
   p1->SetBottomMargin(0.04);  
   p1->Draw();
   if(fLogy) p1->SetLogy();
@@ -913,7 +920,6 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   if(hMC->GetMaximum()>ymax) ymax=hMC->GetMaximum();
   hData->SetMarkerSize(1.3);
   hData->SetMarkerStyle(20);
-  hData->SetLineWidth(3);
   hData->SetTitleOffset(0.30,"Y");
 
   TH1F *h00 = (TH1F*)hData->Clone("data0");
@@ -936,8 +942,12 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     if(fYmin < fYmax) fStack->GetHistogram()->GetYaxis()->SetRangeUser(fYmin,fYmax);
     else fStack->GetHistogram()->GetYaxis()->SetRangeUser(0,1.1*ymax);
     if(fXmin < fXmax) fStack->GetHistogram()->GetXaxis()->SetRangeUser(fXmin,fXmax);
-    fStack->GetHistogram()->GetYaxis()->SetTitleOffset(1.0);
+    fStack->GetHistogram()->GetYaxis()->SetTitleOffset(0.9);
     fStack->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+    if(fDrawCMSLumi) {
+      fStack->GetHistogram()->GetYaxis()->SetTitleFont(42);
+      fStack->GetHistogram()->GetYaxis()->SetLabelFont(42);
+    }
     fStack->Draw("hist");
   }
 
@@ -974,8 +984,11 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   if(fUsePoisson) {
     TGraphAsymmErrors* gr = getAsymmErrors(h00);
     gr->SetMarkerStyle(20);
+    gr->SetLineWidth(h00->GetLineWidth());
+    gr->SetFillStyle(0);
     gr->Draw("PZ0same");
   } else {
+    h00->SetMarkerStyle(20);
     h00->Draw("same");
   }
 
@@ -1001,9 +1014,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   c->cd();
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
-  p2->SetLeftMargin  (0.18);
+  p2->SetLeftMargin  (0.16);
   p2->SetTopMargin   (0.00);
-  p2->SetRightMargin (0.07);
+  p2->SetRightMargin (0.02);
   p2->SetBottomMargin(0.30);
   p2->SetGridy(1);
   p2->Draw();
@@ -1015,7 +1028,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   }
 
   h3->SetTitleSize  (0.16,"Y");
-  h3->SetTitleOffset(0.45,"Y");
+  h3->SetTitleOffset(0.41,"Y");
   h3->SetTitleOffset(0.75,"X");
   h3->SetTitleSize  (0.16,"X");
   h3->SetLabelSize  (0.12,"X");
@@ -1026,17 +1039,21 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   h3->GetYaxis()->SetRangeUser(-0.5,0.5);
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
-  //h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}} - 1");
   h3->GetYaxis()->SetTitle("N_{obs}/N_{exp}");
+  if(fDrawCMSLumi) {
+    h3->GetXaxis()->SetTitleFont(42);
+    h3->GetYaxis()->SetTitleFont(42);
+    h3->GetXaxis()->SetLabelFont(42);
+    h3->GetYaxis()->SetLabelFont(42);
+  }
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
   if(fXmin < fXmax) { xmin=fXmin; xmax=fXmax; }
   TLine *l = new TLine(xmin,1,xmax,1);
-  l->SetLineWidth(3);
+  l->SetLineWidth(2);
   l->SetLineColor(kBlack);
 
-  //h3->Add(hMC, -1.);
   if(fUsePoisson) {
     TGraphAsymmErrors* ratio;
     if(fPlotRatioUncertaintyBand){
@@ -1046,6 +1063,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     }else{
       ratio = getRatioAsymmErrors(h3, hMC);
     }
+    ratio->SetLineWidth(h3->GetLineWidth());
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
     ratio->Draw("PZ0same");
@@ -1085,7 +1103,10 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   c->cd();
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(p1, 4, 0);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
