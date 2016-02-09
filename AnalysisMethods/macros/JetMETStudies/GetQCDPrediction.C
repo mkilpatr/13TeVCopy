@@ -32,11 +32,11 @@ const StyleTools::Colors TreeColors[] = {color_data, color_qcd,color_qcd,color_t
 const TString weights[] = {QCDSupport::stdWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight};
 
 void getSTDTreesAndNames(vector<pair<TTree*,TreeType> >& trees){
-  trees.emplace_back(getTree("pieces/htmht_tree_skimmed.root"),Data);
-  trees.emplace_back(getTree("pieces/ttZ_tZq_skimmed.root"),ttZ);
-  trees.emplace_back(getTree("pieces/znunu_tree_skimmed.root"),Znuu);
-  trees.emplace_back(getTree("pieces/ttbarplusw_tree_skimmed.root"),TTbarW);
-  trees.emplace_back(getTree("pieces/qcd_Tree_skimmed.root")     ,QCD);
+  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root"),Data);
+  trees.emplace_back(QCDSupport::getTree("pieces/ttZ_tZq_skimmed.root"),ttZ);
+  trees.emplace_back(QCDSupport::getTree("pieces/znunu_tree_skimmed.root"),Znuu);
+  trees.emplace_back(QCDSupport::getTree("pieces/ttbarplusw_tree_skimmed.root"),TTbarW);
+  trees.emplace_back(QCDSupport::getTree("pieces/qcd_Tree_skimmed.root")     ,QCD);
 //  trees.emplace_back(getTree("qcd_origTree.root") ,NoSmearQCD);
 }
 
@@ -62,8 +62,8 @@ void checkCRContamination(){
   vector<TString> names;
   vector<TTree*> trees;
 //  trees.emplace_back(getTree("pieces/htmht_tree_skimmed.root")); names.push_back("Data");
-  trees.emplace_back(getTree("pieces/nonQCD_tree_skimmed.root")); names.push_back("Non-QCD MC");
-  trees.emplace_back(getTree("pieces/qcd_tree_skimmed.root")); names.push_back("QCD MC");
+  trees.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names.push_back("Non-QCD MC");
+  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed.root")); names.push_back("QCD MC");
 
 
 
@@ -85,6 +85,100 @@ void checkCRContamination(){
   }
 }
 
+
+void checkBigRegions(){
+//  TString presel = TString::Format("%s && nvetolep == 0", QCDSupport::METPresel.Data());
+  TString crPreData        =  TString::Format("%s && %s && nvetotau == 0 && nvetolep == 0", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data());
+  TString crPreOther       =  TString::Format("%s && %s && nvetolep==0 && (nvetotau==0 || npromptgentau>0)", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data());
+  TString crPreQCDWithVeto =  TString::Format("%s && %s && nvetotau == 0 && nvetolep == 0", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data());
+  TString crWgtOther       =  TString::Format("%s*leptnpweight*lepvetoweight", QCDSupport::stdMCWeight.Data());
+
+//  TString sels[] = {"(dphij12met < .1)","(dphij12met < .15)","(dphij12met < .1 || dphij3met < .1)","(dphij12met < .15 || dphij3met < .15)",""};
+  TString sels[] = {"met >= 250 && met < 300 && nbjets >=2","","met >= 300 && met < 400","met >= 400",""};
+
+  TString sels2[] = {"mtcsv12met < 175 && (njets == 5 || njets == 6)","mtcsv12met < 175 && njets >= 7",
+                     "mtcsv12met >= 175 && (njets == 5 || njets == 6) && ncttstd == 0", "mtcsv12met >= 175 && njets >= 7 && ncttstd == 0", "mtcsv12met >= 175 && ncttstd >= 1",""};
+
+//  TString sels2[] = {"mtcsv12met < 175 && (njets == 5 || njets == 6)","mtcsv12met < 175 && njets >= 7",
+//                     "mtcsv12met >= 175 && (njets == 5 || njets == 6) && ncttstd == 0", "mtcsv12met >= 175 && njets >= 7 && ncttstd == 0", "mtcsv12met >= 175 && ncttstd >= 1",""};
+
+
+  vector<HistogramGetter*> histGs;
+//  double bins[] = {250,300,400,500,600,700};
+//  histGs.push_back(new HistogramGetter("met","met","#slash{#it{E}}_{T}", 5,bins));
+  double bins[] = {0,.1,.2,.3,.4,.5,1.0,1.1};
+  histGs.push_back(new HistogramGetter("dphij12met","min(dphij12met,dphij3met)","dphij123met", 7,bins));
+//
+//  double bins2[] = {0,.5,1};
+//  HistogramGetter histN ("dphij12met","min(dphij12met,dphij3met)","dphij123met", 2,bins2);
+
+
+//  double bins[] = {0,.1,.2,.3,.4,.5,1.0,1.1};
+//  histGs.push_back(new HistogramGetter("dphij1234met","min(min(dphij12met,dphij3met),dphij4met)","dphij1234met", 7,bins));
+
+  double bins2[] = {0,.5,1};
+  HistogramGetter histN ("dphij1234met","min(min(dphij12met,dphij3met),dphij4met)","dphij1234met", 2,bins2);
+
+  vector<TString> names;
+  vector<TTree*> trees;
+  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed_baseline.root")); names.push_back("Data");
+  trees.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed_baseline.root")); names.push_back("Non-QCD MC");
+  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root")); names.push_back("QCD MC");
+
+//  vector<TString> names;
+//  vector<TTree*> trees;
+//  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree.root")); names.push_back("Data");
+//  trees.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree.root")); names.push_back("Non-QCD MC");
+//  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree.root")); names.push_back("QCD MC");
+
+
+
+  for(unsigned int iH = 0; iH < histGs.size(); ++iH)
+    for(unsigned int iP = 0; sels[iP][0]; ++iP)
+    for(unsigned int iP2 = 0; sels2[iP2][0]; ++iP2){
+    TString title = TString::Format("%s, %s",sels[iP].Data(),sels2[iP2].Data());
+    TString name = TString::Format("checkCRContamination_%u_%u",iP,iP2);
+    Plot * plot = new Plot(name,title,histGs[iH]->plotInfo->xTitle,"Events");
+    TString selD = TString::Format("%s && %s && %s",crPreOther.Data(),sels[iP].Data(),sels2[iP2].Data());
+    TH1F * hSND = histN.getHistogram(trees[0],selD,"1.0",TString::Format("tree_D"));
+
+    TString selO = TString::Format("%s && %s && %s",crPreData.Data(),sels[iP].Data(),sels2[iP2].Data());
+    TH1F * hSNO = histN.getHistogram(trees[1],selO,crWgtOther,TString::Format("tree_O"));
+    TString selQ = TString::Format("%s && %s && %s",crPreQCDWithVeto.Data(),sels[iP].Data(),sels2[iP2].Data());
+    TH1F * hSNQ = histN.getHistogram(trees[2],selQ,QCDSupport::stdQCDWeight,TString::Format("tree_Q"));
+    hSNQ = (TH1F*)hSNQ->Clone();
+    hSNQ->Add(hSNO);
+    hSND= (TH1F*)hSND->Clone();
+    hSND->Divide(hSNQ);
+
+
+    for(unsigned int iT = 0; iT < trees.size(); ++iT){
+      if(names[iT] == "Data"){
+        TString sel = TString::Format("%s && %s && %s",crPreOther.Data(),sels[iP].Data(),sels2[iP2].Data());
+        TH1F * hSN = histGs[iH]->getHistogram(trees[iT],sel,"1.0",TString::Format("tree_%u",iT));
+        plot->addHist(hSN,names[iT],"",StyleTools::colorGetter(iT),0,StyleTools::colorGetter(iT));
+
+      }
+      else if(names[iT] == "Non-QCD MC"){
+        TString sel = TString::Format("%s && %s && %s",crPreData.Data(),sels[iP].Data(),sels2[iP2].Data());
+        TH1F * hSN = histGs[iH]->getHistogram(trees[iT],sel,crWgtOther,TString::Format("tree_%u",iT));
+        hSN->Scale(hSND->GetBinContent(2));
+        plot->addToStack(hSN,names[iT],StyleTools::colorGetter(iT),1001,1,1,3);
+      } else {
+        TString sel = TString::Format("%s && %s && %s",crPreQCDWithVeto.Data(),sels[iP].Data(),sels2[iP2].Data());
+        histGs[iH]->setNBS(50);
+        TH1F * hSN = histGs[iH]->getHistogramManual(trees[iT],sel,QCDSupport::stdQCDWeight,TString::Format("tree_%u",iT));
+        histGs[iH]->setNBS(0);
+        plot->addToStack(hSN,names[iT],StyleTools::colorGetter(iT),1001,1,1,3);
+      }
+    }
+    TCanvas * c = new TCanvas;
+    plot->drawRatioStack(c,true,"png");
+
+    cout << title << endl;
+  }
+}
+
 #endif
 
 
@@ -94,7 +188,7 @@ void GetQCDPrediction()
   StyleTools::SetStyle();
   gStyle->SetTitleOffset(1.400,"Y");
   gStyle->SetTitleOffset(0.950,"X");
-
+  checkBigRegions();
 //  gStyle->SetTitleOffset(1.00,"Y");
 //  gStyle->SetTitleOffset(0.950,"X");
 //  gStyle->SetPadBottomMargin(0.5);

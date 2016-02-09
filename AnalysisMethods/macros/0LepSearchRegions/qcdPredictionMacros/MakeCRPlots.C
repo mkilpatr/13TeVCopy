@@ -67,6 +67,9 @@ void go(){
       }
     }
 
+
+
+
     TCanvas * c = new TCanvas;
     plot->setHeader(QCDSupport::header,"");
     plot->setYRange(0.1,400);
@@ -77,12 +80,25 @@ void go(){
     plot->draw(c,true,"png");
     QCDSupport::setTitleOffset(c);
 
-//    CMS_lumi( c, 2, 33 );
-//    c->Update();
-//    c->RedrawAxis();
-//    c->Draw();
 
     c->SaveAs(plot->getName() + TString(".png"));
+
+    //For pas
+    c = new TCanvas;
+    plot->setHeader(QCDSupport::header,"");
+    plot->setTitle(" ");
+    plot->setLegend(.3,.7,.9,.9);
+    plot->getLegend()->SetNColumns(2);
+    plot->setYRange(0.1,3000);
+    plot->setLogy();
+
+    plot->draw(c,true,"png");
+    QCDSupport::setTitleOffset(c);
+
+    c->SaveAs(plot->getName() + TString("_pas.png"));
+
+
+
   }
 }
 #endif

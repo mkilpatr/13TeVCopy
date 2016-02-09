@@ -60,10 +60,11 @@ void go() {
     tI->SetBranchStatus("leptnpweight",1);
     tI->SetBranchStatus("npromptgentau",1);
     tI->SetBranchStatus("lepvetoweight",1);
+    tI->SetBranchStatus("cttWeight",1);
 
     TFile * fO = new TFile(pre +"_skimmed.root","recreate");
     fO->cd();
-    TTree * tO = tI->CopyTree(METPresel);
+    TTree * tO = tI->CopyTree(QCDSupport::METPresel);
     tO->Write();
     fO->Close();
   };
@@ -115,6 +116,16 @@ void go() {
     fO = new TFile(pre +"_skimmed_dphi_split_b_gtp50.root","recreate");
     fO->cd();
     tO = tI->CopyTree("trueResp >= .50 && trueRespFlv ==4");
+    tO->Write();
+    fO->Close();
+    fO = new TFile(pre +"_skimmed_dphi_split_b_inc.root","recreate");
+    fO->cd();
+    tO = tI->CopyTree("trueRespFlv ==4");
+    tO->Write();
+    fO->Close();
+    fO = new TFile(pre +"_skimmed_dphi_split_light_inc.root","recreate");
+    fO->cd();
+    tO = tI->CopyTree("trueRespFlv !=4");
     tO->Write();
     fO->Close();
     delete fO;
