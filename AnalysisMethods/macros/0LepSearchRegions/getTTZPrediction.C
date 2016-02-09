@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getTTZPrediction(const TString defaultdir  = "root://cmseos:1094//store/user/vdutta/13TeV/trees/012216",
+void getTTZPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
                       const TString outputdir   = "plots_bkgest/ttz",
                       const TString srconf      = "plotting/run0lepbkgpred.conf",
                       const TString lumistr     = "2.262",
@@ -16,7 +16,7 @@ void getTTZPrediction(const TString defaultdir  = "root://cmseos:1094//store/use
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt =  basewgt + "*leptnpweight*lepvetoweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
@@ -105,7 +105,7 @@ void getTTZPrediction(const TString defaultdir  = "root://cmseos:1094//store/use
 
       plots0l->plot();
 
-      if(!dolownj) {
+      /*if(!dolownj) {
         TString rmcmd = "rm " + outputdir + "/met_sr*." + format;
         gSystem->Exec(rmcmd.Data());
         TFile* file      = TFile::Open(plots0l->outfileName(),"UPDATE");
@@ -120,7 +120,7 @@ void getTTZPrediction(const TString defaultdir  = "root://cmseos:1094//store/use
         }
         file->Write();
         file->Close();
-      }
+      }*/
 
       cout << "Setting up prediction" << endl;
 
