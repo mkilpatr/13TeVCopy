@@ -36,7 +36,8 @@ if [ $maxevents -gt -1 ]; then
 fi
 
 if [[ "$outputdir" =~ ^/eos/uscms/.* ]]; then
-  xrdcp -np ${outputname} root://cmseos:1094/${outputdir}/
+  copypath=`echo ${outputdir} | sed "s:/eos/uscms::"`
+  xrdcp -np ${outputname} root://cmseos:1094/${copypath}/
   rm ${outputname}
 else
   mv ${outputname} ${outputdir}/

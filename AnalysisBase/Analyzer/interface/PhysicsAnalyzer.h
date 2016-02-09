@@ -54,7 +54,6 @@ namespace ucsbsusy {
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
       virtual void fill();
 
-      static const bool PRINTLHERUNINFO;  // print LHERunInfo: useful to determine which systematic weights are available
       //--------------------------------------------------------------------------------------------------
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
@@ -77,6 +76,8 @@ namespace ucsbsusy {
     public :
       const int     isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
       const TString globalTag;             // Global tag name
+      const bool    printLHERunInfo;  // print LHERunInfo: useful to determine which systematic weights are available
+      edm::InputTag lheInfoTag;
 
       //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information

@@ -803,7 +803,7 @@ void PlotStuff::makeGraphPlot(TString name, TString title, TString xtitle, TStri
 
         TString colorname = TString::Format("comp%d",isam+1);
 
-        plot->addGraph(graphs[isam], sample->label,config_.graphdrawopt, config_.colormap[colorname], 0, config_.colormap[colorname],1);
+        plot->addGraph(graphs[isam], sample->label,config_.graphdrawopt, config_.colormap[colorname], 3013, config_.graphdrawopt=="P" ? config_.colormap[colorname] : 1,1);
         for(int ipoint = 0; ipoint < graphs[isam]->GetN(); ++ipoint) {
           if(graphs[isam]->GetY()[ipoint] > max) {
             maxpoint = ipoint;

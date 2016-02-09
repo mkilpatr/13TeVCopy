@@ -309,7 +309,7 @@ void Plot::addGraph(TGraph* item, TString label, TString drawopt, int color, int
     gr->SetLineColor(linecolor);
 
   gr->SetLineStyle(linestyle);
-  gr->SetMarkerColor(color);
+  gr->SetMarkerColor(linecolor);
   gr->SetFillColor(color);
   gr->SetFillStyle(fillstyle);
 
@@ -325,7 +325,15 @@ void Plot::addGraph(TGraph* item, TString label, TString drawopt, int color, int
     fLeg->AddEntry(gr,label,"PL");
   } else {
     gr->SetLineWidth(3);
-    if(fillstyle > 0) fLeg->AddEntry(gr,label,"F");
+    if(fillstyle > 0) {
+      if(drawopt.Contains("E",TString::kIgnoreCase) || drawopt.Contains("P",TString::kIgnoreCase)) {
+        gr->SetMarkerSize(1.3);
+        gr->SetMarkerStyle(20);
+        fLeg->AddEntry(gr,label,"PF");
+      }
+      else
+        fLeg->AddEntry(gr,label,"F");
+    }
     else              fLeg->AddEntry(gr,label,"L");
   }
 
@@ -851,6 +859,8 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   TH1F* hData = 0;
   TH1F* hMC   = 0;
+  std::vector<TH1F*> vHists;
+  std::vector<TString> vHistOpts;
 
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
   p1->SetLeftMargin  (0.18);
@@ -863,18 +873,34 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   if(fHists1D.size()>0) {   
     for(uint i=0; i<fHists1D.size(); i++) {
-      if(fStack && fStack->GetHists()->Contains(fHists1D[i]->member)) continue;
-      if(hData) break;
-      
-      TString hname = fName;
-      hname += "_h_";
-      hname += TString(to_string(i));
-    
-      hData = (TH1F*)fHists1D[i]->member->Clone(hname);
+      if(fStack && fStack->GetHists()->Contains(fHists1D[i]->member)) {
+        if(!hMC) hMC = (TH1F*)fHists1D[i]->member->Clone("mc");
+        else hMC->Add(fHists1D[i]->member);
+      }
+      else {
+        TString hname = fName;
+        hname += "_h_";
+        hname += TString(to_string(i));
+        TH1F* h = (TH1F*)fHists1D[i]->member->Clone(hname);
+        if(fXmin < fXmax) {
+          h->GetXaxis()->SetRangeUser(fXmin,fXmax);
+        }
+        if(fYmin < fYmax) { 
+          h->GetYaxis()->SetRangeUser(fYmin,fYmax);
+        }
+        if(!hData) {
+          hData = h;
+        } else {
+          vHists.push_back(h);
+          vHistOpts.push_back(fHists1D[i]->opt);
+        }
+      }
     }
-  
-    if(fStack) {
-      hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
+    if(fXmin < fXmax) {
+      hMC->GetXaxis()->SetRangeUser(fXmin,fXmax);
+    }
+    if(fYmin < fYmax) { 
+      hMC->GetYaxis()->SetRangeUser(fYmin,fYmax);
     }
   }
 
@@ -922,11 +948,19 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     hMC->Draw("E2same");
   }
 
+  for(uint i=0; i<vHists.size(); i++) {
+    TH1F *h = vHists[i];              
+    //h->SetLineWidth(3);
+    char opt[100];
+    sprintf(opt,"same%s",vHistOpts[i].Data());
+    h->Draw(opt);
+    //if(i!=ifirst) h->Draw(opt);
+  }
 
   if(fUsePoisson) {
     TGraphAsymmErrors* gr = getAsymmErrors(h00);
     gr->SetMarkerStyle(20);
-    gr->Draw("PZsame");
+    gr->Draw("PZ0same");
   } else {
     h00->Draw("same");
   }
@@ -934,7 +968,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p1->RedrawAxis();
 
   if(fLeg) {
-//    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
@@ -992,12 +1026,12 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   //h3->Add(hMC, -1.);
   if(fUsePoisson) {
     TGraphAsymmErrors* ratio = getRatioAsymmErrors(h3, hMC);
-    h3->GetYaxis()->SetRangeUser(0.001,1.999);
+    h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
-    ratio->Draw("PZsame");
+    ratio->Draw("PZ0same");
   } else {
     h3->Divide(hMC);
-    h3->GetYaxis()->SetRangeUser(0.001,1.999);
+    h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->DrawCopy("P");  
     h3->Draw("Psame");
   }
@@ -1316,7 +1350,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         hMC->SetLineWidth(0);
         hMC->SetMarkerSize(0);
         hMC->Draw("E2same");
-//        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
       }
 
     }
@@ -1365,7 +1399,12 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
       TGraph *gr = vGraphs[i];
       char opt[100];
       (i==0 && fHists1D.size()==0) ? sprintf(opt,"A%s",vGraphOpts[i].Data()) : sprintf(opt,"%s",vGraphOpts[i].Data());
-      gr->Draw(opt);
+      if (vGraphOpts[i].Contains("P",TString::kIgnoreCase) && vGraphOpts[i].Contains(TRegexp("[2-5]"))) {
+        gr->Draw(opt);
+        gr->Draw("P");
+      } else {
+        gr->Draw(opt);
+      }
     }
   }
 

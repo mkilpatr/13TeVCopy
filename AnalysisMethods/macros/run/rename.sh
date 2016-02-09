@@ -8,7 +8,7 @@ cd $workdir
 # sr
 cd sr/
 hadd ttbarplusw_tree.root ttbar-mg_tree.root wjets-ht_tree.root tW_tree.root ttW_tree.root
-mv ttZ_tree.root ttZ_0_tree.root && hadd ttZ_tree.root ttZ_0_tree.root tZq_tree.root
+mv ttZ_tree.root ttZ_only_tree.root && hadd ttZ_tree.root ttZ_only_tree.root tZq_tree.root
 hadd nonqcd_qcdcr_tree.root ttbarplusw_tree.root znunu_tree.root ttZ_tree.root
 cd ..
 ln -s sr/htmht_tree.root data_tree.root
