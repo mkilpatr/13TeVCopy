@@ -93,7 +93,7 @@ void getLLPrediction(const TString defaultdir  = "eos/uscms/store/user/mullin/13
       }
 
       TString inputdir    = sysvar == NOMINAL ? defaultdir : defaultdir + "/" + suffix;
-      if(var == "wjetsNorm" || var == "ttbarNorm" || var == "topmistag") inputdir = defaultdir;
+      if(var == "wjetsNorm" || var == "ttbarNorm") inputdir = defaultdir;
 
       if(suffix != "") suffix.Prepend("_");
 
@@ -114,20 +114,6 @@ void getLLPrediction(const TString defaultdir  = "eos/uscms/store/user/mullin/13
           lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
           lepselwgt = basewgt + "*leptnpweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
         }
-      }
-      if(var == "topmistag") {
-        if(sysvar == NOMINAL) {
-          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*(0.7*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175) + 1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175))";
-          lepselwgt = basewgt + "*leptnpweight*(0.7*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175) + 1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175))";
-        } else if(sysvar == VARUP) {
-          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.77*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
-          lepselwgt = basewgt + "*leptnpweight*((0.77*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
-        } else if (sysvar == VARDOWN) {
-          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.63*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
-          lepselwgt = basewgt + "*leptnpweight*((0.63*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
-        }
-        cout << lepvetowgt.Data() << endl;
-        cout << lepselwgt.Data() << endl;
       }
 
       PlotStuff* plots0l    = setupPlots(srconf,    inputdir, outputdir, lepvetowgt, plotlog, format, lumistr, "output_0l"+suffix+".root");
