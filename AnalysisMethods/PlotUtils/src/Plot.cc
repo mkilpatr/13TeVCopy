@@ -39,9 +39,9 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fHeaderX(0.54),
   fHeaderY(0.92),
   fUsePoisson(false),
-  fDrawCMSLumi(false),
   fPlotRatioUncertaintyBand(false),
-  fPlotStackUncertainty(false)
+  fPlotStackUncertainty(false),
+  fDrawCMSLumi(false)
 {
   counter++;
 }
