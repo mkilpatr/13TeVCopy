@@ -360,8 +360,11 @@ namespace BkgPrediction {
 
     double sf_1b = zll_sf->GetBinContent(1);
     double sf_2b = zll_sf->GetBinContent(2);
-    double sf_1b_unc = zll_sf->GetBinError(1);
-    double sf_2b_unc = zll_sf->GetBinError(2);
+//    double sf_1b_unc = zll_sf->GetBinError(1);
+//    double sf_2b_unc = zll_sf->GetBinError(2);
+    // will get the unc from datacard conf
+    double sf_1b_unc = 0;
+    double sf_2b_unc = 0;
 
     for(int ibin = 1; ibin < znunu_pred->GetNbinsX()+1; ++ibin) {
       double bincontent = znunu_pred->GetBinContent(ibin);

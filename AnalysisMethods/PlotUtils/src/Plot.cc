@@ -12,6 +12,7 @@ Plot::Plot()
 
 Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fStack(0),
+  fHistUnc(0),
   fName(name),
   fTitle(title),
   fXTitle(xtitle),
@@ -38,8 +39,9 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fHeaderX(0.54),
   fHeaderY(0.92),
   fUsePoisson(false),
-  fPlotStackUncertainty(false),
-  fDrawCMSLumi(false)
+  fDrawCMSLumi(false),
+  fPlotRatioUncertaintyBand(false),
+  fPlotStackUncertainty(false)
 {
   counter++;
 }
@@ -950,12 +952,24 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   }
 
   if(fPlotStackUncertainty) {
-    hMC->SetFillColor(kBlue);
-    hMC->SetFillStyle(3013);
-    hMC->SetLineStyle(0);
-    hMC->SetLineWidth(0);
-    hMC->SetMarkerSize(0);
-    hMC->Draw("E2same");
+    if (fHistUnc){
+      TH1F* hUnc = (TH1F*)fHistUnc->Clone();
+      hUnc->SetFillColor(kBlue);
+      hUnc->SetFillStyle(3013);
+      hUnc->SetLineStyle(0);
+      hUnc->SetLineWidth(0);
+      hUnc->SetMarkerSize(0);
+      hUnc->Draw("E2same");
+      if(fLeg) fLeg->AddEntry(hUnc,"Bkg. Uncertainty","F");
+    } else{
+      hMC->SetFillColor(kBlue);
+      hMC->SetFillStyle(3013);
+      hMC->SetLineStyle(0);
+      hMC->SetLineWidth(0);
+      hMC->SetMarkerSize(0);
+      hMC->Draw("E2same");
+      if(fLeg) fLeg->AddEntry(hMC,"Bkg. Uncertainty","F");
+    }
   }
 
   for(uint i=0; i<vHists.size(); i++) {
@@ -981,7 +995,6 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   p1->RedrawAxis();
 
   if(fLeg) {
-    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
@@ -1042,17 +1055,48 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   l->SetLineColor(kBlack);
 
   if(fUsePoisson) {
-    TGraphAsymmErrors* ratio = getRatioAsymmErrors(h3, hMC);
+    TGraphAsymmErrors* ratio;
+    if(fPlotRatioUncertaintyBand){
+      TH1F* hMCNoError = (TH1F*)hMC->Clone("hMCNoError");
+      for (int i=1; i < hMCNoError->GetNbinsX()+1; ++i) hMCNoError->SetBinError(i, 0);
+      ratio = getRatioAsymmErrors(h3, hMCNoError);
+    }else{
+      ratio = getRatioAsymmErrors(h3, hMC);
+    }
     ratio->SetLineWidth(h3->GetLineWidth());
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
     ratio->Draw("PZ0same");
   } else {
-    h3->Divide(hMC);
+    if(fPlotRatioUncertaintyBand){
+      TH1F* hMCNoError = (TH1F*)hMC->Clone("hMCNoError");
+      for (int i=0; i<=hMCNoError->GetNbinsX()+1; ++i) hMCNoError->SetBinError(i, 0);
+      h3->Divide(hMCNoError);
+    }else {
+      h3->Divide(hMC);
+    }
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->DrawCopy("P");  
     h3->Draw("Psame");
   }
+  if (fPlotRatioUncertaintyBand){
+    TH1F* hRelUnc = (TH1F*)fHistUnc->Clone();
+    for (int i=0; i < hRelUnc->GetNbinsX()+1; ++i){
+      auto val = hRelUnc->GetBinContent(i);
+      auto err = hRelUnc->GetBinError(i);
+      if (val==0) continue;
+      hRelUnc->SetBinError(i, err/val);
+      hRelUnc->SetBinContent(i, 1);
+    }
+    hRelUnc->SetFillColor(kBlue);
+    hRelUnc->SetFillStyle(3013);
+    hRelUnc->SetLineStyle(0);
+    hRelUnc->SetLineWidth(0);
+    hRelUnc->SetMarkerSize(0);
+    hRelUnc->Draw("E2same");
+
+  }
+
   l->Draw("same");
 
   p2->RedrawAxis("G");
@@ -1364,14 +1408,25 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         fStack->Draw("hist");	 
       } 
       if(fPlotStackUncertainty) {
-        TH1F* hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
-        hMC->SetFillColor(kBlue);
-        hMC->SetFillStyle(3013);
-        hMC->SetLineStyle(0);
-        hMC->SetLineWidth(0);
-        hMC->SetMarkerSize(0);
-        hMC->Draw("E2same");
-        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+        if (fHistUnc){
+          TH1F* hUnc = (TH1F*)fHistUnc->Clone();
+          hUnc->SetFillColor(kBlue);
+          hUnc->SetFillStyle(3013);
+          hUnc->SetLineStyle(0);
+          hUnc->SetLineWidth(0);
+          hUnc->SetMarkerSize(0);
+          hUnc->Draw("E2same");
+          if(fLeg) fLeg->AddEntry(hUnc,"Bkg. Uncertainty","F");
+        } else{
+          TH1F* hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
+          hMC->SetFillColor(kBlue);
+          hMC->SetFillStyle(3013);
+          hMC->SetLineStyle(0);
+          hMC->SetLineWidth(0);
+          hMC->SetMarkerSize(0);
+          hMC->Draw("E2same");
+          if(fLeg) fLeg->AddEntry(hMC,"Bkg. Uncertainty","F");
+        }
       }
 
     }
