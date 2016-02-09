@@ -168,6 +168,7 @@ class Plot {
     void showStats(int show=111)             { fShowStats = show; }          // display statistics
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
+    void setDrawCMSLumi()                    { fDrawCMSLumi = true; }        // Draw CMS lumi header
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
     TGraphAsymmErrors* getRatioAsymmErrors(TH1F* hnum, TH1F* hden);
@@ -206,6 +207,7 @@ class Plot {
     double fHeaderX, fHeaderY;            // x,y coordinates of bottom left corner of header box
     bool fUsePoisson;                     // Poisson error bars for data
     bool fPlotStackUncertainty;           // Add uncertainty band to stacked hists
+    bool fDrawCMSLumi;                    // Add TDR style CMS lumi header
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
   
