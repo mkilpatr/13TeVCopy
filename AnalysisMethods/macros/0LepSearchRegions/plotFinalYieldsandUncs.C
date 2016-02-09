@@ -2,9 +2,6 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h"
 #endif
 
-
-
-
 enum SysVar { NOMINAL, VARUP, VARDOWN, NONE };
 
 vector<TString> vars = {};
@@ -75,7 +72,7 @@ void addSysUnc(TH1F* nominal, TH1F* varup, TH1F* vardown, TString name, TString 
 
 }
 
-void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest_020916",
+void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
                             const TString inputFileName = "srpred.root",
                             const TString predHistSuffix = "_pred_sr",
                             const TString rawHistSuffix = "_raw_sr",
