@@ -96,6 +96,9 @@ class Plot {
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addProfile(TProfile* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
 
+    // Set the uncertainty histogram. The histogram should have both the central values and the uncertainties.
+    void setUncertaintyHist(TH1F *unc) { fHistUnc = (TH1F*)unc->Clone(); }
+
     // Adding a 1D histogram to a histogram stack
     void addToStack(TH1F *h, int color);
     void addToStack(TH1F *h, TString label, int color, int fillstyle=1001, int linecolor=1, int linestyle=1, int linewidth=0, unsigned int plotoverflow=0);
@@ -167,6 +170,7 @@ class Plot {
     void rebin(int ngroup)                   { fRebin = ngroup; }            // 1D histogram re-bin
     void showStats(int show=111)             { fShowStats = show; }          // display statistics
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
+    void setPlotRatioUncertaintyBand()       { fPlotRatioUncertaintyBand = true; } // Add uncertainty band to ratio plot
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
@@ -189,6 +193,7 @@ class Plot {
     vector<TBox*> fBoxes;                 // list of boxes
     vector<TF1*> fFcns;                   // list of 1D functions
     THStack *fStack;                      // histogram stack
+    TH1F *fHistUnc;                       // uncertainty histogram
     TString fName;                        // plot name
     TString fTitle;                       // plot title
     TString fXTitle;                      // x-axis title
@@ -205,6 +210,7 @@ class Plot {
     TString fLumiText, fChanText;         // text to display in header
     double fHeaderX, fHeaderY;            // x,y coordinates of bottom left corner of header box
     bool fUsePoisson;                     // Poisson error bars for data
+    bool fPlotRatioUncertaintyBand;       // Add uncertainty band to ratio plot
     bool fPlotStackUncertainty;           // Add uncertainty band to stacked hists
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
