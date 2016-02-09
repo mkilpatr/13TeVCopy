@@ -4,8 +4,8 @@
 
 using namespace BkgPrediction;
 
-void getZeroLeptonPrediction(const TString defaultdir  = "root://cmseos:1094//store/user/vdutta/13TeV/trees/012216",
-                             const TString outputdir   = "plots_bkgest_test/srpred",
+void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
+                             const TString outputdir   = "plots_bkgest",
                              const bool    dolownj     = false,
                              const bool    dolowmet    = false,
                              const bool    intBbins    = true,
@@ -27,7 +27,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "root://cmseos:1094//st
 
   gSystem->mkdir(outputdir+ext, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*cttWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
@@ -350,15 +350,14 @@ void getZeroLeptonPrediction(const TString defaultdir  = "root://cmseos:1094//st
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
   TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
   TH1F* qcd            = getQCDPred (file0l, file0lnovetoes, "sr", "qcdcr", srbins, qcdcrtosr, qcdbkgsamples);
-  //TH1F* ttz          = getTTZPred(file0l, filettzcr, "sr", "ttzcr", srbins, usettzsf);
   TH1F* ttz            = getTTZPred(file0l, "sr", srbins);
 
 
   if(ext.BeginsWith("/")) ext.ReplaceAll("/","_");
-  TString fname = "0lsearch";
+  TString fname = "srpred";
   if(dolownj) fname += "_lownj";
   if(dolowmet) fname += "_lowmet";
-  TFile* srpred = new TFile(fname+ext+".root","RECREATE");
+  TFile* srpred = new TFile(outputdir + "/" + fname+ext+".root","RECREATE");
   srpred->cd();
 
   cout << "\n-----------------------" << endl;
@@ -386,6 +385,14 @@ void getZeroLeptonPrediction(const TString defaultdir  = "root://cmseos:1094//st
   znunu->Write();
   qcd->Write();
   ttz->Write();
+
+  for(auto* samp : samples0l) {
+    if(samp->name == "data") continue;
+    TH1F* srhist        = getSRHist(file0l, samp->name, "sr", srbins);
+    srhist->GetXaxis()->SetTitle("Search region");
+    srpred->cd();
+    srhist->Write(samp->name+"_raw_sr");
+  }
 
   if(ext.BeginsWith("_")) ext.ReplaceAll("_","/");
   PlotStuff* plots = new PlotStuff(srpred, outputdir+ext);

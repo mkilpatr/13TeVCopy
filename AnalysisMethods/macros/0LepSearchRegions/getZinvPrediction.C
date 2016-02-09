@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getZinvPrediction(const TString defaultdir  = "root://cmseos:1094//store/user/vdutta/13TeV/trees/012216",
+void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
                        const TString outputdir   = "plots_bkgest/zinv",
                        const TString srconf      = "plotting/run0lepbkgpred.conf",
                        const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
@@ -18,12 +18,12 @@ void getZinvPrediction(const TString defaultdir  = "root://cmseos:1094//store/us
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
   sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
   sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
@@ -120,7 +120,7 @@ void getZinvPrediction(const TString defaultdir  = "root://cmseos:1094//store/us
 
       plots0l->plot();
 
-      if(!dolownj) {
+      /*if(!dolownj) {
         TString rmcmd = "rm " + outputdir + "/met_sr_*." + format;
         gSystem->Exec(rmcmd.Data());
         TFile* file      = TFile::Open(plots0l->outfileName(),"UPDATE");
@@ -135,7 +135,7 @@ void getZinvPrediction(const TString defaultdir  = "root://cmseos:1094//store/us
         }
         file->Write();
         file->Close();
-      }
+      }*/
 
       cout << "Plotting photon region" << endl;
 

@@ -4,8 +4,9 @@
 
 enum SysVar { NOMINAL, VARUP, VARDOWN, NONE };
 
-vector<TString> vars = {"btag","mistag","jes","lep","pu","lep","tau","wjetsNorm","ttbarNorm"};
-vector<TString> bkgs = {"ttz","qcd","lostlep","znunu"};
+vector<TString> vars = {};
+vector<TString> bkgs = {"ttZ","qcd","lostlep","znunu"};
+vector<TString> rawbkgs = {"ttZ","qcd","ttbarplusw","znunu"};
 vector<TString> sigs = {"T2tt_700_1","T2tt_600_200"};
 vector<TString> labels = {"t#bar{t}Z","QCD","t#bar{t}/W","Z#rightarrow#nu#nu"};
 vector<TString> siglabels = {"T2tt(700,1)","T2tt(600,200)"};
@@ -65,15 +66,15 @@ void addSysUnc(TH1F* nominal, TH1F* varup, TH1F* vardown, TString name, TString 
     }
 
     double binerr = nominal->GetBinError(ibin);
-    nominal->SetBinError(ibin, sqrt(binerr*binerr + sysopt == 0 ? sysmax*sysmax : sysavg*sysavg));
+    nominal->SetBinError(ibin, sqrt(binerr*binerr + (sysopt == 0 ? sysmax*sysmax : sysavg*sysavg)));
   }
 
 }
 
 void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
-                            vector<TString> fileNames = {"ttz/ttzpred.root","qcd/qcdpred.root","lostlep/lostleppred.root","zinv/znunupred.root"},
-                            const TString sigFileName = "signal/signalpred.root",
-                            const TString histSuffix = "_pred_sr",
+                            const TString inputFileName = "srpred.root",
+                            const TString predHistSuffix = "_pred_sr",
+                            const TString rawHistSuffix = "_raw_sr",
                             const TString outputFileName = "fullbkgestwithunc.root",
                             const TString lumistr = "2.262",
                             const TString format = "pdf",
@@ -83,37 +84,46 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
 
   TFile* outfile = new TFile(outputFileName,"RECREATE");
 
-  vector<TH1F*> nomhists, sighists;
+  vector<TH1F*> nomhists, rawhists, sighists;
 
-  TH1F* bkgtotal = 0;
+  TH1F *bkgtotal = 0, *rawbkgtotal = 0;
   vector<TH1F*> bkgtotalsup, bkgtotalsdown;
+
+  TFile* infile = new TFile(inputDir + "/" + inputFileName);
+
+  TH1F* data = (TH1F*)infile->Get("data_sr");
+  setBinLabels(data, plotlabels);
 
   for (unsigned int ibkg = 0; ibkg < bkgs.size(); ++ibkg) {
     auto bkg = bkgs[ibkg];
-    TString inputFileName = inputDir + "/" + fileNames[ibkg];
-    TFile* file = new TFile(inputFileName);
-    TH1F* hbkg = (TH1F*)file->Get(bkg + histSuffix);
-    assert(hbkg);
-    setBinLabels(hbkg, plotlabels);
-    nomhists.push_back(hbkg);
+    TH1F* hbkgpred = (TH1F*)infile->Get(bkg + predHistSuffix);
+    TH1F* hbkgraw  = (TH1F*)infile->Get(rawbkgs[ibkg] + rawHistSuffix);
+    assert(hbkgpred);
+    assert(hbkgraw);
+    setBinLabels(hbkgpred, plotlabels);
+    setBinLabels(hbkgraw, plotlabels);
+    nomhists.push_back(hbkgpred);
+    rawhists.push_back(hbkgraw);
     if(ibkg == 0) {
-      bkgtotal = (TH1F*)hbkg->Clone("bkgtotal");
+      bkgtotal = (TH1F*)hbkgpred->Clone("bkgtotal");
+      rawbkgtotal = (TH1F*)hbkgraw->Clone("rawbkgtotal");
     } else {
-      bkgtotal->Add(hbkg);
+      bkgtotal->Add(hbkgpred);
+      rawbkgtotal->Add(hbkgraw);
     }
     for(unsigned int ivar = 0; ivar < vars.size(); ++ivar) {
       auto var = vars[ivar];
-      TString upname = bkg + histSuffix + "_" + var + "up";
-      TString downname = bkg + histSuffix + "_" + var + "down";
-      TH1F* hbkgup = (TH1F*)file->Get(upname);
-      TH1F* hbkgdown = (TH1F*)file->Get(downname);
+      TString upname = bkg + predHistSuffix + "_" + var + "up";
+      TString downname = bkg + predHistSuffix + "_" + var + "down";
+      TH1F* hbkgup = (TH1F*)infile->Get(upname);
+      TH1F* hbkgdown = (TH1F*)infile->Get(downname);
       if (!hbkgup) {
         cout << "No var " << var << " up for " << bkg.Data() << endl;
-        hbkgup = hbkg;
+        hbkgup = hbkgpred;
       }
       if (!hbkgdown) {
         cout << "No var " << var << " down for " << bkg.Data() << endl;
-        hbkgdown = hbkg;
+        hbkgdown = hbkgpred;
       }
       if(ibkg == 0) {
         bkgtotalsup.push_back((TH1F*)hbkgup->Clone("bkgtotal_varup"));
@@ -126,16 +136,8 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     }
   }
 
-  for(unsigned int ivar = 0; ivar < vars.size(); ++ivar) {
-    auto var = vars[ivar];
-    addSysUnc(bkgtotal, bkgtotalsup[ivar], bkgtotalsdown[ivar], var, "total");
-  }
-
-  TString sigInputFileName = inputDir + "/" + sigFileName;
-  TFile* sigfile = new TFile(sigInputFileName);
-  for (unsigned int isig = 0; isig < sigs.size(); ++isig) {
-    auto sig = sigs[isig];
-    TH1F* hsig = (TH1F*)sigfile->Get(sig + histSuffix);
+  for (auto& sig : sigs) {
+    TH1F* hsig = (TH1F*)infile->Get(sig + rawHistSuffix);
     assert(hsig);
     setBinLabels(hsig, plotlabels);
     sighists.push_back(hsig);
@@ -145,6 +147,7 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
 
   for(unsigned int ibkg = 0; ibkg < bkgs.size(); ++ibkg) {
     nomhists[ibkg]->Write(bkgs[ibkg]);
+    rawhists[ibkg]->Write(bkgs[ibkg] + "_raw");
   }
 
   for(unsigned int isig = 0; isig < sigs.size(); ++isig) {
@@ -167,12 +170,22 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
   Plot* plot_sr3 = new Plot("sryields_highmt_nt0_mednj","","#slash{E}_{T} [GeV]","Events");
   Plot* plot_sr4 = new Plot("sryields_highmt_nt0_highnj","","#slash{E}_{T} [GeV]","Events");
   Plot* plot_sr5 = new Plot("sryields_highmt_nt1","","#slash{E}_{T} [GeV]","Events");
+  plot_sr1->setUsePoisson();
+  plot_sr2->setUsePoisson();
+  plot_sr3->setUsePoisson();
+  plot_sr4->setUsePoisson();
+  plot_sr5->setUsePoisson();
+  plot_sr1->addHist(data, "Observed", "E", 1, 0, 1, 0);
+  plot_sr2->addHist(data, "Observed", "E", 1, 0, 1, 0);
+  plot_sr3->addHist(data, "Observed", "E", 1, 0, 1, 0);
+  plot_sr4->addHist(data, "Observed", "E", 1, 0, 1, 0);
+  plot_sr5->addHist(data, "Observed", "E", 1, 0, 1, 0);
   for(unsigned int ibkg = 0; ibkg < bkgs.size(); ++ibkg) {
-    plot_sr1->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
-    plot_sr2->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
-    plot_sr3->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
-    plot_sr4->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
-    plot_sr5->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 1);
+    plot_sr1->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
+    plot_sr2->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
+    plot_sr3->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
+    plot_sr4->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
+    plot_sr5->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
   }
   if (plotbkgunc) {
     plot_sr1->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
@@ -186,91 +199,86 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     plot_sr5->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
     plot_sr5->setName(plot_sr5->getName()+"_bkgunc");
   }
-  plot_sr1->getLegend()->AddEntry((TObject*)0, "", "");
-  plot_sr2->getLegend()->AddEntry((TObject*)0, "", "");
-  plot_sr3->getLegend()->AddEntry((TObject*)0, "", "");
-  plot_sr4->getLegend()->AddEntry((TObject*)0, "", "");
-  plot_sr5->getLegend()->AddEntry((TObject*)0, "", "");
 
   for(unsigned int isig = 0; isig < sigs.size(); ++isig) {
-    plot_sr1->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 1, 5);
-    plot_sr2->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 1, 5);
-    plot_sr3->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 1, 5);
-    plot_sr4->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 1, 5);
-    plot_sr5->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 1, 5);
+    plot_sr1->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 5);
+    plot_sr2->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 5);
+    plot_sr3->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 5);
+    plot_sr4->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 5);
+    plot_sr5->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 5);
   }
   plot_sr1->setXRange(0,10);
-  plot_sr1->addLine(5,0.01,5,200,kGray+2,kDashed);
+  plot_sr1->addLine(5,0.01,5,100,kGray+2,kDashed);
   plot_sr2->setXRange(10,20);
-  plot_sr2->addLine(15,0.01,15,200,kGray+2,kDashed);
+  plot_sr2->addLine(15,0.01,15,100,kGray+2,kDashed);
   plot_sr3->setXRange(20,30);
-  plot_sr3->addLine(25,0.01,25,50,kGray+2,kDashed);
+  plot_sr3->addLine(25,0.01,25,20,kGray+2,kDashed);
   plot_sr4->setXRange(30,40);
-  plot_sr4->addLine(35,0.01,35,40,kGray+2,kDashed);
+  plot_sr4->addLine(35,0.01,35,20,kGray+2,kDashed);
   plot_sr5->setXRange(40,50);
-  plot_sr5->addLine(45,0.01,45,10,kGray+2,kDashed);
+  plot_sr5->addLine(45,0.01,45,5,kGray+2,kDashed);
 
-  plot_sr1->setHeader("#sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.16,0.93);
+  plot_sr1->setHeader("CMS Preliminary                #sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.17,0.93);
   plot_sr1->getLegend()->SetNColumns(2);
-  plot_sr1->setLegend(0.2,0.75,0.7,0.9);
-  plot_sr1->addTextBox("N_{b} = 1", 0.4, 0.65, 0.5, 0.7, 0, 1, 0);
-  plot_sr1->addTextBox("N_{b} #geq 2", 0.8, 0.65, 0.9, 0.7, 0, 1, 0);
-  plot_sr1->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.65, 0.85, 0.92, 0.9, 0, 1, 0);
-  plot_sr1->addTextBox("5-6 jets", 0.82, 0.8, 0.91, 0.85, 0, 1, 0);
-  plot_sr2->setHeader("#sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.16,0.93);
+  plot_sr1->setLegend(0.2,0.65,0.7,0.88);
+  plot_sr1->addTextBox("N_{b} = 1", 0.45, 0.58, 0.55, 0.63, 0, 1, 0);
+  plot_sr1->addTextBox("N_{b} #geq 2", 0.8, 0.58, 0.9, 0.63, 0, 1, 0);
+  plot_sr1->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.7, 0.8, 0.91, 0.88, 0, 1, 0);
+  plot_sr1->addTextBox("5-6 jets", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr2->setHeader("CMS Preliminary                #sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.17,0.93);
   plot_sr2->getLegend()->SetNColumns(2);
-  plot_sr2->setLegend(0.2,0.75,0.7,0.9);
-  plot_sr2->addTextBox("N_{b} = 1", 0.4, 0.65, 0.5, 0.7, 0, 1, 0);
-  plot_sr2->addTextBox("N_{b} #geq 2", 0.8, 0.65, 0.9, 0.7, 0, 1, 0);
-  plot_sr2->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.65, 0.85, 0.92, 0.9, 0, 1, 0);
-  plot_sr2->addTextBox("#geq 7 jets", 0.82, 0.8, 0.91, 0.85, 0, 1, 0);
-  plot_sr3->setHeader("#sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.16,0.93);
+  plot_sr2->setLegend(0.2,0.65,0.7,0.88);
+  plot_sr2->addTextBox("N_{b} = 1", 0.45, 0.58, 0.55, 0.63, 0, 1, 0);
+  plot_sr2->addTextBox("N_{b} #geq 2", 0.8, 0.58, 0.9, 0.63, 0, 1, 0);
+  plot_sr2->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.7, 0.8, 0.91, 0.88, 0, 1, 0);
+  plot_sr2->addTextBox("#geq 7 jets", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr3->setHeader("CMS Preliminary                #sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.17,0.93);
   plot_sr3->getLegend()->SetNColumns(2);
-  plot_sr3->setLegend(0.2,0.75,0.7,0.9);
-  plot_sr3->addTextBox("N_{b} = 1", 0.4, 0.65, 0.5, 0.7, 0, 1, 0);
-  plot_sr3->addTextBox("N_{b} #geq 2", 0.8, 0.65, 0.9, 0.7, 0, 1, 0);
-  plot_sr3->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.85, 0.92, 0.9, 0, 1, 0);
-  plot_sr3->addTextBox("5-6 jets", 0.82, 0.8, 0.91, 0.85, 0, 1, 0);
-  plot_sr3->addTextBox("N_{t} = 0", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
-  plot_sr4->setHeader("#sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.16,0.93);
+  plot_sr3->setLegend(0.2,0.65,0.7,0.88);
+  plot_sr3->addTextBox("N_{b} = 1", 0.45, 0.58, 0.55, 0.63, 0, 1, 0);
+  plot_sr3->addTextBox("N_{b} #geq 2", 0.8, 0.58, 0.9, 0.63, 0, 1, 0);
+  plot_sr3->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.7, 0.8, 0.91, 0.88, 0, 1, 0);
+  plot_sr3->addTextBox("5-6 jets", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr3->addTextBox("N_{t} = 0", 0.82, 0.7, 0.91, 0.75, 0, 1, 0);
+  plot_sr4->setHeader("CMS Preliminary                #sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.17,0.93);
   plot_sr4->getLegend()->SetNColumns(2);
-  plot_sr4->setLegend(0.2,0.75,0.7,0.9);
-  plot_sr4->addTextBox("N_{b} = 1", 0.4, 0.65, 0.5, 0.7, 0, 1, 0);
-  plot_sr4->addTextBox("N_{b} #geq 2", 0.8, 0.65, 0.9, 0.7, 0, 1, 0);
-  plot_sr4->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.85, 0.92, 0.9, 0, 1, 0);
-  plot_sr4->addTextBox("#geq 7 jets", 0.82, 0.8, 0.91, 0.85, 0, 1, 0);
-  plot_sr4->addTextBox("N_{t} = 0", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
-  plot_sr5->setHeader("#sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.16,0.93);
+  plot_sr4->setLegend(0.2,0.65,0.7,0.88);
+  plot_sr4->addTextBox("N_{b} = 1", 0.45, 0.58, 0.55, 0.63, 0, 1, 0);
+  plot_sr4->addTextBox("N_{b} #geq 2", 0.8, 0.58, 0.9, 0.63, 0, 1, 0);
+  plot_sr4->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.7, 0.8, 0.91, 0.88, 0, 1, 0);
+  plot_sr4->addTextBox("#geq 7 jets", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr4->addTextBox("N_{t} = 0", 0.82, 0.7, 0.91, 0.75, 0, 1, 0);
+  plot_sr5->setHeader("CMS Preliminary                #sqrt{s} = 13 TeV, " + TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"",0.17,0.93);
   plot_sr5->getLegend()->SetNColumns(2);
-  plot_sr5->setLegend(0.2,0.75,0.7,0.9);
-  plot_sr5->addTextBox("N_{b} = 1", 0.4, 0.65, 0.5, 0.7, 0, 1, 0);
-  plot_sr5->addTextBox("N_{b} #geq 2", 0.8, 0.65, 0.9, 0.7, 0, 1, 0);
-  plot_sr5->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.85, 0.92, 0.9, 0, 1, 0);
-  plot_sr5->addTextBox("#geq 5 jets", 0.82, 0.8, 0.91, 0.85, 0, 1, 0);
-  plot_sr5->addTextBox("N_{t} #geq 1", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr5->setLegend(0.2,0.65,0.7,0.88);
+  plot_sr5->addTextBox("N_{b} = 1", 0.45, 0.58, 0.55, 0.63, 0, 1, 0);
+  plot_sr5->addTextBox("N_{b} #geq 2", 0.8, 0.58, 0.9, 0.63, 0, 1, 0);
+  plot_sr5->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.7, 0.8, 0.91, 0.88, 0, 1, 0);
+  plot_sr5->addTextBox("#geq 5 jets", 0.82, 0.75, 0.91, 0.8, 0, 1, 0);
+  plot_sr5->addTextBox("N_{t} #geq 1", 0.82, 0.7, 0.91, 0.75, 0, 1, 0);
 
   if(plotlog) {
     plot_sr1->setName(plot_sr1->getName()+"_log");
     plot_sr1->setLogy();
-    plot_sr1->setYRange(0.01,5000.0);
+    plot_sr1->setYRange(0.03,5000.0);
     plot_sr2->setName(plot_sr2->getName()+"_log");
     plot_sr2->setLogy();
-    plot_sr2->setYRange(0.01,5000.0);
+    plot_sr2->setYRange(0.03,5000.0);
     plot_sr3->setName(plot_sr3->getName()+"_log");
     plot_sr3->setLogy();
-    plot_sr3->setYRange(0.01,1000.0);
+    plot_sr3->setYRange(0.03,800.0);
     plot_sr4->setName(plot_sr4->getName()+"_log");
     plot_sr4->setLogy();
-    plot_sr4->setYRange(0.01,500.0);
+    plot_sr4->setYRange(0.03,800.0);
     plot_sr5->setName(plot_sr5->getName()+"_log");
     plot_sr5->setLogy();
-    plot_sr5->setYRange(0.01,100.0);
+    plot_sr5->setYRange(0.03,100.0);
   }
 
-  plot_sr1->draw(mycanv,true,format);
-  plot_sr2->draw(mycanv,true,format);
-  plot_sr3->draw(mycanv,true,format);
-  plot_sr4->draw(mycanv,true,format);
-  plot_sr5->draw(mycanv,true,format);
+  plot_sr1->drawRatioStack(mycanv,true,format);
+  plot_sr2->drawRatioStack(mycanv,true,format);
+  plot_sr3->drawRatioStack(mycanv,true,format);
+  plot_sr4->drawRatioStack(mycanv,true,format);
+  plot_sr5->drawRatioStack(mycanv,true,format);
 
 }
