@@ -5,7 +5,7 @@
 using namespace BkgPrediction;
 
 void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
-                       const TString outputdir   = "plots_bkgest_020916/zinv",
+                       const TString outputdir   = "plots_bkgest/zinv",
                        const TString srconf      = "plotting/run0lepbkgpred.conf",
                        const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
                        const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
@@ -18,7 +18,7 @@ void getZinvPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 

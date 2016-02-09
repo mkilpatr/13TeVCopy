@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user/vdutta/13TeV/trees/012216",
+void getLLPrediction(const TString defaultdir  = "eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
                      const TString outputdir   = "plots_bkgest/lostlep",
                      const TString srconf      = "plotting/run0lepbkgpred.conf",
                      const TString lumistr     = "2.262",
@@ -17,7 +17,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
 {
   gSystem->mkdir(outputdir, true);
 
-  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight";
+  TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt = dotnp ? basewgt + "*leptnpweight*lepvetoweight" : basewgt + "*lepvetoweight";
   TString lepselwgt  = dotnp ? basewgt + "*leptnpweight" : basewgt + "*lepselweight";
 
@@ -93,7 +93,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
       }
 
       TString inputdir    = sysvar == NOMINAL ? defaultdir : defaultdir + "/" + suffix;
-      if(var == "wjetsNorm" || var == "ttbarNorm") inputdir = defaultdir;
+      if(var == "wjetsNorm" || var == "ttbarNorm" || var == "topmistag") inputdir = defaultdir;
 
       if(suffix != "") suffix.Prepend("_");
 
@@ -115,6 +115,20 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
           lepselwgt = basewgt + "*leptnpweight*((0.80*("+sel["isttbar"]+")) + (1.0*("+sel["isnotttbar"]+")))";
         }
       }
+      if(var == "topmistag") {
+        if(sysvar == NOMINAL) {
+          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*(0.7*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175) + 1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175))";
+          lepselwgt = basewgt + "*leptnpweight*(0.7*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175) + 1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175))";
+        } else if(sysvar == VARUP) {
+          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.77*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
+          lepselwgt = basewgt + "*leptnpweight*((0.77*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
+        } else if (sysvar == VARDOWN) {
+          lepvetowgt = basewgt + "*leptnpweight*lepvetoweight*((0.63*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
+          lepselwgt = basewgt + "*leptnpweight*((0.63*("+sel["iswjets"]+" && ncttstd>=1 && mtcsv12met>175)) + (1.0*(("+sel["isnotwjets"]+") || ncttstd==0 || mtcsv12met<175)))";
+        }
+        cout << lepvetowgt.Data() << endl;
+        cout << lepselwgt.Data() << endl;
+      }
 
       PlotStuff* plots0l    = setupPlots(srconf,    inputdir, outputdir, lepvetowgt, plotlog, format, lumistr, "output_0l"+suffix+".root");
       PlotStuff* plotslepcr = setupPlots(srconf,    inputdir, outputdir, lepselwgt, plotlog, format, lumistr, "output_lepcr"+suffix+".root");
@@ -134,7 +148,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
 
       plots0l->plot();
 
-      if(!dolownj) {
+      /*if(!dolownj) {
         TString rmcmd = "rm " + outputdir + "/met_sr_*." + format;
         gSystem->Exec(rmcmd.Data());
         TFile* file      = TFile::Open(plots0l->outfileName(),"UPDATE");
@@ -149,7 +163,7 @@ void getLLPrediction(const TString defaultdir  = "root://cmseos:1094//store/user
         }
         file->Write();
         file->Close();
-      }
+      }*/
 
       cout << "Plotting 1lepton region" << endl;
 
