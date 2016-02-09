@@ -10,6 +10,7 @@ vector<TString> rawbkgs = {"ttZ","qcd","ttbarplusw","znunu"};
 vector<TString> sigs = {"T2tt_700_1","T2tt_600_200"};
 vector<TString> labels = {"t#bar{t}Z","QCD","t#bar{t}/W","Z#rightarrow#nu#nu"};
 vector<TString> siglabels = {"T2tt(700,1)","T2tt(600,200)"};
+const TString unc_name = "unc_sr";
 
 vector<TString> binlabels = {"bin_250_5_1_0_0", "bin_300_5_1_0_0", "bin_400_5_1_0_0", "bin_500_5_1_0_0", "bin_600_5_1_0_0",
                              "bin_250_5_2_0_0", "bin_300_5_2_0_0", "bin_400_5_2_0_0", "bin_500_5_2_0_0", "bin_600_5_2_0_0",
@@ -136,6 +137,9 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     }
   }
 
+  // get uncertainty hist
+  TH1F* unc = (TH1F*)infile->Get(unc_name);
+
   for (auto& sig : sigs) {
     TH1F* hsig = (TH1F*)infile->Get(sig + rawHistSuffix);
     assert(hsig);
@@ -188,16 +192,22 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     plot_sr5->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 3, 0);
   }
   if (plotbkgunc) {
-    plot_sr1->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
-    plot_sr1->setName(plot_sr1->getName()+"_bkgunc");
-    plot_sr2->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
-    plot_sr2->setName(plot_sr2->getName()+"_bkgunc");
-    plot_sr3->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
-    plot_sr3->setName(plot_sr3->getName()+"_bkgunc");
-    plot_sr4->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
-    plot_sr4->setName(plot_sr4->getName()+"_bkgunc");
-    plot_sr5->addHist(bkgtotal, "Bkg. Uncertainty", "E2", kBlue+1, 3013, 1, 0);
-    plot_sr5->setName(plot_sr5->getName()+"_bkgunc");
+    TH1F *histUnc = unc ? unc : bkgtotal;
+    plot_sr1->setUncertaintyHist(histUnc);
+    plot_sr1->setPlotStackUncertainty();
+    plot_sr1->setPlotRatioUncertaintyBand();
+    plot_sr2->setUncertaintyHist(histUnc);
+    plot_sr2->setPlotStackUncertainty();
+    plot_sr2->setPlotRatioUncertaintyBand();
+    plot_sr3->setUncertaintyHist(histUnc);
+    plot_sr3->setPlotStackUncertainty();
+    plot_sr3->setPlotRatioUncertaintyBand();
+    plot_sr4->setUncertaintyHist(histUnc);
+    plot_sr4->setPlotStackUncertainty();
+    plot_sr4->setPlotRatioUncertaintyBand();
+    plot_sr5->setUncertaintyHist(histUnc);
+    plot_sr5->setPlotStackUncertainty();
+    plot_sr5->setPlotRatioUncertaintyBand();
   }
 
   for(unsigned int isig = 0; isig < sigs.size(); ++isig) {
