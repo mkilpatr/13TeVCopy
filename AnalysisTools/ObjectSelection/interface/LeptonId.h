@@ -34,7 +34,7 @@ namespace MuonISO {
   inline bool inclusive     (const ucsbsusy::MuonF* lep) {return true;}
   inline bool looseMini     (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.2;}
   inline bool medMini       (const ucsbsusy::MuonF* lep) {return lep->miniiso()<0.1;}
-  inline bool medRel        (const ucsbsusy::MuonF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.20;}
+  inline bool looseRel        (const ucsbsusy::MuonF* lep) {return lep->pfdbetaiso()/lep->pt() < 0.25;}
 }
 
 

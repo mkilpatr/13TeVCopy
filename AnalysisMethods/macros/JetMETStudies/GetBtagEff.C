@@ -3,6 +3,7 @@
 #include "AnalysisMethods/PlotUtils/interface/EffPlotTools.hh"
 #include "AnalysisMethods/PlotUtils/interface/PlotTools.hh"
 #include "AnalysisTools/QuickRefold/interface/TObjectContainer.h"
+#include "AnalysisMethods/PlotUtils/interface/HistogramGetter.hh"
 #include "TreeReadingHelper.h"
 #include "TDirectory.h"
 #include "TTree.h"
