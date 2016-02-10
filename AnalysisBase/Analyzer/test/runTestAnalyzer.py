@@ -410,8 +410,8 @@ if updateJECs:
                                process.patJetCorrFactorsReapplyJECAK8 *
                                process.patJetsReapplyJEC        *
                                process.patJetsAK8ReapplyJEC     *
-                               process.ak4PatAssocSeq           * 
                                process.met131TeVFilter          *
+                               process.ak4PatAssocSeq           *                                
                                process.ca8JetsSeq               *
                                process.egmGsfElectronIDSequence * 
                                process.egmPhotonIDSequence)
