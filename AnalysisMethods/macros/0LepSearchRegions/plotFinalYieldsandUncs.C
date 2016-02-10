@@ -192,6 +192,11 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
   plot_sr3->addHist(data, "Observed", "E0", 1, 0, 1, 0, 0, 2);
   plot_sr4->addHist(data, "Observed", "E0", 1, 0, 1, 0, 0, 2);
   plot_sr5->addHist(data, "Observed", "E0", 1, 0, 1, 0, 0, 2);
+  plot_sr1->getLegend()->AddEntry((TObject*)0, "", "");
+  plot_sr2->getLegend()->AddEntry((TObject*)0, "", "");
+  plot_sr3->getLegend()->AddEntry((TObject*)0, "", "");
+  plot_sr4->getLegend()->AddEntry((TObject*)0, "", "");
+  plot_sr5->getLegend()->AddEntry((TObject*)0, "", "");
 
   for(unsigned int ibkg = 0; ibkg < bkgs.size(); ++ibkg) {
     plot_sr1->addToStack(nomhists[ibkg], labels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 2, 0);
@@ -227,6 +232,13 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     plot_sr4->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
     plot_sr5->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
   }
+
+  plot_sr1->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+  plot_sr2->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+  plot_sr3->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+  plot_sr4->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+  plot_sr5->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+
   plot_sr1->setXRange(0,10);
   plot_sr1->addLine(5,0.01,5,100,kGray+2,kDashed);
   plot_sr2->setXRange(10,20);

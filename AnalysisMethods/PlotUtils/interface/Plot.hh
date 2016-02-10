@@ -91,6 +91,7 @@ class Plot {
     void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
     void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
     void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
+    void addHistForRatio(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3, bool onlyplotratio=false);
     void addHist2D(TH2F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addHist2DScaled(TH2F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
@@ -186,6 +187,7 @@ class Plot {
   
   protected:
     vector<h1D*> fHists1D;                // list of 1D hists to be plotted
+    vector<h1D*> fRatioHists1D;           // list of 1D hists to be plotted in ratio plots
     vector<h2D*> fHists2D;                // list of 2D hists to be plotted
     vector<graph*> fGraphs;               // list of graphs to be plotted
     vector<profile*> fProfiles;           // list of profile hists to be plotted
