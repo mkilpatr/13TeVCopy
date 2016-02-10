@@ -40,8 +40,9 @@ void getMotivationPlots() {
 //    c->SetBottomMargin(0.03);
     plot->setYRange(65,2000);
     plot->setLogy();
-    plot->setHeader(QCDSupport::header,"");
-    plot->draw(c,true,"png");
+//    plot->setHeader(QCDSupport::header,"");
+    plot->setDrawCMSLumi();
+    plot->draw(c,true,"pdf");
 
     //Now do distribution plots
     TTree * qcdTree = QCDSupport::getTree("1_17_version/qcd_resTest_smearWithExtraCut_skimmed.root");
@@ -72,11 +73,12 @@ void getMotivationPlots() {
 
       TCanvas * c = new TCanvas;
       plot->setLegend(.45,.65,.92,.9);
-      plot->setYRange(0.,1.0);
-      plot->setHeader(QCDSupport::header,"");
-      plot->draw(c,true,"png");
+      plot->setYRange(0.,1.1);
+//      plot->setHeader(QCDSupport::header,"");
+      plot->setDrawCMSLumi();
+      plot->draw(c,true,"pdf");
       QCDSupport::setTitleOffset(c);
-      c->SaveAs(plot->getName() + TString(".png"));
+      c->SaveAs(plot->getName() + TString(".pdf"));
     }
 
 
@@ -109,10 +111,11 @@ void getMotivationPlots() {
       }
     metplot->setYRange(0.,0.15);
       TCanvas * c2 = new TCanvas;
-      metplot->setHeader(QCDSupport::header,"");
-      metplot->draw(c2,true,"png");
+//      metplot->setHeader(QCDSupport::header,"");
+      metplot->setDrawCMSLumi();
+      metplot->draw(c2,true,"pdf");
       QCDSupport::setTitleOffset(c2);
-      c2->SaveAs(metplot->getName() + TString(".png"));
+      c2->SaveAs(metplot->getName() + TString(".pdf"));
 
 
 }
@@ -155,13 +158,14 @@ void getSmearComparision() {
 
 
         TCanvas * c = new TCanvas;
-        plot->setHeader(QCDSupport::header,"");
-        plot->setYRange(0.5,700);
+//        plot->setHeader(QCDSupport::header,"");
+        plot->setYRange(0.5,5000);
         plot->setLogy();
 
-        plot->drawRatios(c,1,true,"png");
+        plot->setDrawCMSLumi();
+        plot->drawRatios(c,1,true,"pdf");
         QCDSupport::setTitleOffset(c,.850);
-        c->SaveAs(plot->getName() + TString(".png"));
+        c->SaveAs(plot->getName() + TString(".pdf"));
       }
 
 }
@@ -230,9 +234,10 @@ void getTailSFRegion(){
     }
     plot->setLegend(.5,.65,.92,.87);
     plot->getLegend()->SetNColumns(2);
-    plot->drawRatioStack(c,true,"png");
+    plot->setDrawCMSLumi();
+    plot->drawRatioStack(c,true,"pdf");
     QCDSupport::setTitleOffset(c,.850);
-    c->SaveAs(plot->getName() + TString(".png"));
+    c->SaveAs(plot->getName() + TString(".pdf"));
 
   }
 }
@@ -240,10 +245,11 @@ void getTailSFRegion(){
 #endif
 
 void MakeExtraANPlots(){
-  StyleTools::SetStyle();
+  StyleTools::SetTDRStyle();
   gStyle->SetTitleOffset(1.400,"Y");
   gStyle->SetTitleOffset(0.950,"X");
-//  getMotivationPlots();
-//  getSmearComparision();
+  gStyle->SetPadTopMargin   (0.08);
+  getMotivationPlots();
+  getSmearComparision();
   getTailSFRegion();
 }

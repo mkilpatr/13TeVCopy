@@ -40,20 +40,23 @@ void go() {
     case 9: plot->setYRange(0.0001,0.1);break;
     }
     plot->setLogy();
+    plot->setDrawCMSLumi();
     plot->getLegend()->SetNColumns(2);
+    plot->setLegend(.4,.7,.95,.9);
     plot->setHeader("","");
     TCanvas * c = new TCanvas;
-    plot->draw(c,true,"png");
+    plot->draw(c,true,"pdf");
     QCDSupport::setTitleOffset(c);
-    c->SaveAs(plot->getName() + TString(".png"));
+    c->SaveAs(plot->getName() + TString("pdf"));
 
   }
 }
 #endif
 
 void MakeTFPlots(){
-  StyleTools::SetStyle();
+  StyleTools::SetTDRStyle();
   gStyle->SetTitleOffset(1.400,"Y");
   gStyle->SetTitleOffset(0.950,"X");
+  gStyle->SetPadTopMargin   (0.08);
   go();
 }
