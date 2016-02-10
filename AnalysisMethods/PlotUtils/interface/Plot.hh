@@ -91,10 +91,14 @@ class Plot {
     void addHist(TFile *f, TString itemname, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
     void addHistScaled(TH1F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
     void addHistScaled(TFile *f, TString itemname, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3);
+    void addHistForRatio(TH1F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1, unsigned int plotoverflow=0, int linewidth=3, bool onlyplotratio=false);
     void addHist2D(TH2F* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addHist2DScaled(TH2F* item, double scaleto, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addGraph(TGraph* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
     void addProfile(TProfile* item, TString label, TString drawopt="", int color=0, int fillstyle=0, int linecolor=1, int linestyle=1);
+
+    // Set the uncertainty histogram. The histogram should have both the central values and the uncertainties.
+    void setUncertaintyHist(TH1F *unc) { fHistUnc = (TH1F*)unc->Clone(); }
 
     // Adding a 1D histogram to a histogram stack
     void addToStack(TH1F *h, int color);
@@ -167,7 +171,9 @@ class Plot {
     void rebin(int ngroup)                   { fRebin = ngroup; }            // 1D histogram re-bin
     void showStats(int show=111)             { fShowStats = show; }          // display statistics
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
+    void setPlotRatioUncertaintyBand()       { fPlotRatioUncertaintyBand = true; } // Add uncertainty band to ratio plot
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
+    void setDrawCMSLumi()                    { fDrawCMSLumi = true; }        // Draw CMS lumi header
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
     TGraphAsymmErrors* getRatioAsymmErrors(TH1F* hnum, TH1F* hden);
@@ -181,6 +187,7 @@ class Plot {
   
   protected:
     vector<h1D*> fHists1D;                // list of 1D hists to be plotted
+    vector<h1D*> fRatioHists1D;           // list of 1D hists to be plotted in ratio plots
     vector<h2D*> fHists2D;                // list of 2D hists to be plotted
     vector<graph*> fGraphs;               // list of graphs to be plotted
     vector<profile*> fProfiles;           // list of profile hists to be plotted
@@ -189,6 +196,7 @@ class Plot {
     vector<TBox*> fBoxes;                 // list of boxes
     vector<TF1*> fFcns;                   // list of 1D functions
     THStack *fStack;                      // histogram stack
+    TH1F *fHistUnc;                       // uncertainty histogram
     TString fName;                        // plot name
     TString fTitle;                       // plot title
     TString fXTitle;                      // x-axis title
@@ -205,7 +213,9 @@ class Plot {
     TString fLumiText, fChanText;         // text to display in header
     double fHeaderX, fHeaderY;            // x,y coordinates of bottom left corner of header box
     bool fUsePoisson;                     // Poisson error bars for data
+    bool fPlotRatioUncertaintyBand;       // Add uncertainty band to ratio plot
     bool fPlotStackUncertainty;           // Add uncertainty band to stacked hists
+    bool fDrawCMSLumi;                    // Add TDR style CMS lumi header
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
   

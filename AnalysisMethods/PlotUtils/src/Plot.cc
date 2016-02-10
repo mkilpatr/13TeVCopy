@@ -12,6 +12,7 @@ Plot::Plot()
 
 Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fStack(0),
+  fHistUnc(0),
   fName(name),
   fTitle(title),
   fXTitle(xtitle),
@@ -38,7 +39,9 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fHeaderX(0.54),
   fHeaderY(0.92),
   fUsePoisson(false),
-  fPlotStackUncertainty(false)
+  fPlotRatioUncertaintyBand(false),
+  fPlotStackUncertainty(false),
+  fDrawCMSLumi(false)
 {
   counter++;
 }
@@ -51,6 +54,7 @@ Plot::~Plot()
 void Plot::clear()
 {
   fHists1D.clear();
+  fRatioHists1D.clear();
   fHists2D.clear();
   fGraphs.clear();
   fProfiles.clear();
@@ -162,9 +166,10 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);
 
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
     fLeg->AddEntry(hist,label,"PL");
   } else {
+    hist->SetMarkerSize(0);
     if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
     else              fLeg->AddEntry(hist,label,"L");
   }
@@ -211,9 +216,10 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);
 
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
     fLeg->AddEntry(hist,label,"PL");
   } else {
+    hist->SetMarkerSize(0);
     if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
     else              fLeg->AddEntry(hist,label,"L");
   }
@@ -231,6 +237,45 @@ void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString lab
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
   addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
+
+}
+
+void Plot::addHistForRatio(TH1F *h, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth, bool onlyplotratio)
+{
+
+  if(!h)
+    return;
+  
+  TH1F* hist = (TH1F*)h->Clone();
+
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
+    fLeg->AddEntry(hist,label,"PL");
+  } else {
+    hist->SetMarkerSize(0);
+    if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+    else              fLeg->AddEntry(hist,label,"L");
+  }
+
+  if(!onlyplotratio)
+    fHists1D.push_back(new h1D(hist, drawopt));
+
+  fRatioHists1D.push_back(new h1D(hist, drawopt));
 
 }
 
@@ -790,6 +835,10 @@ TGraphAsymmErrors* Plot::getAsymmErrors(TH1F* h){
     double U =  ROOT::Math::gamma_quantile_c(alpha/2,dN+1,1) ;
     gr->SetPointEYhigh(ibin, U - double(dN));
     gr->SetPointEYlow(ibin, double(dN)- L);
+    if(dN == 0) {
+      gr->SetPointEXlow(ibin, 0);
+      gr->SetPointEXhigh(ibin, 0);
+    }
   }
   return gr;
 }
@@ -861,11 +910,13 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TH1F* hMC   = 0;
   std::vector<TH1F*> vHists;
   std::vector<TString> vHistOpts;
+  std::vector<TH1F*> vRatioHists;
+  std::vector<TString> vRatioHistOpts;
 
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
-  p1->SetLeftMargin  (0.18);
+  p1->SetLeftMargin  (0.16);
   p1->SetTopMargin   (0.10);
-  p1->SetRightMargin (0.07);
+  p1->SetRightMargin (0.02);
   p1->SetBottomMargin(0.04);  
   p1->Draw();
   if(fLogy) p1->SetLogy();
@@ -906,12 +957,38 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   assert(hData);
   assert(hMC);
-  
+
+  if(fRatioHists1D.size()>0) {   
+    for(uint i=0; i<fRatioHists1D.size(); i++) {
+      TString hname = fName;
+      hname += "_hratio_";
+      hname += TString(to_string(i));
+      TH1F* h = (TH1F*)fRatioHists1D[i]->member->Clone(hname);
+      if(fXmin < fXmax) {
+        h->GetXaxis()->SetRangeUser(fXmin,fXmax);
+      }
+      if(fYmin < fYmax) { 
+        h->GetYaxis()->SetRangeUser(fYmin,fYmax);
+      }
+      TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+      hratio->Divide(h);
+      hratio->SetLineColor(h->GetLineColor());
+      hratio->SetLineStyle(h->GetLineStyle());
+      hratio->SetLineWidth(h->GetLineWidth());
+      hratio->SetMarkerColor(h->GetMarkerColor());
+      hratio->SetMarkerStyle(h->GetMarkerStyle());
+      hratio->SetMarkerSize(h->GetMarkerSize());
+      hratio->SetFillStyle(h->GetFillStyle());
+      hratio->SetFillColor(h->GetFillColor());
+      vRatioHists.push_back(hratio);
+      vRatioHistOpts.push_back(fRatioHists1D[i]->opt);
+    }
+  }
+
   double ymax = hData->GetMaximum();
   if(hMC->GetMaximum()>ymax) ymax=hMC->GetMaximum();
   hData->SetMarkerSize(1.3);
   hData->SetMarkerStyle(20);
-  hData->SetLineWidth(3);
   hData->SetTitleOffset(0.30,"Y");
 
   TH1F *h00 = (TH1F*)hData->Clone("data0");
@@ -934,18 +1011,34 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     if(fYmin < fYmax) fStack->GetHistogram()->GetYaxis()->SetRangeUser(fYmin,fYmax);
     else fStack->GetHistogram()->GetYaxis()->SetRangeUser(0,1.1*ymax);
     if(fXmin < fXmax) fStack->GetHistogram()->GetXaxis()->SetRangeUser(fXmin,fXmax);
-    fStack->GetHistogram()->GetYaxis()->SetTitleOffset(1.0);
+    fStack->GetHistogram()->GetYaxis()->SetTitleOffset(0.9);
     fStack->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+    if(fDrawCMSLumi) {
+      fStack->GetHistogram()->GetYaxis()->SetTitleFont(42);
+      fStack->GetHistogram()->GetYaxis()->SetLabelFont(42);
+    }
     fStack->Draw("hist");
   }
 
   if(fPlotStackUncertainty) {
-    hMC->SetFillColor(kBlue);
-    hMC->SetFillStyle(3013);
-    hMC->SetLineStyle(0);
-    hMC->SetLineWidth(0);
-    hMC->SetMarkerSize(0);
-    hMC->Draw("E2same");
+    if (fHistUnc){
+      TH1F* hUnc = (TH1F*)fHistUnc->Clone();
+      hUnc->SetFillColor(kBlue);
+      hUnc->SetFillStyle(3013);
+      hUnc->SetLineStyle(0);
+      hUnc->SetLineWidth(0);
+      hUnc->SetMarkerSize(0);
+      hUnc->Draw("E2same");
+      if(fLeg) fLeg->AddEntry(hUnc,"Bkg. Uncertainty","F");
+    } else{
+      hMC->SetFillColor(kBlue);
+      hMC->SetFillStyle(3013);
+      hMC->SetLineStyle(0);
+      hMC->SetLineWidth(0);
+      hMC->SetMarkerSize(0);
+      hMC->Draw("E2same");
+      if(fLeg) fLeg->AddEntry(hMC,"Bkg. Uncertainty","F");
+    }
   }
 
   for(uint i=0; i<vHists.size(); i++) {
@@ -960,15 +1053,17 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   if(fUsePoisson) {
     TGraphAsymmErrors* gr = getAsymmErrors(h00);
     gr->SetMarkerStyle(20);
+    gr->SetLineWidth(h00->GetLineWidth());
+    gr->SetFillStyle(0);
     gr->Draw("PZ0same");
   } else {
+    h00->SetMarkerStyle(20);
     h00->Draw("same");
   }
 
   p1->RedrawAxis();
 
   if(fLeg) {
-    if(fPlotStackUncertainty) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
     fLeg->SetFillStyle(0);
     fLeg->SetBorderSize(0);
     fLeg->Draw();
@@ -988,9 +1083,9 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   c->cd();
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
-  p2->SetLeftMargin  (0.18);
+  p2->SetLeftMargin  (0.16);
   p2->SetTopMargin   (0.00);
-  p2->SetRightMargin (0.07);
+  p2->SetRightMargin (0.02);
   p2->SetBottomMargin(0.30);
   p2->SetGridy(1);
   p2->Draw();
@@ -1002,7 +1097,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   }
 
   h3->SetTitleSize  (0.16,"Y");
-  h3->SetTitleOffset(0.45,"Y");
+  h3->SetTitleOffset(0.41,"Y");
   h3->SetTitleOffset(0.75,"X");
   h3->SetTitleSize  (0.16,"X");
   h3->SetLabelSize  (0.12,"X");
@@ -1013,35 +1108,86 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   h3->GetYaxis()->SetRangeUser(-0.5,0.5);
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
-  //h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}} - 1");
   h3->GetYaxis()->SetTitle("N_{obs}/N_{exp}");
+  if(fDrawCMSLumi) {
+    h3->GetXaxis()->SetTitleFont(42);
+    h3->GetYaxis()->SetTitleFont(42);
+    h3->GetXaxis()->SetLabelFont(42);
+    h3->GetYaxis()->SetLabelFont(42);
+  }
 
   double xmin = hData->GetXaxis()->GetXmin();
   double xmax = hData->GetXaxis()->GetXmax();
   if(fXmin < fXmax) { xmin=fXmin; xmax=fXmax; }
   TLine *l = new TLine(xmin,1,xmax,1);
-  l->SetLineWidth(3);
+  l->SetLineWidth(2);
   l->SetLineColor(kBlack);
 
-  //h3->Add(hMC, -1.);
   if(fUsePoisson) {
-    TGraphAsymmErrors* ratio = getRatioAsymmErrors(h3, hMC);
+    TGraphAsymmErrors* ratio;
+    if(fPlotRatioUncertaintyBand){
+      TH1F* hMCNoError = (TH1F*)hMC->Clone("hMCNoError");
+      for (int i=1; i < hMCNoError->GetNbinsX()+1; ++i) hMCNoError->SetBinError(i, 0);
+      ratio = getRatioAsymmErrors(h3, hMCNoError);
+    }else{
+      ratio = getRatioAsymmErrors(h3, hMC);
+    }
+    ratio->SetLineWidth(h3->GetLineWidth());
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
+    for(uint i=0; i<vRatioHists.size(); i++) {
+      TH1F *h = vRatioHists[i];              
+      char opt[100];
+      sprintf(opt,"same%s",vRatioHistOpts[i].Data());
+      h->Draw(opt);
+    }
     ratio->Draw("PZ0same");
   } else {
-    h3->Divide(hMC);
+    if(fPlotRatioUncertaintyBand){
+      TH1F* hMCNoError = (TH1F*)hMC->Clone("hMCNoError");
+      for (int i=0; i<=hMCNoError->GetNbinsX()+1; ++i) hMCNoError->SetBinError(i, 0);
+      h3->Divide(hMCNoError);
+    }else {
+      h3->Divide(hMC);
+    }
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->DrawCopy("P");  
+    for(uint i=0; i<vRatioHists.size(); i++) {
+      TH1F *h = vRatioHists[i];              
+      char opt[100];
+      sprintf(opt,"same%s",vRatioHistOpts[i].Data());
+      h->Draw(opt);
+    }
     h3->Draw("Psame");
   }
+  if (fPlotRatioUncertaintyBand){
+    TH1F* hRelUnc = (TH1F*)fHistUnc->Clone();
+    for (int i=0; i < hRelUnc->GetNbinsX()+1; ++i){
+      auto val = hRelUnc->GetBinContent(i);
+      auto err = hRelUnc->GetBinError(i);
+      if (val==0) continue;
+      hRelUnc->SetBinError(i, err/val);
+      hRelUnc->SetBinContent(i, 1);
+    }
+    hRelUnc->SetFillColor(kBlue);
+    hRelUnc->SetFillStyle(3013);
+    hRelUnc->SetLineStyle(0);
+    hRelUnc->SetLineWidth(0);
+    hRelUnc->SetMarkerSize(0);
+    hRelUnc->Draw("E2same");
+
+  }
+
   l->Draw("same");
 
   p2->RedrawAxis("G");
   c->cd();
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(p1, 4, 0);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -1343,14 +1489,25 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
         fStack->Draw("hist");	 
       } 
       if(fPlotStackUncertainty) {
-        TH1F* hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
-        hMC->SetFillColor(kBlue);
-        hMC->SetFillStyle(3013);
-        hMC->SetLineStyle(0);
-        hMC->SetLineWidth(0);
-        hMC->SetMarkerSize(0);
-        hMC->Draw("E2same");
-        if(fLeg) fLeg->AddEntry(hMC,"Bkg. uncertainty","F");
+        if (fHistUnc){
+          TH1F* hUnc = (TH1F*)fHistUnc->Clone();
+          hUnc->SetFillColor(kBlue);
+          hUnc->SetFillStyle(3013);
+          hUnc->SetLineStyle(0);
+          hUnc->SetLineWidth(0);
+          hUnc->SetMarkerSize(0);
+          hUnc->Draw("E2same");
+          if(fLeg) fLeg->AddEntry(hUnc,"Bkg. Uncertainty","F");
+        } else{
+          TH1F* hMC = (TH1F*)fStack->GetStack()->Last()->Clone("mc");
+          hMC->SetFillColor(kBlue);
+          hMC->SetFillStyle(3013);
+          hMC->SetLineStyle(0);
+          hMC->SetLineWidth(0);
+          hMC->SetMarkerSize(0);
+          hMC->Draw("E2same");
+          if(fLeg) fLeg->AddEntry(hMC,"Bkg. Uncertainty","F");
+        }
       }
 
     }

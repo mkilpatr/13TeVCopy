@@ -90,6 +90,7 @@ struct TreeFiller {
   size i_passhbheisoflt;
   size i_passhbhefltloose;
   size i_passhbheflttight;
+  size i_passaddmetflts;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -302,7 +303,8 @@ struct TreeFiller {
     i_passeebadsc4flt = data->add<bool>("","passeebadsc4flt","O",0);
     i_passhbheisoflt  = data->add<bool>("","passhbheisoflt","O",0);
     i_passhbhefltloose    = data->add<bool>("","passhbhefltloose","O",0);
-    i_passhbheflttight    = data->add<bool>("","passhbheflttight","O",0);
+    i_passhbheflttight  = data->add<bool>("","passhbheflttight","O",0);
+    i_passaddmetflts    = data->add<bool>("","passaddmetflts","O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -670,6 +672,7 @@ struct TreeFiller {
     data->fill<bool>(i_passhbheisoflt,ana->evtInfoReader.hbheIsoFlt);
     data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
     data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
+    data->fill<bool>(i_passaddmetflts,ana->passaddmetflts);
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
