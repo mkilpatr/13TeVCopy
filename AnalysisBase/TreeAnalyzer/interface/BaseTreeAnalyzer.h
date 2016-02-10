@@ -142,6 +142,7 @@ public:
     defaults::Process  process;
     defaults::DataReco datareco;
     unsigned long      triggerflag;
+    bool               passaddmetflts;
 
     int   nPV;
     float nPU;
@@ -155,7 +156,6 @@ public:
     int   nVetoHPSTaus;
     LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
     int   nSelCTTTops;
-
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -208,7 +208,11 @@ public:
     const bool   isMC_;
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
-  };
+
+ private:
+    std::vector<std::string> addmetflts;
+
+};
 
 
 }
