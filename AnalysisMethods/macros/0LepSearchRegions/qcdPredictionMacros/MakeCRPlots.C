@@ -6,6 +6,7 @@
 //#include  "/Users/nmccoll/Dropbox/Work/scripts/CMS_lumi_inc.h"
 
 using namespace std;
+TString processWeight(TString weight, int iCR) {return iCR == 4 ? TString::Format("%s*%s",weight.Data(),QCDSupport::topMCWeight.Data()) : weight;}
 
 void go(){
 
@@ -41,14 +42,12 @@ void go(){
         plot->addHist(hSN,names[iT],"",colors[iT],0,colors[iT]);
       }
       else if(names[iT] == "MC w/o #it{r}_{jet} corr"){
-        TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],qcdWVSEL,QCDSupport::stdMCWeight,TString::Format("tree_%u",iT));
-        if(iP == 4) hSN->Scale(0.7);
+        TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],qcdWVSEL,processWeight(QCDSupport::stdMCWeight,iP),TString::Format("tree_%u",iT));
         hSN->Add(info.otherBKGScaledYields[iP]);
         plot->addHist(hSN,names[iT],"hist",colors[iT],0,colors[iT]);
       }
       else if(names[iT] == "MC w/o smearing or #it{r}_{jet} corr"){
-        TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],qcdWVSEL,QCDSupport::stdMCWeight,TString::Format("tree_%u",iT));
-        if(iP == 4) hSN->Scale(0.7);
+        TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],qcdWVSEL,processWeight(QCDSupport::stdMCWeight,iP),TString::Format("tree_%u",iT));
         hSN->Add(info.otherBKGScaledYields[iP]);
         plot->addHist(hSN,names[iT],"",colors[iT],0,colors[iT]);
       }
@@ -57,12 +56,11 @@ void go(){
         plot->addToStack(hSN,names[iT],colors[iT],1001,1,1,3);
       }
       else if (names[iT].BeginsWith("T2tt")){
-         TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],t2ttSEL,QCDSupport::stdMCWeight,TString::Format("tree_%u",iT));
+         TH1F * hSN = QCDSupport::metGetter->getHistogram(trees[iT],processWeight(QCDSupport::stdMCWeight,iP),TString::Format("tree_%u",iT));
          plot->addHist(hSN,names[iT],"",colors[iT],0,colors[iT]);
        }
       else {
         TH1F * hSN = (TH1F*)info.qcdYieldsWithVeto[iP]->Clone();//   info.metGetter->getHistogram(trees[iT],sel,TString::Format("%s*qcdRespTailWeight",QCDSupport::stdMCWeight.Data()),TString::Format("tree_%u",iT));
-        if(iP == 4) hSN->Scale(0.7);
         plot->addToStack(hSN,names[iT],colors[iT],1001,1,1,3);
       }
     }
@@ -70,32 +68,33 @@ void go(){
 
 
 
-    TCanvas * c = new TCanvas;
-    plot->setHeader(QCDSupport::header,"");
-    plot->setYRange(0.1,400);
-    plot->setLogy();
-
-
-
-    plot->draw(c,true,"png");
-    QCDSupport::setTitleOffset(c);
-
-
-    c->SaveAs(plot->getName() + TString(".png"));
+//    TCanvas * c = new TCanvas;
+//    plot->setHeader(QCDSupport::header,"");
+//    plot->setYRange(0.1,400);
+//    plot->setLogy();
+//
+//
+//
+//    plot->draw(c,true,"png");
+//    QCDSupport::setTitleOffset(c);
+//
+//
+//    c->SaveAs(plot->getName() + TString(".png"));
 
     //For pas
-    c = new TCanvas;
-    plot->setHeader(QCDSupport::header,"");
+    TCanvas * c = new TCanvas;
+    plot->setDrawCMSLumi();
+//    plot->setHeader(QCDSupport::header,"");
     plot->setTitle(" ");
-    plot->setLegend(.3,.7,.9,.9);
+    plot->setLegend(.4,.7,.95,.9);
     plot->getLegend()->SetNColumns(2);
     plot->setYRange(0.1,3000);
     plot->setLogy();
 
-    plot->draw(c,true,"png");
+    plot->draw(c,true,"pdf");
     QCDSupport::setTitleOffset(c);
 
-    c->SaveAs(plot->getName() + TString("_pas.png"));
+    c->SaveAs(plot->getName() + TString(".pdf"));
 
 
 
@@ -104,8 +103,9 @@ void go(){
 #endif
 
 void MakeCRPlots(){
-  StyleTools::SetStyle();
+  StyleTools::SetTDRStyle();
   gStyle->SetTitleOffset(1.400,"Y");
   gStyle->SetTitleOffset(0.950,"X");
+  gStyle->SetPadTopMargin   (0.08);
   go();
 }
