@@ -54,6 +54,7 @@ Plot::~Plot()
 void Plot::clear()
 {
   fHists1D.clear();
+  fRatioHists1D.clear();
   fHists2D.clear();
   fGraphs.clear();
   fProfiles.clear();
@@ -236,6 +237,45 @@ void Plot::addHistScaled(TFile *f, TString itemname, double scaleto, TString lab
   TH1F* item = (TH1F*)f->FindObjectAny(itemname);
 
   addHistScaled(item, scaleto, label, drawopt, color, fillstyle, linecolor, linestyle, plotoverflow, linewidth);
+
+}
+
+void Plot::addHistForRatio(TH1F *h, TString label, TString drawopt, int color, int fillstyle, int linecolor, int linestyle, unsigned int plotoverflow, int linewidth, bool onlyplotratio)
+{
+
+  if(!h)
+    return;
+  
+  TH1F* hist = (TH1F*)h->Clone();
+
+  if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
+  StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+
+  if(linecolor==0)
+    hist->SetLineColor(color);
+  else
+    hist->SetLineColor(linecolor);
+
+  hist->SetLineStyle(linestyle);
+  hist->SetLineWidth(linewidth);
+
+  if(!fLeg)
+    fLeg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
+  else
+    fLeg->SetY1(fLeg->GetY1()-0.06);
+
+  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0 || drawopt.CompareTo("P",TString::kIgnoreCase)==0 || drawopt.CompareTo("E0",TString::kIgnoreCase)==0 || drawopt.CompareTo("P0",TString::kIgnoreCase)==0) {
+    fLeg->AddEntry(hist,label,"PL");
+  } else {
+    hist->SetMarkerSize(0);
+    if(fillstyle > 0) fLeg->AddEntry(hist,label,"F");
+    else              fLeg->AddEntry(hist,label,"L");
+  }
+
+  if(!onlyplotratio)
+    fHists1D.push_back(new h1D(hist, drawopt));
+
+  fRatioHists1D.push_back(new h1D(hist, drawopt));
 
 }
 
@@ -870,6 +910,8 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TH1F* hMC   = 0;
   std::vector<TH1F*> vHists;
   std::vector<TString> vHistOpts;
+  std::vector<TH1F*> vRatioHists;
+  std::vector<TString> vRatioHistOpts;
 
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
   p1->SetLeftMargin  (0.16);
@@ -915,7 +957,34 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   assert(hData);
   assert(hMC);
-  
+
+  if(fRatioHists1D.size()>0) {   
+    for(uint i=0; i<fRatioHists1D.size(); i++) {
+      TString hname = fName;
+      hname += "_hratio_";
+      hname += TString(to_string(i));
+      TH1F* h = (TH1F*)fRatioHists1D[i]->member->Clone(hname);
+      if(fXmin < fXmax) {
+        h->GetXaxis()->SetRangeUser(fXmin,fXmax);
+      }
+      if(fYmin < fYmax) { 
+        h->GetYaxis()->SetRangeUser(fYmin,fYmax);
+      }
+      TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+      hratio->Divide(h);
+      hratio->SetLineColor(h->GetLineColor());
+      hratio->SetLineStyle(h->GetLineStyle());
+      hratio->SetLineWidth(h->GetLineWidth());
+      hratio->SetMarkerColor(h->GetMarkerColor());
+      hratio->SetMarkerStyle(h->GetMarkerStyle());
+      hratio->SetMarkerSize(h->GetMarkerSize());
+      hratio->SetFillStyle(h->GetFillStyle());
+      hratio->SetFillColor(h->GetFillColor());
+      vRatioHists.push_back(hratio);
+      vRatioHistOpts.push_back(fRatioHists1D[i]->opt);
+    }
+  }
+
   double ymax = hData->GetMaximum();
   if(hMC->GetMaximum()>ymax) ymax=hMC->GetMaximum();
   hData->SetMarkerSize(1.3);
@@ -1066,6 +1135,12 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     ratio->SetLineWidth(h3->GetLineWidth());
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
+    for(uint i=0; i<vRatioHists.size(); i++) {
+      TH1F *h = vRatioHists[i];              
+      char opt[100];
+      sprintf(opt,"same%s",vRatioHistOpts[i].Data());
+      h->Draw(opt);
+    }
     ratio->Draw("PZ0same");
   } else {
     if(fPlotRatioUncertaintyBand){
@@ -1077,6 +1152,12 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     }
     h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->DrawCopy("P");  
+    for(uint i=0; i<vRatioHists.size(); i++) {
+      TH1F *h = vRatioHists[i];              
+      char opt[100];
+      sprintf(opt,"same%s",vRatioHistOpts[i].Data());
+      h->Draw(opt);
+    }
     h3->Draw("Psame");
   }
   if (fPlotRatioUncertaintyBand){
