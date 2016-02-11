@@ -76,7 +76,8 @@ void plot1LCR(const TString inputDir = "plots_bkgest_split_ttbarplusw",
     for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
       TH1F* hsig = (TH1F*)infile->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
       hsig->Scale(intdata/hsig->Integral(1,hsig->GetNbinsX()));
-      plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
+      //plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
+      plots->addHistForRatio(hsig, siglabels[isig], "mc_hist", 0, 0, colormap[sigs[isig]], 11, 0, 3, 0);
     }
 
     plots->setXRange(0,5);

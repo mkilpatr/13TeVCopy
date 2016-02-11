@@ -272,8 +272,11 @@ void Plot::addHistForRatio(TH1F *h, TString label, TString drawopt, int color, i
     else              fLeg->AddEntry(hist,label,"L");
   }
 
-  if(!onlyplotratio)
-    fHists1D.push_back(new h1D(hist, drawopt));
+  if(!onlyplotratio) {
+    TString histdrawopt = drawopt;
+    if(histdrawopt.Contains("mc_")) histdrawopt.Replace(0,3,"");
+    fHists1D.push_back(new h1D(hist,histdrawopt));
+  }
 
   fRatioHists1D.push_back(new h1D(hist, drawopt));
 
@@ -970,8 +973,20 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
       if(fYmin < fYmax) { 
         h->GetYaxis()->SetRangeUser(fYmin,fYmax);
       }
-      TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
-      hratio->Divide(h);
+      bool wrtMC = false; // to make the ratio for this hist as MC/this
+      if(fRatioHists1D[i]->opt.Contains("mc_")) {
+        wrtMC = true;
+        fRatioHists1D[i]->opt.Replace(0,3,"");
+      }
+      TH1F* hratio = 0;
+      if(wrtMC) {
+        hratio =  (TH1F*)h->Clone("h_"+TString(to_string(i))+"over_mc");
+        hratio->Divide(hMC);
+      }
+      else {
+        TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+        hratio->Divide(h);
+      }
       hratio->SetLineColor(h->GetLineColor());
       hratio->SetLineStyle(h->GetLineStyle());
       hratio->SetLineWidth(h->GetLineWidth());
