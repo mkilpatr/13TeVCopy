@@ -30,7 +30,7 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fLegX1(0.6),
   fLegY1(0.84),
   fLegX2(0.93),
-  fLegY2(0.9),
+  fLegY2(0.85),
   fShowStats(0),
   fStatsX(0.68),
   fStatsY(0.90),
@@ -916,7 +916,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
   p1->SetLeftMargin  (0.16);
   p1->SetTopMargin   (0.10);
-  p1->SetRightMargin (0.02);
+  p1->SetRightMargin (0.05);
   p1->SetBottomMargin(0.04);  
   p1->Draw();
   if(fLogy) p1->SetLogy();
@@ -1085,7 +1085,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
   p2->SetLeftMargin  (0.16);
   p2->SetTopMargin   (0.00);
-  p2->SetRightMargin (0.02);
+  p2->SetRightMargin (0.05);
   p2->SetBottomMargin(0.30);
   p2->SetGridy(1);
   p2->Draw();
@@ -1185,7 +1185,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, 0);
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

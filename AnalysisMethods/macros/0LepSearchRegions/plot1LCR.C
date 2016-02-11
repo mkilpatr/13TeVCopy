@@ -10,11 +10,17 @@ vector<TString> siglabels = {"t#bar{t}/W (SR, N_{b}=1)", "t#bar{t}/W (SR, N_{b}#
 
 /*
  * To make the input histograms to this macro, run getZeroLeptonPrediction after uncommenting
- * the ttbar, wjets, tW, and ttW lines in run0lepbkgpred.conf. Then hadd the 0L and onelepcr
- * trees together to get the input file for this macro:
+ * the ttbar, wjets, tW, and ttW lines in run0lepbkgpred.conf (note that the root files for these
+ * trees will need to be linked from <treeDir>/sr/ to <treeDir> similar to how the other trees
+ * are). Then hadd the 0L and onelepcr trees together to get the input file for this macro:
  *
  * $ hadd output_0l_plus_lepcr.root output_0l.root output_lepcr.root
  *
+ * note: some hard-coded numbers in Plot.cc were changed:
+ *   > fLegY2(0.9), -> fLegY2(0.85),   // to move the top of the legend down
+ *   > in void Plot::drawRatioStack:   // to keep the 1000 label of the x-axis from getting cut-off
+ *     > p1->SetRightMargin (0.02) -> p1->SetRightMargin (0.05)
+ *     > p2->SetRightMargin (0.02) -> p2->SetRightMargin (0.05)
  */
 void plot1LCR(const TString inputDir = "plots_bkgest_split_ttbarplusw",
                             const TString inputFileName = "output_0l_plus_lepcr.root",
