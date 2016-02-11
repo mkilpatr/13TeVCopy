@@ -4,16 +4,13 @@
 #include "TGraph2D.h"
 #endif
 
-TGraph DrawContours(TGraph2D &g2, int color, int style,
+vector<TGraph> DrawContours(TGraph2D &g2, int color, int style,
                     TLegend *leg = 0, const string &name = ""){
-  TGraph out;
+  vector<TGraph> out;
   TH2D* hist = g2.GetHistogram();
   TVirtualHistPainter* histptr = hist->GetPainter();
-  TList *l = g2.GetContourList(1.);
-  TList *l2 = histptr->GetContourList(1.);
+  TList *l = histptr->GetContourList(1.);
   if(!l)
-    return out;
-  if(!l2)
     return out;
   bool added = false;
   int max_points = -1;
@@ -22,11 +19,8 @@ TGraph DrawContours(TGraph2D &g2, int color, int style,
     if(g == 0) {
       continue;
     }
-    int n_points = g->GetN();
-    if(n_points > max_points){
-      out = *g;
-      max_points = n_points;
-    }
+    //int n_points = g->GetN();
+    out.push_back(*g);
     g->SetLineColor(color);
     g->SetLineStyle(style);
     g->SetLineWidth(5);
@@ -67,6 +61,9 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
 
   TFile* inputFile = new TFile(inputFileName);
 
+  TH2D* hobs = (TH2D*)inputFile->Get("hobs");
+  TH2D* hobsdown = (TH2D*)inputFile->Get("hobsdown");
+  TH2D* hobsup = (TH2D*)inputFile->Get("hobsup");
   TH2D* hexp = (TH2D*)inputFile->Get("hexp");
   TH2D* hexpdown = (TH2D*)inputFile->Get("hexpdown");
   TH2D* hexpup = (TH2D*)inputFile->Get("hexpup");
@@ -74,17 +71,21 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
 
   vector<double> mstops, mlsps;
   vector<double> exp, expdown, expup, expxsec;
+  vector<double> obs, obsdown, obsup;
 
   for(int ibinx = 1; ibinx < hexp->GetNbinsX()+1; ++ibinx) {
     for(int ibiny = 1; ibiny < hexp->GetNbinsX()+1; ++ibiny) {
       if(hexp->GetBinContent(ibinx, ibiny) != 0.0) {
         mstops.push_back(hexp->GetXaxis()->GetBinLowEdge(ibinx));
         mlsps.push_back(hexp->GetYaxis()->GetBinLowEdge(ibiny));
+        obs.push_back(hobs->GetBinContent(ibinx, ibiny));
+        obsdown.push_back(hobsdown->GetBinContent(ibinx, ibiny));
+        obsup.push_back(hobsup->GetBinContent(ibinx, ibiny));
         exp.push_back(hexp->GetBinContent(ibinx, ibiny));
         expdown.push_back(hexpdown->GetBinContent(ibinx, ibiny));
         expup.push_back(hexpup->GetBinContent(ibinx, ibiny));
         expxsec.push_back(hxsecexp->GetBinContent(ibinx, ibiny));
-        printf("MStop: %4.2f, MLSP: %4.2f, Limit: %4.2f, (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f\n", mstops.back(), mlsps.back(), exp.back(), expup.back(), expdown.back(), expxsec.back());
+        printf("MStop: %4.2f, MLSP: %4.2f, Limit: %4.2f, (+1: %4.2f, -1: %4.2f), Obs Limit: %4.2f (+1 theory: %4.2f, -1 theory: %4.2f), XS Limit: %4.2f\n", mstops.back(), mlsps.back(), exp.back(), expup.back(), expdown.back(), obs.back(), obsup.back(), obsdown.back(), expxsec.back());
       }
     }
   }
@@ -93,6 +94,9 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
   TGraph2D gexp("gexp", "Expected Limit", exp.size(), &mstops.at(0), &mlsps.at(0), &exp.at(0));
   TGraph2D gexpdown("gexpdown", "Expected  -1#sigma Limit", expdown.size(), &mstops.at(0), &mlsps.at(0), &expdown.at(0));
   TGraph2D gexpup("gexpup", "Expected  -1#sigma Limit", expup.size(), &mstops.at(0), &mlsps.at(0), &expup.at(0));
+  TGraph2D gobs("gobs", "Observed Limit", obs.size(), &mstops.at(0), &mlsps.at(0), &obs.at(0));
+  TGraph2D gobsdown("gobsdown", "Observed  -1#sigma (theory) Limit", obsdown.size(), &mstops.at(0), &mlsps.at(0), &obsdown.at(0));
+  TGraph2D gobsup("gobsup", "Observed  -1#sigma (theory) Limit", obsup.size(), &mstops.at(0), &mlsps.at(0), &obsup.at(0));
   TGraph dots(mstops.size(), &mstops.at(0), &mlsps.at(0));
 
   double xmin = *min_element(mstops.cbegin(), mstops.cend());
@@ -100,6 +104,7 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
   double ymin = *min_element(mlsps.cbegin(), mlsps.cend());
   double ymax = *max_element(mlsps.cbegin(), mlsps.cend());
   double bin_size = 12.5;
+
   int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/bin_size))));
   int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/bin_size))));
   printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
@@ -119,18 +124,47 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root")
             1.-gStyle->GetPadRightMargin(), 1.);
   l.SetNColumns(2);
   l.SetBorderSize(0);
-  TGraph cexpup = DrawContours(gexpup, 2, 2);
-  TGraph cexpdown = DrawContours(gexpdown, 2, 2);
-  TGraph cexp = DrawContours(gexp, 2, 1, &l, "Expected");
+  vector<TGraph> cobsup = DrawContours(gobsup, 1, 2, &l, "ObsUp");
+  vector<TGraph> cobsdown = DrawContours(gobsdown, 1, 2, &l, "ObsDown");
+  vector<TGraph> cobs = DrawContours(gobs, 1, 1, &l, "Observed");
+  vector<TGraph> cexpup = DrawContours(gexpup, 2, 2, &l, "ExpUp");
+  vector<TGraph> cexpdown = DrawContours(gexpdown, 2, 2, &l, "ExpDown");
+  vector<TGraph> cexp = DrawContours(gexp, 2, 1, &l, "Expected");
+
   l.Draw("same");
   dots.Draw("p same");
   c.Print("limit_scan.pdf");
 
   TFile file("limit_scan.root","recreate");
   hlim->Write("hXsec_exp_corr");
-  cexp.Write("graph_smoothed_Exp");
-  cexpup.Write("graph_smoothed_ExpP");
-  cexpdown.Write("graph_smoothed_ExpM");
+
+  TString gname = "graph_smoothed";
+
+  for(unsigned int ilim = 0; ilim < cobs.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cobs.at(ilim).Write(gname + "_Obs" + add);
+  }
+  for(unsigned int ilim = 0; ilim < cobsup.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cobsup.at(ilim).Write(gname + "_ObsP" + add);
+  }
+  for(unsigned int ilim = 0; ilim < cobsdown.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cobsdown.at(ilim).Write(gname + "_ObsM" + add);
+  }
+  for(unsigned int ilim = 0; ilim < cexp.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cexp.at(ilim).Write(gname + "_Exp" + add);
+  }
+  for(unsigned int ilim = 0; ilim < cexpup.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cexpup.at(ilim).Write(gname + "_ExpP" + add);
+  }
+  for(unsigned int ilim = 0; ilim < cexpdown.size(); ++ilim) {
+    TString add = ilim > 0 ? "_" + TString(to_string(ilim)) : "";
+    cexpdown.at(ilim).Write(gname + "_ExpM" + add);
+  }
+
   file.Close();
 
 
