@@ -58,7 +58,11 @@ def main():
   if args.printLimits :
       limconfig.printLimits()
   elif args.fillAsymptoticLimits :
-      limconfig.fillAsymptoticLimits()
+      if limconfig.limitmethod == 'Asymptotic' :
+          print 'here'
+          limconfig.fillSignificances()
+      else :
+          limconfig.fillAsymptoticLimits()
   else :
       limconfig.runLimits()
   
@@ -83,14 +87,20 @@ class LimitConfig:
       htmp = TH1D('htmp','htmp',1,0,10000)
       tree.Project('htmp','limit')
       mean = htmp.GetMean()
-      error = htmp.GetError()
-      output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
-      #output = 'mean=' + str(mean) + '\n'
+      #error = htmp.GetError()
+      #output = 'mean=' + str(mean) + '\terror=' + str(error) + '\n'
+      output = 'mean=' + str(mean) + '\n'
+      limit = mean
     else :
       tree = TChain('limit')
       tree.Add(rootFile)
       for entry in tree :
-        output += 'Expected %4.2f %% : r < %4.2f \n' % ((100.0*entry.quantileExpected) , entry.limit)
+        if entry.quantileExpected < 0 :
+            output += 'Observed : r < %4.2f \n' % (entry.limit)
+        else :
+            output += 'Expected %4.2f %% : r < %4.2f \n' % ((100.0*entry.quantileExpected) , entry.limit)
+        if entry.quantileExpected < 0 :
+          limit['obs'] = entry.limit
         if 0.1 < entry.quantileExpected < 0.2 :
           limit['-1'] = entry.limit
         elif 0.4 < entry.quantileExpected < 0.6 :
@@ -111,14 +121,69 @@ class LimitConfig:
       if rootFile=='':
         limits.append(signal+': no limit found..')
       else:
-        output = self.getLimit(rootFile,False)
+        output = self.getLimit(rootFile,False) if self.limitmethod == 'AsymptoticLimits' else self.getLimit(rootFile,True)
         #print signal, ':\n', output
         tempLimit = ''
-        for line in output[0].split('\n'): 
-          if 'Expected 50' in line: 
-            tempLimit = line.replace('Expected',signal+' expected') 
+        if self.limitmethod == 'AsymptoticLimits' :
+            for line in output[0].split('\n'): 
+                if 'Expected 50' in line: 
+                    tempLimit = line.replace('Expected',signal+' expected') 
+        else :
+            for line in output[0].split('\n'): 
+                if 'mean' in line: 
+                    tempLimit = line.replace('mean=',signal+': ') 
         limits.append( tempLimit )
 
+    # print the results
+    print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
+    print '\n'.join(limits)
+    print '\n'
+
+  def fillSignificances(self):
+    limits = []
+    currentDir = os.getcwd()
+    outfile = TFile('significances_T2tt.root','RECREATE')
+    maxmstop = 0.0
+    minmstop = 0.0
+    maxmlsp  = 0.0
+    minmlsp  = 0.0
+    for signal in self.signals :
+      mstop = int(signal.split('_')[1])
+      mlsp = int(signal.split('_')[2])
+      if mstop > maxmstop : maxmstop = mstop
+      if mstop > maxmstop : maxmstop = mstop
+      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
+      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
+    nbinsx = int((maxmstop - minmstop)/12.5)
+    nbinsy = int((maxmlsp - minmlsp)/12.5)
+
+    hsig = TH2D('hsig','',36,100,1000,20,0,500)
+    for signal in self.signals :
+      outputLocation = os.path.join(currentDir,self.limitdir,signal)
+      rootFile = ''
+      dummyFiles = os.listdir(outputLocation)
+      for df in dummyFiles:
+        if 'higgsCombine' in df: rootFile = os.path.join(currentDir,self.limitdir,signal,df)
+      if rootFile=='':
+        limits.append(signal+': no limit found..')
+      else:
+        output = self.getLimit(rootFile,True)
+        print signal, ':\n', output
+        tempLimit = ''
+        for line in output[0].split('\n'): 
+            if 'mean' in line: 
+                tempLimit = line.replace('mean=',signal+': ') 
+        limits.append( tempLimit )
+        mstop = int(signal.split('_')[1])
+        mlsp = int(signal.split('_')[2])
+        limit = output[1]
+        hsig.Fill(mstop,mlsp,limit)
+
+    outfile.cd()
+    hsig.Write()
+    outfile.Close()
+    os.system('root -l -q -b makeSigScanPlots.C')
+       
     # print the results
     print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
     print '\n'.join(limits)
@@ -131,6 +196,10 @@ class LimitConfig:
     xsecfile = TFile(xsecfilename)
     xsechist = TH1D()
     xsechist = xsecfile.Get('xsecs')
+    xsecuphist = TH1D()
+    xsecuphist = xsecfile.Get('xsecsup')
+    xsecdownhist = TH1D()
+    xsecdownhist = xsecfile.Get('xsecsdown')
     outfile = TFile('results_T2tt.root','RECREATE')
     maxmstop = 0.0
     minmstop = 0.0
@@ -146,10 +215,13 @@ class LimitConfig:
     nbinsx = int((maxmstop - minmstop)/12.5)
     nbinsy = int((maxmlsp - minmlsp)/12.5)
 
-    hexp = TH2D('hexp','',34,150,1000,20,0,500)
-    hexpup = TH2D('hexpup','',34,150,1000,20,0,500)
-    hexpdown = TH2D('hexpdown','',34,150,1000,20,0,500)
-    hxsecexp = TH2D('hxsecexp','',34,150,1000,20,0,500)
+    hexp = TH2D('hexp','',36,100,1000,20,0,500)
+    hexpup = TH2D('hexpup','',36,100,1000,20,0,500)
+    hexpdown = TH2D('hexpdown','',36,100,1000,20,0,500)
+    hxsecexp = TH2D('hxsecexp','',36,100,1000,20,0,500)
+    hobs = TH2D('hobs','',36,100,1000,20,0,500)
+    hobsup = TH2D('hobsup','',36,100,1000,20,0,500)
+    hobsdown = TH2D('hobsdown','',36,100,1000,20,0,500)
     for signal in self.signals :
       outputLocation = os.path.join(currentDir,self.limitdir,signal)
       rootFile = ''
@@ -163,31 +235,49 @@ class LimitConfig:
         print signal, ':\n', output
         tempLimit = ''
         for line in output[0].split('\n'): 
+          if 'Observed' in line: 
+            tempLimit = line.replace('Observed\t',signal+' observed') 
           if 'Expected 50' in line: 
-            tempLimit = line.replace('Expected',signal+' expected') 
+            tempLimit += line.replace('Expected\t',signal+' expected') 
         limits.append( tempLimit )
         mstop = int(signal.split('_')[1])
         mlsp = int(signal.split('_')[2])
         limit = output[1]
         xsec = xsechist.Interpolate(mstop)
+        xsecup = xsecuphist.Interpolate(mstop)
+        xsecdown = xsecdownhist.Interpolate(mstop)
         if self.scalesigtoacc :
             xseclimit = limit['0']
             hexp.Fill(mstop,mlsp,limit['0']/xsec)
             hexpdown.Fill(mstop,mlsp,limit['-1']/xsec)
             hexpup.Fill(mstop,mlsp,limit['+1']/xsec)
-            print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,xseclimit)
+            if limit.has_key('obs') :
+                hobs.Fill(mstop,mlsp,limit['obs']/xsec)
+                hobsdown.Fill(mstop,mlsp,limit['obs']/xsecup)
+                hobsup.Fill(mstop,mlsp,limit['obs']/xsecdown)
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1 expt: %4.2f, -1 expt: %4.2f), Obs Limit: %4.2f (+1 theory: %4.2f, -1 theory: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,limit['obs']/xsec,limit['obs']/xsecdown,limit['obs']/xsecup,xseclimit)
+            else :
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,xseclimit)
         else :
             xseclimit = limit['0']*xsec
             hexp.Fill(mstop,mlsp,limit['0'])
             hexpdown.Fill(mstop,mlsp,limit['-1'])
             hexpup.Fill(mstop,mlsp,limit['+1'])
-            print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
+            if limit.has_key('obs') :
+                hobs.Fill(mstop,mlsp,limit['obs'])
+                print 'Can\'t fill obs +/- 1 sigma theory if you didn\'t scale the signals to acceptance!'
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1: %4.2f, -1: %4.2f), Obs Limit: %4.2f, XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],limit['obs'],xseclimit)
+            else :
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
         hxsecexp.Fill(mstop,mlsp,xseclimit)
 
     outfile.cd()
     hexp.Write()
     hexpdown.Write()
     hexpup.Write()
+    hobs.Write()
+    hobsdown.Write()
+    hobsup.Write()
     hxsecexp.Write()
     outfile.Close()
     os.system('root -l -q -b makeScanPlots.C')
@@ -208,6 +298,7 @@ class LimitConfig:
     
     currentDir = os.getcwd()
     significances = [] # store the Significance from each sig point to print at the end
+    observeds = [] # store the Significance from each sig point to print at the end
     
     for signal in self.signals: 
       # create and move into a dummy directory (using the timestamp in the name for uniqueness). At the end of 
@@ -242,7 +333,10 @@ class LimitConfig:
       # === Asymptotic
       if self.limitmethod=='AsymptoticLimits':
         #runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 --rMin 0 --rMax 10 -n '+signal
-        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected --rMin 0 --rMax 10 -n '+signal
+        mstop = int(signal.split('_')[1])
+        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --rMin 0 --rMax 10 -n '+signal
+        if mstop < 400 :
+            runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
@@ -252,16 +346,22 @@ class LimitConfig:
         
         # pull the expected limit out and store
         tempLimit = ''
+        tempObsLimit = ''
         for line in output.split('\n'): 
           if 'Expected 50' in line: 
             tempLimit = line.replace('Expected',signal+' expected') 
+          elif 'Observed' in line: 
+            tempObsLimit = line.replace('Observed',signal+' obs') 
         if tempLimit=='': 
           significances.append(signal+': no limits found..')
         else:
           significances.append(tempLimit)  
+          observeds.append(tempObsLimit)  
       
       elif self.limitmethod=='Asymptotic':
-        runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --expectSignal=1 -n '+signal
+        #runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --toysFreq --expectSignal=1 -n '+signal
+        #runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --expectSignal=1 -n '+signal
+        runLimitsCommand =  'combine -M ProfileLikelihood --significance '+combinedDatacard+' -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
@@ -352,6 +452,8 @@ class LimitConfig:
     # print the significances
     print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
     print '\n'.join(significances)
+    print '\n'
+    print '\n'.join(observeds)
     print '\n'
 
     # rearrange significances to be more eaisly put in a table
