@@ -37,7 +37,7 @@ vector<TString> plotlabels {
 };
 
 void setBinLabels(TH1 *h, const vector<TString>& labels){
-  for (unsigned i=0; i<binlabels.size() && i<h->GetNbinsX(); ++i){
+  for (unsigned i=0; i<labels.size() && i<h->GetNbinsX(); ++i){
     h->GetXaxis()->SetBinLabel(i+1, labels.at(i));
   }
 }

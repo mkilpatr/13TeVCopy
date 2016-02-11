@@ -429,6 +429,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   delete plots;
 
   // update output root file with full uncertainty
-  TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
-  gSystem->Exec(cmd.Data());
+  if (!(dolowmet || dolownj)){
+    TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
+    gSystem->Exec(cmd.Data());
+  }
 }
