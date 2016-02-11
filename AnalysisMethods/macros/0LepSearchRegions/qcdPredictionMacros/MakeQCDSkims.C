@@ -60,10 +60,12 @@ void go() {
     tI->SetBranchStatus("leptnpweight",1);
     tI->SetBranchStatus("npromptgentau",1);
     tI->SetBranchStatus("lepvetoweight",1);
+    tI->SetBranchStatus("cttWeight",1);
+    tI->SetBranchStatus("passaddmetflts",1);
 
     TFile * fO = new TFile(pre +"_skimmed.root","recreate");
     fO->cd();
-    TTree * tO = tI->CopyTree(METPresel);
+    TTree * tO = tI->CopyTree(QCDSupport::METPresel);
     tO->Write();
     fO->Close();
   };
@@ -76,7 +78,7 @@ void go() {
     fI->GetObject("Events",tI);
     TFile * fO = new TFile(pre +"_skimmed_dphi.root","recreate");
     fO->cd();
-    TTree * tO = tI->CopyTree(ResTailExtraCuts);
+    TTree * tO = tI->CopyTree(QCDSupport::ResTailExtraCuts);
     tO->Write();
     fO->Close();
   };
@@ -117,6 +119,16 @@ void go() {
     tO = tI->CopyTree("trueResp >= .50 && trueRespFlv ==4");
     tO->Write();
     fO->Close();
+    fO = new TFile(pre +"_skimmed_dphi_split_b_inc.root","recreate");
+    fO->cd();
+    tO = tI->CopyTree("trueRespFlv ==4");
+    tO->Write();
+    fO->Close();
+    fO = new TFile(pre +"_skimmed_dphi_split_light_inc.root","recreate");
+    fO->cd();
+    tO = tI->CopyTree("trueRespFlv !=4");
+    tO->Write();
+    fO->Close();
     delete fO;
   };
   proc3("pieces/qcd_tree");
@@ -128,7 +140,7 @@ void go() {
     fI->GetObject("Events",tI);
     TFile * fO = new TFile(pre +"_skimmed_baseline.root","recreate");
     fO->cd();
-    TTree * tO = tI->CopyTree(BaselineExtraCuts);
+    TTree * tO = tI->CopyTree(QCDSupport::BaselineExtraCuts);
     tO->Write();
     fO->Close();
   };

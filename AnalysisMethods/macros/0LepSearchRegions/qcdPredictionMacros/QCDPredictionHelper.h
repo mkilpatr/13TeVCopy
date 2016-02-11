@@ -30,13 +30,15 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
 
 
   const TString header = "#sqrt{s} = 13 TeV, L = 2.3 fb^{-1}";
-  const TString METPresel = "passjson && passeebadscflt && passhbhefltloose && passcscbeamhaloflt && passeebadsc4flt && passhbheisoflt && passdijetmet && met >= 250 && j2pt >= 75";
+  const TString METPresel = "passjson && passeebadscflt && passhbhefltloose && passcscbeamhaloflt && passeebadsc4flt && passhbheisoflt && passdijetmet && passaddmetflts && met >= 250 && j2pt >= 75";
   const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
   const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";
   const TString stdWeight = "1.0";
   const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.263";
   const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.263";
+  const TString topMCWeight = "cttWeight";
 
+  TString processWeight(TString weight, int iCR) {return iCR == 4 ? TString::Format("%s*%s",weight.Data(),topMCWeight.Data()) : weight;}
 
   const int nMETBins = 5;
   const double metBins[nMETBins+1] = {250,300,400,500,600,700};
@@ -88,8 +90,8 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
       for(unsigned int iS = 0; iS < nCR; ++iS){
         TString sel = TString::Format("%s && %s",normSel.Data(),crSel[iS].Data());
         TH1F * dataH  = SFIncHG/*(iS == 4?SFIncHG:SFHG)*/ .getHistogram(dataTree,sel,"1.0","Data");
-        TH1F * otherH = SFIncHG/*(iS == 4?SFIncHG:SFHG)*/ .getHistogram(otherBKGTree,sel,normMCWT,"Other");
-        TH1F * qcdH   = SFIncHG/*(iS == 4?SFIncHG:SFHG)*/ .getHistogram(qcdTree,sel,normMCWT,"MC");
+        TH1F * otherH = SFIncHG/*(iS == 4?SFIncHG:SFHG)*/ .getHistogram(otherBKGTree,sel,processWeight(normMCWT,iS),"Other");
+        TH1F * qcdH   = SFIncHG/*(iS == 4?SFIncHG:SFHG)*/ .getHistogram(qcdTree,sel,processWeight(normMCWT,iS),"MC");
         otherH->Add(qcdH);
 //        std::cout <<std::endl<< dataH->GetBinContent(1) <<" "<< otherH->GetBinContent(1) <<" "<< dataH->GetBinContent(1)/otherH->GetBinContent(1)<<std::endl;
         dataH->Divide(otherH);
@@ -111,7 +113,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
     void fillCorrectedOtherBkgYields(){
       for(unsigned int iS = 0; iS < nCR; ++iS){
         TString sel = TString::Format("%s && %s",crPreOther.Data(),crSel[iS].Data());
-        TH1 * h = metGetter->getHistogram(otherBKGTree,sel,crWgtOther.Data(),TString::Format("tree_%u",0));
+        TH1 * h = metGetter->getHistogram(otherBKGTree,sel,processWeight(crWgtOther,iS),TString::Format("tree_%u",0));
         for(unsigned int iB =1; iB <=h->GetNbinsX(); ++iB){
           h->SetBinContent(iB,h->GetBinContent(iB) *otherBKGSFs[iS]->GetBinContent(iB) );
           h->SetBinError(iB,h->GetBinError(iB) *otherBKGSFs[iS]->GetBinContent(iB) );
@@ -127,7 +129,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
     void fillDataCorr(){
       for(unsigned int iS = 0; iS < nCR; ++iS){
         TH1 * hd = metGetter->getHistogram(dataTree,TString::Format("%s && %s",crPreData.Data(),crSel[iS].Data()),"1.0",TString::Format("tree_%u",0));
-        TH1 * hqwv = metGetter->getHistogram(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),stdQCDWeight,TString::Format("tree_%u",0));
+        TH1 * hqwv = metGetter->getHistogram(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),processWeight(stdQCDWeight,iS),TString::Format("tree_%u",0));
         TH1 * corr = (TH1*)hd->Clone();
         TH1 * corrU = (TH1*)hd->Clone();
         std::cout << crSelNames[iS] << std::endl;
@@ -212,6 +214,8 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
         CRegInfo::CR_5_1_1_175
     };
 
+    TString processWeight(TString weight, int iSR) {return iSR >= 8 ? TString::Format("%s*%s",weight.Data(),topMCWeight.Data()) : weight;}
+
     std::vector<TH1F*> nominalQCD;
     std::vector<TH1F*> respUp;
     std::vector<TH1F*> respDown;
@@ -232,18 +236,18 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
         TString selD = TString::Format("%s && %s",crInfo.crPreQCD.Data(),crInfo.crSel[crRegs[iS]].Data());
 
         metGetter->setNBS(50);
-        TH1F * nom = metGetter->getTFAndCov(qcdTree,selN,stdQCDWeight,selD,stdQCDWeight,TString::Format("ratio_%u",iS));
+        TH1F * nom = metGetter->getTFAndCov(qcdTree,selN,processWeight(stdQCDWeight,iS),selD,processWeight(stdQCDWeight,iS),TString::Format("ratio_%u",iS));
         metGetter->setNBS(0);
 
-        TH1F * upN    = metGetter->getHistogram(qcdTree,selN,TString::Format("%s*upTailWeight",stdMCWeight.Data()),"QCD");
-        TH1F * downN  = metGetter->getHistogram(qcdTree,selN,TString::Format("%s*downTailWeight",stdMCWeight.Data()),"QCD");
-        TH1F * norN   = metGetter->getHistogram(qcdTree,selN,stdMCWeight,"QCD");
-        TH1F * orN    = origQcdTree ? metGetter->getHistogram(origQcdTree,selN,stdMCWeight,"QCD") : 0;
+        TH1F * upN    = metGetter->getHistogram(qcdTree,selN,TString::Format("%s*upTailWeight",processWeight(stdMCWeight,iS).Data()),"QCD");
+        TH1F * downN  = metGetter->getHistogram(qcdTree,selN,TString::Format("%s*downTailWeight",processWeight(stdMCWeight,iS).Data()),"QCD");
+        TH1F * norN   = metGetter->getHistogram(qcdTree,selN,processWeight(stdMCWeight,iS),"QCD");
+        TH1F * orN    = origQcdTree ? metGetter->getHistogram(origQcdTree,selN,processWeight(stdMCWeight,iS),"QCD") : 0;
 
-        TH1F * upD    = metGetter->getHistogram(qcdTree,selD,TString::Format("%s*upTailWeight",stdMCWeight.Data()),"QCD");
-        TH1F * downD  = metGetter->getHistogram(qcdTree,selD,TString::Format("%s*downTailWeight",stdMCWeight.Data()),"QCD");
-        TH1F * norD   = metGetter->getHistogram(qcdTree,selD,stdMCWeight,"QCD");
-        TH1F * orD    = origQcdTree ? metGetter->getHistogram(origQcdTree,selD,stdMCWeight,"QCD") : 0;
+        TH1F * upD    = metGetter->getHistogram(qcdTree,selD,TString::Format("%s*upTailWeight",processWeight(stdMCWeight,iS).Data()),"QCD");
+        TH1F * downD  = metGetter->getHistogram(qcdTree,selD,TString::Format("%s*downTailWeight",processWeight(stdMCWeight,iS).Data()),"QCD");
+        TH1F * norD   = metGetter->getHistogram(qcdTree,selD,processWeight(stdMCWeight,iS),"QCD");
+        TH1F * orD    = origQcdTree ? metGetter->getHistogram(origQcdTree,selD,processWeight(stdMCWeight,iS),"QCD") : 0;
 
         upN   ->Divide(upD);
         downN ->Divide(downD);

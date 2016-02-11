@@ -18,16 +18,19 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
 
   TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt =  basewgt + "*leptnpweight*lepvetoweight";
+  TString lepselwgt =  basewgt + "*leptnpweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
+  sel["sel"]          = " && nvetolep>0 && mtlepmet<100";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
-  sel["dphij123inv"]  = " && dphij12met<0.15";
+  sel["dphij123inv"]  = " && (dphij12met<0.1 || dphij3met < 0.1)";
   sel["sr"]           = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123"];
   sel["srnovetoes"]   = sel["trig"] + sel["njets"]    + sel["dphij123"];
   sel["qcdcr"]        = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123inv"];
+  sel["qcdNCR"]       = sel["trig"] + sel["sel"]   + sel["njets"]    + sel["dphij123"];
   sel["qcdcrnovetoes"]= sel["trig"] + sel["njets"]    + sel["dphij123inv"];
   sel["lowmt"]        = " && mtcsv12met<=175";
   sel["highmt"]       = " && mtcsv12met>175";
@@ -52,6 +55,10 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
   sel["highmt_highnj_nt0_nb2"]  = sel["highmt"] + sel["highnj"] + sel["nt0"] + sel["nb2"];
   sel["highmt_nt1_nb1"]         = sel["highmt"] + sel["nt1"] + sel["nb1"];
   sel["highmt_nt1_nb2"]         = sel["highmt"] + sel["nt1"] + sel["nb2"];
+
+
+  const int NBINSNORM          = 1;
+  double metbinsNorm[NBINSNORM+1]         = {250.0, 1000.0};
 
 
   TFile* srpred = 0;
@@ -95,6 +102,42 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
 
       PlotStuff* plots0l    = setupPlots(srconf,    inputdir, outputdir, lepvetowgt, plotlog, format, lumistr, "output_0l"+suffix+".root");
       PlotStuff* plots0lnovetoes = setupPlots(srconf,    inputdir, outputdir, basewgt, plotlog, format, lumistr, "output_0lnovetoes.root");
+      PlotStuff* plots1l         = setupPlots(srconf,    inputdir, outputdir, lepselwgt, plotlog, format, lumistr, "output_1l.root");
+
+      cout << "Plotting 1lepton normalization region" << endl;
+      plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_lowmt_mednj",       "met",        sel["qcdNCR"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+      plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_lowmt_highnj",      "met",        sel["qcdNCR"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+      plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdNCR"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+      plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdNCR"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+      plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_nt1",        "met",        sel["qcdNCR"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+      plots1l->plot();
+
+      //Process 1L Norm
+      vector<TString> samplesToReplace = {"ttbarplusw","znunu","ttZ","data","qcd"};
+      TFile* file1lT         = new TFile(plots1l->outfileName(),"UPDATE");
+      std::vector<TH1F*> newHistos;
+      auto fill = [&](const TString& sr, const TString& samp) {
+        TH1F * h = 0;
+        file1lT->GetObject(TString::Format("o%s_%s",sr.Data(),samp.Data()),h);
+        TH1F *nh = new TH1F(TString::Format("%s_%s",sr.Data(),samp.Data()),";#slash{E}_{T} [GeV]",NBINS,metbins);
+        for(unsigned int iB = 1; iB <= nh->GetNbinsX(); ++iB ){
+          int oB = h->FindFixBin(nh->GetBinCenter(iB));
+          nh->SetBinContent(iB,h->GetBinContent(oB));
+        }
+        newHistos.push_back(nh);
+      };
+      for(const auto& s: samplesToReplace ){
+        fill("met_qcdnormcr_nbgeq1_lowmt_mednj",      s);
+        fill("met_qcdnormcr_nbgeq1_lowmt_highnj",     s);
+        fill("met_qcdnormcr_nbgeq1_highmt_mednj_nt0", s);
+        fill("met_qcdnormcr_nbgeq1_highmt_highnj_nt0",s);
+        fill("met_qcdnormcr_nbgeq1_highmt_nt1",       s);
+      }
+      file1lT->cd();
+      for(auto* h: newHistos ){ h->Write();}
+      file1lT->Close();
+      delete file1lT;
+
 
       cout << "Plotting 0lepton region" << endl;
 
@@ -138,6 +181,13 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
 
       plots0lnovetoes->plot();
 
+
+
+
+
+
+
+
       /*if(!dolownj) {
         TString rmcmd = "rm " + outputdir + "/met_sr*." + format;
         gSystem->Exec(rmcmd.Data());
@@ -171,6 +221,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
 
       TFile* file0l         = new TFile(plots0l->outfileName());
       TFile* file0lnovetoes = new TFile(plots0lnovetoes->outfileName());
+      TFile* file1l         = new TFile(plots1l->outfileName());
 
       vector<TString> srbins;
       if (dolownj)
@@ -193,7 +244,7 @@ void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
 
       vector<TString> bkgsamples = {"ttbarplusw","znunu","ttZ"};
 
-      TH1F* qcd        = getQCDPred (file0l, file0lnovetoes, "sr", "qcdcr", srbins, qcdcrtosr, bkgsamples);
+      TH1F* qcd        = getQCDPred (file0l, file0lnovetoes,file1l, "sr", "qcdcr", "qcdnormcr", srbins, qcdcrtosr, bkgsamples);
 
       if(!srpred) srpred = new TFile(outfilename,"RECREATE");
       else srpred = new TFile(outfilename,"UPDATE");

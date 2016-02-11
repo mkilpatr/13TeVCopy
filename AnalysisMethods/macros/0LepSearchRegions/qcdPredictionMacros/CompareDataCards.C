@@ -42,10 +42,9 @@ struct theirPred{
     if(!inFile.is_open())std::cout <<"Could not find: " << fName << std::endl;
     assert(inFile.is_open());
 
-//    std::regex lnUnc ("^(\\S+)\\s+lnN\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
-//    std::regex gmUnc ("^(\\S+)\\s+gmN\\s+(\\S+)\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
-      std::regex lnUnc ("^(\\S+)\\s+lnN\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
-      std::regex gmUnc ("^(\\S+)\\s+gmN\\s+(\\S+)\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
+
+    std::regex lnUnc ("^(\\S+)\\s+lnN\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
+    std::regex gmUnc ("^(\\S+)\\s+gmN\\s+(\\S+)\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\S+)\\s*$");
     std::smatch sm;
 
     std::vector<double> extUnc;
@@ -119,9 +118,9 @@ void comp(std::string  dataCardDir){
       bool pass = true;
       if(a.data != b.data){ cout << "(Data) "; pass = false;}
       if(!floatComp(a.TFTC,b.TFTC)){ cout << "(TF) "; pass = false;}
-//      if(!floatComp(a.extU,b.extU)){ cout << "(extU) "; pass = false;}
+      if(!floatComp(a.extU,b.extU)){ cout << "(extU) "; pass = false;}
       if(!floatComp(a.respU,b.respU)){ cout << "(respU) "; pass = false;}
-//      if(!floatComp(a.subU,b.subU)){ cout << "(subU) "; pass = false;}
+      if(!floatComp(a.subU,b.subU)){ cout << "(subU) "; pass = false;}
       if(!floatComp(a.statU,b.statU)){ cout << "(statU) "; pass = false;}
       cout << a.print() << endl;
       if(!pass) cout << b.print() << endl;

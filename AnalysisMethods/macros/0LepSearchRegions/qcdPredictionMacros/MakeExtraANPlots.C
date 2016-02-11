@@ -31,7 +31,7 @@ void getMotivationPlots() {
     for(unsigned int iT = 0; iT < dPhiTrees.size(); ++iT){
       if(dPhiTrees[iT].second == Data) continue;
       TH1F * hSN = dphiGetter.getHistogram(dPhiTrees[iT].first,sel,weights[dPhiTrees[iT].second],TString::Format("tree_%u",iT));
-      plot->addToStack(hSN,TreeNames[dPhiTrees[iT].second],TreeColors[dPhiTrees[iT].second]);
+      plot->addToStack(hSN,TreeNames[dPhiTrees[iT].second],TreeColors[dPhiTrees[iT].second],1001,1,1,3);
     }
     TCanvas * c = new TCanvas;
 //    c->SetLeftMargin  (0.18);
@@ -40,8 +40,9 @@ void getMotivationPlots() {
 //    c->SetBottomMargin(0.03);
     plot->setYRange(65,2000);
     plot->setLogy();
-    plot->setHeader(QCDSupport::header,"");
-    plot->draw(c,true,"png");
+//    plot->setHeader(QCDSupport::header,"");
+    plot->setDrawCMSLumi();
+    plot->draw(c,true,"pdf");
 
     //Now do distribution plots
     TTree * qcdTree = QCDSupport::getTree("1_17_version/qcd_resTest_smearWithExtraCut_skimmed.root");
@@ -72,11 +73,12 @@ void getMotivationPlots() {
 
       TCanvas * c = new TCanvas;
       plot->setLegend(.45,.65,.92,.9);
-      plot->setYRange(0.,1.0);
-      plot->setHeader(QCDSupport::header,"");
-      plot->draw(c,true,"png");
+      plot->setYRange(0.,1.1);
+//      plot->setHeader(QCDSupport::header,"");
+      plot->setDrawCMSLumi();
+      plot->draw(c,true,"pdf");
       QCDSupport::setTitleOffset(c);
-      c->SaveAs(plot->getName() + TString(".png"));
+      c->SaveAs(plot->getName() + TString(".pdf"));
     }
 
 
@@ -109,10 +111,11 @@ void getMotivationPlots() {
       }
     metplot->setYRange(0.,0.15);
       TCanvas * c2 = new TCanvas;
-      metplot->setHeader(QCDSupport::header,"");
-      metplot->draw(c2,true,"png");
+//      metplot->setHeader(QCDSupport::header,"");
+      metplot->setDrawCMSLumi();
+      metplot->draw(c2,true,"pdf");
       QCDSupport::setTitleOffset(c2);
-      c2->SaveAs(metplot->getName() + TString(".png"));
+      c2->SaveAs(metplot->getName() + TString(".pdf"));
 
 
 }
@@ -155,13 +158,14 @@ void getSmearComparision() {
 
 
         TCanvas * c = new TCanvas;
-        plot->setHeader(QCDSupport::header,"");
-        plot->setYRange(0.5,700);
+//        plot->setHeader(QCDSupport::header,"");
+        plot->setYRange(0.5,5000);
         plot->setLogy();
 
-        plot->drawRatios(c,1,true,"png");
+        plot->setDrawCMSLumi();
+        plot->drawRatios(c,1,true,"pdf");
         QCDSupport::setTitleOffset(c,.850);
-        c->SaveAs(plot->getName() + TString(".png"));
+        c->SaveAs(plot->getName() + TString(".pdf"));
       }
 
 }
@@ -175,33 +179,48 @@ void getTailSFRegion(){
   double bins[] = {0,.1,.33,.5,.66,.8,1};
   HistogramGetter histG("pseudoResp","pseudoResp","#it{r}_{pseudo,jet}", 6,bins);
 
-  vector<TString> names;
-  vector<TTree*> trees;
-  vector<int> colors;
-  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root")); names.push_back("Data"); colors.push_back(1);
-  trees.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names.push_back("Non-QCD MC"); colors.push_back(2);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_gtp50.root"));      names.push_back("b, r >0.5"); colors.push_back(5);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_ltp50.root"));names.push_back("b, r < 0.5"); colors.push_back(3);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_gtp66.root"));  names.push_back("l, r > 0.66"); colors.push_back(7);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_p33top66.root"));  names.push_back("l, r 0.33-0.66"); colors.push_back(6);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_ltp33.root"));  names.push_back("l, r < 0.33"); colors.push_back(4);
+  vector<TString> names1;
+  vector<TTree*> trees1;
+  vector<int> colors1;
+  trees1.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root")); names1.push_back("Data"); colors1.push_back(1);
+  trees1.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names1.push_back("Non-QCD MC"); colors1.push_back(StyleTools::color_ttbar);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_inc.root"));      names1.push_back("b"); colors1.push_back(StyleTools::color_znunu);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_gtp66.root"));  names1.push_back("l, r > 0.66"); colors1.push_back(821);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_p33top66.root"));  names1.push_back("l, r 0.33-0.66"); colors1.push_back(811);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_ltp33.root"));  names1.push_back("l, r < 0.33"); colors1.push_back(812);
+
+
+  vector<TString> names2;
+  vector<TTree*> trees2;
+  vector<int> colors2;
+  trees2.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root")); names2.push_back("Data"); colors2.push_back(1);
+  trees2.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names2.push_back("Non-QCD MC"); colors2.push_back(StyleTools::color_ttbar);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_inc.root"));  names2.push_back("l"); colors2.push_back(StyleTools::color_znunu);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_gtp50.root"));      names2.push_back("b, r >0.5"); colors2.push_back(811);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_ltp50.root"));names2.push_back("b, r < 0.5"); colors2.push_back(812);
+
+
 
 
   for(unsigned int iP = 0; sels[iP][0]; ++iP){
+    vector<TString>* names  = iP == 0 ? &names1 : &names2;
+    vector<TTree* >* trees  = iP == 0 ? &trees1 : &trees2;
+    vector<int    >* colors = iP == 0 ? &colors1 : &colors2;
+
     TString name = TString::Format("tailSFReg_%u",iP);
     Plot * plot = new Plot(name,selNames[iP],histG.plotInfo->xTitle,"Events");
     TString sel = TString::Format("%s && %s",presel.Data(),sels[iP].Data());
-    for(unsigned int iT = 0; iT < trees.size(); ++iT){
-      if(names[iT] == "Data"){
-        TH1F * hSN = histG.getHistogram(trees[iT],sel,"1.0",TString::Format("tree_%u",iT));
-        plot->addHist(hSN,names[iT],"",colors[iT],0,colors[iT]);
+    for(unsigned int iT = 0; iT < trees->size(); ++iT){
+      if((*names)[iT] == "Data"){
+        TH1F * hSN = histG.getHistogram((*trees)[iT],sel,"1.0",TString::Format("tree_%u",iT));
+        plot->addHist(hSN,(*names)[iT],"",(*colors)[iT],0,(*colors)[iT]);
       } else {
-        TH1F * hSN = histG.getHistogram(trees[iT],sel,TString::Format("%s",QCDSupport::stdMCWeight.Data()),TString::Format("tree_%u",iT));
-        if(names[iT] == "Non-QCD MC"){
+        TH1F * hSN = histG.getHistogram((*trees)[iT],sel,TString::Format("%s",QCDSupport::stdMCWeight.Data()),TString::Format("tree_%u",iT));
+        if((*names)[iT] == "Non-QCD MC"){
           if(iP == 0) hSN->Scale(0.886424);
           if(iP == 1) hSN->Scale(0.77299);
         }
-        plot->addToStack(hSN,names[iT],colors[iT]);
+        plot->addToStack(hSN,(*names)[iT],(*colors)[iT],1001,1,1,3);
       }
 
     }
@@ -209,12 +228,16 @@ void getTailSFRegion(){
     plot->setHeader(QCDSupport::header,"");
 //    plot->setLogy();
     if(iP == 1){
-      plot->setYRange(0.,1200);
+      plot->setYRange(0.,1000);
+    } else {
+      plot->setYRange(0.,4500);
     }
+    plot->setLegend(.5,.65,.92,.87);
     plot->getLegend()->SetNColumns(2);
-    plot->drawRatioStack(c,true,"png");
+    plot->setDrawCMSLumi();
+    plot->drawRatioStack(c,true,"pdf");
     QCDSupport::setTitleOffset(c,.850);
-    c->SaveAs(plot->getName() + TString(".png"));
+    c->SaveAs(plot->getName() + TString(".pdf"));
 
   }
 }
@@ -222,9 +245,10 @@ void getTailSFRegion(){
 #endif
 
 void MakeExtraANPlots(){
-  StyleTools::SetStyle();
+  StyleTools::SetTDRStyle();
   gStyle->SetTitleOffset(1.400,"Y");
   gStyle->SetTitleOffset(0.950,"X");
+  gStyle->SetPadTopMargin   (0.08);
   getMotivationPlots();
   getSmearComparision();
   getTailSFRegion();

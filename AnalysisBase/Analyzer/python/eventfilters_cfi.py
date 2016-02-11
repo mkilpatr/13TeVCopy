@@ -23,4 +23,4 @@ met200Filter = cms.EDFilter('METFilter',
   verbose = cms.bool(False)
 )
 
-met131TeVFilter = met200Filter.clone( minMET = cms.double(-1), maxMET = cms.double(131000),verbose = cms.bool(True))
+met131TeVFilter = met200Filter.clone( minMET = cms.double(-1), maxMET = cms.double(70000),verbose = cms.bool(True))

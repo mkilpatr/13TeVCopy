@@ -30,7 +30,7 @@ namespace StyleTools {
                color_ttZ=797,                // kOrange-3
                color_tW=876,                 // kViolet-4
                color_wjets=391,              // kYellow-9
-               color_znunu=628,              // kRed-4
+               color_znunu=623,              // kRed-9
                color_other=391,              // kYellow-9
                color_T2tt=634,               // kRed+2
                color_T2tt_850_100=634,       // kRed+2
