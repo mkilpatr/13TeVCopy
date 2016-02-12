@@ -6,7 +6,7 @@ vector<TString> regions = {"lowmt_mednj", "lowmt_highnj", "highmt_mednj_nt0", "h
 vector<TString> bkgs      = {/*"ttZ"      , "qcd", "znunu"             ,*/ "ttW"      , "tW", "wjets" , "ttbar"   };
 vector<TString> bkglabels = {/*"t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu",*/ "t#bar{t}W", "tW", "W+jets", "t#bar{t}"};
 vector<TString> sigs      = {"nb1"         , "nb2"            };
-vector<TString> siglabels = {"t#bar{t}/W (SR, N_{b}=1)", "t#bar{t}/W (SR, N_{b}#geq2)"};
+vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
 
 /*
  * To make the input histograms to this macro, run getZeroLeptonPrediction after uncommenting
@@ -22,7 +22,7 @@ vector<TString> siglabels = {"t#bar{t}/W (SR, N_{b}=1)", "t#bar{t}/W (SR, N_{b}#
  *     > p1->SetRightMargin (0.02) -> p1->SetRightMargin (0.05)
  *     > p2->SetRightMargin (0.02) -> p2->SetRightMargin (0.05)
  */
-void plot1LCR(const TString inputDir = "plots_bkgest_split_ttbarplusw",
+void plot1LCR(const TString inputDir = "plots_bkgest",
                             const TString inputFileName = "output_0l_plus_lepcr.root",
                             const TString format  = "pdf",
                             const bool    plotlog = true
