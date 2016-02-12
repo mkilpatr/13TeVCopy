@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getLLPrediction(const TString defaultdir  = "eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
+void getLLPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
                      const TString outputdir   = "plots_bkgest/lostlep",
                      const TString srconf      = "plotting/run0lepbkgpred.conf",
                      const TString lumistr     = "2.262",
@@ -21,7 +21,7 @@ void getLLPrediction(const TString defaultdir  = "eos/uscms/store/user/mullin/13
   TString lepvetowgt = dotnp ? basewgt + "*leptnpweight*lepvetoweight" : basewgt + "*lepvetoweight";
   TString lepselwgt  = dotnp ? basewgt + "*leptnpweight" : basewgt + "*lepselweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
   sel["vetoes"]       = dotnp ? " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))" : " && ((nvetolep==0 && nvetotau==0) || (ismc && (ngoodgenele>0 || ngoodgenmu>0 || npromptgentau>0)))";
   sel["lepsel"]       = " && nvetolep>0";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";

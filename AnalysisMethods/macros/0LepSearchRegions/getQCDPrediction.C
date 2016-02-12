@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
+void getQCDPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
                       const TString outputdir   = "plots_bkgest/qcd",
                       const TString srconf      = "plotting/run0lepbkgpred.conf",
                       const TString lumistr     = "2.262",
