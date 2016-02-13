@@ -79,13 +79,13 @@ def main() :
       xsec[sig] = getXsec(sig)*1000 # pb->fb (lumi is in 1/fb)
   #print '\n', 'using xsecs:', xsec
   
-  # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
-  print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
-  print makeTable(inDir) 
+  ### # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
+  ### print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
+  ### print makeTable(inDir) 
   
-  # observed data and predicted MC (with stat/syst) yields for the LLB 1LCR
-  print '\n\n\n', '='*5, 'Making yield plus unc table for onelepcr...', '\n\n'
-  print makeCrTable(inDir,'onelepcr')
+  ### # observed data and predicted MC (with stat/syst) yields for the LLB 1LCR
+  ### print '\n\n\n', '='*5, 'Making yield plus unc table for onelepcr...', '\n\n'
+  ### print makeCrTable(inDir,'onelepcr')
   
   # expected signal yields and efficiencies for the baseline selection and per bin for 2 example points
   # baseline effs are total and per bin effs are wrt the baseline selection

@@ -109,13 +109,12 @@ def makeChunk(inDir,bkg,nj, mtb, nt,cr='') :
 #   - use 'cr' to get the file for the CR
 def getFileName(inDir,met,nj,nb,nt,mtb,cr='',sig='') :
   fname = 'met'+str(met)+'_njets'+str(nj)+'_nbjets'+str(nb)+'_ncttstd'+str(nt)+'_mtcsv12met'+str(mtb)+'.txt'
-  if 'T2tt' in sig : 
-    if cr=='' : return os.path.join(inDir,sig,sig+'_'       +fname)
-    else      : return os.path.join(inDir,sig,sig+'_'+cr+'_'+fname)
-  if cr=='' : fname = fname+'_sr'
-  else      : fname = cr+'_'+fname+'_'+cr
-  fname = 'template_'+fname+'_template'
-  fname = os.path.join(inDir,fname)
+  if cr=='onelepcr' : fname = 'onelepcr_'+fname
+  if 'T2' in sig : 
+    fname = sig+'_'+fname
+    return os.path.join(inDir,sig,fname)
+  fname = 'T2tt_700_1_'+fname
+  fname = os.path.join(inDir,'T2tt_700_1',fname)
   return fname
 
 # get and properly format the number for the given bkg, bin

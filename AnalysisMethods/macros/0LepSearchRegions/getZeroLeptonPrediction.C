@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
+void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
                              const TString outputdir   = "plots_bkgest",
                              const bool    dolownj     = false,
                              const bool    dolowmet    = false,
@@ -31,8 +31,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
-  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
   sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";

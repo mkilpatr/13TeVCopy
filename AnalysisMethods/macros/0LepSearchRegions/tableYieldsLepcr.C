@@ -29,10 +29,11 @@ vector<TString> metRows = { "", "250-300", "300-400", "400-500", "500-600", "$>$
  *
  * $ hadd output_0l_plus_lepcr.root output_0l.root output_lepcr.root
  */
-void tableYieldsLepcr(const TString inputDir      = "plots_bkgest_split_ttbarplusw",
+void tableYieldsLepcr(const TString inputDir      = "plots_bkgest", // "plots_bkgest_split_ttbarplusw",
                       const TString inputFileName = "output_0l_plus_lepcr.root"
                      )
 {
+  cout << endl << "using hists from " << inputDir << "/" << inputFileName << endl << endl;
 
   TFile* infile = new TFile(inputDir + "/" + inputFileName);
 
