@@ -81,7 +81,7 @@ def main() :
   
   ### # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
   ### print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
-  ### print makeTable(inDir) 
+  ### print makeTable(inDir)
   
   ### # observed data and predicted MC (with stat/syst) yields for the LLB 1LCR
   ### print '\n\n\n', '='*5, 'Making yield plus unc table for onelepcr...', '\n\n'
@@ -90,7 +90,7 @@ def main() :
   # expected signal yields and efficiencies for the baseline selection and per bin for 2 example points
   # baseline effs are total and per bin effs are wrt the baseline selection
   print '\n\n\n', '='*5, 'Making signal yield plus acceptance*eff table...', '\n\n'
-  print makeEffTable(inDir,2.263) 
+  print makeEffTable(inDir,2.263)
   print '\n\n\n'
 
 # piece together chunks for the SR yields
@@ -182,7 +182,7 @@ def makeCrChunk(inDir,nj,nb,mtb,nt,cr) :
 
 # SR yield/unc table chunk for a given bin in (njets, mtb, ntops)
 def makeChunk(inDir,nj,nb,mtb,nt) :
-  s = chunkHeader(nj,nb,mtb,nt,7) #.replace('{7}{c}{','{7}{c}{ \\multirow{2}{*}{').replace('} \\\\','} } \\\\ \\multicolumn{7}{c}{}  \\\\')
+  s = chunkHeader(nj,nb,mtb,nt,7)
   for binMet in binsMet : 
     s += binMet[1] 
     #for sigpoint in signals :
@@ -190,7 +190,9 @@ def makeChunk(inDir,nj,nb,mtb,nt) :
     n = 0
     e = 0
     for bkg in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
-      (tn,te) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')[1]
+      (dummy,(tn,te)) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')
+      #if bkg == 'ttbarplusw' :
+      #  print dummy
       n += tn
       e += te**2
       s += ' & ' + str(round(tn,2)) + ' $\\pm$ ' + str(round(te,2))
@@ -237,7 +239,7 @@ def getYield(inDir,process,met=-1,nj=-1,nb=-1,nt=-1,mtb=-1,cr='',sig='') :
   for l in f:
     if len(l) < 1 : continue
     if not 'rate' in l : continue
-    n = l.split()[ps[process]-2]
+    n = l.split()[ps[process]-1]
   f.close()
   n = float(n.replace('SIGRATE',''))
   return n
