@@ -17,6 +17,7 @@ sources = {
                   ('corr_tau'             , 'Tau veto'                   ),
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' ),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' ),
+                  ('lostlep_nt1metintunc' , '\\met integration'          ),
                   ('pu'                   , 'Pileup reweighting'         ),
                   ('scale_j'              , 'Jet energy scale'           ),
                   ('ttbarNorm'            , '\\ttbar~normalization'      ),
@@ -93,6 +94,7 @@ def makeChunk(inDir,bkg,nj, mtb, nt,cr='') :
   columns = 11 if cr=='' else 6
   s = chunkHeaderNoB(nj, mtb, nt, columns)
   for source in sources[bkg] :
+    if source[0]=='lostlep_nt1metintunc' and nt!=1 : continue
     s += source[1]
     if cr=='onelepcr' and nt==1 : # combine met bins for nT=1 for the onelepcr
       s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr) + '}  \\\\ \n'

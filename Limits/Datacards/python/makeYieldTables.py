@@ -23,6 +23,7 @@ sources = {
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' , 'syst'),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' , 'syst'),
                   ('pu'                   , 'Pileup reweighting'         , 'syst'),
+                  ('lostlep_nt1metintunc' , '\\met integration'          , 'syst'),
                   ('scale_j'              , 'Jet energy scale'           , 'syst'),
                   ('ttbarNorm'            , '\\ttbar~normalization'      , 'syst'),
                   ('wjetsNorm'            , '\\W+jets normalization'     , 'syst'),
@@ -192,6 +193,7 @@ def makeChunk(inDir,nj,nb,mtb,nt) :
     for bkg in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
       (dummy,(tn,te)) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')
       #if bkg == 'ttbarplusw' :
+      #  if binMet[0] == 250 : print ''
       #  print dummy
       n += tn
       e += te**2
@@ -213,9 +215,16 @@ def getTotalEvents(inDir,sig) :
 
 # return the yield +/- stat +/- syst for the given process in the given bin
 def getBinYieldUncs(inDir,process,met,nj,nb,nt,mtb,cr='',sig='') :
-  if cr=='' and process == 'ttbarplusw' : 
-    inDir = inDir.replace('unblind_obs','setratetopred')
-  y = getYield(inDir,process,met,nj,nb,nt,mtb,cr,sig)
+  y = 0
+  if cr=='' and process == 'ttbarplusw' :
+    # replace raw MC ttbarplusw with estimate from 1LCR
+    met1L = met if nt==0 else 250
+    mc0L = getYield(inDir,process,met  ,nj,nb,nt,mtb,''        ,sig)
+    mc1L = getYield(inDir,process,met1L,nj,1 ,nt,mtb,'onelepcr',sig)
+    tf = mc0L / mc1L
+    y = tf * getDataYield(inDir,process,met1L,nj,1,nt,mtb,'onelepcr')
+  else :
+    y = getYield(inDir,process,met,nj,nb,nt,mtb,cr,sig)
   stat = 0
   syst = 0
   stsy = 0
