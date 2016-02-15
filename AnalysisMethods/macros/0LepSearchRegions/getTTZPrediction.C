@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getTTZPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
+void getTTZPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
                       const TString outputdir   = "plots_bkgest/ttz",
                       const TString srconf      = "plotting/run0lepbkgpred.conf",
                       const TString lumistr     = "2.262",
@@ -19,7 +19,7 @@ void getTTZPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/
   TString basewgt    = lumistr + "*weight*truePUWeight*btagWeight*qcdRespTailWeight*(cttWeight*(ncttstd>0 && mtcsv12met>175) + 1.0*(ncttstd==0 || mtcsv12met<=175))";
   TString lepvetowgt =  basewgt + "*leptnpweight*lepvetoweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>250 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
   sel["njets"]        = dolownj ? " && njets>=2 && njets<5 && nbjets>=1 && nlbjets>=2" : " && njets>=5 && nbjets>=1 && nlbjets>=2";
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";

@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160208_met250njets5_pr521",
+void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
                              const TString outputdir   = "plots_bkgest",
                              const bool    dolownj     = false,
                              const bool    dolowmet    = false,
@@ -31,8 +31,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   TString lepvetowgt = basewgt + "*leptnpweight*lepvetoweight";
   TString lepselwgt  = basewgt + "*leptnpweight";
 
-  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  sel["trig"]         = "passjson && passdijetmet && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
+  sel["trigpho"]      = "passjson && passtrigphoton165 && origmet<200 && j2pt>75 && met>200 && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose && passaddmetflts";
   sel["trigzll"]      = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 80 && dilepmass < 100";
   sel["trigzlloff"]   = "passjson && passTrig && j2pt>75 && met>100 && dilepmass > 20 && (dilepmass < 80 || dilepmass > 100)";
   sel["vetoes"]       = " && nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0))";
@@ -405,7 +405,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   plots->setFormat(format);
   plots->setYTitle("Events");
   if(plotlog) plots->setLogy();
-  plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.2f fb^{-1}",stof(string(lumistr.Data()))),"");
+  plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.1f fb^{-1}",stof(string(lumistr.Data()))),"");
   plots->setHeaderPosition(0.16, 0.93);
   plots->setColor("lostlep_pred_sr",StyleTools::color_ttbar);
   plots->setMaxScale(2.0);
@@ -431,6 +431,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   delete plots;
 
   // update output root file with full uncertainty
-  TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
-  gSystem->Exec(cmd.Data());
+  if (!(dolowmet || dolownj)){
+    TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
+    gSystem->Exec(cmd.Data());
+  }
 }
