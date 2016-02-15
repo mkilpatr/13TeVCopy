@@ -30,7 +30,7 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fLegX1(0.6),
   fLegY1(0.84),
   fLegX2(0.93),
-  fLegY2(0.9),
+  fLegY2(0.85),
   fShowStats(0),
   fStatsX(0.68),
   fStatsY(0.90),
@@ -272,8 +272,11 @@ void Plot::addHistForRatio(TH1F *h, TString label, TString drawopt, int color, i
     else              fLeg->AddEntry(hist,label,"L");
   }
 
-  if(!onlyplotratio)
-    fHists1D.push_back(new h1D(hist, drawopt));
+  if(!onlyplotratio) {
+    TString histdrawopt = drawopt;
+    if(histdrawopt.Contains("mc_")) histdrawopt.Replace(0,3,"");
+    fHists1D.push_back(new h1D(hist,histdrawopt));
+  }
 
   fRatioHists1D.push_back(new h1D(hist, drawopt));
 
@@ -916,7 +919,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TPad *p1 = new TPad("p1","p1",0,0.3,1,1);
   p1->SetLeftMargin  (0.16);
   p1->SetTopMargin   (0.10);
-  p1->SetRightMargin (0.02);
+  p1->SetRightMargin (0.05);
   p1->SetBottomMargin(0.04);  
   p1->Draw();
   if(fLogy) p1->SetLogy();
@@ -970,8 +973,20 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
       if(fYmin < fYmax) { 
         h->GetYaxis()->SetRangeUser(fYmin,fYmax);
       }
-      TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
-      hratio->Divide(h);
+      bool wrtMC = false; // to make the ratio for this hist as MC/this
+      if(fRatioHists1D[i]->opt.Contains("mc_")) {
+        wrtMC = true;
+        fRatioHists1D[i]->opt.Replace(0,3,"");
+      }
+      TH1F* hratio = 0;
+      if(wrtMC) {
+        hratio =  (TH1F*)h->Clone("h_"+TString(to_string(i))+"over_mc");
+        hratio->Divide(hMC);
+      }
+      else {
+        TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+        hratio->Divide(h);
+      }
       hratio->SetLineColor(h->GetLineColor());
       hratio->SetLineStyle(h->GetLineStyle());
       hratio->SetLineWidth(h->GetLineWidth());
@@ -1085,7 +1100,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   TPad *p2 = new TPad("p2","p2",0,0,1,0.3);
   p2->SetLeftMargin  (0.16);
   p2->SetTopMargin   (0.00);
-  p2->SetRightMargin (0.02);
+  p2->SetRightMargin (0.05);
   p2->SetBottomMargin(0.30);
   p2->SetGridy(1);
   p2->Draw();
@@ -1185,7 +1200,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, 0);
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

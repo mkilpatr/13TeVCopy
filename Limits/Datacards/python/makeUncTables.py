@@ -17,6 +17,7 @@ sources = {
                   ('corr_tau'             , 'Tau veto'                   ),
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' ),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' ),
+                  ('lostlep_nt1metintunc' , '\\met integration'          ),
                   ('pu'                   , 'Pileup reweighting'         ),
                   ('scale_j'              , 'Jet energy scale'           ),
                   ('ttbarNorm'            , '\\ttbar~normalization'      ),
@@ -93,6 +94,7 @@ def makeChunk(inDir,bkg,nj, mtb, nt,cr='') :
   columns = 11 if cr=='' else 6
   s = chunkHeaderNoB(nj, mtb, nt, columns)
   for source in sources[bkg] :
+    if source[0]=='lostlep_nt1metintunc' and nt!=1 : continue
     s += source[1]
     if cr=='onelepcr' and nt==1 : # combine met bins for nT=1 for the onelepcr
       s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr) + '}  \\\\ \n'
@@ -109,13 +111,12 @@ def makeChunk(inDir,bkg,nj, mtb, nt,cr='') :
 #   - use 'cr' to get the file for the CR
 def getFileName(inDir,met,nj,nb,nt,mtb,cr='',sig='') :
   fname = 'met'+str(met)+'_njets'+str(nj)+'_nbjets'+str(nb)+'_ncttstd'+str(nt)+'_mtcsv12met'+str(mtb)+'.txt'
-  if 'T2tt' in sig : 
-    if cr=='' : return os.path.join(inDir,sig,sig+'_'       +fname)
-    else      : return os.path.join(inDir,sig,sig+'_'+cr+'_'+fname)
-  if cr=='' : fname = fname+'_sr'
-  else      : fname = cr+'_'+fname+'_'+cr
-  fname = 'template_'+fname+'_template'
-  fname = os.path.join(inDir,fname)
+  if cr=='onelepcr' : fname = 'onelepcr_'+fname
+  if 'T2' in sig : 
+    fname = sig+'_'+fname
+    return os.path.join(inDir,sig,fname)
+  fname = 'T2tt_700_1_'+fname
+  fname = os.path.join(inDir,'T2tt_700_1',fname)
   return fname
 
 # get and properly format the number for the given bkg, bin
