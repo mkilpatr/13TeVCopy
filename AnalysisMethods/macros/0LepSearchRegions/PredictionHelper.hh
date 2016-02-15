@@ -200,7 +200,7 @@ namespace BkgPrediction {
 
   }
 
-  TH1F* getQCDPred(TFile* file, TFile* filenovetoes, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap, vector<TString> bkgsamples) {
+  TH1F* getQCDPred(TFile* file, TFile* filenovetoes, TFile* filenorm, const TString region, const TString crname, const TString normcrname, vector<TString> bins, BinMap crtosrmap, vector<TString> bkgsamples) {
 
     cout << "\nGetting the QCD prediction in the " << region << " region. CR label is " << crname << endl;
 
@@ -213,9 +213,19 @@ namespace BkgPrediction {
     TH1F* qcd_cr_withvetoes = getSRHist(file, "qcd", crname, crbins);
     TH1F* qcd_cr = getSRHist(filenovetoes, "qcd", crname+"novetoes", crbins);
     TH1F* data_cr = getSRHist(file, "data", crname, crbins);
-    TH1F* data_less_nonqcd_cr = (TH1F*)data_cr->Clone("data_less_nonqcd_" + crname);
+
+    TH1F* data_norm_cr = getSRHist(filenorm, "data", normcrname, crbins);
+    TH1F* qcd_norm_cr = getSRHist(filenorm, "qcd", normcrname, crbins);
+    TH1F* mc_norm_cr = (TH1F*)qcd_norm_cr->Clone("mc_" + normcrname);
 
     TH1F* nonqcd_cr = (TH1F*)data_cr->Clone("nonqcd_" + crname);
+
+
+    for(auto sname : bkgsamples) {
+      if(sname == "qcd" || sname == "data") continue;
+      TH1F* mc_cr = getSRHist(filenorm, sname, normcrname, crbins);
+      mc_norm_cr->Add(mc_cr);
+    }
 
     for(int ibin = 1; ibin < nonqcd_cr->GetNbinsX()+1; ++ibin) {
       nonqcd_cr->SetBinContent(ibin,0);
@@ -226,6 +236,15 @@ namespace BkgPrediction {
       TH1F* mc_cr = getSRHist(file, sname, crname, crbins);
       nonqcd_cr->Add(mc_cr);
     }
+
+    for(int ibin = 1; ibin < nonqcd_cr->GetNbinsX()+1; ++ibin) {
+      assert(mc_norm_cr->GetBinContent(ibin) > 0);
+      double sf = data_norm_cr->GetBinContent(ibin) / mc_norm_cr->GetBinContent(ibin);
+      nonqcd_cr->SetBinContent(ibin,nonqcd_cr->GetBinContent(ibin)*sf);
+    }
+
+
+
     TH1F* nonqcd_sf_cr = (TH1F*)data_cr->Clone("nonqcd_sf_" + crname);
 
     for(int ibin = 1; ibin < nonqcd_sf_cr->GetNbinsX()+1; ++ibin) {
@@ -241,9 +260,9 @@ namespace BkgPrediction {
       cout << nonqcd_sf_cr->GetBinContent(ibin) << " +/- " << nonqcd_sf_cr->GetBinError(ibin) << "\t";
     }
     cout << endl;
-    removeNegatives(data_less_nonqcd_cr);
-    removeZeroes(data_less_nonqcd_cr);
-    data_less_nonqcd_cr->Multiply(nonqcd_sf_cr);
+    removeNegatives(data_cr);
+    removeZeroes(data_cr);
+    data_cr->Multiply(nonqcd_sf_cr);
 
 
 
@@ -257,7 +276,7 @@ namespace BkgPrediction {
     cout << endl;
 
     TH1F* qcd_pred = (TH1F*)qcd_tf->Clone("qcd_pred_" + region);
-    qcd_pred->Multiply(data_less_nonqcd_cr);
+    qcd_pred->Multiply(data_cr);
 
     cout << "\nQCD prediction: ";
     for(int ibin = 1; ibin < qcd_pred->GetNbinsX()+1; ++ibin) {
