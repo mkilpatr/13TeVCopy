@@ -63,6 +63,6 @@ for samp in samples:
     else:
         print "File of %s do not exist: Bypassing..."%samp
         continue
-#  print cmd
+  print cmd
   subprocess.call(cmd, shell=True)
     
