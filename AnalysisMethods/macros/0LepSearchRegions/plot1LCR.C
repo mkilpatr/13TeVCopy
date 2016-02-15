@@ -16,7 +16,7 @@ vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
  *
  * $ hadd output_0l_plus_lepcr.root output_0l.root output_lepcr.root
  */
-void plot1LCR(const TString inputDir = "plots_bkgest_160215", // plots_bkgest_160215_updated
+void plot1LCR(const TString inputDir = "plots_bkgest",
                             const TString inputFileName = "output_0l_plus_lepcr.root",
                             const TString format  = "pdf",
                             const bool    plotlog = true
