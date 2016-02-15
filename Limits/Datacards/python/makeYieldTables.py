@@ -80,7 +80,8 @@ def main() :
       xsec[sig] = getXsec(sig)*1000 # pb->fb (lumi is in 1/fb)
   #print '\n', 'using xsecs:', xsec
   
-  ### # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
+  ### # MC predicted yields plus total uncertainties for all 4 bkgs from the datacards
+  ### # currently used as a cross-check of the table made with getZeroLeptonUncertainty.py
   ### print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
   ### print makeTable(inDir)
   

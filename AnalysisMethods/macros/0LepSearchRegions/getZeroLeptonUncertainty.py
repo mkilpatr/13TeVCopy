@@ -135,8 +135,11 @@ def readYields(pred_file):
             if bin not in yields:
                 yields[bin] = {}
                 statUnc_pieces[bin] = {}
-            yields[bin][sample] = h.GetBinContent(ibin+1)
-            statUnc_pieces[bin][sample] = h.GetBinError(ibin+1)
+            y = h.GetBinContent(ibin+1)
+            e = h.GetBinError(ibin+1)
+            yields[bin][sample] = y
+            if sample == 'ttZ': statUnc_pieces[bin][sample] = min(e,y) # don't want MC stat unc > 100%
+            else :              statUnc_pieces[bin][sample] = e
     h = f.Get('data_sr')
     for ibin in xrange(0, h.GetNbinsX()):
         bin = binlist[ibin]
@@ -168,7 +171,7 @@ def calcAbsUnc():
                 absUnc[bin][type] += relUnc[type][bin][sample] * yields[bin][sample]
                 if sample == 'ttbarplusw': absUnc_ttbarplusw[bin][type] += relUnc[type][bin][sample] * yields[bin][sample]    
                 if sample == 'znunu'     : absUnc_znunu     [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]   
-                if sample == 'ttZ'       : absUnc_ttz       [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]   
+                if sample == 'ttZ'       : absUnc_ttz       [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]
                 if sample == 'qcd'       : absUnc_qcd       [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]   
 
     for bin in absUnc:
@@ -181,8 +184,8 @@ def calcAbsUnc():
         fullUnc[bin]                      = sumUnc([statUnc[bin], systUnc[bin]])
         fullUnc_pieces['ttbarplusw'][bin] = sumUnc([statUnc_pieces[bin]['ttbarplusw'], systUnc_ttbarplusw[bin]])  
         fullUnc_pieces['znunu'][bin]      = sumUnc([statUnc_pieces[bin]['znunu'     ], systUnc_znunu     [bin]])  
-        fullUnc_pieces['qcd'][bin]        = sumUnc([statUnc_pieces[bin]['ttZ'       ], systUnc_qcd       [bin]])  
-        fullUnc_pieces['ttZ'][bin]        = sumUnc([statUnc_pieces[bin]['qcd'       ], systUnc_ttz       [bin]])  
+        fullUnc_pieces['qcd'][bin]        = sumUnc([statUnc_pieces[bin]['qcd'       ], systUnc_qcd       [bin]])
+        fullUnc_pieces['ttZ'][bin]        = sumUnc([statUnc_pieces[bin]['ttZ'       ], systUnc_ttz       [bin]])
         
 
 

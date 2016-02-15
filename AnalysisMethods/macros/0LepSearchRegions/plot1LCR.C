@@ -5,7 +5,7 @@
 vector<TString> regions = {"lowmt_mednj", "lowmt_highnj", "highmt_mednj_nt0", "highmt_highnj_nt0", "highmt_nt1" };
 vector<TString> bkgs      = {/*"ttZ"      , "qcd", "znunu"             ,*/ "ttW"      , "tW", "wjets" , "ttbar"   };
 vector<TString> bkglabels = {/*"t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu",*/ "t#bar{t}W", "tW", "W+jets", "t#bar{t}"};
-vector<TString> sigs      = {"nb1"         , "nb2"            };
+vector<TString> sigs      = {"nb1"              , "nb2"                 };
 vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
 
 /*
@@ -15,14 +15,8 @@ vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
  * are). Then hadd the 0L and onelepcr trees together to get the input file for this macro:
  *
  * $ hadd output_0l_plus_lepcr.root output_0l.root output_lepcr.root
- *
- * note: some hard-coded numbers in Plot.cc were changed:
- *   > fLegY2(0.9), -> fLegY2(0.85),   // to move the top of the legend down
- *   > in void Plot::drawRatioStack:   // to keep the 1000 label of the x-axis from getting cut-off
- *     > p1->SetRightMargin (0.02) -> p1->SetRightMargin (0.05)
- *     > p2->SetRightMargin (0.02) -> p2->SetRightMargin (0.05)
  */
-void plot1LCR(const TString inputDir = "plots_bkgest",
+void plot1LCR(const TString inputDir = "plots_bkgest_160215", // plots_bkgest_160215_updated
                             const TString inputFileName = "output_0l_plus_lepcr.root",
                             const TString format  = "pdf",
                             const bool    plotlog = true
@@ -41,7 +35,7 @@ void plot1LCR(const TString inputDir = "plots_bkgest",
   colormap["qcd"]   = StyleTools::color_qcd;
   colormap["ttz"]   = StyleTools::color_ttZ;
   colormap["nb1"]   = kRed;
-  colormap["nb2"]   = kGreen+3; // kViolet-1 doesn't work because in intersects with tW's violet in one bin
+  colormap["nb2"]   = kOrange-3; // kGreen+3; // kViolet-1 doesn't work because in intersects with tW's violet in one bin
 
   StyleTools::SetTDRStyle();
 
@@ -67,11 +61,18 @@ void plot1LCR(const TString inputDir = "plots_bkgest",
     double intbkg = bkgtotal->Integral(1,bkgtotal->GetNbinsX());
 
     // get and scale individual bkgs for plotting
+    TH1F* unc = 0;
     for(unsigned int ibkg = 0; ibkg<bkgs.size(); ++ibkg) {
       TH1F* hbkg = (TH1F*)infile->Get("met_lepcr_nbgeq1_"+region+"_"+bkgs[ibkg]+";1");
       hbkg->Scale(intdata/intbkg);
+      if(ibkg == 0) unc = (TH1F*)hbkg->Clone("unc");
+      else unc->Add(hbkg);
+      for(unsigned int i=1; i<=hbkg->GetNbinsX(); ++i) hbkg->SetBinError(i,0);
       plots->addToStack(hbkg, bkglabels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 2, 0);
     } // bkgs
+    plots->setUncertaintyHist(unc);
+    plots->setPlotStackUncertainty();
+    plots->setPlotRatioUncertaintyBand();
 
     for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
       TH1F* hsig = (TH1F*)infile->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
