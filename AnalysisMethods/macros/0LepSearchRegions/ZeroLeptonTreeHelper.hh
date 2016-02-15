@@ -1364,7 +1364,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       filler.fillEventInfo(&data, this);
       filler.fillJetInfo  (&data, jets, bJets, met);
-      filler.fillTopTagInfo(&data,this, jets);
+//      filler.fillTopTagInfo(&data,this, jets);
       return true;
     }
 
