@@ -198,6 +198,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
     plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["lepcr"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINS, metbins);
     plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_highnj_nt0", "met",        sel["lepcr"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINS, metbins);
     plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_nt1_int",    "met",        sel["lepcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS_NT1, metbins_nt1);
+    // for making AN plots
+    plotslepcr->addTreeVar("met_lepcr_nbgeq1_highmt_nt1",       "met",        sel["lepcr"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINS, metbins);
   }
   else {
     plotslepcr->addTreeVar("met_lepcr_lowmt_mednj_nb1",             "met",        sel["lepcr"] + sel["lowmt_mednj_nb1"],       "#slash{E}_{T} [GeV]", NBINS, metbins);

@@ -23,6 +23,7 @@ sources = {
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' , 'syst'),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' , 'syst'),
                   ('pu'                   , 'Pileup reweighting'         , 'syst'),
+                  ('lostlep_nt1metintunc' , '\\met integration'          , 'syst'),
                   ('scale_j'              , 'Jet energy scale'           , 'syst'),
                   ('ttbarNorm'            , '\\ttbar~normalization'      , 'syst'),
                   ('wjetsNorm'            , '\\W+jets normalization'     , 'syst'),
@@ -79,18 +80,18 @@ def main() :
       xsec[sig] = getXsec(sig)*1000 # pb->fb (lumi is in 1/fb)
   #print '\n', 'using xsecs:', xsec
   
-  # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
-  print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
-  print makeTable(inDir) 
+  ### # MC predicted yields plus stat/syst uncertainties for all 4 bkgs plus yields from 2 example signal points
+  ### print '\n\n\n', '='*5, 'Making yield plus unc table...', '\n\n'
+  ### print makeTable(inDir)
   
-  # observed data and predicted MC (with stat/syst) yields for the LLB 1LCR
-  print '\n\n\n', '='*5, 'Making yield plus unc table for onelepcr...', '\n\n'
-  print makeCrTable(inDir,'onelepcr')
+  ### # observed data and predicted MC (with stat/syst) yields for the LLB 1LCR
+  ### print '\n\n\n', '='*5, 'Making yield plus unc table for onelepcr...', '\n\n'
+  ### print makeCrTable(inDir,'onelepcr')
   
   # expected signal yields and efficiencies for the baseline selection and per bin for 2 example points
   # baseline effs are total and per bin effs are wrt the baseline selection
   print '\n\n\n', '='*5, 'Making signal yield plus acceptance*eff table...', '\n\n'
-  print makeEffTable(inDir,2.263) 
+  print makeEffTable(inDir,2.263)
   print '\n\n\n'
 
 # piece together chunks for the SR yields
@@ -182,7 +183,7 @@ def makeCrChunk(inDir,nj,nb,mtb,nt,cr) :
 
 # SR yield/unc table chunk for a given bin in (njets, mtb, ntops)
 def makeChunk(inDir,nj,nb,mtb,nt) :
-  s = chunkHeader(nj,nb,mtb,nt,7) #.replace('{7}{c}{','{7}{c}{ \\multirow{2}{*}{').replace('} \\\\','} } \\\\ \\multicolumn{7}{c}{}  \\\\')
+  s = chunkHeader(nj,nb,mtb,nt,7)
   for binMet in binsMet : 
     s += binMet[1] 
     #for sigpoint in signals :
@@ -190,7 +191,10 @@ def makeChunk(inDir,nj,nb,mtb,nt) :
     n = 0
     e = 0
     for bkg in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
-      (tn,te) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')[1]
+      (dummy,(tn,te)) = getBinYieldUncs(inDir,bkg,binMet[0],nj,nb,nt,mtb,'')
+      #if bkg == 'ttbarplusw' :
+      #  if binMet[0] == 250 : print ''
+      #  print dummy
       n += tn
       e += te**2
       s += ' & ' + str(round(tn,2)) + ' $\\pm$ ' + str(round(te,2))
@@ -211,9 +215,16 @@ def getTotalEvents(inDir,sig) :
 
 # return the yield +/- stat +/- syst for the given process in the given bin
 def getBinYieldUncs(inDir,process,met,nj,nb,nt,mtb,cr='',sig='') :
-  if cr=='' and process == 'ttbarplusw' : 
-    inDir = inDir.replace('unblind_obs','setratetopred')
-  y = getYield(inDir,process,met,nj,nb,nt,mtb,cr,sig)
+  y = 0
+  if cr=='' and process == 'ttbarplusw' :
+    # replace raw MC ttbarplusw with estimate from 1LCR
+    met1L = met if nt==0 else 250
+    mc0L = getYield(inDir,process,met  ,nj,nb,nt,mtb,''        ,sig)
+    mc1L = getYield(inDir,process,met1L,nj,1 ,nt,mtb,'onelepcr',sig)
+    tf = mc0L / mc1L
+    y = tf * getDataYield(inDir,process,met1L,nj,1,nt,mtb,'onelepcr')
+  else :
+    y = getYield(inDir,process,met,nj,nb,nt,mtb,cr,sig)
   stat = 0
   syst = 0
   stsy = 0
@@ -237,7 +248,7 @@ def getYield(inDir,process,met=-1,nj=-1,nb=-1,nt=-1,mtb=-1,cr='',sig='') :
   for l in f:
     if len(l) < 1 : continue
     if not 'rate' in l : continue
-    n = l.split()[ps[process]-2]
+    n = l.split()[ps[process]-1]
   f.close()
   n = float(n.replace('SIGRATE',''))
   return n
