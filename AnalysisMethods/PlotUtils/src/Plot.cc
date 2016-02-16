@@ -984,7 +984,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
         hratio->Divide(hMC);
       }
       else {
-        TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+        hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
         hratio->Divide(h);
       }
       hratio->SetLineColor(h->GetLineColor());
