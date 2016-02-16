@@ -58,19 +58,13 @@ def sumUnc(unc_list):
 
 relUnc={}
 absUnc={}
-absUnc_ttbarplusw={}
-absUnc_znunu={}
-absUnc_qcd={}
-absUnc_ttz={}
+absUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
 yields={}
 yields_data={}
 statUnc={}
 statUnc_pieces={}
 systUnc={}
-systUnc_ttbarplusw={}
-systUnc_znunu={}
-systUnc_qcd={}
-systUnc_ttz={}
+systUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
 fullUnc={}
 fullUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
 allVals = {}
@@ -154,50 +148,33 @@ def calcAbsUnc():
     For uncertainties of the same type, add linearly for each bin.
     For uncertainties of different types, add in quadrature for each bin.
     '''
-    absUnc            = {bin:{} for bin in binlist}
-    absUnc_ttbarplusw = {bin:{} for bin in binlist}
-    absUnc_znunu      = {bin:{} for bin in binlist}
-    absUnc_qcd        = {bin:{} for bin in binlist}
-    absUnc_ttz        = {bin:{} for bin in binlist}
+    absUnc = {bin:{} for bin in binlist}
+    for sample in all_samples: absUnc_pieces[sample] = {bin:{} for bin in binlist}
     for bin in binlist:
-        absUnc[bin]            = {type:0 for type in relUnc.keys()}
-        absUnc_ttbarplusw[bin] = {type:0 for type in relUnc.keys()}
-        absUnc_znunu[bin]      = {type:0 for type in relUnc.keys()}
-        absUnc_qcd[bin]        = {type:0 for type in relUnc.keys()}
-        absUnc_ttz[bin]        = {type:0 for type in relUnc.keys()}
+        absUnc[bin] = {type:0 for type in relUnc.keys()}
+        for sample in all_samples: absUnc_pieces[sample][bin] = {type:0 for type in relUnc.keys()}
         for type in relUnc:
             for sample in all_samples:
                 # Add the same type of unc. linearly
-                absUnc[bin][type] += relUnc[type][bin][sample] * yields[bin][sample]
-                if sample == 'ttbarplusw': absUnc_ttbarplusw[bin][type] += relUnc[type][bin][sample] * yields[bin][sample]    
-                if sample == 'znunu'     : absUnc_znunu     [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]   
-                if sample == 'ttZ'       : absUnc_ttz       [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]
-                if sample == 'qcd'       : absUnc_qcd       [bin][type] += relUnc[type][bin][sample] * yields[bin][sample]   
+                tempUnc = relUnc[type][bin][sample] * yields[bin][sample]
+                absUnc[bin][type]                += tempUnc
+                absUnc_pieces[sample][bin][type] += tempUnc
 
     for bin in absUnc:
         # Add different types of unc. in quadrature
-        systUnc[bin]            = sumUnc(absUnc[bin].values())
-        systUnc_ttbarplusw[bin] = sumUnc(absUnc_ttbarplusw[bin].values())
-        systUnc_znunu[bin]      = sumUnc(absUnc_znunu     [bin].values())
-        systUnc_qcd[bin]        = sumUnc(absUnc_qcd       [bin].values())
-        systUnc_ttz[bin]        = sumUnc(absUnc_ttz       [bin].values())
-        fullUnc[bin]                      = sumUnc([statUnc[bin], systUnc[bin]])
-        fullUnc_pieces['ttbarplusw'][bin] = sumUnc([statUnc_pieces[bin]['ttbarplusw'], systUnc_ttbarplusw[bin]])  
-        fullUnc_pieces['znunu'][bin]      = sumUnc([statUnc_pieces[bin]['znunu'     ], systUnc_znunu     [bin]])  
-        fullUnc_pieces['qcd'][bin]        = sumUnc([statUnc_pieces[bin]['qcd'       ], systUnc_qcd       [bin]])
-        fullUnc_pieces['ttZ'][bin]        = sumUnc([statUnc_pieces[bin]['ttZ'       ], systUnc_ttz       [bin]])
-        
+        systUnc[bin] = sumUnc(absUnc[bin].values())
+        fullUnc[bin] = sumUnc([statUnc[bin], systUnc[bin]])
+        for sample in all_samples:
+            systUnc_pieces[sample][bin] = sumUnc(absUnc_pieces[sample][bin].values())
+            fullUnc_pieces[sample][bin] = sumUnc([statUnc_pieces[bin][sample], systUnc_pieces[sample][bin]])
 
 
 def writeFullUnc(pred_file):
     ''' Update the input root file, add a hist with total prediction and full uncertainty. '''
     f = rt.TFile(pred_file, 'UPDATE')
     h = rt.TH1F('bkgtotal_unc_sr', '', len(binlist), 0, len(binlist))
-    h_pieces = { 'ttbarplusw' : rt.TH1F('ttbarplusw_unc_sr', '', len(binlist), 0, len(binlist))
-               , 'znunu'      : rt.TH1F(     'znunu_unc_sr', '', len(binlist), 0, len(binlist))
-               , 'ttZ'        : rt.TH1F(       'qcd_unc_sr', '', len(binlist), 0, len(binlist))
-               , 'qcd'        : rt.TH1F(       'ttz_unc_sr', '', len(binlist), 0, len(binlist))
-               }
+    h_pieces = {}
+    for sample in all_samples : h_pieces[sample] = rt.TH1F(sample+'_unc_sr', '', len(binlist), 0, len(binlist))
     print "%30s %10s %8s" % ('bin', 'total pred', 'total unc.')
     for ibin in xrange(0, h.GetNbinsX()):
         bin = binlist[ibin]
@@ -214,14 +191,11 @@ def writeFullUnc(pred_file):
             h_pieces[sample].SetBinError(ibin+1, err)
             allVals[bin][sample] = (val,err)  
     h.Write('bkgtotal_unc_sr', rt.TObject.kOverwrite)
-    h_pieces['ttbarplusw'].Write('ttbarplusw_unc_sr', rt.TObject.kOverwrite)
-    h_pieces['znunu'     ].Write(     'znunu_unc_sr', rt.TObject.kOverwrite)
-    h_pieces['ttZ'       ].Write(       'qcd_unc_sr', rt.TObject.kOverwrite)
-    h_pieces['qcd'       ].Write(       'ttz_unc_sr', rt.TObject.kOverwrite)
+    for sample in all_samples : h_pieces[sample].Write(sample+'_unc_sr', rt.TObject.kOverwrite)
     f.Close()
 
 def makeYieldTable():
-    ''' Make a Latex-formatted table with each bkg pred plus unc, total bkg plus unc, and observed data. '''
+    ''' Make a Latex-formatted table with each bkg plus unc, total bkg plus unc, and observed data for every bin. '''
     print '\nprinting yield table...\n'
     s  = '\\hline\n'
     s += '\\met [GeV]  &  \\ttbar, \\W+jets  &  \\znunu  &  QCD  &  \\ttZ  &  total SM  &  $N_{\\rm data}$  \\\\ \n'
@@ -263,11 +237,12 @@ def chunkHeader(nj,nb,mtb,nt,columns):
     elif(mtb==175 and nj==5 and nt==0 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $5\\leq\\nj<7$, $N_\\mathrm{t} = 0$, $\\nb = 1$'
     elif(mtb==175 and nj==7 and nt==0 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq7$ $N_\\mathrm{t} = 0$, $\\nb = 1$'
     elif(mtb==175 and nj==5 and nt==1 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq5$, $N_\\mathrm{t} \\geq 1$, $\\nb = 1$'
-    if  (mtb==  0 and nj==5           and nb==2) : s += '$\\mtb < 175$~\\GeV, $5\\leq\\nj<7$, $\\nb \\geq 2$'
+    elif(mtb==  0 and nj==5           and nb==2) : s += '$\\mtb < 175$~\\GeV, $5\\leq\\nj<7$, $\\nb \\geq 2$'
     elif(mtb==  0 and nj==7           and nb==2) : s += '$\\mtb < 175$~\\GeV, $\\nj\\geq7$, $\\nb \\geq 2$'
     elif(mtb==175 and nj==5 and nt==0 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $5\\leq\\nj<7$, $N_\\mathrm{t} = 0$, $\\nb \\geq 2$'
     elif(mtb==175 and nj==7 and nt==0 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq7$ $N_\\mathrm{t} = 0$, $\\nb \\geq 2$'
     elif(mtb==175 and nj==5 and nt==1 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq5$, $N_\\mathrm{t} \\geq 1$, $\\nb \\geq 2$'
+    else : s += 'UNKNOWN HEADER (mtb='+str(mtb)+',nj='+str(nj)+',nt='+str(nt)+'nb='+str(nb)+')'
     #nJets $NJETS, \mtb MTB$~\\GeV, $N_\\mathrm{t} NT$
     s += '} \\\\ \n'
     s += '\\hline\n' 
