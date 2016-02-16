@@ -5,7 +5,7 @@
 vector<TString> regions = {"lowmt_mednj", "lowmt_highnj", "highmt_mednj_nt0", "highmt_highnj_nt0", "highmt_nt1" };
 vector<TString> bkgs      = {/*"ttZ"      , "qcd", "znunu"             ,*/ "ttW"      , "tW", "wjets" , "ttbar"   };
 vector<TString> bkglabels = {/*"t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu",*/ "t#bar{t}W", "tW", "W+jets", "t#bar{t}"};
-vector<TString> sigs      = {"nb1"              , "nb2"                 };
+vector<TString> sigs      = {}; //{"nb1"              , "nb2"                 };
 vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
 
 /*
@@ -15,7 +15,7 @@ vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
  * are).
  *
  */
-void plot1LCR(const TString inputDir = "plots_bkgest",
+void plot1LCR(const TString inputDir = "plots_bkgest_160215", // "plots_bkgest",
                             const TString srFileName = "output_0l.root",
                             const TString crFileName = "output_lepcr.root",
                             const TString format  = "pdf",
