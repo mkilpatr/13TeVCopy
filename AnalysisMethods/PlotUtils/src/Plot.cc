@@ -814,7 +814,10 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
   c->cd();
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -1353,7 +1356,10 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
   c->RedrawAxis();
   
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -1709,7 +1715,10 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
   c->SetGridy(fGridy);
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   // Save plot if necessary
   if(doSave) {
