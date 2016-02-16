@@ -47,7 +47,7 @@ void go() {
     TCanvas * c = new TCanvas;
     plot->draw(c,true,"pdf");
     QCDSupport::setTitleOffset(c);
-    c->SaveAs(plot->getName() + TString("pdf"));
+    c->SaveAs(plot->getName() + TString(".pdf"));
 
   }
 }
