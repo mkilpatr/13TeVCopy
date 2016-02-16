@@ -7,7 +7,7 @@
 using namespace std;
 
 enum TreeType {Data,QCD, NoSmearQCD, TTbarW, Znuu, ttZ};
-const TString TreeNames[] = {"Data", "QCD","NoSmearQCD","t#bar{t}W","Z#rightarrow#nu#nu","t#bar{t}Z"};
+const TString TreeNames[] = {"Data", "QCD","NoSmearQCD","t#bar{t}/W","Z#rightarrow#nu#nu","t#bar{t}Z"};
 const StyleTools::Colors TreeColors[] = {color_data, color_qcd,color_qcd,color_ttbar,color_znunu,color_ttZ};
 const TString weights[] = {QCDSupport::stdWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight,QCDSupport::stdMCWeight};
 
