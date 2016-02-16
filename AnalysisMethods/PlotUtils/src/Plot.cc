@@ -1190,7 +1190,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     hRelUnc->SetLineWidth(0);
     hRelUnc->SetMarkerSize(0);
     hRelUnc->Draw("E2same");
-
+    if(!fPlotStackUncertainty &&  fLeg) fLeg->AddEntry(hRelUnc,"Bkg. Uncertainty","F");
   }
 
   l->Draw("same");
