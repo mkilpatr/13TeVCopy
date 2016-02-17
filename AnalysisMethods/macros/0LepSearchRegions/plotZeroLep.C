@@ -63,7 +63,7 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
     plots->addTreeVar("nlbjets_reducedbaseline",   "nlbjets",                  sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"]                  + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{bl}", 6, -0.5, 5.5, 0,0,0, 1.5);
     plots->addTreeVar("nbjets_reducedbaseline",    "nbjets",                   sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"]                 + sel["dphij12met"] + sel["dphij34met"], "N_{b}", 6, -0.5, 5.5, 0,0,0, 0.5);
     plots->addTreeVar("dphij34met_reducedbaseline","min(dphij3met,dphij4met)", sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"]                    , "min(#Delta#phi(j_{3},#slash{E}_{T}),#Delta#phi(j_{4},#slash{E}_{T}))", 21, 0.0, 3.15, 0,0,0, 0.5);
-    plots->addTreeVar("met_reducedbaseline",       "met",                      sel["trig"] + sel["passvetoes"]              + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, 250);
+    plots->addTreeVar("met_reducedbaseline",       "met",                      sel["trig"] + sel["passvetoes"]              + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0);
     plots->addTreeVar("mtb_baseline",              "mtcsv12met",               sel["baseline"], "M_{T}(b_{1,2}, #slash{E}_{T}) [GeV]", 20, 0.0, 500.0);
 
     // // scale to 5X
