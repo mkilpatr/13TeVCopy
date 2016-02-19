@@ -17,12 +17,16 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), eeBadSCJSON(new cfgSet::JSONProcessing()), cscBeamHaloJSON(new cfgSet::JSONProcessing()), xsecFile(0), xsecLookup(0) {
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), eeBadSCJSON(new cfgSet::JSONProcessing()), cscBeamHaloJSON(new cfgSet::JSONProcessing()), badResolutionTrkJSON(new cfgSet::JSONProcessing()), muonBadTrkJSON(new cfgSet::JSONProcessing()), xsecFile(0), xsecLookup(0) {
     if(!isMC()) {
-      TString ee_bad_sc_txtfile = TString::Format("%s/src/data/JSON/ecalscn1043093_Dec01.txt", getenv("CMSSW_BASE"));
+      TString ee_bad_sc_txtfile = TString::Format("%s/src/data/EventFilters/ecalscn1043093_Dec01.txt", getenv("CMSSW_BASE"));
+      TString csc_beam_halo_txtfile = TString::Format("%s/src/data/EventFilters/csc2015_Dec01.txt", getenv("CMSSW_BASE"));
+      TString bad_resolution_trk_txtfile = TString::Format("%s/src/data/EventFilters/badResolutionTrack.txt", getenv("CMSSW_BASE"));
+      TString muon_bad_trk_txtfile = TString::Format("%s/src/data/EventFilters/muonBadTrack.txt", getenv("CMSSW_BASE"));
       eeBadSCJSON->addRunLumiEventFile(ee_bad_sc_txtfile);
-      TString csc_beam_halo_txtfile = TString::Format("%s/src/data/JSON/csc2015_Dec01.txt", getenv("CMSSW_BASE"));
       cscBeamHaloJSON->addRunLumiEventFile(csc_beam_halo_txtfile);
+      badResolutionTrkJSON->addRunLumiEventFile(bad_resolution_trk_txtfile);
+      muonBadTrkJSON->addRunLumiEventFile(muon_bad_trk_txtfile);
     }
     else {
       if(inputFile != "" && inputFile != "NONE") {
@@ -51,6 +55,8 @@ public:
       iDataReco  = data.add<size8> ("","datareco"  ,"b",datareco);
     iPassEEBadSC4    = data.add<bool> (defaults::BRANCH_METFILTERS,"eeBadSC4Flt","O",true);
     iPassCSCBeamHalo = data.add<bool> (defaults::BRANCH_METFILTERS,"cscBeamHaloFlt","O",true);
+    iPassBadResolutionTrk = data.add<bool> (defaults::BRANCH_METFILTERS,"badResolutionTrkFlt","O",true);
+    iPassMuonBadTrk  = data.add<bool> (defaults::BRANCH_METFILTERS,"muonBadTrkFlt","O",true);
   }
 
   void processVariables() {
@@ -66,6 +72,8 @@ public:
     if(!isMC()) {
       data.fill<bool>(iPassEEBadSC4,    !(eeBadSCJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
       data.fill<bool>(iPassCSCBeamHalo, !(cscBeamHaloJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
+      data.fill<bool>(iPassBadResolutionTrk, !(badResolutionTrkJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
+      data.fill<bool>(iPassMuonBadTrk,  !(muonBadTrkJSON->hasRunLumiEvent(evtInfoReader.run, evtInfoReader.lumi, evtInfoReader.event)));
       return true;
     }
     data.fill<float>(iGenWeight, genwgtsign / (1.0 - (2.0*(nNeg/(nPos+nNeg)))));
@@ -83,6 +91,8 @@ public:
   size iXSec;
   size iPassEEBadSC4;
   size iPassCSCBeamHalo;
+  size iPassBadResolutionTrk;
+  size iPassMuonBadTrk;
 
   double nPos;
   double nNeg;
@@ -97,6 +107,8 @@ public:
 
   cfgSet::JSONProcessing* eeBadSCJSON;
   cfgSet::JSONProcessing* cscBeamHaloJSON;
+  cfgSet::JSONProcessing* badResolutionTrkJSON;
+  cfgSet::JSONProcessing* muonBadTrkJSON;
 
   TFile* xsecFile;
   TH1D*  xsecLookup;

@@ -4,13 +4,13 @@
 
 using namespace ucsbsusy;
 
-void makeZeroLeptonSRTrees(TString sname = "htmht",
+void makeZeroLeptonSRTrees(TString sname = "T2tt_750_100",
                            const int fileindex = -1,
-                           const bool isMC = false,
-                           const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
+                           const bool isMC = true,
+                           const TString fname = "/store/user/apatters/13TeV/271115/merged/T2tt_750_100_ntuple_postproc.root",
                            const TString outputdir = "trees",
-                           const TString fileprefix = "root://eoscms//eos/cms",
-                           const TString json="")
+                           const TString fileprefix = "root://cmseos:1094/",
+                           const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
@@ -27,12 +27,12 @@ void makeZeroLeptonSRTrees(TString sname = "htmht",
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
   // disable JetID for signal samples
-  if (sname.Contains("T2tt")) pars.jets.applyJetID = false;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW")) pars.jets.applyJetID = false;
 
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
-  a.analyze(1000000);
+  a.analyze(10000);
 
   //a.analyze(10000,100000);
 
