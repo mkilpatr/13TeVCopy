@@ -45,7 +45,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     weight            (1),
     process           (defaults::NUMPROCESSES),
     datareco          (defaults::MC),
-    passaddmetflts    (0),
     nPV               (0),
     nPU               (0),
     rho               (0),
@@ -139,15 +138,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResCorrFile,configSet.corrections.jetResTailFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
-    }
-  }
-
-  if (!isMC_) {
-    ifstream myfile;
-    myfile.open(TString::Format("%s/src/data/EventFilters/additionalmetfilters.txt",cfgSet::CMSSW_BASE));
-    if (!myfile.fail()) {
-      std::string teststr; 
-      while (std::getline(myfile,teststr)) { addmetflts.push_back(teststr); }
     }
   }
 
@@ -292,15 +282,6 @@ void BaseTreeAnalyzer::processVariables()
     weight=  evtInfoReader.evtweight;
     process =  evtInfoReader.process;
     datareco =  evtInfoReader.datareco;
-
-    passaddmetflts = true;
-    if (!isMC_) {
-      std::string srun   = std::to_string(run);
-      std::string slumi  = std::to_string(lumi);
-      std::string sevent = std::to_string(event);
-      std::string srle = srun+":"+slumi+":"+sevent;
-      for (unsigned int i0=0; i0<addmetflts.size(); ++i0) { if (srle == addmetflts[i0]) { passaddmetflts = false; } } 
-    }
 
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.processMET(this);
