@@ -71,6 +71,8 @@ namespace ucsbsusy {
       bool cscBeamHaloFlt;
       bool eeBadSCFlt;
       bool eeBadSC4Flt;
+      bool badResolutionTrkFlt;
+      bool muonBadTrkFlt;
       int  massPar1;
       int  massPar2;
       int  massPar3;
