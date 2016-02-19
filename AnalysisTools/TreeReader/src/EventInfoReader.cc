@@ -59,6 +59,8 @@ EventInfoReader::EventInfoReader()
   cscBeamHaloFlt = false;
   eeBadSCFlt = false;
   eeBadSC4Flt = false;
+  badResolutionTrkFlt = false;
+  muonBadTrkFlt = false;
   massPar1 = 0;
   massPar2 = 0;
   massPar3 = 0;
@@ -107,6 +109,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Tight", &hbheFltR2Tight);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"cscBeamHaloFlt", &cscBeamHaloFlt);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"eeBadSC4Flt", &eeBadSC4Flt);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badResolutionTrkFlt", &badResolutionTrkFlt);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"muonBadTrkFlt", &muonBadTrkFlt);
 
   clog << endl;
 }

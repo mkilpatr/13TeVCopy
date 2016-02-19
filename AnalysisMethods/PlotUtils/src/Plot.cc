@@ -814,7 +814,10 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
   c->cd();
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -984,7 +987,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
         hratio->Divide(hMC);
       }
       else {
-        TH1F* hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
+        hratio = (TH1F*)hData->Clone("data_over_h_"+TString(to_string(i)));
         hratio->Divide(h);
       }
       hratio->SetLineColor(h->GetLineColor());
@@ -1190,7 +1193,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     hRelUnc->SetLineWidth(0);
     hRelUnc->SetMarkerSize(0);
     hRelUnc->Draw("E2same");
-
+    if(!fPlotStackUncertainty &&  fLeg) fLeg->AddEntry(hRelUnc,"Bkg. Uncertainty","F");
   }
 
   l->Draw("same");
@@ -1353,7 +1356,10 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
   c->RedrawAxis();
   
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   if(doSave) {
     gSystem->mkdir(outputdir,true);
@@ -1709,7 +1715,10 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
   c->SetGridy(fGridy);
 
   // Add header and lumi text
-  header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
+  if(fDrawCMSLumi)
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+  else
+    header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
   // Save plot if necessary
   if(doSave) {

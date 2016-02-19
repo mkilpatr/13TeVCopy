@@ -23,12 +23,12 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-#options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
+options.inputFiles = '/store/data/Run2015D/MuonEG/MINIAOD/05Oct2015-v2/60000/00D43A12-C573-E511-8F4C-0025905A60E0.root'
 #options.inputFiles = '/store/data/Run2015D/HTMHT/MINIAOD/PromptReco-v4/000/258/159/00000/42D9839F-DC6B-E511-82B0-02163E0136EC.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/18F237DA-CF6D-E511-B4A3-00221981B410.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/38C49928-8D72-E511-94A6-001E67579188.root'
-options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/FEE1CE52-216E-E511-9B5A-0025905A60B8.root'
+#options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/FEE1CE52-216E-E511-9B5A-0025905A60B8.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2_ext3-v1/10000/003964D7-D06E-E511-A8DA-001517F7F524.root'
 #options.inputFiles = '/store/mc/RunIISpring15MiniAODv2/SMS-T1tttt_mGluino-1500to1525_mLSP-50to1125_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/FastAsympt25ns_74X_mcRun2_asymptotic_v2-v1/20000/0A5EEA32-037C-E511-9870-002590596486.root'
 #options.inputFiles = '/store/mc/RunIISpring15FSPremix/SMS-T2tt_mStop-600-950_mLSP-1to450_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/MCRUN2_74_V9-v1/00000/00667B2C-6F9B-E511-978E-02163E013DDA.root'
@@ -86,7 +86,7 @@ ISFASTSIM = False
 ISMINIAODV1 = False
 runMetCorrAndUnc = True
 updateJECs = True
-JECUNCFILE = 'data/JEC/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt'
+JECUNCFILE = 'data/JEC/Summer15_25nsV7_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
 if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in options.inputFiles[0] :
@@ -106,10 +106,10 @@ if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in optio
 # Specific to data
 if '/store/data' in options.inputFiles[0] :
     ISDATA = True
-    JECUNCFILE = 'data/JEC/Summer15_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
+    JECUNCFILE = 'data/JEC/Summer15_25nsV7_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename = jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
     process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_v5')
@@ -234,7 +234,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=ISFASTSIM  #use external JECs (sqlite file)
+usePrivateSQlite=True   #use external JECs (sqlite file)
 useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections.
 
@@ -250,7 +250,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era="Summer15_25nsV6_DATA" if ISDATA else "Summer15_25nsV6_MC"
+    era="Summer15_25nsV7_DATA" if ISDATA else "Summer15_25nsV7_MC"
     if ISFASTSIM :
         era="MCRUN2_74_V9"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/"+era+".db")
