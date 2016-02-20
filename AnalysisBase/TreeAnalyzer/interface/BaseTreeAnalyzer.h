@@ -142,7 +142,6 @@ public:
     defaults::Process  process;
     defaults::DataReco datareco;
     unsigned long      triggerflag;
-    bool               passaddmetflts;
 
     int   nPV;
     float nPU;
@@ -208,9 +207,6 @@ public:
     const bool   isMC_;
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
-
- private:
-    std::vector<std::string> addmetflts;
 
 };
 

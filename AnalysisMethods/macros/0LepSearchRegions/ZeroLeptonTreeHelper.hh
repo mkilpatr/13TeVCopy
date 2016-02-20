@@ -672,7 +672,7 @@ struct TreeFiller {
     data->fill<bool>(i_passhbheisoflt,ana->evtInfoReader.hbheIsoFlt);
     data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
     data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
-    data->fill<bool>(i_passaddmetflts,ana->passaddmetflts);
+    data->fill<bool>(i_passaddmetflts,(ana->isMC() || (ana->evtInfoReader.badResolutionTrkFlt && ana->evtInfoReader.muonBadTrkFlt)));
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
