@@ -380,7 +380,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
       double predsyst = pred*(getTotalSystUnc(crinfo,reg,metBin) - 1);
 
       if(tf < .0005 ) return TString::Format(" $<$0.001 & - ");
-      return TString::Format("%.3f $\\pm$ %.3f & %.2f $\\pm$ %.3f (stat.) $\\pm$ %.3f (syst.)",tf,tfUnc,pred,predstat,predsyst );
+      return TString::Format("%.3f $\\pm$ %.3f & %.3f $\\pm$ %.3f (stat.) $\\pm$ %.3f (syst.)",tf,tfUnc,pred,predstat,predsyst );
     }
   };
 
