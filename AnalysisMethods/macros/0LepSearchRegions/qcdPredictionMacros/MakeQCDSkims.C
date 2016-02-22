@@ -63,6 +63,11 @@ void go() {
     tI->SetBranchStatus("cttWeight",1);
     tI->SetBranchStatus("passaddmetflts",1);
 
+//    tI->SetBranchStatus("ht",1);
+//    tI->SetBranchStatus("j1pt",1);
+//    tI->SetBranchStatus("j2pt",1);
+//    tI->SetBranchStatus("j3pt",1);
+
     TFile * fO = new TFile(pre +"_skimmed.root","recreate");
     fO->cd();
     TTree * tO = tI->CopyTree(QCDSupport::METPresel);
