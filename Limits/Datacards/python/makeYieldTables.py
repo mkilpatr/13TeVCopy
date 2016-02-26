@@ -4,6 +4,7 @@ import sys
 from math import sqrt
 from ROOT import TFile,TH1D
 from makeUncTables import getDataYield, getRawUnc, getFileName, chunkHeaderNoB, chunkHeader
+#from makeUncTables import signals
 
 """Makes the yield tables for the AN for the various backgrounds and signal points using the datacards.
 If the uncertanty names change, the "sources" dictornary will need to be updated apropriately. Other 
@@ -13,8 +14,9 @@ dictionary is correct.
 
 binsB   = (1,2)
 binsMet = ((250,'250-300'),(300,'300-400'),(400,'400-500'),(500,'500-600'),(600,'$>$600'))
-ps = {'ttbarplusw':3, 'znunu':4, 'ttz':5, 'qcd':6, 'onelepcr':3, 'T2tt_700_1':3, 'T2tt_600_200':3}
-signals = ('T2tt_700_1','T2tt_600_200')
+ps = {'ttbarplusw':3, 'znunu':4, 'ttz':5, 'qcd':6, 'onelepcr':3, 'T2tt_700_1':2, 'T2tt_600_200':2, 'T2tt_300_200':2, 'signal':2}
+#signals = ('T2tt_700_1','T2tt_600_200','T2tt_300_200')
+signals = ('T2tb_550_1','T2tb_650_150','T2tb_500_200')
 totalYields = {}
 xsec = {}
 sources = {
@@ -22,6 +24,7 @@ sources = {
                   ('corr_tau'             , 'Tau veto'                   , 'syst'),
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' , 'syst'),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' , 'syst'),
+                  ('fake_t'               ,  'Top-taging'                , 'syst'),
                   ('pu'                   , 'Pileup reweighting'         , 'syst'),
                   ('lostlep_nt1metintunc' , '\\met integration'          , 'syst'),
                   ('scale_j'              , 'Jet energy scale'           , 'syst'),
@@ -37,6 +40,7 @@ sources = {
   'znunu' : [('corr_l'                        , 'Lepton veto'                , 'syst'),
              ('eff_b_heavy'                   , '\\bq-tagging: heavy flavor' , 'syst'),
              ('eff_b_light'                   , '\\bq-tagging: light flavor' , 'syst'),
+             ('fake_t'                        ,  'Top-taging'                , 'syst'),
              ('pu'                            , 'Pileup reweighting'         , 'syst'),
              ('scale_j'                       , 'Jet energy scale'           , 'syst'),
              ('znunu_rzunc'                   , '$R_{\\cPZ}$'                , 'syst'),
@@ -58,6 +62,7 @@ sources = {
   'qcd' : [('corr_tau'          , 'Tau veto'                  , 'syst'),
            ('eff_b_heavy'       , '\\bq-tagging: heavy flavor', 'syst'),
            ('eff_b_light'       , '\\bq-tagging: light flavor', 'syst'),
+           ('fake_t'            ,  'Top-taging'               , 'syst'),
            ('pu'                , 'Pileup reweighting'        , 'syst'),
            ('scale_j'           , 'Jet energy scale'          , 'syst'),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    , 'syst'),
@@ -100,7 +105,7 @@ def makeTable(inDir) :
   s  = '\\hline\n'
   s += '\\met [GeV]  &  \\ttbar, \\W+jets  &  \\znunu  &  QCD  &  \\ttZ  &  total SM  &  $N_{\\rm data}$  \\\\ \n'
   s += '\\hline\n'
-  s += makeChunk(inDir,5,1,  0,0)
+  s += makeCwhunk(inDir,5,1,  0,0)
   s += makeChunk(inDir,5,2,  0,0)
   s += makeChunk(inDir,7,1,  0,0)
   s += makeChunk(inDir,7,2,  0,0)
@@ -130,14 +135,13 @@ def makeCrTable(inDir,cr='') :
 def makeEffTable(inDir,lumi) :
   for sig in signals :
     if not sig in totalYields.keys() : 
-      totalYields[sig] = getTotalEvents(inDir,sig)
+      totalYields[sig] = getTotalEvents(inDir,sig)*xsec[sig]/1000.
   s  = '\\hline\n'
-  s += ' &  \\multicolumn{2}{c||}{T2tt(700,1)} & \multicolumn{2}{c|}{T2tt(600,200)}  \\\\ \n'
+  s += ' &  \\multicolumn{2}{c||}{T2tt(700,1)} & \multicolumn{2}{c||}{T2tt(600,200)} & \multicolumn{2}{c|}{T2tt(300,200)}  \\\\ \n'
   s += '\\hline\n'
-  s += '\\met [GeV] & $\\nb=1$ & $\\nb \\geq 2$ & $\\nb=1$ & $\\nb \\geq 2$ \\\\ \n'
+  s += '\\met [GeV]' + '& $\\nb=1$ & $\\nb \\geq 2$'*len(signals) + ' \\\\ \n'
   s += '\\hline\n'
-  s += '\\hline\n'
-  s += '\\multicolumn{5}{c}{Baseline selection}  \\\\ \n'
+  s += '\\multicolumn{'+str(2*len(signals)+1)+'}{c}{Baseline selection}  \\\\ \n'
   s += '\\hline\n'
   for sig in signals :
     n = totalYields[sig]
@@ -155,7 +159,7 @@ def makeEffTable(inDir,lumi) :
 
 # signal yield/eff table chunk for a given bin in (njets, mtb, ntops)
 def makeEffChunk(inDir,lumi,nj,mtb,nt,cr='') :
-  s = chunkHeaderNoB(nj, mtb, nt, 5)
+  s = chunkHeaderNoB(nj, mtb, nt, 2*len(signals)+1)
   for binMet in binsMet :
     s += binMet[1]
     for sig in signals :
@@ -164,6 +168,7 @@ def makeEffChunk(inDir,lumi,nj,mtb,nt,cr='') :
         # this eff is relitive to ALL expected events for
         # now we're going to only consider it relitive
         # to the baseline selection, so need to calc that
+        n = n*xsec[sig]/1000.
         effbase = n / totalYields[sig]
         s += ' & ' + str(round(n,2)) + ' (' + str(round(effbase*100,1)) +'\\%)'
     s += ' \\\\ \n'
@@ -249,6 +254,8 @@ def getYield(inDir,process,met=-1,nj=-1,nb=-1,nt=-1,mtb=-1,cr='',sig='') :
   for l in f:
     if len(l) < 1 : continue
     if not 'rate' in l : continue
+    if 'T' in sig     : process = 'signal'
+    if 'T' in process : process = 'signal'
     n = l.split()[ps[process]-1]
   f.close()
   n = float(n.replace('SIGRATE',''))

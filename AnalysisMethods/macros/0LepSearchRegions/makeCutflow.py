@@ -23,16 +23,21 @@ baselines = [
 
 cuts = [
          #('$\\met > 250$, $\pt (J_{1,2})>75$'  , 'met>250 && j1pt>75 && j2pt>75'  ),
+         ('$\\met > 200$'          , 'met>200'                                    ),
          ('$\\met > 250$'          , 'met>250'                                    ),
          ('$\pt (J_{1,2})>75$'     , 'j1pt>75 && j2pt>75'                         ),
          ('lepton veto'            , 'nvetolep==0'                                ),
-         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
+         #('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
+         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
          ('$N_{J} \\geq 5$'        , 'njets>=5'                                   ),
          ('$\\nb^{l} \\geq 2$'     , 'nlbjets>=2'                                 ),
          ('$\\nb \\geq 1$'         , 'nbjets>=1'                                  ),
          ('$\\dphij_{12} > 0.5$'   , 'dphij12met>0.5'                             ),
          ('$\\dphij_{3} > 0.5$'    , 'dphij3met>0.5'                              ),
          ('$\\dphij_{4} > 0.5$'    , 'dphij4met>0.5'                              ),
+         #
+         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
+         ('$\\tau$ veto'           , 'nvetotau==0'                                ),
        ]
 
 binnings = {

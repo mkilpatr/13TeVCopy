@@ -97,7 +97,7 @@ void PlotStuff::assignColor(TString sname)
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double xline)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
@@ -106,11 +106,11 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
-  vlines_.push_back(xline);
+  vlines_.push_back(xlines);
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, double xline)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins);
@@ -119,11 +119,11 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
-  vlines_.push_back(xline);
+  vlines_.push_back(xlines);
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, double xline)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins, nbinsy, ybins);
@@ -132,7 +132,7 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
-  vlines_.push_back(xline);
+  vlines_.push_back(xlines);
 
 }
 
@@ -504,7 +504,7 @@ void PlotStuff::loadTables()
 
 }
 
-void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists,  double xline)
+void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists,  vector<double> xlines)
 {
   Plot *plot = new Plot(name, title, xtitle, ytitle);
   plot->outputdir = outputdir_;
@@ -715,7 +715,7 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
 
   bool legonleft = maxbin > 0.5*nbins ? true : false;
 
-  if(xline>-99.) {
+  for(auto xline : xlines) {
     if(config_.logy) plot->addLine(xline, config_.minlogscale, xline, config_.maxlogscale*max, config_.vlinecolor, config_.vlinestyle);
     else             plot->addLine(xline, 0.01               , xline, config_.maxscale   *max, config_.vlinecolor, config_.vlinestyle);
   }
@@ -892,8 +892,8 @@ void PlotStuff::plot()
     assert(histvec.size() == samples_.size());
 
     canvas_->Clear();
-    double xline = vlines_.size()>0 ? vlines_[ihist] : -999.;
-    makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec, xline);
+    //double xlines = vlines_.size()>0 ? vlines_[ihist] : -999.;
+    makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec, vlines_[ihist]);
 
     if(config_.writehists) {
       outfile_->cd();

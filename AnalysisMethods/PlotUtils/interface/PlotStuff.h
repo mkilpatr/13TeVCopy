@@ -299,11 +299,11 @@ class PlotStuff {
     virtual ~PlotStuff() {}
 
     // Add a plot to be made from the provided TTrees: use with TREES
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0, double xline=-999.);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0, vector<double> xlines={});
     // Add a plot to be made from the provided TTrees: use with TREES and variable x binning
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, double xline=-999.);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, vector<double> xlines={});
     // Add a plot to be made from the provided TTrees: use with TREES and variable x/y binning
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, double xline=-999.);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, vector<double> xlines={});
     // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
@@ -411,7 +411,7 @@ class PlotStuff {
     // Fill yields and uncertainties
     void     loadTables();
     // Plot the given histograms on a canvas
-    void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists, double xline=-999);
+    void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists, vector<double> xlines={});
     // Plot the given 2D histograms separately
     void     makeHist2DPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH2F*> hists);
     // Plot the given graphs on a canvas
@@ -439,7 +439,7 @@ class PlotStuff {
     vector<TString>          graphplotnames_;
     vector<TString>          tablelabels_;
     vector<Sample*>          samples_;
-    vector<double>           vlines_;
+    vector<vector<double>>   vlines_;
     TFile*                   infile_;
     TString                  inputdir_;
     TString                  outputdir_;

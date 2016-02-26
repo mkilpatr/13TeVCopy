@@ -5,8 +5,10 @@
 vector<TString> regions = {"lowmt_mednj", "lowmt_highnj", "highmt_mednj_nt0", "highmt_highnj_nt0", "highmt_nt1" };
 vector<TString> bkgs      = {/*"ttZ"      , "qcd", "znunu"             ,*/ "ttW"      , "tW", "wjets" , "ttbar"   };
 vector<TString> bkglabels = {/*"t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu",*/ "t#bar{t}W", "tW", "W+jets", "t#bar{t}"};
-vector<TString> sigs      = {}; //{"nb1"              , "nb2"                 };
-vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
+//vector<TString> sigs      = {}; //{"nb1"              , "nb2"                 };
+//vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
+vector<TString> sigs      = {"T2tt_700_1" , "T2tt_600_200" };
+vector<TString> siglabels = {"T2tt(700,1)", "T2tt(600,200)"};
 
 /*
  * To make the input histograms to this macro, run getZeroLeptonPrediction after uncommenting
@@ -15,28 +17,31 @@ vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
  * are).
  *
  */
-void plot1LCR(const TString inputDir = "plots_bkgest_160215", // "plots_bkgest",
-                            const TString srFileName = "output_0l.root",
+void plot1LCR(const TString inputDir = "plots_bkgest_160224_looseBaseline_njets2_nlb1", // "plots_bkgest",
+                            //const TString srFileName = "output_0l.root",
                             const TString crFileName = "output_lepcr.root",
                             const TString format  = "pdf",
                             const bool    plotlog = true
                             )
 {
 
-  TFile* infileSR = new TFile(inputDir + "/" + srFileName);
+  //TFile* infileSR = new TFile(inputDir + "/" + srFileName);
   TFile* infileCR = new TFile(inputDir + "/" + crFileName);
 
   StyleTools::ColorMap colormap = StyleTools::DefaultColors();
   colormap["ttbarplusw"] = StyleTools::color_ttbar;
   colormap["ttbar"]      = kCyan-7;
   colormap["wjets"]      = StyleTools::color_wjets;
-  colormap["tW"]         = StyleTools::color_tW;
+  //colormap["tW"]         = StyleTools::color_tW;
+  //colormap["tW"]         = kGreen-9; //StyleTools::color_tW;
   colormap["ttW"]        = StyleTools::color_ttW;
   colormap["znunu"] = kRed-9;
   colormap["qcd"]   = StyleTools::color_qcd;
   colormap["ttz"]   = StyleTools::color_ttZ;
   colormap["nb1"]   = kRed;
   colormap["nb2"]   = kOrange-3; // kGreen+3; // kViolet-1 doesn't work because in intersects with tW's violet in one bin
+  colormap["T2tt_700_1"]   = kRed;
+  colormap["T2tt_600_200"] = kViolet-1;
 
   StyleTools::SetTDRStyle();
 
@@ -75,12 +80,13 @@ void plot1LCR(const TString inputDir = "plots_bkgest_160215", // "plots_bkgest",
     plots->setPlotStackUncertainty();
     plots->setPlotRatioUncertaintyBand();
 
-    for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
-      TH1F* hsig = (TH1F*)infileSR->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
-      hsig->Scale(intdata/hsig->Integral(1,hsig->GetNbinsX()));
-      //plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
-      plots->addHistForRatio(hsig, siglabels[isig], "mc_hist", 0, 0, colormap[sigs[isig]], 11, 0, 3, 0);
-    }
+    // for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
+    //   //TH1F* hsig = (TH1F*)infileSR->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
+    //   TH1F* hsig = (TH1F*)infileCR->Get("met_lepcr_nbgeq1_"+region+"_"+sigs[isig]+";1");
+    //   //hsig->Scale(intdata/hsig->Integral(1,hsig->GetNbinsX()));
+    //   plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
+    //   //plots->addHistForRatio(hsig, siglabels[isig], "mc_hist", 0, 0, colormap[sigs[isig]], 11, 0, 3, 0);
+    // }
 
     plots->setXRange(0,5);
     if(plotlog) {
