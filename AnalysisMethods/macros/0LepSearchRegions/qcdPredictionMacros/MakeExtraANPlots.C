@@ -123,23 +123,28 @@ void getMotivationPlots() {
 void getSmearComparision() {
 //  //Get dPhi plot
   TString preselection = TString::Format("%s && %s ",QCDSupport::METPresel.Data(),QCDSupport::BaselineExtraCuts.Data());
-//  TString sels[] = {"nbjets == 1 && (dphij12met < .1 || dphij3met < .1)","nbjets >= 2 && (dphij12met < .1 || dphij3met < .1)",
-//      "nbjets == 1  && (dphij12met > .5)","nbjets >= 2 && (dphij12met > .5)"
-//
-//
-//      ,""};
-//  TString selNames[] = {"#Delta#phi_{123} < 0.1, 1 b-tag","#Delta#phi_{123} < 0.1, #geq 2 b-tags","#Delta#phi_{12} > 0.5, 1 b-tag","#Delta#phi_{12} > 0.5,  #geq 2 b-tags",""};
+
+  std::vector<HistogramGetter*> hists;
 
   TString sels[] = {"nbjets == 1","nbjets >= 2",
       "ncttstd >=1","dphij12met > .5"
-
-
       ,""};
   TString selNames[] = {"1 b-tag","#geq 2 b-tags","#geq1 top tag","#Delta#phi_{12} > 0.5",""};
 
-
   double bins[] = {250,300,400,500,600,700};
-  HistogramGetter metHistG("met","met","#slash{#it{E}}_{T} [GeV]", 5,bins);
+    hists.push_back(new HistogramGetter("met","met","#slash{#it{E}}_{T} [GeV]", 5,bins));
+
+
+
+//  TString sels[] = {"nbjets >=1"
+//      ,""};
+//  TString selNames[] = {" ",""};
+//  hists.push_back(new HistogramGetter("ht","ht","#it{H}_{T} [GeV]", 58,200,5000));
+//  hists.push_back(new HistogramGetter("j1pt","j1pt","#it{p}_{T, jet 1} [GeV]", 29,100,3000));
+//  hists.push_back(new HistogramGetter("j2pt","j2pt","#it{p}_{T, jet 2} [GeV]", 24,100,2500));
+//  hists.push_back(new HistogramGetter("j3pt","j3pt","#it{p}_{T, jet 3} [GeV]", 15,0,1500));
+
+
 
   TTree * smearQCD = QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root");
   TTree * origQCD = QCDSupport::getTree("pieces/qcd_origtree_skimmed_baseline.root");
@@ -147,12 +152,14 @@ void getSmearComparision() {
 
 
 
+    for(unsigned int iH = 0; iH < hists.size(); ++iH)
       for(unsigned int iP = 0; sels[iP][0]; ++iP){
-        TString name = TString::Format("smearComp_%u",iP);
-        Plot * plot = new Plot(name,selNames[iP],metHistG.plotInfo->xTitle,"Events");
+        auto& histG = *hists[iH];
+        TString name = TString::Format("smearComp_%u_%u",iH,iP);
+        Plot * plot = new Plot(name,selNames[iP],histG.plotInfo->xTitle,"Events");
         TString sel = TString::Format("%s && %s",preselection.Data(),sels[iP].Data());
-        metHistG.setNBS(50);TH1F * hSS = metHistG.getHistogramManual(smearQCD,sel,"weight*2.26","QCD");
-        metHistG.setNBS(0); TH1F * hSO = metHistG.getHistogram(origQCD,sel,"weight*2.26","QCD2");
+        histG.setNBS(50);TH1F * hSS = histG.getHistogramManual(smearQCD,sel,"weight*2.26","QCD");
+        histG.setNBS(0); TH1F * hSO = histG.getHistogram(origQCD,sel,"weight*2.26","QCD2");
         plot->addHist(hSO,"Original QCD MC","",TreeColors[TTbarW],0,TreeColors[TTbarW]);
         plot->addHist(hSS,"Smeared QCD MC","",TreeColors[Znuu],0,TreeColors[Znuu]);
 
