@@ -34,8 +34,8 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
   const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
   const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";
   const TString stdWeight = "1.0";
-  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.263";
-  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.263";
+  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.317";
+  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.317";
   const TString topMCWeight = "cttWeight";
 
   TString processWeight(TString weight, int iCR) {return iCR == 4 ? TString::Format("%s*%s",weight.Data(),topMCWeight.Data()) : weight;}
@@ -129,7 +129,9 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
     void fillDataCorr(){
       for(unsigned int iS = 0; iS < nCR; ++iS){
         TH1 * hd = metGetter->getHistogram(dataTree,TString::Format("%s && %s",crPreData.Data(),crSel[iS].Data()),"1.0",TString::Format("tree_%u",0));
-        TH1 * hqwv = metGetter->getHistogram(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),processWeight(stdQCDWeight,iS),TString::Format("tree_%u",0));
+        metGetter->setNBS(50);
+        TH1 * hqwv = metGetter->getHistogramManual(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),processWeight(stdQCDWeight,iS),TString::Format("tree_%u",0));
+        metGetter->setNBS(0);
         TH1 * corr = (TH1*)hd->Clone();
         TH1 * corrU = (TH1*)hd->Clone();
         std::cout << crSelNames[iS] << std::endl;
