@@ -84,7 +84,7 @@ if '50ns' in options.inputFiles[0] :
 ISDATA = False
 ISFASTSIM = False
 ISMINIAODV1 = False
-runMetCorrAndUnc = True
+runMetCorrAndUnc = False
 updateJECs = True
 JECUNCFILE = 'data/JEC/Summer15_25nsV7_MC_Uncertainty_AK4PFchs.txt'
 
@@ -110,9 +110,10 @@ if '/store/data' in options.inputFiles[0] :
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
     jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt")
+    #jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename = jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_v5')
+    process.TestAnalyzer.globalTag = cms.string('74X_dataRun2_reMiniAOD_v2')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -234,8 +235,8 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData=ISDATA        #data/MC switch
-usePrivateSQlite=True   #use external JECs (sqlite file)
-useHFCandidates=False   #create an additionnal NoHF slimmed MET collection if the option is set to false
+usePrivateSQlite=ISFASTSIM  #use external JECs (sqlite file)
+useHFCandidates=True    #create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals=True     #application of residual corrections.
 
 # For adding NoHF MET
@@ -395,12 +396,49 @@ if updateJECs:
         jetSource = cms.InputTag("slimmedJetsAK8"),
         jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
     )
+    # Raw MET
+    process.uncorrectedMet = cms.EDProducer("RecoMETExtractor",
+        correctionLevel = cms.string('raw'),
+        metSource = cms.InputTag("slimmedMETs",processName=cms.InputTag.skipCurrentProcess())
+        )
+    # Raw PAT MET
+    from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
+    addMETCollection(process, labelName="uncorrectedPatMet", metSource="uncorrectedMet")
+    if not ISDATA :
+        # MET
+        process.genMet = cms.EDProducer("GenMETExtractor",
+            metSource = cms.InputTag("slimmedMETs",processName=cms.InputTag.skipCurrentProcess())
+            )
+        process.uncorrectedPatMet.genMETSource = cms.InputTag('genMet')
+    else :
+        process.uncorrectedPatMet.addGenMET = cms.bool(False)
+    process.Type1CorrForNewJEC = cms.EDProducer("PATPFJetMETcorrInputProducer",
+        isMC = cms.bool(ISDATA != True),
+        jetCorrLabel = cms.InputTag("L3Absolute"),
+        jetCorrLabelRes = cms.InputTag("L2L3Residual"),
+        offsetCorrLabel = cms.InputTag("L1FastJet"),
+        skipEM = cms.bool(True),
+        skipEMfractionThreshold = cms.double(0.9),
+        skipMuonSelection = cms.string('isGlobalMuon | isStandAloneMuon'),
+        skipMuons = cms.bool(True),
+        src = cms.InputTag("patJetsReapplyJEC"),
+        type1JetPtThreshold = cms.double(15.0),
+        type2ExtraCorrFactor = cms.double(1.0),
+        type2ResidualCorrEtaMax = cms.double(9.9),
+        type2ResidualCorrLabel = cms.InputTag(""),
+        type2ResidualCorrOffset = cms.double(0.0)
+        )
+    process.slimmedMETsNewJEC = cms.EDProducer('CorrectedPATMETProducer',
+        src = cms.InputTag('uncorrectedPatMet'),
+        srcCorrections = cms.VInputTag(cms.InputTag('Type1CorrForNewJEC', 'type1'))
+        )
     process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('patJetsAK8ReapplyJEC')
     process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Electrons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Photons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.PFCandidates.jets = cms.InputTag('patJetsReapplyJEC')
+    process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
     process.QGTagger.srcJets = cms.InputTag('patJetsReapplyJEC')
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')

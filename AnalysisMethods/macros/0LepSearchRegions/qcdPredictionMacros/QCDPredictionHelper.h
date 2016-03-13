@@ -34,8 +34,8 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
   const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
   const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";
   const TString stdWeight = "1.0";
-  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.263";
-  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.263";
+  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.317";
+  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.317";
   const TString topMCWeight = "cttWeight";
 
   TString processWeight(TString weight, int iCR) {return iCR == 4 ? TString::Format("%s*%s",weight.Data(),topMCWeight.Data()) : weight;}
