@@ -125,6 +125,7 @@ void comp(std::string  dataCardDir){
       if(!absComp(a.statU,b.statU)){ cout << "(statU) "; pass = false;}
       cout << a.print() << endl;
       if(!pass) cout << b.print() << endl;
+      cout << (a.TFTC - b.TFTC)/a.TFTC<<endl;
     }
 
   }

@@ -57,6 +57,15 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
         "mtcsv12met >= 175 && njets >= 7 && ncttstd == 0",
         "mtcsv12met >= 175 && ncttstd >= 1"
     };
+
+    TString crSelLabels[nCR] = {
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV}{5-6 jets}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV}{#geq 7 jets}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{5-6 jets, N_{t} = 0}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{#geq 7 jets, N_{t} = 0}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{#geq 5 jets, N_{t} #geq 1}"
+    };
+
       TString crSelNames[nCR] = {"#it{m}_{T,b} < 175, nJ 5-6","#it{m}_{T,b}< 175, nJ #geq7",
           "#it{m}_{T,b} #geq 175, nJ 5-6, nT 0","#it{m}_{T,b} #geq 175, nJ #geq7, nT 0",
           "#it{m}_{T,b} #geq 175, nT #geq1"
