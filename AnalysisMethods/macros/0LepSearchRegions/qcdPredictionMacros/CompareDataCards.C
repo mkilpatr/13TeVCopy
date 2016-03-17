@@ -108,22 +108,24 @@ void comp(std::string  dataCardDir){
   srinfo.loadExternUnc(dataCardDir);
 
   auto floatComp = [] (float a, float b) -> bool {return fabs(a - b)/((a+b)/2) < 0.01 && a*b > 0;};
+  auto absComp = [] (float a, float b) -> bool {return fabs(a - b) < 0.0005;};
 
   for(unsigned int iS = 0; iS < srinfo.nSR; ++iS){
     cout << srinfo.srRegBinNames[iS] << endl;
     for(unsigned int iM = 0; iM < QCDSupport::nMETBins; ++iM){
-      cout << QCDSupport::metBins[iM]<<" ";
+      cout << QCDSupport::metBins[iM]<<" "<<endl;
       theirPred b; b.fill(srinfo,dataCardDir,QCDSupport::SRegInfo::SRReg(iS),iM);
       ourPred a; a.fill(srinfo,crinfo,QCDSupport::SRegInfo::SRReg(iS),iM);
       bool pass = true;
       if(a.data != b.data){ cout << "(Data) "; pass = false;}
-      if(!floatComp(a.TFTC,b.TFTC)){ cout << "(TF) "; pass = false;}
-      if(!floatComp(a.extU,b.extU)){ cout << "(extU) "; pass = false;}
-      if(!floatComp(a.respU,b.respU)){ cout << "(respU) "; pass = false;}
-      if(!floatComp(a.subU,b.subU)){ cout << "(subU) "; pass = false;}
-      if(!floatComp(a.statU,b.statU)){ cout << "(statU) "; pass = false;}
+      if(!absComp(a.TFTC,b.TFTC)){ cout << "(TF) "; pass = false;}
+      if(!absComp(a.extU,b.extU)){ cout << "(extU) "; pass = false;}
+      if(!absComp(a.respU,b.respU)){ cout << "(respU) "; pass = false;}
+      if(!absComp(a.subU,b.subU)){ cout << "(subU) "; pass = false;}
+      if(!absComp(a.statU,b.statU)){ cout << "(statU) "; pass = false;}
       cout << a.print() << endl;
       if(!pass) cout << b.print() << endl;
+      cout << (a.TFTC - b.TFTC)/a.TFTC<<endl;
     }
 
   }

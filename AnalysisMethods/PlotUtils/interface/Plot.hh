@@ -173,7 +173,7 @@ class Plot {
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
     void setPlotRatioUncertaintyBand()       { fPlotRatioUncertaintyBand = true; } // Add uncertainty band to ratio plot
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
-    void setDrawCMSLumi(int iPosX=10)        { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; } // Draw CMS lumi header (and change its position)
+    void setDrawCMSLumi(int iPosX=10, TString extraText = "Preliminary")        { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; } // Draw CMS lumi header (and change its position)
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
     TGraphAsymmErrors* getRatioAsymmErrors(TH1F* hnum, TH1F* hden);
@@ -217,6 +217,7 @@ class Plot {
     bool fPlotStackUncertainty;           // Add uncertainty band to stacked hists
     bool fDrawCMSLumi;                    // Add TDR style CMS lumi header
     int  fCMSLumiPosX;                    // iPosX in void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX)
+    TString  fCMSLumiExtraText;           // extraText in void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
   

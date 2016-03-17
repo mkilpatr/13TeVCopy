@@ -815,7 +815,7 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1203,7 +1203,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1357,7 +1357,7 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
   
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX);
+    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1716,7 +1716,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX);
+    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

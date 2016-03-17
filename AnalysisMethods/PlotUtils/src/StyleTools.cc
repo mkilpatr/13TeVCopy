@@ -346,7 +346,7 @@ void StyleTools::SetTDRStyle()
   return;
 }
 
-void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX)
+void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
 {
 
   // Global variables
@@ -355,7 +355,6 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX)
   float cmsTextFont   = 61;  // default is helvetic-bold
 
   bool writeExtraText = true;
-  TString extraText   = "Preliminary";
   float extraTextFont = 52;  // default is helvetica-italics
   
   // text sizes and text offsets with respect to the top frame
