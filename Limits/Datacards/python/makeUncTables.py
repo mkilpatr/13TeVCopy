@@ -66,8 +66,10 @@ sources = {
            ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
   ],
   'signal' : [('corr_l'         , 'Lepton veto'               ),
-              ('lumi'           , 'Luminosity'                ),
+              ('eff_b_fsim'     , 'Fast-sim \\bq-tagging'     ),
+              ('eff_b_heavy'    , '\\bq-tagging'              ),
               ('eff_t'          , 'Top efficiency'            ),
+              ('lumi'           , 'Luminosity'                ),
               ('pu'             , 'Pileup reweighting'        ),
               ('scale_j'        , 'Jet energy scale'          ),
               ('signal_isrunc'  , 'ISR'                       ),
@@ -88,15 +90,15 @@ def main() :
   print makeTable(inDir,'onelepcr','onelepcr')
   
   # tables for the various bkgs
-  for k in ('ttbarplusw', 'znunu', 'qcd', 'ttz') : 
+  for k in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
     print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
     print makeTable(inDir,k)
   print '\n\n\n'
 
   # tables for signal unc
   print '\n\n\n', '='*5, 'Making signal unc table...', '\n\n'
-  #sigs = ('T2tt_700_1', 'T2tt_600_200', 'T2tt_300_200')
-  sigs = ('T2tb_550_1','T2tb_650_150','T2tb_500_200')
+  sigs = ('T2tt_700_1', 'T2tt_600_200', 'T2tt_300_200') #, 'T2tt_325_200', 'T2tt_250_150')
+  #sigs = ('T2tb_550_1','T2tb_650_150','T2tb_500_200')
   for k in sigs :
     print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
     print makeTable(inDir,k)

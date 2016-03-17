@@ -11,54 +11,70 @@ weight     = 'weight'
 projvar    = 'met'
 treename   = 'Events'
 filesuffix = '_tree.root'
-treeDir    = '/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160217_noPreSel'
+#treeDir    = '/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160217_noPreSel'
+treeDir    = '/uscms_data/d3/hqu/trees/050316'
 
-signals = ['T2tt_500_200','T2tt_500_250','T2tt_600_200','T2tt_850_1','ttbarplusw','znunu','ttZ']
+#signals = ['T2tt_500_200','T2tt_500_250','T2tt_600_200','T2tt_850_1','ttbarplusw','znunu','ttZ']
+signals = ['T2tt_250_150','T2tt_600_200','T2tt_700_100','T2tb_700_100','T2tb_600_200']
 
 baselines = [
               ('inclusive'             , ''                         ),
-              ('0 gen e/$\\mu$'        , 'ngoodgenmu+nvetolele==0'  ),
-              ('$\geq1$ gen e/$\\mu$'  , 'ngoodgenmu+nvetolele>=1'  ),
+              #('0 gen e/$\\mu$'        , 'ngoodgenmu+nvetolele==0'  ),
+              #('$\geq1$ gen e/$\\mu$'  , 'ngoodgenmu+nvetolele>=1'  ),
             ]
 
 cuts = [
-         #('$\\met > 250$, $\pt (J_{1,2})>75$'  , 'met>250 && j1pt>75 && j2pt>75'  ),
-         ('$\\met > 200$'          , 'met>200'                                    ),
-         ('$\\met > 250$'          , 'met>250'                                    ),
-         ('$\pt (J_{1,2})>75$'     , 'j1pt>75 && j2pt>75'                         ),
+         ('Trigger preselection ($\\met > 250$, $\pt (J_{1,2})>75$)'  , 'met>250 && j1pt>75 && j2pt>75'  ),
+         #('$\\met > 200$'          , 'met>200'                                    ),
+         #('$\\met > 250$'          , 'met>250'                                    ),
+         #('$\pt (J_{1,2})>75$'     , 'j1pt>75 && j2pt>75'                         ),
          ('lepton veto'            , 'nvetolep==0'                                ),
          #('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
-         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
-         ('$N_{J} \\geq 5$'        , 'njets>=5'                                   ),
-         ('$\\nb^{l} \\geq 2$'     , 'nlbjets>=2'                                 ),
-         ('$\\nb \\geq 1$'         , 'nbjets>=1'                                  ),
-         ('$\\dphij_{12} > 0.5$'   , 'dphij12met>0.5'                             ),
-         ('$\\dphij_{3} > 0.5$'    , 'dphij3met>0.5'                              ),
-         ('$\\dphij_{4} > 0.5$'    , 'dphij4met>0.5'                              ),
-         #
-         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
          ('$\\tau$ veto'           , 'nvetotau==0'                                ),
+         ('$N_{J} \\geq 5$'        , 'njets>=5'                                   ),
+         ('$\\nb^{l} \\geq 2$, $\\nb \\geq 1$'     , 'nlbjets>=2 && nbjets>=1'    ),
+         #('$\\nb^{l} \\geq 2$, '     , 'nlbjets>=2'                                 ),
+         #('$\\nb \\geq 1$'         , 'nbjets>=1'                                  ),
+         ('$\\dphij_{1234} > 0.5$' , 'dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5'),
+         #('$\\dphij_{12} > 0.5$'   , 'dphij12met>0.5'                             ),
+         #('$\\dphij_{3} > 0.5$'    , 'dphij3met>0.5'                              ),
+         #('$\\dphij_{4} > 0.5$'    , 'dphij4met>0.5'                              ),
+         #
+         #('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
+         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
        ]
 
 binnings = {
-  'binning 1: \\mtb, \\nj, \\nt' : [
-    ('low  $\\mtb$, low  $\\nj$' , 'mtcsv12met<175  && njets<=6'               ),
-    ('low  $\\mtb$, high $\\nj$' , 'mtcsv12met<175  && njets>=7'               ),
-    ('high $\\mtb$, low  $\\nj$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0' ),
-    ('high $\\mtb$, high $\\nj$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0' ),
-    ('high $\\mtb$, high $\\nt$' , 'mtcsv12met>=175             && ncttstd>=1' ),
-  ],
-  'binning 2: \\nb' : [
-    ('$\\nb = 1$'     , 'nbjets==1' ),
-    ('$\\nb \\geq 2$' , 'nbjets>=2' ),
-  ],
-  'binning 3: \\met' : [
-    ('\\met 250-300'     , 'met>=250 && met<300'),
-    ('\\met 300-400'     , 'met>=300 && met<400'),
-    ('\\met 400-500'     , 'met>=400 && met<500'),
-    ('\\met 500-600'     , 'met>=500 && met<600'),
+  '\\met~bins' : [
+    ('\\met~250-300'     , 'met>=250 && met<300'),
+    ('\\met~300-400'     , 'met>=300 && met<400'),
+    ('\\met~400-500'     , 'met>=400 && met<500'),
+    ('\\met~500-600'     , 'met>=500 && met<600'),
     ('\\met $\\geq$ 600' , 'met>=600'           ),
   ],
+  '\\mtb, \\nj, \\nt, \\nb~bins' : [
+    ('low  $\\mtb$, low  $\\nj$, $\\nb=1$' , 'mtcsv12met<175  && njets<=6               && nbjets==1' ),
+    ('low  $\\mtb$, high $\\nj$, $\\nb=1$' , 'mtcsv12met<175  && njets>=7               && nbjets==1' ),
+    ('high $\\mtb$, low  $\\nj$, $\\nb=1$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0 && nbjets==1' ),
+    ('high $\\mtb$, high $\\nj$, $\\nb=1$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0 && nbjets==1' ),
+    ('high $\\mtb$, high $\\nt$, $\\nb=1$' , 'mtcsv12met>=175             && ncttstd>=1 && nbjets==1' ),
+    ('low  $\\mtb$, low  $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met<175  && njets<=6               && nbjets>=1' ),
+    ('low  $\\mtb$, high $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met<175  && njets>=7               && nbjets>=1' ),
+    ('high $\\mtb$, low  $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0 && nbjets>=1' ),
+    ('high $\\mtb$, high $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0 && nbjets>=1' ),
+    ('high $\\mtb$, high $\\nt$, $\\nb \\geq 2$' , 'mtcsv12met>=175             && ncttstd>=1 && nbjets>=1' ),
+  ],
+  #'binning 1: \\mtb, \\nj, \\nt' : [
+  #  ('low  $\\mtb$, low  $\\nj$' , 'mtcsv12met<175  && njets<=6'               ),
+  #  ('low  $\\mtb$, high $\\nj$' , 'mtcsv12met<175  && njets>=7'               ),
+  #  ('high $\\mtb$, low  $\\nj$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0' ),
+  #  ('high $\\mtb$, high $\\nj$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0' ),
+  #  ('high $\\mtb$, high $\\nt$' , 'mtcsv12met>=175             && ncttstd>=1' ),
+  #],
+  #'binning 2: \\nb' : [
+  #  ('$\\nb = 1$'     , 'nbjets==1' ),
+  #  ('$\\nb \\geq 2$' , 'nbjets>=2' ),
+  #],
 }
 
 hline  = '\\hline\n'
