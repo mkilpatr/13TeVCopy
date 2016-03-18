@@ -230,10 +230,19 @@ def makeTableChunk(nj,nb,mtb,nt):
 # formats the prediction nEvents +/- error
 def formatPrediction(n,e):
   if n>=10:
-    return ' & ' + str(int(round(n,0))) + ' $\\pm$ ' + str(int(round(e,0)))
-  if n>=1:
-    return ' & ' + str(round(n,1)) + ' $\\pm$ ' + str(round(e,1))
-  return ' & ' + str(round(n,2)) + ' $\\pm$ ' + str(round(e,2))
+    n = str(int(round(n,0)))
+    e = str(int(round(e,0)))
+  elif n>=1:
+    n = str(round(n,1))
+    e = str(round(e,1))
+  else:
+    n = str(round(n,2))
+    e = str(round(e,2))
+  if n=='0.0':
+    if e=='0.0':
+      return ' & $<$0.01'
+    return ' & $<$' + e
+  return ' & ' + n + ' $\\pm$ ' + e
 
 # puts together the bin header for bins of nJets, mtb, nTop (no selection on nB)
 def chunkHeader(nj,nb,mtb,nt,columns):
