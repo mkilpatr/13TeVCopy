@@ -10,11 +10,13 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
                              const bool    dolowmet    = false,
                              const bool    intBbins    = true,
                              const bool    plotlog     = true,
+                             const bool    yieldTable  = false,
                              const TString var         = "",
                              const TString srconf      = "plotting/run0lepbkgpred.conf",
                              const TString phocrconf   = "plotting/runphotoncrbkgpred.conf",
                              const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
                              const TString ttzcrconf   = "plotting/runttzcrbkgpred.conf",
+                             const TString limconfdir  = "",
                              const TString lumistr     = "2.262",
                              const TString region      = "sr",
                              //const TString region      = "srlownj",
@@ -41,12 +43,13 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   if (dolowmet)         { sel["trig"] += " && met<250"; sel["trigpho"] += " && met<250"; }
   sel["dphij123"]     = " && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij3"]       = " && dphij3met>0.5 && dphij4met>0.5";
-  sel["dphij123inv"]  = " && (dphij12met<0.15 || dphij3met<0.15)";
+  sel["dphij123inv"]  = " && (dphij12met<0.1 || dphij3met < 0.1)";
   sel["lepcrsel"]     = " && nvetolep>0 && mtlepmet<100";
   sel["sr"]           = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123"];
   sel["srnovetoes"]   = sel["trig"] + sel["njets"]    + sel["dphij123"];
   sel["lepcr"]        = sel["trig"] + sel["lepcrsel"] + sel["njets"]    + sel["dphij123"];
   sel["qcdcr"]        = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij123inv"];
+  sel["qcdNCR"]       = sel["trig"] + sel["lepcrsel"] + sel["njets"]    + sel["dphij123"]    + " && met>250";
   sel["qcdcrnovetoes"]= sel["trig"] + sel["njets"]    + sel["dphij123inv"];
   sel["qcdincl"]      = sel["trig"] + sel["vetoes"]   + sel["njets"]    + sel["dphij3"];
   sel["phocr"]        = sel["trigpho"] + sel["njets"] + sel["dphij123"];
@@ -82,13 +85,18 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   sel["highmt_nt1_nb1"]         = sel["highmt"] + sel["nt1"] + sel["nb1"];
   sel["highmt_nt1_nb2"]         = sel["highmt"] + sel["nt1"] + sel["nb2"];
 
+  const int NBINSNORM             = 1;
+  double metbinsNorm[NBINSNORM+1] = {250.0, 1000.0};
+
+
   TString inputdir    = defaultdir;
 
-  PlotStuff* plots0l    = setupPlots(srconf,    inputdir+ext, outputdir+ext, lepvetowgt, plotlog, format, lumistr, "output_0l.root");
+  PlotStuff* plots0l         = setupPlots(srconf,    inputdir+ext, outputdir+ext, lepvetowgt, plotlog, format, lumistr, "output_0l.root");
   PlotStuff* plots0lnovetoes = setupPlots(srconf,    inputdir+ext, outputdir+ext, basewgt, plotlog, format, lumistr, "output_0lnovetoes.root");
-  PlotStuff* plotslepcr = setupPlots(srconf,    inputdir+ext, outputdir+ext, lepselwgt, plotlog, format, lumistr, "output_lepcr.root");
-  PlotStuff* plotsphocr = setupPlots(phocrconf, inputdir+"/photoncr"+ext, outputdir+ext, basewgt, plotlog, format, lumistr, "output_phocr.root");
-  PlotStuff* plotszllcr = setupPlots(zllcrconf, inputdir+"/zllcr"+ext, outputdir+ext, lepselwgt, plotlog, format, lumistr, "output_zllcr.root");
+  PlotStuff* plots1l         = setupPlots(srconf,    inputdir+ext, outputdir+ext, lepselwgt, plotlog, format, lumistr, "output_1l.root");
+  PlotStuff* plotslepcr      = setupPlots(srconf,    inputdir+ext, outputdir+ext, lepselwgt, plotlog, format, lumistr, "output_lepcr.root");
+  PlotStuff* plotsphocr      = setupPlots(phocrconf, inputdir+"/photoncr"+ext, outputdir+ext, basewgt, plotlog, format, lumistr, "output_phocr.root");
+  PlotStuff* plotszllcr      = setupPlots(zllcrconf, inputdir+"/zllcr"+ext, outputdir+ext, lepselwgt, plotlog, format, lumistr, "output_zllcr.root");
   //PlotStuff* plotsttzcr = setupPlots(ttzcrconf, inputdir+"/ttzcr", outputdir, basewgt, plotlog, format, lumistr, "output_ttzcr.root");
 
   cout << "Plotting 0lepton region" << endl;
@@ -160,6 +168,40 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   }
 
   plots0lnovetoes->plot();
+
+  cout << "Plotting qcd 1lepton normalization region" << endl;
+  plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_lowmt_mednj",       "met",        sel["qcdNCR"] + sel["lowmt_mednj"],        "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+  plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_lowmt_highnj",      "met",        sel["qcdNCR"] + sel["lowmt_highnj"],       "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+  plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_mednj_nt0",  "met",        sel["qcdNCR"] + sel["highmt_mednj_nt0"],   "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+  plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_highnj_nt0", "met",        sel["qcdNCR"] + sel["highmt_highnj_nt0"],  "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+  plots1l->addTreeVar("omet_qcdnormcr_nbgeq1_highmt_nt1",        "met",        sel["qcdNCR"] + sel["highmt_nt1"],         "#slash{E}_{T} [GeV]", NBINSNORM, metbinsNorm);
+  plots1l->plot();
+
+  //Process 1L Norm
+  vector<TString> samplesToReplace = {"ttbarplusw","znunu","ttZ","data","qcd"};
+  TFile* file1lT = new TFile(plots1l->outfileName(),"UPDATE");
+  std::vector<TH1F*> newHistos;
+  auto fill = [&](const TString& sr, const TString& samp) {
+    TH1F * h = 0;
+    file1lT->GetObject(TString::Format("o%s_%s",sr.Data(),samp.Data()),h);
+    TH1F *nh = new TH1F(TString::Format("%s_%s",sr.Data(),samp.Data()),";#slash{E}_{T} [GeV]",NBINS,metbins);
+    for(unsigned int iB = 1; iB <= nh->GetNbinsX(); ++iB ){
+      int oB = h->FindFixBin(nh->GetBinCenter(iB));
+      nh->SetBinContent(iB,h->GetBinContent(oB));
+    }
+    newHistos.push_back(nh);
+  };
+  for(const auto& s: samplesToReplace ){
+    fill("met_qcdnormcr_nbgeq1_lowmt_mednj",      s);
+    fill("met_qcdnormcr_nbgeq1_lowmt_highnj",     s);
+    fill("met_qcdnormcr_nbgeq1_highmt_mednj_nt0", s);
+    fill("met_qcdnormcr_nbgeq1_highmt_highnj_nt0",s);
+    fill("met_qcdnormcr_nbgeq1_highmt_nt1",       s);
+  }
+  file1lT->cd();
+  for(auto* h: newHistos ){ h->Write();}
+  file1lT->Close();
+  delete file1lT;
 
   if(!(true || dolownj || dolowmet)) {
     TString rmcmd = "rm " + outputdir + "/met_sr*." + format;
@@ -286,6 +328,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
 
   TFile* file0l         = new TFile(plots0l->outfileName());
   TFile* file0lnovetoes = new TFile(plots0lnovetoes->outfileName());
+  TFile* file1l         = new TFile(plots1l->outfileName());
   TFile* filelepcr      = new TFile(plotslepcr->outfileName());
   TFile* filephocr      = new TFile(plotsphocr->outfileName());
   TFile* filezllcr      = new TFile(plotszllcr->outfileName());
@@ -351,7 +394,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   TH1F* data           = (true || dolownj || dolowmet) ? getSRHist (file0l, "data", "sr",      srbins) : 0;
   TH1F* lostlep        = getLLPred (file0l, filelepcr, "sr",      "lepcr",      srbins, lepcrtosr);
   TH1F* znunu          = getZPred  (file0l, filephocr, filezllcr, "sr", "phocr", "zllcr", srbins, phocrtosr, zllcrtosr);
-  TH1F* qcd            = getQCDPred (file0l, file0lnovetoes, "sr", "qcdcr", srbins, qcdcrtosr, qcdbkgsamples);
+  TH1F* qcd            = getQCDPred (file0l, file0lnovetoes,file1l, "sr", "qcdcr", "qcdnormcr", srbins, qcdcrtosr, qcdbkgsamples);
   TH1F* ttz            = getTTZPred(file0l, "sr", srbins);
 
 
@@ -433,6 +476,8 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
   // update output root file with full uncertainty
   if (!(dolowmet || dolownj)){
     TString cmd = "python getZeroLeptonUncertainty.py " + outputfilename;
+    if(limconfdir!="") cmd += " -c " + limconfdir;
+    if(yieldTable)     cmd += " -t";
     gSystem->Exec(cmd.Data());
   }
 }

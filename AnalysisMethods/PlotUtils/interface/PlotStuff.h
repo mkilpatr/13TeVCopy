@@ -182,6 +182,8 @@ class PlotStuff {
         double                 tablelumi;
         SelMap                 selmap;
         ColorMap               colormap;
+        int                    vlinecolor;
+        int                    vlinestyle;
         vector<PlotTreeVar>    treevars;
         vector<PlotComp>       comphistplots;
         vector<PlotComp>       comphist2dplots;
@@ -237,6 +239,8 @@ class PlotStuff {
           canvaswidth(600),
           tablelumi(4000.),
           colormap(DefaultColors()),
+          vlinecolor(1),
+          vlinestyle(1),
           plotoverflow(1),
           make_integral(false),
           reverse_integral_dir(false),
@@ -295,11 +299,11 @@ class PlotStuff {
     virtual ~PlotStuff() {}
 
     // Add a plot to be made from the provided TTrees: use with TREES
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy=0, double ymin=0, double ymax=0, vector<double> xlines={});
     // Add a plot to be made from the provided TTrees: use with TREES and variable x binning
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, vector<double> xlines={});
     // Add a plot to be made from the provided TTrees: use with TREES and variable x/y binning
-    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins);
+    void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, vector<double> xlines={});
     // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
@@ -377,6 +381,8 @@ class PlotStuff {
     void     setCanvasSize(double width, double height) { config_.canvaswidth = width; config_.canvasheight = height; }
     // Customize color for a particular sample
     void     setColor(TString sname, unsigned int color) { config_.colormap[sname] = color; }
+    // Customize color and style for a verticle line
+    void     setVLine(int color=1, int style=1) { config_.vlinecolor = color; config_.vlinestyle = style; }
     // Set option for plotting overflow bin by default
     void     setPlotOverflow(unsigned int plotoverflow) { config_.plotoverflow = plotoverflow; }
     // Make integral plots. Default integral direction: (value > [cut]).
@@ -405,7 +411,7 @@ class PlotStuff {
     // Fill yields and uncertainties
     void     loadTables();
     // Plot the given histograms on a canvas
-    void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists);
+    void     makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists, vector<double> xlines={});
     // Plot the given 2D histograms separately
     void     makeHist2DPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH2F*> hists);
     // Plot the given graphs on a canvas
@@ -433,6 +439,7 @@ class PlotStuff {
     vector<TString>          graphplotnames_;
     vector<TString>          tablelabels_;
     vector<Sample*>          samples_;
+    vector<vector<double>>   vlines_;
     TFile*                   infile_;
     TString                  inputdir_;
     TString                  outputdir_;

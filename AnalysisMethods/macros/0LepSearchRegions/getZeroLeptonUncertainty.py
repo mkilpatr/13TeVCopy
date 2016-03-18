@@ -58,10 +58,16 @@ def sumUnc(unc_list):
 
 relUnc={}
 absUnc={}
+absUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
 yields={}
+yields_data={}
 statUnc={}
+statUnc_pieces={}
 systUnc={}
+systUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
 fullUnc={}
+fullUnc_pieces={'ttbarplusw':{}, 'znunu':{}, 'qcd':{}, 'ttZ':{}}
+allVals = {}
 
 def readRelUnc(config_path):
     '''Read in percentage syst. uncertainty from the config files.'''
@@ -122,13 +128,19 @@ def readYields(pred_file):
             bin = binlist[ibin]
             if bin not in yields:
                 yields[bin] = {}
-                statUnc[bin] = {}
-            yields[bin][sample] = h.GetBinContent(ibin+1)
-            statUnc[bin][sample] = h.GetBinError(ibin+1)
+                statUnc_pieces[bin] = {}
+            y = h.GetBinContent(ibin+1)
+            e = h.GetBinError(ibin+1)
+            yields[bin][sample] = y
+            if sample == 'ttZ': statUnc_pieces[bin][sample] = min(e,y) # don't want MC stat unc > 100%
+            else :              statUnc_pieces[bin][sample] = e
+    h = f.Get('data_sr')
+    for ibin in xrange(0, h.GetNbinsX()):
+        bin = binlist[ibin]
+        yields_data[bin] = (h.GetBinContent(ibin+1), h.GetBinError(ibin+1))
     f.Close()
-    
     for bin in binlist:
-        statUnc[bin] = sumUnc(statUnc[bin].values())
+        statUnc[bin] = sumUnc(statUnc_pieces[bin].values())
 
 
 def calcAbsUnc():
@@ -137,23 +149,32 @@ def calcAbsUnc():
     For uncertainties of different types, add in quadrature for each bin.
     '''
     absUnc = {bin:{} for bin in binlist}
+    for sample in all_samples: absUnc_pieces[sample] = {bin:{} for bin in binlist}
     for bin in binlist:
         absUnc[bin] = {type:0 for type in relUnc.keys()}
+        for sample in all_samples: absUnc_pieces[sample][bin] = {type:0 for type in relUnc.keys()}
         for type in relUnc:
             for sample in all_samples:
                 # Add the same type of unc. linearly
-                absUnc[bin][type] += relUnc[type][bin][sample] * yields[bin][sample]
+                tempUnc = relUnc[type][bin][sample] * yields[bin][sample]
+                absUnc[bin][type]                += tempUnc
+                absUnc_pieces[sample][bin][type] += tempUnc
 
     for bin in absUnc:
         # Add different types of unc. in quadrature
         systUnc[bin] = sumUnc(absUnc[bin].values())
         fullUnc[bin] = sumUnc([statUnc[bin], systUnc[bin]])
+        for sample in all_samples:
+            systUnc_pieces[sample][bin] = sumUnc(absUnc_pieces[sample][bin].values())
+            fullUnc_pieces[sample][bin] = sumUnc([statUnc_pieces[bin][sample], systUnc_pieces[sample][bin]])
 
 
 def writeFullUnc(pred_file):
     ''' Update the input root file, add a hist with total prediction and full uncertainty. '''
     f = rt.TFile(pred_file, 'UPDATE')
     h = rt.TH1F('bkgtotal_unc_sr', '', len(binlist), 0, len(binlist))
+    h_pieces = {}
+    for sample in all_samples : h_pieces[sample] = rt.TH1F(sample+'_unc_sr', '', len(binlist), 0, len(binlist))
     print "%30s %10s %8s" % ('bin', 'total pred', 'total unc.')
     for ibin in xrange(0, h.GetNbinsX()):
         bin = binlist[ibin]
@@ -162,8 +183,87 @@ def writeFullUnc(pred_file):
         h.SetBinContent(ibin+1, val)
         h.SetBinError(ibin+1, err)
         print "%30s %10.2f %8.2f" % (bin, val, err)
+        allVals[bin] = {'bkg':(val,err)}
+        for sample in all_samples:
+            val = yields[bin][sample]
+            err = fullUnc_pieces[sample][bin]
+            h_pieces[sample].SetBinContent(ibin+1, val)
+            h_pieces[sample].SetBinError(ibin+1, err)
+            allVals[bin][sample] = (val,err)  
     h.Write('bkgtotal_unc_sr', rt.TObject.kOverwrite)
+    for sample in all_samples : h_pieces[sample].Write(sample+'_unc_sr', rt.TObject.kOverwrite)
     f.Close()
+
+def makeYieldTable():
+    ''' Make a Latex-formatted table with each bkg plus unc, total bkg plus unc, and observed data for every bin. '''
+    print '\nprinting yield table...\n'
+    s  = '\\hline\n'
+    s += '\\met [GeV]  &  \\ttbar, \\W+jets  &  \\znunu  &  QCD  &  \\ttZ  &  total SM  &  $N_{\\rm data}$  \\\\ \n'
+    s += '\\hline\n'
+    s += makeTableChunk(5,1,  0,0)
+    s += makeTableChunk(5,2,  0,0)
+    s += makeTableChunk(7,1,  0,0)
+    s += makeTableChunk(7,2,  0,0)
+    s += makeTableChunk(5,1,175,0)
+    s += makeTableChunk(5,2,175,0)
+    s += makeTableChunk(7,1,175,0)
+    s += makeTableChunk(7,2,175,0)
+    s += makeTableChunk(5,1,175,1)
+    s += makeTableChunk(5,2,175,1)
+    s += '\\hline\n'
+    print s
+    
+def makeTableChunk(nj,nb,mtb,nt):
+    ''' Put together the table chunk for the given nj,nb,mtb,nt mega-bin. '''
+    s = chunkHeader(nj,nb,mtb,nt,7)
+    for binMet in [(250,'250-300'), (300,'300-400'), (400,'400-500'), (500,'500-600'), (600,'$>$600')] :
+        bin = '_'.join(['bin',str(binMet[0]),str(nj),str(nb),str(nt),str(mtb)])
+        s += binMet[1]
+        for bkg in ('ttbarplusw', 'znunu', 'qcd', 'ttZ', 'bkg') :
+            n, e = allVals[bin][bkg]
+            s += formatPrediction(n,e)
+        n, e = yields_data[bin]
+        s += ' & ' + str(int(n))
+        s += ' \\\\ \n'
+    return s
+
+# formats the prediction nEvents +/- error
+def formatPrediction(n,e):
+  if n>=10:
+    n = str(int(round(n,0)))
+    e = str(int(round(e,0)))
+  elif n>=1:
+    n = str(round(n,1))
+    e = str(round(e,1))
+  else:
+    n = str(round(n,2))
+    e = str(round(e,2))
+  if n=='0.0':
+    if e=='0.0':
+      return ' & $<$0.01'
+    return ' & $<$' + e
+  return ' & ' + n + ' $\\pm$ ' + e
+
+# puts together the bin header for bins of nJets, mtb, nTop (no selection on nB)
+def chunkHeader(nj,nb,mtb,nt,columns):
+    ''' Put together the mega-bin chunk header. '''
+    s  = '\\hline\n'
+    s += '\\multicolumn{'+str(columns)+'}{c}{'
+    if  (mtb==  0 and nj==5           and nb==1) : s += '$\\mtb < 175$~\\GeV, $5\\leq\\nj<7$, $\\nb = 1$'
+    elif(mtb==  0 and nj==7           and nb==1) : s += '$\\mtb < 175$~\\GeV, $\\nj\\geq7$, $\\nb = 1$'
+    elif(mtb==175 and nj==5 and nt==0 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $5\\leq\\nj<7$, $N_\\mathrm{t} = 0$, $\\nb = 1$'
+    elif(mtb==175 and nj==7 and nt==0 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq7$ $N_\\mathrm{t} = 0$, $\\nb = 1$'
+    elif(mtb==175 and nj==5 and nt==1 and nb==1) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq5$, $N_\\mathrm{t} \\geq 1$, $\\nb = 1$'
+    elif(mtb==  0 and nj==5           and nb==2) : s += '$\\mtb < 175$~\\GeV, $5\\leq\\nj<7$, $\\nb \\geq 2$'
+    elif(mtb==  0 and nj==7           and nb==2) : s += '$\\mtb < 175$~\\GeV, $\\nj\\geq7$, $\\nb \\geq 2$'
+    elif(mtb==175 and nj==5 and nt==0 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $5\\leq\\nj<7$, $N_\\mathrm{t} = 0$, $\\nb \\geq 2$'
+    elif(mtb==175 and nj==7 and nt==0 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq7$ $N_\\mathrm{t} = 0$, $\\nb \\geq 2$'
+    elif(mtb==175 and nj==5 and nt==1 and nb==2) : s += '$\\mtb \\geq 175$~\\GeV, $\\nj\\geq5$, $N_\\mathrm{t} \\geq 1$, $\\nb \\geq 2$'
+    else : s += 'UNKNOWN HEADER (mtb='+str(mtb)+',nj='+str(nj)+',nt='+str(nt)+'nb='+str(nb)+')'
+    #nJets $NJETS, \mtb MTB$~\\GeV, $N_\\mathrm{t} NT$
+    s += '} \\\\ \n'
+    s += '\\hline\n' 
+    return s
 
 
 def main():
@@ -177,12 +277,18 @@ def main():
         default='../../../Limits/Datacards/setup',
         help='Uncertainties configs directory. Default: %(default)s'
     )
+    parser.add_argument('-t', '--printTable',
+        dest='printTable',
+        action='store_true',
+        help='print the full bkg prediction table: %(default)s'
+    )
     args = parser.parse_args()
     
     readRelUnc(args.configdir)
     readYields(args.predfile)
     calcAbsUnc()
     writeFullUnc(args.predfile)
+    if args.printTable : makeYieldTable()
 
 
 if __name__=='__main__':
