@@ -108,14 +108,20 @@ if args.makegrid :
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
         mstopmin = sample.split('_')[1][:3]
-        mstopmax = sample.split('_')[1][-3:]
+        mstopmax = sample.split('_')[1][-4:] if len(sample.split('_')[1]) > 3 and sample.split('_')[1][-4].isdigit() else sample.split('_')[1][-3:]
+        sigbase = sample.split('_')[0]
+        sigsuffix = sample.split('_')[3] if len(sample.split('_')) > 3 else ''
         infiles = [prefix+f for f in filelist]
         files[sample] = infiles
+        print mstopmin,mstopmax
         for mstop in range(int(mstopmin), int(mstopmax)+args.mstopsteps, args.mstopsteps) :
             mlspmax = mstop
             for mlsp in range(0, mlspmax+args.mlspsteps, args.mlspsteps) :
-                snames[sample].append('_'.join(['T2tt',str(mstop),str(mlsp)]))
-                masspoints.append(('_').join(['T2tt',str(mstop),str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join(['T2tt',str(mstop),'1']))
+                snames[sample].append('_'.join([sigbase,str(mstop),str(mlsp)]))
+                masspoints.append(('_').join([sigbase,str(mstop),str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join([sigbase,str(mstop),'1']))
+                if len(sigsuffix) :
+                    snames[sample][-1] += '_' + sigsuffix
+                    masspoints[-1] += '_' + sigsuffix
     
     print 'Creating submission file: submit_makegrid.sh'
     script = open('submit_makegrid.sh','w')

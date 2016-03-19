@@ -11,12 +11,14 @@ is correct.
 
 binsB   = (1,2)
 binsMet = (250,300,400,500,600)
-ps = {'ttbarplusw':3, 'znunu':4, 'ttz':5, 'qcd':6, 'onelepcr':3}
+ps = {'ttbarplusw':3, 'znunu':4, 'ttz':5, 'qcd':6, 'onelepcr':3, 'signal':2}
 sources = {
   'ttbarplusw' : [('corr_l'               , 'Lepton veto'                ),
                   ('corr_tau'             , 'Tau veto'                   ),
                   ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' ),
                   ('eff_b_light'          , '\\bq-tagging: light flavor' ),
+                  ('eff_t'                , 'Top efficiency'             ),
+                  ('fake_t'               ,  'Top mis-tagging'           ),
                   ('lostlep_nt1metintunc' , '\\met integration'          ),
                   ('pu'                   , 'Pileup reweighting'         ),
                   ('scale_j'              , 'Jet energy scale'           ),
@@ -32,6 +34,7 @@ sources = {
   'znunu' : [('corr_l'                        , 'Lepton veto'                ),
              ('eff_b_heavy'                   , '\\bq-tagging: heavy flavor' ),
              ('eff_b_light'                   , '\\bq-tagging: light flavor' ),
+             ('fake_t'                        , 'Top mis-tagging'            ),
              ('pu'                            , 'Pileup reweighting'         ),
              ('scale_j'                       , 'Jet energy scale'           ),
              ('znunu_rzunc'                   , '$R_{\\cPZ}$'                ),
@@ -42,6 +45,7 @@ sources = {
   'ttz' : [('corr_l'        , 'Lepton veto'               ),
            ('eff_b_heavy'   , '\\bq-tagging: heavy flavor'),
            ('eff_b_light'   , '\\bq-tagging: light flavor'),
+           ('eff_t'         , 'Top efficiency'            ),
            ('lumi'          , 'Luminosity'                ),
            ('pu'            , 'Pileup reweighting'        ),
            ('scale_j'       , 'Jet energy scale'          ),
@@ -53,13 +57,25 @@ sources = {
   'qcd' : [('corr_tau'          , 'Tau veto'                  ),
            ('eff_b_heavy'       , '\\bq-tagging: heavy flavor'),
            ('eff_b_light'       , '\\bq-tagging: light flavor'),
+           ('fake_t'            , 'Top mis-tagging'           ),
            ('pu'                , 'Pileup reweighting'        ),
            ('scale_j'           , 'Jet energy scale'          ),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    ),
            ('qcd_jetresptailunc', 'Jet response tail'         ),
            ('qcd_tfstatunc'     , 'Transfer factor'           ),
            ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
-  ]
+  ],
+  'signal' : [('corr_l'         , 'Lepton veto'               ),
+              ('eff_b_fsim'     , 'Fast-sim \\bq-tagging'     ),
+              ('eff_b_heavy'    , '\\bq-tagging'              ),
+              ('eff_t'          , 'Top efficiency'            ),
+              ('lumi'           , 'Luminosity'                ),
+              ('pu'             , 'Pileup reweighting'        ),
+              ('scale_j'        , 'Jet energy scale'          ),
+              ('signal_isrunc'  , 'ISR'                       ),
+              ('signal_scaleunc', 'Scale'                     ),
+              ('mcstat_signal'  , 'Monte Carlo statistics'    ),
+  ],
 } # sources
 
 def main() :
@@ -74,7 +90,16 @@ def main() :
   print makeTable(inDir,'onelepcr','onelepcr')
   
   # tables for the various bkgs
-  for k in ('ttbarplusw', 'znunu', 'qcd', 'ttz') : 
+  for k in ('ttbarplusw', 'znunu', 'qcd', 'ttz') :
+    print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
+    print makeTable(inDir,k)
+  print '\n\n\n'
+
+  # tables for signal unc
+  print '\n\n\n', '='*5, 'Making signal unc table...', '\n\n'
+  sigs = ('T2tt_700_1', 'T2tt_600_200', 'T2tt_300_200') #, 'T2tt_325_200', 'T2tt_250_150')
+  #sigs = ('T2tb_550_1','T2tb_650_150','T2tb_500_200')
+  for k in sigs :
     print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
     print makeTable(inDir,k)
   print '\n\n\n'
@@ -93,16 +118,22 @@ def makeTable(inDir,bkg,cr='') :
 def makeChunk(inDir,bkg,nj, mtb, nt,cr='') :
   columns = 11 if cr=='' else 6
   s = chunkHeaderNoB(nj, mtb, nt, columns)
+  sig = ''
+  if 'T2' in bkg :
+    sig = bkg
+    bkg = 'signal'
   for source in sources[bkg] :
     if source[0]=='lostlep_nt1metintunc' and nt!=1 : continue
+    if source[0]=='fake_t'               and nt!=1 : continue
+    if source[0]=='eff_t'                and nt!=1 : continue
     s += source[1]
     if cr=='onelepcr' and nt==1 : # combine met bins for nT=1 for the onelepcr
-      s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr) + '}  \\\\ \n'
+      s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr,sig) + '}  \\\\ \n'
       continue
     for nb in binsB :
       if cr != '' and nb>1 : continue
       for met in binsMet:
-        s += ' & ' + getUnc(inDir,source[0],bkg,met,nj,nb,nt,mtb,cr)
+        s += ' & ' + getUnc(inDir,source[0],bkg,met,nj,nb,nt,mtb,cr,sig)
     s += ' \\\\ \n'
   return s
 
@@ -122,7 +153,7 @@ def getFileName(inDir,met,nj,nb,nt,mtb,cr='',sig='') :
 # get and properly format the number for the given bkg, bin
 def getUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr='',sig='') :
   if unc == 'lumi' : return '4.6\\%'
-  u = getRawUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr)
+  u = getRawUnc(inDir,unc,process,met,nj,nb,nt,mtb,cr,sig)
   if u == '-' : return u
   return str(int(round(u*100,0)))+'\\%'
 

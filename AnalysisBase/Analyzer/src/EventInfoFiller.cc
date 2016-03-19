@@ -86,7 +86,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
     iEvent.getByToken(puSummaryToken_, puSummaryInfos_);
   iEvent.getByToken(metToken_, mets_);
   iEvent.getByToken(metOOBToken_, metsOOB_);
-  iEvent.getByToken(metNoHFToken_, metsNoHF_);
+  //iEvent.getByToken(metNoHFToken_, metsNoHF_);
   iEvent.getByToken(puppimetToken_, puppimets_);
   if(options_ & LOADGEN)
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
@@ -98,7 +98,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
 
   met_ = &mets_->front();
   metOOB_ = &metsOOB_->front();
-  metNoHF_ = &metsNoHF_->front();
+  //metNoHF_ = &metsNoHF_->front();
   puppimet_ = &puppimets_->front();
   eventCoords.run = iEvent.run();
   eventCoords.lumi = iEvent.luminosityBlock();
@@ -153,12 +153,12 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_            ,met_->pt());
   data.fill<float>       (imetphi_           ,met_->phi());
   data.fill<float>       (imetsumEt_         ,met_->sumEt());
-  data.fill<float>       (irawmetpt_         ,met_->uncorPt());
-  data.fill<float>       (irawmetphi_        ,met_->uncorPhi());
-  data.fill<float>       (irawmetsumEt_      ,met_->uncorSumEt());
-  data.fill<float>       (imetnohfpt_        ,metNoHF_->pt());
-  data.fill<float>       (imetnohfphi_       ,metNoHF_->phi());
-  data.fill<float>       (imetnohfsumEt_     ,metNoHF_->sumEt());
+  data.fill<float>       (irawmetpt_         ,metOOB_->uncorPt());
+  data.fill<float>       (irawmetphi_        ,metOOB_->uncorPhi());
+  data.fill<float>       (irawmetsumEt_      ,metOOB_->uncorSumEt());
+  //data.fill<float>       (imetnohfpt_        ,metNoHF_->pt());
+  //data.fill<float>       (imetnohfphi_       ,metNoHF_->phi());
+  //data.fill<float>       (imetnohfsumEt_     ,metNoHF_->sumEt());
   data.fill<float>       (ipuppimetpt_       ,puppimet_->pt());
   data.fill<float>       (ipuppimetphi_      ,puppimet_->phi());
   data.fill<float>       (ipuppimetsumEt_    ,puppimet_->sumEt());
