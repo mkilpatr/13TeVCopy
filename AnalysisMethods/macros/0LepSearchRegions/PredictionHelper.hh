@@ -125,7 +125,7 @@ namespace BkgPrediction {
 
   }
 
-  TH1F* getLLPred(TFile* file0l, TFile* filelepcr, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap) {
+  TH1F* getLLPred(TFile* file0l, TFile* filelepcr, const TString region, const TString crname, vector<TString> bins, BinMap crtosrmap, bool intBbins = true) {
 
     cout << "\nGetting the Lost Lepton prediction in the " << region << " region. CR label is " << crname << endl;
 
@@ -150,30 +150,53 @@ namespace BkgPrediction {
     }
     cout << endl;
 
-    for(int intbin = datamc_sf->GetNbinsX()-9; intbin < datamc_sf->GetNbinsX()+1; ++intbin) {
-      double binerr = datamc_sf->GetBinError(intbin);
-      int nt0bin1 = 0, nt0bin2 = 0;
-      cout << "SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
-      bool havent0data = (data_cr->GetBinContent(intbin-20) + data_cr->GetBinContent(intbin-10)) > 0.003;
-      if(havent0data) {
-        nt0bin1 = intbin-20;
-        nt0bin2 = intbin-10;
-      } else {
-        nt0bin1 = intbin-21;
-        nt0bin2 = intbin-11;
+    if (intBbins){
+      for(int intbin = datamc_sf->GetNbinsX()-9; intbin < datamc_sf->GetNbinsX()+1; ++intbin) {
+        double binerr = datamc_sf->GetBinError(intbin);
+        int nt0bin1 = 0, nt0bin2 = 0;
+        cout << "SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+        bool havent0data = (data_cr->GetBinContent(intbin-20) + data_cr->GetBinContent(intbin-10)) > 0.003;
+        if(havent0data) {
+          nt0bin1 = intbin-20;
+          nt0bin2 = intbin-10;
+        } else {
+          nt0bin1 = intbin-21;
+          nt0bin2 = intbin-11;
+        }
+        double data_nt0 = data_cr->GetBinContent(nt0bin1) + data_cr->GetBinContent(nt0bin2);
+        double data_unc_nt0 = sqrt((data_cr->GetBinError(nt0bin1)*data_cr->GetBinError(nt0bin1)) + (data_cr->GetBinError(nt0bin2)*data_cr->GetBinError(nt0bin2)));
+        double mc_nt0 = lostlep_cr->GetBinContent(nt0bin1) + lostlep_cr->GetBinContent(nt0bin2);
+        double mc_unc_nt0 = sqrt((lostlep_cr->GetBinError(nt0bin1)*lostlep_cr->GetBinError(nt0bin1)) + (lostlep_cr->GetBinError(nt0bin2)*lostlep_cr->GetBinError(nt0bin2)));
+        double relunc = sqrt(pow((data_unc_nt0/data_nt0),2) + pow((mc_unc_nt0/mc_nt0),2));
+        cout << "Combined nTop 0 yields from bins " << nt0bin1 << ", " << nt0bin2 << ": Data = " << data_nt0 << " +/- " << data_unc_nt0 << ", MC = " << mc_nt0 << " +/- " << mc_unc_nt0 << "; SF = " << data_nt0/mc_nt0 << " +/- " << relunc*data_nt0/mc_nt0 << endl;
+        cout << "Adding relative uncertainty of " << relunc << " from corresponding nt0 bin" << endl;
+        relunc *= datamc_sf->GetBinContent(intbin);
+        datamc_sf->SetBinError(intbin, sqrt((binerr*binerr) + (relunc*relunc)));
+        cout << "New SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
       }
-      double data_nt0 = data_cr->GetBinContent(nt0bin1) + data_cr->GetBinContent(nt0bin2);
-      double data_unc_nt0 = sqrt((data_cr->GetBinError(nt0bin1)*data_cr->GetBinError(nt0bin1)) + (data_cr->GetBinError(nt0bin2)*data_cr->GetBinError(nt0bin2)));
-      double mc_nt0 = lostlep_cr->GetBinContent(nt0bin1) + lostlep_cr->GetBinContent(nt0bin2);
-      double mc_unc_nt0 = sqrt((lostlep_cr->GetBinError(nt0bin1)*lostlep_cr->GetBinError(nt0bin1)) + (lostlep_cr->GetBinError(nt0bin2)*lostlep_cr->GetBinError(nt0bin2)));
-      double relunc = sqrt(pow((data_unc_nt0/data_nt0),2) + pow((mc_unc_nt0/mc_nt0),2));
-      cout << "Combined nTop 0 yields from bins " << nt0bin1 << ", " << nt0bin2 << ": Data = " << data_nt0 << " +/- " << data_unc_nt0 << ", MC = " << mc_nt0 << " +/- " << mc_unc_nt0 << "; SF = " << data_nt0/mc_nt0 << " +/- " << relunc*data_nt0/mc_nt0 << endl;
-      cout << "Adding relative uncertainty of " << relunc << " from corresponding nt0 bin" << endl;
-      relunc *= datamc_sf->GetBinContent(intbin);
-      datamc_sf->SetBinError(intbin, sqrt((binerr*binerr) + (relunc*relunc)));
-      cout << "New SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+    }else {
+      for(int intbin = datamc_sf->GetNbinsX()-19; intbin < datamc_sf->GetNbinsX()+1; ++intbin) {
+        double binerr = datamc_sf->GetBinError(intbin);
+        int nt0bin = 0;
+        cout << "SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+        bool havent0data = data_cr->GetBinContent(intbin-20) > 0.003;
+        if(havent0data) {
+          nt0bin = intbin-20;
+        } else {
+          nt0bin = intbin-21;
+        }
+        double data_nt0 = data_cr->GetBinContent(nt0bin);
+        double data_unc_nt0 = data_cr->GetBinError(nt0bin);
+        double mc_nt0 = lostlep_cr->GetBinContent(nt0bin);
+        double mc_unc_nt0 = lostlep_cr->GetBinError(nt0bin);
+        double relunc = sqrt(pow((data_unc_nt0/data_nt0),2) + pow((mc_unc_nt0/mc_nt0),2));
+        cout << "Combined nTop 0 yields from bins " << nt0bin << ", " << ": Data = " << data_nt0 << " +/- " << data_unc_nt0 << ", MC = " << mc_nt0 << " +/- " << mc_unc_nt0 << "; SF = " << data_nt0/mc_nt0 << " +/- " << relunc*data_nt0/mc_nt0 << endl;
+        cout << "Adding relative uncertainty of " << relunc << " from corresponding nt0 bin" << endl;
+        relunc *= datamc_sf->GetBinContent(intbin);
+        datamc_sf->SetBinError(intbin, sqrt((binerr*binerr) + (relunc*relunc)));
+        cout << "New SF in bin " << intbin << ": " << datamc_sf->GetBinContent(intbin) << " +/- " << datamc_sf->GetBinError(intbin) << endl;
+      }
     }
-
     TH1F* lostlep_tf = (TH1F*)lostlep_sr->Clone("lostlep_tf_" + region);
     lostlep_tf->Divide(lostlep_cr);
 
