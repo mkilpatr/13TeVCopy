@@ -199,6 +199,7 @@ struct TreeFiller {
   size i_httwoleadfatjet;
 
   // below is for top / w tagging and SF extraction
+  size i_absdphilepmet;
   size i_sfbclose2lep;
   size i_sfncttcand  ;
   size i_sfcttcandpt ;
@@ -230,6 +231,27 @@ struct TreeFiller {
   size i_wcandeta;
   size i_wpasspt;
   size i_wpasseta;
+  size i_sfcttcandptdr1;
+  size i_sfcttcandptdr2;
+  size i_sfcttcandptdr3;
+  size i_sfcttcandetadr1;
+  size i_sfcttcandetadr2;
+  size i_sfcttcandetadr3;
+  size i_sfcttpassptdr1;
+  size i_sfcttpassptdr2;
+  size i_sfcttpassptdr3;
+  size i_sfcttpassetadr1;
+  size i_sfcttpassetadr2;
+  size i_sfcttpassetadr3;
+  size i_nhadronicgentops;
+  size i_sfcttcandptdr6;
+  size i_sfcttpassptdr6;
+  size i_sfcttcandetadr6;
+  size i_sfcttpassetadr6;
+  size i_sfcttcandptdr6hard;
+  size i_sfcttcandetadr6hard;
+  size i_sfcttpassptdr6hard;
+  size i_sfcttpassetadr6hard;
 
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
     return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4);
@@ -412,6 +434,7 @@ struct TreeFiller {
     i_toppt          = data->add<float>("","toppt","F",0);
     i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
 
+    i_absdphilepmet       = data->add<float>("","absdphilepmet","F",0);
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
     i_sfcttcandpt      = data->add<float>("","sfcttcandpt","F",0);
@@ -443,6 +466,27 @@ struct TreeFiller {
     i_wcandeta  = data->addMulti<float>("","wcandeta",0);
     i_wpasspt   = data->addMulti<float>("","wpasspt",0);
     i_wpasseta  = data->addMulti<float>("","wpasseta",0);
+    i_sfcttcandptdr1 = data->addMulti<float>("","sfcttcandptdr1",0);
+    i_sfcttcandptdr2= data->addMulti<float>("","sfcttcandptdr2",0);
+    i_sfcttcandptdr3= data->addMulti<float>("","sfcttcandptdr3",0);
+    i_sfcttcandetadr1= data->addMulti<float>("","sfcttcandetadr1",0);
+    i_sfcttcandetadr2= data->addMulti<float>("","sfcttcandetadr2",0);
+    i_sfcttcandetadr3= data->addMulti<float>("","sfcttcandetadr3",0);
+    i_sfcttpassptdr1= data->addMulti<float>("","sfcttpassptdr1",0);
+    i_sfcttpassptdr2= data->addMulti<float>("","sfcttpassptdr2",0);
+    i_sfcttpassptdr3= data->addMulti<float>("","sfcttpassptdr3",0);
+    i_sfcttpassetadr1= data->addMulti<float>("","sfcttpassetadr1",0);
+    i_sfcttpassetadr2= data->addMulti<float>("","sfcttpassetadr2",0);
+    i_sfcttpassetadr3= data->addMulti<float>("","sfcttpassetadr3",0);
+    i_sfcttcandptdr6hard = data->addMulti<float>("","sfcttcandptdr6hard",0);
+    i_sfcttcandetadr6hard = data->addMulti<float>("","sfcttcandetadr6hard",0);
+    i_sfcttpassptdr6hard = data->addMulti<float>("","sfcttpassptdr6hard",0);
+    i_sfcttpassetadr6hard =data->addMulti<float>("","sfcttpassetadr6hard",0);
+    i_nhadronicgentops = data->add<int>("","nhadronicgentops","i",0);
+    i_sfcttcandptdr6 = data->addMulti<float>("","sfcttcandptdr6",0);
+    i_sfcttcandetadr6= data->addMulti<float>("","sfcttcandetadr6",0);
+    i_sfcttpassptdr6= data->addMulti<float>("","sfcttpassptdr6",0);
+    i_sfcttpassetadr6= data->addMulti<float>("","sfcttpassetadr6",0);
 
   }
 
@@ -614,9 +658,11 @@ struct TreeFiller {
       }
     }
 
+    float absdphilepmet = -1.;
     if(ana->selectedLepton) {
       const auto * lep = ana->selectedLepton;
       auto WP4 = lep->p4() + ana->met->p4();
+      absdphilepmet = fabs(PhysicsUtilities::deltaPhi(*lep, *ana->met));
       data->fill<float>(i_absdphilepw, fabs(PhysicsUtilities::deltaPhi(WP4, *lep)) );
       data->fill<float>(i_leptonpt, lep->pt());
       data->fill<float>(i_leptoneta, lep->eta());
@@ -664,6 +710,7 @@ struct TreeFiller {
         data->fill<float>(i_dilepmass, dilepp4.mass());
       }
     }
+    data->fill<float>(i_absdphilepmet, absdphilepmet);
 
 //    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
     data->fill<bool>(i_passcscbeamhaloflt, ana->evtInfoReader.cscBeamHaloFlt);
@@ -728,6 +775,41 @@ struct TreeFiller {
 
   }
 
+  // follows particle to final molting (eg gamma -> gamma -> gamma ...)
+  // adapted from ParticleInfo(?) routine
+  const GenParticleF* getFinal(const GenParticleF* particle) {
+    if (!particle) return 0;
+    const GenParticleF* final = particle;
+    unsigned int numDaughters = 0;
+
+    while(1==1) {
+      numDaughters = final->numberOfDaughters();
+      const GenParticleF* chain = 0;
+      for(unsigned int iDau = 0; iDau < numDaughters; ++iDau)
+        if(final->daughter(iDau)->pdgId() == particle->pdgId()) {
+          chain = final->daughter(iDau); // next in chain
+          break;
+        }
+      if(chain == 0) break;
+      final = chain;
+    }
+    return final;
+  }
+
+  // tests if gen top decayed to a W, then to a (e/mu/tau) lepton
+  bool isGenTopHadronic(GenParticleF* t) {
+    if(abs(t->pdgId()) != 6) return false; // not a top
+    const GenParticleF* ft = getFinal(t);
+    for(unsigned int iD = 0; iD < ft->numberOfDaughters(); ++iD){
+      const GenParticleF* w =  ft->daughter(iD);
+      if(abs(w->pdgId()) != 24) continue;
+      const GenParticleF* wf = getFinal(w);
+      for(unsigned int iWD = 0; iWD < wf->numberOfDaughters(); ++iWD) 
+        if ((abs(wf->daughter(iWD)->pdgId()) >= 11) && (abs(wf->daughter(iWD)->pdgId()) <= 14)) return false;
+    }
+    return true;
+  }
+
   void fillGenInfo(TreeWriterData* data, GenParticleF* boson, vector<GenJetF*> genjets, bool cleanjetsvboson = true) {
     data->fill<float>(i_bosonpt, boson ? boson->pt() : 0.0);
     data->fill<float>(i_bosoneta, boson ? boson->eta() : 0.0);
@@ -777,9 +859,168 @@ struct TreeFiller {
     float sfwsdpasspt_       = -9.;
     float sfwsdpasseta_      = -9.;
 
+    int nhadronicgentops_ = 0;
 
+    // ctt selection efficiency
+    // strategy: for each gen top, loop thru reco cttTops, match one or multi with dR cone, record pT spectra for efficiency
+    if(ana->isMC()) {
 
-    
+      //indices of hardest cands for each case
+      unsigned int indxctt = 99;
+      float maxcttpt_ = -1.;
+      unsigned int indxctt1 = 99;
+      float maxcttpt1_ = -1.;
+      unsigned int indxctt2 = 99;
+      float maxcttpt2_ = -1.;
+      unsigned int indxctt3 = 99;
+      float maxcttpt3_ = -1.;
+      unsigned int indxcttpass1 = 99;
+      float maxcttpasspt1_ = -1.;
+      unsigned int indxcttpass2 = 99;
+      float maxcttpasspt2_ = -1.;
+      unsigned int indxcttpass3 = 99;
+      float maxcttpasspt3_ = -1.;
+
+      // to be sorted for duplicates later
+      vector<float> canddr1pt, canddr1eta, canddr2pt, canddr2eta, canddr3pt, canddr3eta;
+      vector<float> passdr1pt, passdr1eta, passdr2pt, passdr2eta, passdr3pt, passdr3eta;
+      vector<float> canddr6pt, canddr6eta, passdr6pt, passdr6eta;
+
+      for(auto* p : ana->genParts) {
+        if ((abs(p->pdgId())==6) && isGenTopHadronic(p)) {
+          nhadronicgentops_++;
+          unsigned int countctttags = 0;
+          for (auto* ctt : ana->cttTops) {
+            float cttpt_ = ctt->p4().pt();
+
+            // for variable dr cones, want matching efficiency (cand = passed ctt selection; pass = then passed dR matching)
+            if (cfgSet::isSelTaggedTop(*ctt)) {
+
+              // cone 1 (dR 0.2)
+              if (cttpt_>maxcttpt1_) { indxctt1 = countctttags; maxcttpt1_ = cttpt_; } // index of hardest cand
+              canddr1pt.push_back(ctt->pt()); canddr1eta.push_back(ctt->p4().eta());
+              if(PhysicsUtilities::deltaR(*ctt, *p) < 0.2) {
+                if (cttpt_>maxcttpasspt1_) { indxcttpass1 = countctttags; maxcttpasspt1_ = cttpt_; } // index of hardest pass
+                passdr1pt.push_back(ctt->pt()); passdr1eta.push_back(ctt->p4().eta());
+              }
+
+              // cone 2 (dR 0.5)
+              if (cttpt_>maxcttpt2_) { indxctt2 = countctttags; maxcttpt2_ = cttpt_; } // index of hardest cand
+              canddr2pt.push_back(ctt->pt()); canddr2eta.push_back(ctt->p4().eta());
+              if(PhysicsUtilities::deltaR(*ctt, *p) < 0.5) {
+                if (cttpt_>maxcttpasspt2_) { indxcttpass2 = countctttags; maxcttpasspt2_ = cttpt_; } // index of hardest pass
+                passdr2pt.push_back(ctt->pt()); passdr2eta.push_back(ctt->p4().eta());
+              }
+
+              // cone 3 (dR 0.8)
+              if (cttpt_>maxcttpt3_) { indxctt3 = countctttags; maxcttpt3_ = cttpt_; } // index of hardest cand
+              canddr3pt.push_back(ctt->pt()); canddr3eta.push_back(ctt->p4().eta());
+              if(PhysicsUtilities::deltaR(*ctt, *p) < 0.8) {
+                if (cttpt_>maxcttpasspt3_) { indxcttpass3 = countctttags; maxcttpasspt3_ = cttpt_; } // index of hardest pass
+                passdr3pt.push_back(ctt->pt()); passdr3eta.push_back(ctt->p4().eta());
+              }
+
+            }//if ctt selected
+
+            // default cone (dR 0.6)
+            // not matching eff here. rather want eff of ctt selection after matching.
+            // multiple jets per event!
+            if(PhysicsUtilities::deltaR(*ctt, *p) < 0.6) {
+              if (cttpt_>maxcttpt_) { indxctt = countctttags; maxcttpt_ = cttpt_; } // index of hardest 0.6 matched ctt jet
+              canddr6pt.push_back(ctt->p4().pt()); canddr6eta.push_back(ctt->p4().eta());
+              if(cfgSet::isSelTaggedTop(*ctt)) {passdr6pt.push_back(ctt->p4().pt()); passdr6eta.push_back(ctt->p4().eta());}
+            }
+
+            ++countctttags;
+          }//for ctt tops
+        }//if hadronic top
+      }//for gen particles
+
+      // vectors to be de-duplicate
+      vector<vector<float> > v_undup;
+      v_undup.push_back(canddr1pt); v_undup.push_back(canddr1eta);
+      v_undup.push_back(canddr2pt); v_undup.push_back(canddr2eta);
+      v_undup.push_back(canddr3pt); v_undup.push_back(canddr3eta);
+      v_undup.push_back(passdr1pt); v_undup.push_back(passdr1eta);
+      v_undup.push_back(passdr2pt); v_undup.push_back(passdr2eta);
+      v_undup.push_back(passdr3pt); v_undup.push_back(passdr3eta);
+      v_undup.push_back(canddr6pt); v_undup.push_back(canddr6eta);
+      v_undup.push_back(passdr6pt); v_undup.push_back(passdr6eta);
+      
+      for(int ii = 0; ii < v_undup.size(); ii++) {
+        set<float> s_undup(v_undup[ii].begin(),v_undup[ii].end());
+        v_undup[ii].assign(s_undup.begin(),s_undup.end());
+      }
+
+      // push dr cone variables       
+/*
+      for(unsigned int i = 0; i < v_undup[0].size(); ++i) {data->fillMulti<float>(i_sfcttcandptdr1,v_undup[0][i]); }
+      for(unsigned int i = 0; i < v_undup[1].size(); ++i) {data->fillMulti<float>(i_sfcttcandetadr1,v_undup[1][i]); }
+      for(unsigned int i = 0; i < v_undup[2].size(); ++i) {data->fillMulti<float>(i_sfcttcandptdr2,v_undup[2][i]); }
+      for(unsigned int i = 0; i < v_undup[3].size(); ++i) {data->fillMulti<float>(i_sfcttcandetadr2,v_undup[3][i]); }
+      for(unsigned int i = 0; i < v_undup[4].size(); ++i) {data->fillMulti<float>(i_sfcttcandptdr3,v_undup[4][i]); }
+      for(unsigned int i = 0; i < v_undup[5].size(); ++i) {data->fillMulti<float>(i_sfcttcandetadr3,v_undup[5][i]); }
+
+      for(unsigned int i = 0; i < v_undup[6].size(); ++i) {data->fillMulti<float>(i_sfcttpassptdr1,v_undup[6][i]); }
+      for(unsigned int i = 0; i < v_undup[7].size(); ++i) {data->fillMulti<float>(i_sfcttpassetadr1,v_undup[7][i]); }
+      for(unsigned int i = 0; i < v_undup[8].size(); ++i) {data->fillMulti<float>(i_sfcttpassptdr2,v_undup[8][i]); }
+      for(unsigned int i = 0; i < v_undup[9].size(); ++i) {data->fillMulti<float>(i_sfcttpassetadr2,v_undup[9][i]); }
+      for(unsigned int i = 0; i < v_undup[10].size(); ++i) {data->fillMulti<float>(i_sfcttpassptdr3,v_undup[10][i]); }
+      for(unsigned int i = 0; i < v_undup[11].size(); ++i) {data->fillMulti<float>(i_sfcttpassetadr3,v_undup[11][i]); }
+*/
+
+      for(unsigned int i = 0; i < v_undup[12].size(); ++i) {data->fillMulti<float>(i_sfcttcandptdr6,v_undup[12][i]); }
+      for(unsigned int i = 0; i < v_undup[13].size(); ++i) {data->fillMulti<float>(i_sfcttcandetadr6,v_undup[13][i]); }
+      for(unsigned int i = 0; i < v_undup[14].size(); ++i) {data->fillMulti<float>(i_sfcttpassptdr6,v_undup[14][i]); }
+      for(unsigned int i = 0; i < v_undup[15].size(); ++i) {data->fillMulti<float>(i_sfcttpassetadr6,v_undup[15][i]); }
+
+      // hardest gen matched to 0.6
+      if (indxctt<99) {
+        data->fillMulti<float>(i_sfcttcandptdr6hard        , ana->cttTops[indxctt]->p4().pt());
+        data->fillMulti<float>(i_sfcttcandetadr6hard       , ana->cttTops[indxctt]->p4().eta());
+        if(cfgSet::isSelTaggedTop(*ana->cttTops[indxctt])) {
+          data->fillMulti<float>(i_sfcttpassptdr6hard      , ana->cttTops[indxctt]->p4().pt());
+          data->fillMulti<float>(i_sfcttpassetadr6hard      , ana->cttTops[indxctt]->p4().eta());
+        }
+      }
+
+      // hardest gen matched other cones
+      // cone 1
+      if (indxctt1<99) {
+        auto *ctt = ana->cttTops[indxctt1];
+        data->fillMulti<float>(i_sfcttcandptdr1        , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttcandetadr1       , ctt->p4().eta());
+      }
+      if (indxcttpass1<99) {
+        auto *ctt = ana->cttTops[indxcttpass1];
+        data->fillMulti<float>(i_sfcttpassptdr1      , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttpassetadr1      , ctt->p4().eta());
+      }
+      // cone 2
+      if (indxctt2<99) {
+        auto *ctt = ana->cttTops[indxctt2];
+        data->fillMulti<float>(i_sfcttcandptdr2        , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttcandetadr2       , ctt->p4().eta());
+      }
+      if (indxcttpass2<99) {
+        auto *ctt = ana->cttTops[indxcttpass2];
+        data->fillMulti<float>(i_sfcttpassptdr2      , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttpassetadr2      , ctt->p4().eta());
+      }
+      // cone 3
+      if (indxctt3<99) {
+        auto *ctt = ana->cttTops[indxctt3];
+        data->fillMulti<float>(i_sfcttcandptdr3        , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttcandetadr3       , ctt->p4().eta());
+      }
+      if (indxcttpass3<99) {
+        auto *ctt = ana->cttTops[indxcttpass3];
+        data->fillMulti<float>(i_sfcttpassptdr3      , ctt->p4().pt());
+        data->fillMulti<float>(i_sfcttpassetadr3      , ctt->p4().eta());
+      }
+
+    }//if MC
+
     vector<LorentzVector> csvmjets;
     for(auto* j : jets) {
 
@@ -968,7 +1209,7 @@ struct TreeFiller {
     data->fill<unsigned int>(i_sfnwsdpass    , sfnwsdpass_);
     data->fill<float>(i_sfwsdpasspt          , sfwsdpasspt_);
     data->fill<float>(i_sfwsdpasseta         , sfwsdpasseta_);
-
+    data->fill<int  >(i_nhadronicgentops      , nhadronicgentops_);
 
     for(auto* fj : ana->fatJets) {
 
