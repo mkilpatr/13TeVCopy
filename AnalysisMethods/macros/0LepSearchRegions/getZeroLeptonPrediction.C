@@ -4,7 +4,7 @@
 
 using namespace BkgPrediction;
 
-void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160211_met250njets5_pr537",
+void getZeroLeptonPrediction(const TString defaultdir  = "/uscms_data/d3/hqu/trees/050316",
                              const TString outputdir   = "plots_bkgest",
                              const bool    dolownj     = false,
                              const bool    dolowmet    = false,
@@ -17,7 +17,7 @@ void getZeroLeptonPrediction(const TString defaultdir  = "/eos/uscms/store/user/
                              const TString zllcrconf   = "plotting/runzllcrbkgpred.conf",
                              const TString ttzcrconf   = "plotting/runttzcrbkgpred.conf",
                              const TString limconfdir  = "",
-                             const TString lumistr     = "2.262",
+                             const TString lumistr     = "2.317",
                              const TString region      = "sr",
                              //const TString region      = "srlownj",
                              const TString format      = "pdf",
