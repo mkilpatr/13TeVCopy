@@ -41,7 +41,10 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fUsePoisson(false),
   fPlotRatioUncertaintyBand(false),
   fPlotStackUncertainty(false),
-  fDrawCMSLumi(false)
+  fDrawCMSLumi(false),
+  fCMSLumiPosX(10),
+  fCMSLumiExtraText("Preliminary"),
+  fCMSLumiPeriod(4)
 {
   counter++;
 }
@@ -152,6 +155,12 @@ void Plot::addHist(TH1F* item, TString label, TString drawopt, int color, int fi
 
   if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -202,6 +211,12 @@ void Plot::addHistScaled(TH1F* item, double scaleto, TString label, TString draw
   if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
 
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -250,6 +265,12 @@ void Plot::addHistForRatio(TH1F *h, TString label, TString drawopt, int color, i
 
   if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -291,6 +312,12 @@ void Plot::addHist2D(TH2F* item, TString label, TString drawopt, int color, int 
   TH2F* hist = (TH2F*)item->Clone();
 
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -321,6 +348,12 @@ void Plot::addHist2DScaled(TH2F* item, double scaleto, TString label, TString dr
   hist->Scale(scaleto/hist->Integral(0, hist->GetNbinsX()+1, 0, hist->GetNbinsY()+1));
 
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -450,6 +483,12 @@ void Plot::addToStack(TH1F *h, TString label, int color, int fillstyle, int line
 
   if(plotoverflow) hist = addOverFlow(hist, plotoverflow);
   StyleTools::InitHist(hist, fXTitle, fYTitle, color, fillstyle);
+  if(fDrawCMSLumi) {
+    hist->SetTitleFont  (42   ,"XY");
+    hist->SetLabelFont  (42   ,"XY");
+    hist->SetTitleOffset(1.200,"X");
+    hist->SetLabelOffset(0.007,"X");
+  }
 
   if(linecolor==0)
     hist->SetLineColor(color);
@@ -509,7 +548,7 @@ void Plot::addToStack(TFile *f, TString histname, TString label, int color, int 
 
 }  
   
-void Plot::addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize, int textcolor, int fillcolor)
+void Plot::addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize, int textcolor, int fillcolor, int textalign, float textangle)
 {
 
   TPaveText *tb = new TPaveText(x1,y1,x2,y2,"NDC");
@@ -521,7 +560,9 @@ void Plot::addTextBox(TString text, double x1, double y1, double x2, double y2, 
     tb->SetFillColor(fillcolor);
 
   tb->SetBorderSize(bordersize);
-  tb->AddText(text);
+  TText* tt = tb->AddText(text);
+  tt->SetTextAngle(textangle);
+  tt->SetTextAlign(textalign);
   fTextBoxes.push_back(tb);
 
 }
@@ -815,7 +856,7 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1203,7 +1244,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1357,7 +1398,7 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
   
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, 4, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1716,7 +1757,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, 4, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

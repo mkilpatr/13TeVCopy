@@ -3,11 +3,11 @@
 #endif
 
 void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
-                 const TString inputdir="root://cmseos:1094//store/user/mullin/13TeV/lepCor/trees/160219_defaults_pr545",
+                 const TString inputdir="/uscms_data/d3/hqu/trees/050316_met250njets5",
                  const TString outputdir="plots_0lep",
-                 const double  sigscale = 10, // 10, 5, -1
-                 const bool    plotlog = false, // with sigscale = 10
-                 const TString lumistr  = "2.262",
+                 const double  sigscale = -1,
+                 const bool    plotlog = true, // with sigscale = 10
+                 const TString lumistr  = "2.318",
                  const TString format = "pdf")
 {
 
@@ -18,30 +18,34 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
   plots->setPlotType(PlotStuff::DATAMC);
   plots->setTree("Events");
   //plots->setRatioPlot();
-  plots->setColor("T2tt_700_1"  ,kRed);
+  plots->setColor("T2tt_700_100"  ,kRed);
   plots->setColor("T2tt_600_200",kViolet-1);
   plots->setColor("T2tt_350_150",kViolet-1);
+  plots->setColor("T2tt_250_150",kViolet-1);
   plots->setColor("T2tb_700_1"  ,kRed);
+  plots->setColor("T2tb_700_100",kGreen+3);
   plots->setColor("T2tb_700_200",kViolet-1);
   plots->setColor("T2tb_500_200",kOrange+3);
   plots->setColor("T2bW_600_1_x05"  ,kRed);
   plots->setColor("T2bW_400_150_x05",kViolet-1);
-  plots->setColor("znunu",kRed-9);
   plots->setPlotOverflow(1);
-  plots->setScaleToData();
+  //plots->setScaleToData();
   plots->setSigScale(sigscale);
   if(sigscale < 0)
     plots->setAddSigScaleTxt(false);
   plots->setFormat(format);
   if(plotlog) {
     plots->setLogy();
-    plots->setMinLogScale(0.2);
+    plots->setMinLogScale(0.3);
   }
-  plots->setWgtVar(lumistr+"*weight*truePUWeight*btagWeight*leptnpweight*lepvetoweight*qcdRespTailWeight");
-  //plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.2f fb^{-1}",stof(string(lumistr.Data()))),"");
-  plots->setHeaderText("#sqrt{s} = 13 TeV","2.3 fb^{-1}","");
-  plots->setHeaderPosition(0.16, 0.93);
-  plots->setVLine(kGray+2,kDashed);
+  plots->setWgtVar(lumistr+"*weight*truePUWeight*btagWeight*btagFastSimWeight*leptnpweight*lepvetoweight*qcdRespTailWeight");
+  plots->setDrawCMSLumi("Simulation", 10, 4);
+  //plots->setLegend(0.63,0.53,0.88,0.83);
+  //plots->addTextBox("[Signals scaled to SM]", 0.62, 0.47, 0.88, 0.53);
+  plots->setLegend(0.63,0.59,0.88,0.89);
+  plots->addTextBox("[Signals scaled to SM]", 0.63, 0.53, 0.88, 0.59);
+  //plots->addTextBox("HPTT analysis", 0.62, 0.83, 0.9, 0.9);
+  //plots->setVLine(kGray+2,kDashed);
 
   map<TString,TString> sel;
   sel["trig"]       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
@@ -60,16 +64,16 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
   sel["baseline"]   = sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"];
   sel["1lcrbaseline"] = sel["trig"] + sel["lepcrsel"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"];
 
-  vector<double> lines_met = {/*250,*/300,400,500,600};
-  vector<double> lines_dphi = {0.5};
-  vector<double> lines_njets75 = {1.5};
-  vector<double> lines_njets_sel = {4.5};
-  vector<double> lines_njets_bin = {4.5,6.5};
-  vector<double> lines_nlbjets = {1.5};
-  vector<double> lines_nbjets_sel = {1.5};
-  vector<double> lines_nbjets_bin = {0.5,1.5};
-  vector<double> lines_mtb = {175};
-  vector<double> lines_nctt = {0.5};
+  vector<double> lines_met = {}; //{/*250,*/300,400,500,600};
+  vector<double> lines_dphi = {}; //{0.5};
+  vector<double> lines_njets75 = {}; //{1.5};
+  vector<double> lines_njets_sel = {}; //{4.5};
+  vector<double> lines_njets_bin = {}; //{4.5,6.5};
+  vector<double> lines_nlbjets = {}; //{1.5};
+  vector<double> lines_nbjets_sel = {}; //{1.5};
+  vector<double> lines_nbjets_bin = {}; //{0.5,1.5};
+  vector<double> lines_mtb = {}; //{175};
+  vector<double> lines_nctt = {}; //{0.5};
 
   if(plotlog && sigscale==10) {
     // logscale (scale to same NX as below)
@@ -97,10 +101,22 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
     }
     else if(sigscale==-1) {
       // scale to MC
-      plots->addTreeVar("nbjets_baseline_lowmtb", "nbjets",     sel["baseline"] + " && mtcsv12met < 175" , "N_{b}",  6, -0.5,  5.5, 0,0,0, lines_nbjets_bin);
-      plots->addTreeVar("njets_baseline_lowmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met < 175" , "N_{J}", 11,  3.5, 14.5, 0,0,0, lines_njets_bin);
-      plots->addTreeVar("nbjets_baseline_highmtb", "nbjets",     sel["baseline"] + " && mtcsv12met >= 175" , "N_{b}",  6, -0.5,  5.5, 0,0,0, lines_nbjets_bin);
-      plots->addTreeVar("njets_baseline_highmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met >= 175" , "N_{J}", 11,  3.5, 14.5, 0,0,0, lines_njets_bin);
+      plots->addTreeVar("met_baseline",           "met",        sel["baseline"], "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      plots->addTreeVar("met_baseline_lowmtb",    "met",        sel["baseline"] + " && mtcsv12met <= 175", "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      plots->addTreeVar("met_baseline_highmtb",   "met",        sel["baseline"] + " && mtcsv12met > 175" , "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      if(!plotlog) {
+        plots->addTreeVar("mtb_baseline",            "mtcsv12met", sel["baseline"], "#it{M}_{T}(b_{1,2}, #slash{#it{E}}_{T}) [GeV]", 20, 0.0, 500.0);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(205);
+        plots->addTreeVar("nbjets_baseline",         "nbjets",     sel["baseline"], "#it{N}_{b}",  5, 0.5,  5.5);
+        plots->addTreeVar("nbjets_baseline_lowmtb",  "nbjets",     sel["baseline"] + " && mtcsv12met < 175", "#it{N}_{b}",  5, 0.5,  5.5);
+        plots->addTreeVar("nbjets_baseline_highmtb", "nbjets",     sel["baseline"] + " && mtcsv12met >= 175", "#it{N}_{b}",  5, 0.5,  5.5);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(210);
+        plots->addTreeVar("njets_baseline" ,         "njets" ,     sel["baseline"], "#it{N}_{j}", 10,  4.5, 14.5);
+        plots->addTreeVar("njets_baseline_lowmtb" ,  "njets" ,     sel["baseline"] + " && mtcsv12met < 175", "#it{N}_{j}", 10,  4.5, 14.5);
+        plots->addTreeVar("njets_baseline_highmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met >= 175", "#it{N}_{j}", 10,  4.5, 14.5);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(203);
+        plots->addTreeVar("nctt_baseline_highmtb",   "ncttstd",    sel["baseline"] + " && mtcsv12met >= 175" , "#it{N}_{t}", 3, -0.5, 2.5);
+      }
     }
 
     // removed from AN

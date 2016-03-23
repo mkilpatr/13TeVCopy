@@ -4,8 +4,8 @@
 
 
 void plotTauCands(const TString conffile="runtau.conf",
-                  const TString inputdir="trees",
-                  const TString outputdir="trees")
+                  const TString inputdir="/eos/uscms/store/user/vdutta/13TeV/trees/091115/tauveto/",
+                  const TString outputdir="plots")
 {
 
   gSystem->mkdir(outputdir,true);
@@ -18,23 +18,31 @@ void plotTauCands(const TString conffile="runtau.conf",
   myPlots1->setWgtVar("1.0");
   myPlots1->setWriteHists();
   myPlots1->setHeaderText("","","");
+  myPlots1->setColor("realtaus",StyleTools::color_ttbar1l);
   myPlots1->setColor("realtaus_tt1tau",StyleTools::color_ttbar1l);
-  myPlots1->setColor("realtaus_tt2tau",StyleTools::color_ttbar2l);
-  myPlots1->setColor("faketaus_T2tt_500_325",StyleTools::color_comp4);
-  myPlots1->setColor("faketaus_T2tt_650_325",StyleTools::color_comp1);
-  myPlots1->setColor("faketaus_T2tt_850_100",StyleTools::color_comp2);
+  myPlots1->setColor("realtaus_tt2tau",StyleTools::color_wjets);
+  myPlots1->setColor("faketaus_T2tt_500_325",kViolet-1);
+  myPlots1->setColor("faketaus_T2tt_650_325",kGreen+3);
+  myPlots1->setColor("faketaus_T2tt_850_100",kRed);
   myPlots1->setLegend(0.25, 0.7, 0.9, 0.9);
   myPlots1->setYTitle("Candidates");
   myPlots1->setTreeFileSuffix("_addtaumva.root");
   myPlots1->setAddSigScaleTxt(false);
+  myPlots1->setFormat("pdf");
   //myPlots1->setLogy();
+  myPlots1->setDrawCMSLumi("Simulation", 10, 0);
+  myPlots1->setLegend(0.42,0.59,0.92,0.89);
+  myPlots1->addTextBox("[Signal distributions scaled to t#bar{t}]", 0.42, 0.53, 0.92, 0.59);
+  //myPlots1->setLegend(0.42,0.53,0.92,0.83);
+  //myPlots1->addTextBox("[Signal distributions scaled to t#bar{t}]", 0.42, 0.47, 0.92, 0.53);
+  //myPlots1->addTextBox("HPTT analysis", 0.42, 0.83, 0.7, 0.88);
 
   myPlots1->addTreeVar("mt",        "mt",        "1==1","m_{T} [GeV]",                   250,0.0,500.0);
   myPlots1->addTreeVar("mtnophoton","mtnophoton","1==1","m_{T} [GeV]",                   250,0.0,500.0);
   myPlots1->addTreeVar("dphimet",   "dphimet",   "1==1","|#Delta#phi(h, #slash{E}_{T})|",252,0.0,3.15);
   myPlots1->addTreeVar("dphiw",     "dphiw",     "1==1","|#Delta#phi(h, W)|"            ,252,0.0,3.15);
 
-  myPlots1->addTreeVar("mt_baseline",        "mt",        "njets>3 && misset>150.0","m_{T} [GeV]",                   250,0.0,500.0);
+  myPlots1->addTreeVar("mt_baseline",        "mt",        "njets>3 && misset>150.0","#it{M}_{T}(h^{#pm}, #it{#slash{E}}_{T}) [GeV]",                   250,0.0,500.0);
   myPlots1->addTreeVar("mtnophoton_baseline","mtnophoton","njets>3 && misset>150.0","m_{T} [GeV]",                   250,0.0,500.0);
   myPlots1->addTreeVar("dphimet_baseline",   "dphimet",   "njets>3 && misset>150.0","|#Delta#phi(h, #slash{E}_{T})|",252,0.0,3.15);
   myPlots1->addTreeVar("dphiw_baseline",     "dphiw",     "njets>3 && misset>150.0","|#Delta#phi(h, W)|",252,0.0,3.15);
