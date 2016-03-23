@@ -7,9 +7,9 @@ enum SysVar { NOMINAL, VARUP, VARDOWN, NONE };
 vector<TString> vars = {};
 vector<TString> bkgs = {"ttZ","qcd","lostlep","znunu"};
 vector<TString> rawbkgs = {"ttZ","qcd","ttbarplusw","znunu"};
-vector<TString> sigs = {"T2tt_700_1","T2tt_600_200"};
-vector<TString> labels = {"t#bar{t}Z","QCD","t#bar{t}/W","Z#rightarrow#nu#nu"};
-vector<TString> siglabels = {"T2tt(700,1)","T2tt(600,200)"};
+vector<TString> labels = {"t#bar{t}Z","QCD","t#bar{t}/W+jets","Z(#nu#bar{#nu})+jets"};
+vector<TString> sigs = {"T2tt_700_100", "T2tt_250_150", "T2tb_700_100"};
+vector<TString> siglabels = {"T2tt(700,100)", "T2tt(250,150)", "T2tb(700,100)"};
 const TString unc_name = "bkgtotal_unc_sr";
 
 vector<TString> binlabels = {"bin_250_5_1_0_0", "bin_300_5_1_0_0", "bin_400_5_1_0_0", "bin_500_5_1_0_0", "bin_600_5_1_0_0",
@@ -35,6 +35,15 @@ vector<TString> plotlabels {
     "[250, 300)", "[300, 400)", "[400, 500)", "[500, 600)", "#geq 600",
     "[250, 300)", "[300, 400)", "[400, 500)", "[500, 600)", "#geq 600"
 };
+
+vector<vector<TString>> regionLabels = {
+    {"M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", "5-6 jets"},
+    {"M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", "#geq 7 jets"},
+    {"M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", "5-6 jets, N_{t} = 0"},
+    {"M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", "#geq 7 jets, N_{t} = 0"},
+    {"M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", "#geq 5 jets, N_{t} #geq 1"}
+};
+
 
 void setBinLabels(TH1 *h, const vector<TString>& labels){
   for (unsigned i=0; i<labels.size() && i<h->GetNbinsX(); ++i){
@@ -77,7 +86,6 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
                             const TString predHistSuffix = "_pred_sr",
                             const TString rawHistSuffix = "_raw_sr",
                             const TString outputFileName = "fullbkgestwithunc.root",
-                            const TString lumistr = "2.262",
                             const TString format = "pdf",
                             const bool    plotbkgunc = true,
                             const bool    plotlog = true)
@@ -162,12 +170,17 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
   colormap["lostlep"] = StyleTools::color_ttbar;
   colormap["ttz"] = StyleTools::color_ttZ;
   colormap["znunu"] = kRed-9;
-  colormap["T2tt_700_1"] = kRed;
-  colormap["T2tt_600_200"] = kViolet-1;
+  colormap["T2tt_700_100"] = kRed;
+  colormap["T2tt_250_150"] = kViolet-1;
+  colormap["T2tb_700_100"] = kGreen+3;
 
   StyleTools::SetTDRStyle();
 
-  TCanvas* mycanv = StyleTools::MakeCanvas("myc","",800,600);
+  TCanvas* mycanv1 = StyleTools::MakeCanvas("myc1","",800,600);
+  TCanvas* mycanv2 = StyleTools::MakeCanvas("myc2","",800,600);
+  TCanvas* mycanv3 = StyleTools::MakeCanvas("myc3","",800,600);
+  TCanvas* mycanv4 = StyleTools::MakeCanvas("myc4","",800,600);
+  TCanvas* mycanv5 = StyleTools::MakeCanvas("myc5","",800,600);
 
   Plot* plot_sr1 = new Plot("sryields_lowmt_mednj","","#slash{E}_{T} [GeV]","Events");
   Plot* plot_sr2 = new Plot("sryields_lowmt_highnj","","#slash{E}_{T} [GeV]","Events");
@@ -181,11 +194,11 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
   plot_sr4->setUsePoisson();
   plot_sr5->setUsePoisson();
 
-  plot_sr1->setDrawCMSLumi();
-  plot_sr2->setDrawCMSLumi();
-  plot_sr3->setDrawCMSLumi();
-  plot_sr4->setDrawCMSLumi();
-  plot_sr5->setDrawCMSLumi();
+  plot_sr1->setDrawCMSLumi(0);
+  plot_sr2->setDrawCMSLumi(0);
+  plot_sr3->setDrawCMSLumi(0);
+  plot_sr4->setDrawCMSLumi(0);
+  plot_sr5->setDrawCMSLumi(0);
 
   plot_sr1->addHist(data, "Observed", "E0", 1, 0, 1, 0, 0, 2);
   plot_sr2->addHist(data, "Observed", "E0", 1, 0, 1, 0, 0, 2);
@@ -233,83 +246,104 @@ void plotFinalYieldsandUncs(const TString inputDir = "plots_bkgest",
     plot_sr5->addHist(sighists[isig], siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
   }
 
-  plot_sr1->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
-  plot_sr2->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
-  plot_sr3->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
-  plot_sr4->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
-  plot_sr5->addHistForRatio(rawbkgtotal, "Simulation", "hist", kOrange, 0, kOrange, 1, 0, 2, 1);
+//  plot_sr1->addHistForRatio(rawbkgtotal, "Simulation", "hist", kPink-1, 0, kPink-1, 1, 0, 2, 1);
+//  plot_sr2->addHistForRatio(rawbkgtotal, "Simulation", "hist", kPink-1, 0, kPink-1, 1, 0, 2, 1);
+//  plot_sr3->addHistForRatio(rawbkgtotal, "Simulation", "hist", kPink-1, 0, kPink-1, 1, 0, 2, 1);
+//  plot_sr4->addHistForRatio(rawbkgtotal, "Simulation", "hist", kPink-1, 0, kPink-1, 1, 0, 2, 1);
+//  plot_sr5->addHistForRatio(rawbkgtotal, "Simulation", "hist", kPink-1, 0, kPink-1, 1, 0, 2, 1);
 
   plot_sr1->setXRange(0,10);
-  plot_sr1->addLine(5,0.01,5,100,kGray+2,kDashed);
+  plot_sr1->addLine(5,0.03,5,150,kGray+2,kDashed);
   plot_sr2->setXRange(10,20);
-  plot_sr2->addLine(15,0.01,15,100,kGray+2,kDashed);
+  plot_sr2->addLine(15,0.03,15,90,kGray+2,kDashed);
   plot_sr3->setXRange(20,30);
-  plot_sr3->addLine(25,0.01,25,20,kGray+2,kDashed);
+  plot_sr3->addLine(25,0.03,25,60,kGray+2,kDashed);
   plot_sr4->setXRange(30,40);
-  plot_sr4->addLine(35,0.01,35,20,kGray+2,kDashed);
+  plot_sr4->addLine(35,0.03,35,30,kGray+2,kDashed);
   plot_sr5->setXRange(40,50);
-  plot_sr5->addLine(45,0.01,45,5,kGray+2,kDashed);
+  plot_sr5->addLine(45,0.04,45,8,kGray+2,kDashed);
 
   plot_sr1->getLegend()->SetNColumns(2);
-  plot_sr1->setLegend(0.2,0.65,0.7,0.88);
-  plot_sr1->addTextBox("N_{b} = 1", 0.32, 0.58, 0.42, 0.63, 0, 1, 0);
-  plot_sr1->addTextBox("N_{b} #geq 2", 0.73, 0.58, 0.83, 0.63, 0, 1, 0);
-  plot_sr1->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.65, 0.8, 0.95, 0.88, 0, 1, 0);
-  plot_sr1->addTextBox("5-6 jets", 0.82, 0.72, 0.95, 0.8, 0, 1, 0);
+  plot_sr1->setLegend(0.2,0.63,0.68,0.88);
 
   plot_sr2->getLegend()->SetNColumns(2);
-  plot_sr2->setLegend(0.2,0.65,0.7,0.88);
-  plot_sr2->addTextBox("N_{b} = 1", 0.32, 0.58, 0.42, 0.63, 0, 1, 0);
-  plot_sr2->addTextBox("N_{b} #geq 2", 0.73, 0.58, 0.83, 0.63, 0, 1, 0);
-  plot_sr2->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV", 0.65, 0.8, 0.95, 0.88, 0, 1, 0);
-  plot_sr2->addTextBox("#geq 7 jets", 0.82, 0.72, 0.95, 0.8, 0, 1, 0);
+  plot_sr2->setLegend(0.2,0.63,0.68,0.88);
 
   plot_sr3->getLegend()->SetNColumns(2);
-  plot_sr3->setLegend(0.2,0.65,0.7,0.88);
-  plot_sr3->addTextBox("N_{b} = 1", 0.32, 0.58, 0.42, 0.63, 0, 1, 0);
-  plot_sr3->addTextBox("N_{b} #geq 2", 0.73, 0.58, 0.83, 0.63, 0, 1, 0);
-  plot_sr3->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.8, 0.95, 0.88, 0, 1, 0);
-  plot_sr3->addTextBox("5-6 jets", 0.82, 0.72, 0.95, 0.8, 0, 1, 0);
-  plot_sr3->addTextBox("N_{t} = 0", 0.86, 0.66, 0.95, 0.72, 0, 1, 0);
+  plot_sr3->setLegend(0.2,0.63,0.68,0.88);
 
   plot_sr4->getLegend()->SetNColumns(2);
-  plot_sr4->setLegend(0.2,0.65,0.7,0.88);
-  plot_sr4->addTextBox("N_{b} = 1", 0.32, 0.58, 0.42, 0.63, 0, 1, 0);
-  plot_sr4->addTextBox("N_{b} #geq 2", 0.73, 0.58, 0.83, 0.63, 0, 1, 0);
-  plot_sr4->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.8, 0.95, 0.88, 0, 1, 0);
-  plot_sr4->addTextBox("#geq 7 jets", 0.82, 0.72, 0.95, 0.8, 0, 1, 0);
-  plot_sr4->addTextBox("N_{t} = 0", 0.86, 0.66, 0.95, 0.72, 0, 1, 0);
+  plot_sr4->setLegend(0.2,0.63,0.68,0.88);
 
   plot_sr5->getLegend()->SetNColumns(2);
-  plot_sr5->setLegend(0.2,0.65,0.7,0.88);
-  plot_sr5->addTextBox("N_{b} = 1", 0.32, 0.58, 0.42, 0.63, 0, 1, 0);
-  plot_sr5->addTextBox("N_{b} #geq 2", 0.73, 0.58, 0.83, 0.63, 0, 1, 0);
-  plot_sr5->addTextBox("M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV", 0.65, 0.8, 0.95, 0.88, 0, 1, 0);
-  plot_sr5->addTextBox("#geq 5 jets", 0.82, 0.72, 0.95, 0.8, 0, 1, 0);
-  plot_sr5->addTextBox("N_{t} #geq 1", 0.86, 0.66, 0.95, 0.72, 0, 1, 0);
+  plot_sr5->setLegend(0.2,0.63,0.68,0.88);
 
   if(plotlog) {
     plot_sr1->setName(plot_sr1->getName()+"_log");
     plot_sr1->setLogy();
-    plot_sr1->setYRange(0.03,5000.0);
+    plot_sr1->setYRange(0.1,12000.0);
     plot_sr2->setName(plot_sr2->getName()+"_log");
     plot_sr2->setLogy();
-    plot_sr2->setYRange(0.03,5000.0);
+    plot_sr2->setYRange(0.1,5000.0);
     plot_sr3->setName(plot_sr3->getName()+"_log");
     plot_sr3->setLogy();
-    plot_sr3->setYRange(0.03,2000.0);
+    plot_sr3->setYRange(0.1,8000.0);
     plot_sr4->setName(plot_sr4->getName()+"_log");
     plot_sr4->setLogy();
-    plot_sr4->setYRange(0.03,800.0);
+    plot_sr4->setYRange(0.1,2000.0);
     plot_sr5->setName(plot_sr5->getName()+"_log");
     plot_sr5->setLogy();
-    plot_sr5->setYRange(0.03,100.0);
+    plot_sr5->setYRange(0.1,200.0);
   }
 
-  plot_sr1->drawRatioStack(mycanv,true,format);
-  plot_sr2->drawRatioStack(mycanv,true,format);
-  plot_sr3->drawRatioStack(mycanv,true,format);
-  plot_sr4->drawRatioStack(mycanv,true,format);
-  plot_sr5->drawRatioStack(mycanv,true,format);
+  TLatex tl;
+  tl.SetTextSize(0.037);
+  tl.SetTextAlign(31);
+
+  plot_sr1->drawRatioStack(mycanv1,true,format);
+  mycanv1->cd();
+  tl.DrawLatexNDC(0.4, 0.65, "N_{b} = 1");
+  tl.DrawLatexNDC(0.8, 0.65, "N_{b} #geq 2");
+  tl.DrawLatexNDC(0.92, 0.88, "HPTT");
+  tl.DrawLatexNDC(0.92, 0.83, regionLabels[0].front());
+  tl.DrawLatexNDC(0.92, 0.78, regionLabels[0].back());
+  mycanv1->SaveAs(plot_sr1->getName()+".pdf");
+
+  plot_sr2->drawRatioStack(mycanv2,true,format);
+  mycanv2->cd();
+  tl.DrawLatexNDC(0.4, 0.65, "N_{b} = 1");
+  tl.DrawLatexNDC(0.8, 0.65, "N_{b} #geq 2");
+  tl.DrawLatexNDC(0.92, 0.88, "HPTT");
+  tl.DrawLatexNDC(0.92, 0.83, regionLabels[1].front());
+  tl.DrawLatexNDC(0.92, 0.78, regionLabels[1].back());
+  mycanv2->SaveAs(plot_sr2->getName()+".pdf");
+
+
+  plot_sr3->drawRatioStack(mycanv3,true,format);
+  mycanv3->cd();
+  tl.DrawLatexNDC(0.4, 0.65, "N_{b} = 1");
+  tl.DrawLatexNDC(0.8, 0.65, "N_{b} #geq 2");
+  tl.DrawLatexNDC(0.92, 0.88, "HPTT");
+  tl.DrawLatexNDC(0.92, 0.83, regionLabels[2].front());
+  tl.DrawLatexNDC(0.92, 0.78, regionLabels[2].back());
+  mycanv3->SaveAs(plot_sr3->getName()+".pdf");
+
+  plot_sr4->drawRatioStack(mycanv4,true,format);
+  mycanv4->cd();
+  tl.DrawLatexNDC(0.4, 0.65, "N_{b} = 1");
+  tl.DrawLatexNDC(0.8, 0.65, "N_{b} #geq 2");
+  tl.DrawLatexNDC(0.92, 0.88, "HPTT");
+  tl.DrawLatexNDC(0.92, 0.83, regionLabels[3].front());
+  tl.DrawLatexNDC(0.92, 0.78, regionLabels[3].back());
+  mycanv4->SaveAs(plot_sr4->getName()+".pdf");
+
+  plot_sr5->drawRatioStack(mycanv5,true,format);
+  mycanv5->cd();
+  tl.DrawLatexNDC(0.37, 0.65, "N_{b} = 1");
+  tl.DrawLatexNDC(0.8, 0.65, "N_{b} #geq 2");
+  tl.DrawLatexNDC(0.92, 0.88, "HPTT");
+  tl.DrawLatexNDC(0.92, 0.83, regionLabels[4].front());
+  tl.DrawLatexNDC(0.92, 0.78, regionLabels[4].back());
+  mycanv5->SaveAs(plot_sr5->getName()+".pdf");
 
 }
