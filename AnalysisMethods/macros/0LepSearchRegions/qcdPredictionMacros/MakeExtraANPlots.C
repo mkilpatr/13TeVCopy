@@ -123,23 +123,28 @@ void getMotivationPlots() {
 void getSmearComparision() {
 //  //Get dPhi plot
   TString preselection = TString::Format("%s && %s ",QCDSupport::METPresel.Data(),QCDSupport::BaselineExtraCuts.Data());
-//  TString sels[] = {"nbjets == 1 && (dphij12met < .1 || dphij3met < .1)","nbjets >= 2 && (dphij12met < .1 || dphij3met < .1)",
-//      "nbjets == 1  && (dphij12met > .5)","nbjets >= 2 && (dphij12met > .5)"
-//
-//
-//      ,""};
-//  TString selNames[] = {"#Delta#phi_{123} < 0.1, 1 b-tag","#Delta#phi_{123} < 0.1, #geq 2 b-tags","#Delta#phi_{12} > 0.5, 1 b-tag","#Delta#phi_{12} > 0.5,  #geq 2 b-tags",""};
+
+  std::vector<HistogramGetter*> hists;
 
   TString sels[] = {"nbjets == 1","nbjets >= 2",
       "ncttstd >=1","dphij12met > .5"
-
-
       ,""};
   TString selNames[] = {"1 b-tag","#geq 2 b-tags","#geq1 top tag","#Delta#phi_{12} > 0.5",""};
 
-
   double bins[] = {250,300,400,500,600,700};
-  HistogramGetter metHistG("met","met","#slash{#it{E}}_{T} [GeV]", 5,bins);
+    hists.push_back(new HistogramGetter("met","met","#slash{#it{E}}_{T} [GeV]", 5,bins));
+
+
+
+//  TString sels[] = {"nbjets >=1"
+//      ,""};
+//  TString selNames[] = {" ",""};
+//  hists.push_back(new HistogramGetter("ht","ht","#it{H}_{T} [GeV]", 58,200,5000));
+//  hists.push_back(new HistogramGetter("j1pt","j1pt","#it{p}_{T, jet 1} [GeV]", 29,100,3000));
+//  hists.push_back(new HistogramGetter("j2pt","j2pt","#it{p}_{T, jet 2} [GeV]", 24,100,2500));
+//  hists.push_back(new HistogramGetter("j3pt","j3pt","#it{p}_{T, jet 3} [GeV]", 15,0,1500));
+
+
 
   TTree * smearQCD = QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root");
   TTree * origQCD = QCDSupport::getTree("pieces/qcd_origtree_skimmed_baseline.root");
@@ -147,12 +152,14 @@ void getSmearComparision() {
 
 
 
+    for(unsigned int iH = 0; iH < hists.size(); ++iH)
       for(unsigned int iP = 0; sels[iP][0]; ++iP){
-        TString name = TString::Format("smearComp_%u",iP);
-        Plot * plot = new Plot(name,selNames[iP],metHistG.plotInfo->xTitle,"Events");
+        auto& histG = *hists[iH];
+        TString name = TString::Format("smearComp_%u_%u",iH,iP);
+        Plot * plot = new Plot(name,selNames[iP],histG.plotInfo->xTitle,"Events");
         TString sel = TString::Format("%s && %s",preselection.Data(),sels[iP].Data());
-        metHistG.setNBS(50);TH1F * hSS = metHistG.getHistogramManual(smearQCD,sel,"weight*2.26","QCD");
-        metHistG.setNBS(0); TH1F * hSO = metHistG.getHistogram(origQCD,sel,"weight*2.26","QCD2");
+        histG.setNBS(50);TH1F * hSS = histG.getHistogramManual(smearQCD,sel,"weight*2.317","QCD");
+        histG.setNBS(0); TH1F * hSO = histG.getHistogram(origQCD,sel,"weight*2.317","QCD2");
         plot->addHist(hSO,"Original QCD MC","",TreeColors[TTbarW],0,TreeColors[TTbarW]);
         plot->addHist(hSS,"Smeared QCD MC","",TreeColors[Znuu],0,TreeColors[Znuu]);
 
@@ -173,21 +180,21 @@ void getSmearComparision() {
 void getTailSFRegion(){
   TString presel = TString::Format("%s && %s", QCDSupport::METPresel.Data(),QCDSupport::ResTailExtraCuts.Data());
   TString sels[] = {"pseudoRespCSV < 0.605","pseudoRespCSV >= 0.890",""};
-  TString selNames[] = {"Jet is not light b-tagged","Jet is medium b-tagged",""};
+  TString selNames[] = {"Jet not b-tagged","Jet b-tagged",""};
 
 
   double bins[] = {0,.1,.33,.5,.66,.8,1};
-  HistogramGetter histG("pseudoResp","pseudoResp","#it{r}_{pseudo,jet}", 6,bins);
+  HistogramGetter histG("pseudoResp","pseudoResp","#it{r}^{pseudo}_{jet}", 6,bins);
 
   vector<TString> names1;
   vector<TTree*> trees1;
   vector<int> colors1;
   trees1.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root")); names1.push_back("Data"); colors1.push_back(1);
   trees1.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names1.push_back("Non-QCD MC"); colors1.push_back(StyleTools::color_ttbar);
-  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_inc.root"));      names1.push_back("b"); colors1.push_back(StyleTools::color_znunu);
-  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_gtp66.root"));  names1.push_back("l, r > 0.66"); colors1.push_back(821);
-  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_p33top66.root"));  names1.push_back("l, r 0.33-0.66"); colors1.push_back(811);
-  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_ltp33.root"));  names1.push_back("l, r < 0.33"); colors1.push_back(812);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_inc.root"));      names1.push_back("b jet"); colors1.push_back(StyleTools::color_znunu);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_gtp66.root"));  names1.push_back("l jet, r_{jet} > 0.66"); colors1.push_back(821);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_p33top66.root"));  names1.push_back("l jet, r_{jet} 0.33-0.66"); colors1.push_back(811);
+  trees1.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_ltp33.root"));  names1.push_back("l jet, r_{jet} < 0.33"); colors1.push_back(812);
 
 
   vector<TString> names2;
@@ -195,9 +202,9 @@ void getTailSFRegion(){
   vector<int> colors2;
   trees2.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed.root")); names2.push_back("Data"); colors2.push_back(1);
   trees2.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root")); names2.push_back("Non-QCD MC"); colors2.push_back(StyleTools::color_ttbar);
-  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_inc.root"));  names2.push_back("l"); colors2.push_back(StyleTools::color_znunu);
-  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_gtp50.root"));      names2.push_back("b, r >0.5"); colors2.push_back(811);
-  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_ltp50.root"));names2.push_back("b, r < 0.5"); colors2.push_back(812);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_light_inc.root"));  names2.push_back("l jet"); colors2.push_back(StyleTools::color_znunu);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_gtp50.root"));      names2.push_back("b jet, r_{jet} >0.5"); colors2.push_back(811);
+  trees2.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_dphi_split_b_ltp50.root"));names2.push_back("b jet, r_{jet} < 0.5"); colors2.push_back(812);
 
 
 
@@ -213,12 +220,12 @@ void getTailSFRegion(){
     for(unsigned int iT = 0; iT < trees->size(); ++iT){
       if((*names)[iT] == "Data"){
         TH1F * hSN = histG.getHistogram((*trees)[iT],sel,"1.0",TString::Format("tree_%u",iT));
-        plot->addHist(hSN,(*names)[iT],"",(*colors)[iT],0,(*colors)[iT]);
+        plot->addHist(hSN,(*names)[iT],"P0",(*colors)[iT],0,(*colors)[iT]);
       } else {
         TH1F * hSN = histG.getHistogram((*trees)[iT],sel,TString::Format("%s",QCDSupport::stdMCWeight.Data()),TString::Format("tree_%u",iT));
         if((*names)[iT] == "Non-QCD MC"){
-          if(iP == 0) hSN->Scale(0.886424);
-          if(iP == 1) hSN->Scale(0.77299);
+          if(iP == 0) hSN->Scale(0.92178);
+          if(iP == 1) hSN->Scale(0.789706);
         }
         plot->addToStack(hSN,(*names)[iT],(*colors)[iT],1001,1,1,3);
       }
@@ -234,9 +241,16 @@ void getTailSFRegion(){
     }
     plot->setLegend(.5,.65,.92,.87);
     plot->getLegend()->SetNColumns(2);
-    plot->setDrawCMSLumi();
+    plot->setDrawCMSLumi(10,"Preliminary");
     plot->drawRatioStack(c,true,"pdf");
-    QCDSupport::setTitleOffset(c,.850);
+    c->cd();
+    TLatex *tl = new TLatex();
+    tl->SetTextSize(0.03);
+    tl->DrawLatexNDC(0.2, 0.77, "HPTT QCD #it{r}_{jet} SF CS");
+    tl->DrawLatexNDC(0.2, 0.73, selNames[iP]);
+
+    QCDSupport::setTitleOffset(c,1.250);
+
     c->SaveAs(plot->getName() + TString(".pdf"));
 
   }

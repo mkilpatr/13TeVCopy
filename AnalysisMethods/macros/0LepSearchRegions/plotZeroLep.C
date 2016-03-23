@@ -3,11 +3,11 @@
 #endif
 
 void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
-                 const TString inputdir="root://cmseos:1094//store/user/mullin/13TeV/lepCor/trees/160208_defaults_pr521",
+                 const TString inputdir="/uscms_data/d3/hqu/trees/050316_met250njets5",
                  const TString outputdir="plots_0lep",
-                 const double  sigscale = 10,
-                 const bool    plotlog = false,
-                 const TString lumistr  = "2.262",
+                 const double  sigscale = -1,
+                 const bool    plotlog = true, // with sigscale = 10
+                 const TString lumistr  = "2.318",
                  const TString format = "pdf")
 {
 
@@ -18,27 +18,39 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
   plots->setPlotType(PlotStuff::DATAMC);
   plots->setTree("Events");
   //plots->setRatioPlot();
-  plots->setColor("T2tt_700_1"  ,kRed);
+  plots->setColor("T2tt_700_100"  ,kRed);
   plots->setColor("T2tt_600_200",kViolet-1);
   plots->setColor("T2tt_350_150",kViolet-1);
-  plots->setColor("znunu",kRed-9);
+  plots->setColor("T2tt_250_150",kViolet-1);
+  plots->setColor("T2tb_700_1"  ,kRed);
+  plots->setColor("T2tb_700_100",kGreen+3);
+  plots->setColor("T2tb_700_200",kViolet-1);
+  plots->setColor("T2tb_500_200",kOrange+3);
+  plots->setColor("T2bW_600_1_x05"  ,kRed);
+  plots->setColor("T2bW_400_150_x05",kViolet-1);
   plots->setPlotOverflow(1);
+  //plots->setScaleToData();
   plots->setSigScale(sigscale);
   if(sigscale < 0)
     plots->setAddSigScaleTxt(false);
   plots->setFormat(format);
   if(plotlog) {
     plots->setLogy();
-    plots->setMinLogScale(0.2);
+    plots->setMinLogScale(0.3);
   }
-  plots->setWgtVar(lumistr+"*weight*truePUWeight*btagWeight*leptnpweight*lepvetoweight*qcdRespTailWeight");
-  //plots->setHeaderText("#sqrt{s} = 13 TeV",TString::Format("%4.2f fb^{-1}",stof(string(lumistr.Data()))),"");
-  plots->setHeaderText("#sqrt{s} = 13 TeV","2.3 fb^{-1}","");
-  plots->setHeaderPosition(0.16, 0.93);
+  plots->setWgtVar(lumistr+"*weight*truePUWeight*btagWeight*btagFastSimWeight*leptnpweight*lepvetoweight*qcdRespTailWeight");
+  plots->setDrawCMSLumi("Simulation", 10, 4);
+  //plots->setLegend(0.63,0.53,0.88,0.83);
+  //plots->addTextBox("[Signals scaled to SM]", 0.62, 0.47, 0.88, 0.53);
+  plots->setLegend(0.63,0.59,0.88,0.89);
+  plots->addTextBox("[Signals scaled to SM]", 0.63, 0.53, 0.88, 0.59);
+  //plots->addTextBox("HPTT analysis", 0.62, 0.83, 0.9, 0.9);
+  //plots->setVLine(kGray+2,kDashed);
 
   map<TString,TString> sel;
   sel["trig"]       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   sel["passvetoes"] = " && (nvetotau==0 || (ismc && npromptgentau>0)) && nvetolep==0";
+  sel["lepcrsel"]   = " && nvetolep>0 && mtlepmet<100";
   sel["met"]        = " && met>250";
   sel["njets75"]    = " && j2pt>75";
   sel["njets"]      = " && njets >= 5";
@@ -50,38 +62,74 @@ void plotZeroLep(const TString conffile="plotting/plot0lep.conf",
   sel["dphij34met"] = " && dphij3met>0.5 && dphij4met>0.5";
   sel["dphij123"]   = " && dphij12met>1 && dphij3met>0.5 && dphij4met>0.5";
   sel["baseline"]   = sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"];
+  sel["1lcrbaseline"] = sel["trig"] + sel["lepcrsel"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"];
 
-  // scale to NX (currently 10)
-  plots->addTreeVar("njets75_reducedbaseline",   "njets75",                  sel["trig"] + sel["passvetoes"] + sel["met"]                  + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{J} (p_{T} > 75 GeV)", 11, -0.5, 10.5);
-  plots->addTreeVar("njets_reducedbaseline",     "njets",                    sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"]                + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{J}", 11, -0.5, 10.5);
-  plots->addTreeVar("nlbjets_reducedbaseline",   "nlbjets",                  sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"]                  + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{bl}", 6, -0.5, 5.5);
-  plots->addTreeVar("nbjets_reducedbaseline",    "nbjets",                   sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"]                 + sel["dphij12met"] + sel["dphij34met"], "N_{b}", 6, -0.5, 5.5);
-  plots->addTreeVar("dphij34met_reducedbaseline","min(dphij3met,dphij4met)", sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"]                    , "min(#Delta#phi(j_{3},#slash{E}_{T}),#Delta#phi(j_{4},#slash{E}_{T}))", 21, 0.0, 3.15);
-  plots->addTreeVar("met_reducedbaseline",       "met",                      sel["trig"] + sel["passvetoes"]              + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0);
-  plots->addTreeVar("mtb_baseline",              "mtcsv12met",               sel["baseline"], "M_{T}(b_{1,2}, #slash{E}_{T}) [GeV]", 20, 0.0, 500.0);
+  vector<double> lines_met = {}; //{/*250,*/300,400,500,600};
+  vector<double> lines_dphi = {}; //{0.5};
+  vector<double> lines_njets75 = {}; //{1.5};
+  vector<double> lines_njets_sel = {}; //{4.5};
+  vector<double> lines_njets_bin = {}; //{4.5,6.5};
+  vector<double> lines_nlbjets = {}; //{1.5};
+  vector<double> lines_nbjets_sel = {}; //{1.5};
+  vector<double> lines_nbjets_bin = {}; //{0.5,1.5};
+  vector<double> lines_mtb = {}; //{175};
+  vector<double> lines_nctt = {}; //{0.5};
 
-  // logscale (scale to same NX as above)
-  plots->addTreeVar("dphij12met_reducedbaseline","dphij12met",               sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"]                     + sel["dphij34met"], "min(#Delta#phi(j_{1},#slash{E}_{T}),#Delta#phi(j_{2},#slash{E}_{T}))", 63, 0.0, 3.15);
+  if(plotlog && sigscale==10) {
+    // logscale (scale to same NX as below)
+    plots->addTreeVar("met_reducedbaseline",       "met",                      sel["trig"] + sel["passvetoes"]              + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, lines_met);
+    plots->addTreeVar("dphij12met_reducedbaseline","dphij12met",               sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"]                     + sel["dphij34met"], "min(#Delta#phi(j_{1},#slash{E}_{T}),#Delta#phi(j_{2},#slash{E}_{T}))", 63, 0.0, 3.15, 0,0,0, lines_dphi);
+    //plots->addTreeVar("met_lowmtb" ,  "met",   sel["baseline"] + " && mtcsv12met <  175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, lines_met);
+    //plots->addTreeVar("met_highmtb",  "met",   sel["baseline"] + " && mtcsv12met >= 175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, lines_met);
+  }
+  else {
+    if(sigscale==10) {
+      // scale to NX (currently 10)
+      plots->addTreeVar("njets75_reducedbaseline",   "njets75",                  sel["trig"] + sel["passvetoes"] + sel["met"]                  + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{J} (p_{T} > 75 GeV)", 11, -0.5, 10.5, 0,0,0, lines_njets75);
+      plots->addTreeVar("njets_reducedbaseline",     "njets",                    sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"]                + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{J}", 11, -0.5, 10.5, 0,0,0, lines_njets_sel);
+      plots->addTreeVar("nlbjets_reducedbaseline",   "nlbjets",                  sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"]                  + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{bl}", 6, -0.5, 5.5, 0,0,0, lines_nlbjets);
+      plots->addTreeVar("nbjets_reducedbaseline",    "nbjets",                   sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"]                 + sel["dphij12met"] + sel["dphij34met"], "N_{b}", 6, -0.5, 5.5, 0,0,0, lines_nbjets_sel);
+      plots->addTreeVar("dphij34met_reducedbaseline","min(dphij3met,dphij4met)", sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"] + sel["njets"] + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"]                    , "min(#Delta#phi(j_{3},#slash{E}_{T}),#Delta#phi(j_{4},#slash{E}_{T}))", 21, 0.0, 3.15, 0,0,0, lines_dphi);
+      plots->addTreeVar("mtb_baseline",              "mtcsv12met",               sel["baseline"], "M_{T}(b_{1,2}, #slash{E}_{T}) [GeV]", 20, 0.0, 500.0, 0,0,0, lines_mtb);
+      //plots->addTreeVar("njets30_reducedbaseline",     "njets30",                    sel["trig"] + sel["passvetoes"] + sel["met"] + sel["njets75"]                + sel["nlbjets"] + sel["nbjets"] + sel["dphij12met"] + sel["dphij34met"], "N_{J}", 11, -0.5, 10.5, 0,0,0, lines_njets);
+      //plots->addTreeVar("met_lowmtb" ,  "met",   sel["baseline"] + " && mtcsv12met <  175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, lines_met);
+      //plots->addTreeVar("met_highmtb",  "met",   sel["baseline"] + " && mtcsv12met >= 175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0, 0,0,0, lines_met);
+    }
+    else if(sigscale==5) {
+      // scale to 5X
+      plots->addTreeVar("nctt_baseline_highmtb",  "ncttstd",    sel["baseline"] + " && mtcsv12met > 175" , "N_{t}", 4, -0.5, 3.5, 0,0,0, lines_nctt);
+    }
+    else if(sigscale==-1) {
+      // scale to MC
+      plots->addTreeVar("met_baseline",           "met",        sel["baseline"], "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      plots->addTreeVar("met_baseline_lowmtb",    "met",        sel["baseline"] + " && mtcsv12met <= 175", "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      plots->addTreeVar("met_baseline_highmtb",   "met",        sel["baseline"] + " && mtcsv12met > 175" , "#slash{#it{E}}_{T} [GeV]", 30, 250.0, 1000.0);
+      if(!plotlog) {
+        plots->addTreeVar("mtb_baseline",            "mtcsv12met", sel["baseline"], "#it{M}_{T}(b_{1,2}, #slash{#it{E}}_{T}) [GeV]", 20, 0.0, 500.0);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(205);
+        plots->addTreeVar("nbjets_baseline",         "nbjets",     sel["baseline"], "#it{N}_{b}",  5, 0.5,  5.5);
+        plots->addTreeVar("nbjets_baseline_lowmtb",  "nbjets",     sel["baseline"] + " && mtcsv12met < 175", "#it{N}_{b}",  5, 0.5,  5.5);
+        plots->addTreeVar("nbjets_baseline_highmtb", "nbjets",     sel["baseline"] + " && mtcsv12met >= 175", "#it{N}_{b}",  5, 0.5,  5.5);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(210);
+        plots->addTreeVar("njets_baseline" ,         "njets" ,     sel["baseline"], "#it{N}_{j}", 10,  4.5, 14.5);
+        plots->addTreeVar("njets_baseline_lowmtb" ,  "njets" ,     sel["baseline"] + " && mtcsv12met < 175", "#it{N}_{j}", 10,  4.5, 14.5);
+        plots->addTreeVar("njets_baseline_highmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met >= 175", "#it{N}_{j}", 10,  4.5, 14.5);
+        // In StyleTools.cc: hist->GetXaxis()->SetNdivisions(203);
+        plots->addTreeVar("nctt_baseline_highmtb",   "ncttstd",    sel["baseline"] + " && mtcsv12met >= 175" , "#it{N}_{t}", 3, -0.5, 2.5);
+      }
+    }
 
-  // scale to 5X
-  plots->addTreeVar("nctt_baseline_highmtb",  "ncttstd",    sel["baseline"] + " && mtcsv12met > 175" , "N_{t}", 4, -0.5, 3.5);
-
-  // scale to MC
-  plots->addTreeVar("nbjets_baseline_lowmtb", "nbjets",     sel["baseline"] + " && mtcsv12met < 175" , "N_{b}",  6, -0.5,  5.5);
-  plots->addTreeVar("njets_baseline_lowmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met < 175" , "N_{J}", 11,  3.5, 14.5);
-  plots->addTreeVar("nbjets_baseline_highmtb", "nbjets",     sel["baseline"] + " && mtcsv12met >= 175" , "N_{b}",  6, -0.5,  5.5);
-  plots->addTreeVar("njets_baseline_highmtb" , "njets" ,     sel["baseline"] + " && mtcsv12met >= 175" , "N_{J}", 11,  3.5, 14.5);
-
-  // removed from AN
-  //plots->addTreeVar("met_baseline_lowmtb",    "met",        sel["baseline"] + " && mtcsv12met <= 175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0);
-  //plots->addTreeVar("met_baseline_highmtb",   "met",        sel["baseline"] + " && mtcsv12met > 175" , "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0);
-  //plots->addTreeVar("nctt_baseline_lowmtb",   "ncttstd",    sel["baseline"] + " && mtcsv12met <= 175", "N_{t}", 4, -0.5, 3.5);
-  //plots->addTreeVar("nbjets_baseline_nctt0",   "nbjets",     sel["baseline"] + " && ncttstd==0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
-  //plots->addTreeVar("nbjets_baseline_nctt1",   "nbjets",     sel["baseline"] + " && ncttstd>0",         "Number of b-Tagged Jets", 6, -0.5, 5.5);
-  //plots->addTreeVar("nbjets_baseline_highmtb_nctt0",   "nbjets",     sel["baseline"] + " && mtcsv12met > 175 && ncttstd==0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
-  //plots->addTreeVar("nbjets_baseline_highmtb_nctt1",   "nbjets",     sel["baseline"] + " && mtcsv12met > 175 && ncttstd>0",         "Number of b-Tagged Jets", 6, -0.5, 5.5);
-  //plots->addTreeVar("nbjets_baseline_lowmtb_nctt0",    "nbjets",     sel["baseline"] + " && mtcsv12met <= 175 && ncttstd==0",       "Number of b-Tagged Jets", 6, -0.5, 5.5);
-  //plots->addTreeVar("nbjets_baseline_lowmtb_nctt1",    "nbjets",     sel["baseline"] + " && mtcsv12met <= 175 && ncttstd>0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    // removed from AN
+    //plots->addTreeVar("met_baseline_lowmtb",    "met",        sel["baseline"] + " && mtcsv12met <= 175", "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0);
+    //plots->addTreeVar("met_baseline_highmtb",   "met",        sel["baseline"] + " && mtcsv12met > 175" , "#slash{E}_{T} [GeV]", 50, 250.0, 1000.0);
+    //plots->addTreeVar("nctt_baseline_lowmtb",   "ncttstd",    sel["baseline"] + " && mtcsv12met <= 175", "N_{t}", 4, -0.5, 3.5);
+    //plots->addTreeVar("nbjets_baseline_nctt0",   "nbjets",     sel["baseline"] + " && ncttstd==0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    //plots->addTreeVar("nbjets_baseline_nctt1",   "nbjets",     sel["baseline"] + " && ncttstd>0",         "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    //plots->addTreeVar("nbjets_baseline_highmtb_nctt0",   "nbjets",     sel["baseline"] + " && mtcsv12met > 175 && ncttstd==0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    //plots->addTreeVar("nbjets_baseline_highmtb_nctt1",   "nbjets",     sel["baseline"] + " && mtcsv12met > 175 && ncttstd>0",         "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    //plots->addTreeVar("nbjets_baseline_lowmtb_nctt0",    "nbjets",     sel["baseline"] + " && mtcsv12met <= 175 && ncttstd==0",       "Number of b-Tagged Jets", 6, -0.5, 5.5);
+    //plots->addTreeVar("nbjets_baseline_lowmtb_nctt1",    "nbjets",     sel["baseline"] + " && mtcsv12met <= 175 && ncttstd>0",        "Number of b-Tagged Jets", 6, -0.5, 5.5);
+  }
 
   plots->plot(); 
 

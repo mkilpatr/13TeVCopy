@@ -46,7 +46,12 @@ void go() {
   TTree * dataNormTree= QCDSupport::getTree("pieces/htmht_tree_skimmed.root");
   TTree * bkgNormTree = QCDSupport::getTree("pieces/nonQCD_tree_skimmed.root");
   TTree * qcdNormTree = QCDSupport::getTree("pieces/qcd_tree_skimmed.root");
-  TString ttbarWNormSels[] = {TString::Format("%s && nvetolep >= 1 && mtlepmet < 100", QCDSupport::METPresel.Data()),TString::Format("%s && nvetolep >= 1 && mtlepmet < 100 && nbjets >= 1", QCDSupport::METPresel.Data()),""};
+  TString ttbarWNormSels[] = {TString::Format("%s && nvetolep >= 1 && mtlepmet < 100 && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5", QCDSupport::METPresel.Data()),
+                              TString::Format("%s && nvetolep >= 1 && mtlepmet < 100 && dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5 && nbjets >= 1", QCDSupport::METPresel.Data()),""};
+
+//  TString ttbarWNormSels[] = {TString::Format("%s && nvetolep >= 1 && mtlepmet < 100", QCDSupport::METPresel.Data()),
+//                              TString::Format("%s && nvetolep >= 1 && mtlepmet < 100 && nbjets >= 1", QCDSupport::METPresel.Data()),""};
+
   TString ttbarWNormSelNames[] = {"Incl","bTag"};
   HistogramGetter normHisto ("norm","met","norm", 1,150,1000);
   for(unsigned int iS = 0; ttbarWNormSels[iS][0]; ++iS){

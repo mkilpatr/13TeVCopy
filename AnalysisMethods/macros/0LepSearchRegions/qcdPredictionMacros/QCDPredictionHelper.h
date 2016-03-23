@@ -34,14 +34,16 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
   const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
   const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";
   const TString stdWeight = "1.0";
-  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.263";
-  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.263";
+  const TString stdMCWeight = "weight*truePUWeight*btagWeight*2.317";
+  const TString stdQCDWeight = "weight*truePUWeight*btagWeight*qcdRespTailWeight*2.317";
   const TString topMCWeight = "cttWeight";
 
   TString processWeight(TString weight, int iCR) {return iCR == 4 ? TString::Format("%s*%s",weight.Data(),topMCWeight.Data()) : weight;}
-
   const int nMETBins = 5;
   const double metBins[nMETBins+1] = {250,300,400,500,600,700};
+
+//  const int nMETBins = 1;
+//  const double metBins[nMETBins+1] = {250,700};
   HistogramGetter * metGetter = new HistogramGetter("met","met","#slash{#it{E}}_{T} [GeV]", nMETBins,metBins);
 
   struct CRegInfo {
@@ -55,6 +57,15 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
         "mtcsv12met >= 175 && njets >= 7 && ncttstd == 0",
         "mtcsv12met >= 175 && ncttstd >= 1"
     };
+
+    TString crSelLabels[nCR] = {
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV}{5-6 jets}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) < 175 GeV}{#geq 7 jets}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{5-6 jets, N_{t} = 0}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{#geq 7 jets, N_{t} = 0}",
+        "#splitline{M_{T}(b_{1,2},#slash{E}_{T}) > 175 GeV}{#geq 5 jets, N_{t} #geq 1}"
+    };
+
       TString crSelNames[nCR] = {"#it{m}_{T,b} < 175, nJ 5-6","#it{m}_{T,b}< 175, nJ #geq7",
           "#it{m}_{T,b} #geq 175, nJ 5-6, nT 0","#it{m}_{T,b} #geq 175, nJ #geq7, nT 0",
           "#it{m}_{T,b} #geq 175, nT #geq1"
@@ -96,7 +107,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
 //        std::cout <<std::endl<< dataH->GetBinContent(1) <<" "<< otherH->GetBinContent(1) <<" "<< dataH->GetBinContent(1)/otherH->GetBinContent(1)<<std::endl;
         dataH->Divide(otherH);
 
-        TH1 * h = new TH1F(TString::Format("ttbarwSF_%u",iS),";SF",5,metBins);
+        TH1 * h = new TH1F(TString::Format("ttbarwSF_%u",iS),";SF",nMETBins,metBins);
         for(unsigned int iB = 1; iB <= h->GetNbinsX(); ++iB){
           double metV = h->GetBinCenter(iB);
           double sf = dataH->GetBinContent( dataH->FindFixBin(metV) );
@@ -129,7 +140,9 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
     void fillDataCorr(){
       for(unsigned int iS = 0; iS < nCR; ++iS){
         TH1 * hd = metGetter->getHistogram(dataTree,TString::Format("%s && %s",crPreData.Data(),crSel[iS].Data()),"1.0",TString::Format("tree_%u",0));
-        TH1 * hqwv = metGetter->getHistogram(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),processWeight(stdQCDWeight,iS),TString::Format("tree_%u",0));
+        metGetter->setNBS(50);
+        TH1 * hqwv = metGetter->getHistogramManual(qcdTree,TString::Format("%s && %s",crPreQCDWithVeto.Data(),crSel[iS].Data()),processWeight(stdQCDWeight,iS),TString::Format("tree_%u",0));
+        metGetter->setNBS(0);
         TH1 * corr = (TH1*)hd->Clone();
         TH1 * corrU = (TH1*)hd->Clone();
         std::cout << crSelNames[iS] << std::endl;
@@ -380,7 +393,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
       double predsyst = pred*(getTotalSystUnc(crinfo,reg,metBin) - 1);
 
       if(tf < .0005 ) return TString::Format(" $<$0.001 & - ");
-      return TString::Format("%.3f $\\pm$ %.3f & %.2f $\\pm$ %.3f (stat.) $\\pm$ %.3f (syst.)",tf,tfUnc,pred,predstat,predsyst );
+      return TString::Format("%.3f $\\pm$ %.3f & %.3f $\\pm$ %.3f (stat.) $\\pm$ %.3f (syst.)",tf,tfUnc,pred,predstat,predsyst );
     }
   };
 

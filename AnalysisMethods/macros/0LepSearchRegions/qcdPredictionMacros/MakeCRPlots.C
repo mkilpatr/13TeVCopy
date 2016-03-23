@@ -19,10 +19,10 @@ void go(){
   vector<TString> names;
   vector<TTree*> trees;
   vector<int> colors;
-  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed_baseline.root")); names.push_back("Observed"); colors.push_back(1);
+  trees.emplace_back(QCDSupport::getTree("pieces/htmht_tree_skimmed_baseline.root")); names.push_back("Data"); colors.push_back(1);
   trees.emplace_back(QCDSupport::getTree("pieces/nonQCD_tree_skimmed_baseline.root")); names.push_back("Non-QCD bkg");colors.push_back(color_ttbar);
   trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root")); names.push_back("Smeared QCD MC"); colors.push_back(color_qcd);
-  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root")); names.push_back("Without #it{r}_{jet} corr");colors.push_back(color_znunu);
+//  trees.emplace_back(QCDSupport::getTree("pieces/qcd_tree_skimmed_baseline.root")); names.push_back("Without #it{r}_{jet} corr");colors.push_back(color_znunu);
   trees.emplace_back(QCDSupport::getTree("pieces/qcd_origtree_skimmed_baseline.root")); names.push_back("With orig. QCD MC");colors.push_back(color_tW);
 //  trees.emplace_back(QCDSupport::getTree("pieces/T2tt_500_200_tree.root")); names.push_back("T2tt_500_200"); colors.push_back(color_znunu);
 //  trees.emplace_back(QCDSupport::getTree("pieces/T2tt_700_1_tree.root")); names.push_back("T2tt_700_1"); colors.push_back(color_tW);
@@ -30,11 +30,11 @@ void go(){
   std::vector<double> minY(info.nCR,0.1);
   std::vector<double> maxY(info.nCR,3000);
 
-  minY[0] = 0.3;maxY[0] = 2000;
-  minY[1] = 0.3;maxY[1] = 2000;
-  minY[2] = 0.3;maxY[2] = 500;
-  minY[3] = 0.3;maxY[3] = 70;
-  minY[4] = 0.2;maxY[4] = 50;
+  minY[0] = 0.3;maxY[0] = 100000;
+  minY[1] = 0.3;maxY[1] = 50000;
+  minY[2] = 0.3;maxY[2] = 4000;
+  minY[3] = 0.3;maxY[3] = 2000;
+  minY[4] = 0.2;maxY[4] = 500;
 
     for(unsigned int iP = 0; iP < info.nCR; ++iP){
     TString title = TString::Format("%s",info.crSelNames[iP].Data());
@@ -43,9 +43,9 @@ void go(){
     TString qcdWVSEL= TString::Format("%s && %s",info.crPreQCDWithVeto.Data(),info.crSel[iP].Data());
     TString t2ttSEL= TString::Format("%s && %s",info.crPreData.Data(),info.crSel[iP].Data());
     for(unsigned int iT = 0; iT < trees.size(); ++iT){
-      if(names[iT] == "Observed"){
+      if(names[iT] == "Data"){
         TH1F * hSN = (TH1F*)info.dataYields[iP]->Clone();
-        plot->addHist(hSN,names[iT],"P",colors[iT],0,colors[iT]);
+        plot->addHist(hSN,names[iT],"E0",colors[iT],0,colors[iT]);
 
       }
       else if(names[iT] == "Without #it{r}_{jet} corr"){
@@ -92,17 +92,26 @@ void go(){
     plot->setUsePoisson();
     plot->setYRange(minY[iP],maxY[iP]);
     plot->setTitle(" ");
-    plot->setLegend(.4,.68,.90,.88);
-    plot->getLegend()->SetNColumns(2);
+    plot->setLegend(.6,.58,.90,.88);
+//    plot->getLegend()->SetNColumns(2);
 
     plot->setLogy();
-
+    c->cd();
     plot->drawRatioStack(c,true,"pdf");
+    c->cd();
+    c->Modified();
+    TLatex *tl = new TLatex();
+    tl->SetTextSize(0.03);
+    tl->DrawLatexNDC(0.2, 0.77, "HPTT QCD CS");
+    tl->DrawLatexNDC(0.2, 0.69, info.crSelLabels[iP]);
+
 
 
     QCDSupport::setTitleOffset(c);
+    c->Update();
 
     c->SaveAs(plot->getName() + TString(".pdf"));
+    c->SaveAs(TString::Format("QCD_CS_%u.pdf",iP));
 
 
 

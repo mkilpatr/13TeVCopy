@@ -5,43 +5,43 @@
 vector<TString> regions = {"lowmt_mednj", "lowmt_highnj", "highmt_mednj_nt0", "highmt_highnj_nt0", "highmt_nt1" };
 vector<TString> bkgs      = {/*"ttZ"      , "qcd", "znunu"             ,*/ "ttW"      , "tW", "wjets" , "ttbar"   };
 vector<TString> bkglabels = {/*"t#bar{t}Z", "QCD", "Z#rightarrow#nu#nu",*/ "t#bar{t}W", "tW", "W+jets", "t#bar{t}"};
-vector<TString> sigs      = {"nb1"         , "nb2"            };
-vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
+//vector<TString> sigs      = {}; //{"nb1"              , "nb2"                 };
+//vector<TString> siglabels = {"LLB (SR, N_{b}=1)", "LLB (SR, N_{b}#geq2)"};
+vector<TString> sigs      = {"T2tt_700_1" , "T2tt_600_200" };
+vector<TString> siglabels = {"T2tt(700,1)", "T2tt(600,200)"};
 
 /*
  * To make the input histograms to this macro, run getZeroLeptonPrediction after uncommenting
  * the ttbar, wjets, tW, and ttW lines in run0lepbkgpred.conf (note that the root files for these
  * trees will need to be linked from <treeDir>/sr/ to <treeDir> similar to how the other trees
- * are). Then hadd the 0L and onelepcr trees together to get the input file for this macro:
+ * are).
  *
- * $ hadd output_0l_plus_lepcr.root output_0l.root output_lepcr.root
- *
- * note: some hard-coded numbers in Plot.cc were changed:
- *   > fLegY2(0.9), -> fLegY2(0.85),   // to move the top of the legend down
- *   > in void Plot::drawRatioStack:   // to keep the 1000 label of the x-axis from getting cut-off
- *     > p1->SetRightMargin (0.02) -> p1->SetRightMargin (0.05)
- *     > p2->SetRightMargin (0.02) -> p2->SetRightMargin (0.05)
  */
-void plot1LCR(const TString inputDir = "plots_bkgest",
-                            const TString inputFileName = "output_0l_plus_lepcr.root",
+void plot1LCR(const TString inputDir = "plots_bkgest_160224_looseBaseline_njets2_nlb1", // "plots_bkgest",
+                            //const TString srFileName = "output_0l.root",
+                            const TString crFileName = "output_lepcr.root",
                             const TString format  = "pdf",
                             const bool    plotlog = true
                             )
 {
 
-  TFile* infile = new TFile(inputDir + "/" + inputFileName);
+  //TFile* infileSR = new TFile(inputDir + "/" + srFileName);
+  TFile* infileCR = new TFile(inputDir + "/" + crFileName);
 
   StyleTools::ColorMap colormap = StyleTools::DefaultColors();
   colormap["ttbarplusw"] = StyleTools::color_ttbar;
   colormap["ttbar"]      = kCyan-7;
   colormap["wjets"]      = StyleTools::color_wjets;
-  colormap["tW"]         = StyleTools::color_tW;
+  //colormap["tW"]         = StyleTools::color_tW;
+  //colormap["tW"]         = kGreen-9; //StyleTools::color_tW;
   colormap["ttW"]        = StyleTools::color_ttW;
   colormap["znunu"] = kRed-9;
   colormap["qcd"]   = StyleTools::color_qcd;
   colormap["ttz"]   = StyleTools::color_ttZ;
   colormap["nb1"]   = kRed;
-  colormap["nb2"]   = kGreen+3; // kViolet-1 doesn't work because in intersects with tW's violet in one bin
+  colormap["nb2"]   = kOrange-3; // kGreen+3; // kViolet-1 doesn't work because in intersects with tW's violet in one bin
+  colormap["T2tt_700_1"]   = kRed;
+  colormap["T2tt_600_200"] = kViolet-1;
 
   StyleTools::SetTDRStyle();
 
@@ -53,32 +53,40 @@ void plot1LCR(const TString inputDir = "plots_bkgest",
     plots->setUsePoisson();
     plots->setDrawCMSLumi();
 
-    TH1F* data = (TH1F*)infile->Get("met_lepcr_nbgeq1_"+region+"_data;1");
+    TH1F* data = (TH1F*)infileCR->Get("met_lepcr_nbgeq1_"+region+"_data;1");
     double intdata = data->Integral(1,data->GetNbinsX());
     plots->addHist(data, "Data", "E0", 1, 0, 1, 0, 0, 2);
 
     // get full bkg for scaling and ratio
     TH1F* bkgtotal = 0;
     for(unsigned int ibkg = 0; ibkg<bkgs.size(); ++ibkg) {
-      TH1F* hbkg = (TH1F*)infile->Get("met_lepcr_nbgeq1_"+region+"_"+bkgs[ibkg]+";1");
+      TH1F* hbkg = (TH1F*)infileCR->Get("met_lepcr_nbgeq1_"+region+"_"+bkgs[ibkg]+";1");
       if(ibkg == 0) bkgtotal = (TH1F*)hbkg->Clone("bkgtotal");
       else bkgtotal->Add(hbkg);
     } // bkgs
     double intbkg = bkgtotal->Integral(1,bkgtotal->GetNbinsX());
 
     // get and scale individual bkgs for plotting
+    TH1F* unc = 0;
     for(unsigned int ibkg = 0; ibkg<bkgs.size(); ++ibkg) {
-      TH1F* hbkg = (TH1F*)infile->Get("met_lepcr_nbgeq1_"+region+"_"+bkgs[ibkg]+";1");
+      TH1F* hbkg = (TH1F*)infileCR->Get("met_lepcr_nbgeq1_"+region+"_"+bkgs[ibkg]+";1");
       hbkg->Scale(intdata/intbkg);
+      if(ibkg == 0) unc = (TH1F*)hbkg->Clone("unc");
+      else unc->Add(hbkg);
+      for(unsigned int i=1; i<=hbkg->GetNbinsX(); ++i) hbkg->SetBinError(i,0);
       plots->addToStack(hbkg, bkglabels[ibkg], colormap[bkgs[ibkg]], 1001, 1, 1, 2, 0);
     } // bkgs
+    plots->setUncertaintyHist(unc);
+    plots->setPlotStackUncertainty();
+    plots->setPlotRatioUncertaintyBand();
 
-    for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
-      TH1F* hsig = (TH1F*)infile->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
-      hsig->Scale(intdata/hsig->Integral(1,hsig->GetNbinsX()));
-      //plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
-      plots->addHistForRatio(hsig, siglabels[isig], "mc_hist", 0, 0, colormap[sigs[isig]], 11, 0, 3, 0);
-    }
+    // for(unsigned int isig = 0; isig<sigs.size(); ++isig) {
+    //   //TH1F* hsig = (TH1F*)infileSR->Get("met_sr_"+region+"_"+sigs[isig]+"_ttbarplusw"+";1");
+    //   TH1F* hsig = (TH1F*)infileCR->Get("met_lepcr_nbgeq1_"+region+"_"+sigs[isig]+";1");
+    //   //hsig->Scale(intdata/hsig->Integral(1,hsig->GetNbinsX()));
+    //   plots->addHist(hsig, siglabels[isig], "hist", 0, 0, colormap[sigs[isig]], 11, 0, 3);
+    //   //plots->addHistForRatio(hsig, siglabels[isig], "mc_hist", 0, 0, colormap[sigs[isig]], 11, 0, 3, 0);
+    // }
 
     plots->setXRange(0,5);
     if(plotlog) {

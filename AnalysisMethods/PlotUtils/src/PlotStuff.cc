@@ -97,7 +97,7 @@ void PlotStuff::assignColor(TString sname)
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
@@ -106,10 +106,11 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
+  vlines_.push_back(xlines);
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins);
@@ -118,10 +119,11 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
+  vlines_.push_back(xlines);
 
 }
 
-void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins)
+void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, vector<double> xlines)
 {
 
   PlotTreeVar treevar(plotname, varname, selection, label, nbinsx, xbins, nbinsy, ybins);
@@ -130,6 +132,7 @@ void PlotStuff::addTreeVar(TString plotname, TString varname, TString selection,
     hist2dplotnames_.push_back(plotname);
   else
     histplotnames_.push_back(plotname);
+  vlines_.push_back(xlines);
 
 }
 
@@ -155,6 +158,14 @@ void PlotStuff::addCompSet(TString compplotname, vector<TString> plots, vector<T
     printf("CompPlot type not known! Specify either HISTCOMP, HIST2DCOMP or GRAPHCOMP\n");
     return;
   }
+
+}
+
+void PlotStuff::addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize, int textcolor, int fillcolor, int textalign, float textangle)
+{
+
+  PlotText textbox(text, x1, y1, x2, y2, bordersize, textcolor, fillcolor, textalign, textangle);
+  textboxes_.push_back(textbox);
 
 }
 
@@ -501,14 +512,20 @@ void PlotStuff::loadTables()
 
 }
 
-void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists)
+void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TString ytitle, vector<TH1F*> hists,  vector<double> xlines)
 {
-
   Plot *plot = new Plot(name, title, xtitle, ytitle);
   plot->outputdir = outputdir_;
   gSystem->mkdir(outputdir_, true);
   if(config_.usepoisson) plot->setUsePoisson();
   if(config_.uncband) plot->setPlotStackUncertainty();
+
+  if(config_.drawcmslumi)
+    plot->setDrawCMSLumi(config_.cmslumipos, config_.cmslumitxt, config_.cmslumiper);
+  else if(config_.sqrts != "" && config_.lumi != "")
+    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+  else
+    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
 
   double max = 0.0;
   int maxbin = 0;
@@ -555,19 +572,19 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
         } else if(isSignal(sname)) {
           if(config_.sigscale < 0) {
             double sigscale = config_.scaletodata ? data : bkgtot;
-            plot->addHistScaled(hists[isam], sigscale, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 11, config_.plotoverflow, 5);
+            plot->addHistScaled(hists[isam], sigscale, config_.addsigscaletxt ? sample->label + " (scaled to #sum(bkg))" : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 11, config_.plotoverflow, config_.drawcmslumi ? 3 : 5);
             if(sigscale*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1) > max) {
               max = sigscale*hists[isam]->GetMaximum()/hists[isam]->Integral(0, nbins+1);
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else if (config_.sigscale != 1) {
-            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), config_.addsigscaletxt ? TString::Format("%dx %s",config_.sigscale, sample->label.Data()) : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 11, config_.plotoverflow, 5);
+            plot->addHistScaled(hists[isam], config_.sigscale*hists[isam]->Integral(0, nbins+1), config_.addsigscaletxt ? TString::Format("%dx %s",config_.sigscale, sample->label.Data()) : sample->label, "hist", config_.colormap[sname], 0, config_.colormap[sname], 11, config_.plotoverflow, config_.drawcmslumi ? 3 : 5);
             if(config_.sigscale*hists[isam]->GetMaximum() > max) {
               max = config_.sigscale*hists[isam]->GetMaximum();
               maxbin = hists[isam]->GetMaximumBin();
             }
           } else {
-            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 11, config_.plotoverflow, 5);
+            plot->addHist(hists[isam], sample->label, "hist", 0, 0, config_.colormap[sname], 11, config_.plotoverflow, config_.drawcmslumi ? 3 : 5);
           }
         } else {
           if(config_.scaletodata)
@@ -713,6 +730,11 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
 
   bool legonleft = maxbin > 0.5*nbins ? true : false;
 
+  for(auto xline : xlines) {
+    if(config_.logy) plot->addLine(xline, config_.minlogscale, xline, config_.maxlogscale*max, config_.vlinecolor, config_.vlinestyle);
+    else             plot->addLine(xline, 0.01               , xline, config_.maxscale   *max, config_.vlinecolor, config_.vlinestyle);
+  }
+
   if(config_.logy) {
     plot->setName(plot->getName()+"_log");
     plot->setLogy();
@@ -721,16 +743,14 @@ void PlotStuff::makeHistPlot(TString name, TString title, TString xtitle, TStrin
     plot->setYRange(0.0, config_.maxscale*max);
   }
 
-  if(config_.sqrts != "" && config_.lumi != "")
-    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
-  else
-    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
-
   if(config_.legx1 != 0)
     plot->setLegend(config_.legx1, config_.legy1, config_.legx2, config_.legy2);
 
   if(legonleft && plot->getLegend()->GetX1() > 0.5)
     plot->moveLegend(0.2-plot->getLegend()->GetX1(), 0.0);
+
+  for(auto tb : textboxes_)
+    plot->addTextBox(tb.text, tb.x1, tb.y1, tb.x2, tb.y2, tb.bordersize, tb.textcolor, tb.fillcolor, tb.textalign, tb.textangle);
 
   if(config_.plotratio && config_.type == DATAMC)
     plot->drawRatioStack(canvas_, true, config_.format);
@@ -768,6 +788,9 @@ void PlotStuff::makeHist2DPlot(TString name, TString title, TString xtitle, TStr
 
     plot->setLegend(0,0,0,0);
 
+    for(auto tb : textboxes_)
+      plot->addTextBox(tb.text, tb.x1, tb.y1, tb.x2, tb.y2, tb.bordersize, tb.textcolor, tb.fillcolor, tb.textalign, tb.textangle);
+
     plot->draw(canvas_, true, config_.format);
     delete plot;
 
@@ -781,6 +804,13 @@ void PlotStuff::makeGraphPlot(TString name, TString title, TString xtitle, TStri
   Plot *plot = new Plot(name, title, xtitle, ytitle);
   plot->outputdir = outputdir_;
   gSystem->mkdir(outputdir_, true);
+
+  if(config_.drawcmslumi)
+    plot->setDrawCMSLumi(config_.cmslumipos, config_.cmslumitxt, config_.cmslumiper);
+  else if(config_.sqrts != "" && config_.lumi != "")
+    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
+  else
+    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
 
   TGraph* gr0 = graphs.at(0);
   int npoints = gr0->GetN();
@@ -827,16 +857,14 @@ void PlotStuff::makeGraphPlot(TString name, TString title, TString xtitle, TStri
 
   bool legonleft = maxpoint > 0.5*npoints ? true : false;
 
-  if(config_.sqrts != "" && config_.lumi != "")
-    plot->setHeader(config_.sqrts+", "+config_.lumi, config_.channel, config_.headerx, config_.headery);
-  else
-    plot->setHeader(config_.sqrts+" "+config_.lumi, config_.channel, config_.headerx, config_.headery);
-
   if(config_.legx1 != 0)
     plot->setLegend(config_.legx1, config_.legy1, config_.legx2, config_.legy2);
 
   if(legonleft && plot->getLegend()->GetX1() > 0.5)
     plot->moveLegend(0.2-plot->getLegend()->GetX1(), 0.0);
+
+  for(auto tb : textboxes_)
+    plot->addTextBox(tb.text, tb.x1, tb.y1, tb.x2, tb.y2, tb.bordersize, tb.textcolor, tb.fillcolor, tb.textalign, tb.textangle);
 
   plot->draw(canvas_, true, config_.format);
 
@@ -858,13 +886,19 @@ void PlotStuff::plot()
   graphs_.clear();
   loadPlots();
 
-  SetStyle();
+  if(config_.drawcmslumi)
+    SetTDRStyle();
+  else
+    SetStyle();
 
   assert(histplotnames_.size()   == hists_.size());
   assert(hist2dplotnames_.size() == hists2d_.size());
   assert(graphplotnames_.size()  == graphs_.size());
+  if(vlines_.size()>0) assert(vlines_.size() == hists_.size());
 
   canvas_ = MakeCanvas("plotc","plotc",config_.canvaswidth,config_.canvasheight);
+  if(config_.drawcmslumi)
+    canvas_->SetFrameLineWidth (1);
 
   for(auto& histvec : hists_) {
     auto ihist = &histvec - &hists_[0];
@@ -884,7 +918,8 @@ void PlotStuff::plot()
     assert(histvec.size() == samples_.size());
 
     canvas_->Clear();
-    makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec);
+    //double xlines = vlines_.size()>0 ? vlines_[ihist] : -999.;
+    makeHistPlot(histplotnames_[ihist], hist0->GetTitle(), hist0->GetXaxis()->GetTitle(), hist0->GetYaxis()->GetTitle(), histvec, vlines_[ihist]);
 
     if(config_.writehists) {
       outfile_->cd();
