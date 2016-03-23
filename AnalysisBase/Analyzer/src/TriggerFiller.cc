@@ -18,7 +18,8 @@ TriggerFiller::TriggerFiller(const edm::ParameterSet& cfg, edm::ConsumesCollecto
   triggerBitToken_     (cc.consumes<edm::TriggerResults>                   (cfg.getParameter<edm::InputTag>("bits"))),
   triggerObjToken_     (cc.consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag>("objects"))),
   triggerPrescaleToken_(cc.consumes<pat::PackedTriggerPrescales>           (cfg.getParameter<edm::InputTag>("prescales"))),
-  triggerNames_        (0)
+  triggerNames_        (0),
+  isFastSim_(cfg.getUntrackedParameter<bool>("isFastSim"))
 {
 
   initTriggerNames();
@@ -240,7 +241,9 @@ void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
   iEvent.getByToken(triggerObjToken_, triggerObjects_);
-  iEvent.getByToken(triggerPrescaleToken_, triggerPrescales_);
+  if( ! isFastSim_ ) {
+    iEvent.getByToken(triggerPrescaleToken_, triggerPrescales_);
+  }
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
   isLoaded_ = true;
 
@@ -256,7 +259,7 @@ void TriggerFiller::fill()
     if(trigindex != trigIds_.end()) {
       data.fillMulti<unsigned long>(itrig_bit_flag, trigindex->second);
       data.fillMulti<bool         >(itrig_bit_pass, triggerBits_->accept(i));
-      data.fillMulti<unsigned int >(itrig_bit_prescale, triggerPrescales_->getPrescaleForIndex(i));
+      data.fillMulti<unsigned int >(itrig_bit_prescale, isFastSim_ ? 1 : triggerPrescales_->getPrescaleForIndex(i));
     }
   }
 
