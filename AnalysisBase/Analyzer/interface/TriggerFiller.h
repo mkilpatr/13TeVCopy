@@ -56,6 +56,8 @@ namespace ucsbsusy {
     size itrig_obj_pathflags;
     size itrig_obj_filterflags;
 
+    bool isFastSim_;
+
   public :
     edm::Handle<edm::TriggerResults>                    triggerBits_;
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects_;
