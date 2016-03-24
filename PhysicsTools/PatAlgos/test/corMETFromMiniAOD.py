@@ -22,15 +22,14 @@ process.options = cms.untracked.PSet(
 
 # How many events to process
 process.maxEvents = cms.untracked.PSet( 
-   input = cms.untracked.int32(1000)
+   input = cms.untracked.int32(100)
 )
 
 #configurable options =======================================================================
-runOnOld74XMAOD=True #to be set to True for 74X X<12 miniAODs, False otherwise
 runOnData=False #data/MC switch
 usePrivateSQlite=False #use external JECs (sqlite file)
 useHFCandidates=False #create an additionnal NoHF slimmed MET collection if the option is set to false
-applyResiduals=False #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
+applyResiduals=True #application of residual corrections. Have to be set to True once the 13 TeV residual corrections are available. False to be kept meanwhile. Can be kept to False later for private tests or for analysis checks and developments (not the official recommendation!).
 #===================================================================
 
 
@@ -46,8 +45,8 @@ if runOnData:
   process.GlobalTag.globaltag = autoCond['run2_data']
   #process.GlobalTag.globaltag = '75X_dataRun1_v2' #'74X_dataRun2_Prompt_v1'
 else:
- # process.GlobalTag.globaltag = 'MCRUN2_74_v9'
-  process.GlobalTag.globaltag = autoCond['run2_mc']
+  process.GlobalTag.globaltag = 'MCRUN2_75_V5'
+ # process.GlobalTag.globaltag = autoCond['run2_mc']
  # process.GlobalTag = GlobaTag(GlobalTag, 'auto:run2_mc', '')
 
 if usePrivateSQlite:
@@ -86,7 +85,8 @@ if runOnData:
 else:
   #75X file : root://eoscms.cern.ch//store/relval/CMSSW_7_5_0/RelValTTbar_13/MINIAODSIM/75X_mcRun2_asymptotic_v1-v1/00000/92A928E7-842A-E511-87CC-0025905A60E0.root
   #74X file : root://eoscms.cern.ch//store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/60000/001C7571-0511-E511-9B8E-549F35AE4FAF.root
-  fname = 'root://eoscms.cern.ch//store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/60000/001C7571-0511-E511-9B8E-549F35AE4FAF.root'
+  fname = 'root://eoscms.cern.ch//store/relval/CMSSW_7_5_3/RelValZEE_13/MINIAODSIM/75X_mcRun2_asymptotic_v5-v1/00000/F8C5D3F4-A861-E511-BA41-002618943906.root'
+  
 # Define the input source
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring([ fname ])
@@ -112,14 +112,13 @@ from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMet
 #for a full met computation, remove the pfCandColl input
 runMetCorAndUncFromMiniAOD(process,
                            isData=runOnData,
-                           repro74X=runOnOld74XMAOD #only for 74X X<12 miniAODs 
                            )
 
 if not useHFCandidates:
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData,
                                pfCandColl=cms.InputTag("noHFCands"),
-                               repro74X=runOnOld74XMAOD, #only for 74X X<12 miniAODs 
+                               reclusterJets=True, #needed for NoHF
                                recoMetFromPFCs=True, #needed for NoHF
                                postfix="NoHF"
                                )

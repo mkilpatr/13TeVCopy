@@ -82,6 +82,7 @@ void pat::PATLostTracks::produce(edm::StreamID, edm::Event& iEvent, const edm::E
     edm::Handle<reco::VertexCollection> pvs;
     iEvent.getByToken( PV_, pvs );
     reco::VertexRef PV(pvs.id());
+    reco::VertexRefProd PVRefProd(pvs);
     if (!pvs->empty()) {
         PV = reco::VertexRef(pvs, 0);
     }
@@ -125,7 +126,7 @@ void pat::PATLostTracks::produce(edm::StreamID, edm::Event& iEvent, const edm::E
 		{
 			outPtrP->push_back(tr);
 			reco::Candidate::PolarLorentzVector p4(tr.pt(),tr.eta(),tr.phi(),0.13957018);
-			outPtrC->push_back(pat::PackedCandidate(p4,tr.vertex(),tr.phi(),211*tr.charge(),PV));
+			outPtrC->push_back(pat::PackedCandidate(p4,tr.vertex(),tr.phi(),211*tr.charge(),PVRefProd,PV.key()));
 			outPtrC->back().setTrackProperties((*tracks)[i]);
 		        if(PVOrig.trackWeight(edm::Ref<reco::TrackCollection>(tracks,i)) > 0.5) {
 		                outPtrC->back().setAssociationQuality(pat::PackedCandidate::UsedInFitTight);

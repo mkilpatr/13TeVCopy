@@ -77,7 +77,7 @@ namespace ucsbsusy {
       const int     isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
       const TString globalTag;             // Global tag name
       const bool    printLHERunInfo;  // print LHERunInfo: useful to determine which systematic weights are available
-      edm::InputTag lheInfoTag;
+      edm::EDGetTokenT<LHERunInfoProduct> lheInfoToken_;
 
       //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information

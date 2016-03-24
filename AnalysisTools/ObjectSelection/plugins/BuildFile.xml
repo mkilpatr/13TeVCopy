@@ -1,8 +1,0 @@
-<use name="AnalysisTools/ObjectSelection"/>
-<use name="RecoEcal/EgammaCoreTools"/>
-<library   name="AnalysisToolsObjectSelectionPlugins" file="*.cc">
-   <flags   EDM_PLUGIN="1"/>
-</library>
-<library name="AnalysisToolsObjectSelectionPlugins_cuts" file="cuts/*.cc">
-  <flags   EDM_PLUGIN="1"/>
-</library>

@@ -25,10 +25,10 @@ public:
 
 
 protected:
-  const edm::InputTag recoJetsSrc     ;
-  const edm::InputTag redRecoJetsSrc  ;
-  const edm::InputTag redGenJetsSrc   ;
-  const edm::InputTag redGenJetsPtrSrc;
+  const edm::EDGetTokenT<pat::JetCollection>     recoJetsToken_;
+  const edm::EDGetTokenT<reco::PFJetCollection>  redRecoJetsToken_;
+  const edm::EDGetTokenT<reco::GenJetCollection> redGenJetsToken_;
+  const edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr>> redGenJetsPtrToken_;
   const std::string   redGenJetTag    ;
 
 
@@ -40,19 +40,19 @@ protected:
 
 //--------------------------------------------------------------------------------------------------
 RedefinedGenJetAssociator::RedefinedGenJetAssociator(const edm::ParameterSet& iConfig)
-        : recoJetsSrc          (iConfig.getParameter<edm::InputTag>("recoJetsSrc"))
-        , redRecoJetsSrc       (iConfig.getParameter<edm::InputTag>("redRecoJetsSrc"))
-        , redGenJetsSrc        (iConfig.getParameter<edm::InputTag>("redGenJetsSrc"))
-        , redGenJetsPtrSrc     (iConfig.getParameter<edm::InputTag>("redGenJetsPtrSrc"))
+        : recoJetsToken_          (consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("recoJetsSrc")))
+        , redRecoJetsToken_       (consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("redRecoJetsSrc")))
+        , redGenJetsToken_        (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("redGenJetsSrc")))
+        , redGenJetsPtrToken_     (consumes<edm::ValueMap<reco::CandidatePtr>>(iConfig.getParameter<edm::InputTag>("redGenJetsPtrSrc")))
         , redGenJetTag         (iConfig.getParameter<std::string>("redGenJetTag"))
     {}
 
 //--------------------------------------------------------------------------------------------------
 void RedefinedGenJetAssociator::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
-  iEvent.getByLabel(recoJetsSrc     ,recoJets     );
-  iEvent.getByLabel(redRecoJetsSrc  ,redRecoJets  );
-  iEvent.getByLabel(redGenJetsSrc   ,redGenJets   );
-  iEvent.getByLabel(redGenJetsPtrSrc,redGenJetsPtr);
+  iEvent.getByToken(recoJetsToken_     , recoJets     );
+  iEvent.getByToken(redRecoJetsToken_  , redRecoJets  );
+  iEvent.getByToken(redGenJetsToken_   , redGenJets   );
+  iEvent.getByToken(redGenJetsPtrToken_, redGenJetsPtr);
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -39,6 +39,8 @@ ReJetProducer::ReJetProducer(const edm::ParameterSet& iConfig) :
         , doPickyJets     (iConfig.getParameter<bool  >("doPickyJets"  ))
         , pickyMaxSplits  (iConfig.getParameter<int>("pickyMaxSplits"  ))
         , splitter        (doPickyJets ? new PickyJetSplitting(iConfig.getParameter<string>("pickyMVAFileName"),iConfig.getParameter<string>("pickyMVAName"),PickyJetSplitting::NOPUPPI_RECO,iConfig) : 0)
+        , genMotherParticlesToken_(consumes<reco::GenParticleCollection>(genMotherSrc))
+        , genParticlesToken_(consumes<pat::PackedGenParticleCollection>(genSrc))
     {
 
   produces< reco::PFJetCollection             >(        );
@@ -98,9 +100,9 @@ void ReJetProducer::vetoGenPart(std::vector<bool>& vetoes) const {
 //--------------------------------------------------------------------------------------------------
 void ReJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if(produceGen){
-    iEvent.getByLabel(genSrc,genParticles);
+    iEvent.getByToken(genParticlesToken_,genParticles);
   }
-  if(producePartonJets || (produceGen && ignoreBosonInv) ) iEvent.getByLabel(genMotherSrc,genMotherParticles);
+  if(producePartonJets || (produceGen && ignoreBosonInv) ) iEvent.getByToken(genMotherParticlesToken_,genMotherParticles);
 }
 
 void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets, std::auto_ptr<std::vector<int> > superJetIndices){

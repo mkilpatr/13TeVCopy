@@ -50,7 +50,7 @@ public:
 
 private:
   // member data
-  edm::InputTag src_;
+  edm::EDGetTokenT<pat::PackedCandidateCollection> srcToken_;
 
   std::string  moduleName_;
 
@@ -65,7 +65,7 @@ private:
 
 //______________________________________________________________________________
 convertPackedCandToRecoCand::convertPackedCandToRecoCand(const edm::ParameterSet& iConfig)
-  : src_(iConfig.getParameter<InputTag>("src"))
+  : srcToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<InputTag>("src")))
   , moduleName_(iConfig.getParameter<string>("@module_label"))
 {
   //produces<reco::PFCandidateCollection>("convertedPackedPFCandidates");
@@ -81,10 +81,10 @@ convertPackedCandToRecoCand::convertPackedCandToRecoCand(const edm::ParameterSet
 void convertPackedCandToRecoCand::produce(edm::Event& iEvent,const edm::EventSetup& iSetup)
 {
 
-  edm::Handle<vector<pat::PackedCandidate> > packedCands_;
+  edm::Handle<pat::PackedCandidateCollection> packedCands_;
   //edm::Handle<View<Candidate> > packedCands_;
   
-  iEvent.getByLabel(src_,packedCands_);
+  iEvent.getByToken(srcToken_, packedCands_);
   
   size_t nCands = (size_t)packedCands_->size();
   

@@ -19,7 +19,6 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 
-#include "AnalysisTools/ObjectSelection/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 #include "AnalysisTools/ObjectSelection/interface/LeptonMVA.h"
 

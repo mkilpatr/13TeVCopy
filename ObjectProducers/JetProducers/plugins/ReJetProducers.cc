@@ -8,12 +8,14 @@ using namespace ucsbsusy;
 
 class PFReJetProducer : public ReJetProducer{
 public:
-  PFReJetProducer(const edm::ParameterSet& iConfig) : ReJetProducer(iConfig)
- {};
+  PFReJetProducer(const edm::ParameterSet& iConfig) :
+    ReJetProducer(iConfig),
+    recoCandidatesToken_(consumes<reco::PFCandidateCollection>(src)){
+  };
   virtual ~PFReJetProducer(){};
 
   virtual void load(edm::Event& iEvent, const edm::EventSetup& iSetup){
-    iEvent.getByLabel(src,recoCandidates);
+    iEvent.getByToken(recoCandidatesToken_,recoCandidates);
     ReJetProducer::load(iEvent,iSetup);
   }
 
@@ -68,13 +70,17 @@ public:
   }
 
 protected:
+  edm::EDGetTokenT<reco::PFCandidateCollection>       recoCandidatesToken_;
   edm::Handle<reco::PFCandidateCollection >           recoCandidates;
 
 };
 
 class PackedReJetProducer : public ReJetProducer{
 public:
-  PackedReJetProducer(const edm::ParameterSet& iConfig) : ReJetProducer(iConfig), producePU       (iConfig.getParameter<bool            >("producePU"                 ))
+  PackedReJetProducer(const edm::ParameterSet& iConfig) :
+    ReJetProducer(iConfig),
+    producePU(iConfig.getParameter<bool>("producePU")),
+    recoCandidatesToken_(consumes<pat::PackedCandidateCollection>(src))
  {
     if(producePU){
       produces<reco::PFJetCollection>("PU");
@@ -84,7 +90,7 @@ public:
   virtual ~PackedReJetProducer(){};
 
   virtual void load(edm::Event& iEvent, const edm::EventSetup& iSetup){
-    iEvent.getByLabel(src,recoCandidates);
+    iEvent.getByToken(recoCandidatesToken_,recoCandidates);
     ReJetProducer::load(iEvent,iSetup);
   }
 
@@ -150,7 +156,8 @@ public:
 
 protected:
   const bool producePU;
-  edm::Handle<pat::PackedCandidateCollection >           recoCandidates;
+  edm::EDGetTokenT<pat::PackedCandidateCollection>      recoCandidatesToken_;
+  edm::Handle<pat::PackedCandidateCollection>           recoCandidates;
 
 };
 

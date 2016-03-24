@@ -74,10 +74,9 @@ namespace pat {
             const edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr> >    PuppiCandsMap_;
             const edm::EDGetTokenT<std::vector< reco::PFCandidate >  >    PuppiCands_;
             const edm::EDGetTokenT<std::vector< reco::PFCandidate >  >    PuppiCandsNoLep_;
-            const edm::EDGetTokenT<edm::View<reco::CompositePtrCandidate> > SVWhiteList_;
+            std::vector< edm::EDGetTokenT<edm::View<reco::CompositePtrCandidate> > > SVWhiteLists_;
 
             const double minPtForTrackProperties_;
-
             // for debugging
             float calcDxy(float dx, float dy, float phi) const {
                 return - dx * std::sin(phi) + dy * std::cos(phi);
@@ -96,13 +95,19 @@ pat::PATPackedCandidateProducer::PATPackedCandidateProducer(const edm::Parameter
   PVOrigs_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("originalVertices"))),
   TKOrigs_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("originalTracks"))),
   PuppiWeight_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("PuppiSrc"))),
-  PuppiWeightNoLep_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("PuppiNoLepSrc"))),  
+  PuppiWeightNoLep_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("PuppiNoLepSrc"))),
   PuppiCandsMap_(consumes<edm::ValueMap<reco::CandidatePtr> >(iConfig.getParameter<edm::InputTag>("PuppiSrc"))),
   PuppiCands_(consumes<std::vector< reco::PFCandidate > >(iConfig.getParameter<edm::InputTag>("PuppiSrc"))),
-  PuppiCandsNoLep_(consumes<std::vector< reco::PFCandidate > >(iConfig.getParameter<edm::InputTag>("PuppiNoLepSrc"))),  
-  SVWhiteList_(consumes<edm::View< reco::CompositePtrCandidate > >(iConfig.getParameter<edm::InputTag>("secondaryVerticesForWhiteList"))),
+  PuppiCandsNoLep_(consumes<std::vector< reco::PFCandidate > >(iConfig.getParameter<edm::InputTag>("PuppiNoLepSrc"))),
   minPtForTrackProperties_(iConfig.getParameter<double>("minPtForTrackProperties"))
 {
+  std::vector<edm::InputTag> sv_tags = iConfig.getParameter<std::vector<edm::InputTag> >("secondaryVerticesForWhiteList");
+  for(auto itag : sv_tags){
+    SVWhiteLists_.push_back(
+      consumes<edm::View< reco::CompositePtrCandidate > >(itag)
+      );
+  }
+
   produces< std::vector<pat::PackedCandidate> > ();
   produces< edm::Association<pat::PackedCandidateCollection> > ();
   produces< edm::Association<reco::PFCandidateCollection> > ();
@@ -149,15 +154,17 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
     const edm::Association<reco::VertexCollection> &  associatedPV=*(assoHandle.product());
     const edm::ValueMap<int>  &  associationQuality=*(assoQualityHandle.product());
            
-    edm::Handle<edm::View<reco::CompositePtrCandidate > > svWhiteListHandle;
-    iEvent.getByToken(SVWhiteList_,svWhiteListHandle);
-    const edm::View<reco::CompositePtrCandidate > &  svWhiteList=*(svWhiteListHandle.product());
+
     std::set<unsigned int> whiteList;
-    for(unsigned int i=0; i<svWhiteList.size();i++)
-    {
-      for(unsigned int j=0; j< svWhiteList[i].numberOfSourceCandidatePtrs(); j++) {
+    for(auto itoken : SVWhiteLists_) {
+      edm::Handle<edm::View<reco::CompositePtrCandidate > > svWhiteListHandle;
+      iEvent.getByToken(itoken, svWhiteListHandle);
+      const edm::View<reco::CompositePtrCandidate > &  svWhiteList=*(svWhiteListHandle.product());
+      for(unsigned int i=0; i<svWhiteList.size();i++) {
+        for(unsigned int j=0; j< svWhiteList[i].numberOfSourceCandidatePtrs(); j++) {
           const edm::Ptr<reco::Candidate> & c = svWhiteList[i].sourceCandidatePtr(j);
           if(c.id() == cands.id()) whiteList.insert(c.key());
+        }
       }
     }
  
@@ -165,6 +172,7 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
     edm::Handle<reco::VertexCollection> PVs;
     iEvent.getByToken( PVs_, PVs );
     reco::VertexRef PV(PVs.id());
+    reco::VertexRefProd PVRefProd(PVs);
     math::XYZPoint  PVpos;
 
 
@@ -213,7 +221,7 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
           }
 
 
-          outPtrP->push_back( pat::PackedCandidate(cand.polarP4(), vtx, phiAtVtx, cand.pdgId(), PV));
+          outPtrP->push_back( pat::PackedCandidate(cand.polarP4(), vtx, phiAtVtx, cand.pdgId(), PVRefProd, PV.key()));
           outPtrP->back().setAssociationQuality(pat::PackedCandidate::PVAssociationQuality(qualityMap[quality]));
           if(cand.trackRef().isNonnull() && PVOrig->trackWeight(cand.trackRef()) > 0.5 && quality == 7) {
                   outPtrP->back().setAssociationQuality(pat::PackedCandidate::UsedInFitTight);
@@ -237,10 +245,19 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
             PVpos = PV->position();
           }
 
-          outPtrP->push_back( pat::PackedCandidate(cand.polarP4(), PVpos, cand.phi(), cand.pdgId(), PV));
+          outPtrP->push_back( pat::PackedCandidate(cand.polarP4(), PVpos, cand.phi(), cand.pdgId(), PVRefProd, PV.key()));
           outPtrP->back().setAssociationQuality(pat::PackedCandidate::PVAssociationQuality(pat::PackedCandidate::UsedInFitTight));
         }
+
+	// neutrals
+
+	if(abs(cand.pdgId()) == 1 || abs(cand.pdgId()) == 130) {
+	  outPtrP->back().setHcalFraction(cand.hcalEnergy()/(cand.ecalEnergy()+cand.hcalEnergy()));
+	} else {
+	  outPtrP->back().setHcalFraction(0);
+	}
 	
+       
         if (puppiWeight.isValid()){
            reco::PFCandidateRef pkref( cands, ic );
                  // outPtrP->back().setPuppiWeight( (*puppiWeight)[pkref]);
@@ -290,8 +307,8 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
 
     // Fix track association for sorted candidates
     for(size_t i=0,ntk=mappingTk.size();i<ntk;i++){
-        int origInd = mappingTk[i];
-        if (origInd>=0 ) mappingTk[i]=reverseOrder[origInd]; 
+        if(mappingTk[i] >= 0)
+          mappingTk[i]=reverseOrder[mappingTk[i]];
     }
 
     for(size_t i=0,ntk=mappingPuppi.size();i<ntk;i++){

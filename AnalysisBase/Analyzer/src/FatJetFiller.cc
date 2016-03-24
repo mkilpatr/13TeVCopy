@@ -69,10 +69,10 @@ void FatJetFiller::fill()
     else          { cmstoptagmass = fatjet.mass(); }
 
     data.fillMulti<float>(ifj_rawmass_       , fatjet.mass());
-    data.fillMulti<float>(ifj_trimmedmass_   , fatjet.userFloat("ak8PFJets"+puRemoval_+"TrimmedMass"));
+//    data.fillMulti<float>(ifj_trimmedmass_   , fatjet.userFloat("ak8PFJets"+puRemoval_+"TrimmedMass"));//FIXME_76X
     data.fillMulti<float>(ifj_prunedmass_    , fatjet.userFloat("ak8PFJets"+puRemoval_+"PrunedMass"));
     data.fillMulti<float>(ifj_softdropmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"SoftDropMass"));
-    data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"FilteredMass"));
+//    data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"FilteredMass"));
     data.fillMulti<float>(ifj_cmstoptagmass_ , cmstoptagmass);
     data.fillMulti<float>(ifj_cmstoptagminmass_ , cmstoptagminmass);
     data.fillMulti<int  >(ifj_cmstoptagnsubjets_, cmstoptagnsubjets);

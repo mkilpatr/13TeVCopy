@@ -138,6 +138,8 @@ protected:
   PickyJetSplitting * splitter;
 
   fastjet::JetAlgorithm jetAlgo;
+  edm::EDGetTokenT<reco::GenParticleCollection> genMotherParticlesToken_;
+  edm::EDGetTokenT<pat::PackedGenParticleCollection> genParticlesToken_;
   edm::Handle<reco::GenParticleCollection>      genMotherParticles;
   edm::Handle<pat::PackedGenParticleCollection> genParticles;
   };

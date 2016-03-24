@@ -16,7 +16,7 @@ protected:
 
 public:
   ~QuarkGluonTagInterface() {  delete qglikeli_;}
-  QuarkGluonTagInterface() : qglikeli_  (new QGLikelihoodCalculator()) {}
+  QuarkGluonTagInterface() : qglikeli_  (nullptr/*new QGLikelihoodCalculator()*//*FIXME_76X*/) {}
 
   template <class Jet>
   double getDiscriminator(const Jet& jet, double rho)

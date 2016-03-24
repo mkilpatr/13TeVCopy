@@ -25,26 +25,26 @@ public:
 
 
 protected:
-  const edm::InputTag genJetSrc       ;
-  const edm::InputTag genMotherSrc    ;
-  const edm::InputTag genSrc          ;
+  const edm::EDGetTokenT<reco::GenJetCollection>            genJetToken_       ;
+  const edm::EDGetTokenT<reco::GenParticleCollection>       genMotherToken_    ;
+  const edm::EDGetTokenT<pat::PackedGenParticleCollection>  genToken_          ;
 
-  const edm::InputTag recoJetSrc       ;
-  const edm::InputTag partonJetSrc     ;
-  const edm::InputTag recoToGenTag     ;
-  const edm::InputTag recoToPartonTag  ;
+  const edm::EDGetTokenT<reco::PFJetCollection>             recoJetToken_       ;
+  const edm::EDGetTokenT<reco::GenJetCollection>            partonJetToken_     ;
+  const edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr>> recoToGenToken_     ;
+  const edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr>> recoToPartonToken_  ;
 
  };
 
 //--------------------------------------------------------------------------------------------------
 JetFlavorAssociator::JetFlavorAssociator(const edm::ParameterSet& iConfig)
-        : genJetSrc       (iConfig.getParameter<edm::InputTag>("genJetsSrc"))
-        , genMotherSrc    (iConfig.getParameter<edm::InputTag>("genMotherSrc"))
-        , genSrc          (iConfig.getParameter<edm::InputTag>("genSrc"))
-        , recoJetSrc      (iConfig.getParameter<edm::InputTag>("recoJetSrc"))
-        , partonJetSrc    (iConfig.getParameter<edm::InputTag>("partonJetSrc"))
-        , recoToGenTag    (iConfig.getParameter<edm::InputTag>("recoToGenTag"))
-        , recoToPartonTag (iConfig.getParameter<edm::InputTag>("recoToPartonTag"))
+        : genJetToken_       (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJetsSrc")))
+        , genMotherToken_    (consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genMotherSrc")))
+        , genToken_          (consumes<pat::PackedGenParticleCollection>(iConfig.getParameter<edm::InputTag>("genSrc")))
+        , recoJetToken_      (consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("recoJetSrc")))
+        , partonJetToken_    (consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("partonJetSrc")))
+        , recoToGenToken_    (consumes<edm::ValueMap<reco::CandidatePtr>>(iConfig.getParameter<edm::InputTag>("recoToGenTag")))
+        , recoToPartonToken_ (consumes<edm::ValueMap<reco::CandidatePtr>>(iConfig.getParameter<edm::InputTag>("recoToPartonTag")))
     {
 
       produces< std::vector<size8> >("flavors");
@@ -63,14 +63,14 @@ void JetFlavorAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   edm::Handle<edm::ValueMap<reco::CandidatePtr> > recoToGenJetPtr    ;
   edm::Handle<edm::ValueMap<reco::CandidatePtr> > recoTopartonJetPtr ;
 
-  iEvent.getByLabel(genJetSrc   ,genJets           );
-  iEvent.getByLabel(genMotherSrc,genMotherParticles);
-  iEvent.getByLabel(genSrc      ,packedGenParticles);
+  iEvent.getByToken(genJetToken_   ,genJets           );
+  iEvent.getByToken(genMotherToken_,genMotherParticles);
+  iEvent.getByToken(genToken_      ,packedGenParticles);
 
-  iEvent.getByLabel(recoJetSrc       ,recoJets);
-  iEvent.getByLabel(partonJetSrc     ,partonJets);
-  iEvent.getByLabel(recoToGenTag     ,recoToGenJetPtr);
-  iEvent.getByLabel(recoToPartonTag  ,recoTopartonJetPtr);
+  iEvent.getByToken(recoJetToken_       ,recoJets);
+  iEvent.getByToken(partonJetToken_     ,partonJets);
+  iEvent.getByToken(recoToGenToken_     ,recoToGenJetPtr);
+  iEvent.getByToken(recoToPartonToken_  ,recoTopartonJetPtr);
 
   //start with heavy flavors
   std::vector<JetFlavorMatching::ParticleDecay> bHadrons;
