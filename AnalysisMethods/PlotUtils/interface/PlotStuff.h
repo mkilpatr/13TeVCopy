@@ -112,6 +112,32 @@ class PlotStuff {
 
     };
 
+    struct PlotText {
+
+      public :
+        TString text;
+        double x1, y1, x2, y2;
+        int bordersize;
+        int textcolor;
+        int fillcolor;
+        int textalign;
+        float textangle;
+
+      PlotText(TString intext, double inx1, double iny1, double inx2, double iny2, int inbordersize, int intextcolor, int infillcolor, int intextalign, float intextangle) :
+        text(intext),
+        x1(inx1),
+        y1(iny1),
+        x2(inx2),
+        y2(iny2),
+        bordersize(inbordersize),
+        textcolor(intextcolor),
+        fillcolor(infillcolor),
+        textalign(intextalign),
+        textangle(intextangle)
+      {}
+
+    };
+
     // Hold information about sets of histograms/graphs to be compared in a plot
     struct PlotComp {
 
@@ -184,6 +210,10 @@ class PlotStuff {
         ColorMap               colormap;
         int                    vlinecolor;
         int                    vlinestyle;
+        bool                   drawcmslumi;
+        int                    cmslumipos;
+        int                    cmslumiper;
+        TString                cmslumitxt;
         vector<PlotTreeVar>    treevars;
         vector<PlotComp>       comphistplots;
         vector<PlotComp>       comphist2dplots;
@@ -241,6 +271,10 @@ class PlotStuff {
           colormap(DefaultColors()),
           vlinecolor(1),
           vlinestyle(1),
+          drawcmslumi(false),
+          cmslumipos(10),
+          cmslumiper(4),
+          cmslumitxt("Preliminary"),
           plotoverflow(1),
           make_integral(false),
           reverse_integral_dir(false),
@@ -306,6 +340,8 @@ class PlotStuff {
     void     addTreeVar(TString plotname, TString varname, TString selection, TString label, int nbinsx, double* xbins, int nbinsy, double* ybins, vector<double> xlines={});
     // Add a set of names of histograms/graphs to be compared on a single plot: use with HISTSSINGLEFILE. Set compplottype to GRAPHCOMP for graphs
     void     addCompSet(TString compplotname, vector<TString> plots, vector<TString> labels, double ymax=0.0, PlotComp::CompPlotType compplottype=PlotComp::HISTCOMP);
+    // Add a text box to all plots at a given location
+    void     addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=0, int textcolor=1, int fillcolor=0, int textalign=11, float textangle=0.0);
     // Add a selection for which to compute event yields and add to yields table. Use with TREES
     void     addSelection(TString label, TString selection);
     // Get name of outputfile to which histograms are saved if writehists option is chosen in config
@@ -353,6 +389,8 @@ class PlotStuff {
     void     setYTitle(TString ytitle) { config_.ytitle = ytitle; }
     // x, y coordinates of lower left corner of header box
     void     setHeaderPosition(double headerx, double headery) { config_.headerx = headerx; config_.headery = headery; }
+    // Draw CMS lumi header
+    void     setDrawCMSLumi(TString extratxt="Preliminary", int lumipos=10, int lumiper=4) { config_.drawcmslumi = true; config_.cmslumitxt = extratxt; config_.cmslumipos = lumipos; config_.cmslumiper = lumiper; }
     // Change coordinates of legend box, only if default behavior is not desired
     void     setLegend(double legx1, double legy1, double legx2, double legy2) { config_.legx1 = legx1; config_.legy1 = legy1; config_.legx2 = legx2; config_.legy2 = legy2; }
     // Draw option for histograms in comparison plots (doesn't apply to DATAMC)
@@ -437,6 +475,7 @@ class PlotStuff {
     vector<TString>          histplotnames_;
     vector<TString>          hist2dplotnames_;
     vector<TString>          graphplotnames_;
+    vector<PlotText>         textboxes_;
     vector<TString>          tablelabels_;
     vector<Sample*>          samples_;
     vector<vector<double>>   vlines_;

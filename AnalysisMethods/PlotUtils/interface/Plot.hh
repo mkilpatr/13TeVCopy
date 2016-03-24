@@ -113,7 +113,7 @@ class Plot {
     static TH1F* addOverFlow(TH1F* h, unsigned int overflowopt=1);
 
     // Adding a text box to the plot
-    void addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=1, int textcolor=0, int fillcolor=0);
+    void addTextBox(TString text, double x1, double y1, double x2, double y2, int bordersize=1, int textcolor=0, int fillcolor=0, int textalign=11, float textangle=0.0);
   
     // Add a line between two points (x1,y1) and (x2,y2)
     void addLine(double x1, double y1, double x2, double y2, int color=1, int style=1);
@@ -173,7 +173,7 @@ class Plot {
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
     void setPlotRatioUncertaintyBand()       { fPlotRatioUncertaintyBand = true; } // Add uncertainty band to ratio plot
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
-    void setDrawCMSLumi(int iPosX=10, TString extraText = "Preliminary")        { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; } // Draw CMS lumi header (and change its position)
+    void setDrawCMSLumi(int iPosX=10, TString extraText = "Preliminary", int iPer=4)        { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; fCMSLumiPeriod=iPer; } // Draw CMS lumi header (and change its position)
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);
     TGraphAsymmErrors* getRatioAsymmErrors(TH1F* hnum, TH1F* hden);
@@ -218,6 +218,7 @@ class Plot {
     bool fDrawCMSLumi;                    // Add TDR style CMS lumi header
     int  fCMSLumiPosX;                    // iPosX in void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX)
     TString  fCMSLumiExtraText;           // extraText in void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
+    int  fCMSLumiPeriod;                  // integer to choose lumi text displayed
   
     vector<TLegendEntry*> fStackEntries;  // pointer to legend entry objects for histograms in a stack
   

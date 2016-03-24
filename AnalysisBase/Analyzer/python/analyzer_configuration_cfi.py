@@ -257,6 +257,7 @@ nominal_configuration = cms.PSet(
 
                                   Triggers = cms.untracked.PSet(
                                       isFilled  = cms.untracked.bool(True),
+                                      isFastSim = cms.untracked.bool(False),
                                       bits      = cms.InputTag('TriggerResults','','HLT'),
                                       objects   = cms.InputTag('selectedPatTrigger'),
                                       prescales = cms.InputTag('patTrigger'),

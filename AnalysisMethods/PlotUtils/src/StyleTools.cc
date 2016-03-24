@@ -313,7 +313,8 @@ void StyleTools::SetTDRStyle()
   tdrStyle->SetAxisColor(1, "XYZ");
   tdrStyle->SetStripDecimals(kTRUE);
   tdrStyle->SetTickLength(0.03, "XYZ");
-  tdrStyle->SetNdivisions(510, "XYZ");
+  //tdrStyle->SetNdivisions(510, "XYZ");
+  tdrStyle->SetNdivisions(505, "XYZ");
   tdrStyle->SetPadTickX(1);  // To get tick marks on the opposite side of the frame
   tdrStyle->SetPadTickY(1);
 
@@ -374,7 +375,7 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
   TString lumi_13TeV = "2.3 fb^{-1}";
   TString lumi_8TeV  = "19.7 fb^{-1}";
   TString lumi_7TeV  = "5.1 fb^{-1}";
-  TString lumi_sqrtS = "";
+  TString lumi_sqrtS = "13 TeV";
 
   bool drawLogo      = false;
 
