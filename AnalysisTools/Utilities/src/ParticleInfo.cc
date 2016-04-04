@@ -13,7 +13,7 @@ bool ParticleInfo::isFinal(const int status) {return status == 1;}
 bool ParticleInfo::isIntermediate(const int status) {return status == 2;}
 bool ParticleInfo::isHadronization(const int status) {return status >= 71 && status <= 79; }
 bool ParticleInfo::isDocIntermediate(const int status){return status == 22;}
-bool ParticleInfo::isDocAltered(const int status){return status >= 41 && status < 71;}
+bool ParticleInfo::isDocAltered(const int status){return status >= 31 && status < 71;}
 bool ParticleInfo::isDocOutgoing(const int status){return status == 23 || status == 24;}
 bool ParticleInfo::isIncoming(const int status) {return status > 3 && status <= 21;}
 //_____________________________________________________________________________
