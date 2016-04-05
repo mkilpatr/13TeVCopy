@@ -313,7 +313,7 @@ elif args.runmerge :
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             prefix = "root://eoscms/"
             filelist.append
-            cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(_numEvent[0-9]+|).root'" % (eos,args.inputdir,samples[isam]))
+            cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(-ext[0-9]+|)(_numEvent[0-9]+|).root'" % (eos,args.inputdir,samples[isam]))
             ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
@@ -321,7 +321,7 @@ elif args.runmerge :
             outname = "%s%s/%s_ntuple.root" % (prefix,args.outdir,samples[isam])
             filelist.insert(0, outname)
         else :
-            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'output_[0-9]+_%s(_numEvent[0-9]+|).root' % samples[isam], f)]
+            filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'output_[0-9]+_%s(-ext[0-9]+|)(_numEvent[0-9]+|).root' % samples[isam], f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
             filelist = ["".join([prefix,file]) for file in filelist]

@@ -63,10 +63,10 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
 )
 
 # MC theory systematic weights only saved for specific samples
-if 'TTZ' in options.inputFiles[0] or 'TTW' in options.inputFiles[0] or 'tZq' in options.inputFiles[0] or 'SMS' in options.inputFiles[0] :
+if 'TTZ' in options.inputFiles[0] or 'TTW' in options.inputFiles[0] or 'tZq' in options.inputFiles[0] or 'SMS' in options.inputFiles[0] or 'T2bW' in options.inputFiles[0] :
     print 'Adding theory weights'
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
-    if 'SMS' in options.inputFiles[0] :
+    if 'SMS' in options.inputFiles[0] or 'T2bW' in options.inputFiles[0] :
         process.TestAnalyzer.EventInfo.lheEvtInfo = cms.InputTag('source')
 else : 
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
@@ -89,17 +89,18 @@ updateJECs = True
 JECUNCFILE = 'data/JEC/Summer15_25nsV7_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
-if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in options.inputFiles[0] :
+if 'FastAsympt25ns' in options.inputFiles[0] or 'RunIISpring15FSPremix' in options.inputFiles[0] or 'T2bW' in options.inputFiles[0] :
     print 'Running on FastSim'
     ISFASTSIM = True
     JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults','','HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
+    process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
     if 'RunIISpring15FSPremix' in options.inputFiles[0] :
         print 'Running on miniAODv1'
         ISMINIAODV1 = True
         process.TestAnalyzer.EventInfo.pileupSummaryInfos = cms.InputTag('addPileupInfo')
-    if 'SMS' in options.inputFiles[0] :
+    if 'SMS' in options.inputFiles[0] or 'T2bW' in options.inputFiles[0] :
         print 'SMS: will save masses'
         process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
 
