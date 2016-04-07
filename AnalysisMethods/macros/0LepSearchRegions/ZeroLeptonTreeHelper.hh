@@ -47,6 +47,18 @@ cfgSet::ConfigSet pars0LepPhoton(TString json) {
   return cfg;
 }
 
+struct hettTop {
+  RecoJetF jet1, jet2, jet3; // pt-ordered subjets
+  RecoJetF jet123;           // hett top, p4 is sum of p4 of j1,j2,j3
+  float    m12, m13, m23;      // -1 if not relevant: trijet(y/y/y), dijet(y/n/n), monojet(n/n/n)
+  float    m123;    // NOT USED except to compare approximation m123 ~ m3jet in trijets. m123 is the more natural.
+  float    m3jet;   // always filled, with: m3jet (trijet), m12 (W dijet + aux jet), or m1 (monojet)
+  bool     trijet;  // true iff trijet: jets 1,2,3 filled
+  bool     dijet;   // true iff W "dijet": jet1 = W "dijet", jet2 = auxillary jet
+  bool     monojet; // true iff top "monojet": jet1 = top
+};
+std::vector<hettTop > hettTops= {}; // objects, not ptrs, otherwise there's some funny business
+
 std::vector<LorentzVector> topsPass;
 struct TreeFiller {
 
@@ -197,6 +209,42 @@ struct TreeFiller {
   size i_metovsqrtht;
   size i_toppt;
   size i_httwoleadfatjet;
+
+  // hett top tagging
+  // matched
+  size i_hettnmatchedrecotops;
+  size i_hetthardmatchednsubjets;
+  size i_hetthardmatchedgentoppt;
+  size i_hetthardmatchedgentopeta;
+  size i_hetthardmatchedrecopt;
+  size i_hetthardmatchedrecoeta;
+  size i_hetthardmatchedrecom3jet;
+  size i_hetthardmatchedrecom12;
+  size i_hetthardmatchedrecom13;
+  size i_hetthardmatchedrecom23;
+  size i_hetthardmatchedrecoj1pt;
+  size i_hetthardmatchedrecoj1eta;
+  size i_hetthardmatchedrecoj2pt;
+  size i_hetthardmatchedrecoj2eta;
+  size i_hetthardmatchedrecoj3pt;
+  size i_hetthardmatchedrecoj3eta;
+  // unmatched
+  size i_hettnrecotops;
+  size i_hetthardnsubjets;
+  size i_hetthardgentoppt;
+  size i_hetthardgentopeta;
+  size i_hetthardrecopt;
+  size i_hetthardrecoeta;
+  size i_hetthardrecom3jet;
+  size i_hetthardrecom12;
+  size i_hetthardrecom13;
+  size i_hetthardrecom23;
+  size i_hetthardrecoj1pt;
+  size i_hetthardrecoj1eta;
+  size i_hetthardrecoj2pt;
+  size i_hetthardrecoj2eta;
+  size i_hetthardrecoj3pt;
+  size i_hetthardrecoj3eta; 
 
   // below is for top / w tagging and SF extraction
   size i_absdphilepmet;
@@ -434,6 +482,42 @@ struct TreeFiller {
     i_toppt          = data->add<float>("","toppt","F",0);
     i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
 
+    // hett
+    i_hettnmatchedrecotops         = data->add<int  >("","hettnmatchedrecotops","I",0);
+    i_hetthardmatchednsubjets     = data->add<int  >("","hetthardmatchednsubjets","I",0);
+    i_hetthardmatchedgentoppt     = data->add<float>("","hetthardmatchedgentoppt","F",0);
+    i_hetthardmatchedgentopeta    = data->add<float>("","hetthardmatchedgentopeta","F",0);
+    i_hetthardmatchedrecopt       = data->add<float>("","hetthardmatchedrecopt","F",0);
+    i_hetthardmatchedrecoeta      = data->add<float>("","hetthardmatchedrecoeta","F",0);
+    i_hetthardmatchedrecom3jet    = data->add<float>("","hetthardmatchedrecom3jet","F",0);
+    i_hetthardmatchedrecom12      = data->add<float>("","hetthardmatchedrecom12","F",0);
+    i_hetthardmatchedrecom13      = data->add<float>("","hetthardmatchedrecom13","F",0);
+    i_hetthardmatchedrecom23      = data->add<float>("","hetthardmatchedrecom23","F",0);
+    i_hetthardmatchedrecoj1pt     = data->add<float>("","hetthardmatchedrecoj1pt","F",0);
+    i_hetthardmatchedrecoj1eta    = data->add<float>("","hetthardmatchedrecoj1eta","F",0);
+    i_hetthardmatchedrecoj2pt     = data->add<float>("","hetthardmatchedrecoj2pt","F",0);
+    i_hetthardmatchedrecoj2eta    = data->add<float>("","hetthardmatchedrecoj2eta","F",0);
+    i_hetthardmatchedrecoj3pt     = data->add<float>("","hetthardmatchedrecoj3pt","F",0);
+    i_hetthardmatchedrecoj3eta    = data->add<float>("","hetthardmatchedrecoj3eta","F",0);
+
+    i_hettnrecotops               = data->add<int  >("","hettnrecotops","I",0);
+    i_hetthardnsubjets            = data->add<int  >("","hetthardnsubjets","I",0);
+    i_hetthardgentoppt            = data->add<float>("","hetthardgentoppt","F",0);
+    i_hetthardgentopeta           = data->add<float>("","hetthardgentopeta","F",0); 
+    i_hetthardrecopt              = data->add<float>("","hetthardrecopt","F",0);
+    i_hetthardrecoeta             = data->add<float>("","hetthardrecoeta","F",0);
+    i_hetthardrecom3jet           = data->add<float>("","hetthardrecom3jet","F",0);
+    i_hetthardrecom12             = data->add<float>("","hetthardrecom12","F",0);
+    i_hetthardrecom13             = data->add<float>("","hetthardrecom13","F",0);
+    i_hetthardrecom23             = data->add<float>("","hetthardrecom23","F",0);
+    i_hetthardrecoj1pt            = data->add<float>("","hetthardrecoj1pt","F",0);
+    i_hetthardrecoj1eta           = data->add<float>("","hetthardrecoj1eta","F",0);
+    i_hetthardrecoj2pt            = data->add<float>("","hetthardrecoj2pt","F",0);
+    i_hetthardrecoj2eta           = data->add<float>("","hetthardrecoj2eta","F",0);
+    i_hetthardrecoj3pt            = data->add<float>("","hetthardrecoj3pt","F",0);
+    i_hetthardrecoj3eta           = data->add<float>("","hetthardrecoj3eta","F",0);
+
+    // ctt
     i_absdphilepmet       = data->add<float>("","absdphilepmet","F",0);
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
@@ -826,6 +910,500 @@ struct TreeFiller {
   }
 
 
+
+  // UNTESTED perform loose cone match to, eg CTT-tagged tops or FatJets
+  // suggest 0.6 for AK8 jets and 0.4 for AK4
+  template<typename T> // hettTop, CMSTop, MomentumF, FatJetF, RecoJetF, LorentzVector, so many!
+  hettTop* isNearHettTaggedTop(T* jet) {
+    for(int i = 0 ; i < hettTops.size() ; ++i) {
+      hettTop htop = hettTops[i];
+      float htoppt_ = htop.jet123.p4().pt();
+      if (PhysicsUtilities::deltaR(htop.jet123, *jet) < 0.6) return &hettTops[i];
+    }
+    return 0; // esp. if fillHettInfo hasn't been called
+  }
+  // UNTESTED same, for selected CTTTops
+  template<typename T>
+  CMSTopF* isNearCTTSelectedTop(BaseTreeAnalyzer* ana, T* jet) {
+    for(int i = 0 ; i < ana->selectedCTTTops.size() ; ++i) {
+      CMSTopF* cmstop = ana->selectedCTTTops[i];
+      float cmstoppt_ = cmstop->p4().pt();
+      if (PhysicsUtilities::deltaR(cmstop, *jet) < 0.6) return ana->selectedCTTTops[i];
+    }
+    return 0;
+  }
+
+  // fill HETT branches
+  void fillHettInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets, vector<hettTop> hettTops) {
+    bool dbg = false;
+    if(dbg) cout << endl << endl << endl <<  "**** NEW EVENT ***" << endl;
+
+    float mW   =  80.4;
+    float mTop = 173.4;
+    float rMin = 0.85*mW/mTop;
+    float rMax = 1.25*mW/mTop;
+
+    if(dbg) cout << "Filling HETT info" << endl;
+    for(auto* jet : jets) { // print ak4 info
+      if(dbg) cout   
+        << "AK4 jets pt,eta: " << left
+        << setw(10) << jet->pt() 
+        << setw(10) << jet->eta() << endl;
+    }
+
+    RecoJetF jet1, jet2, jet3;
+    int nJets = jets.size();
+    if(dbg) cout << "nJets: " << nJets << endl;
+
+    // unique ak4 triplets
+    for (int i = 0 ; i < nJets-2 ; ++i) {
+      for(int j = i+1 ; j < nJets-1 ; ++j) {
+        for(int k = j+1 ; k < nJets ; ++k) {
+          if(dbg) cout << "triplet index: " << i << " " << j << " " << k << endl;
+
+          jet1 = jets[i]->p4(); jet2 = jets[j]->p4(); jet3 = jets[k]->p4();
+          RecoJetF jet123 = jet1.p4() + jet2.p4() + jet3.p4();
+          float m12  = (jet1.p4() + jet2.p4()).mass();
+          float m13  = (jet1.p4() + jet3.p4()).mass();
+          float m23  = (jet2.p4() + jet3.p4()).mass();     
+          float m123 = jet123.mass(); // note m123 ~ m3jet for p_i^2 ~ 0. they use m3jet.
+          float m3jet = sqrt(m12*m12+m13*m13+m23*m23);
+          if(dbg) cout << "jet1: " << jet1.p4() << endl;
+          if(dbg) cout << "jet2: " << jet2.p4() << endl;
+          if(dbg) cout << "jet3: " << jet3.p4() << endl;
+          if(dbg) cout << "jet123: " << jet123.p4() << endl;          
+          if(dbg) cout << "m3jet: " << m3jet << endl;
+          if(dbg) cout << "m123: " << m123 << endl;
+          if(dbg) cout << "m12: " << m12 << endl;
+          if(dbg) cout << "m23: " << m23 << endl;
+          if(dbg) cout << "m13: " << m13 << endl;
+
+          // condition (i)
+          if(dbg) cout << "deltaR 123,1: " << PhysicsUtilities::deltaR(jet123,jet1) << endl;
+          if(dbg) cout << "deltaR 123,2: " << PhysicsUtilities::deltaR(jet123,jet2) << endl;
+          if(dbg) cout << "deltaR 123,3: " << PhysicsUtilities::deltaR(jet123,jet3) << endl;
+          if((PhysicsUtilities::deltaR(jet123,jet1) > 1.5) ||
+             (PhysicsUtilities::deltaR(jet123,jet2) > 1.5) || 
+             (PhysicsUtilities::deltaR(jet123,jet3) > 1.5)) continue;
+          
+          // condition (ii)
+          if((m3jet > 250.) || (m3jet < 100.)) continue;
+
+          // condition (iii) has subconditions A1 A2 B C    
+          bool condA1 = (0.2 < atan(m13/m12)) &
+                        (1.3 > atan(m13/m12));
+          if(dbg) cout << "condition A1 atan: " << atan(m13/m12) << " " << condA1 << endl;
+
+          bool condA2 = (rMin < m23/m3jet) & 
+                        (rMax > m23/m3jet);
+          if(dbg) cout << "condition A2 m23/m3jet: " << m23/m3jet << " " << condA2 << endl;
+          bool condA = condA1 & condA2;
+
+          // condition B
+          bool condB = (pow(rMin,2)*(1+pow(m13/m12,2)) < 1-pow(m23/m3jet,2)) &
+                       (pow(rMax,2)*(1+pow(m13/m12,2)) > 1-pow(m23/m3jet,2)) &
+                       (m23/m3jet > 0.35);
+          if(dbg) cout << "condition B" << endl;
+          if(dbg) cout << "LHS: " << pow(rMin,2)*(1+pow(m13/m12,2)) << endl;
+          if(dbg) cout << "CEN: " << 1-pow(m23/m3jet,2) << endl;
+          if(dbg) cout << "RHS: " << pow(rMax,2)*(1+pow(m13/m12,2)) << endl;
+          if(dbg) cout << "AN ratio m23/m3jet: " << m23/m3jet << endl;
+          if(dbg) cout << "condB: " << condB << endl; 
+          
+          // condition C is condition B with jet 2 <-> 3
+          bool condC = (pow(rMin,2)*(1+pow(m12/m13,2)) < 1-pow(m23/m3jet,2)) &
+                       (pow(rMax,2)*(1+pow(m12/m13,2)) > 1-pow(m23/m3jet,2)) &
+                       (m23/m3jet > 0.35);
+          if(dbg) cout << "condition C" << endl;
+          if(dbg) cout << "LHS: " << pow(rMin,2)*(1+pow(m12/m13,2)) << endl;
+          if(dbg) cout << "CEN: " << 1-pow(m23/m3jet,2) << endl;
+          if(dbg) cout << "RHS: " << pow(rMax,2)*(1+pow(m12/m13,2)) << endl;
+          if(dbg) cout << "condC: " << condC << endl;
+
+          // enforce either A or B or C
+          if (!(condA || condB || condC)) continue;
+
+          if(dbg) cout << "**Candidate trijet was found!" << endl;
+          hettTop cand = {}; // fill and submit this hett candidate          
+          cand.trijet = true; cand.dijet = false; cand.monojet = false; // need to set all three for some reason
+          cand.jet1 = jet1; cand.jet2 = jet2; cand.jet3 = jet3; cand.jet123 = jet123;
+          cand.m12   = m12;   cand.m23   = m23;   cand.m13   = m13;   cand.m123   = m123;   cand.m3jet = m3jet;
+          hettTops.push_back(cand);
+        }
+      }
+    }
+
+    if(dbg) {
+      cout << endl << "Size of hettTops before trijet cleaning: " << hettTops.size() << endl;
+      for(int i = 0 ; i < hettTops.size() ; ++i) { // print hettTops
+        cout << "j1 " << hettTops[i].jet1.p4() << endl;
+        cout << "j2 " << hettTops[i].jet2.p4() << endl;
+        cout << "j3 " << hettTops[i].jet3.p4() << endl;
+        cout << "j123 " << hettTops[i].jet123.p4() << endl;
+        cout << "m12 " << hettTops[i].m12 << endl;
+        cout << "m13 " << hettTops[i].m13 << endl;
+        cout << "m23 " << hettTops[i].m23 << endl;
+        cout << "m123 " << hettTops[i].m123 << endl;
+        cout << "m3jet " << hettTops[i].m3jet << endl;
+        cout << "tri/di/mono " << hettTops[i].trijet << " " <<  hettTops[i].dijet << " " << hettTops[i].monojet << endl;
+      }
+    }
+
+    // remove (all but one of the) trijets who share a jet
+    if(dbg) cout << endl << "Cleaning trijets" << endl;
+    for(int i = 0 ; i < nJets ; ++i) {
+      int prev = -1, toErase = -1;
+      for(int j = 0 ; j < hettTops.size() ; ++j) {
+        bool isPresent = (jets[i]->p4() == hettTops[j].jet1.p4()) |
+			 (jets[i]->p4() == hettTops[j].jet2.p4()) |
+                         (jets[i]->p4() == hettTops[j].jet3.p4());       
+        if(isPresent && prev > -1 ) { // this jet is in two hettTops
+          if(dbg) cout << "Overlap found, trijet indices: " << prev << " " << j << endl;
+          toErase = (abs(hettTops[prev].m3jet - mTop) >
+                     abs(hettTops[j   ].m3jet - mTop)) ? prev : j; // erase one with largest gap from mTop
+        }
+        if(isPresent) prev = j;        
+      }
+      if(toErase > -1) {
+        if(dbg) cout << "Erasing trijet with index " << toErase << endl;
+        hettTops.erase(hettTops.begin() + toErase); 
+        i = 0; // iterate procedure for rare case of > 2 trijets sharing a jet
+      }
+    }
+
+    if(dbg) {        
+      cout << endl <<  "Size of hettTops after trijet cleaning: " << hettTops.size() << endl;
+      for(int i = 0 ; i < hettTops.size() ; ++i) { // print hettTops
+        cout << "j1 " << hettTops[i].jet1.p4() << endl;
+        cout << "j2 " << hettTops[i].jet2.p4() << endl;
+        cout << "j3 " << hettTops[i].jet3.p4() << endl;
+        cout << "j123 " << hettTops[i].jet123.p4() << endl;
+        cout << "m12 " << hettTops[i].m12 << endl;
+        cout << "m13 " << hettTops[i].m13 << endl;
+        cout << "m23 " << hettTops[i].m23 << endl;
+        cout << "m123 " << hettTops[i].m123 << endl;
+        cout << "m3jet " << hettTops[i].m3jet << endl;
+        cout << "tri/di/mono " << hettTops[i].trijet << " " <<  hettTops[i].dijet << " " << hettTops[i].monojet << endl;
+      }
+    }
+
+    // find dijets and monojets (boosted scenarios)
+    for(auto jet : jets) {
+      if(dbg) cout << endl << "Considering jet for mono/dijet: " << jet->mass() << " " << jet->p4() << endl;
+      // ignore mono/dijet if already used in a trijet
+      bool jetUsed = false;
+      for(auto t : hettTops) {
+        jetUsed |= ((jet->p4() == t.jet1.p4()) |
+                    (jet->p4() == t.jet2.p4()) |
+                    (jet->p4() == t.jet3.p4()));
+      }
+      if(jetUsed) {
+        if(dbg) cout << "Jet with this p4 was already in a trijet " << jet->p4() << endl;
+        continue;
+      }
+
+      // boosted top "monojet", which stands alone
+      if ((jet->mass() > 110.) && (jet->mass() < 220.)) {
+        if(dbg) cout << "Found monojet with p4 " << jet->p4() << endl;
+        hettTop cand = {}; // fill and submit this hett candidate
+        cand.monojet = true; cand.dijet = false; cand.trijet = false;
+        cand.jet1 = *jet; cand.jet123 = cand.jet1;
+        cand.m12 = -1.; cand.m23 = -1.; cand.m13 = -1.; cand.m123 = -1.; 
+        cand.m3jet = jet->mass();
+        hettTops.push_back(cand);
+      }
+
+      // boosted W "dijet", which requires an auxillary jet
+      else if ((jet->mass() > 70.) && (jet->mass() < 110.)) {
+        if(dbg) cout << "Found potential dijet with p4 " << jet->p4() << endl;
+        int iCandAux = -1;
+        for(int i = 0 ; i < nJets ; ++i) { // find an auxillary jet for the W
+          if(dbg) cout << "Considering aux jet " << jets[i]->p4() << endl;
+          if(jets[i]->p4() == jet->p4()) {
+            if(dbg) cout << "skipped self jet" << endl;
+            continue;
+          }
+          bool isUsed = false; // aux jet cannot be in a trijet already
+          for(auto t : hettTops) {
+            isUsed |= ((jets[i]->p4() == t.jet1.p4()) |
+                       (jets[i]->p4() == t.jet2.p4()) |
+                       (jets[i]->p4() == t.jet3.p4()));
+          }
+          if(isUsed) {
+            if(dbg) cout << "aux jet already used in trijet " << jets[i]->p4() << endl;
+            continue;
+          }
+          // two conditions on dijet + jet system
+          float massDijet        = jet->mass();
+          float massDijetPlusJet = (jet->p4()+jets[i]->p4()).mass();
+          if(dbg) cout << "massDijet and DijetPlusJet: " << massDijet << " " << massDijetPlusJet << endl;
+          bool condA = (rMin < massDijet/massDijetPlusJet) & 
+                       (rMax > massDijet/massDijetPlusJet);
+          bool condB = (100. < massDijetPlusJet) &
+                       (250. > massDijetPlusJet);
+          if(dbg) cout << "Dijet conditions A, B: " << condA << " " << condB << endl;
+          if(condA && condB) {
+            iCandAux = i;
+            break; // do we want more candidates or to break here?
+          }
+        }//aux
+        if(iCandAux > -1) { // did suitable aux jet exist?
+          if(dbg) cout << "Found aux for the dijet" << endl;
+          hettTop cand = {}; // fill and submit this hett top candidate
+          cand.dijet = true; cand.monojet = false; cand.trijet = false;
+          if(dbg) cout << "iCandAux: " << iCandAux << endl;
+          if(dbg) cout << "jet1 being filled with " << jet->p4() << endl;
+          if(dbg) cout << "jet2 being filled with " << jets[iCandAux]->p4() << endl;
+          cand.jet1 = *jet; cand.jet2 = *jets[iCandAux]; cand.jet123 = cand.jet1.p4()+cand.jet2.p4();
+          cand.m13 = -1.; cand.m23 = -1.; cand.m123 = -1.;
+          cand.m12   = (jet->p4() + jets[iCandAux]->p4()).mass(); 
+          cand.m3jet = (jet->p4() + jets[iCandAux]->p4()).mass();
+          hettTops.push_back(cand);
+        }
+      }//ifW
+    }//mono/dijets
+
+    if(dbg) {
+      cout << endl << "Size of hettTops after mono/dijet discovery: " << hettTops.size() << endl;
+      for(int i = 0 ; i < hettTops.size() ; ++i) { // print hettTops
+        cout << "j1 " << hettTops[i].jet1.p4() << endl;
+        cout << "j2 " << hettTops[i].jet2.p4() << endl;
+        cout << "j3 " << hettTops[i].jet3.p4() << endl;
+        cout << "j123 " << hettTops[i].jet123.p4() << endl;
+        cout << "m12 " << hettTops[i].m12 << endl;
+        cout << "m13 " << hettTops[i].m13 << endl;
+        cout << "m23 " << hettTops[i].m23 << endl;
+        cout << "m123 " << hettTops[i].m123 << endl;
+        cout << "m3jet " << hettTops[i].m3jet << endl;
+        cout << "tri/di/mono " << hettTops[i].trijet << " " <<  hettTops[i].dijet << " " << hettTops[i].monojet << endl;
+      }
+    }
+
+    // mc efficiency
+    if(dbg) cout << endl << endl << "Efficiency work" << endl;
+   
+    int   hettnrecotops_       = hettTops.size();
+    // properties of hardest (unmatched) hett top (per-jet basis)
+    int   hetthardnsubjets_    = -1;
+    float hetthardgentoppt_    = -9.; 
+    float hetthardgentopeta_   = -9.; 
+    float hetthardrecopt_      = -9.; 
+    float hetthardrecoeta_     = -9.; 
+    float hetthardrecom3jet_   = -9.; 
+    float hetthardrecom12_     = -9.; 
+    float hetthardrecom13_     = -9.; 
+    float hetthardrecom23_     = -9.; 
+    float hetthardrecoj1pt_    = -9.; 
+    float hetthardrecoj1eta_   = -9.; 
+    float hetthardrecoj2pt_    = -9.; 
+    float hetthardrecoj2eta_   = -9.; 
+    float hetthardrecoj3pt_    = -9.; 
+    float hetthardrecoj3eta_   = -9.; 
+
+    // properties of hardest gen-matched hett top (per-jet basis)
+    int   hettnmatchedrecotops_     = -1; // number of reco tops matched to hardest gen top
+    int   hetthardmatchednsubjets_  = -1;
+    float hetthardmatchedgentoppt_  = -9.; 
+    float hetthardmatchedgentopeta_ = -9.; 
+    float hetthardmatchedrecopt_    = -9.; 
+    float hetthardmatchedrecoeta_   = -9.; 
+    float hetthardmatchedrecom3jet_ = -9.; 
+    float hetthardmatchedrecom12_   = -9.; 
+    float hetthardmatchedrecom13_   = -9.; 
+    float hetthardmatchedrecom23_   = -9.; 
+    float hetthardmatchedrecoj1pt_  = -9.; 
+    float hetthardmatchedrecoj1eta_ = -9.; 
+    float hetthardmatchedrecoj2pt_  = -9.; 
+    float hetthardmatchedrecoj2eta_ = -9.; 
+    float hetthardmatchedrecoj3pt_  = -9.; 
+    float hetthardmatchedrecoj3eta_ = -9.; 
+
+    // unmatched properties
+    // find hardest reco top
+    int iHardestHett_ = -1;
+//    hettTop* hardHett_ = 0; // fixme so 'hard' object doesn't lose scope out of for{}
+    float hardhettpt_ = -99.; // the running hardest reco top pt
+    if(dbg) cout << "finding hardest unmatched reco top..." << endl;
+//    for (hettTop htop : hettTops) { // fixme --see above
+    for(int i = 0 ; i < hettTops.size() ; ++i) {
+      hettTop htop = hettTops[i];
+      float htoppt_ = htop.jet123.p4().pt();
+      if(dbg) cout << "this hett has pt " << htoppt_ << endl;
+      if(htoppt_ < hardhettpt_) {
+        if(dbg) cout << "harder hett has been found" << endl;
+        continue; // we've already found harder reco tops
+      }
+      if(dbg) cout << "was hardest hett seen " << endl;
+      hardhettpt_ = htoppt_; // update hardest reco top pt
+//      hardHett_ = htop; // fixme --see above
+      iHardestHett_ = i;
+    }
+    // fill properties of hardest unmatched reco top
+    if(iHardestHett_ > -1) {
+      hettTop hardHett_  = hettTops[iHardestHett_];
+      hetthardrecopt_    = hardHett_.jet123.p4().pt();
+      hetthardrecoeta_   = hardHett_.jet123.p4().eta();
+      hetthardrecom3jet_ = hardHett_.m3jet;
+      hetthardrecom12_   = hardHett_.m12;
+      hetthardrecom13_   = hardHett_.m13;
+      hetthardrecom23_   = hardHett_.m23;
+      hetthardrecoj1pt_  = hardHett_.jet1.p4().pt();
+      hetthardrecoj1eta_ = hardHett_.jet1.p4().eta();
+      hetthardrecoj2pt_  = hardHett_.jet2.p4().pt();
+      hetthardrecoj2eta_ = hardHett_.jet2.p4().eta();
+      hetthardrecoj3pt_  = hardHett_.jet3.p4().pt();
+      hetthardrecoj3eta_ = hardHett_.jet3.p4().eta();      
+      if(hardHett_.m13 < 0) { // either dijet or monojet
+        if(hardHett_.m12 < 0) { // monojet
+          hetthardnsubjets_ = 1;
+        } else { // dijet                   
+          hetthardnsubjets_ = 2;
+        }
+      } else { // trijet
+        hetthardnsubjets_ = 3;
+      }
+      if(dbg) cout << "hardest hett has pt: " << hardHett_.jet123.p4().pt() << endl;
+      if(dbg) cout << "hardest hett has eta: " << hardHett_.jet123.p4().eta() << endl;
+      if(dbg) cout << "hardest hett has phi: " << hardHett_.jet123.p4().phi() << endl;
+      if(dbg) cout << "hardest hett has m3jet: " << hardHett_.m3jet << endl;
+      if(dbg) cout << "hardest hett nsubjets: " << hetthardnsubjets_ << endl;
+    }//if hardHett
+
+    if(ana->isMC()) { 
+
+      // gen-matched properties
+      // find hardest gen top
+      GenParticleF* hardGenTop_ = 0;
+      float hardgentoppt_ = -99.; // the running hardest gen top pt
+      if(dbg) cout << "finding hardest gen top" << endl;
+      for(auto* p : ana->genParts) {
+        if ((abs(p->pdgId())==6) && isGenTopHadronic(p)) { // only want gen tops
+          float gentoppt_ = p->p4().pt();
+          if(dbg) cout << "this gen top has pt: " << gentoppt_ << endl;
+          if (gentoppt_ < hardgentoppt_) {
+            if(dbg) cout << "harder gen tops have been found" << endl;
+            continue; // we've already found harder gen tops
+          }
+          hardgentoppt_ = gentoppt_; // update hardest gen top pt
+          hardGenTop_ = p;
+        }
+      }
+
+      if(hardGenTop_) {
+        if(dbg) cout << "hardest gen top has pt " << hardgentoppt_ << endl;
+        if(dbg) cout << "hardest gen top has eta " << hardGenTop_->p4().eta() << endl;
+        if(dbg) cout << "hardest gen top has phi " << hardGenTop_->p4().phi() << endl;
+
+        // find hardest reco top which gen-matches our hardest gen top
+//        hettTop* hardRecoTop_ = 0; // fixme --see above
+        int iHardestReco_ = -1;
+        float hardmatchedrecotoppt_ = -99.; // the running hardest reco top pt
+        hettnmatchedrecotops_ = 0; // must restart count at zero here (default above is -1 meaning N/A)
+        if(dbg) cout << "finding hardest matching reco top" << endl;
+        for(int i = 0 ; i < hettTops.size() ; ++i) {
+//        for (hettTop recotop : hettTops) {// fixme --see above
+          hettTop recotop = hettTops[i];
+          if(dbg) cout << "this hett has deltaR wrt hardest gen top of " << PhysicsUtilities::deltaR(recotop.jet123, *hardGenTop_) << endl;
+          if (PhysicsUtilities::deltaR(recotop.jet123, *hardGenTop_) < 0.4) { // only want matched reco tops
+            ++hettnmatchedrecotops_;
+            float matchedrecotoppt_ = recotop.jet123.p4().pt();
+            if(dbg) cout << "matched hett has pt " << recotop.jet123.p4().pt() << endl;
+            if(dbg) cout << "matched hett has eta " << recotop.jet123.p4().eta() << endl;        
+            if(matchedrecotoppt_ < hardmatchedrecotoppt_) {
+              if(dbg) cout << "harder matched hett has been found" << endl;
+              continue; // we've already found harder matched reco tops
+            }
+            hardmatchedrecotoppt_     = matchedrecotoppt_; // update hardest matched reco top pt
+            hetthardmatchedgentoppt_  = hardGenTop_->p4().pt();  // must fill pt/eta here, or later do = (hettnmatchedrecotops_>0) ? hardGenTop_->p4().pt() : -99.;
+            hetthardmatchedgentopeta_ = hardGenTop_->p4().eta(); //
+            if(dbg) cout << "setting hardest matched hett" << endl;
+//            hardRecoTop_ = &recotop; // fixme --see above
+            iHardestReco_ = i;
+          }
+        }
+//        if(hardRecoTop_) {// fixme --see above
+        if(iHardestReco_ > -1) {
+          hettTop* hardRecoTop_ = &hettTops[iHardestReco_];
+          if(dbg) cout << "hardest matched reco jet has pt " << hardRecoTop_->jet123.p4().pt() << endl;
+          if(dbg) cout << "hardest matched reco jet has eta " << hardRecoTop_->jet123.p4().eta() << endl;
+          if(dbg) cout << "hardest matched reco jet has m3jet " << hardRecoTop_->m3jet << endl;
+          if(dbg) cout << "hardest matched reco jet has m12 " << hardRecoTop_->m12 << endl;
+          if(dbg) cout << "hardest matched reco jet has m13 " << hardRecoTop_->m13 << endl;
+          if(dbg) cout << "hardest matched reco jet has m23 " << hardRecoTop_->m23 << endl;
+          if(dbg) cout << "hardest matched reco jet has j1pt " << hardRecoTop_->jet1.p4().pt() << endl;
+          if(dbg) cout << "hardest matched reco jet has j1eta " << hardRecoTop_->jet1.p4().eta() << endl;
+          if(dbg) cout << "hardest matched reco jet has j2pt " << hardRecoTop_->jet2.p4().pt() << endl;
+          if(dbg) cout << "hardest matched reco jet has j2eta " << hardRecoTop_->jet2.p4().eta() << endl;
+          if(dbg) cout << "hardest matched reco jet has j3pt " << hardRecoTop_->jet3.p4().pt() << endl;
+          if(dbg) cout << "hardest matched reco jet has j3eta " << hardRecoTop_->jet3.p4().eta() << endl;
+          hetthardmatchedrecopt_    = hardRecoTop_->jet123.p4().pt();
+          hetthardmatchedrecoeta_   = hardRecoTop_->jet123.p4().eta();
+          hetthardmatchedrecom3jet_ = hardRecoTop_->m3jet;
+          hetthardmatchedrecom12_   = hardRecoTop_->m12;
+          hetthardmatchedrecom13_   = hardRecoTop_->m13;
+          hetthardmatchedrecom23_   = hardRecoTop_->m23;
+          hetthardmatchedrecoj1pt_  = hardRecoTop_->jet1.p4().pt();
+          hetthardmatchedrecoj1eta_ = hardRecoTop_->jet1.p4().eta();
+          hetthardmatchedrecoj2pt_  = hardRecoTop_->jet2.p4().pt();
+          hetthardmatchedrecoj2eta_ = hardRecoTop_->jet2.p4().eta();
+          hetthardmatchedrecoj3pt_  = hardRecoTop_->jet3.p4().pt();
+          hetthardmatchedrecoj3eta_ = hardRecoTop_->jet3.p4().eta();
+          if(hardRecoTop_->m13 < 0) { // either dijet or monojet
+            if(hardRecoTop_->m12 < 0) { // monojet
+              hetthardmatchednsubjets_ = 1;
+            } else { // dijet
+              hetthardmatchednsubjets_ = 2;
+            }
+          } else { // trijet
+            hetthardmatchednsubjets_ = 3;
+          }
+
+        }//if hardRecoTop
+      }//if hardGenTop
+
+      if(dbg) cout << "hettnmatchedrecotops was " << hettnmatchedrecotops_ << endl;
+      if(dbg) cout << "hetthardmatchednsubjets was " << hetthardmatchednsubjets_ << endl;
+
+    }//isMC
+
+      // fill branches
+      data->fill<int  >(i_hettnrecotops       ,hettnrecotops_     );
+      data->fill<int  >(i_hetthardnsubjets    ,hetthardnsubjets_  );
+      data->fill<float>(i_hetthardgentoppt    ,hetthardgentoppt_  );
+      data->fill<float>(i_hetthardgentopeta   ,hetthardgentopeta_ );
+      data->fill<float>(i_hetthardrecopt      ,hetthardrecopt_    );
+      data->fill<float>(i_hetthardrecoeta     ,hetthardrecoeta_   );
+      data->fill<float>(i_hetthardrecom3jet   ,hetthardrecom3jet_ );
+      data->fill<float>(i_hetthardrecom12     ,hetthardrecom12_   );
+      data->fill<float>(i_hetthardrecom13     ,hetthardrecom13_   );
+      data->fill<float>(i_hetthardrecom23     ,hetthardrecom23_   );
+      data->fill<float>(i_hetthardrecoj1pt    ,hetthardrecoj1pt_  );
+      data->fill<float>(i_hetthardrecoj1eta   ,hetthardrecoj1eta_ );
+      data->fill<float>(i_hetthardrecoj2pt    ,hetthardrecoj2pt_  );
+      data->fill<float>(i_hetthardrecoj2eta   ,hetthardrecoj2eta_ );
+      data->fill<float>(i_hetthardrecoj3pt    ,hetthardrecoj3pt_  );
+      data->fill<float>(i_hetthardrecoj3eta   ,hetthardrecoj3eta_ );
+      data->fill<int  >(i_hettnmatchedrecotops       ,hettnmatchedrecotops_     );
+      data->fill<int  >(i_hetthardmatchednsubjets    ,hetthardmatchednsubjets_  );
+      data->fill<float>(i_hetthardmatchedgentoppt    ,hetthardmatchedgentoppt_  );
+      data->fill<float>(i_hetthardmatchedgentopeta   ,hetthardmatchedgentopeta_ );
+      data->fill<float>(i_hetthardmatchedrecopt      ,hetthardmatchedrecopt_    );
+      data->fill<float>(i_hetthardmatchedrecoeta     ,hetthardmatchedrecoeta_   );
+      data->fill<float>(i_hetthardmatchedrecom3jet   ,hetthardmatchedrecom3jet_ );
+      data->fill<float>(i_hetthardmatchedrecom12     ,hetthardmatchedrecom12_   );
+      data->fill<float>(i_hetthardmatchedrecom13     ,hetthardmatchedrecom13_   );
+      data->fill<float>(i_hetthardmatchedrecom23     ,hetthardmatchedrecom23_   );
+      data->fill<float>(i_hetthardmatchedrecoj1pt    ,hetthardmatchedrecoj1pt_  );
+      data->fill<float>(i_hetthardmatchedrecoj1eta   ,hetthardmatchedrecoj1eta_ );
+      data->fill<float>(i_hetthardmatchedrecoj2pt    ,hetthardmatchedrecoj2pt_  );
+      data->fill<float>(i_hetthardmatchedrecoj2eta   ,hetthardmatchedrecoj2eta_ );
+      data->fill<float>(i_hetthardmatchedrecoj3pt    ,hetthardmatchedrecoj3pt_  );
+      data->fill<float>(i_hetthardmatchedrecoj3eta   ,hetthardmatchedrecoj3eta_ );
+
+    return;
+  }//fillHettInfo
+
+  // fill HPTT (CTT) branches
   void fillTopTagInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets) {
 
     bool sfbclose2lep_ = false;    
@@ -865,7 +1443,8 @@ struct TreeFiller {
     // strategy: for each gen top, loop thru reco cttTops, match one or multi with dR cone, record pT spectra for efficiency
     if(ana->isMC()) {
 
-      //indices of hardest cands for each case
+      //indices of hardest cands for each matching cone size
+      // 1,2,3 are placeholders, 6 is default dr=0.6
       unsigned int indxctt = 99;
       float maxcttpt_ = -1.;
       unsigned int indxctt1 = 99;
