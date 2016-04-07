@@ -40,6 +40,9 @@ def main():
   parser = argparse.ArgumentParser(description='Produce or print limits based on existing datacards')
   parser.add_argument("-p", "--print", dest="printLimits", action='store_true', help="Print last set of limits/significances calculated. [Default: False]")
   parser.add_argument("-f", "--fill", dest="fillAsymptoticLimits", action='store_true', help="Fill root files with results of asymptotic limit calculations for all signal points. [Default: False]")
+  parser.add_argument("-l", "--limfile", dest="limitFile", default='results_T2tt.root', help="Name of output file with upper limit histograms. [Default: results_T2tt.root]")
+  parser.add_argument("-e", "--excfile", dest="exclusionFile", default='limit_scan_T2tt.root', help="Name of output file with exclusion curves and interpolated cross section limits. [Default: results_T2tt.root]")
+  parser.add_argument("-i", "--interpolate", dest="addInterpolation", type=int, default=0, choices=[0,1], help="Whether or not to run Chris West's interpolation. [Options: 0 (no), 1 (yes). Default: 0]")
   parser.add_argument("-c", "--config", dest="configFile", default='dc_0l_setup.conf', help="Config file to be run with. [Default: dc_0l_setup.conf]")
   args = parser.parse_args()
 
@@ -62,7 +65,7 @@ def main():
           print 'here'
           limconfig.fillSignificances()
       else :
-          limconfig.fillAsymptoticLimits()
+          limconfig.fillAsymptoticLimits(args.limitFile,args.exclusionFile,args.addInterpolation)
   else :
       limconfig.runLimits()
   
@@ -189,7 +192,7 @@ class LimitConfig:
     print '\n'.join(limits)
     print '\n'
 
-  def fillAsymptoticLimits(self):
+  def fillAsymptoticLimits(self,limfilename,excfilename,interpolate):
     limits = []
     currentDir = os.getcwd()
     xsecfilename = ('../data/xsecs/stop.root')
@@ -200,7 +203,7 @@ class LimitConfig:
     xsecuphist = xsecfile.Get('xsecsup')
     xsecdownhist = TH1D()
     xsecdownhist = xsecfile.Get('xsecsdown')
-    outfile = TFile('results_T2tt.root','RECREATE')
+    outfile = TFile(limfilename,'RECREATE')
     maxmstop = 0.0
     minmstop = 0.0
     maxmlsp  = 0.0
@@ -209,19 +212,22 @@ class LimitConfig:
       mstop = int(signal.split('_')[1])
       mlsp = int(signal.split('_')[2])
       if mstop > maxmstop : maxmstop = mstop
-      if mstop > maxmstop : maxmstop = mstop
-      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
-      if minmlsp == 0.0 or mlsp < minmlsp : minmlsp = mlsp
-    nbinsx = int((maxmstop - minmstop)/12.5)
-    nbinsy = int((maxmlsp - minmlsp)/12.5)
+      if mlsp > maxmlsp : maxmlsp = mlsp
+      if minmstop == 0.0 or mstop < minmstop : minmstop = mstop
+      if mlsp < minmlsp : minmlsp = mlsp
+    nbinsx = int((maxmstop - minmstop)/25.0)
+    nbinsy = int((maxmlsp - minmlsp)/25.0)
+    print 'XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d' % (minmstop, maxmstop, minmlsp, maxmlsp, nbinsx, nbinsy)
 
-    hexp = TH2D('hexp','',36,100,1000,20,0,500)
-    hexpup = TH2D('hexpup','',36,100,1000,20,0,500)
-    hexpdown = TH2D('hexpdown','',36,100,1000,20,0,500)
-    hxsecexp = TH2D('hxsecexp','',36,100,1000,20,0,500)
-    hobs = TH2D('hobs','',36,100,1000,20,0,500)
-    hobsup = TH2D('hobsup','',36,100,1000,20,0,500)
-    hobsdown = TH2D('hobsdown','',36,100,1000,20,0,500)
+    hexp = TH2D('hexp','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hexpup = TH2D('hexpup','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hexpdown = TH2D('hexpdown','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hxsecexp = TH2D('hxsecexp','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hxsecobs = TH2D('hxsecobs','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hobs = TH2D('hobs','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hobsup = TH2D('hobsup','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+    hobsdown = TH2D('hobsdown','',nbinsx,minmstop,maxmstop,nbinsy,minmlsp,maxmlsp)
+
     for signal in self.signals :
       outputLocation = os.path.join(currentDir,self.limitdir,signal)
       rootFile = ''
@@ -248,28 +254,35 @@ class LimitConfig:
         xsecdown = xsecdownhist.Interpolate(mstop)
         if self.scalesigtoacc :
             xseclimit = limit['0']
+            xsecobslimit = 0.0
             hexp.Fill(mstop,mlsp,limit['0']/xsec)
             hexpdown.Fill(mstop,mlsp,limit['-1']/xsec)
             hexpup.Fill(mstop,mlsp,limit['+1']/xsec)
             if limit.has_key('obs') :
+                xsecobslimit = limit['obs']
                 hobs.Fill(mstop,mlsp,limit['obs']/xsec)
                 hobsdown.Fill(mstop,mlsp,limit['obs']/xsecup)
                 hobsup.Fill(mstop,mlsp,limit['obs']/xsecdown)
-                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1 expt: %4.2f, -1 expt: %4.2f), Obs Limit: %4.2f (+1 theory: %4.2f, -1 theory: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,limit['obs']/xsec,limit['obs']/xsecdown,limit['obs']/xsecup,xseclimit)
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1 expt: %4.2f, -1 expt: %4.2f), Obs Limit: %4.2f (+1 theory: %4.2f, -1 theory: %4.2f), XS Limit: %4.2f exp, %4.2f obs' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,limit['obs']/xsec,limit['obs']/xsecdown,limit['obs']/xsecup,xseclimit,xsecobslimit)
             else :
                 print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0']/xsec,limit['+1']/xsec,limit['-1']/xsec,xseclimit)
         else :
             xseclimit = limit['0']*xsec
+            xsecobslimit = 0.0
             hexp.Fill(mstop,mlsp,limit['0'])
             hexpdown.Fill(mstop,mlsp,limit['-1'])
             hexpup.Fill(mstop,mlsp,limit['+1'])
             if limit.has_key('obs') :
+                xsecobslimit = limit['obs']*xsec
                 hobs.Fill(mstop,mlsp,limit['obs'])
-                print 'Can\'t fill obs +/- 1 sigma theory if you didn\'t scale the signals to acceptance!'
-                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1: %4.2f, -1: %4.2f), Obs Limit: %4.2f, XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],limit['obs'],xseclimit)
+                hobsdown.Fill(mstop,mlsp,limit['obs']*xsec/xsecup)
+                hobsup.Fill(mstop,mlsp,limit['obs']*xsec/xsecdown)
+                #print 'Can\'t fill obs +/- 1 sigma theory if you didn\'t scale the signals to acceptance!'
+                print 'MStop: %d, MLSP: %d, XS: %4.2f, Exp Limit: %4.2f (+1 expt: %4.2f, -1 expt: %4.2f), Obs Limit: %4.2f (+1 theory: %4.2f, -1 theory: %4.2f), XS Limit: %4.2f exp, %4.2f obs' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],limit['obs'],limit['obs']*xsec/xsecdown,limit['obs']*xsec/xsecup,xseclimit,xsecobslimit)
             else :
                 print 'MStop: %d, MLSP: %d, XS: %4.2f, Limit: %4.2f (+1: %4.2f, -1: %4.2f), XS Limit: %4.2f' % (mstop,mlsp,xsec,limit['0'],limit['+1'],limit['-1'],xseclimit)
         hxsecexp.Fill(mstop,mlsp,xseclimit)
+        hxsecobs.Fill(mstop,mlsp,xsecobslimit)
 
     outfile.cd()
     hexp.Write()
@@ -279,8 +292,9 @@ class LimitConfig:
     hobsdown.Write()
     hobsup.Write()
     hxsecexp.Write()
+    hxsecobs.Write()
     outfile.Close()
-    os.system('root -l -q -b makeScanPlots.C')
+    os.system('root -l -q -b makeScanPlots.C\\(\\"%s\\",\\"%s\\",%d\\)' % (limfilename,excfilename,interpolate))
        
     # print the results
     print '='*5, 'RESULTS', '('+self.limitmethod+')', '='*5
@@ -334,9 +348,10 @@ class LimitConfig:
       if self.limitmethod=='AsymptoticLimits':
         #runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run expected -t -1 --rMin 0 --rMax 10 -n '+signal
         mstop = int(signal.split('_')[1])
-        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --rMin 0 --rMax 10 -n '+signal
-        if mstop < 400 :
-            runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' -n '+signal
+        sigtype = signal.split('_')[0]
+        runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' -n '+signal
+        if mstop >= 400 :
+            runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --rMin 0 --rMax 10 -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?
@@ -359,9 +374,9 @@ class LimitConfig:
           observeds.append(tempObsLimit)  
       
       elif self.limitmethod=='Asymptotic':
-        #runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --toysFreq --expectSignal=1 -n '+signal
+        runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --toysFreq --expectSignal=1 -n '+signal
         #runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --expectSignal=1 -n '+signal
-        runLimitsCommand =  'combine -M ProfileLikelihood --significance '+combinedDatacard+' -n '+signal
+        #runLimitsCommand =  'combine -M ProfileLikelihood --significance '+combinedDatacard+' -n '+signal
         # run the limit command and figure out what the output root file is
         print 'now running:' #DEUBGGING ONLY 
         print runLimitsCommand, '\n' # keep this in some kind of log file?

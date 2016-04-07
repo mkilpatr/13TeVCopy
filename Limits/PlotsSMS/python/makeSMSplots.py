@@ -20,11 +20,11 @@ if __name__ == '__main__':
     xsecPlot.Save("%sXSEC" %outputname)
 
     # only lines
-    contPlot = smsPlotCONT(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
-    contPlot.Draw()
-    contPlot.Save("%sCONT" %outputname)
+    #contPlot = smsPlotCONT(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
+    #contPlot.Draw()
+    #contPlot.Save("%sCONT" %outputname)
 
     # brazilian flag (show only 1 sigma)
-    brazilPlot = smsPlotBrazil(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
-    brazilPlot.Draw()
-    brazilPlot.Save("%sBAND" %outputname)
+    #brazilPlot = smsPlotBrazil(modelname, fileIN.HISTOGRAM, fileIN.OBSERVED, fileIN.EXPECTED, fileIN.ENERGY, fileIN.LUMI, fileIN.PRELIMINARY, "")
+    #brazilPlot.Draw()
+    #brazilPlot.Save("%sBAND" %outputname)
