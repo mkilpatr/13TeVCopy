@@ -618,7 +618,7 @@ struct TreeFiller {
     data->fill<int>(i_nmbjets,  nmbjets);
     data->fill<int>(i_ntbjets,  ntbjets);
     data->fill<int>(i_njl,  njl);
-    data->fill<float>(i_mht,  mht_);
+    data->fill<float>(i_mht,  mht_.pt());
     data->fill<float>(i_ht,   JetKinematics::ht(jets, 20.0, 2.4));
     data->fill<float>(i_ht30, JetKinematics::ht(jets, 30.0, 2.4));
     data->fill<float>(i_ht40, JetKinematics::ht(jets, 40.0, 2.4));
