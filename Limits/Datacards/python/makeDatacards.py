@@ -447,6 +447,8 @@ class DatacardConfig:
 
         if process == 2 and self.scalesigtoacc :
             mstop = int(filename.split('_')[-3])
+            if 'T2bW' in filename :
+                mstop = int(filename.split('_')[-4])
             xsecfile = TFile('../data/xsecs/stop.root')
             xsechist = TH1D()
             xsechist = xsecfile.Get('xsecs')
@@ -569,6 +571,7 @@ class DatacardConfig:
     def fillUncertaintyValues(self):
         """Get values of each designated uncertainty
         """
+        #mcstatuncs = open('mcstatuncs.txt','w')
         for file in self.uncvalfiles :
             print 'Opening ',file
             with open('%s/%s' % (self.setupbase,file),'r') as f :
@@ -744,6 +747,8 @@ class DatacardConfig:
                                                     unc.vals[binname][samp] = 1 + (mcunc/mcevts)
                                             else :
                                                 unc.vals[binname][samp] = 2.0
+                                            #mcstatuncs.write('%s\t%s\t%s\t%4.3f\n' % (binname,uncname,samp,unc.vals[binname][samp]))
+        #mcstatuncs.close()
 
     def getUncertaintyLine(self,uncname,unc,binlabel,backgrounds,nbkgevts):
         """Get line with uncertainty name, type, and values correctly formatted

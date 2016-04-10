@@ -15,5 +15,5 @@ Steps for producing datacards and computing limits:
 5) In order to fill a root file with the limit results for all mass points considered (needed for the final plots), run:
    > python Datacards/python/runLimits.py -f [-c <name_of_your.conf>]
 6) To make the usual SMS exclusion plots, you can then run:
-   > python PlotsSMS/python/makeSMSplots.py PlotsSMS/config/T2tt_SUSxxxxx.cfg T2tt
+   > python PlotsSMS/python/makeSMSplots.py PlotsSMS/config/T2tt_SUS16005.cfg T2tt
    which will produce the limit plots in pdf format
