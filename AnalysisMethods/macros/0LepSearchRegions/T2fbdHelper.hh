@@ -125,6 +125,7 @@ struct TreeFiller {
   size i_nlbjets   ;
   size i_nmbjets   ;
   size i_ntbjets   ;
+  size i_mht       ;
   size i_ht        ;
   size i_ht30      ;
   size i_ht40      ;
@@ -285,6 +286,7 @@ struct TreeFiller {
     i_nlbjets           = data->add<int>("","nlbjets","I",0);
     i_nmbjets           = data->add<int>("","nmbjets","I",0);
     i_ntbjets           = data->add<int>("","ntbjets","I",0);
+    i_mht               = data->add<float>("","mht","F",0);
     i_ht                = data->add<float>("","ht","F",0);
     i_ht30              = data->add<float>("","ht30","F",0);
     i_ht40              = data->add<float>("","ht40","F",0);
@@ -594,6 +596,7 @@ struct TreeFiller {
     int njets75 = 0, njets30 = 0; 
     int ntbjets = 0, nmbjets = 0, nlbjets = 0, nbjets30 = 0;
     int njl = 0;
+    LorentzVector mht_; 
     for(auto* j : jets) {
       if(j->pt() > 75.0) njets75++;
       if(j->pt() > 30.0) njets30++;
@@ -602,7 +605,10 @@ struct TreeFiller {
       if(j->csv() > defaults::CSV_MEDIUM) nmbjets++;
       if(j->csv() > defaults::CSV_TIGHT)  ntbjets++;
       if(j->csv() > defaults::CSV_MEDIUM && j->pt() > 30.0) nbjets30++;
+
+      if ( (j->pt()>30.) && (fabs(j->eta())<2.5) ) { mht_ += j->p4(); }
     }
+
     data->fill<int>(i_njets,    int(jets.size()));
     data->fill<int>(i_njets30,  njets30);
     data->fill<int>(i_njets75,  njets75);
@@ -612,6 +618,7 @@ struct TreeFiller {
     data->fill<int>(i_nmbjets,  nmbjets);
     data->fill<int>(i_ntbjets,  ntbjets);
     data->fill<int>(i_njl,  njl);
+    data->fill<float>(i_mht,  mht_);
     data->fill<float>(i_ht,   JetKinematics::ht(jets, 20.0, 2.4));
     data->fill<float>(i_ht30, JetKinematics::ht(jets, 30.0, 2.4));
     data->fill<float>(i_ht40, JetKinematics::ht(jets, 40.0, 2.4));
