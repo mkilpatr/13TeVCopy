@@ -21,6 +21,8 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fXmax(0),
   fYmin(0),
   fYmax(0),
+  fRatioMin(0.001),
+  fRatioMax(2.999),
   fLogx(0),
   fLogy(0),
   fGridx(0),
@@ -718,7 +720,7 @@ void Plot::drawRatio(TCanvas *c, TH1F *h1, TH1F *h2, bool doSave, TString format
   h1->GetYaxis()->SetNdivisions(305);
   h1->GetXaxis()->SetTitle(fXTitle);
   h1->GetYaxis()->SetTitle("Ratio");
-  h1->GetYaxis()->SetRangeUser(0.0,2.0);
+  h1->GetYaxis()->SetRangeUser(fRatioMin,fRatioMax);
   h1->Draw("EP");
   double xmin = h1->GetXaxis()->GetXmin();
   double xmax = h1->GetXaxis()->GetXmax();
@@ -833,7 +835,7 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
   h3->GetYaxis()->SetTitleFont(62);
   h3->GetYaxis()->CenterTitle(kTRUE);
   h3->GetXaxis()->SetTitleFont(62);
-  h3->GetYaxis()->SetRangeUser(-0.5,0.5);
+  h3->GetYaxis()->SetRangeUser(fRatioMin, fRatioMax);
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
   h3->GetYaxis()->SetTitle("#frac{N_{obs}}{N_{exp}} - 1");
@@ -846,7 +848,6 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
   h3->Add(hMC, -1.);
   h3->Divide(hMC);
-  h3->GetYaxis()->SetRangeUser(-0.4,0.4);
 
   h3->DrawCopy("P");  
   h3->Draw("Psame");
@@ -1164,7 +1165,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
   h3->GetYaxis()->SetTitleFont(62);
   h3->GetYaxis()->CenterTitle(kTRUE);
   h3->GetXaxis()->SetTitleFont(62);
-  h3->GetYaxis()->SetRangeUser(-0.5,0.5);
+  h3->GetYaxis()->SetRangeUser(fRatioMin, fRatioMax);
   h3->GetYaxis()->SetNdivisions(305);
   h3->GetXaxis()->SetTitle(fXTitle);
   h3->GetYaxis()->SetTitle("N_{obs}/N_{exp}");
@@ -1192,7 +1193,6 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
       ratio = getRatioAsymmErrors(h3, hMC);
     }
     ratio->SetLineWidth(h3->GetLineWidth());
-    h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->Draw("AXIS");
     for(uint i=0; i<vRatioHists.size(); i++) {
       TH1F *h = vRatioHists[i];              
@@ -1209,7 +1209,6 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
     }else {
       h3->Divide(hMC);
     }
-    h3->GetYaxis()->SetRangeUser(0.001,2.999);
     h3->DrawCopy("P");  
     for(uint i=0; i<vRatioHists.size(); i++) {
       TH1F *h = vRatioHists[i];              
@@ -1375,7 +1374,7 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
     h0->GetYaxis()->SetNdivisions(305);
     h0->GetXaxis()->SetTitle(fXTitle);
     h0->GetYaxis()->SetTitle("Ratio");
-    h0->GetYaxis()->SetRangeUser(0.0,2.0);
+    h0->GetYaxis()->SetRangeUser(fRatioMin,fRatioMax);
 
     h0->Draw("AXIS");
 
