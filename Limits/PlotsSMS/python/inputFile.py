@@ -1,4 +1,5 @@
 import sys
+import re
 import ROOT as rt
 rt.gROOT.SetBatch(True)    
 
@@ -39,9 +40,9 @@ class inputFile():
             if tmpLINE[0] != "EXPECTED": continue
             fileIN.close()
             rootFileIn = rt.TFile.Open(tmpLINE[1])
-            return {'nominal': rootFileIn.Get(tmpLINE[2]),
-                    'plus': rootFileIn.Get(tmpLINE[3]),
-                    'minus': rootFileIn.Get(tmpLINE[4]),
+            return {'nominal': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[2],tmpLINE[2]), key.GetName())],
+                    'plus': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[3],tmpLINE[3]), key.GetName())],
+                    'minus': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[4],tmpLINE[4]), key.GetName())],
                     'colorLine': tmpLINE[5],
                     'colorArea': tmpLINE[6]}
 
@@ -52,9 +53,9 @@ class inputFile():
             if tmpLINE[0] != "OBSERVED": continue
             fileIN.close()
             rootFileIn = rt.TFile.Open(tmpLINE[1])
-            return {'nominal': rootFileIn.Get(tmpLINE[2]),
-                    'plus': rootFileIn.Get(tmpLINE[3]),
-                    'minus': rootFileIn.Get(tmpLINE[4]),
+            return {'nominal': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[2],tmpLINE[2]), key.GetName())],
+                    'plus': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[3],tmpLINE[3]), key.GetName())],
+                    'minus': [rootFileIn.Get(key.GetName()) for key in rt.gDirectory.GetListOfKeys() if re.match(r'(%s_[0-9]+|%s)$' % (tmpLINE[4],tmpLINE[4]), key.GetName())],
                     'colorLine': tmpLINE[5],
                     'colorArea': tmpLINE[6]}
 

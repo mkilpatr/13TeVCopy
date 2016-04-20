@@ -164,6 +164,7 @@ class Plot {
     void setYTitle(TString str)              { fYTitle = str; }              // y-axis title
     void setXRange(double xmin, double xmax) { fXmin = xmin; fXmax = xmax; } // x-axis range
     void setYRange(double ymin, double ymax) { fYmin = ymin; fYmax = ymax; } // y-axis range
+    void setRatioRange(double xmin, double xmax) { fRatioMin = xmin; fRatioMax = xmax; } // y-axis range of ratios plots
     void setLogx(int value=1)                { fLogx = value; }              // toggle logscale x-axis
     void setLogy(int value=1)                { fLogy = value; }              // toggle logscale y-axis
     void setGridx(bool value=1)              { fGridx = value; }             // toggle grid lines from x-axis ticks
@@ -203,6 +204,7 @@ class Plot {
     TString fYTitle;                      // y-axis title
     double fXmin, fXmax;                  // x-axis range
     double fYmin, fYmax;                  // y-axis range
+    double fRatioMin, fRatioMax;          // y-axis range of ratio plots
     int fLogx, fLogy;                     // logscale axes
     int fGridx, fGridy;                   // grid lines
     int fRebin;                           // grouping for histogram re-bin

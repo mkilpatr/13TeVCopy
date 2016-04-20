@@ -65,18 +65,22 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
   TH2D *hsigcorr = gsig.GetHistogram();
   if(!hsigcorr) throw runtime_error("Could not retrieve histogram");
   hsig->SetTitle(";m_{stop} [GeV];m_{LSP} [GeV]");
+  hsigcorr->SetTitle(";m_{stop} [GeV];m_{LSP} [GeV]");
 
   TCanvas c("","",800,800);
-  c.SetLogz();
+  //c.SetLogz();
   hsigcorr->SetMinimum(*min_element(sig.cbegin(), sig.cend()));
   hsigcorr->SetMaximum(*max_element(sig.cbegin(), sig.cend()));
+  hsigcorr->GetYaxis()->SetRangeUser(0.0,450.0);
+  hsigcorr->GetYaxis()->SetTitleOffset(1.5);
+  hsigcorr->GetZaxis()->SetRangeUser(0.0,5.0);
   gsig.Draw("colz");
   //TLegend l(gStyle->GetPadLeftMargin(), 1.-gStyle->GetPadTopMargin(),
   //          1.-gStyle->GetPadRightMargin(), 1.);
   //l.SetNColumns(2);
   //l.SetBorderSize(0);
   dots.Draw("p same");
-  c.Print("sig_scan.pdf");
+  c.Print("sig_scan_exp.pdf");
 
   TFile file("sig_scan.root","recreate");
   hsigcorr->Write("hsig_corr");

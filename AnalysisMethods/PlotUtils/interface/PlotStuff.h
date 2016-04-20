@@ -202,6 +202,8 @@ class PlotStuff {
         double                 maxscale;
         double                 minlogscale;
         double                 maxlogscale;
+        double                 ratio_min;
+        double                 ratio_max;
         bool                   logy;
         double                 canvasheight;
         double                 canvaswidth;
@@ -264,6 +266,8 @@ class PlotStuff {
           maxscale(1.3),
           minlogscale(.8),
           maxlogscale(20.),
+          ratio_min(0.001),
+          ratio_max(2.999),
           logy(false),
           canvasheight(600),
           canvaswidth(600),
@@ -427,6 +431,8 @@ class PlotStuff {
     void     setIntegral(bool reverse_integral_direction = false) {config_.make_integral = true; config_.reverse_integral_dir = reverse_integral_direction; }
     // Make a ratio plot
     void     setRatioPlot(bool plotratio = true) { config_.plotratio = plotratio; }
+    // Set range of the ratio plot
+    void     setRatioRange(double min, double max) { config_.ratio_min = min; config_.ratio_max = max; }
     // Scale backgrounds to data (when plotting data vs MC)
     void     setScaleToData(bool scaletodata = true) { config_.scaletodata = scaletodata; }
     // Use Poisson error bars for data
