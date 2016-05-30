@@ -14,6 +14,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
+#include "TLorentzVector.h"
 
 namespace ucsbsusy {
 
@@ -32,13 +33,11 @@ namespace ucsbsusy {
 
     // Members to hold indices of tree data
     size ifj_rawmass_;
-    size ifj_trimmedmass_;
     size ifj_prunedmass_;
     size ifj_softdropmass_;
-    size ifj_filteredmass_;
-    size ifj_cmstoptagmass_;
-    size ifj_cmstoptagminmass_;
-    size ifj_cmstoptagnsubjets_;
+    //    size ifj_cmstoptagmass_;
+    //    size ifj_cmstoptagminmass_;
+    //    size ifj_cmstoptagnsubjets_;
     //size ifj_massdropfilteredmass_;
     size ifj_tau1_;
     size ifj_tau2_;
@@ -49,7 +48,43 @@ namespace ucsbsusy {
     size ifj_looseId_;
     size ifj_tightId_;
     size ifj_muEnFrac_;
+    size ifj_csv_;
+    size ifj_cvsl_;
+    size ifj_cvsb_;
+    size ifj_nsoftdropsubjets_;
+    size ifj_sdsubjet1_pt_;
+    size ifj_sdsubjet1_eta_;
+    size ifj_sdsubjet1_phi_;
+    size ifj_sdsubjet1_mass_;
+    size ifj_sdsubjet1_csv_;
+    size ifj_sdsubjet2_pt_;
+    size ifj_sdsubjet2_eta_;
+    size ifj_sdsubjet2_phi_;
+    size ifj_sdsubjet2_mass_;
+    size ifj_sdsubjet2_csv_;
 
+    size ifj_puppi_pt_;
+    size ifj_puppi_eta_;
+    size ifj_puppi_phi_;
+    size ifj_puppi_mass_;
+    size ifj_puppi_tau1_;
+    size ifj_puppi_tau2_;
+    size ifj_puppi_tau3_;
+    size ifj_puppi_csv_;
+    size ifj_puppi_cvsl_;
+    size ifj_puppi_cvsb_;
+    size ifj_puppi_nsoftdropsubjets_;
+    size ifj_puppi_sdsubjet1_pt_;
+    size ifj_puppi_sdsubjet1_eta_;
+    size ifj_puppi_sdsubjet1_phi_;
+    size ifj_puppi_sdsubjet1_mass_;
+    size ifj_puppi_sdsubjet1_csv_;
+    size ifj_puppi_sdsubjet2_pt_;
+    size ifj_puppi_sdsubjet2_eta_;
+    size ifj_puppi_sdsubjet2_phi_;
+    size ifj_puppi_sdsubjet2_mass_;
+    size ifj_puppi_sdsubjet2_csv_;
+    size ifj_puppi_sdmass_;
 
   public :
     // Data members
