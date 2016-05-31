@@ -115,7 +115,20 @@ namespace ucsbsusy {
     kTightMu3		= 1UL<<33,
     kLooseMuMVA		= 1UL<<34,
     kMediumMuMVA	= 1UL<<35,
-    kTightMuMVA		= 1UL<<36
+    kTightMuMVA		= 1UL<<36,
+    kVLooseIsoMVARun2newDMwLT     = 1UL<<37,
+    kLooseIsoMVARun2newDMwLT      = 1UL<<38,
+    kMediumIsoMVARun2newDMwLT     = 1UL<<39,
+    kTightIsoMVARun2newDMwLT      = 1UL<<40,
+    kVTightIsoMVARun2newDMwLT     = 1UL<<41,
+    kLooseIsoMVARun2dR03oldDMwLT  = 1UL<<42,
+    kMediumIsoMVARun2dR03oldDMwLT = 1UL<<43,
+    kTightIsoMVARun2dR03oldDMwLT  = 1UL<<44,
+    kVTightIsoMVARun2dR03oldDMwLT = 1UL<<45,
+    kLooseIsoDB3HitsdR03          = 1UL<<46,
+    kMediumIsoDB3HitsdR03         = 1UL<<47,
+    kTightIsoDB3HitsdR03          = 1UL<<48
+
   };
 
   enum TriggerBits {

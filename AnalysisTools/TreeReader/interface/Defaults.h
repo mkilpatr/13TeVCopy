@@ -39,6 +39,7 @@ namespace defaults {
   const std::string BRANCH_AK8PUPPIFATJETS = "ak8puppi";
   const std::string BRANCH_TRIGGERS   = "trig";
   const std::string BRANCH_METFILTERS = "metfilter";
+  const std::string BRANCH_SV         = "sv";
 
   enum CSVWPs {CSVL, CSVM, CSVT};
   const double CSVValues[] = {0.605,0.890,0.970};

@@ -32,6 +32,7 @@ TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
   idxysig_               = data.addMulti<float>(branchName_,"dxysig",0);
   iidflags_              = data.addMulti<unsigned long>(branchName_,"idflags",0);
 
+
   if(options_ & FILLCANDINFO) {
     ileadcand_pt_          = data.addMulti<float>(branchName_,"leadcand_pt",0);
     ileadcand_eta_         = data.addMulti<float>(branchName_,"leadcand_eta",0);
@@ -101,6 +102,18 @@ void TauFiller::initTauIdNames()
   hpsIds_.insert(pair<string, unsigned long>("againstMuonLooseMVA", kLooseMuMVA));
   hpsIds_.insert(pair<string, unsigned long>("againstMuonMediumMVA", kMediumMuMVA));
   hpsIds_.insert(pair<string, unsigned long>("againstMuonTightMVA", kTightMuMVA));
+  hpsIds_.insert(pair<string, unsigned long>("byVLooseIsolationMVArun2v1DBnewDMwLT", kVLooseIsoMVARun2newDMwLT));
+  hpsIds_.insert(pair<string, unsigned long>("byLooseIsolationMVArun2v1DBnewDMwLT" , kLooseIsoMVARun2newDMwLT ));
+  hpsIds_.insert(pair<string, unsigned long>("byMediumIsolationMVArun2v1DBnewDMwLT", kMediumIsoMVARun2newDMwLT));
+  hpsIds_.insert(pair<string, unsigned long>("byTightIsolationMVArun2v1DBnewDMwLT" , kTightIsoMVARun2newDMwLT ));
+  hpsIds_.insert(pair<string, unsigned long>("byVTightIsolationMVArun2v1DBnewDMwLT", kVTightIsoMVARun2newDMwLT));
+  hpsIds_.insert(pair<string, unsigned long>("byLooseIsolationMVArun2v1DBdR03oldDMwLT" , kLooseIsoMVARun2dR03oldDMwLT ));
+  hpsIds_.insert(pair<string, unsigned long>("byMediumIsolationMVArun2v1DBdR03oldDMwLT", kMediumIsoMVARun2dR03oldDMwLT));
+  hpsIds_.insert(pair<string, unsigned long>("byTightIsolationMVArun2v1DBdR03oldDMwLT" , kTightIsoMVARun2dR03oldDMwLT ));
+  hpsIds_.insert(pair<string, unsigned long>("byVTightIsolationMVArun2v1DBdR03oldDMwLT", kVTightIsoMVARun2dR03oldDMwLT));
+  hpsIds_.insert(pair<string, unsigned long>("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03" , kLooseIsoDB3HitsdR03));
+  hpsIds_.insert(pair<string, unsigned long>("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03", kMediumIsoDB3HitsdR03));
+  hpsIds_.insert(pair<string, unsigned long>("byTightCombinedIsolationDeltaBetaCorr3HitsdR03" , kTightIsoDB3HitsdR03));
 
 }
 
@@ -184,6 +197,7 @@ void TauFiller::fill()
       data.fillMulti<float>(iantimumvaraw_, tau.isTauIDAvailable("againstMuonMVAraw") ? tau.tauID("againstMuonMVAraw") : 0.0);
       data.fillMulti<int  >(iantimumvacat_, tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
     }
+
 
   }
   isFilled_ = true;
