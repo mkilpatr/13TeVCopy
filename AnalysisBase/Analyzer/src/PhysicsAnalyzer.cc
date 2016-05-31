@@ -35,6 +35,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
+, sv                  (0)
 {
 
   //-- Dataset info -----------------------------------------------------------
@@ -337,6 +338,15 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(photons);
       break;
     }
+
+  case SV : { 
+    sv = new SecondaryVertexFiller(cfg, consumesCollector(),
+				  0,
+				  branchName == "" ? defaults::BRANCH_SV : branchName
+				  );
+    initializedFillers.push_back(sv);
+    break;
+  }
 
     default : {
       cout << endl << "No settings for type: " << type << " found, maybe you should use the initialization enabling the event setup!" << endl;

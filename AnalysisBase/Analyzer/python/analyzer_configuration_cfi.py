@@ -274,4 +274,10 @@ nominal_configuration = cms.PSet(
                                       hbherun2tight = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
                                       ),
 
+                                  SecondaryVertices = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      primaryvertices   = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                      secondaryvertices = cms.InputTag('slimmedSecondaryVertices'),
+                                      ),
+
                                 )

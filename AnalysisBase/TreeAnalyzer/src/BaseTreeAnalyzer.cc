@@ -233,6 +233,7 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
     break;

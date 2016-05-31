@@ -33,6 +33,7 @@
 #include "AnalysisBase/Analyzer/interface/FatJetFiller.h"
 #include "AnalysisBase/Analyzer/interface/TriggerFiller.h"
 #include "AnalysisBase/Analyzer/interface/METFiltersFiller.h"
+#include "AnalysisBase/Analyzer/interface/SecondaryVertexFiller.h"
 
 namespace ucsbsusy {
 
@@ -58,7 +59,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, TRIGGERS, METFILTERS};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, TRIGGERS, METFILTERS, SV};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -100,6 +101,7 @@ namespace ucsbsusy {
       FatJetFiller      * ak8puppifatjets;
       TriggerFiller     * triggers;
       METFiltersFiller  * metfilters;
+      SecondaryVertexFiller * sv;
     protected:
       //vector of initialized fillers for automatic processing
       std::vector<BaseFiller*> initializedFillers;
