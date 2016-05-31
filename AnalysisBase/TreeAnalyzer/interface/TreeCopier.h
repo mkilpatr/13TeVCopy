@@ -55,7 +55,7 @@ public:
     TreeWriterData * fillingData() {return &data;}
 
   private:
-    void runEvent() {}; //Never used
+    void runEvent() override {}; //Never used
   protected:
     const TString outFileName_;
 
