@@ -78,6 +78,7 @@ nominal_configuration = cms.PSet(
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
                                       loadJecUncFile    = cms.untracked.bool(False),
+                                      fillExtraJetInfo  = cms.untracked.bool(False),
                                       jecLabel          = cms.untracked.string('AK4PFchs'),
                                       jetCorrUncertainty= cms.untracked.string('SubTotalMC'),
                                   ),
@@ -103,6 +104,7 @@ nominal_configuration = cms.PSet(
                                       superJetAssoc      = cms.untracked.InputTag(''),
                                       superJetNsub       = cms.untracked.InputTag(''),
                                       loadJecUncFile     = cms.untracked.bool(False),
+                                      fillExtraJetInfo   = cms.untracked.bool(False),
                                   ),
 
                                   PickyJets = cms.untracked.PSet(
@@ -126,6 +128,7 @@ nominal_configuration = cms.PSet(
                                       superJetAssoc        = cms.untracked.InputTag(''),
                                       superJetNsub         = cms.untracked.InputTag(''),
                                       loadJecUncFile       = cms.untracked.bool(False),
+                                      fillExtraJetInfo     = cms.untracked.bool(False),
                                   ),
 
                                   CASubJets = cms.untracked.PSet(
@@ -150,6 +153,7 @@ nominal_configuration = cms.PSet(
                                       superJetAssoc        = cms.untracked.InputTag('subjetsca','SuperJetIndex'),
                                       superJetNsub         = cms.untracked.InputTag('subjetsca','NCASubjets'),
                                       loadJecUncFile       = cms.untracked.bool(False),
+                                      fillExtraJetInfo     = cms.untracked.bool(False),
                                   ),
 
                                   Muons = cms.untracked.PSet(

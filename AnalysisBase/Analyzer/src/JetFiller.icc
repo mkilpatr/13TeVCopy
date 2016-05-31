@@ -104,7 +104,22 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   ijetpuId_        = data.addMulti<float>(branchName_,"jet_puId"        , 0);
   ijetlooseId_     = data.addMulti<bool> (branchName_,"jet_looseId"     , 0);
   ijettightId_     = data.addMulti<bool> (branchName_,"jet_tightId"     , 0);
-  ijetmuEnFrac_    = data.addMulti<bool> (branchName_,"jet_muEnFrac"    , 0);
+  if(options_ & FILLJETEXTRA) {
+    ijetchHadEnFrac_   = data.addMulti<float> (branchName_,"jet_chHadEnFrac"   , 0);
+    ijetchEmEnFrac_    = data.addMulti<float> (branchName_,"jet_chEmEnFrac"    , 0);
+    ijetmuEnFrac_      = data.addMulti<float> (branchName_,"jet_muEnFrac"      , 0);
+    ijetelEnFrac_      = data.addMulti<float> (branchName_,"jet_elEnFrac"      , 0);
+    ijetneuHadEnFrac_  = data.addMulti<float> (branchName_,"jet_neuHadEnFrac"  , 0);
+    ijetneuEmEnFrac_   = data.addMulti<float> (branchName_,"jet_neuEmEnFrac"   , 0);
+    ijetphoEnFrac_     = data.addMulti<float> (branchName_,"jet_phoEnFrac"     , 0);
+    ijetchMult_        = data.addMulti<int>   (branchName_,"jet_chMult"        , 0);
+    ijetneuMult_       = data.addMulti<int>   (branchName_,"jet_neuMult"       , 0);
+    ijetchHadMult_     = data.addMulti<int>   (branchName_,"jet_chHadMult"     , 0);
+    ijetelMult_        = data.addMulti<int>   (branchName_,"jet_elMult"        , 0);
+    ijetmuMult_        = data.addMulti<int>   (branchName_,"jet_muMult"        , 0);
+    ijetneuHadMult_    = data.addMulti<int>   (branchName_,"jet_neuHadMult"    , 0);
+    ijetphoMult_       = data.addMulti<int>   (branchName_,"jet_phoMult"       , 0);
+  }
   ijetcsv_         = data.addMulti<float>(branchName_,"jet_csv"         , 0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
 
@@ -329,7 +344,22 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetcsv_     ,0);
       data.fillMulti<bool> (ijetlooseId_ ,false);
       data.fillMulti<bool> (ijettightId_ ,false);
-      data.fillMulti<bool> (ijetmuEnFrac_,false);
+      if(options_ & FILLJETEXTRA) {
+        data.fillMulti<float> (ijetchHadEnFrac_   ,0);
+        data.fillMulti<float> (ijetchEmEnFrac_    ,0);
+        data.fillMulti<float> (ijetmuEnFrac_      ,0);
+        data.fillMulti<float> (ijetelEnFrac_      ,0);
+        data.fillMulti<float> (ijetneuHadEnFrac_  ,0);
+        data.fillMulti<float> (ijetneuEmEnFrac_   ,0);
+        data.fillMulti<float> (ijetphoEnFrac_     ,0);
+        data.fillMulti<int>   (ijetchMult_        ,0);
+        data.fillMulti<int>   (ijetneuMult_       ,0);
+        data.fillMulti<int>   (ijetchHadMult_     ,0);
+        data.fillMulti<int>   (ijetelMult_        ,0);
+        data.fillMulti<int>   (ijetmuMult_        ,0);
+        data.fillMulti<int>   (ijetneuHadMult_    ,0);
+        data.fillMulti<int>   (ijetphoMult_       ,0);
+      }
       if(options_ & LOADSUPER) {
         data.fillMulti<int16>(ijetsuperindex_,-1);
       }
@@ -356,7 +386,22 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
     data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
-    data.fillMulti<bool> (ijetmuEnFrac_,JetFunctions::passMuonEnergyFraction(j));
+    if(options_ & FILLJETEXTRA) {
+      data.fillMulti<float> (ijetchHadEnFrac_   ,j.chargedHadronEnergyFraction());
+      data.fillMulti<float> (ijetchEmEnFrac_    ,j.chargedEmEnergyFraction());
+      data.fillMulti<float> (ijetmuEnFrac_      ,j.muonEnergyFraction());
+      data.fillMulti<float> (ijetelEnFrac_      ,j.electronEnergyFraction());
+      data.fillMulti<float> (ijetneuHadEnFrac_  ,j.neutralHadronEnergyFraction());
+      data.fillMulti<float> (ijetneuEmEnFrac_   ,j.neutralEmEnergyFraction());
+      data.fillMulti<float> (ijetphoEnFrac_     ,j.photonEnergyFraction());
+      data.fillMulti<int>   (ijetchMult_        ,j.chargedMultiplicity());
+      data.fillMulti<int>   (ijetneuMult_       ,j.neutralMultiplicity());
+      data.fillMulti<int>   (ijetchHadMult_     ,j.chargedHadronMultiplicity());
+      data.fillMulti<int>   (ijetelMult_        ,j.electronMultiplicity());
+      data.fillMulti<int>   (ijetmuMult_        ,j.muonMultiplicity());
+      data.fillMulti<int>   (ijetneuHadMult_    ,j.neutralHadronMultiplicity());
+      data.fillMulti<int>   (ijetphoMult_       ,j.photonMultiplicity());
+    }
 
 
 

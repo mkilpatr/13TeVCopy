@@ -9,10 +9,12 @@
 #include "AnalysisTools/DataFormats/interface/Photon.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/WPolCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
+
 
 #include <iostream>
 
@@ -176,10 +178,12 @@ namespace cfgSet {
   class CorrectionConfig : public BaseConfig {
   public:
     int ttbarCorrections;
+    int wpolCorrections;
     int eventCorrections;
     int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
+
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
@@ -218,9 +222,11 @@ namespace cfgSet {
     TString jetResTailFile;
     ucsbsusy::CORRTYPE jetResTailCorrType;
 
+    ucsbsusy::CORRTYPE metResSystRunIType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
+        wpolCorrections(ucsbsusy::WPolCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
@@ -241,7 +247,8 @@ namespace cfgSet {
         jetResCorrType(ucsbsusy::NONE),
         jetScaleCorr(ucsbsusy::NONE),
         jetResTailFile(1),
-        jetResTailCorrType(ucsbsusy::NONE)
+      jetResTailCorrType(ucsbsusy::NONE),
+      metResSystRunIType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -251,6 +258,14 @@ namespace cfgSet {
         os << std::endl;
 
       }
+
+      if(a.wpolCorrections != ucsbsusy::WPolCorrectionSet::NULLOPT){
+        os << "Applying wpol = ";
+	if(a.wpolCorrections & ucsbsusy::WPolCorrectionSet::WPOLWGT)   { os << "WPOL WGT ";   }
+        os << std::endl;
+
+      }
+
       if(a.eventCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){
         os << "Applying event corrections from " << a.eventCorrectionFile.Data() <<" -> ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::PU)
@@ -308,6 +323,8 @@ namespace cfgSet {
           os << "JetResolution ("<< a.jetResCorrType<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL)
           os << "QCDJetRespTail ("<< a.jetResTailCorrType<<")";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNI)
+          os << "METResolutionSystRunI ";
         os << std::endl;
       }
       return os;

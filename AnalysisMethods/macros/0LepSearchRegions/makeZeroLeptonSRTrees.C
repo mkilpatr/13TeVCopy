@@ -32,6 +32,10 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_750_100",
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
+  // CHF filter for FastSim
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
+
+
   a.analyze(10000);
 
   //a.analyze(10000,100000);

@@ -7,3 +7,6 @@
 [submodule "AnalysisTools/RooUnfold"]
 	path = AnalysisTools/RooUnfold
 	url = git@github.com:UCSBSusy/RooUnfold.git
+[submodule "AnalysisTools/OptiMass"]
+	path = AnalysisTools/OptiMass
+	url = https://github.com/ASPatterson/OptiMass-v1.0.3.git

@@ -26,7 +26,8 @@ public :
                           , LOADGEN         = (1 <<  1)   ///< load gen jets
                           , LOADJETSHAPE    = (1 <<  2)   ///< load jet shap variables
                           , LOADTOPASSOC    = (1 <<  3)   ///< load top - jet assoc
-                          , FILLOBJ         = (1 <<  4)   ///< Fill objects (as opposed to just pointers
+                          , LOADJETEXTRA    = (1 <<  4)   ///< load extra jet info
+                          , FILLOBJ         = (1 <<  5)   ///< Fill objects (as opposed to just pointers
   };
   static const int defaultOptions;
 
@@ -79,6 +80,21 @@ public:
   std::vector<size16>* genAssocPrtIndex_;
   std::vector<size16>* genAssocJetIndex_;
   std::vector<int8>*   genAssocCont_;
+  //for jet extra
+  std::vector<float>* jetchHadEnFrac_ ;
+  std::vector<float>* jetchEmEnFrac_  ;
+  std::vector<float>* jetmuEnFrac_    ;
+  std::vector<float>* jetelEnFrac_    ;
+  std::vector<float>* jetneuHadEnFrac_;
+  std::vector<float>* jetneuEmEnFrac_ ;
+  std::vector<float>* jetphoEnFrac_   ;
+  std::vector<int>  * jetchMult_      ;
+  std::vector<int>  * jetneuMult_     ;
+  std::vector<int>  * jetchHadMult_   ;
+  std::vector<int>  * jetelMult_      ;
+  std::vector<int>  * jetmuMult_      ;
+  std::vector<int>  * jetneuHadMult_  ;
+  std::vector<int>  * jetphoMult_     ;
 
 
   //the actual jet collection

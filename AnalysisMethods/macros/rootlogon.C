@@ -4,6 +4,7 @@
   //gROOT->ProcessLine("#include<vector>");
   gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libAnalysisMethodsPlotUtils.so");
   gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libAnalysisBaseTreeAnalyzer.so");
+  gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libAnalysisToolsOptiMass.so");
   // temporary fix ... suppress warnings from Parang for now
   TString makeshared(gSystem->GetMakeSharedLib());
   TString dummy = makeshared.ReplaceAll("-W ", "");

@@ -230,6 +230,39 @@ CylLorentzVectorF METResCorr::getCorrectedMET(const CylLorentzVectorF& trueBoson
 
 }
 
+
+  METResSystRunI::METResSystRunI() : Correction("METResSyst"){}
+  //  CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF*> jets, CylLorentzVectorF met) const {
+  CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const {
+  //  CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const {
+
+    if(corrType == NONE || corrType == NOMINAL) { return met; }
+
+    // calculate clustered met
+    CylLorentzVectorF clusteredmet; clusteredmet.SetPxPyPzE(0.,0.,0.,0.);
+    for (auto& j : jets) {
+      if (j.pt() > 15) { clusteredmet -= j.p4(); }
+    }
+
+    // calculate unclustered met
+    CylLorentzVectorF unclusteredmet; unclusteredmet.SetPxPyPzE(0.,0.,0.,0.);
+    unclusteredmet = met - clusteredmet;
+
+    // scale the unclusteredmet
+    float scale = 0.;
+    if (corrType == UP)   { scale = 1.1; }
+    if (corrType == DOWN) { scale = 0.9; }
+    unclusteredmet.SetPxPyPzE(scale*unclusteredmet.px(),scale*unclusteredmet.py(),unclusteredmet.pz(),unclusteredmet.E());
+
+    // recalculate met
+    CylLorentzVectorF modifiedmet; modifiedmet.SetPxPyPzE(0.,0.,0.,0.);
+    modifiedmet = clusteredmet + unclusteredmet;
+
+    return modifiedmet;
+}
+
+
+
 float METNoHFScaleCorr::scaleCorr(float trueMETPT) const {
   double x = std::min(std::max(20.0,double(trueMETPT)),300.0);
   return ( (-0.0569193 -2.10679/x -52.8809/(x*x)) - (-0.00187469 -2.90383/x -33.1923/(x*x) ) );
@@ -266,7 +299,7 @@ CylLorentzVectorF METNoHFResCorr::getCorrectedMET(const CylLorentzVectorF& trueB
 }
 JetAndMETCorrectionSet::JetAndMETCorrectionSet(): metScale(0),metResolution(0), jetResolution(0), jetScale(0), metNoHFScale(0), metNoHFResolution(0)
 ,originalMET(new MomentumF),correctedMET(new MomentumF),originalMETNoHF(new MomentumF),correctedMETNoHF(new MomentumF),
-trueBosons(new CylLorentzVectorF),trueMET(new CylLorentzVectorF),respTailWeight(1)
+trueBosons(new CylLorentzVectorF),trueMET(new CylLorentzVectorF),respTailWeight(1),metResolutionSystRunI(0)
 {}
 JetAndMETCorrectionSet::~JetAndMETCorrectionSet(){
   delete originalMET;
@@ -302,6 +335,10 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
   if(options_ & QCDRESPTAIL){
     respTail = new RespTailCorr(jetResponseTailFile);
     corrections.push_back(respTail);
+  }
+  if(options_ & METRESSYSTRUNI){
+    metResolutionSystRunI = new METResSystRunI;
+    corrections.push_back(metResolutionSystRunI);
   }
 }
 
@@ -363,6 +400,8 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
 
 
   CylLorentzVectorF tempMET = correctedMET->p4();
+  CylLorentzVectorF origMET = originalMET->p4();
+
 
   if(metResolution) {
     tempMET = metResolution->getCorrectedMET(*trueBosons,*trueMET,tempMET);
@@ -370,6 +409,12 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
   if(metScale) {
     tempMET = metScale->getCorrectedMET(*trueBosons,tempMET);
   }
+  if(metResolutionSystRunI) { 
+    //    tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets->recoJets, origMET);
+    tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets->recoJets, origMET);
+    //    tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets, origMET);
+  }
+
   correctedMET->setP4(tempMET);
 
   CylLorentzVectorF tempMETNoHF = correctedMETNoHF->p4();

@@ -1,10 +1,11 @@
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "AnalysisMethods/macros/0LepSearchRegions/T2fbdHelper.hh"
+#include "AnalysisMethods/macros/0LFBDSearchRegions/T2fbdHelper.hh"
 #endif
 
 using namespace ucsbsusy;
 
-void makeZeroLeptonSRTreesFBDMETplusLepCS(TString sname = "htmht",
+void makeZeroLeptonMETplusLepCRFBD(TString sname = "htmht",
 					  const int fileindex = -1,
 					  const bool isMC = false,
 					  const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
@@ -26,18 +27,19 @@ void makeZeroLeptonSRTreesFBDMETplusLepCS(TString sname = "htmht",
   
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
-
-  // disable JetID for signal samples
-  if (sname.Contains("T2tt")) pars.jets.applyJetID = false;
-  pars.jets.cleanJetsvLeptons = true; // comment it if you want search region - this is only for 1lep control sample with lep added back to met
+  pars.jets.cleanJetsvLeptons = true; // only for 1lep control sample with lep added back to met
   pars.electrons              = LeptonSelection::zl_ctr_sLep_electrons;
   pars.muons                  = LeptonSelection::zl_ctr_sLep_muons;
-  pars.secondaryElectrons     = LeptonSelection::zl_ctr_sLep_sec_electrons;
-  pars.secondaryMuons         = LeptonSelection::zl_ctr_sLep_sec_muons;
 
+  // disable jetID for FastSim
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) pars.jets.applyJetID = false;
 
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
+  a.addlep2met = true;
+
+  // CHF filter for FastSim
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
 
   a.analyze(1000000);
 

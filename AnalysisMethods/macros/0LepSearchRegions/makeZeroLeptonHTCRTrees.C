@@ -42,7 +42,9 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       filler.fillEventInfo(&data, this);
       if(isMC()) filler.fillGenInfo  (&data, 0, genJets, false);
       filler.fillJetInfo  (&data, jets, bJets, met);
-      filler.fillTopTagInfo(&data,this, jets);
+      //m2Filler.fillM2Info(&data,this,M2TreeFiller::TTBAR_1L);
+      //cttFiller.fillTopTagInfo(&data,this,jets);
+      //hettFiller.fillHettInfo(&data,this,jets,hettTops);
       return true;
     }
 
@@ -70,20 +72,11 @@ void makeZeroLeptonHTCRTrees(TString sname = "ww2l",
   cfgSet::ConfigSet pars = pars0lep(json);
   pars = cfgSet::zl_search_set;
   pars.corrections.eventCorrectionFile =  TString::Format("%s/src/data/corrections/eventCorr_allData.root",cfgSet::CMSSW_BASE);
-  pars.jets.cleanJetsvSelectedLeptons = true;
-  pars.selectedLeptons = cfgSet::ol_sel_leptons;
-  pars.selectedLeptons.minEPt = 10.0;
-  pars.selectedLeptons.maxEEta = 2.1;
-  pars.selectedLeptons.maxED0 = 0.02;
-  pars.selectedLeptons.maxEDz = 0.1;
-  pars.selectedLeptons.minMuPt = 10.0;
-  pars.selectedLeptons.maxMuEta = 2.4;
-  pars.vetoedLeptons = cfgSet::ol_veto_leptons;
-
+  pars.jets.cleanJetsvLeptons = true;
 
   OneLepCRAnalyzer a(fullname, "Events", outfilename, fileindex+ 2, isMC, &pars);
 
-  //  a.analyze(100000,50000);
+  //a.analyze(10000,5000);
   a.analyze(100000);
 
 

@@ -46,6 +46,7 @@ public:
                           , SAVEQGL         = (1 <<  4)   ///< save the quark-gluon likelihood (for AK4 jets)
                           , LOADSUPER       = (1 <<  5)   ///< load links to super jets
                           , LOADUNCFROMFILE = (1 <<  6)   ///< load jet uncertainties from external file
+                          , FILLJETEXTRA    = (1 <<  7)   ///< additional info about jet energy fractions and multiplicities
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
@@ -96,7 +97,20 @@ public:
       size ijetpuId_     ;
       size ijetlooseId_  ;
       size ijettightId_  ;
-      size ijetmuEnFrac_ ;
+      size ijetchHadEnFrac_ ;
+      size ijetchEmEnFrac_  ;
+      size ijetmuEnFrac_    ;
+      size ijetelEnFrac_    ;
+      size ijetneuHadEnFrac_;
+      size ijetneuEmEnFrac_ ;
+      size ijetphoEnFrac_   ;
+      size ijetchMult_      ;
+      size ijetneuMult_     ;
+      size ijetchHadMult_   ;
+      size ijetelMult_      ;
+      size ijetmuMult_      ;
+      size ijetneuHadMult_  ;
+      size ijetphoMult_     ;
       size ijetcsv_      ;
       size ijetarea_     ;
       size ijetgenindex_ ;

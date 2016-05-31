@@ -123,6 +123,12 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       ttbarCorrections.load(configSet.corrections.ttbarCorrectionFile,configSet.corrections.ttbarCorrections);
       corrections.push_back(&ttbarCorrections);
     }
+
+    if(configSet.corrections.wpolCorrections != WPolCorrectionSet::NULLOPT){
+      wpolCorrections.load(configSet.corrections.wpolCorrections);
+      corrections.push_back(&wpolCorrections);
+    }
+
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
       eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
@@ -324,7 +330,7 @@ void BaseTreeAnalyzer::processVariables()
   if(fatJetPuppiReader.isLoaded()){
     fatJetsPuppi.clear();
     fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
-    for(auto& p : fatJetPuppiReader.fatJets) fatJets.push_back(&p);
+    for(auto& p : fatJetPuppiReader.fatJets) fatJetsPuppi.push_back(&p);
   }
 
   if(trigObjReader.isLoaded()){
