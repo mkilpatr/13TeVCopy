@@ -59,13 +59,6 @@ def get_num_events(filelist, prefix='', wgtsign=1, treename='TestAnalyzer/Events
             totentries += tree.GetEntries('genweight<0')
     return totentries
 
-def is_extension(sample):
-    if re.search(r'-ext[0-9]*$', sample) and re.sub(r'-ext[0-9]*$', '', sample) in samples:
-        print sample, 'is an extension sample, continue...'
-        return True
-    else:
-        return False
-
 processes = []
 samples = []
 xsecs = []
@@ -74,25 +67,31 @@ totnposevents = []
 totnnegevents = []
 xsecfiles = []
 
-with open(args.input, "r") as f :
-    for line in f :
-        content = line.split()
-        if "#" in content[0] :
-            continue
-        processes.append(content[0])
-        samples.append(content[1])
-        xsecs.append(content[2])
-        datasets.append(content[3])
-        if len(content) > 4 :
-            xsecfiles.append(content[4])
-        else :
-            xsecfiles.append("NONE")
+def parseConfig(removeExtension=False):
+    with open(args.input, "r") as f :
+        for line in f :
+            content = line.split()
+            if "#" in content[0] :
+                continue
+            if removeExtension and re.search(r'-ext[0-9]*$', content[1]):
+                print content[1], 'is an extension sample, will not be proecessed in this step...'
+                continue
+            processes.append(content[0])
+            samples.append(content[1])
+            xsecs.append(content[2])
+            datasets.append(content[3])
+            if len(content) > 4 :
+                xsecfiles.append(content[4])
+            else :
+                xsecfiles.append("NONE")
 
 eos = "/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
 os.system("mkdir -p %s" % args.jobdir)
 
 if args.makegrid :
+    parseConfig(True)
+
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
         os.system("%s mkdir -p %s" % (eos, args.outdir))
     else :
@@ -103,7 +102,6 @@ if args.makegrid :
     prefix = ""
     snames = {}
     for sample in samples :
-        if is_extension(sample): continue
         filelist = []
         snames[sample] = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
@@ -158,7 +156,6 @@ echo "$runscript $runmacro $workdir $outputdir"
 """.format(stype=args.submittype))
 
     for sample in samples :
-        if is_extension(sample): continue
         for masspoint in snames[sample] :
             submitfile = '%s/filelist_%s.txt' % (args.jobdir, masspoint)
             with open(submitfile, 'w') as f :
@@ -214,6 +211,7 @@ rm submit.cmd""".format(
     exit()
 
 elif args.postprocess :
+    parseConfig(True)
 
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
         os.system("%s mkdir -p %s" % (eos, args.outdir))
@@ -223,7 +221,6 @@ elif args.postprocess :
     files = []
     prefix = ""
     for isam in range(len(samples)) :
-        if is_extension(samples[isam]): continue
         filelist = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             cmd = ("%s find -f %s | egrep '%s(-ext[0-9]*|)(_[0-9]+|)_ntuple.root'" % (eos, args.outdir, samples[isam]))
@@ -269,7 +266,6 @@ echo "$runscript $runmacro $workdir $outputdir"
 """.format(stype=args.submittype))
 
     for isam in range(len(samples)) :
-        if is_extension(samples[isam]): continue
         for ifile in range(len(files[isam])) :
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root", "_{}.root".format(args.postsuffix))
@@ -318,6 +314,7 @@ rm submit.cmd""".format(
     exit()
 
 elif args.runmerge :
+    parseConfig(False)
 
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
         os.system("%s mkdir -p %s" % (eos, args.outdir))
@@ -379,6 +376,7 @@ elif args.runmerge :
     os.system("chmod +x submitmerge.sh")
 
 elif args.submittype == 'crab':
+    parseConfig(False)
 
     print "Creating crab config files: "
     crab_configs = []
@@ -413,6 +411,7 @@ elif args.submittype == 'crab':
     os.system("chmod +x %s.sh" % args.submit)
 
 else :
+    parseConfig(False)
 
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
         os.system("%s mkdir -p %s" % (eos, args.outdir))
