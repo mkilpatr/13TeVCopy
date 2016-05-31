@@ -83,15 +83,19 @@
        for(unsigned int iB = 0; iB < nBootStraps; ++iB)
          delete bootFormulas[iB];
 
-       if(underOverflow){
+       if(underflow){
          PlotTools::toUnderflow(hN);
-         PlotTools::toOverflow(hN);
          PlotTools::toUnderflow(hD);
-         PlotTools::toOverflow(hD);
          if(nBootStraps){
            PlotTools::toUnderflowX(hbN);
-           PlotTools::toOverflowX(hbN);
            PlotTools::toUnderflowX(hbD);
+         }
+       }
+       if(overflow){
+         PlotTools::toOverflow(hN);
+         PlotTools::toOverflow(hD);
+         if(nBootStraps){
+           PlotTools::toOverflowX(hbN);
            PlotTools::toOverflowX(hbD);
          }
        }
@@ -157,10 +161,11 @@
 
     tree->Draw(TString::Format("%s>>+%s",plotInfo->var.Data(),name.Data()),sel,"goff");
 
-    if(underOverflow){
+    if(underflow)
       PlotTools::toUnderflow(h);
+    if(overflow)
       PlotTools::toOverflow(h);
-    }
+
     return h;
   }
 
@@ -210,11 +215,15 @@
      for(unsigned int iB = 0; iB < nBootStraps; ++iB)
        delete bootFormulas[iB];
 
-     if(underOverflow){
+     if(underflow){
        PlotTools::toUnderflow(h);
-       PlotTools::toOverflow(h);
        if(nBootStraps){
          PlotTools::toUnderflowX(hb);
+       }
+     }
+     if(overflow){
+       PlotTools::toOverflow(h);
+       if(nBootStraps){
          PlotTools::toOverflowX(hb);
        }
      }

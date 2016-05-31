@@ -55,6 +55,20 @@ JetReader::JetReader() : BaseReader(){
   genAssocPrtIndex_ = new std::vector<size16>;
   genAssocJetIndex_ = new std::vector<size16>;
   genAssocCont_     = new std::vector<int8>  ;
+  jetchHadEnFrac_   = new std::vector<float>;
+  jetchEmEnFrac_    = new std::vector<float>;
+  jetmuEnFrac_      = new std::vector<float>;
+  jetelEnFrac_      = new std::vector<float>;
+  jetneuHadEnFrac_  = new std::vector<float>;
+  jetneuEmEnFrac_   = new std::vector<float>;
+  jetphoEnFrac_     = new std::vector<float>;
+  jetchMult_        = new std::vector<int>  ;
+  jetneuMult_       = new std::vector<int>  ;
+  jetchHadMult_     = new std::vector<int>  ;
+  jetelMult_        = new std::vector<int>  ;
+  jetmuMult_        = new std::vector<int>  ;
+  jetneuHadMult_    = new std::vector<int>  ;
+  jetphoMult_       = new std::vector<int>  ;
 
 }
 
@@ -80,6 +94,8 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
     treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_);
+    treeReader->setBranchAddress(branchName_,"jet_chHadEnFrac"  ,&jetchHadEnFrac_  );
+
   }
   if(options_ & LOADGEN){
     clog << "gen ";
@@ -118,6 +134,22 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"prtassoc_jetIndex"    , &genAssocJetIndex_);
     treeReader->setBranchAddress(branchName_,"prtassoc_jetCont"     , &genAssocCont_    );
   }
+  if(options_ & LOADJETEXTRA){
+    clog <<"jetextra ";
+    treeReader->setBranchAddress(branchName_,"jet_chEmEnFrac"   ,&jetchEmEnFrac_   );
+//    treeReader->setBranchAddress(branchName_,"jet_muEnFrac"     ,&jetmuEnFrac_     ); //I think ttbar must ahve this branch already???
+    treeReader->setBranchAddress(branchName_,"jet_elEnFrac"     ,&jetelEnFrac_     );
+    treeReader->setBranchAddress(branchName_,"jet_neuHadEnFrac" ,&jetneuHadEnFrac_ );
+    treeReader->setBranchAddress(branchName_,"jet_neuEmEnFrac"  ,&jetneuEmEnFrac_  );
+    treeReader->setBranchAddress(branchName_,"jet_phoEnFrac"    ,&jetphoEnFrac_    );
+    treeReader->setBranchAddress(branchName_,"jet_chMult"       ,&jetchMult_       );
+    treeReader->setBranchAddress(branchName_,"jet_neuMult"      ,&jetneuMult_      );
+    treeReader->setBranchAddress(branchName_,"jet_chHadMult"    ,&jetchHadMult_    );
+    treeReader->setBranchAddress(branchName_,"jet_elMult"       ,&jetelMult_       );
+    treeReader->setBranchAddress(branchName_,"jet_muMult"       ,&jetmuMult_       );
+    treeReader->setBranchAddress(branchName_,"jet_neuHadMult"   ,&jetneuHadMult_   );
+    treeReader->setBranchAddress(branchName_,"jet_phoMult"      ,&jetphoMult_      );
+  }
   if(options_ & FILLOBJ)
     clog << "+Objects";
   clog << endl;
@@ -152,7 +184,8 @@ void JetReader::addRecoJetToObjectList(const int iJ){
   GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
    recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
-                               (*jetlooseId_)[iJ], matchedGen);
+                               (*jetlooseId_)[iJ],  matchedGen);
+  recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -168,6 +201,7 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetpuId_       ->push_back(1);
   jetlooseId_    ->push_back(inJet->looseid());
   jettightId_    ->push_back(1);
+  jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
   jetcsv_        ->push_back(inJet->csv());
   jetarea_       ->push_back(0);
   jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );

@@ -189,6 +189,7 @@ public:
     // Correction sets
     //--------------------------------------------------------------------------------------------------
     TtbarCorrectionSet  ttbarCorrections;
+    WPolCorrectionSet   wpolCorrections;
     EventCorrectionSet  eventCorrections;
     LeptonCorrectionSet leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;

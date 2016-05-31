@@ -97,6 +97,15 @@ public:
   CylLorentzVectorF getCorrectedMET(const CylLorentzVectorF& trueBosons,const CylLorentzVectorF& trueMET, CylLorentzVectorF met) const;
 };
 
+class METResSystRunI : public Correction {
+public:
+  METResSystRunI();
+  float get() const {return 1.0;}
+  //  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF*> jets, CylLorentzVectorF met) const;
+  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const;
+  //  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const;
+};
+
 class METNoHFScaleCorr : public Correction {
 public:
   METNoHFScaleCorr() : Correction("METNoHFScale") {}
@@ -121,6 +130,7 @@ public:
                           , JETRESOLUTION         = (1 <<  2)   ///< Correct jet Resolution
                           , JETSCALE              = (1 <<  3)   ///< Correct jet Scale
                           , QCDRESPTAIL           = (1 <<  4)   ///< Correct response tail in QCD
+			  , METRESSYSTRUNI        = (1 <<  5)   ///< MET Resolution RunI syst
   };
   JetAndMETCorrectionSet();
   virtual ~JetAndMETCorrectionSet();
@@ -163,6 +173,8 @@ private:
   CylLorentzVectorF * trueMET; //neutrinos from EWK bosons or LSPs
 
   float respTailWeight;
+
+  METResSystRunI *metResolutionSystRunI;
 };
 
 

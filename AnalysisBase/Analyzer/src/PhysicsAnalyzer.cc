@@ -151,6 +151,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
       if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= PatJetFiller::LOADUNCFROMFILE;
+      if(cfg.getUntrackedParameter<bool>("fillExtraJetInfo"))           defaultOptions |= PatJetFiller::FILLJETEXTRA;
 
       ak4Jets = new PatJetFiller(cfg, consumesCollector(),
                                  options < 0 ? defaultOptions : options,
@@ -170,6 +171,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
       if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= RecoJetFiller::LOADUNCFROMFILE;
+      if(cfg.getUntrackedParameter<bool>("fillExtraJetInfo"))           defaultOptions |= RecoJetFiller::FILLJETEXTRA;
 
       puppiJets = new RecoJetFiller(cfg, consumesCollector(),
                                     options < 0 ? defaultOptions : options,

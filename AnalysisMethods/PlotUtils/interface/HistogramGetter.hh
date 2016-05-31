@@ -73,11 +73,11 @@ public:
 
 public:
   BasicPlotInfo * plotInfo;
-  HistogramGetter(BasicPlotInfo * plotInfo) : plotInfo(plotInfo), nBootStraps(0), underOverflow(true) {}
+  HistogramGetter(BasicPlotInfo * plotInfo) : plotInfo(plotInfo), nBootStraps(0), underflow(false), overflow(true) {}
   HistogramGetter(TString name,TString var,TString xTitle,int nBins,const double* bins) :
-    plotInfo(new SetBinsPlotInfo(name,var,xTitle,nBins, bins)), nBootStraps(0), underOverflow(true) {}
+    plotInfo(new SetBinsPlotInfo(name,var,xTitle,nBins, bins)), nBootStraps(0), underflow(false), overflow(true) {}
   HistogramGetter(TString name,TString var,TString xTitle,int nBins,double minX,double maxX) :
-    plotInfo(new MinMaxPlotInfo(name,var,xTitle,nBins, minX,maxX)), nBootStraps(0), underOverflow(true) {}
+    plotInfo(new MinMaxPlotInfo(name,var,xTitle,nBins, minX,maxX)), nBootStraps(0), underflow(false), overflow(true) {}
 
   //Get a histogram with the loaded plotInfo, but set your own weight and selection string
   TH1F * getHistogram(TTree* tree,TString histSelection,TString histWeight, TString histSampleName = "");
@@ -94,6 +94,9 @@ public:
   //For when you want to flip between bootstrapping for the same getter
   void setNBS(int newBS) {nBootStraps = newBS;}
 
+  // Set underflow and overflow
+  void setUnderOverflow(bool addUnderflow, bool addOverflow) { underflow = addUnderflow; overflow = addOverflow; }
+
 private:
   TH1F * getHistogram(TTree* tree);
   TH1F*  getHistogramManual(TTree * tree);
@@ -104,7 +107,8 @@ private:
   TString weight;
   TString sampleName;
   unsigned int nBootStraps;
-  bool underOverflow;
+  bool underflow;
+  bool overflow;
 
 };
 

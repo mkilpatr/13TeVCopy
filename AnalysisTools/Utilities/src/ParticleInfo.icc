@@ -23,6 +23,31 @@ bool ParticleInfo::isLastInChain(const Particle* particle, bool (*selectID)(int)
   return true;
 }
 //_____________________________________________________________________________
+template<typename Particle>
+bool ParticleInfo::isGenTopHadronic(const Particle* particle) {
+  int topPdgid = TMath::Abs(particle->pdgId());
+  if(topPdgid != ParticleInfo::p_t) return false;
+
+  for(unsigned int iD = 0; iD < particle->numberOfDaughters(); ++iD){
+    const Particle* dau = particle->daughter(iD);
+    int dauPdgid = TMath::Abs(dau->pdgId());
+    if(dauPdgid == ParticleInfo::p_t) {
+      return ParticleInfo::isGenTopHadronic(dau); // recurse to last top in chain
+    }
+  }
+
+  for(unsigned int iD = 0; iD < particle->numberOfDaughters(); ++iD){
+    auto dau = ParticleInfo::getFinal(particle->daughterRef(iD));
+    int dauPdgid = TMath::Abs(dau->pdgId());
+    if(dauPdgid != ParticleInfo::p_Wplus) continue;  // find W daughter
+    auto w = ParticleInfo::getFinal(dau); // last W in chain    
+    for(unsigned int iWD = 0; iWD < w->numberOfDaughters(); ++iWD){
+      if( ParticleInfo::isLeptonOrNeutrino(w->daughter(iWD)->pdgId()) ) return false; // no need for last in chain here
+    }
+  }
+  return true;
+}
+//_____________________________________________________________________________
 template<typename ParticleRef>
 ParticleRef ParticleInfo::getFinal(ParticleRef particle, int maxNumDaughters)
 {

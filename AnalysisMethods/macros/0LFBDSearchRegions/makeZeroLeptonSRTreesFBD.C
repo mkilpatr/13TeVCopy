@@ -1,5 +1,6 @@
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "AnalysisMethods/macros/0LepSearchRegions/T2fbdHelper.hh"
+#include "AnalysisMethods/macros/0LFBDSearchRegions/T2fbdHelper.hh"
 #endif
 
 using namespace ucsbsusy;
@@ -26,12 +27,14 @@ void makeZeroLeptonSRTreesFBD(TString sname = "htmht",
   
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
-
-  // disable JetID for signal samples
-  if (sname.Contains("T2tt")) pars.jets.applyJetID = false;
+  // disable jetID for FastSim
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) pars.jets.applyJetID = false;
 
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
+
+  // CHF filter for FastSim
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
 
   a.analyze(1000000);
 

@@ -1,9 +1,9 @@
-#include "../interface/Plot.hh"
-#include "../interface/StyleTools.hh"
-#include "../interface/PlotROCCurves.h"
-#include "../interface/EffPlotTools.hh"
-#include "../interface/PlotStuff.h"
-#include "../interface/SFGetter.hh"
+#include "AnalysisMethods/PlotUtils/interface/Plot.hh"
+#include "AnalysisMethods/PlotUtils/interface/StyleTools.hh"
+#include "AnalysisMethods/PlotUtils/interface/PlotROCCurves.h"
+#include "AnalysisMethods/PlotUtils/interface/EffPlotTools.hh"
+#include "AnalysisMethods/PlotUtils/interface/PlotStuff.h"
+#include "AnalysisMethods/PlotUtils/interface/SFGetter.hh"
 
 #ifdef __CINT__
 #pragma link off all globals;

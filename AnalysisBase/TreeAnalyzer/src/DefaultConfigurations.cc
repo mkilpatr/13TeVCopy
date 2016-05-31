@@ -108,6 +108,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
 
+  standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::NULLOPT;
+
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/lepCorr.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
@@ -122,6 +124,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.jetResCorrType           = ucsbsusy::NONE;
   standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends_Summer15_25nsV6_MC_PtResolution_AK4PFchs.root",CMSSW_BASE);
   standardCorrections.jetResCorrFile           = TString::Format("%s/src/data/corrections/ak4JetResCorr_Summer15_25nsV6_MC_PtResolution_AK4PFchs.root",CMSSW_BASE);
+
+  standardCorrections.metResSystRunIType       = ucsbsusy::NONE;
 
   standardCorrections.jetResTailFile           = TString::Format("%s/src/data/corrections/qcdJetRespTailCorr.root",CMSSW_BASE);
   standardCorrections.jetResTailCorrType       = ucsbsusy::NOMINAL;

@@ -19,20 +19,18 @@ public:
   }
 
   virtual bool fillEvent() {
+//    if(met->pt() < 200) return false;
+//    if(nJets < 2 || jets[0]->pt() < 75) return false;
     return true;
   }
 
   void book() {
   }
-
-
 };
-
 
 #endif
 
-void QCDSkimmer(string fileName, int fileIndex = -1, string treeName = "Events", string outPostfix ="qcdSkim", bool isMC = true) {
-
+void QCDSkimmer(string fileName = "root://cmsxrootd.fnal.gov//store/user/jzabel/13TeV/skims/qcd_noSmearing/qcd_ht200to300_1_ntuple_postproc_1_qcdSkim.root", int fileIndex = -1,  string treeName = "Events", string outPostfix ="qcdSkim", string dummy = "", bool isMC = true, int startEvent =-1, int maxEvents = -1) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
 
@@ -42,8 +40,7 @@ void QCDSkimmer(string fileName, int fileIndex = -1, string treeName = "Events",
   if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
   TString outName = fileIndex < 0 ? TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str()) : TString::Format("%s_%i_%s.root",prefix.Data(),fileIndex,outPostfix.c_str());
 
-
   Copier a(fileName,treeName,outName.Data(),fileIndex+2,isMC, &cfg);
 
-  a.analyze();
+  a.analyze(10000,maxEvents,startEvent);
 }

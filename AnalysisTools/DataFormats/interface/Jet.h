@@ -91,6 +91,7 @@ public :
     bool  looseid()     const { return looseid_;}
     float pt_raw()      const { return pt_raw_; }
     float uncertainty() const { return uncertainty_;}
+    float chHadFrac()   const { return chHadFrac_;}
     const GenJet<CoordSystem>  *genJet()        const { return genJet_;  }
     GenJet<CoordSystem>        *genJet()        { return genJet_;  }
 
@@ -99,11 +100,13 @@ public :
     void  setLooseId(const float inLooseId)       {looseid_     = inLooseId;}
     void  setPtRaw(const float inPtRaw )          {pt_raw_      = inPtRaw;  }
     void  setUncertainty(const float inUncert)    {uncertainty_ = inUncert; }
+    void  setChHadFrac(const float inChHadFrac)   {chHadFrac_   = inChHadFrac;}
 protected :
     float csv_;                     //pointer to csv information
     float pt_raw_;                  //magnitude of uncorrected transverse momentum
     float uncertainty_;             //JEC error magnitude
     bool  looseid_;                 //passes loose jet id or not
+    float  chHadFrac_;              //charged hadron fraction
     GenJet<CoordSystem>  *genJet_;  //Matched genJet
 
 };
