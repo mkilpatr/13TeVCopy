@@ -31,6 +31,17 @@ TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
   idxyerr_               = data.addMulti<float>(branchName_,"dxyerr",0);
   idxysig_               = data.addMulti<float>(branchName_,"dxysig",0);
   iidflags_              = data.addMulti<unsigned long>(branchName_,"idflags",0);
+  iisomvarun2dbnew_vl_   = data.addMulti<float>(branchName_,"isomvarun2dbnew_vl",0);
+  iisomvarun2dbnew_l_    = data.addMulti<float>(branchName_,"isomvarun2dbnew_l",0);
+  iisomvarun2dbnew_m_    = data.addMulti<float>(branchName_,"isomvarun2dbnew_m",0);
+  iisomvarun2dbnew_t_    = data.addMulti<float>(branchName_,"isomvarun2dbnew_t",0);  
+  iisomvarun2dbnew_vt_   = data.addMulti<float>(branchName_,"isomvarun2dbnew_vt",0);
+  iisomvarun2dbnew03_vl_ = data.addMulti<float>(branchName_,"isomvarun2dbnew03_vl",0);
+  iisomvarun2dbnew03_l_  = data.addMulti<float>(branchName_,"isomvarun2dbnew03_l",0);
+  iisomvarun2dbnew03_m_  = data.addMulti<float>(branchName_,"isomvarun2dbnew03_m",0);
+  iisomvarun2dbnew03_t_  = data.addMulti<float>(branchName_,"isomvarun2dbnew03_t",0);  
+  iisomvarun2dbnew03_vt_ = data.addMulti<float>(branchName_,"isomvarun2dbnew03_vt",0);  
+
 
   if(options_ & FILLCANDINFO) {
     ileadcand_pt_          = data.addMulti<float>(branchName_,"leadcand_pt",0);
@@ -184,6 +195,17 @@ void TauFiller::fill()
       data.fillMulti<float>(iantimumvaraw_, tau.isTauIDAvailable("againstMuonMVAraw") ? tau.tauID("againstMuonMVAraw") : 0.0);
       data.fillMulti<int  >(iantimumvacat_, tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
     }
+
+    data.fillMulti<float>(iisomvarun2dbnew_vl_, tau.isTauIDAvailable("byVLooseIsolationMVArun2v1DBnewDMwLT") ? tau.tauID("byVLooseIsolationMVArun2v1DBnewDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew_l_ , tau.isTauIDAvailable("byLooseIsolationMVArun2v1DBnewDMwLT")  ? tau.tauID("byLooseIsolationMVArun2v1DBnewDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew_m_ , tau.isTauIDAvailable("byMediumIsolationMVArun2v1DBnewDMwLT") ? tau.tauID("byMediumIsolationMVArun2v1DBnewDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew_t_ , tau.isTauIDAvailable("byTightIsolationMVArun2v1DBnewDMwLT")  ? tau.tauID("byTightIsolationMVArun2v1DBnewDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew_vt_, tau.isTauIDAvailable("byVTightIsolationMVArun2v1DBnewDMwLT") ? tau.tauID("byVTightIsolationMVArun2v1DBnewDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew03_vl_, tau.isTauIDAvailable("byVLooseIsolationMVArun2v1DBdR03oldDMwLT") ? tau.tauID("byVLooseIsolationMVArun2v1DBdR03oldDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew03_l_ , tau.isTauIDAvailable("byLooseIsolationMVArun2v1DBdR03oldDMwLT")  ? tau.tauID("byLooseIsolationMVArun2v1DBdR03oldDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew03_m_ , tau.isTauIDAvailable("byMediumIsolationMVArun2v1DBdR03oldDMwLT") ? tau.tauID("byMediumIsolationMVArun2v1DBdR03oldDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew03_t_ , tau.isTauIDAvailable("byTightIsolationMVArun2v1DBdR03oldDMwLT")  ? tau.tauID("byTightIsolationMVArun2v1DBdR03oldDMwLT") : 0.0);
+    data.fillMulti<float>(iisomvarun2dbnew03_vt_, tau.isTauIDAvailable("byVTightIsolationMVArun2v1DBdR03oldDMwLT") ? tau.tauID("byVTightIsolationMVArun2v1DBdR03oldDMwLT") : 0.0);
 
   }
   isFilled_ = true;

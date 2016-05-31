@@ -77,6 +77,18 @@ namespace ucsbsusy {
       size iantimumvaraw_;
       size iantimumvacat_;
 
+      size iisomvarun2dbnew_vl_;
+      size iisomvarun2dbnew_l_;
+      size iisomvarun2dbnew_m_;
+      size iisomvarun2dbnew_t_;
+      size iisomvarun2dbnew_vt_;
+      size iisomvarun2dbnew03_vl_;
+      size iisomvarun2dbnew03_l_;
+      size iisomvarun2dbnew03_m_;
+      size iisomvarun2dbnew03_t_;
+      size iisomvarun2dbnew03_vt_;
+
+
     public :
       // Data members
       edm::Handle<pat::TauCollection> taus_;
