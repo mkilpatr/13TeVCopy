@@ -17,6 +17,7 @@ namespace ucsbsusy{
 
 namespace JetFunctions{
   template<typename Jet> bool passLooseJetId(const Jet& j){
+
     if(fabs(j.eta())>3.0){
       if(j.neutralEmEnergyFraction()<0.90 && j.neutralMultiplicity()>10 ) return true;
       else return false;
@@ -106,6 +107,8 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   ijettightId_     = data.addMulti<bool> (branchName_,"jet_tightId"     , 0);
   ijetmuEnFrac_    = data.addMulti<bool> (branchName_,"jet_muEnFrac"    , 0);
   ijetcsv_         = data.addMulti<float>(branchName_,"jet_csv"         , 0);
+  ijetcvsl_        = data.addMulti<float>(branchName_,"jet_cvsl"        , 0);	
+  ijetcvsb_        = data.addMulti<float>(branchName_,"jet_cvsb"        , 0);		
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
 
   if(options_ & LOADGEN) {
@@ -327,6 +330,8 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetptraw_   ,0);
       data.fillMulti<float>(ijetpuId_    ,0);
       data.fillMulti<float>(ijetcsv_     ,0);
+      data.fillMulti<float>(ijetcvsl_    ,0);	
+      data.fillMulti<float>(ijetcvsb_    ,0);		
       data.fillMulti<bool> (ijetlooseId_ ,false);
       data.fillMulti<bool> (ijettightId_ ,false);
       data.fillMulti<bool> (ijetmuEnFrac_,false);
@@ -354,6 +359,8 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
+    data.fillMulti<float>(ijetcvsl_ ,getcvslDisc(j));	
+    data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));		
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
     data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
     data.fillMulti<bool> (ijetmuEnFrac_,JetFunctions::passMuonEnergyFraction(j));

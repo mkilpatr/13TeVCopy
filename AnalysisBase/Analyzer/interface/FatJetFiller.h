@@ -70,9 +70,9 @@ namespace ucsbsusy {
     size ifj_puppi_tau1_;
     size ifj_puppi_tau2_;
     size ifj_puppi_tau3_;
-    size ifj_puppi_csv_;
-    size ifj_puppi_cvsl_;
-    size ifj_puppi_cvsb_;
+    //    size ifj_puppi_csv_;
+    //    size ifj_puppi_cvsl_;
+    //    size ifj_puppi_cvsb_;
     size ifj_puppi_nsoftdropsubjets_;
     size ifj_puppi_sdsubjet1_pt_;
     size ifj_puppi_sdsubjet1_eta_;

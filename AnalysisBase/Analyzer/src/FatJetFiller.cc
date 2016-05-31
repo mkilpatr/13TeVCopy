@@ -59,9 +59,9 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_puppi_tau1_             = data.addMulti<float>(branchName_,"fatjet_puppi_tau1",-1.);
   ifj_puppi_tau2_             = data.addMulti<float>(branchName_,"fatjet_puppi_tau2",-1.);
   ifj_puppi_tau3_             = data.addMulti<float>(branchName_,"fatjet_puppi_tau3",-1.);
-  ifj_puppi_csv_              = data.addMulti<float> (branchName_,"fatjet_puppi_csv",0);
-  ifj_puppi_cvsl_             = data.addMulti<float> (branchName_,"fatjet_puppi_cvsl",0);
-  ifj_puppi_cvsb_             = data.addMulti<float> (branchName_,"fatjet_puppi_cvsb",0);
+  //  ifj_puppi_csv_              = data.addMulti<float> (branchName_,"fatjet_puppi_csv",0);
+  //  ifj_puppi_cvsl_             = data.addMulti<float> (branchName_,"fatjet_puppi_cvsl",0);
+  //  ifj_puppi_cvsb_             = data.addMulti<float> (branchName_,"fatjet_puppi_cvsb",0);
   ifj_puppi_nsoftdropsubjets_ = data.addMulti<int>(branchName_,"fatjet_puppi_nsoftdropsubjets",0);
   ifj_puppi_sdsubjet1_pt_     = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet1_pt",0);
   ifj_puppi_sdsubjet1_eta_    = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet1_eta",0);
@@ -149,10 +149,10 @@ void FatJetFiller::fill()
     data.fillMulti<int>  (ifj_nsoftdropsubjets_ , sdsubjet_.size());
 
     std::vector<TLorentzVector> sdsubjetsp4;
-    std::vector<float>          sdsubjetsCSV; 
+    std::vector<float>          sdsubjetsCSV;
     for (auto const & it : sdsubjet_) {
       TLorentzVector tmpLV; tmpLV.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());
-      sdsubjetsp4.push_back(tmpLV);              
+      sdsubjetsp4.push_back(tmpLV);
       sdsubjetsCSV.push_back(it->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
     }
     if (sdsubjetsp4.size()>0) {
