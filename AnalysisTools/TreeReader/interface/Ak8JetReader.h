@@ -38,11 +38,9 @@ namespace ucsbsusy {
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
     std::vector<float>* ak8rawmass_;
-    std::vector<float>* ak8trimmedmass_;
     std::vector<float>* ak8prunedmass_;
     std::vector<float>* ak8softdropmass_;
-    std::vector<float>* ak8filteredmass_;
-    std::vector<float>* ak8cmstoptagmass_;
+    //    std::vector<float>* ak8cmstoptagmass_;
     std::vector<float>* ak8tau1_;
     std::vector<float>* ak8tau2_;
     std::vector<float>* ak8tau3_;

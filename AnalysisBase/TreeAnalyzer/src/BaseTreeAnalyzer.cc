@@ -220,13 +220,13 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       reader.load(&fatJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName);
       break;
     }
-
+      /*
     case cfgSet::AK8PUPPIFATJETS : {
       int defaultOptions = FatJetReader::defaultOptions;
       reader.load(&fatJetPuppiReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName);
       break;
     }
-
+      */
     case cfgSet::CORRAL : {
       int defaultOptions = CORRALReader::defaultOptions;
       reader.load(&corralReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CORRAL : branchName );
@@ -264,7 +264,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PFCANDS);
   load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS);
-  load(cfgSet::AK8PUPPIFATJETS);
+  //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
@@ -327,13 +327,13 @@ void BaseTreeAnalyzer::processVariables()
     fatJets.reserve(fatJetReader.fatJets.size());
     for(auto& p : fatJetReader.fatJets) fatJets.push_back(&p);
   }
-
+  /*
   if(fatJetPuppiReader.isLoaded()){
     fatJetsPuppi.clear();
     fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
     for(auto& p : fatJetPuppiReader.fatJets) fatJetsPuppi.push_back(&p);
   }
-
+  */
   if(trigObjReader.isLoaded()){
     triggerflag =  trigObjReader.triggerflag;
     triggerObjects.clear();
