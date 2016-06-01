@@ -239,6 +239,12 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::SV : {
+      int defaultOptions = SVReader::defaultOptions;
+      reader.load(&svReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_SV : branchName);
+      break;
+    }
+
 
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
@@ -266,6 +272,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::AK8FATJETS);
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
+  load(cfgSet::SV);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -344,6 +351,12 @@ void BaseTreeAnalyzer::processVariables()
     triggerInfo.reserve(trigObjReader.triginfo.size());
     for(auto& tI : trigObjReader.triginfo)
       triggerInfo.push_back(&tI);
+  }
+
+  if(svReader.isLoaded()){
+    SVs.clear();
+    SVs.reserve(svReader.SVs.size());
+    for(auto& p : svReader.SVs) SVs.push_back(&p);
   }
 
   allLeptons.clear();

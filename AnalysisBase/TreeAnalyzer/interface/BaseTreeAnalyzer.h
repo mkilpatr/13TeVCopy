@@ -28,6 +28,7 @@
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
+#include "AnalysisTools/TreeReader/interface/SVReader.h"
 
 
 namespace ucsbsusy {
@@ -129,7 +130,7 @@ public:
     //FatJetReader        fatJetPuppiReader   ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
-
+    SVReader            svReader            ;
 
   public:
     //--------------------------------------------------------------------------------------------------
@@ -182,6 +183,7 @@ public:
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
+    std::vector<SVF*>            SVs;
 
 
 
