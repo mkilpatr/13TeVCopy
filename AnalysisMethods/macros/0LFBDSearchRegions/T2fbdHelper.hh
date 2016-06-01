@@ -692,10 +692,10 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
         data.fill<float>(i_origmet, met->pt());
       }
       else {
-	//        if (met->pt() < 200    ) return false;
-	//        if (nJets     < 2      ) return false;
-	//        if (lvjl.size()<1      ) return false;
-	//        if (lvjl.at(0).pt()<200) return false;
+	if (met->pt() < 200    ) return false;
+	if (nJets     < 2      ) return false;
+	if (lvjl.size()<1      ) return false;
+	if (lvjl.at(0).pt()<200) return false;
 
         filler.fillEventInfo(&data, this);
         filler.fillJetInfo  (&data, jets, bJets, met);

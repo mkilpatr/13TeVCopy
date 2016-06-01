@@ -13,7 +13,7 @@ void makeZeroLeptonSRTreesFBD(TString sname = "htmht",
 			      const TString fileprefix = "root://eoscms//eos/cms",
 			      const TString json="")
 {
-  cout << "i m here \n"; 
+
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
   
   if(fileindex > -1)
@@ -30,15 +30,14 @@ void makeZeroLeptonSRTreesFBD(TString sname = "htmht",
   // disable jetID for FastSim
   if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) pars.jets.applyJetID = false;
 
-  //  TString treeName = "Events";
-  TString treeName = "TestAnalyzer/Events";
+  TString treeName = "Events";
+  //TString treeName = "TestAnalyzer/Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
   // CHF filter for FastSim
   if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
 
-  //  a.analyze(1000000);
-  a.analyze(1);
+  a.analyze(1000000);
   //  a.analyze(10000,50000);
 
 }
