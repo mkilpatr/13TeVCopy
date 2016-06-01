@@ -252,6 +252,7 @@ namespace ucsbsusy {
     fFlag_hcalLaserEventFilter = 1UL<<12,
     fFlag_CSCTightHalo2015Filter = 1UL<<13,
     fFlag_HBHENoiseIsoFilter     = 1UL<<14,
+    fFlag_globalTightHalo2016Filter = 1UL<<15
   };
 
 }

@@ -43,6 +43,7 @@ void METFiltersFiller::initTriggerNames()
   trigIds_["Flag_hcalLaserEventFilter"]               = fFlag_hcalLaserEventFilter;
   trigIds_["Flag_CSCTightHalo2015Filter"]             = fFlag_CSCTightHalo2015Filter;
   trigIds_["Flag_HBHENoiseIsoFilter"]                 = fFlag_HBHENoiseIsoFilter;
+  trigIds_["Flag_globalTightHalo2016Filter"]          = fFlag_globalTightHalo2016Filter;
 }
 
 //--------------------------------------------------------------------------------------------------
