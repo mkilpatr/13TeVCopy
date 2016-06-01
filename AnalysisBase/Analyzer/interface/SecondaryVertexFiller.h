@@ -50,12 +50,14 @@ namespace ucsbsusy {
     size sv_ntracks_;
     size sv_chi2_;
     size sv_ndf_;
-    size sv_ip2d_;
-    size sv_sip2d_;
-    size sv_ip3d_;
-    size sv_sip3d_;
+    //    size sv_ip2d_;
+    //    size sv_sip2d_;
+    //    size sv_ip3d_;
+    //    size sv_sip3d_;
     size sv_dxy_;
+    size sv_dxyerr_;
     size sv_d3d_;
+    size sv_d3derr_;
     size sv_costhetasvpv_;
 
     static MagneticField *paramField_;
