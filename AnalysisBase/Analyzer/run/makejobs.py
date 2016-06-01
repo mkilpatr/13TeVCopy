@@ -73,7 +73,7 @@ def parseConfig(removeExtension=False):
             content = line.split()
             if "#" in content[0] :
                 continue
-            if removeExtension and re.search(r'-ext[0-9]*$', content[1]):
+            if removeExtension and re.search(r'-ext[0-9]*$', content[1]) and re.sub(r'-ext[0-9]*$', '', content[1]) in samples:
                 print content[1], 'is an extension sample, will not be proecessed in this step...'
                 continue
             processes.append(content[0])
