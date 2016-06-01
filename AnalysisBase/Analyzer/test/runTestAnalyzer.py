@@ -24,8 +24,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-# options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
-# options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
+#options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 
 options.maxEvents = -1
@@ -110,7 +110,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     JECUNCFILE = 'data/JEC/Fall15_25nsV2_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_273730_24May2016.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_274286_01Jun2016.txt")
     # jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
