@@ -39,30 +39,14 @@ namespace ucsbsusy {
 
   private :
 
-
     edm::EDGetTokenT<edm::TriggerResults>  triggerBitToken_;
-    edm::EDGetTokenT<bool>                 hNoiseResultToken_;
-    edm::EDGetTokenT<bool>                 hNoiseIsoResultToken_;
-    edm::EDGetTokenT<bool>                 hNoiseResultRun2LooseToken_;
-    edm::EDGetTokenT<bool>                 hNoiseResultRun2TightToken_;
     const edm::TriggerNames *              triggerNames_;
     TrigIdMap                              trigIds_;
 
     size itrig_bit_pass;
 
-    size hbheFilterFix_;
-    size hbheFilterIso_;
-    size hbheFilterRun2Loose_;
-    size hbheFilterRun2Tight_;
-
-    bool isFastSim_;
-
   public :
     edm::Handle<edm::TriggerResults> triggerBits_;
-    edm::Handle<bool> hNoiseResult_;
-    edm::Handle<bool> hNoiseIsoResult_;
-    edm::Handle<bool> hNoiseResultRun2Loose_;
-    edm::Handle<bool> hNoiseResultRun2Tight_;
 
   };
 

@@ -249,7 +249,10 @@ namespace ucsbsusy {
     fFlag_METFilters = 1UL<<9,
     fFlag_HBHENoiseFilter = 1UL<<10,
     fFlag_trkPOG_toomanystripclus53X = 1UL<<11,
-    fFlag_hcalLaserEventFilter = 1UL<<12
+    fFlag_hcalLaserEventFilter = 1UL<<12,
+    fFlag_CSCTightHalo2015Filter = 1UL<<13,
+    fFlag_HBHENoiseIsoFilter     = 1UL<<14,
+    fFlag_globalTightHalo2016Filter = 1UL<<15
   };
 
 }
