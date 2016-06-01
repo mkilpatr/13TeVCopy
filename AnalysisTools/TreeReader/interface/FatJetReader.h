@@ -39,11 +39,9 @@ namespace ucsbsusy {
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
     std::vector<float>* fjrawmass_;
-    std::vector<float>* fjtrimmedmass_;
     std::vector<float>* fjprunedmass_;
     std::vector<float>* fjsoftdropmass_;
-    std::vector<float>* fjfilteredmass_;
-    std::vector<float>* fjcmstoptagmass_;
+    //    std::vector<float>* fjcmstoptagmass_;
     std::vector<float>* fjtau1_;
     std::vector<float>* fjtau2_;
     std::vector<float>* fjtau3_;

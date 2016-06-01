@@ -20,11 +20,9 @@ const int Ak8JetReader::defaultOptions = Ak8JetReader::LOADRECO | Ak8JetReader::
 //--------------------------------------------------------------------------------------------------
 Ak8JetReader::Ak8JetReader() : BaseReader(){
   ak8rawmass_       = new vector<float>;
-  ak8trimmedmass_   = new vector<float>;
   ak8prunedmass_    = new vector<float>;
   ak8softdropmass_  = new vector<float>;
-  ak8filteredmass_  = new vector<float>;
-  ak8cmstoptagmass_ = new vector<float>;
+  //  ak8cmstoptagmass_ = new vector<float>;
   ak8tau1_          = new vector<float>;
   ak8tau2_          = new vector<float>;
   ak8tau3_          = new vector<float>;
@@ -44,11 +42,8 @@ void Ak8JetReader::load(TreeReader *treeReader, int options, string branchName)
     clog << "Loading (" << branchName << ") ak8jets with: ";
 
     treeReader->setBranchAddress(branchName_, "fatjet_rawmass"      , &ak8rawmass_      ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_trimmedmass"  , &ak8trimmedmass_  ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_prunedmass"   , &ak8prunedmass_   ,true);
     treeReader->setBranchAddress(branchName_, "fatjet_softdropmass" , &ak8softdropmass_ ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_filteredmass" , &ak8filteredmass_ ,true);
-    treeReader->setBranchAddress(branchName_, "fatjet_cmstoptagmass", &ak8cmstoptagmass_,true);    
+    //    treeReader->setBranchAddress(branchName_, "fatjet_cmstoptagmass", &ak8cmstoptagmass_,true);    
     treeReader->setBranchAddress(branchName_, "fatjet_tau1"         , &ak8tau1_         ,true);
     treeReader->setBranchAddress(branchName_, "fatjet_tau2"         , &ak8tau2_         ,true);
     treeReader->setBranchAddress(branchName_, "fatjet_tau3"         , &ak8tau3_         ,true);
@@ -69,13 +64,11 @@ void Ak8JetReader::refresh(){
   ak8Jets.clear();
   ak8Jets.reserve(ak8pt_->size()); 
   for(unsigned int iJ = 0; iJ < ak8pt_->size(); ++iJ){
-    ak8Jets.emplace_back(CylLorentzVectorF(ak8pt_->at(iJ),ak8eta_->at(iJ),ak8phi_->at(iJ),ak8cmstoptagmass_->at(iJ)),iJ);
+    ak8Jets.emplace_back(CylLorentzVectorF(ak8pt_->at(iJ),ak8eta_->at(iJ),ak8phi_->at(iJ),ak8rawmass_->at(iJ)),iJ);
     ak8Jets.back().setFJRawMass(ak8rawmass_->at(iJ));
-    ak8Jets.back().setFJTrimmedMass(ak8trimmedmass_->at(iJ));
     ak8Jets.back().setFJPrunedMass(ak8prunedmass_->at(iJ));
     ak8Jets.back().setFJSoftDropMass(ak8softdropmass_->at(iJ));
-    ak8Jets.back().setFJFilteredMass(ak8filteredmass_->at(iJ));
-    ak8Jets.back().setFJCmsTopTagMass(ak8cmstoptagmass_->at(iJ));
+    //    ak8Jets.back().setFJCmsTopTagMass(ak8cmstoptagmass_->at(iJ));
     ak8Jets.back().setFJTau1(ak8tau1_->at(iJ));
     ak8Jets.back().setFJTau2(ak8tau2_->at(iJ));
     ak8Jets.back().setFJTau3(ak8tau3_->at(iJ));

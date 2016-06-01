@@ -126,7 +126,7 @@ public:
     GenParticleReader   genParticleReader   ;
     CMSTopReader        cmsTopReader        ;
     FatJetReader        fatJetReader        ;
-    FatJetReader        fatJetPuppiReader   ;
+    //FatJetReader        fatJetPuppiReader   ;
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
 
@@ -178,7 +178,7 @@ public:
     std::vector<CMSTopF*>        cttTops           ;
     std::vector<CMSTopF*>        selectedCTTTops   ;
     std::vector<FatJetF*>        fatJets;
-    std::vector<FatJetF*>        fatJetsPuppi;
+    //    std::vector<FatJetF*>        fatJetsPuppi;
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
