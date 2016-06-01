@@ -228,9 +228,6 @@ if ISDATA :
 
 process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE)
 
-if ISFASTSIM or 'SMS' in DatasetName or 'T2tt' in DatasetName or 'T2tb' in DatasetName or 'T2bW' in DatasetName or 'T2-4bd' in DatasetName :
-    process.TestAnalyzer.Jets.fillExtraJetInfo = cms.untracked.bool(True)
-
 #==============================================================================================================================#
 # Custom METs
 # Configurable options

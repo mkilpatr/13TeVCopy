@@ -78,7 +78,7 @@ nominal_configuration = cms.PSet(
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
                                       loadJecUncFile    = cms.untracked.bool(False),
-                                      fillExtraJetInfo  = cms.untracked.bool(False),
+                                      fillExtraJetInfo  = cms.untracked.bool(True),
                                       jecLabel          = cms.untracked.string('AK4PFchs'),
                                       jetCorrUncertainty= cms.untracked.string('SubTotalMC'),
                                   ),
