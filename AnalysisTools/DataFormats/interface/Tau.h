@@ -19,8 +19,9 @@ namespace ucsbsusy {
   class Tau : public Momentum<CoordSystem>
   {
 
-    public :
-      Tau() : index_(-1), leadCand_(), leadChargedCand_(), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0), passpogid_(false), passpogiso_(false), isgoodpogtau_(false) {}
+  public :
+  Tau() : index_(-1), leadCand_(), leadChargedCand_(), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0), passpogid_(false), passpogiso_(false), isgoodpogtau_(false),
+      ispogvlisomvarun2new_(false) {}
 
       template <class InputCoordSystem>
       Tau(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -35,7 +36,7 @@ namespace ucsbsusy {
 		leadCand_(inLeadcand), leadChargedCand_(inLeadchcand),
 		q_(inCharge), dxy_(inDxy), dxyerr_(inDxyerr),
 		dxysig_(inDxysig), hpsid_(inHpsid), passpogid_(false),
-		passpogiso_(false), isgoodpogtau_(false) {}
+		  passpogiso_(false), isgoodpogtau_(false), ispogvlisomvarun2new_(false) {}
 
       ~Tau() {}
 
@@ -49,6 +50,7 @@ namespace ucsbsusy {
       bool	passpogiso() 		const { return passpogiso_;	}
       bool      ishpsvetotau()          const { return ishpsvetotau_;   }
       bool	isgoodpogtau() 	const { return isgoodpogtau_;	}
+      bool	ispogvlisomvarun2new() 	const { return ispogvlisomvarun2new_;	}
       const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
       void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
       const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return leadChargedCand_;	}
@@ -63,6 +65,7 @@ namespace ucsbsusy {
       void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
       void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
       void	setIsGoodPOGTau(bool flag)	{ isgoodpogtau_ = flag;	}
+      void	setisPOGVLIsoMVARun2NewTau(bool flag)	{ ispogvlisomvarun2new_ = flag;	}
       void	setIsHPSVetoTau(bool flag)	{ ishpsvetotau_ = flag; }
 
     protected :
@@ -78,6 +81,7 @@ namespace ucsbsusy {
       bool	passpogiso_;
       bool	isgoodpogtau_;
       bool      ishpsvetotau_;
+      bool      ispogvlisomvarun2new_;
 
   };
 
