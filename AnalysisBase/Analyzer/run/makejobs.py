@@ -328,7 +328,7 @@ elif args.runmerge :
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             prefix = "root://eoscms/"
             if args.submittype == "crab":
-                cmd = ("%s find -f %s | egrep 'evttree_[0-9]+(_numEvent[0-9]+|).root' | grep -v 'failed'" % (eos, os.path.join(args.inputdir, datasets[isam].split("/")[1])))
+                cmd = ("%s find -f %s | egrep 'evttree_[0-9]+(_numEvent[0-9]+|).root' | grep -v 'failed'" % (eos, os.path.join(args.inputdir, datasets[isam].split("/")[1], 'crab_' + samples[isam])))
             else:
                 cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(-ext[0-9]*|)(_numEvent[0-9]+|).root'" % (eos, args.inputdir, samples[isam]))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -339,7 +339,7 @@ elif args.runmerge :
             filelist.insert(0, outname)
         else :
             if args.submittype == "crab":
-                input_dir = os.path.join(args.inputdir, datasets[isam].split("/")[1])
+                input_dir = os.path.join(args.inputdir, datasets[isam].split("/")[1], 'crab_' + samples[isam])
                 filelist = [os.path.join(dp, f) for dp, dn, filenames in os.walk(input_dir) if 'failed' not in dp for f in filenames if re.match(r'evttree_[0-9]+(_numEvent[0-9]+|).root', f)]
             else:
                 filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'output_[0-9]+_%s(-ext[0-9]*|)(_numEvent[0-9]+|).root' % samples[isam], f)]
