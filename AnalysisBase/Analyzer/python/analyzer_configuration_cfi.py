@@ -57,6 +57,8 @@ nominal_configuration = cms.PSet(
                                       saveSystematicWeights  = cms.untracked.bool(False),
                                       whichSystematicWeights = cms.untracked.vuint32(),
                                       isMassScan             = cms.untracked.bool(False),
+                                      stdGenJets             = cms.InputTag('slimmedGenJets'),
+                                      fillNumStdGenJets      = cms.untracked.bool(False),
                                   ),
                                     
                                   Jets = cms.untracked.PSet(  
