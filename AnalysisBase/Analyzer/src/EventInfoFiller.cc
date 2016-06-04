@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // EventInfoFiller
-// 
+//
 // Simple class to write some event info into a TTree.
-// 
-// EventInfoFiller.cc created on Mon Aug 11 10:23:46 CEST 2014 
-// 
+//
+// EventInfoFiller.cc created on Mon Aug 11 10:23:46 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
@@ -30,6 +30,7 @@ EventInfoFiller::EventInfoFiller(
   genEvtInfoToken_   (cc.consumes<GenEventInfoProduct>   (cfg.getParameter<edm::InputTag>("genEvtInfo"))),
   lheEvtInfoToken_   (cc.consumes<LHEEventProduct>       (cfg.getParameter<edm::InputTag>("lheEvtInfo"))),
   systWgtIndices_    (cfg.getUntrackedParameter<std::vector<unsigned int> >              ("whichSystematicWeights")),
+  stdGenJetToken_    (cc.consumes<reco::GenJetCollection>(cfg.getParameter<edm::InputTag>("stdGenJets"))),
   primaryVertexIndex_(-1),
   met_(0),
   metOOB_(0),
@@ -70,6 +71,7 @@ EventInfoFiller::EventInfoFiller(
   inmefiltparts_  =  data.add<int>         (branchName_,"nmefiltpartons"  ,"I",0);
   ilhecentralwgt_ =  data.add<float>       (branchName_,"lhecentralweight","F",1);
   isystwgts_      =  data.addMulti<float>  (branchName_,"systweights",0);
+  instdgenjets_   =  data.add<int>         (branchName_,"nstdgenjets","I",0);
   if(options_ & LOADLHE && options_ & SAVEMASSES)
     imasspar_     =  data.addMulti<size16> (branchName_,"massparams",0);
 
@@ -92,6 +94,8 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
   if(options_ & LOADLHE)
     iEvent.getByToken(lheEvtInfoToken_, lheEvtInfo_);
+  if(options_ & LOADGENJETS)
+    iEvent.getByToken(stdGenJetToken_, stdGenJets_);
 
   if(vertices_->size() > 0)
     primaryVertexIndex_ = 0;
@@ -110,7 +114,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
 void EventInfoFiller::fill()
 {
   bool hasgoodvtx = false;
-  if(!(*vertices_)[primaryVertexIndex_].isFake() && 
+  if(!(*vertices_)[primaryVertexIndex_].isFake() &&
       (*vertices_)[primaryVertexIndex_].ndof() > 4. &&
       (*vertices_)[primaryVertexIndex_].position().Rho() <= 2.0 &&
       fabs((*vertices_)[primaryVertexIndex_].position().Z())<=24.0)
@@ -194,6 +198,13 @@ void EventInfoFiller::fill()
         data.fillMulti<size16>(imasspar_, convertTo<size16>(mstr.Atoi(),"EventInfoFiller::massparams"));
     }
     data.fill<float>     (ilhecentralwgt_,lheEvtInfo_->originalXWGTUP());
+  }
+  if(options_ & LOADGENJETS) {
+    int ngenj = 0;
+    for (const auto &j : *stdGenJets_){
+      if (j.pt()>20 && fabs(j.eta())<2.4) ++ngenj;
+    }
+    data.fill<int>       (instdgenjets_    ,ngenj);
   }
 
   isFilled_ = true;

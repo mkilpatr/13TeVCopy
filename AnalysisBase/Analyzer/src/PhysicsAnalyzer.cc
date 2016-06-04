@@ -124,6 +124,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC()) defaultOptions |= EventInfoFiller::LOADGEN;
       if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
       if(isMC() && cfg.getUntrackedParameter<bool>("isMassScan")) defaultOptions |= EventInfoFiller::SAVEMASSES;
+      if(isMC() && cfg.getUntrackedParameter<bool>("fillNumStdGenJets")) defaultOptions |= EventInfoFiller::LOADGENJETS;
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),
                                       options < 0 ? defaultOptions : options
                                       );
@@ -145,7 +146,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     }
 
     case AK4JETS : {
-      int defaultOptions = PatJetFiller::defaultOptions; 
+      int defaultOptions = PatJetFiller::defaultOptions;
       if((isMC() && cfg.getUntrackedParameter<bool>("fillJetGenInfo"))) defaultOptions |= PatJetFiller::LOADGEN;
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= PatJetFiller::SAVETOPASSOC;
@@ -280,8 +281,8 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(pfcands);
       break;
     }
- 
-    case CMSTOPS : { 
+
+    case CMSTOPS : {
       cmstops = new CMSTopFiller(cfg, consumesCollector(),
                                  0,
 			         branchName == "" ? defaults::BRANCH_CMSTOPS : branchName
@@ -290,7 +291,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-  case AK8FATJETS : { 
+  case AK8FATJETS : {
     ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
 				  0,
 				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
@@ -299,7 +300,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     break;
   }
 
-  case AK8PUPPIFATJETS : { 
+  case AK8PUPPIFATJETS : {
     ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
 				       0,
 				       branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName
@@ -307,7 +308,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     initializedFillers.push_back(ak8puppifatjets);
     break;
   }
-    
+
     case TRIGGERS : {
       int defaultOptions = TriggerFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("printTriggerNames")) defaultOptions |= TriggerFiller::PRINTTRIGGERNAMES;
@@ -318,7 +319,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       initializedFillers.push_back(triggers);
       break;
     }
- 
+
     case METFILTERS : {
       int defaultOptions = METFiltersFiller::defaultOptions;
       metfilters = new METFiltersFiller(cfg, consumesCollector(),
@@ -332,7 +333,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = PhotonFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
-    
+
       photons = new PhotonFiller(cfg, consumesCollector(),
 			       options < 0 ? defaultOptions : options,
 			       branchName == "" ? defaults::BRANCH_PHOTONS : branchName
@@ -341,7 +342,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-  case SV : { 
+  case SV : {
     sv = new SecondaryVertexFiller(cfg, consumesCollector(),
 				  0,
 				  branchName == "" ? defaults::BRANCH_SV : branchName

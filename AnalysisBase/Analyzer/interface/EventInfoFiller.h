@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // EventInfoFiller
-// 
+//
 // Simple class to write some event info into a TTree.
-// 
-// EventInfoFiller.h created on Mon Aug 11 10:23:46 CEST 2014 
-// 
+//
+// EventInfoFiller.h created on Mon Aug 11 10:23:46 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_EVENTINFOFILLER_H
@@ -17,6 +17,7 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 
@@ -41,7 +42,8 @@ namespace ucsbsusy {
         LOADGEN     = (1 << 0),
         LOADLHE     = (1 << 1),
         LOADPUINFO  = (1 << 2),
-        SAVEMASSES  = (1 << 3)
+        SAVEMASSES  = (1 << 3),
+        LOADGENJETS = (1 << 4)
       };
       static const int defaultOptions = NULLOPT;
 
@@ -64,6 +66,7 @@ namespace ucsbsusy {
       edm::EDGetTokenT<GenEventInfoProduct>             genEvtInfoToken_;
       edm::EDGetTokenT<LHEEventProduct>                 lheEvtInfoToken_;
       std::vector<unsigned int>                         systWgtIndices_;
+      edm::EDGetTokenT<reco::GenJetCollection>          stdGenJetToken_;
 
       // Members to hold index of most recently filled tree data
       size irun_          ;
@@ -92,7 +95,7 @@ namespace ucsbsusy {
       size ipuppimetpt_   ;
       size ipuppimetphi_  ;
       size ipuppimetsumEt_;
-      size igenmetpt_     ; 
+      size igenmetpt_     ;
       size igenmetphi_    ;
       size igenwgt_       ;
       size igenqscale_    ;
@@ -101,6 +104,7 @@ namespace ucsbsusy {
       size ilhecentralwgt_;
       size isystwgts_     ;
       size imasspar_      ;
+      size instdgenjets_  ;
 
     public:
       // Data members
@@ -119,6 +123,7 @@ namespace ucsbsusy {
       edm::Handle<pat::METCollection>              puppimets_;
       edm::Handle<GenEventInfoProduct>             genEvtInfo_;
       edm::Handle<LHEEventProduct>                 lheEvtInfo_;
+      edm::Handle<reco::GenJetCollection>          stdGenJets_;
 
   };
 
