@@ -42,12 +42,12 @@ namespace defaults {
   const std::string BRANCH_SV         = "sv";
 
   enum CSVWPs {CSVL, CSVM, CSVT};
-  const double CSVValues[] = {0.605,0.890,0.970};
+  const double CSVValues[] = {0.460,0.800,0.935};
 
   //Will be depreciated in next run
-  const double CSV_LOOSE        = 0.605;
-  const double CSV_MEDIUM       = 0.890;
-  const double CSV_TIGHT        = 0.970;
+  const double CSV_LOOSE        = 0460;
+  const double CSV_MEDIUM       = 0.800;
+  const double CSV_TIGHT        = 0.935;
   ///
   const double TAU_MVA_VETO_MTPRESEL_LOOSE = 0.64;
   const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.55;
