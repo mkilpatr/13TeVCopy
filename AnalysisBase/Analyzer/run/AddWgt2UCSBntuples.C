@@ -52,10 +52,12 @@ public:
   }
 
   bool fillEvent() {
-    data.fill<float>(iGenWeight, genwgtsign / (1.0 - (2.0*(nNeg/(nPos+nNeg)))));
-    if(xsecLookup) {
-      data.fill<float>(iXSec, xsec);
-      data.fill<float>(iXSWeight, xsecweight);
+    if(isMC()) {
+      data.fill<float>(iGenWeight, genwgtsign / (1.0 - (2.0*(nNeg/(nPos+nNeg)))));
+      if(xsecLookup) {
+        data.fill<float>(iXSec, xsec);
+        data.fill<float>(iXSWeight, xsecweight);
+      }
     }
     return true;
   }
