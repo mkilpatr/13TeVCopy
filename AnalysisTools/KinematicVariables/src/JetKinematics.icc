@@ -8,7 +8,7 @@
 
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "AnalysisTools/Parang/interface/Persistables.h"
+#include "AnalysisTools/Utilities/interface/StatHelper.h"
 
 using namespace ucsbsusy;
 
@@ -134,7 +134,7 @@ double JetKinematics::htAway(const MET& met, const std::vector<Jet*>& jets, cons
 template<typename Jet>
 double JetKinematics::ptRMS(const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {
-  PStatistics               ptStats;
+  StatHelper               ptStats;
   for(const auto* jet : jets ){
     if (!passCuts(*jet,minPT,maxEta)) continue;
     ptStats.add(jet->pt());
@@ -146,7 +146,7 @@ double JetKinematics::ptRMS(const std::vector<Jet*>& jets, const double minPT, c
 template<typename MET,typename Jet>
 double JetKinematics::deltaPhiMETRMS(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {
-  PStatistics               dPhiAwayStats;
+  StatHelper               dPhiAwayStats;
   const float              oppositePhi     = TVector2::Phi_mpi_pi( met.phi() + TMath::Pi() );
   for(const auto* jet : jets ){
     if (!passCuts(*jet,minPT,maxEta)) continue;
@@ -206,7 +206,7 @@ double JetKinematics::deltaEtaBJetRMS(const std::vector<Jet*>& jets, bool (*isBJ
   }
   if(leadBInd == -1) return 0;
 
-  PStatistics               JB_DETAStats      ;
+  StatHelper               JB_DETAStats      ;
   for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
     if(leadBInd == int(iJ)) continue;
     const Jet& jet = *jets[iJ];
