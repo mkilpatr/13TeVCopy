@@ -200,6 +200,12 @@ struct TreeFiller {
   size i_toppt;
   size i_httwoleadfatjet;
   size i_absdphilepmet;
+  size i_nsdtopjmewp1vloose;
+  size i_nsdtopjmewp1loose;
+  size i_nsdtopjmewp1tight;
+  size i_nsdwjmewp1loose;
+  size i_nsdwjmewp1tight;
+
 
   void rankedByCSV(vector<RecoJetF*> inJets, vector<RecoJetF*>& outJets) {
     outJets.clear();
@@ -373,6 +379,11 @@ struct TreeFiller {
     i_toppt          = data->add<float>("","toppt","F",0);
     i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
     i_absdphilepmet       = data->add<float>("","absdphilepmet","F",0);
+    i_nsdtopjmewp1vloose  = data->add<int>("","nsdtopjmewp1vloose","I",0);
+    i_nsdtopjmewp1loose  = data->add<int>("","nsdtopjmewp1loose","I",0);
+    i_nsdtopjmewp1tight  = data->add<int>("","nsdtopjmewp1tight","I",0);
+    i_nsdwjmewp1loose    = data->add<int>("","nsdwjmewp1loose","I",0);
+    i_nsdwjmewp1tight    = data->add<int>("","nsdwjmewp1tight","I",0);
   }
 
   bool passSoftDropTaggerFJ(FatJetF* fj,float minMass,float maxMass) {
@@ -390,6 +401,11 @@ struct TreeFiller {
     float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
 
     return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
+  }
+
+
+  bool passSoftDropTaggerFJ(const FatJetF* fj,float minMass,float maxMass, float tau32max, float tau21max) {
+    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>400.) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, bool lepAddedBack = false, MomentumF* metn = 0) {
@@ -481,15 +497,28 @@ struct TreeFiller {
     if (ana->cttTops.size()>1) { data->fill<float>(i_httwoleadfatjet,(ana->cttTops[0]->pt()+ana->cttTops[1]->pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
 
-    int nfjsd60_   = 0;
-    int nfjpr60_   = 0;
+    bool passSoftDropTaggerFJ(const FatJetF* fj,float minMass,float maxMass, float tau32max, float tau21max) {
+      return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>400.) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
+    }
+
+    int nfjsd60_ = 0, nfjpr60_   = 0;
+    int nsdtopjmewp1loose_ = 0, nsdtopjmewp1vloose_ = 0, nsdtopjmewp1tight_ = 0, nsdwjmewp1loose_ = 0, nsdwjmewp1tight_ = 0;
     for(auto* fj : ana->fatJets) {
       if (passSoftDropTaggerFJ(fj,60.,100000.)) { ++nfjsd60_; }
       if (passPrunedTaggerFJ(fj,60.,100000.))   { ++nfjpr60_; }
-
+      if (passSoftDropTaggerFJ(fj,110.,210.,0.50,100.))    { ++nsdtopjmewp1tight_; }
+      if (passSoftDropTaggerFJ(fj,110.,210.,0.69,100.))    { ++nsdtopjmewp1loose_; }
+      if (passSoftDropTaggerFJ(fj,110.,210.,0.86,100.))    { ++nsdtopjmewp1vloose_; }
+      if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.45))      { ++nsdwjmewp1tight_; }
+      if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.60))      { ++nsdwjmewp1loose_; }
     }
     data->fill<int  >(i_nfjsd60, nfjsd60_);
     data->fill<int  >(i_nfjpr60, nfjpr60_);
+    data->fill<int  >(i_nsdtopjmewp1tight,nsdtopjmewp1tight_);
+    data->fill<int  >(i_nsdtopjmewp1loose,nsdtopjmewp1loose_);
+    data->fill<int  >(i_nsdtopjmewp1vloose,nsdtopjmewp1vloose_);
+    data->fill<int  >(i_nsdwjmewp1tight,nsdwjmewp1tight_);
+    data->fill<int  >(i_nsdwjmewp1loose,nsdwjmewp1loose_);
 
     for(auto& pfc : ana->pfcandReader.pfcands) {
       if(!pfc.ischargedhadron() || pfc.pt() < 10.0 || fabs(pfc.eta()) > 2.4) continue;
