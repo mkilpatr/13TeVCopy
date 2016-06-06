@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <TString.h>
 #include <TTree.h>
+#include <TSystem.h>
 
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultConfigurations.h"
 
