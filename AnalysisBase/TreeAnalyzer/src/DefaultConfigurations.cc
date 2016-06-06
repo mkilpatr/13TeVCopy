@@ -75,8 +75,8 @@ void cfgSet::loadDefaultTauConfigurations() {
   zl_veto_taus.minPt      = 20;
   zl_veto_taus.maxEta     = 2.4;
   zl_veto_taus.requireOppositeQToSelLepton = false;
-  zl_veto_taus.minDeltaRFromSelLepton      = 0.4;
-  zl_veto_taus.selected   = &ucsbsusy::TauF::ishpsvetotau;
+  zl_veto_taus.minDeltaRFromSelLepton      = -0.4;
+  zl_veto_taus.selected   = &ucsbsusy::TauF::ispogvlisomvarun2new;
   zl_veto_taus.setConfig();
 
   sl_veto_taus = zl_veto_taus;
