@@ -338,8 +338,15 @@ if ISMINIAODV1 :
 
 #==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
-# from JMEAnalysis.JetToolbox.jetToolbox_cff import *
+from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 
+if ISDATA :
+    jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=False, addCMSTopTagger=True)
+else :
+    jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=(ISDATA != True), addCMSTopTagger=True)
+
+
+## old implementation - keep as a template
 # process.load('CommonTools.PileupAlgos.Puppi_cff')
 
 # process.puppi.useExistingWeights = True

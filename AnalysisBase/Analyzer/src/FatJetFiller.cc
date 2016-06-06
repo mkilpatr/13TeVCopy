@@ -155,14 +155,39 @@ void FatJetFiller::fill()
       sdsubjetsp4.push_back(tmpLV);
       sdsubjetsCSV.push_back(it->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
     }
-    if (sdsubjetsp4.size()>0) {
+
+    if (sdsubjetsp4.size()==0) {
+      data.fillMulti<float>(ifj_sdsubjet1_pt_  ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet1_eta_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet1_phi_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet1_mass_,-9.);
+      data.fillMulti<float>(ifj_sdsubjet1_csv_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_pt_  ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_eta_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_phi_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_mass_,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_csv_ ,-9.);
+    }
+
+    if (sdsubjetsp4.size()==1) {
       data.fillMulti<float>(ifj_sdsubjet1_pt_  ,sdsubjetsp4[0].Pt());
       data.fillMulti<float>(ifj_sdsubjet1_eta_ ,sdsubjetsp4[0].Eta());
       data.fillMulti<float>(ifj_sdsubjet1_phi_ ,sdsubjetsp4[0].Phi());
       data.fillMulti<float>(ifj_sdsubjet1_mass_,sdsubjetsp4[0].M());
       data.fillMulti<float>(ifj_sdsubjet1_csv_ ,sdsubjetsCSV[0]);
+      data.fillMulti<float>(ifj_sdsubjet2_pt_  ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_eta_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_phi_ ,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_mass_,-9.);
+      data.fillMulti<float>(ifj_sdsubjet2_csv_ ,-9.);
     }
-    if (sdsubjetsp4.size()>1) {
+
+    if (sdsubjetsp4.size()>=2) {
+      data.fillMulti<float>(ifj_sdsubjet1_pt_  ,sdsubjetsp4[0].Pt());
+      data.fillMulti<float>(ifj_sdsubjet1_eta_ ,sdsubjetsp4[0].Eta());
+      data.fillMulti<float>(ifj_sdsubjet1_phi_ ,sdsubjetsp4[0].Phi());
+      data.fillMulti<float>(ifj_sdsubjet1_mass_,sdsubjetsp4[0].M());
+      data.fillMulti<float>(ifj_sdsubjet1_csv_ ,sdsubjetsCSV[0]);
       data.fillMulti<float>(ifj_sdsubjet2_pt_  ,sdsubjetsp4[1].Pt());
       data.fillMulti<float>(ifj_sdsubjet2_eta_ ,sdsubjetsp4[1].Eta());
       data.fillMulti<float>(ifj_sdsubjet2_phi_ ,sdsubjetsp4[1].Phi());
@@ -182,15 +207,39 @@ void FatJetFiller::fill()
       sdpuppisubjetsp4.push_back(tmpLV);              
       sdpuppisubjetsCSV.push_back(it->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
     }
-    if (sdpuppisubjetsp4.size()>0) {
+
+    if (sdpuppisubjetsp4.size()==0) {
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,-9.);
+    }
+
+    if (sdpuppisubjetsp4.size()==1) {
       data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,sdpuppisubjetsp4[0].Pt());
       data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,sdpuppisubjetsp4[0].Eta());
       data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,sdpuppisubjetsp4[0].Phi());
       data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,sdpuppisubjetsp4[0].M());
       data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,sdpuppisubjetsCSV[0]);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,-9.);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,-9.);
     }
 
-    if (sdpuppisubjetsp4.size()>1) {
+    if (sdpuppisubjetsp4.size()>=2) {
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,sdpuppisubjetsp4[0].Pt());
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,sdpuppisubjetsp4[0].Eta());
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,sdpuppisubjetsp4[0].Phi());
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,sdpuppisubjetsp4[0].M());
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,sdpuppisubjetsCSV[0]);
       data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,sdpuppisubjetsp4[1].Pt());
       data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,sdpuppisubjetsp4[1].Eta());
       data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,sdpuppisubjetsp4[1].Phi());

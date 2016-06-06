@@ -83,7 +83,7 @@ void SecondaryVertexFiller::fill()
       const reco::VertexCompositePtrCandidate &sv = (*svs_)[i0]; 
       const reco::Vertex & pv = (*pvs_)[0];
 
-      if ((sv.pt()>40.) || ((vertexDxy(sv,pv).value())>4.) || (vertexDdotP(sv,pv)>0.9) ) { continue; }
+      if ((sv.pt()>40.) || ((vertexDxy(sv,pv).value())>4.) || (vertexDdotP(sv,pv)<0.9) ) { continue; }
 
       data.fillMulti<float>(sv_pt_          , sv.pt() );
       data.fillMulti<float>(sv_eta_         , sv.eta() );
