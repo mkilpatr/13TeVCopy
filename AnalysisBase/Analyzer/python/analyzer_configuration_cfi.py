@@ -246,7 +246,7 @@ nominal_configuration = cms.PSet(
 
                                   CMSTops = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
-                                      fatJets  = cms.InputTag('slimmedJetsAK8'),
+                                      fatJets  = cms.InputTag('patJetsCMSTopTagCHSPacked'),
                                       ),
                                       
                                   AK8FatJets = cms.untracked.PSet(
