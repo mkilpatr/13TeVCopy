@@ -20,7 +20,6 @@ CMSTopFiller::CMSTopFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
 
   ictt_cmstoptagmass_ = data.addMulti<float>(branchName_,"top_cmstoptagmass",0);
   ictt_allsubjetmass_ = data.addMulti<float>(branchName_,"top_allsubjetmass",0);
-
   ictt_top_pt_        = data.addMulti<float>(branchName_,"top_pt",0);
   ictt_top_eta_       = data.addMulti<float>(branchName_,"top_eta",0);
   ictt_top_phi_       = data.addMulti<float>(branchName_,"top_phi",0);
@@ -68,10 +67,13 @@ void CMSTopFiller::fill()
 
 float CMSTopFiller::getMinMass(std::vector<TLorentzVector> subjetslv) {
 
-  float minmass_ = 999.;
+  unsigned int maxloops = 0;
+  if (subjetslv.size()>3) { maxloops = 3; }
+  else                    { maxloops = subjetslv.size(); }
 
-  for (unsigned int i0=0; i0<subjetslv.size(); ++i0) {
-    for (unsigned int i1=0; i1<subjetslv.size(); ++i1) {
+  float minmass_ = 999.;
+  for (unsigned int i0=0; i0<maxloops; ++i0) {
+    for (unsigned int i1=0; i1<maxloops; ++i1) {
       if (i1<=i0) { continue; }
       float minmasstmp_ = (subjetslv[i0]+subjetslv[i1]).M();
       if (minmasstmp_< minmass_) { minmass_ = minmasstmp_; } 
