@@ -11,7 +11,7 @@
 #include <vector>
 #include "Math/LorentzVector.h"
 #include "Math/VectorUtil.h"
-#include "AnalysisMethods/macros/0LepSearchRegions/M2.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/M2.hh"
 #include "AnalysisMethods/macros/0LepSearchRegions/HettTopTagger.hh"
 #include "AnalysisMethods/macros/0LepSearchRegions/CttTopTagger.hh"
 
@@ -496,10 +496,6 @@ struct TreeFiller {
 
     if (ana->cttTops.size()>1) { data->fill<float>(i_httwoleadfatjet,(ana->cttTops[0]->pt()+ana->cttTops[1]->pt())); } else { data->fill<float>(i_httwoleadfatjet,0.); }
 
-
-    bool passSoftDropTaggerFJ(const FatJetF* fj,float minMass,float maxMass, float tau32max, float tau21max) {
-      return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>400.) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
-    }
 
     int nfjsd60_ = 0, nfjpr60_   = 0;
     int nsdtopjmewp1loose_ = 0, nsdtopjmewp1vloose_ = 0, nsdtopjmewp1tight_ = 0, nsdwjmewp1loose_ = 0, nsdwjmewp1tight_ = 0;
