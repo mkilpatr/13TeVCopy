@@ -66,7 +66,8 @@ void TauFiller::initTauIdNames()
 {
 
   hpsIds_.insert(pair<string, unsigned long>("decayModeFinding", kDecayMode));
-  hpsIds_.insert(pair<string, unsigned long>("decayModeFindingnewDMs", kDecayModeNew));
+  hpsIds_.insert(pair<string, unsigned long>("decayModeFindingOldDMs", kDecayModeOld));
+  hpsIds_.insert(pair<string, unsigned long>("decayModeFindingNewDMs", kDecayModeNew));
   hpsIds_.insert(pair<string, unsigned long>("byVLooseCombinedIsolationDeltaBetaCorr3Hits", kVLooseIsoDB3Hits));
   hpsIds_.insert(pair<string, unsigned long>("byLooseCombinedIsolationDeltaBetaCorr3Hits", kLooseIsoDB3Hits));
   hpsIds_.insert(pair<string, unsigned long>("byMediumCombinedIsolationDeltaBetaCorr3Hits", kMediumIsoDB3Hits));
