@@ -59,10 +59,12 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
 //--------------------------------------------------------------------------------------------------
 void METFiltersFiller::fill()
 {
+  size trigPass = 0;
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
     if(trigindex != trigIds_.end() && triggerBits_->accept(i)) {
-      itrig_bit_pass |= trigindex->second;
+      trigPass |= trigindex->second;
     }
   }
+  data.fill<size>     (itrig_bit_pass    ,trigPass);
 } // end of METFiltersFiller::fill()
