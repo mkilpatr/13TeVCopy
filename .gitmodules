@@ -10,3 +10,6 @@
 [submodule "AnalysisTools/OptiMass"]
 	path = AnalysisTools/OptiMass
 	url = https://github.com/ASPatterson/OptiMass-v1.0.3.git
+[submodule "JMEAnalysis/JetToolbox"]
+	path = JMEAnalysis/JetToolbox
+	url = git@github.com:cms-jet/JetToolbox.git
