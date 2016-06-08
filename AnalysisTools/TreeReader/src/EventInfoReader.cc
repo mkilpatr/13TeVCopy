@@ -50,17 +50,15 @@ EventInfoReader::EventInfoReader()
   process = defaults::NUMPROCESSES;
   datrec = 0;
   datareco = defaults::MC;
-  metfilterbitpass = new vector<bool>;
+  metfilterbitpass_old = new vector<bool>;
+  metfilterbitpass = 0;
   massparams = new vector<size16>;
-  hbheIsoFlt = false;
-  hbheFltR2Loose = false;
-  hbheFltR2Tight = false;
-  cscFlt     = false;
-  cscBeamHaloFlt = false;
-  eeBadSCFlt = false;
-  eeBadSC4Flt = false;
-  badResolutionTrkFlt = false;
-  muonBadTrkFlt = false;
+  HBHENoiseFilter                      = false;
+  HBHENoiseIsoFilter                   = false;
+  CSCTightHalo2015Filter               = false;
+  EcalDeadCellTriggerPrimitiveFilter   = false;
+  goodVertices                         = false;
+  eeBadScFilter                        = false;
   massPar1 = 0;
   massPar2 = 0;
   massPar3 = 0;
@@ -103,14 +101,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
   treeReader->setBranchAddress(branchName,"lhecentralweight", &lhecentralweight);
   treeReader->setBranchAddress(branchName,"systweights", &systweights);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterIso", &hbheIsoFlt);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Loose", &hbheFltR2Loose);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"hbheFilterRun2Tight", &hbheFltR2Tight);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"cscBeamHaloFlt", &cscBeamHaloFlt);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"eeBadSC4Flt", &eeBadSC4Flt);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badResolutionTrkFlt", &badResolutionTrkFlt);
-  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"muonBadTrkFlt", &muonBadTrkFlt);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass_old);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"int_bit_pass", &metfilterbitpass);
 
   clog << endl;
 }
@@ -125,8 +117,24 @@ void EventInfoReader::refresh()
   datareco = static_cast<defaults::DataReco>(datrec);
   evtweight = xsecweight * genevtweight;
 
-  cscFlt     = metfilterbitpass->size() ? metfilterbitpass->at(2) : true;
-  eeBadSCFlt = metfilterbitpass->size() ? metfilterbitpass->at(8) : true;
+  //// HACK for old and new version of met filters
+  if(metfilterbitpass_old->size()){
+    HBHENoiseFilter                    = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseFilter                   ) : true;
+    HBHENoiseIsoFilter                 = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseIsoFilter                ) : true;
+    CSCTightHalo2015Filter             = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_CSCTightHalo2015Filter            ) : true;
+    EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_EcalDeadCellTriggerPrimitiveFilter) : true;
+    goodVertices                       = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_goodVertices                      ) : true;
+    eeBadScFilter                      = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_eeBadScFilter                     ) : true;
+  } else {
+    HBHENoiseFilter                    = metfilterbitpass & fFlag_HBHENoiseFilter                   ;
+    HBHENoiseIsoFilter                 = metfilterbitpass & fFlag_HBHENoiseIsoFilter                ;
+    CSCTightHalo2015Filter             = metfilterbitpass & fFlag_CSCTightHalo2015Filter            ;
+    EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass & fFlag_EcalDeadCellTriggerPrimitiveFilter;
+    goodVertices                       = metfilterbitpass & fFlag_goodVertices                      ;
+    eeBadScFilter                      = metfilterbitpass & fFlag_eeBadScFilter                     ;
+  }
+
+
 
   if(massparams->size() > 0)
     massPar1 = massparams->at(0);

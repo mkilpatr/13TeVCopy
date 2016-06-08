@@ -61,21 +61,22 @@ namespace ucsbsusy {
       size8             datrec;
       defaults::DataReco datareco;
 
-      std::vector<bool>          * metfilterbitpass;
+      std::vector<bool>          * metfilterbitpass_old;
+      size                         metfilterbitpass;
       std::vector<size16>        * massparams;
 
-      bool hbheIsoFlt;
-      bool hbheFltR2Loose;
-      bool hbheFltR2Tight;
-      bool cscFlt;
-      bool cscBeamHaloFlt;
-      bool eeBadSCFlt;
-      bool eeBadSC4Flt;
-      bool badResolutionTrkFlt;
-      bool muonBadTrkFlt;
+      bool HBHENoiseFilter;
+      bool HBHENoiseIsoFilter;
+      bool CSCTightHalo2015Filter;
+      bool EcalDeadCellTriggerPrimitiveFilter;
+      bool goodVertices;
+      bool eeBadScFilter;
+
+
       int  massPar1;
       int  massPar2;
       int  massPar3;
+
 
       MomentumF    met;
       MomentumF    metNoHF;

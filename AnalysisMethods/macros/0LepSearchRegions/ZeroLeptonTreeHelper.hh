@@ -85,14 +85,12 @@ struct TreeFiller {
   size i_passjson  ;
   size i_passdijetmet;
   size i_isfastsim;
-//  size i_passcscflt; // to be added back later
-  size i_passcscbeamhaloflt;
-  size i_passeebadscflt;
-  size i_passeebadsc4flt;
-  size i_passhbheisoflt;
-  size i_passhbhefltloose;
-  size i_passhbheflttight;
-  size i_passaddmetflts;
+  size i_pass_HBHENoiseFilter                    ;
+  size i_pass_HBHENoiseIsoFilter                 ;
+  size i_pass_CSCTightHalo2015Filter             ;
+  size i_pass_EcalDeadCellTriggerPrimitiveFilter ;
+  size i_pass_goodVertices                       ;
+  size i_pass_eeBadScFilter                      ;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -264,14 +262,12 @@ struct TreeFiller {
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_isfastsim      = data->add<bool>("","isfastsim","O",0);
-//    i_passcscflt     = data->add<bool>("","passcscflt","O",0);
-    i_passcscbeamhaloflt = data->add<bool>("","passcscbeamhaloflt","O",0);
-    i_passeebadscflt = data->add<bool>("","passeebadscflt","O",0);
-    i_passeebadsc4flt = data->add<bool>("","passeebadsc4flt","O",0);
-    i_passhbheisoflt  = data->add<bool>("","passhbheisoflt","O",0);
-    i_passhbhefltloose    = data->add<bool>("","passhbhefltloose","O",0);
-    i_passhbheflttight  = data->add<bool>("","passhbheflttight","O",0);
-    i_passaddmetflts    = data->add<bool>("","passaddmetflts","O",0);
+    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
+    i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
+    i_pass_CSCTightHalo2015Filter               = data->add<bool>("","pass_CSCTightHalo2015Filter"            ,"O",0);
+    i_pass_EcalDeadCellTriggerPrimitiveFilter   = data->add<bool>("","pass_EcalDeadCellTriggerPrimitiveFilter","O",0);
+    i_pass_goodVertices                         = data->add<bool>("","pass_goodVertices"                      ,"O",0);
+    i_pass_eeBadScFilter                        = data->add<bool>("","pass_eeBadScFilter"                     ,"O",0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -639,14 +635,12 @@ struct TreeFiller {
     }
     data->fill<float>(i_absdphilepmet, absdphilepmet);
 
-//    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
-    data->fill<bool>(i_passcscbeamhaloflt, ana->evtInfoReader.cscBeamHaloFlt);
-    data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
-    data->fill<bool>(i_passeebadsc4flt,ana->evtInfoReader.eeBadSC4Flt);
-    data->fill<bool>(i_passhbheisoflt,ana->evtInfoReader.hbheIsoFlt);
-    data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
-    data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
-    data->fill<bool>(i_passaddmetflts,(ana->isMC() || (ana->evtInfoReader.badResolutionTrkFlt && ana->evtInfoReader.muonBadTrkFlt)));
+    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
+    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
+    data->fill<bool>(i_pass_CSCTightHalo2015Filter            ,ana->evtInfoReader.CSCTightHalo2015Filter            );
+    data->fill<bool>(i_pass_EcalDeadCellTriggerPrimitiveFilter,ana->evtInfoReader.EcalDeadCellTriggerPrimitiveFilter);
+    data->fill<bool>(i_pass_goodVertices                      ,ana->evtInfoReader.goodVertices                      );
+    data->fill<bool>(i_pass_eeBadScFilter                     ,ana->evtInfoReader.eeBadScFilter                     );
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;

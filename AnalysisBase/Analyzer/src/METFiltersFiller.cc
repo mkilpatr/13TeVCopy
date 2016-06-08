@@ -20,8 +20,7 @@ METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCo
 {
 
   initTriggerNames();
-
-  itrig_bit_pass        = data.addMulti<bool>(branchName_,"bit_pass",0);
+  itrig_bit_pass        = data.add<size>(branchName_,"int_bit_pass","i",0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -44,6 +43,7 @@ void METFiltersFiller::initTriggerNames()
   trigIds_["Flag_CSCTightHalo2015Filter"]             = fFlag_CSCTightHalo2015Filter;
   trigIds_["Flag_HBHENoiseIsoFilter"]                 = fFlag_HBHENoiseIsoFilter;
   trigIds_["Flag_globalTightHalo2016Filter"]          = fFlag_globalTightHalo2016Filter;
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -61,9 +61,8 @@ void METFiltersFiller::fill()
 {
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
-    if(trigindex != trigIds_.end()) {
-      data.fillMulti<bool>(itrig_bit_pass, triggerBits_->accept(i));
+    if(trigindex != trigIds_.end() && triggerBits_->accept(i)) {
+      itrig_bit_pass |= trigindex->second;
     }
   }
-
 } // end of METFiltersFiller::fill()
