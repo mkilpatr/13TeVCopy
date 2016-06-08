@@ -256,6 +256,27 @@ namespace ucsbsusy {
     fFlag_globalTightHalo2016Filter = 1UL<<15
   };
 
+
+  enum METFilterBits_VectorVersion {
+     fFlag_idx_HBHENoiseFilter                    = 0,
+     fFlag_idx_HBHENoiseIsoFilter                 = 1,
+     fFlag_idx_CSCTightHaloFilter                 = 2,
+     fFlag_idx_CSCTightHalo2015Filter             = 3,
+     fFlag_idx_globalTightHalo2016Filter          = 4,
+     fFlag_idx_hcalLaserEventFilter               = 5,
+     fFlag_idx_EcalDeadCellTriggerPrimitiveFilter = 6,
+     fFlag_idx_goodVertices                      = 7,
+     fFlag_idx_eeBadScFilter                     = 8,
+     fFlag_idx_ecalLaserCorrFilter               = 9,
+     fFlag_idx_trkPOGFilters                     = 10,
+     fFlag_idx_trkPOG_manystripclus53X           = 11,
+     fFlag_idx_trkPOG_toomanystripclus53X        = 12,
+     fFlag_idx_trkPOG_logErrorTooManyClusters    = 13,
+     fFlag_idx_METFilters                        = 14
+
+
+  };
+
 }
 
 #endif
