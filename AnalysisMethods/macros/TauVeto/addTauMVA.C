@@ -1,22 +1,15 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
+#include "AnalysisBase/TreeAnalyzer/interface/MVAWrapper.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
-#include "AnalysisTools/Parang/interface/Panvariate.h"
 
 using namespace std;
 using namespace ucsbsusy;
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree) : TreeCopierAllBranches(fileName,treeName,outFileName,isMCTree)
-  {
-
-    TFile*              file1    = TFile::Open("tauDisc_new.root", "READ");
-    mva1  = dynamic_cast<ParamatrixMVA*>(file1->Get("mva_0"));
-    delete file1;
-    assert(mva1);
-
-  };
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree) : TreeCopierAllBranches(fileName,treeName,outFileName,12345,isMCTree,0), mvaWrap("tauDisc_new.root","mva_0")
+  {};
   virtual ~Copier() {};
 
   virtual void setupTree() {
@@ -59,50 +52,49 @@ public:
 
   virtual void processVariables(){}
 
-  double evaluateMVA(const ParamatrixMVA* mvas){
+  double evaluateMVA(){
     float filtered_pt = pt;
     if(pt > 1000.0) filtered_pt = 999.9;
 
-    static const int parIndex_pt = mvas->findAxis("pt");
+    static const int parIndex_pt = mvaWrap.findAxis("pt");
     static vector<double> mva_parameters(1,0);
     mva_parameters[parIndex_pt] = filtered_pt;
 
-    const Panvariate * mva = mvas->get(mva_parameters);
-    assert(mva);
+    mvaWrap.setParameters(mva_parameters);
 
-    static const int index_pt         = mva->findVariable("pt"        );
-    static const int index_abseta     = mva->findVariable("abseta"    );
-    static const int index_chiso0p1   = mva->findVariable("chiso0p1"  );
-    static const int index_chiso0p2   = mva->findVariable("chiso0p2"  );
-    static const int index_chiso0p3   = mva->findVariable("chiso0p3"  );
-    static const int index_chiso0p4   = mva->findVariable("chiso0p4"  );
-    static const int index_totiso0p1  = mva->findVariable("totiso0p1" );
-    static const int index_totiso0p2  = mva->findVariable("totiso0p2" );
-    static const int index_totiso0p3  = mva->findVariable("totiso0p3" );
-    static const int index_totiso0p4  = mva->findVariable("totiso0p4" );
-    static const int index_neartrkdr  = mva->findVariable("neartrkdr" );
-    static const int index_contjetdr  = mva->findVariable("contjetdr" );
-    static const int index_contjetcsv = mva->findVariable("contjetcsv");
+    static const int index_pt         =mvaWrap.findVariable("pt"        );
+    static const int index_abseta     =mvaWrap.findVariable("abseta"    );
+    static const int index_chiso0p1   =mvaWrap.findVariable("chiso0p1"  );
+    static const int index_chiso0p2   =mvaWrap.findVariable("chiso0p2"  );
+    static const int index_chiso0p3   =mvaWrap.findVariable("chiso0p3"  );
+    static const int index_chiso0p4   =mvaWrap.findVariable("chiso0p4"  );
+    static const int index_totiso0p1  =mvaWrap.findVariable("totiso0p1" );
+    static const int index_totiso0p2  =mvaWrap.findVariable("totiso0p2" );
+    static const int index_totiso0p3  =mvaWrap.findVariable("totiso0p3" );
+    static const int index_totiso0p4  =mvaWrap.findVariable("totiso0p4" );
+    static const int index_neartrkdr  =mvaWrap.findVariable("neartrkdr" );
+    static const int index_contjetdr  =mvaWrap.findVariable("contjetdr" );
+    static const int index_contjetcsv =mvaWrap.findVariable("contjetcsv");
 
-    mva->setVariable(index_pt, pt);
-    mva->setVariable(index_abseta, abseta);
-    mva->setVariable(index_chiso0p1, chiso0p1);
-    mva->setVariable(index_chiso0p2, chiso0p2);
-    mva->setVariable(index_chiso0p3, chiso0p3);
-    mva->setVariable(index_chiso0p4, chiso0p4);
-    mva->setVariable(index_totiso0p1, totiso0p1);
-    mva->setVariable(index_totiso0p2, totiso0p2);
-    mva->setVariable(index_totiso0p3, totiso0p3);
-    mva->setVariable(index_totiso0p4, totiso0p4);
-    mva->setVariable(index_neartrkdr, neartrkdr);
-    mva->setVariable(index_contjetdr, contjetdr);
-    mva->setVariable(index_contjetcsv, contjetcsv);
+    mvaWrap.setVariable(index_pt, pt);
+    mvaWrap.setVariable(index_abseta, abseta);
+    mvaWrap.setVariable(index_chiso0p1, chiso0p1);
+    mvaWrap.setVariable(index_chiso0p2, chiso0p2);
+    mvaWrap.setVariable(index_chiso0p3, chiso0p3);
+    mvaWrap.setVariable(index_chiso0p4, chiso0p4);
+    mvaWrap.setVariable(index_totiso0p1, totiso0p1);
+    mvaWrap.setVariable(index_totiso0p2, totiso0p2);
+    mvaWrap.setVariable(index_totiso0p3, totiso0p3);
+    mvaWrap.setVariable(index_totiso0p4, totiso0p4);
+    mvaWrap.setVariable(index_neartrkdr, neartrkdr);
+    mvaWrap.setVariable(index_contjetdr, contjetdr);
+    mvaWrap.setVariable(index_contjetcsv, contjetcsv);
 
-    return mva->evaluateMethod(0);
+    return mvaWrap.evaluate();
   }
 
   bool fillEvent() {
-    data.fill<float>(taumva_new,   evaluateMVA(mva1));
+    data.fill<float>(taumva_new,   evaluateMVA());
     return true;
   }
 
@@ -110,7 +102,7 @@ public:
     taumva_new      = data.add<float>("","taumva_new"      ,"F",0);
   }
 
-  const ParamatrixMVA*  mva1;
+  MVAWrapper mvaWrap;
 
   size taumva_new;
 
@@ -146,7 +138,7 @@ public:
 
 #endif
 
-void addTauMVA(string fileName = "trees/faketaus_T2tt_850_100.root", string treeName = "Candidates", string outFileName ="trees/faketaus_T2tt_850_100_addtaumva.root", bool isMCTree = true) {
+void addTauMVA(string fileName = "tauMVATrees/realtaus_tt1tau.root", string treeName = "Candidates", string outFileName ="tauMVATrees/realtaus_tt1tau_addtaumva.root", bool isMCTree = true) {
   Copier a(fileName,treeName,outFileName,isMCTree);
   a.analyze(100000);
 }

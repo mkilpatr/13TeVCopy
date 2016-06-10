@@ -31,8 +31,8 @@ public:
   }
 
   void configure(){
-    addInputTree(sigTree,"GoodTaus","gentaumatch==1 && nGenLeptons==0 && nGenTaus==nGenHadTaus && nGenHadTaus==1 && njets>3 && misset>150 && mt<100 && pt>10 && ptmatch > 6.");
-    addInputTree(bkgTree,"FakeTaus","gentaumatch==0 && nGenLeptons==0 && nGenTaus==0 && njets>3 && misset>150 && mt<100 && pt>10");
+    addInputTree(sigTree,"GoodTaus","gentaumatch==1 && nGenLeptons==0 && nGenTaus==nGenHadTaus && nGenHadTaus==1 && njets>3 && misset>150 && mt<100 && pt>10 && ptmatch > 6. && absdz<0.2");
+    addInputTree(bkgTree,"FakeTaus","gentaumatch==0 && nGenLeptons==0 && nGenTaus==0 && njets>3 && misset>150 && mt<100 && pt>10 && absdz<0.2");
 
     addFactory(TMVA::Types::kBDT,"BDTG");
     addAxis(new BinnedSpace("pt", "pt", "10, 1000"));
@@ -52,7 +52,7 @@ public:
 
 
 
-void produceTauMVA(string sigFileName = "trees/ttbar.root", string bkgFileName = "trees/T2tt_650_325.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_new.root") {
+void produceTauMVA(string sigFileName = "tauMVATrees/realtaus_tt1tau.root", string bkgFileName = "tauMVATrees/T2tt_850_100.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_new.root") {
   TFile * sigFile = new TFile(sigFileName.c_str(),"read");
   TFile * bkgFile = new TFile(bkgFileName.c_str(),"read");
   TTree * sigTree = 0;
