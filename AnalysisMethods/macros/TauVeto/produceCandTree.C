@@ -15,7 +15,7 @@ class Analyzer : public BaseTreeAnalyzer {
 
   public :
 
-  Analyzer(TString fileName, TString treeName, bool isMCTree, TString outPath, TString outName) : BaseTreeAnalyzer(fileName, treeName, isMCTree), outputPath_(outPath), outputName_(outName) {
+  Analyzer(TString fileName, TString treeName, bool isMCTree, TString outPath, TString outName, cfgSet::ConfigSet& cfg) : BaseTreeAnalyzer(fileName, treeName, isMCTree,12345,&cfg), outputPath_(outPath), outputName_(outName) {
     loadTree();
   }
 
@@ -114,8 +114,12 @@ void Analyzer::processVariables()
     }
 
   if(pfcandReader.isLoaded())
-    for(auto& pfc : pfcandReader.extpfcands)
+    for(auto& pfc : pfcandReader.extpfcands){
+      MomentumF* cand = new MomentumF(pfc.p4());
+      if(pfc.nearPhoton().pt() > -1.) cand->setP4(pfc.p4() + pfc.nearPhoton().p4());
+      pfc.setMt(JetKinematics::transverseMass(*cand,*met));
       extpfcands.push_back(&pfc);
+    }
 
 
   if(genParticleReader.isLoaded()){
@@ -295,47 +299,47 @@ void Analyzer::runEvent()
       }
     }
 
-    if(c->pt() > 5.0 && fabs(c->eta()) < 2.4) {
+    if(c->pt() > 10.0 && fabs(c->eta()) < 2.4) {
 
-      pt = c->pt();
+      pt = std::min(c->pt(),float(300.0));
       njets = nJets;
       mt = c->mt();
-      mtnophoton = JetKinematics::transverseMass(*c, *met);
-      dphimet = fabs(PhysicsUtilities::deltaPhi(*c, *met));
+//      mtnophoton = JetKinematics::transverseMass(*c, *met);
+//      dphimet = fabs(PhysicsUtilities::deltaPhi(*c, *met));
 
-      MomentumF* W = new MomentumF(c->p4() + met->p4());
-      dphiw = fabs(PhysicsUtilities::deltaPhi(*c, *W));
+//      MomentumF* W = new MomentumF(c->p4() + met->p4());
+//      dphiw = fabs(PhysicsUtilities::deltaPhi(*c, *W));
 
-      abseta = fabs(c->eta());
-      absdz = fabs(c->dz());
-      taumva = c->taudisc();
-      chiso0p1 = c->chiso0p1();
-      chiso0p2 = c->chiso0p2();
-      chiso0p3 = c->chiso0p3();
-      chiso0p4 = c->chiso0p4();
-      chreliso0p1 = chiso0p1/pt;
-      chreliso0p2 = chiso0p2/pt;
-      chreliso0p3 = chiso0p3/pt;
-      chreliso0p4 = chiso0p4/pt;
-      totiso0p1 = c->totiso0p1();
-      totiso0p2 = c->totiso0p2();
-      totiso0p3 = c->totiso0p3();
-      totiso0p4 = c->totiso0p4();
-      totreliso0p1 = totiso0p1/pt;
-      totreliso0p2 = totiso0p2/pt;
-      totreliso0p3 = totiso0p3/pt;
-      totreliso0p4 = totiso0p4/pt;
-      neartrkdr = c->neartrkdr();
+      abseta       = fabs(c->eta());
+      absdz        = fabs(c->dz());
+      taumva       = c->taudisc();
+      chiso0p1     = std::min(c->chiso0p1(),float(700.0));
+      chiso0p2     = std::min(c->chiso0p2(),float(700.0));
+      chiso0p3     = std::min(c->chiso0p3(),float(700.0));
+      chiso0p4     = std::min(c->chiso0p4(),float(700.0));
+//      chreliso0p1  = chiso0p1/pt;
+//      chreliso0p2  = chiso0p2/pt;
+//      chreliso0p3  = chiso0p3/pt;
+//      chreliso0p4  = chiso0p4/pt;
+      totiso0p1    = std::min(c->totiso0p1(),float(700.0));
+      totiso0p2    = std::min(c->totiso0p2(),float(700.0));
+      totiso0p3    = std::min(c->totiso0p3(),float(700.0));
+      totiso0p4    = std::min(c->totiso0p4(),float(700.0));
+//      totreliso0p1 = totiso0p1/pt;
+//      totreliso0p2 = totiso0p2/pt;
+//      totreliso0p3 = totiso0p3/pt;
+//      totreliso0p4 = totiso0p4/pt;
+      neartrkdr    = c->neartrkdr();
 
-      const RecoJetF* jet = c->jetIndex() > -1 && c->jetIndex() < int(jets.size()) ? jets.at(c->jetIndex()) : 0;
-      contjetdr = (c->jetIndex() > -1 && c->jetIndex() < int(jets.size()) &&  jet->pt() > 30.0 && fabs(jet->eta()) < 2.4) ? PhysicsUtilities::deltaR(*c, *jet) : 0.5;
-      contjetcsv = (c->jetIndex() > -1 && c->jetIndex() < int(jets.size()) &&  jet->pt() > 30.0 && fabs(jet->eta()) < 2.4) ? jet->csv() : 0.0;
+      contjetdr  = std::min(float(0.4), c->contjetdr() );
+      if(contjetdr < 0.0) contjetdr = 0.0;
+      contjetcsv =  c->contjetcsv();
       if(contjetcsv < 0.0) contjetcsv = 0.0;
 
-      double nearestDR = 10.7;
-      int nearpho_pt1_ind = PhysicsUtilities::findNearestDRDeref(*c, pfphotons, nearestDR, 1e308, 1.0);
-      nearphodr = nearpho_pt1_ind > -1 ? PhysicsUtilities::deltaR(*c, *pfphotons.at(nearpho_pt1_ind)) : -1.0;
-      nearphopt = nearpho_pt1_ind > -1 && nearestDR < 0.05 ? pfphotons.at(nearpho_pt1_ind)->pt() : 0.0;
+//      double nearestDR = 10.7;
+//      int nearpho_pt1_ind = PhysicsUtilities::findNearestDRDeref(*c, pfphotons, nearestDR, 1e308, 1.0);
+//      nearphodr = nearpho_pt1_ind > -1 ? PhysicsUtilities::deltaR(*c, *pfphotons.at(nearpho_pt1_ind)) : -1.0;
+//      nearphopt = nearpho_pt1_ind > -1 && nearestDR < 0.05 ? pfphotons.at(nearpho_pt1_ind)->pt() : 0.0;
 
       if(match && nGenHadTaus > 0) gentaumatch = true;
       else                         gentaumatch = false;
@@ -369,22 +373,25 @@ void produceCandTree(TString sname = "T2tt_500_325",
                      const int fileindex = -1,
                      const bool isMC = true,
                      const TString fname = "T2tt_500_325_ntuple.root",
-                     const double xsec = 1.0,
                      const TString outputdir = "trees",
-                     const TString fileprefix = "root://eoscms//eos/cms/store/user/vdutta/13TeV/270215/merged/")
+                     const TString fileprefix = "root://cmseos:1094/",
+                     const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
 {
-
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
 
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
+
 
   TString fullname = fileprefix+fname;
 
-  Analyzer a(fullname, "Events", isMC, outputdir, sname);
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  // disable JetID for signal samples
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW")) cfg.jets.applyJetID = false;
+
+  Analyzer a(fullname, "Events", isMC, outputdir, sname, cfg);
 
   a.analyze(10000);
 

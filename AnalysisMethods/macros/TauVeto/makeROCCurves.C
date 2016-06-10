@@ -2,21 +2,21 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotROCCurves.h"
 #endif
 
-void makeROCCurves(const TString sigtree    = "trees/realtaus_tt1tau_addtaumva.root",
-                   const TString bkgtree    = "trees/faketaus_T2tt_650_325_addtaumva.root",
+void makeROCCurves(const TString sigtree    = "tauMVATrees/realtaus_tt1tau_addtaumva.root",
+                   const TString bkgtree    = "tauMVATrees/faketaus_T2tt_500_325_addtaumva.root",
                    const TString siglabel   = "#varepsilon(t#bar{t} gen-matched h^{#pm})",
-                   const TString bkglabel   = "#varepsilon(T2tt(650,325) non-matched h^{#pm})",
+                   const TString bkglabel   = "#varepsilon(T2tt(500,325) non-matched h^{#pm})",
                    const TString treename   = "Candidates",
                    const TString outputname = "comp_meddm")
 {
 
   TString selbase   = "njets>3 && misset>150 && pt>10";
   TString selmt     = selbase + " && absdz<0.2 && mt<100";
-  TString seldphi   = selbase + " && absdz<0.2 && dphimet<1.34";
+//  TString seldphi   = selbase + " && absdz<0.2 && dphimet<1.34";
 
   vector<TString> compmvas_training = {"taumva", "taumva_new"};
 
-  vector<TString> compvars = {"dphimet", "dphiw", "mt", "mtnophoton"};
+  vector<TString> compvars = {"mt"};
 
   PlotROCCurves* plots = new PlotROCCurves();
 
@@ -25,10 +25,10 @@ void makeROCCurves(const TString sigtree    = "trees/realtaus_tt1tau_addtaumva.r
 
   plots->addROCVariable("taumva", "Old training", selmt, selmt, kRed+2,    200, -1.0, 1.0);
   plots->addROCVariable("taumva_new", "New training", selmt, selmt, kBlue+2,    200, -1.0, 1.0);
-  plots->addROCVariable("dphimet", "|#Delta#phi(h^{#pm}, #slash{E}_{T})|", selbase, selbase, kRed+2, 210, 0, 3.15, 1);
-  plots->addROCVariable("dphiw", "|#Delta#phi(h^{#pm}, W)|", selbase, selbase, kBlue+2, 210, 0, 3.15, 1);
+//  plots->addROCVariable("dphimet", "|#Delta#phi(h^{#pm}, #slash{E}_{T})|", selbase, selbase, kRed+2, 210, 0, 3.15, 1);
+//  plots->addROCVariable("dphiw", "|#Delta#phi(h^{#pm}, W)|", selbase, selbase, kBlue+2, 210, 0, 3.15, 1);
   plots->addROCVariable("mt", "m_{T} (with #gamma)", selbase, selbase, kOrange+2, 250, 0, 500, 1);
-  plots->addROCVariable("mtnophoton", "m_{T} (without #gamma)", selbase, selbase, kAzure+2, 250, 0, 500, 1);
+//  plots->addROCVariable("mtnophoton", "m_{T} (without #gamma)", selbase, selbase, kAzure+2, 250, 0, 500, 1);
 
   plots->addCompPlot(outputname+"_mvatraining",      compmvas_training);
   plots->addCompPlot(outputname+"_mvatraining_zoom", compmvas_training, 0.0, 0.1, 0.4, 0.9);
@@ -50,7 +50,7 @@ void makeROCCurves(const TString sigtree    = "trees/realtaus_tt1tau_addtaumva.r
   plots->plotAll();
 
   plots->getInfoForCut("mt", 100.0);
-  plots->getInfoForBackgroundEff("dphimet", bkgeff_mt100);
+//  plots->getInfoForBackgroundEff("dphimet", bkgeff_mt100);
 
   plots->getInfoForSignalEff("taumva_new", 0.7);
   plots->getInfoForSignalEff("taumva", 0.7);

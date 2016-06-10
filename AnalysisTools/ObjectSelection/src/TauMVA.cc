@@ -74,18 +74,19 @@ double TauMVA::evaluateMVA(float pt, float eta, float dz, float chiso0p1, float 
 
   assert(mvaReader);
 
-  mvaReader->setVariable(index_pt, pt);
-  mvaReader->setVariable(index_abseta, fabs(eta));
-  mvaReader->setVariable(index_chiso0p1, chiso0p1);
-  mvaReader->setVariable(index_chiso0p2, chiso0p2);
-  mvaReader->setVariable(index_chiso0p3, chiso0p3);
-  mvaReader->setVariable(index_chiso0p4, chiso0p4);
-  mvaReader->setVariable(index_totiso0p1, totiso0p1);
-  mvaReader->setVariable(index_totiso0p2, totiso0p2);
-  mvaReader->setVariable(index_totiso0p3, totiso0p3);
-  mvaReader->setVariable(index_totiso0p4, totiso0p4);
-  mvaReader->setVariable(index_nearesttrkdr, nearesttrkdr);
-  mvaReader->setVariable(index_contjetdr, contjetdr < 0.0 ? 0.5 : contjetdr);
+  mvaReader->setVariable(index_pt, std::min(pt,float(300.0)));
+  mvaReader->setVariable(index_abseta, std::min(fabs(eta),2.4));
+  mvaReader->setVariable(index_chiso0p1 , std::min(chiso0p1 ,float(700)));
+  mvaReader->setVariable(index_chiso0p2 , std::min(chiso0p2 ,float(700)));
+  mvaReader->setVariable(index_chiso0p3 , std::min(chiso0p3 ,float(700)));
+  mvaReader->setVariable(index_chiso0p4 , std::min(chiso0p4 ,float(700)));
+  mvaReader->setVariable(index_totiso0p1, std::min(totiso0p1,float(700)));
+  mvaReader->setVariable(index_totiso0p2, std::min(totiso0p2,float(700)));
+  mvaReader->setVariable(index_totiso0p3, std::min(totiso0p3,float(700)));
+  mvaReader->setVariable(index_totiso0p4, std::min(totiso0p4,float(700)));
+  mvaReader->setVariable(index_nearesttrkdr, std::min(nearesttrkdr,float(2.38)));
+  contjetdr = std::min(float(0.4),contjetdr);
+  mvaReader->setVariable(index_contjetdr, contjetdr < 0.0 ? 0.0 : contjetdr);
   mvaReader->setVariable(index_contjetcsv, contjetcsv < 0.0 ? 0.0 : contjetcsv);
 
  return mvaReader->evaluateMethod(0);

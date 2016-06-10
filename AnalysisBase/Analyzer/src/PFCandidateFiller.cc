@@ -23,13 +23,13 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
   taudiscMin_   (cfg.getUntrackedParameter<double>          ("minTauDisc"))
 {
 
-  string base = getenv("CMSSW_BASE") + string("/src/data/Taus/");
+  string base = getenv("CMSSW_BASE") + string("/src/data/taus/");
   string tauMVAFileName_MtPresel = cfg.getUntrackedParameter<string>("tauMVAFileName_MtPresel");
-  string tauMVAFileName_DphiPresel = cfg.getUntrackedParameter<string>("tauMVAFileName_DphiPresel");
+//  string tauMVAFileName_DphiPresel = cfg.getUntrackedParameter<string>("tauMVAFileName_DphiPresel");
   string tauMVAName = cfg.getUntrackedParameter<string>("tauMVAName");
 
   tauMVA_MtPresel_   = new TauMVA(base+tauMVAFileName_MtPresel, tauMVAName);
-  tauMVA_DphiPresel_ = new TauMVA(base+tauMVAFileName_DphiPresel, tauMVAName);
+//  tauMVA_DphiPresel_ = new TauMVA(base+tauMVAFileName_DphiPresel, tauMVAName);
 
   ipt_     = data.addMulti<float>(branchName_,"pt",0);
   ieta_    = data.addMulti<float>(branchName_,"eta",0);
@@ -259,7 +259,7 @@ void PFCandidateFiller::fill()
     float contjetcsv = jetmatch ? jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
 
     float taumva_mtpresel   = tauMVA_MtPresel_  ->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
-    float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
+//    float taumva_dphipresel = tauMVA_DphiPresel_->evaluateMVA(pfc->pt(), pfc->eta(), pfc->dz(), chiso0p1, chiso0p2, chiso0p3, chiso0p4, totiso0p1, totiso0p2, totiso0p3, totiso0p4, nearesttrkdr, contjetdr, contjetcsv);
 
     data.fillMulti<float>(ipt_, pfc->pt());
     data.fillMulti<float>(ieta_, pfc->eta());
@@ -283,11 +283,18 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(inearphoeta_, photonIndex > -1 ? pfcands_->at(photonIndex).eta() : -1.0);
     data.fillMulti<float>(inearphophi_, photonIndex > -1 ? pfcands_->at(photonIndex).phi() : -1.0);
     data.fillMulti<float>(inearestTrkDR_, nearesttrkdr);
-    data.fillMulti<int  >(icontJetIndex_, jetIndex);
+//    data.fillMulti<int  >(icontJetIndex_, jetIndex);
+
+    //Store in the tree jet pt -> 20 so that in the next round we can go that low
+    jetmatch = jetIndex > -1 && jet->pt() >= 20.0 && fabs(jet->eta()) < 2.4;
+    contjetdr = jetmatch ? PhysicsUtilities::deltaR(*pfc, *jet) : -1.0;
+    contjetcsv = jetmatch ? jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -1.0;
+
+
     data.fillMulti<float>(icontJetDR_, contjetdr);
     data.fillMulti<float>(icontJetCSV_, contjetcsv);
     data.fillMulti<float>(itaudisc_mtpresel_, taumva_mtpresel);
-    data.fillMulti<float>(itaudisc_dphipresel_, taumva_dphipresel);
+//    data.fillMulti<float>(itaudisc_dphipresel_, taumva_dphipresel);
   }
 
   isFilled_ = true;
