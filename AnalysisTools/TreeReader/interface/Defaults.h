@@ -50,7 +50,7 @@ namespace defaults {
   const double CSV_TIGHT        = 0.935;
   ///
 
-  const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.80;
+  const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.71;
 
   const double TAU_MVA_VETO_DPHIPRESEL_MEDIUM = 0.53;
   const double TAU_MTCUT_VETO = 100.;
