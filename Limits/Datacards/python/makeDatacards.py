@@ -519,7 +519,7 @@ class Datacard:
             uncline = unc.label.ljust(self.colwidth - 2)
         else :
             uncline = unc.label.ljust(self.colwidth)
-        uncline += unc.type + ' '
+        uncline += ' ' + unc.type + ' '
         # don't count uncertainties with no entries for any of the processes
         hasEntry = False
         if unc.type == 'gmN' :
