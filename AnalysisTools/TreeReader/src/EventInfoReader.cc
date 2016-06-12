@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // EventInfoReader
-// 
+//
 // Class for reading event level information from TTree.
-// 
-// EventInfoReader.cc created on Mon Nov 3 12:56:14 CET 2014 
-// 
+//
+// EventInfoReader.cc created on Mon Nov 3 12:56:14 CET 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
@@ -44,6 +44,7 @@ EventInfoReader::EventInfoReader()
   xsecweight = 1;
   genevtweight = 1;
   evtweight = 1;
+  nStandardGenJets = -1;
   lhecentralweight = 1;
   systweights = new vector<float>;
   proc = 0;
@@ -99,6 +100,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"xsection", &xsec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);
+  treeReader->setBranchAddress(branchName,"nstdgenjets", &nStandardGenJets);
   treeReader->setBranchAddress(branchName,"lhecentralweight", &lhecentralweight);
   treeReader->setBranchAddress(branchName,"systweights", &systweights);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass_old);

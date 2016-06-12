@@ -12,7 +12,6 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
-#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 namespace ucsbsusy {
 

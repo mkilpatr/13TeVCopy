@@ -47,16 +47,16 @@ parser.add_argument("-e", "--redir", dest="redir", default="root://cmsxrootd.fna
 parser.add_argument("--storageSite", dest="site", default="T3_US_FNALLPC", help="Crab storage site. [Default: T3_US_FNALLPC]")
 args = parser.parse_args()
 
-def get_num_events(filelist, prefix='', wgtsign=1, treename='TestAnalyzer/Events'):
+def get_num_events(filelist, prefix='', wgtsign=1, treename='TestAnalyzer/Events', selection=''):
     totentries = 0
     for filename in filelist :
         filepath = '/'.join(['%s' % prefix, '%s' % filename])
         file = TFile.Open(filepath)
         tree = file.Get(treename)
         if wgtsign > 0 :
-            totentries += tree.GetEntries('genweight>0')
+            totentries += tree.GetEntries('genweight>0' + selection)
         else :
-            totentries += tree.GetEntries('genweight<0')
+            totentries += tree.GetEntries('genweight<0' + selection)
     return totentries
 
 processes = []
@@ -66,8 +66,9 @@ datasets = []
 totnposevents = []
 totnnegevents = []
 xsecfiles = []
+wgtscalefactors = []
 
-def parseConfig(removeExtension=False):
+def parseConfig(removeExtension=False, removeGenJets5=False):
     with open(args.input, "r") as f :
         for line in f :
             content = line.split()
@@ -76,10 +77,16 @@ def parseConfig(removeExtension=False):
             if removeExtension and re.search(r'-ext[0-9]*$', content[1]) and re.sub(r'-ext[0-9]*$', '', content[1]) in samples:
                 print content[1], 'is an extension sample, will not be proecessed in this step...'
                 continue
+            if removeGenJets5 and re.search(r'-genjets5$', content[1]) and re.sub(r'-genjets5$', '', content[1]) in samples:
+                print content[1], 'is a genjets5 filtered sample, will be treated together with the inclusive sample...'
+                continue
             processes.append(content[0])
             samples.append(content[1])
             xsecs.append(content[2])
-            datasets.append(content[3])
+            if len(content) > 3 :
+                datasets.append(content[3])
+            else:
+                datasets.append(None)
             if len(content) > 4 :
                 xsecfiles.append(content[4])
             else :
@@ -211,7 +218,7 @@ rm submit.cmd""".format(
     exit()
 
 elif args.postprocess :
-    parseConfig(True)
+    parseConfig(True, True)
 
     if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
         os.system("%s mkdir -p %s" % (eos, args.outdir))
@@ -222,22 +229,38 @@ elif args.postprocess :
     prefix = ""
     for isam in range(len(samples)) :
         filelist = []
+        extrafilelist = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             cmd = ("%s find -f %s | egrep '%s(-ext[0-9]*|)(_[0-9]+|)_ntuple.root'" % (eos, args.outdir, samples[isam]))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             result = ps.communicate()
             filelist = result[0].rstrip('\n').split('\n')
             prefix = "root://eoscms/"
+            if 'qcd' in samples[isam]:
+                cmd = ("%s find -f %s | egrep '%s-genjets5(-ext[0-9]*|)(_[0-9]+|)_ntuple.root'" % (eos, args.outdir, samples[isam]))
+                ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                result = ps.communicate()
+                extrafilelist = result[0].rstrip('\n').split('\n')
         else :
             filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext[0-9]*|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
-        files.append(filelist)
+            if 'qcd' in samples[isam]:
+                extrafilelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s-genjets5(-ext[0-9]*|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
+        files.append(filelist + extrafilelist)
         nposevents = get_num_events(filelist, prefix)
         nnegevents = get_num_events(filelist, prefix, -1)
         totnposevents.append(nposevents)
         totnnegevents.append(nnegevents)
         print "Sample " + samples[isam] + " has " + str(nposevents) + " positive and " + str(nnegevents) + " negative weight events"
+        if 'qcd' in samples[isam]:
+            ngenjets5events = get_num_events(filelist, prefix, selection=' && nstdgenjets>=5')
+            nextragenjets5events = get_num_events(extrafilelist, prefix, selection=' && nstdgenjets>=5')
+            wgtsf = float(ngenjets5events) / (ngenjets5events + nextragenjets5events)
+            wgtscalefactors.append(wgtsf)
+            print "Sample " + samples[isam] + " has " + str(nposevents) + " events, " + str(ngenjets5events) + " of which have ngenjets>=5; Extra genjets5 sample has " + str(nextragenjets5events) + " events; wgtSF for ngenjets>=5 = " + str(wgtsf)
+        else:
+            wgtscalefactors.append(1)
 
     print "Creating submission file: submit_addweight.sh"
     script = open("submit_addweight.sh", "w")
@@ -270,12 +293,12 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root", "_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\"\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\",{wgtsf}\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {outname} {outdir} $workdir\n""".format(
-                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], outname=outfilename, outdir=args.outdir
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {wgtsf} {outname} {outdir} $workdir\n""".format(
+                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
@@ -286,7 +309,7 @@ universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {wgtsf} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -300,7 +323,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir, name=samples[isam], j=ifile))
@@ -353,8 +376,9 @@ elif args.runmerge :
             f.write('\n'.join(filelist))
         print "There are %d files to merge for %s\n" % (len(filelist) - 1, samples[isam])
         if args.splitmerge :
-            nummergedfiles = int(input("How many merged files do you want? "))
             numfilespermerge = int(input("How many input files per merge? "))
+            nummergedfiles = 0 if numfilespermerge==0 else int(len(filelist)/numfilespermerge)
+            print "Will produce %d merged files." % nummergedfiles
             for imerge in range(1, nummergedfiles + 1) :
                 start = ((imerge - 1) * numfilespermerge) + 2
                 end = (imerge * numfilespermerge) + 1
@@ -383,6 +407,7 @@ elif args.submittype == 'crab':
     for isamp in range(len(samples)):
         samp = samples[isamp]
         dataset = datasets[isamp]
+        if not dataset: continue
         isData = re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', dataset)
 #         crab_template_file = 'template_runCrabOnData.py' if isData else 'template_runCrabOnMC.py'
         crab_template_file = 'template_runCrab.py'
@@ -447,26 +472,26 @@ echo "$cfgfile $runscript $workdir $outputdir"
         pathtocfg=args.path, runscript=args.script, stype=args.submittype
         ))
     for isam in range(len(samples)) :
-
- 	if args.arrangement == "das" :
-		cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
-	elif args.arrangement == "local" and args.splittype == "file" :
-		cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
-	else :
-		print "Fatal error: File-based splitting (splittype == \"file\") required if local."
+        if not datasets[isam]: continue
+        if args.arrangement == "das" :
+            cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
+        elif args.arrangement == "local" and args.splittype == "file" :
+            cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
+        else :
+            print "Fatal error: File-based splitting (splittype == \"file\") required if local."
         subprocess.call(cmd, shell=True)
         if args.arrangement == "das" :
-		cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
-        	ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        	numevents = int(ps.communicate()[0])
-        	if args.maxevents > -1  and args.maxevents < numevents :
-            		numevents = args.maxevents
+            cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
+            ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            numevents = int(ps.communicate()[0])
+            if args.maxevents > -1  and args.maxevents < numevents :
+                numevents = args.maxevents
         numperjob = args.numperjob
         numlines = 0
-	infilename = "%s/filelist_%s.txt" % (args.jobdir, samples[isam])
+        infilename = "%s/filelist_%s.txt" % (args.jobdir, samples[isam])
         print "Creating jobs for %s" % samples[isam]
         with open(infilename, "r") as infile :
-           numlines = len(infile.readlines())
+            numlines = len(infile.readlines())
         if args.splittype == "file" :
             numjobs = int(numlines) / int(numperjob)
             rem = numlines % numperjob
@@ -487,7 +512,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
             if args.splittype == "file" and args.arrangement == "local" :
                 jobfile = "job_%d_%s.txt" % (ijob, samples[isam])
                 os.system("sed -n %d,%dp %s | awk \'{print \"root://cmseos:1094/\" $0}\' > %s/%s" % (start, end, infilename, args.jobdir, jobfile))
- 	    elif args.splittype == "file" :
+            elif args.splittype == "file" :
                 jobfile = "job_%d_%s.txt" % (ijob, samples[isam])
                 os.system("sed -n %d,%dp %s > %s/%s" % (start, end, infilename, args.jobdir, jobfile))
             elif args.splittype == "event" :
@@ -497,7 +522,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
             cmd = ""
             if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
                 cmd = ("%s ls %s | grep -c output_%d_%s%s.root" % (eos, args.outdir, ijob, samples[isam], suffix))
-	    else :
+            else :
                 cmd = "ls %s | grep -c output_%d_%s%s.root" % (args.outdir, ijob, samples[isam], suffix)
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             output = ps.communicate()[0][0]
