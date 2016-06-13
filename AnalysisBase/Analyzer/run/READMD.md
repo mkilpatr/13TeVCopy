@@ -14,13 +14,15 @@ Assume you use condor at FNAL.
 
 `./makejobs.py --runmerge -i [ttbar.conf] --inputdir [/eos/uscms/store/user/${USER}/13TeV/ntuples/outputs] -o [/eos/uscms/store/user/${USER}/13TeV/ntuples/after_merge] --splitmerge`
 
-Here you need to specify how many output files you want, and how many input files to take for each output file.
+Here you only need to specify how many input files to include per output file, and the number of output files will be calculated automatically (the remaining files will be added to the last output file).
 
 [**Step 3**] Add weights:
 
 `./makejobs.py --postprocess -i [ttbar.conf] --inputdir [/eos/uscms/store/user/${USER}/13TeV/ntuples/after_merge] -o /eos/uscms/store/user/${USER}/13TeV/ntuples/merged`
 
 The extension samples will be combined with the original samples (*This is handled by makejobs.py now, so no need to comment out the -ext lines. However, make sure you have the -ext lines AFTER the original samples in your .conf file.*). 
+
+The QCD genjets5 samples will be patched together in this step (by scaling down the weights of N(genjets>=5) events). For it to work properly, make sure you have, e.g., the lines `qcd-ht300to500`, `qcd-ht300to500-ext`, `qcd-ht300to500-genjets5`, all in your .conf file, and they appear in this order.
 
 [**Step 4**] Split files (only for signal scans):
 
@@ -39,11 +41,17 @@ Remember to setup the CRAB environment before submitting:
 
 `source /cvmfs/cms.cern.ch/crab3/crab_light.(c)sh`
 
-Then for Step 2, you also need the `-t crab` option, because the output files are named differently (but the merging is running interacitvely. You can use `tmux` or `screen` to keep the script running.)
+You can check the status of, resubmit, or kill **all** the jobs by
+
+`./makejobs.py -i ttbar.conf -t crab --crabcmd (status|resubmit|kill|...)`
+
+(Or run any crab command that works in this format: `crab [command] -d crab_projects/[name]`)
 
 [**Step 2**] Merge CRAB output files:
 
-`./makejobs.py --runmerge -i ttbar.conf --inputdir /eos/uscms/store/user/${USER}/13TeV/010616 -o /eos/uscms/store/user/${USER}/13TeV/010616/after_merge --splitmerge -t crab`
+For Step 2, you need to add the `--fromcrab` option, because the output files are named differently.
+
+`./makejobs.py --runmerge -i ttbar.conf --inputdir /eos/uscms/store/user/${USER}/13TeV/010616 -o /eos/uscms/store/user/${USER}/13TeV/010616/after_merge --splitmerge --fromcrab`
 
 Step 3 and 4 is the same as in the above section and uses Condor.
 
