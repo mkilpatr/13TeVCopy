@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // EventInfoReader
-// 
+//
 // Class for reading event level information from TTree.
-// 
-// EventInfoReader.h created on Mon Nov 3 12:56:14 CET 2014 
-// 
+//
+// EventInfoReader.h created on Mon Nov 3 12:56:14 CET 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_TREEREADER_EVENTINFOREADER_H
@@ -54,6 +54,7 @@ namespace ucsbsusy {
       float         xsecweight;
       float         genevtweight;
       float         evtweight;
+      int           nStandardGenJets;
       float         lhecentralweight;
       std::vector<float> * systweights;
       size8             proc;

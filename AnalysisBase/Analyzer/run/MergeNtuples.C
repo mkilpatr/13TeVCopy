@@ -13,22 +13,25 @@
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
-void MergeNtuples(const TString input)
+void MergeNtuples(const TString input, bool batchMode = true)
 {
   gBenchmark->Start("MergeNtuples");
 
-  TString outfilename;          // output of merged files  
+  TString outfilename;          // output of merged files
   vector<TString> infilenames;  // list input ntuple files to be stored
 
   //
   // parse input file
-  //  
+  //
   ifstream ifs;
   ifs.open(input.Data());
   assert(ifs.is_open());
   string line;
   getline(ifs,line);
   outfilename = line;
+  if (batchMode) {
+    outfilename.Remove(0,outfilename.Last('/')+1);
+  }
   while(getline(ifs,line)) { infilenames.push_back(line); }
   ifs.close();
 

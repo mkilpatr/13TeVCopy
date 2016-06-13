@@ -58,6 +58,9 @@ public:
         data.fill<float>(iXSec, xsec);
         data.fill<float>(iXSWeight, xsecweight);
       }
+      if(qcdGenJets5Scale < 1 && evtInfoReader.nStandardGenJets >= 5){
+        data.fill<float>(iXSWeight, qcdGenJets5Scale * xsecweight);
+      }
     }
     return true;
   }
@@ -82,6 +85,7 @@ public:
   TFile* xsecFile;
   TH1D*  xsecLookup;
 
+  double qcdGenJets5Scale;
 };
 
 
@@ -96,7 +100,7 @@ public:
  */
 //AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,0,"TestAnalyzer/Events","wgt")
 
-void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "") {
+void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "", double wgtsf = 1) {
 
   //get the output name
   TString outName(fileName);
@@ -131,6 +135,7 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
   a.lumi        = lumi;
   a.process     = process;
   a.datareco    = datareco;
+  a.qcdGenJets5Scale = wgtsf;
 
   if (isMC) clog << "Copying  "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] <<" and xsec weight "<< a.xsecweight << " with fraction of negative weight events " << nNegEvents/(nPosEvents+nNegEvents) << " into file "<< outName << endl;
   else      clog << "Copying  "<< a.getEntries() <<" events of type " <<  defaults::PROCESS_NAMES[a.process] << " into file " << outName << endl;
