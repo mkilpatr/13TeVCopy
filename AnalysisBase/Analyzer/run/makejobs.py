@@ -44,7 +44,9 @@ parser.add_argument("-l", "--splittype", dest="splittype", default="file", choic
 parser.add_argument("-q", "--queue", dest="queue", default="8nh", help="LSF submission queue. [Default: 8nh]")
 parser.add_argument("-a", "--arrangement", dest="arrangement", default="das", choices=["das", "local"], help="(ntuplizing only) Specifies if samples' paths are das, or local eos space (format: /eos/uscms/store/... or /eos/cms/store/...). If local, then file-based splitting required, and sample name will be used to discover files (eg \'find /eos/uscms/store/...\') [Options: das, local. Default: das]")
 parser.add_argument("-e", "--redir", dest="redir", default="root://cmsxrootd.fnal.gov/", help="Url of redirector to be added to file names. [Default: root://cmsxrootd.fnal.gov/]")
-parser.add_argument("--storageSite", dest="site", default="T3_US_FNALLPC", help="Crab storage site. [Default: T3_US_FNALLPC]")
+parser.add_argument("--storagesite", dest="site", default="T3_US_FNALLPC", help="Crab storage site. [Default: T3_US_FNALLPC]")
+parser.add_argument("--crabcmd", dest="crabcommand", default=None, help="Crab command. [Default: None]")
+parser.add_argument("--fromcrab", dest="fromcrab", action='store_true', help="The files to be merged are produced by CRAB. [Default: False]")
 args = parser.parse_args()
 
 def get_num_events(filelist, prefix='', wgtsign=1, treename='TestAnalyzer/Events', selection=''):
@@ -345,12 +347,12 @@ elif args.runmerge :
         os.system("mkdir -p %s" % args.outdir)
 
     prefix = ""
-    mergecommands = []
+    mergefilelist = []
     for isam in range(len(samples)) :
         filelist = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             prefix = "root://eoscms/"
-            if args.submittype == "crab":
+            if args.fromcrab:
                 cmd = ("%s find -f %s | egrep 'evttree_[0-9]+(_numEvent[0-9]+|).root' | grep -v 'failed'" % (eos, os.path.join(args.inputdir, datasets[isam].split("/")[1], 'crab_' + samples[isam])))
             else:
                 cmd = ("%s find -f %s | egrep 'output_[0-9]+_%s(-ext[0-9]*|)(_numEvent[0-9]+|).root'" % (eos, args.inputdir, samples[isam]))
@@ -361,7 +363,7 @@ elif args.runmerge :
             outname = "%s%s/%s_ntuple.root" % (prefix, args.outdir, samples[isam])
             filelist.insert(0, outname)
         else :
-            if args.submittype == "crab":
+            if args.fromcrab:
                 input_dir = os.path.join(args.inputdir, datasets[isam].split("/")[1], 'crab_' + samples[isam])
                 filelist = [os.path.join(dp, f) for dp, dn, filenames in os.walk(input_dir) if 'failed' not in dp for f in filenames if re.match(r'evttree_[0-9]+(_numEvent[0-9]+|).root', f)]
             else:
@@ -371,36 +373,111 @@ elif args.runmerge :
             filelist = ["".join([prefix, file]) for file in filelist]
             outname = "%s%s/%s_ntuple.root" % (prefix, args.outdir, samples[isam])
             filelist.insert(0, outname)
-        mergefile = "merge_%s.txt" % samples[isam]
+        mergefile = os.path.join(args.jobdir, "merge_%s.txt" % samples[isam])
         with open(mergefile, "w") as f:
             f.write('\n'.join(filelist))
         print "There are %d files to merge for %s\n" % (len(filelist) - 1, samples[isam])
         if args.splitmerge :
             numfilespermerge = int(input("How many input files per merge? "))
-            nummergedfiles = 0 if numfilespermerge==0 else int(len(filelist)/numfilespermerge)
+            nummergedfiles = 0 if numfilespermerge==0 else max(int((len(filelist)-1) / numfilespermerge), 1)
             print "Will produce %d merged files." % nummergedfiles
             for imerge in range(1, nummergedfiles + 1) :
                 start = ((imerge - 1) * numfilespermerge) + 2
                 end = (imerge * numfilespermerge) + 1
-                outfile = "merge_%s_%d.txt" % (samples[isam], imerge)
+                outfile = os.path.join(args.jobdir, "merge_%s_%d.txt" % (samples[isam], imerge))
                 os.system("sed -n 1p %s | sed \"s/ntuple.root/%d_ntuple.root/\" > %s" % (mergefile, imerge, outfile))
                 os.system("sed -n %d,%dp %s >> %s" % (start, end, mergefile, outfile))
-                mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % outfile)
+                mergefilelist.append(os.path.basename(outfile))
             rem = len(filelist) - 1 - (nummergedfiles * numfilespermerge)
             if rem > 0 :
                 print "Will add last %d files to last merged file" % rem
-                os.system("tail -n %d %s >> merge_%s_%d.txt" % (rem, mergefile, samples[isam], nummergedfiles))
+                os.system("tail -n %d %s >> %s/merge_%s_%d.txt" % (rem, mergefile, args.jobdir, samples[isam], nummergedfiles))
         else :
-            mergecommands.append("root -l -q -b MergeNtuples.C+\\(\\\"%s\\\"\\)" % mergefile)
+            mergefilelist.append(os.path.basename(mergefile))
 
-    with open("submitmerge.sh", "w") as f :
-        f.write("#!/bin/bash\n")
-        f.write('\n'.join(mergecommands))
-        f.write("\n")
-    os.system("chmod +x submitmerge.sh")
+    print 'Creating submission file: submit_runmerge.sh'
+    script = open('submit_runmerge.sh', 'w')
+    script.write("""#!/bin/bash
+outputdir={outputdir}
+runmacro=MergeNtuples.C
+prefix={prefix}
+""".format(outputdir=args.outdir, prefix=prefix))
+
+    if args.submittype == 'lsf' or args.submittype == 'condor' :
+        script.write("""
+workdir=$CMSSW_BASE
+runscript=runmerge{stype}.sh
+
+if [ ! "$CMSSW_BASE" ]; then
+  echo "-------> error: define cms environment."
+  exit 1
+fi
+
+cp MergeNtuples.C $workdir
+cp rootlogon.C $workdir
+
+echo "$runscript $runmacro $workdir $outputdir"
+""".format(stype=args.submittype))
+
+    for submitfile in mergefilelist :
+        outfilename = submitfile.lstrip('merge_').replace('.txt', '_ntuple.root')
+        if args.submittype == 'interactive' :
+            script.write("""root -l -q -b MergeNtuples.C+\\(\\\"{infile}\\\",0\\)\n""".format(
+            infile = os.path.join(args.jobdir, submitfile)
+            ))
+        elif args.submittype == 'lsf' :
+            script.write("""cp {jobdir}/{infile} $workdir\nbsub -q {queue} $runscript $runmacro {infile} {outfile} {outdir} $workdir\n""".format(
+            queue=args.queue, jobdir=args.jobdir, infile=submitfile, outfile=outfilename, outdir=args.outdir
+            ))
+        elif args.submittype == 'condor' :
+            os.system("mkdir -p %s/logs" % args.jobdir)
+            jobname = outfilename.rstrip('_ntuple.root')
+            jobscript = open('%s/submit_%s_runmerge.sh' % (args.jobdir, jobname), 'w')
+            jobscript.write("""
+cat > submit.cmd <<EOF
+universe                = vanilla
+Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
+request_disk            = 10000000
+Executable              = runmergecondor.sh
+Arguments               = {macro} {infile} {outfile} {outdir} {workdir}
+Output                  = logs/{sname}_runmerge.out
+Error                   = logs/{sname}_runmerge.err
+Log                     = logs/{sname}_runmerge.log
+use_x509userproxy       = true
+initialdir              = {jobdir}
+Should_Transfer_Files   = YES
+transfer_input_files    = {workdir}/{macro},{workdir}/{infile},{workdir}/rootlogon.C
+WhenToTransferOutput    = ON_EXIT
+Queue
+EOF
+
+condor_submit submit.cmd;
+rm submit.cmd""".format(
+            macro="MergeNtuples.C", infile=submitfile, outfile=outfilename, outdir=args.outdir, workdir="${CMSSW_BASE}", jobdir=args.jobdir, sname=jobname
+            ))
+            jobscript.close()
+            script.write("cp {jobdir}/{infile} $workdir\n./{jobdir}/submit_{sname}_runmerge.sh\n".format(jobdir=args.jobdir, infile=submitfile, sname=jobname))
+            os.system("chmod +x %s/submit_%s_runmerge.sh" % (args.jobdir, jobname))
+
+    script.close()
+    os.system("chmod +x submit_runmerge.sh")
+
+    print "Done!"
+    exit()
 
 elif args.submittype == 'crab':
     parseConfig(False)
+
+    if args.crabcommand:
+        print "Creating submission file: ", args.submit + ".sh"
+        with open(args.submit + ".sh", "w") as script:
+            script.write("#!/bin/bash\n\n")
+            for isamp in range(len(samples)):
+                samp = samples[isamp]
+                script.write("crab %s -d crab_projects/crab_%s\n\n" % (args.crabcommand, samp))
+        os.system("chmod +x %s.sh" % args.submit)
+        print "Done!"
+        exit()
 
     print "Creating crab config files: "
     crab_configs = []
@@ -434,6 +511,8 @@ elif args.submittype == 'crab':
             script.write("crab submit -c %s\n\n" % cfg)
 
     os.system("chmod +x %s.sh" % args.submit)
+    print "Done!"
+    exit()
 
 else :
     parseConfig(False)
