@@ -112,7 +112,7 @@ void PFCandidateReader::refresh(){
       pfcands.back().setNearPhoton(CylLorentzVectorF(nearphopt->at(iL),nearphoeta->at(iL),nearphophi->at(iL),0));
       pfcands.back().setTauDisc(taudisc->at(iL));
       pfcands.back().setFromPV(fromPV->at(iL));
-      pfcands.back().setJetIndex(jetIndex->at(iL));
+      pfcands.back().setJetIndex(-1);
       pfcands.back().setTrackIso(trackiso->at(iL));
       if(options_ & LOADTAUVETOMT)
         pfcands.back().setIsMVAVetoTau(taudisc->at(iL) > defaults::TAU_MVA_VETO_MTPRESEL_MEDIUM);
