@@ -69,10 +69,6 @@ void TauReader::refresh(){
       taus.back().setDxyErr(dxyerr->at(iL));
       taus.back().setDxySig(dxysig->at(iL));
       taus.back().setHPSId(hpsid->at(iL));
-      taus.back().setIsGoodPOGTau((hpsid->at(iL) & kMediumIsoDB3Hits)>0 && ((hpsid->at(iL) & kDecayMode)>0));
-      taus.back().setIsHPSVetoTau((hpsid->at(iL) & kLooseIsoDB3Hits)>0 && ((hpsid->at(iL) & kDecayMode)>0));
-      //      taus.back().setisPOGVLIsoMVARun2NewTau((hpsid->at(iL) & kVLooseIsoMVARun2newDMwLT)>0 && ((hpsid->at(iL) & kDecayModeNew)>0)); //need to be put back as soon as we have new ntuples - then delete last line.
-      taus.back().setisPOGVLIsoMVARun2NewTau((hpsid->at(iL) & kVLooseIsoMVARun2newDMwLT)>0);
     }
   }
 }
