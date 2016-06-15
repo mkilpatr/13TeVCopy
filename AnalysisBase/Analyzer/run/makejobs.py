@@ -420,7 +420,7 @@ echo "$runscript $runmacro $workdir $outputdir"
 """.format(stype=args.submittype))
 
     for submitfile in mergefilelist :
-        outfilename = submitfile.lstrip('merge_').replace('.txt', '_ntuple.root')
+        outfilename = submitfile[6:].replace('.txt', '_ntuple.root')
         if args.submittype == 'interactive' :
             script.write("""root -l -q -b MergeNtuples.C+\\(\\\"{infile}\\\",0\\)\n""".format(
             infile = os.path.join(args.jobdir, submitfile)
@@ -431,7 +431,7 @@ echo "$runscript $runmacro $workdir $outputdir"
             ))
         elif args.submittype == 'condor' :
             os.system("mkdir -p %s/logs" % args.jobdir)
-            jobname = outfilename.rstrip('_ntuple.root')
+            jobname = outfilename.replace('_ntuple.root', '')
             jobscript = open('%s/submit_%s_runmerge.sh' % (args.jobdir, jobname), 'w')
             jobscript.write("""
 cat > submit.cmd <<EOF
