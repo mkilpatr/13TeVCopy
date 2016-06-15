@@ -39,10 +39,6 @@ namespace ucsbsusy {
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
     std::vector<float>* toprawmass_;
-    std::vector<float>* toptrimmedmass_;
-    std::vector<float>* topprunedmass_;
-    std::vector<float>* topsoftdropmass_;
-    std::vector<float>* topfilteredmass_;
     std::vector<float>* topcmstoptagmass_;
     std::vector<float>* toptau1_;
     std::vector<float>* toptau2_;
@@ -50,7 +46,6 @@ namespace ucsbsusy {
     std::vector<float>* toppt_;
     std::vector<float>* topeta_;
     std::vector<float>* topphi_;
-    std::vector<float>* topwmass_;
     std::vector<float>* topminmass_;
     std::vector<float>*   topnsubjets_;
 
