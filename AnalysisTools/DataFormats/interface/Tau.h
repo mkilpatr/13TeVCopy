@@ -20,8 +20,7 @@ namespace ucsbsusy {
   {
 
   public :
-  Tau() : index_(-1), leadCand_(), leadChargedCand_(), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0), passpogid_(false), passpogiso_(false), isgoodpogtau_(false),
-      ispogvlisomvarun2new_(false) {}
+  Tau() : index_(-1), leadCand_(), leadChargedCand_(), q_(0), dxy_(0), dxyerr_(0), dxysig_(0), hpsid_(0) {}
 
       template <class InputCoordSystem>
       Tau(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum,
@@ -35,8 +34,7 @@ namespace ucsbsusy {
 		index_(inIndex), 
 		leadCand_(inLeadcand), leadChargedCand_(inLeadchcand),
 		q_(inCharge), dxy_(inDxy), dxyerr_(inDxyerr),
-		dxysig_(inDxysig), hpsid_(inHpsid), passpogid_(false),
-		  passpogiso_(false), isgoodpogtau_(false), ispogvlisomvarun2new_(false) {}
+		dxysig_(inDxysig), hpsid_(inHpsid) {}
 
       ~Tau() {}
 
@@ -46,15 +44,15 @@ namespace ucsbsusy {
       float	dxyerr() 			  const { return dxyerr_;	}
       float	dxysig() 			  const { return dxysig_;	}
       unsigned long	hpsid() const { return hpsid_;	}
-      bool	passpogid() 		const { return passpogid_;	}
-      bool	passpogiso() 		const { return passpogiso_;	}
-      bool      ishpsvetotau()          const { return ishpsvetotau_;   }
-      bool	isgoodpogtau() 	const { return isgoodpogtau_;	}
-      bool	ispogvlisomvarun2new() 	const { return ispogvlisomvarun2new_;	}
+      bool  ishpsvetotau()          const { return (hpsid_ & kLooseIsoDB3Hits) && (hpsid_ & kDecayMode);   }
+      bool	isgoodpogtau() 	        const { return (hpsid_ & kMediumIsoDB3Hits) && (hpsid_ & kDecayMode);	}
+      bool	ispogvlisomvarun2new() 	const { return (hpsid_ & kVLooseIsoMVARun2newDMwLT);	}
+      bool  ispoglisomvarun2new()   const { return (hpsid_ & kLooseIsoMVARun2newDMwLT); }
       const Momentum<CoordSystem>&	leadCandidate()	  	  const	{ return leadCand_;		}
       void setLeadCandidate(const Momentum<CoordSystem>& inMom )      { leadCand_ = inMom;    }
       const Momentum<CoordSystem>&	leadChargedCandidate()    const	{ return leadChargedCand_;	}
       void setLeadChargedCandidate(const Momentum<CoordSystem>& inMom)    { leadChargedCand_ = inMom; }
+
 
       void	setIndex(int newIndex)		{ index_ = newIndex;	}
       void	setCharge(int newCharge)	{ q_ = newCharge;	}
@@ -62,11 +60,7 @@ namespace ucsbsusy {
       void	setDxyErr(float newDxyErr)	{ dxyerr_ = newDxyErr;	}
       void	setDxySig(float newDxySig)	{ dxysig_ = newDxySig;	}
       void	setHPSId(unsigned long newHPSId){ hpsid_ = newHPSId;	}
-      void	setPassPOGId(bool flag)		{ passpogid_ = flag;	}
-      void	setPassPOGIso(bool flag)	{ passpogiso_ = flag;	}
-      void	setIsGoodPOGTau(bool flag)	{ isgoodpogtau_ = flag;	}
-      void	setisPOGVLIsoMVARun2NewTau(bool flag)	{ ispogvlisomvarun2new_ = flag;	}
-      void	setIsHPSVetoTau(bool flag)	{ ishpsvetotau_ = flag; }
+
 
     protected :
       int	index_;  //Index in tau vector
@@ -77,11 +71,6 @@ namespace ucsbsusy {
       float	dxyerr_;
       float	dxysig_;
       unsigned long hpsid_;
-      bool	passpogid_;
-      bool	passpogiso_;
-      bool	isgoodpogtau_;
-      bool      ishpsvetotau_;
-      bool      ispogvlisomvarun2new_;
 
   };
 
