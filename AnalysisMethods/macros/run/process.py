@@ -93,7 +93,6 @@ cat > submit.cmd <<EOF
 universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
-request_memory          = 10000
 Executable              = {runscript}{stype}.sh
 Arguments               = {macro} {sname} {index} {mc} {file} . {prefix} {workdir} {json}
 Output                  = logs/{sname}_{num}.out
