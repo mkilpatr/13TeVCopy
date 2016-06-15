@@ -27,8 +27,7 @@ class CMSTop : public Momentum<CoordSystem>
   {
   public :
   CMSTop() : index_(-1), 
-             topRawMass_(-9.), topTrimmedMass_(-9.), topPrunedMass_(-9.), topSoftDropMass_(-9.), topFilteredMass_(-9.), topCmsTopTagMass_(-9.),
-             topTau1_(-9.), topTau2_(-9.), topTau3_(-9.), topWMass_(-9), topMinMass_(-9), topNSubJets_(-9) {}
+             topRawMass_(-9.), topCmsTopTagMass_(-9.), topTau1_(-9.), topTau2_(-9.), topTau3_(-9.), topMinMass_(-9), topNSubJets_(-9) {}
     
 
 
@@ -36,49 +35,32 @@ class CMSTop : public Momentum<CoordSystem>
       CMSTop(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, 
 	     const int   inIndex            = -1,
       	     const float inTopRawMass       = -9.,
-	     const float inTopTrimmedMass   = -9.,
-	     const float inTopPrunedMass    = -9.,
-	     const float inTopSoftDropMass  = -9.,
-	     const float inTopFilteredMass  = -9.,
 	     const float inTopCmsTopTagMass = -9.,
 	     const float inTopTau1          = -9.,
 	     const float inTopTau2          = -9.,
 	     const float inTopTau3          = -9.,
-	     const float inTopWMass         = -9.,
 	     const float inTopMinMass       = -9.,
 	     const int   inTopNSubJets      = -9.
 	     )
-      : Momentum<CoordSystem>(inMomentum), index_(inIndex), topRawMass_(inTopRawMass), topTrimmedMass_(inTopTrimmedMass), topPrunedMass_(inTopPrunedMass), 
-      topSoftDropMass_(inTopSoftDropMass), topCmsTopTagMass_(inTopCmsTopTagMass), topTau1_(inTopTau1), topTau2_(inTopTau2), topTau3_(inTopTau3), 
-      topWMass_(inTopWMass), topMinMass_(inTopMinMass), topNSubJets_(inTopNSubJets)  {}
+      : Momentum<CoordSystem>(inMomentum), index_(inIndex), topRawMass_(inTopRawMass), topCmsTopTagMass_(inTopCmsTopTagMass), topTau1_(inTopTau1), topTau2_(inTopTau2), topTau3_(inTopTau3), topMinMass_(inTopMinMass), topNSubJets_(inTopNSubJets)  {}
 
     ~CMSTop(){}
     
     int	index()		     const { return index_;           }
     float topRawMass()       const { return topRawMass_;      }
-    float topTrimmedMass()   const { return topTrimmedMass_;  }
-    float topPrunedMass()    const { return topPrunedMass_;   }
-    float topSoftDropMass()  const { return topSoftDropMass_; }
-    float topFilteredMass()  const { return topFilteredMass_; }
     float topCmsTopTagMass() const { return topCmsTopTagMass_; }
     float topTau1()          const { return topTau1_;         }
     float topTau2()          const { return topTau2_;         }
     float topTau3()          const { return topTau3_;         }
-    float topWMass()         const { return topWMass_;        }
     float topMinMass()       const { return topMinMass_;      }
     int   topNsubJets()      const { return topNSubJets_;     }
 
     void  setIndex(const int& newIndex)                       { index_            = newIndex;           }
     void  setTopRawMass(const float inTopRawMass)             { topRawMass_       = inTopRawMass;       }
-    void  setTopTrimmedMass(const float inTopTrimmedMass)     { topTrimmedMass_   = inTopTrimmedMass;   }
-    void  setTopPrunedMass(const float inTopPrunedMass)       { topPrunedMass_    = inTopPrunedMass;    }
-    void  setTopSoftDropMass(const float inTopSoftDropMass)   { topSoftDropMass_  = inTopSoftDropMass;  }
-    void  setTopFilteredMass(const float inTopFilteredMass)   { topFilteredMass_  = inTopFilteredMass;  }
     void  setTopCmsTopTagMass(const float inTopCmsTopTagMass) { topCmsTopTagMass_ = inTopCmsTopTagMass; }
     void  setTopTau1(const float inTopTau1)                   { topTau1_           = inTopTau1;         }
     void  setTopTau2(const float inTopTau2)                   { topTau2_           = inTopTau2;         }
     void  setTopTau3(const float inTopTau3)                   { topTau3_           = inTopTau3;         }
-    void  setTopWMass(const float inTopWMass)                 { topWMass_          = inTopWMass;        }
     void  setTopMinMass(const float inTopMinMass)             { topMinMass_        = inTopMinMass;      }
     void  setTopNSubJets(const int inTopNSubJets)             { topNSubJets_       = inTopNSubJets;     }
     
@@ -91,15 +73,10 @@ class CMSTop : public Momentum<CoordSystem>
   protected :
     int	  index_;  //Index in CMSTop vector
     float topRawMass_;
-    float topTrimmedMass_;
-    float topPrunedMass_;
-    float topSoftDropMass_;
-    float topFilteredMass_;
     float topCmsTopTagMass_;
     float topTau1_;
     float topTau2_;
     float topTau3_;
-    float topWMass_;
     float topMinMass_;
     int   topNSubJets_;
     

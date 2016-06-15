@@ -20,10 +20,6 @@ const int CMSTopReader::defaultOptions = CMSTopReader::LOADRECO | CMSTopReader::
 //--------------------------------------------------------------------------------------------------
 CMSTopReader::CMSTopReader() : BaseReader(){
   toprawmass_       = new vector<float>;
-  toptrimmedmass_   = new vector<float>;
-  topprunedmass_    = new vector<float>;
-  topsoftdropmass_  = new vector<float>;
-  topfilteredmass_  = new vector<float>;
   topcmstoptagmass_ = new vector<float>;
   toptau1_          = new vector<float>;
   toptau2_          = new vector<float>;
@@ -31,7 +27,6 @@ CMSTopReader::CMSTopReader() : BaseReader(){
   toppt_            = new vector<float>;
   topeta_           = new vector<float>;
   topphi_           = new vector<float>;
-  topwmass_         = new vector<float>;
   topminmass_       = new vector<float>;
   topnsubjets_      = new vector<float>  ;
 
@@ -48,10 +43,6 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
     if(options_ & LOADPHYS14) {
       treeReader->setBranchAddress(branchName_, "fatjet_mass"      , &toprawmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_trimmedmass"  , &toptrimmedmass_  ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_prunedmass"   , &topprunedmass_   ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_softdropmass" , &topsoftdropmass_ ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_massdropfilteredmass" , &topfilteredmass_ ,true);
       treeReader->setBranchAddress(branchName_, "top_topmass"         , &topcmstoptagmass_,true);    
       treeReader->setBranchAddress(branchName_, "fatjet_tau1"         , &toptau1_         ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_tau2"         , &toptau2_         ,true);
@@ -59,16 +50,11 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
       treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
       treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_wmass"        , &topwmass_        ,true);
       treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
       treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
     }
     else {
       treeReader->setBranchAddress(branchName_, "top_rawmass"      , &toprawmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "top_trimmedmass"  , &toptrimmedmass_  ,true);
-      treeReader->setBranchAddress(branchName_, "top_prunedmass"   , &topprunedmass_   ,true);
-      treeReader->setBranchAddress(branchName_, "top_softdropmass" , &topsoftdropmass_ ,true);
-      treeReader->setBranchAddress(branchName_, "top_filteredmass" , &topfilteredmass_ ,true);
       treeReader->setBranchAddress(branchName_, "top_cmstoptagmass", &topcmstoptagmass_,true);    
       treeReader->setBranchAddress(branchName_, "top_tau1"         , &toptau1_         ,true);
       treeReader->setBranchAddress(branchName_, "top_tau2"         , &toptau2_         ,true);
@@ -76,7 +62,6 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
       treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
       treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_wmass"        , &topwmass_        ,true);
       treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
       treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
     }
@@ -98,15 +83,10 @@ void CMSTopReader::refresh(){
 
     cmsTops.emplace_back(CylLorentzVectorF(toppt_->at(iJ),topeta_->at(iJ),topphi_->at(iJ),topcmstoptagmass_->at(iJ)),iJ);
     cmsTops.back().setTopRawMass(toprawmass_->at(iJ));
-    cmsTops.back().setTopTrimmedMass(toptrimmedmass_->at(iJ));
-    cmsTops.back().setTopPrunedMass(topprunedmass_->at(iJ));
-    cmsTops.back().setTopSoftDropMass(topsoftdropmass_->at(iJ));
-    cmsTops.back().setTopFilteredMass(topfilteredmass_->at(iJ));
     cmsTops.back().setTopCmsTopTagMass(topcmstoptagmass_->at(iJ));
     cmsTops.back().setTopTau1(toptau1_->at(iJ));
     cmsTops.back().setTopTau2(toptau2_->at(iJ));
     cmsTops.back().setTopTau3(toptau3_->at(iJ));
-    cmsTops.back().setTopWMass(topwmass_->at(iJ));
     cmsTops.back().setTopMinMass(topminmass_->at(iJ));
     cmsTops.back().setTopNSubJets(topnsubjets_->at(iJ));
 
