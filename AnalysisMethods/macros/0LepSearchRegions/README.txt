@@ -7,11 +7,14 @@ Currently there are config files to create all the unput files under plotting (r
 ./process.py -p ../0LepSearchRegions -m makeZeroLeptonPhotonCRTrees.C -c plotting/run_Photon.conf -t condor -o [your path]/photoncr/pieces
 ./process.py -p ../0LepSearchRegions -m makeZeroLeptonZtoLLCRTrees.C  -c plotting/run_ZtoLL.conf  -t condor -o [your path]/zllcr/pieces
 ./process.py -p ../0LepSearchRegions -m makeZeroLeptonSRTrees.C -c plotting/run_0LSR.conf -t condor -o [your path]/sr/pieces
+./process.py -p ../0LepSearchRegions -m makeZeroLeptonMETplusLepCRTrees.C -c plotting/run_LepCR.conf -t condor -o [your path]/lepcr/pieces
 ./process.py -p ../0LepSearchRegions -m makeZeroLeptonSRTrees.C -c plotting/run_Signals.conf -t condor -o [your path]/signals
+./process.py -p ../0LepSearchRegions -m makeZeroLeptonMETplusLepCRTrees.C -c plotting/run_Signals.conf -t condor -o [your path]/lepcr/signals
 (2) Merge trees:
 ./mergeTrees.py -c ../0LepSearchRegions/plotting/run_Photon.conf -i [your path]/photoncr/pieces -o [your path]/photoncr
 ./mergeTrees.py -c ../0LepSearchRegions/plotting/run_ZtoLL.conf -i [your path]/zllcr/pieces -o [your path]/zllcr
 ./mergeTrees.py -c ../0LepSearchRegions/plotting/run_0LSR.conf -i [your path]/sr/pieces -o [your path]/sr
+./mergeTrees.py -c ../0LepSearchRegions/plotting/run_LepCR.conf -i [your path]/lepcr/pieces -o [your path]/lepcr
 For signal trees, just move them to [your path].
 (3) Rename and link trees:
 ./rename.sh [your path]

@@ -60,7 +60,7 @@ struct TreeFiller {
   size i_ismc             ;
   size i_passjson         ;
   size i_passmetmht90     ;
-  size i_passtrigel       ;
+  size i_passtrige        ;
   size i_passtrigmu       ;
   size i_truePUWeight     ;
   size i_btagWeight       ;
@@ -69,13 +69,12 @@ struct TreeFiller {
   size i_lepvetoweight    ;
   size i_lepselweight     ;
   size i_leptnpweight     ;
-  size i_passcscbeamhaloflt;
-  size i_passeebadscflt   ;
-  size i_passeebadsc4flt  ;
-  size i_passhbheisoflt   ;
-  size i_passhbhefltloose ;
-  size i_passhbheflttight ;
-  size i_passaddmetflts   ;
+  size i_pass_HBHENoiseFilter                    ;
+  size i_pass_HBHENoiseIsoFilter                 ;
+  size i_pass_CSCTightHalo2015Filter             ;
+  size i_pass_EcalDeadCellTriggerPrimitiveFilter ;
+  size i_pass_goodVertices                       ;
+  size i_pass_eeBadScFilter                      ;
   size i_met         ;
   size i_nvetolep  ;
   size i_nvetotau  ;
@@ -99,7 +98,7 @@ struct TreeFiller {
   size i_njl;
   size i_j1lpt;
   size i_dphij1lmet;
-  size i_ljCHEF;
+  size i_jet1chef;
 
 #ifndef SLIM_VERSION
   size i_systweights;
@@ -206,15 +205,14 @@ struct TreeFiller {
     i_lepselweight      = data->add<float>("","lepselweight","F",0);
     i_leptnpweight      = data->add<float>("","leptnpweight","F",0);
     i_passmetmht90      = data->add<bool>("","passmetmht90","O",0);
-    i_passtrigel        = data->add<bool>("","passtrigel","O",0);
+    i_passtrige         = data->add<bool>("","passtrige","O",0);
     i_passtrigmu        = data->add<bool>("","passtrigmu","O",0);
-    i_passcscbeamhaloflt = data->add<bool>("","passcscbeamhaloflt","O",0);
-    i_passeebadscflt    = data->add<bool>("","passeebadscflt","O",0);
-    i_passeebadsc4flt   = data->add<bool>("","passeebadsc4flt","O",0);
-    i_passhbheisoflt    = data->add<bool>("","passhbheisoflt","O",0);
-    i_passhbhefltloose  = data->add<bool>("","passhbhefltloose","O",0);
-    i_passhbheflttight  = data->add<bool>("","passhbheflttight","O",0);
-    i_passaddmetflts    = data->add<bool>("","passaddmetflts","O",0);
+    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
+    i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
+    i_pass_CSCTightHalo2015Filter               = data->add<bool>("","pass_CSCTightHalo2015Filter"            ,"O",0);
+    i_pass_EcalDeadCellTriggerPrimitiveFilter   = data->add<bool>("","pass_EcalDeadCellTriggerPrimitiveFilter","O",0);
+    i_pass_goodVertices                         = data->add<bool>("","pass_goodVertices"                      ,"O",0);
+    i_pass_eeBadScFilter                        = data->add<bool>("","pass_eeBadScFilter"                     ,"O",0);
     i_met               = data->add<float>("","met","F",0);
     i_nvetolep          = data->add<int>("","nvetolep","I",0);
     i_nvetotau          = data->add<int>("","nvetotau","I",0);
@@ -238,7 +236,7 @@ struct TreeFiller {
     i_njl               = data->add<int>("","njl","I",0);
     i_j1lpt             = data->add<float>("","j1lpt","F",0);
     i_dphij1lmet        = data->add<float>("","dphij1lmet","F",0);
-    i_ljCHEF            = data->add<float>("","ljCHEF","F",2);
+    i_jet1chef          = data->add<float>("","jet1chef","F",2);
 
 #ifndef SLIM_VERSION
     i_systweights       = data->addMulti<float>("","systweights",0);
@@ -326,21 +324,19 @@ struct TreeFiller {
     data->fill<float>(i_leptnpweight, ana->leptonCorrections.getTnPLepWeight());
 
     // the met filters
-//    data->fill<bool>(i_passcscflt,ana->evtInfoReader.cscFlt);
-    data->fill<bool>(i_passcscbeamhaloflt, ana->evtInfoReader.cscBeamHaloFlt);
-    data->fill<bool>(i_passeebadscflt,ana->evtInfoReader.eeBadSCFlt);
-    data->fill<bool>(i_passeebadsc4flt,ana->evtInfoReader.eeBadSC4Flt);
-    data->fill<bool>(i_passhbheisoflt,ana->evtInfoReader.hbheIsoFlt);
-    data->fill<bool>(i_passhbhefltloose,ana->evtInfoReader.hbheFltR2Loose);
-    data->fill<bool>(i_passhbheflttight,ana->evtInfoReader.hbheFltR2Tight);
-    data->fill<bool>(i_passaddmetflts,(ana->isMC() || (ana->evtInfoReader.badResolutionTrkFlt && ana->evtInfoReader.muonBadTrkFlt)));
+    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
+    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
+    data->fill<bool>(i_pass_CSCTightHalo2015Filter            ,ana->evtInfoReader.CSCTightHalo2015Filter            );
+    data->fill<bool>(i_pass_EcalDeadCellTriggerPrimitiveFilter,ana->evtInfoReader.EcalDeadCellTriggerPrimitiveFilter);
+    data->fill<bool>(i_pass_goodVertices                      ,ana->evtInfoReader.goodVertices                      );
+    data->fill<bool>(i_pass_eeBadScFilter                     ,ana->evtInfoReader.eeBadScFilter                     );
 
     data->fill<bool >(i_passmetmht90, ana->isMC() ? true : (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight : false));
-    data->fill<bool >(i_passtrigel, (ana->isMC() || ana->process==defaults::DATA_SINGLEEL) ? (ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf) || (ana->triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf) : false);
+    data->fill<bool >(i_passtrige,  (ana->isMC() || ana->process==defaults::DATA_SINGLEEL) ? (ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf) || (ana->triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf) : false);
     data->fill<bool >(i_passtrigmu, (ana->isMC() || ana->process==defaults::DATA_SINGLEMU) ? ((ana->triggerflag & kHLT_IsoMu20) || (ana->triggerflag & kHLT_IsoTkMu20)): false);
 
     //CH energy fraction filter
-    data->fill<float >(i_ljCHEF, ana->defaultJets->jetchHadEnFrac_->size() ? ana->defaultJets->jetchHadEnFrac_->at(ana->defaultJets->recoJets[0].index())  :10);
+    data->fill<float >(i_jet1chef, ana->defaultJets->jetchHadEnFrac_->size() ? ana->defaultJets->jetchHadEnFrac_->at(ana->defaultJets->recoJets[0].index())  :10);
 
     if(!lepAddedBack) {
       data->fill<float>(i_met, ana->met->pt());
@@ -430,7 +426,7 @@ struct TreeFiller {
         if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) { ++ngenel_;  ++ngenlep_; genlepq_=-1.*((p->pdgId())/(abs(p->pdgId()))); }
 	if ( (abs(p->pdgId())==13) && (abs(genPartMom->pdgId())==24) ) { ++ngenmu_;  ++ngenlep_; genlepq_=-1.*((p->pdgId())/(abs(p->pdgId()))); }
 	if ( (abs(p->pdgId())==15) && (abs(genPartMom->pdgId())==24) ) { ++ngentau_; ++ngenlep_; genlepq_=-1.*((p->pdgId())/(abs(p->pdgId()))); }
-	
+
         if (ParticleInfo::isA(ParticleInfo::p_eminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom) || ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom)))
           nGoodGenEle++;
         else if (ParticleInfo::isA(ParticleInfo::p_muminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom) || ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom)))
@@ -501,7 +497,7 @@ struct TreeFiller {
 
     int ntbjets = 0, nmbjets = 0, nlbjets = 0;
     int njl = 0;
-    LorentzVector mht_; 
+    LorentzVector mht_;
     for(auto* j : jets) {
       if(j->csv() < defaults::CSV_LOOSE)  njl++;
       if(j->csv() > defaults::CSV_LOOSE)  nlbjets++;
@@ -527,12 +523,12 @@ struct TreeFiller {
 #endif
 
     // collection of jets that do not pass CSVL
-    std::vector<LorentzVector> lvjl; 
+    std::vector<LorentzVector> lvjl;
     lvjl.clear();
     for(auto* j : jets) { if ( (j->pt()>20) && (j->csv() < defaults::CSV_LOOSE) ) { lvjl.push_back((LorentzVector)j->p4()); } }
-    if (lvjl.size()>0) { 
-      data->fill<float>(i_j1lpt,lvjl[0].pt()); 
-      data->fill<float>(i_dphij1lmet,fabs(PhysicsUtilities::deltaPhi(lvjl[0],*met))); 
+    if (lvjl.size()>0) {
+      data->fill<float>(i_j1lpt,lvjl[0].pt());
+      data->fill<float>(i_dphij1lmet,fabs(PhysicsUtilities::deltaPhi(lvjl[0],*met)));
     }
 #ifndef SLIM_VERSION
     if (lvjl.size()>1) {
@@ -615,7 +611,7 @@ struct TreeFiller {
       data->fill<float>(i_drcsv1csv2,fabs(PhysicsUtilities::deltaR(*jetsCSVranked[0], *jetsCSVranked[1])));
 #endif
     }
-   
+
   }
 
 };
@@ -673,7 +669,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       if(!goodvertex) return false;
       if(applyCHFFilter && !filler.passCHFFilter(jets)) return false;
 
-      std::vector<LorentzVector> lvjl; 
+      std::vector<LorentzVector> lvjl;
       lvjl.clear();
       for(auto* j : jets) { if ( (j->pt()>20) && (j->csv() < defaults::CSV_LOOSE) ) { lvjl.push_back((LorentzVector)j->p4()); } }
 

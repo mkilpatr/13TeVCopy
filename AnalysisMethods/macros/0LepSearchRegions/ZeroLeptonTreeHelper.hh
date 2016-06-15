@@ -56,6 +56,7 @@ struct TreeFiller {
   size i_run       ;
   size i_lumi      ;
   size i_event     ;
+  size i_process   ;
   size i_weight    ;
   size i_systweights;
   size i_ismc      ;
@@ -83,14 +84,15 @@ struct TreeFiller {
   size i_passtright800;
   size i_passtright900;
   size i_passjson  ;
+  size i_passmetmht90;
   size i_passdijetmet;
-  size i_isfastsim;
   size i_pass_HBHENoiseFilter                    ;
   size i_pass_HBHENoiseIsoFilter                 ;
   size i_pass_CSCTightHalo2015Filter             ;
   size i_pass_EcalDeadCellTriggerPrimitiveFilter ;
   size i_pass_goodVertices                       ;
   size i_pass_eeBadScFilter                      ;
+  size i_jet1chef  ;
   size i_genmet    ;
   size i_bosonpt   ;
   size i_bosoneta  ;
@@ -233,6 +235,7 @@ struct TreeFiller {
     i_run            = data->add<unsigned int>("","run","i",0);
     i_lumi           = data->add<unsigned int>("","lumi","i",0);
     i_event          = data->add<unsigned int>("","event","i",0);
+    i_process        = data->add<unsigned int>("","process","i",0);
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_systweights    = data->addMulti<float>("","systweights",0);
@@ -261,13 +264,14 @@ struct TreeFiller {
     i_passtright900  = data->add<bool>("","passtright900","O",0);
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
-    i_isfastsim      = data->add<bool>("","isfastsim","O",0);
+    i_passmetmht90   = data->add<bool>("","passmetmht90","O",0);
     i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
     i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
     i_pass_CSCTightHalo2015Filter               = data->add<bool>("","pass_CSCTightHalo2015Filter"            ,"O",0);
     i_pass_EcalDeadCellTriggerPrimitiveFilter   = data->add<bool>("","pass_EcalDeadCellTriggerPrimitiveFilter","O",0);
     i_pass_goodVertices                         = data->add<bool>("","pass_goodVertices"                      ,"O",0);
     i_pass_eeBadScFilter                        = data->add<bool>("","pass_eeBadScFilter"                     ,"O",0);
+    i_jet1chef       = data->add<float>("","jet1chef","F",2);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
@@ -374,8 +378,8 @@ struct TreeFiller {
     i_metovsqrtht    = data->add<float>("","metovsqrtht","F",0);
     i_toppt          = data->add<float>("","toppt","F",0);
     i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
-    i_absdphilepmet       = data->add<float>("","absdphilepmet","F",0);
-    i_nsdtopjmewp1vloose  = data->add<int>("","nsdtopjmewp1vloose","I",0);
+    i_absdphilepmet      = data->add<float>("","absdphilepmet","F",0);
+    i_nsdtopjmewp1vloose = data->add<int>("","nsdtopjmewp1vloose","I",0);
     i_nsdtopjmewp1loose  = data->add<int>("","nsdtopjmewp1loose","I",0);
     i_nsdtopjmewp1tight  = data->add<int>("","nsdtopjmewp1tight","I",0);
     i_nsdwjmewp1loose    = data->add<int>("","nsdwjmewp1loose","I",0);
@@ -400,14 +404,15 @@ struct TreeFiller {
   }
 
 
-  bool passSoftDropTaggerFJ(const FatJetF* fj,float minMass,float maxMass, float tau32max, float tau21max) {
-    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>400.) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
+  bool passSoftDropTaggerFJ(const FatJetF* fj, float minPT, float minMass,float maxMass, float tau32max, float tau21max) {
+    return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>minPT) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
   }
 
   void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, bool lepAddedBack = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
+    data->fill<unsigned int>(i_process, ana->process);
     data->fill<bool >(i_ismc, ana->isMC());
     data->fill<float>(i_weight, ana->weight);
     for(auto wgt : *ana->evtInfoReader.systweights) {
@@ -420,8 +425,8 @@ struct TreeFiller {
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());
-    data->fill<bool >(i_passtrige,  ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEEL ? ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf : false));
-    data->fill<bool >(i_passtrigmu, ana->isMC() ? true : (ana->process==defaults::DATA_SINGLEMU ? ana->triggerflag & kHLT_IsoMu22 : false));
+    data->fill<bool >(i_passtrige,  (ana->isMC() || ana->process==defaults::DATA_SINGLEEL) ? (ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf) || (ana->triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf) : false);
+    data->fill<bool >(i_passtrigmu, (ana->isMC() || ana->process==defaults::DATA_SINGLEMU) ? ((ana->triggerflag & kHLT_IsoMu20) || (ana->triggerflag & kHLT_IsoTkMu20)): false);
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
     data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
     data->fill<bool >(i_passtrigmu17tkmu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
@@ -437,7 +442,7 @@ struct TreeFiller {
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false));
     data->fill<bool >(i_passtright900, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT900 : false));
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
-    data->fill<bool >(i_isfastsim,     ana->process==defaults::SIGNAL);
+    data->fill<bool >(i_passmetmht90, ana->isMC() ? true : (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight : false));
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();
@@ -498,11 +503,11 @@ struct TreeFiller {
     for(auto* fj : ana->fatJets) {
       if (passSoftDropTaggerFJ(fj,60.,100000.)) { ++nfjsd60_; }
       if (passPrunedTaggerFJ(fj,60.,100000.))   { ++nfjpr60_; }
-      if (passSoftDropTaggerFJ(fj,110.,210.,0.50,100.))    { ++nsdtopjmewp1tight_; }
-      if (passSoftDropTaggerFJ(fj,110.,210.,0.69,100.))    { ++nsdtopjmewp1loose_; }
-      if (passSoftDropTaggerFJ(fj,110.,210.,0.86,100.))    { ++nsdtopjmewp1vloose_; }
-      if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.45))      { ++nsdwjmewp1tight_; }
-      if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.60))      { ++nsdwjmewp1loose_; }
+      if (passSoftDropTaggerFJ(fj,400,110.,210.,0.50,100.))    { ++nsdtopjmewp1tight_; }
+      if (passSoftDropTaggerFJ(fj,400,110.,210.,0.69,100.))    { ++nsdtopjmewp1loose_; }
+      if (passSoftDropTaggerFJ(fj,400,110.,210.,0.86,100.))    { ++nsdtopjmewp1vloose_; }
+      if (passSoftDropTaggerFJ(fj,150,60.,110.,10.,0.45))      { ++nsdwjmewp1tight_; }
+      if (passSoftDropTaggerFJ(fj,150,60.,110.,10.,0.60))      { ++nsdwjmewp1loose_; }
     }
     data->fill<int  >(i_nfjsd60, nfjsd60_);
     data->fill<int  >(i_nfjpr60, nfjpr60_);
@@ -641,6 +646,8 @@ struct TreeFiller {
     data->fill<bool>(i_pass_EcalDeadCellTriggerPrimitiveFilter,ana->evtInfoReader.EcalDeadCellTriggerPrimitiveFilter);
     data->fill<bool>(i_pass_goodVertices                      ,ana->evtInfoReader.goodVertices                      );
     data->fill<bool>(i_pass_eeBadScFilter                     ,ana->evtInfoReader.eeBadScFilter                     );
+    //CH energy fraction filter
+    data->fill<float >(i_jet1chef, ana->defaultJets->jetchHadEnFrac_->size() ? ana->defaultJets->jetchHadEnFrac_->at(ana->defaultJets->recoJets[0].index())  :10);
 
     std::vector<float> gentoppt_; gentoppt_.clear();
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
@@ -857,10 +864,12 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       TreeCopierManualBranches(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;}
 
     const double metcut_   = 200.0 ;
-    const int    minnjets_ =   2   ;
-    const double minj2pt_  = 75.0  ;
+    const int    minnjets_ =   5   ;
 
+    bool addlep2met = false;
     bool applyCHFFilter    = false ;
+
+    size i_origmet = 0;
 
     TreeFiller filler;
 //    M2TreeFiller m2Filler;
@@ -873,23 +882,32 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      m2Filler.book(&data);
 //      hettFiller.book(&data);
 //      cttFiller.book(&data);
+      i_origmet           = data.add<float>("","origmet","F",0);
     }
 
     bool fillEvent() {
 
       if(!goodvertex) return false;
-
-      //if(nVetoedLeptons > 0)  return false;
-      //if(nVetoedTracks  > 0)  return false;
-
-      if(met->pt() < metcut_  ) return false;
-      if(nJets     < minnjets_) return false;
-      if(jets.at(1)->pt() < minj2pt_)  return false;
-
+      if( nJets < minnjets_) return false;
       if(applyCHFFilter && !filler.passCHFFilter(jets)) return false;
 
-      filler.fillEventInfo(&data, this);
-      filler.fillJetInfo  (&data, jets, bJets, met);
+      if (addlep2met) {
+        if (nSelLeptons < 1    )        return false;
+
+        MomentumF lepplusmet;
+        lepplusmet.setP4(met->p4() + selectedLepton->p4());
+
+        if (lepplusmet.pt() < metcut_)  return false;
+
+        filler.fillEventInfo(&data, this, true, &lepplusmet);
+        filler.fillJetInfo  (&data, jets, bJets, &lepplusmet);
+        data.fill<float>(i_origmet, met->pt());
+      } else {
+        if(met->pt() < metcut_  ) return false;
+        filler.fillEventInfo(&data, this);
+        filler.fillJetInfo  (&data, jets, bJets, met);
+      }
+
       //m2Filler.fillM2Info(&data,this,M2TreeFiller::TTBAR_1L);
       //hettFiller.fillHettInfo(&data,this,jets,hettTops);
       //cttFiller.fillTopTagInfo(&data,this,jets);
