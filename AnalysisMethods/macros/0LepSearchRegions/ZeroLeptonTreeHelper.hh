@@ -100,6 +100,7 @@ struct TreeFiller {
   size i_lepvetoweight;
   size i_lepselweight;
   size i_leptnpweight;
+  size i_origmet   ;
   size i_met       ;
   size i_metphi    ;
   size i_metnohf   ;
@@ -276,6 +277,7 @@ struct TreeFiller {
     i_bosonpt        = data->add<float>("","bosonpt","F",0);
     i_bosoneta       = data->add<float>("","bosoneta","F",0);
     i_distoppt       = data->add<float>("","distoppt","F",0);
+    i_origmet        = data->add<float>("","origmet","F",0);
     i_met            = data->add<float>("","met","F",0);
     i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
     i_lepselweight   = data->add<float>("","lepselweight","F",0);
@@ -394,21 +396,11 @@ struct TreeFiller {
     return ( (fj->fjPrunedMass() > minMass) && (fj->fjPrunedMass() < maxMass) && fabs(fj->p4().eta())<=2.4 );
   }
 
-  bool passSoftDropTaggerCTT(CMSTopF* ctt,float minMass,float maxMass,int nsubjet, float t2ovt1) {
-
-    float mass_   = ctt->topSoftDropMass();
-    int nsubjts_  = ctt->topNsubJets();
-    float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
-
-    return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
-  }
-
-
   bool passSoftDropTaggerFJ(const FatJetF* fj, float minPT, float minMass,float maxMass, float tau32max, float tau21max) {
     return ( (fj->fjSoftDropMass() > minMass) && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>minPT) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
   }
 
-  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, bool lepAddedBack = false, MomentumF* metn = 0) {
+  void fillEventInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0) {
     data->fill<unsigned int>(i_run, ana->run);
     data->fill<unsigned int>(i_lumi, ana->lumi);
     data->fill<unsigned int>(i_event, ana->event);
@@ -451,7 +443,8 @@ struct TreeFiller {
     data->fill<float>(i_lepselweight, ana->leptonCorrections.getSelLepWeight());
     data->fill<float>(i_leptnpweight, ana->leptonCorrections.getTnPLepWeight());
     data->fill<float>(i_genmet, ana->genmet->pt());
-    if(!lepAddedBack) {
+    data->fill<float>(i_origmet, ana->met->pt());
+    if(!useModifiedMET) {
       data->fill<float>(i_met, ana->met->pt());
       data->fill<float>(i_metphi, ana->met->phi());
     } else {
@@ -869,7 +862,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     bool addlep2met = false;
     bool applyCHFFilter    = false ;
 
-    size i_origmet = 0;
 
     TreeFiller filler;
 //    M2TreeFiller m2Filler;
@@ -882,7 +874,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      m2Filler.book(&data);
 //      hettFiller.book(&data);
 //      cttFiller.book(&data);
-      i_origmet           = data.add<float>("","origmet","F",0);
     }
 
     bool fillEvent() {
@@ -901,7 +892,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         filler.fillEventInfo(&data, this, true, &lepplusmet);
         filler.fillJetInfo  (&data, jets, bJets, &lepplusmet);
-        data.fill<float>(i_origmet, met->pt());
       } else {
         if(met->pt() < metcut_  ) return false;
         filler.fillEventInfo(&data, this);
