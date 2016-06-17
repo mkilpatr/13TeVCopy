@@ -1,4 +1,5 @@
 
+
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultConfigurations.h"
 #include "AnalysisBase/TreeAnalyzer/interface/ConfigurationBase.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
@@ -103,7 +104,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::CTT;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2015d_2137ipb_52bins_69mb.root",CMSSW_BASE);
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/2016/pu_6_13_2016_69000.root",CMSSW_BASE);
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
