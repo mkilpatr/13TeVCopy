@@ -53,10 +53,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       drphotonparton = -1;
 
       if (selectedPhotons.empty()) return;
-
       pho = selectedPhotons.front();
-      // add photon to met
-//      met->setP4(met->p4() + pho->p4());
 
       // clean leptons vs recoPhoton
       vector<LeptonF*> tmpLeptons;

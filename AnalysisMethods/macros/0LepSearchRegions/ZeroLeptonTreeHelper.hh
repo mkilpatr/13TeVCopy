@@ -85,6 +85,7 @@ struct TreeFiller {
   size i_passtright900;
   size i_passjson  ;
   size i_passmetmht90;
+  size i_passmetmht100;
   size i_passdijetmet;
   size i_pass_HBHENoiseFilter                    ;
   size i_pass_HBHENoiseIsoFilter                 ;
@@ -266,6 +267,7 @@ struct TreeFiller {
     i_passdijetmet   = data->add<bool>("","passdijetmet","O",0);
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passmetmht90   = data->add<bool>("","passmetmht90","O",0);
+    i_passmetmht100  = data->add<bool>("","passmetmht100","O",0);
     i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
     i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
     i_pass_CSCTightHalo2015Filter               = data->add<bool>("","pass_CSCTightHalo2015Filter"            ,"O",0);
@@ -417,8 +419,8 @@ struct TreeFiller {
     data->fill<float>(i_qcdRespTailWeight, ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_normWeight,  ana->eventCorrections.getNormWeight());
     data->fill<float>(i_topptWeight, ana->ttbarCorrections.getTopPTWeight());
-    data->fill<bool >(i_passtrige,  (ana->isMC() || ana->process==defaults::DATA_SINGLEEL) ? (ana->triggerflag & kHLT_Ele22_eta2p1_WPLoose_Gsf) || (ana->triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf) : false);
-    data->fill<bool >(i_passtrigmu, (ana->isMC() || ana->process==defaults::DATA_SINGLEMU) ? ((ana->triggerflag & kHLT_IsoMu20) || (ana->triggerflag & kHLT_IsoTkMu20)): false);
+    data->fill<bool >(i_passtrige,  (ana->isMC() || ana->process==defaults::DATA_SINGLEEL) ? (ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf) : false);
+    data->fill<bool >(i_passtrigmu, (ana->isMC() || ana->process==defaults::DATA_SINGLEMU) ? ((ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22)): false);
     data->fill<bool >(i_passtrige17e12, ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
     data->fill<bool >(i_passtrigmu17mu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
     data->fill<bool >(i_passtrigmu17tkmu8, ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
@@ -435,6 +437,7 @@ struct TreeFiller {
     data->fill<bool >(i_passtright900, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT900 : false));
     data->fill<bool >(i_passdijetmet, ana->isMC() ? true : (ana->process==defaults::DATA_HTMHT ? ana->triggerflag & kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned : false));
     data->fill<bool >(i_passmetmht90, ana->isMC() ? true : (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight : false));
+    data->fill<bool >(i_passmetmht100, ana->isMC() ? true : (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET100_PFMHT100_IDTight : false));
     bool hasJSON = ana->hasJSONFile();
     bool isMC = ana->isMC();
     bool passesLumi = ana->passesLumiMask();
