@@ -82,7 +82,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   }
 
   if(options_ & TRUEPU) {
-    truePUCorr->setAxis(ana->nPU);
+    truePUCorr->setAxis(std::min(ana->nPU,float(37.0)));
     truePUWeight = truePUCorr->get();
   }
 
