@@ -134,14 +134,11 @@ namespace ucsbsusy {
 
   enum TriggerBits {
     kHLT_IsoMu24_eta2p1 = 1UL<<0,
-    //kHLT_IsoMu27 = 1UL<<1,
     kHLT_IsoTkMu20 = 1UL<<1,
     kHLT_IsoTkMu24_eta2p1 = 1UL<<2,
-    //kHLT_IsoTkMu27 = 1UL<<3,
+    kHLT_Ele25_WPTight_Gsf = 1UL<<3,
     kHLT_Ele27_eta2p1_WPLoose_Gsf = 1UL<<4,
     kHLT_Ele27_eta2p1_WP75_Gsf = 1UL<<5,
-    //kHLT_Ele32_eta2p1_WPLoose_Gsf = 1UL<<6,
-    //kHLT_Ele32_eta2p1_WP75_Gsf = 1UL<<7,
     kHLT_PFHT300_PFMET100 = 1UL<<6,
     kHLT_PFHT300_PFMET110 = 1UL<<7,
     kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned = 1UL<<8,
@@ -149,8 +146,6 @@ namespace ucsbsusy {
     kHLT_PFHT350_PFMET100_NoiseCleaned = 1UL<<10,
     kHLT_PFHT350_PFMET120_NoiseCleaned = 1UL<<11,
     kHLT_PFMET170_NoiseCleaned = 1UL<<12,
-    //kHLT_PFMET120_NoiseCleaned_BTagCSV07 = 1UL<<13,
-    //kHLT_PFMET120_NoiseCleaned_BTagCSV072 = 1UL<<14,
     kHLT_PFMETNoMu90_PFMHTNoMu90_IDTight = 1UL<<13,
     kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight = 1UL<<14,
     kHLT_PFHT300 = 1UL<<15,
@@ -165,6 +160,9 @@ namespace ucsbsusy {
     kHLT_Photon165_R9Id90_HE10_IsoM = 1UL<<24,
     kHLT_Photon165_HE10 = 1UL<<25,
     kHLT_Photon175 = 1UL<<26,
+    kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight = 1UL<<27,
+    kHLT_Ele25_eta2p1_WPLoose_Gsf = 1UL<<28,
+    kHLT_Ele25_eta2p1_WPTight_Gsf = 1UL<<29,
     /*kHLT_DiPFJetAve100_HFJEC = 1UL<<27,
     kHLT_DiPFJetAve140 = 1UL<<28,
     kHLT_DiPFJetAve160_HFJEC = 1UL<<29,
@@ -234,7 +232,10 @@ namespace ucsbsusy {
     kSingleEle27NoER = 1UL<<26,
     kSingleEle23NoER = 1UL<<27,
     kSingleIsoMu20 = 1UL<<28,
-    kSingleIsoTkMu20 = 1UL<<29
+    kSingleIsoTkMu20 = 1UL<<29,
+    kSingleEle25WPTightNoER = 1UL<<30,
+    kSingleEle25WPLoose = 1UL<<31,
+    kSingleEle25WPTight = 1UL<<32
   };
 
   enum METFilterBits {
