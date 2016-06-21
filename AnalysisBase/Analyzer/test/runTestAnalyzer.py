@@ -24,9 +24,9 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-# options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
-# options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
-options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
+#options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
+options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 
 options.maxEvents = -1
 
@@ -89,9 +89,9 @@ if 'QCD' in DatasetName:
 ISDATA = False
 ISFASTSIM = False
 ISMINIAODV1 = False
-runMetCorrAndUnc = False
-updateJECs = False
-JECUNCFILE = 'data/JEC/Spring16_25nsV1_MC_Uncertainty_AK4PFchs.txt'
+runMetCorrAndUnc = True
+updateJECs = True
+JECUNCFILE = 'data/JEC/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName :
@@ -112,10 +112,10 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    JECUNCFILE = 'data/JEC/Fall15_25nsV2_DATA_Uncertainty_AK4PFchs.txt'
+    JECUNCFILE = 'data/JEC/Spring16_25nsV3_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_274443_11Jun2016.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_275376_21Jun2016.txt")
     # jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
@@ -237,7 +237,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = ISFASTSIM  # use external JECs (sqlite file)
+usePrivateSQlite = True  # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -253,7 +253,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Fall15_25nsV2_DATA" if ISDATA else "Spring16_25nsV1_MC"
+    era = "Spring16_25nsV3_DATA" if ISDATA else "Spring16_25nsV3_MC"
     if ISFASTSIM :
         era = "MCRUN2_74_V9"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
@@ -290,8 +290,8 @@ if runMetCorrAndUnc :
     runMetCorAndUncFromMiniAOD(process,
                                isData=runOnData
                                )
-    process.shiftedPatJetEnDown.jetCorrUncertaintyTag = cms.string("")
-    process.shiftedPatJetEnUp.jetCorrUncertaintyTag = cms.string("")
+    #process.shiftedPatJetEnDown.jetCorrUncertaintyTag = cms.string("")
+    #process.shiftedPatJetEnUp.jetCorrUncertaintyTag = cms.string("")
     process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETs', '', 'run')
 
     if not useHFCandidates:
@@ -389,6 +389,7 @@ if updateJECs:
         jetSource=cms.InputTag("slimmedJetsAK8"),
         jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
     )
+    '''
     # Raw MET
     process.uncorrectedMet = cms.EDProducer("RecoMETExtractor",
         correctionLevel=cms.string('raw'),
@@ -425,13 +426,14 @@ if updateJECs:
         src=cms.InputTag('uncorrectedPatMet'),
         srcCorrections=cms.VInputTag(cms.InputTag('Type1CorrForNewJEC', 'type1'))
         )
+    '''
     process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('patJetsAK8ReapplyJEC')
     process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Electrons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.Photons.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.PFCandidates.jets = cms.InputTag('patJetsReapplyJEC')
-    process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
+    #process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
     process.QGTagger.srcJets = cms.InputTag('patJetsReapplyJEC')
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
