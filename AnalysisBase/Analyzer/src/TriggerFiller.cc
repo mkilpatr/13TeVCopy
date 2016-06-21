@@ -72,8 +72,14 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele23_WPLoose_Gsf_v2"] = kHLT_Ele23_WPLoose_Gsf;
   trigIds_["HLT_Ele23_WPLoose_Gsf_v3"] = kHLT_Ele23_WPLoose_Gsf;
   trigIds_["HLT_Ele23_WPLoose_Gsf_v4"] = kHLT_Ele23_WPLoose_Gsf;
+  trigIds_["HLT_Ele25_WPTight_Gsf_v1"] = kHLT_Ele25_WPTight_Gsf;
+  trigIds_["HLT_Ele25_WPTight_Gsf_v2"] = kHLT_Ele25_WPTight_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v1"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v2"] = kHLT_Ele27_WPLoose_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v2"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v3"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
@@ -121,6 +127,8 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_v2"] = kHLT_PFMETNoMu90_PFMHTNoMu90_IDTight;
   trigIds_["HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v1"] = kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight;
   trigIds_["HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_v2"] = kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight;
+  trigIds_["HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_v1"] = kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight;
+  trigIds_["HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_v2"] = kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight;
   trigIds_["HLT_PFHT300_v1"] = kHLT_PFHT300;
   trigIds_["HLT_PFHT300_v2"] = kHLT_PFHT300;
   trigIds_["HLT_PFHT300_v3"] = kHLT_PFHT300;
@@ -212,6 +220,9 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltSingleEle22WP75GsfTrackIsoFilter"] = kSingleEle22;
   trigFilterIds_["hltSingleEle22WPTightGsfTrackIsoFilter"] = kSingleEle22WPTight;
   trigFilterIds_["hltEle23WPLooseGsfTrackIsoFilter"] = kSingleEle23NoER;
+  trigFilterIds_["hltEle25WPTightGsfTrackIsoFilter"] = kSingleEle25WPTightNoER;
+  trigFilterIds_["hltEle25erWPLooseGsfTrackIsoFilter"] = kSingleEle25WPLoose;
+  trigFilterIds_["hltEle25erWPTightGsfTrackIsoFilter"] = kSingleEle25WPTight;
   trigFilterIds_["hltEle27noerWPLooseGsfTrackIsoFilter"] = kSingleEle27NoER;
   trigFilterIds_["hltEle27WPLooseGsfTrackIsoFilter"] = kSingleEle27;
   trigFilterIds_["hltEle27WP75GsfTrackIsoFilter"] = kSingleEle27;
