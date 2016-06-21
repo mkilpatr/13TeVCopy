@@ -138,7 +138,6 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       metpluspho.setP4(met->p4() + pho->p4());
 
       filler.fillEventInfo(&data, this, true, &metpluspho);
-      filler.fillJetInfo  (&data, jets, bJets, &metpluspho);
 
       data.fill<int>(i_npho, selectedPhotons.size());
       data.fill<float>(i_phopt, pho->pt());

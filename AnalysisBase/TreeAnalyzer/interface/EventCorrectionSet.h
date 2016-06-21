@@ -17,12 +17,6 @@ const double Z_0B_SF  = 1.02;
 const double Z_1B_SF  = 1.00;
 const double Z_2B_SF  = 1.28;
 
-class PUCorr50NS : public RefoldCorrection {
-public:
-  enum axes {NPV,INPUT_MC};
-  PUCorr50NS(TFile * file) : RefoldCorrection("PU50NS",file) {}
-};
-
 class PUCorr : public RefoldCorrection {
 public:
   enum axes {NPV};
@@ -55,7 +49,7 @@ public:
                           , CTT              = (1 <<  3)   ///< CTT top tagging
 
   };
- EventCorrectionSet(): puCorr50NS(0), puCorr(0), truePUCorr(0), cttCorr(0), puWeight(1), pu50NSWeight(1), truePUWeight(1), normWeight(1),cttWeight(1) {}
+ EventCorrectionSet(): puCorr(0), truePUCorr(0), cttCorr(0), puWeight(1), truePUWeight(1), normWeight(1),cttWeight(1) {}
 
   virtual ~EventCorrectionSet() {};
   virtual void load(TString fileName, TString cttCorrName, int correctionOptions = NULLOPT);
@@ -64,20 +58,17 @@ public:
   //individual accessors
   float getPUWeight() const {return puWeight;}
   float getTruePUWeight() const {return truePUWeight;}
-  float get50NSPUWeight() const {return pu50NSWeight;}
   float getNormWeight() const {return normWeight;}
   float getCTTWeight() const {return cttWeight;}
 
 private:
   //Correction list
-  PUCorr50NS * puCorr50NS;
   PUCorr * puCorr;
   TruePUCorr * truePUCorr;
   CTTCorr * cttCorr;
 
   //output values
   float puWeight;
-  float pu50NSWeight;
   float truePUWeight;
   float normWeight;
   float cttWeight;

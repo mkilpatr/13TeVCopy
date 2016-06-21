@@ -22,13 +22,9 @@ void makeZeroLeptonMETplusLepCRTrees(TString sname = "htmht",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
-  cfgSet::ConfigSet pars = pars0lep(json);
+  cfgSet::ConfigSet pars = pars1LCR(json);
 
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
-
-  pars.jets.cleanJetsvLeptons = true; // only for 1lep control sample with lep added back to met
-  pars.electrons              = LeptonSelection::zl_ctr_sLep_electrons;
-  pars.muons                  = LeptonSelection::zl_ctr_sLep_muons;
 
   // disable jetID for FastSim
   if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) pars.jets.applyJetID = false;

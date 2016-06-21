@@ -1,7 +1,7 @@
 #ifndef T2FBDHELPER_HH
 #define T2FBDHELPER_HH
 
-#define SLIM_VERSION
+//#define SLIM_VERSION
 
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/DataFormats/interface/CMSTop.h"
