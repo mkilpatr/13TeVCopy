@@ -65,7 +65,9 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
 }
 
 bool cfgSet::isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max) {
-  return (fj->fjSoftDropMass() > minMass && (fj->fjSoftDropMass() < maxMass) && fabs(fj->p4().eta())<=2.4 && (fj->p4().pt()>minPT) && ((fj->fjTau3())/(fj->fjTau2()))<tau32max && ((fj->fjTau2())/(fj->fjTau1()))<tau21max);
+  float tau21 = fj->fjTau1() > 0 ? fj->fjTau2()/fj->fjTau1() : 1e9;
+  float tau32 = fj->fjTau2() > 0 ? fj->fjTau3()/fj->fjTau2() : 1e9;
+  return (fj->fjSoftDropMass() > minMass && (fj->fjSoftDropMass() < maxMass) && fabs(fj->eta())<=2.4 && (fj->pt()>minPT) && tau32<tau32max && tau21<tau21max);
 }
 
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){

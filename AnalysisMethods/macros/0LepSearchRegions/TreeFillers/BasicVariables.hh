@@ -209,12 +209,12 @@ struct BasicVarsFiller {
     data->fill<bool>(i_passtrigphoton165, ana->isMC() || (ana->triggerflag & kHLT_Photon165_HE10));
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false));
 
-    bool passTrigEl = ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
+    bool passTrigEl = ana->triggerflag & kHLT_Ele25_eta2p1_WPTight_Gsf;
     bool passTrigMu = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22);
     data->fill<bool>(i_passtrigmu,     ana->isMC() || (ana->process==defaults::DATA_SINGLEMU ? passTrigMu: false));
     data->fill<bool>(i_passtrige,      ana->isMC() || (ana->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
 
-    bool passTrigElEl = ana->triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+    bool passTrigElEl = ana->triggerflag & kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
     bool passTrigMuMu = (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
     data->fill<bool>(i_passtrigdilep,  ana->isMC() || ((ana->process==defaults::DATA_DOUBLEMU && passTrigMuMu) || (ana->process==defaults::DATA_DOUBLEEG && passTrigElEl && (!passTrigMuMu))));
 
