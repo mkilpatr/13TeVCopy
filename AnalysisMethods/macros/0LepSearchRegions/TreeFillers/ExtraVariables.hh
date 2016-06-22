@@ -14,14 +14,12 @@ struct ExtraVarsFiller {
   ExtraVarsFiller() {}
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
-  size i_test_genwpt;
 
   // Syst. studies
   size i_systweights;
   size i_wpolWeightUp;
   size i_wpolWeightDn;
   size i_costhetastar;
-  size i_lp;
 
   // JetMET extra
   size i_njets30   ;
@@ -101,10 +99,8 @@ struct ExtraVarsFiller {
   size i_ngentau;
   size i_ngenlep;
   size i_genlepq ;
-  size i_genwpt;
 
   void bookTest(TreeWriterData* data){
-    i_test_genwpt         = data->add<float>("","test_genwpt","F",-1);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -112,7 +108,6 @@ struct ExtraVarsFiller {
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
     i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
-    i_lp                = data->add<float>("","lp","F",-9);
   }
 
   void bookJetMET(TreeWriterData* data){
@@ -195,19 +190,11 @@ struct ExtraVarsFiller {
     i_ngenel         = data->add<int>("","ngenel","I",0);
     i_ngentau        = data->add<int>("","ngentau","I",0);
     i_ngenlep        = data->add<int>("","ngenlep","I",0);
-    i_genwpt         = data->add<float>("","genwpt","F",-1);
   }
 
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    if (ana->isMC()){
-      for (const auto *p : ana->genParts){
-        if (ParticleInfo::isA(ParticleInfo::p_Wplus, p)){
-          data->fill<float>(i_test_genwpt, p->pt());
-          break;
-        }
-      }
-    }
+
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -217,14 +204,6 @@ struct ExtraVarsFiller {
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
-
-    float lp_ = -9.;
-    if (ana->selectedLepton){
-      const auto *lep = ana->selectedLepton;
-      auto WP4 = lep->p4() + ana->met->p4();
-      lp_ = ( lep->px()*WP4.px() + lep->py()*WP4.py() ) / ( WP4.pt()*WP4.pt() );
-    }
-    data->fill<float>(i_lp,lp_);
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
@@ -427,7 +406,6 @@ struct ExtraVarsFiller {
       }
       else if (abs(p->pdgId())==5) { genb.push_back(p); }
       else if (abs(p->pdgId())==6) { gent.push_back(p); }
-      else if (abs(p->pdgId())==24){ genw.push_back(p); }
 
       if (p->numberOfMothers()==0) continue;
 
@@ -455,8 +433,6 @@ struct ExtraVarsFiller {
       data->fill<float>(i_gentop2pt, gent[1]->pt());
       data->fill<float>(i_ditoppt, (gent[0]->p4()+gent[1]->p4()).pt());
     }
-
-    if (genw.size()>0) { data->fill<float>(i_genwpt, genw[0]->pt()); }
 
     if (genb.size()>0) {
       data->fill<float>(i_genb1pt, genb[0]->pt());
