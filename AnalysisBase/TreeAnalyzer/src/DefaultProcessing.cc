@@ -64,6 +64,12 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
   return (top.topCmsTopTagMass() > 140.0 && top.topCmsTopTagMass() < 250.0 && top.topMinMass() > 50.0 && top.topNsubJets() >= 3 && top.p4().pt()>=400. && fabs(top.p4().eta())<=2.4);
 }
 
+bool cfgSet::isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max) {
+  float tau21 = fj->fjTau1() > 0 ? fj->fjTau2()/fj->fjTau1() : 1e9;
+  float tau32 = fj->fjTau2() > 0 ? fj->fjTau3()/fj->fjTau2() : 1e9;
+  return (fj->fjSoftDropMass() > minMass && (fj->fjSoftDropMass() < maxMass) && fabs(fj->eta())<=2.4 && (fj->pt()>minPT) && tau32<tau32max && tau21<tau21max);
+}
+
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){
   if(!electronConf.isConfig || !muonConf.isConfig)
     throw std::invalid_argument("config::selectLeptons(): You want to do selecting but have not yet configured the selection!");
@@ -94,9 +100,9 @@ void cfgSet::selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, 
 void cfgSet::selectTaus(std::vector<ucsbsusy::TauF*>& selectedTaus, std::vector<ucsbsusy::LeptonF*>& selectedLeptons, ucsbsusy::TauFCollection& allTaus, const TauConfig& conf){
   if(!conf.isConfig())
     throw std::invalid_argument("config::selectTaus(): You want to do selecting but have not yet configured the selection!");
-    
+
   selectedTaus.clear();
-  
+
   for(auto& tau : allTaus){
     if(isSelTau(tau,selectedLeptons,conf))
      selectedTaus.push_back(&tau);
@@ -116,7 +122,7 @@ void cfgSet::selectPhotons(std::vector<ucsbsusy::PhotonF*>& selectedPhotons, ucs
 }
 
 void cfgSet::selectJets(std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsbsusy::RecoJetF*>* bJets, std::vector<ucsbsusy::RecoJetF*>* nonBJets,
-			ucsbsusy::RecoJetFCollection& allJets, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, 
+			ucsbsusy::RecoJetFCollection& allJets, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons,
 			const std::vector<ucsbsusy::LeptonF*>* primaryLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons,
 			const std::vector<ucsbsusy::PFCandidateF*>* vetoedTracks, const JetConfig&  conf){
   if(!conf.isConfig())
@@ -210,6 +216,24 @@ void  cfgSet::applyAdHocPUCorr(ucsbsusy::RecoJetFCollection& jets, const std::ve
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
 }
 
+void cfgSet::sortByCSV(std::vector<ucsbsusy::RecoJetF*>& jets) {
+  std::sort(jets.begin(), jets.end(), [](RecoJetF *a, RecoJetF *b){return a->csv() > b->csv();});
+}
+
+bool cfgSet::passCHFFilter(const std::vector<ucsbsusy::RecoJetF*>& jets) {
+  bool pass = true;
+  for(auto* jet : jets) {
+    if(jet->pt() > 20.0 && fabs(jet->eta()) < 2.5 && (!jet->genJet() || jet->genJet()->pt() < 5.0) && jet->chHadFrac() < 0.1) pass = false;
+  }
+  return pass;
+}
+
+void cfgSet::selectISRJets(const std::vector<ucsbsusy::RecoJetF*>& jets, std::vector<ucsbsusy::RecoJetF*>* isrJets) {
+  isrJets->clear();
+  for (auto *j : jets){
+    if (j->csv() < defaults::CSV_LOOSE) isrJets->push_back(j);
+  }
+}
 /*
 void cfgSet::processMET(ucsbsusy::MomentumF& met, const std::vector<ucsbsusy::LeptonF*>* selectedLeptons, const std::vector<ucsbsusy::PhotonF*>* selectedPhotons, const METConfig& conf){
   if(!conf.isConfig())

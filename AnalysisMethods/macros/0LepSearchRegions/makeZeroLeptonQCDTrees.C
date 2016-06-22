@@ -158,7 +158,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
 
 
       filler.fillEventInfo(&data, this);
-      filler.fillJetInfo  (&data, jets, bJets, met);
 
 
       return true;

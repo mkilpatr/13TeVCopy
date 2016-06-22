@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // BaseTreeAnalyzer
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
@@ -44,7 +44,7 @@ public:
 
 class BaseTreeAnalyzer {
 public:
-    
+
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName,size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars);
     virtual ~BaseTreeAnalyzer() {};
@@ -175,6 +175,7 @@ public:
     std::vector<PhotonF*>        selectedPhotons   ;
     std::vector<RecoJetF*>       jets              ;
     std::vector<RecoJetF*>       bJets             ;
+    std::vector<RecoJetF*>       isrJets           ;
     std::vector<RecoJetF*>       nonBJets          ;
     std::vector<GenParticleF*>   genParts          ;
     std::vector<CMSTopF*>        cttTops           ;
@@ -197,10 +198,6 @@ public:
     LeptonCorrectionSet leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
     BTagCorrectionSet    bTagCorrections;
-
-
-    //hack for DY PU
-    bool zIsInvisible;
 
     JetReader  * defaultJets;
 

@@ -17,66 +17,43 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
     const double DR_CUT = 0.4;
 
-    vector<GenJetF*> genJets;
     PhotonF*         pho            = nullptr;
-    GenParticleF*    boson          = nullptr;
-    bool             passPhotonSel  = true;
     bool             passDRSel      = true;
     bool             passGenMatch   = true;
     bool             flagQCDFake    = false;
     bool             flagBypassDRSel= false;
-    float            origMET        = 0;
-    float            origMETNoHF    = 0;
+    float            drphotonparton = -1;
 
-    size i_origmet = 0;
-    size i_origmetnohf = 0;
     size i_npho = 0;
     size i_phopt = 0;
     size i_phoeta = 0;
     size i_passgenmatch = 0;
+    size i_drphotonparton = 0;
 
     void book() {
       ZeroLeptonAnalyzer::book();
 
-      i_origmet           = data.add<float>("","origmet","F",0);
-      i_origmetnohf       = data.add<float>("","origmetnohf","F",0);
       i_npho              = data.add<int>("","npho","I",0);
       i_phopt             = data.add<float>("","phopt","F",0);
       i_phoeta            = data.add<float>("","phoeta","F",0);
       i_passgenmatch      = data.add<bool>("","passgenmatch","O",0);
+      i_drphotonparton    = data.add<float>("","drphotonparton","F",-1);
     }
 
     void processVariables(){
       BaseTreeAnalyzer::processVariables();
-      origMET = met->pt();
-      origMETNoHF = metNoHF->pt();
 
       // reset to nullptr
       pho = nullptr;
-      boson = nullptr;
+      GenParticleF* genphoton = nullptr;
 
       // set these flags to be true (for data and znunu)
-      passPhotonSel = true;
       passDRSel = true;
       passGenMatch = true;
+      drphotonparton = -1;
 
-      if (process == defaults::SINGLE_Z){
-        for(auto *p : genParts)
-          if(p->pdgId() == ParticleInfo::p_Z0) {
-            boson = p;
-            break; // end of znunu
-          }
-        return;
-      }
-
-      if (selectedPhotons.empty()){
-        passPhotonSel = false;
-        return;
-      }
+      if (selectedPhotons.empty()) return;
       pho = selectedPhotons.front();
-      // add photon to met
-      met->setP4(met->p4() + pho->p4());
-      metNoHF->setP4(metNoHF->p4() + pho->p4());
 
       // clean leptons vs recoPhoton
       vector<LeptonF*> tmpLeptons;
@@ -96,13 +73,6 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if (!isMC()) return; // end of data
 
-      // fill genjets
-      genJets.clear();
-      for(auto &j : defaultJets->genJets){
-        if(cfgSet::isSelGenJet(j,configSet.jets))
-          genJets.push_back(&j);
-        // cleaning vs boson moved to TreeFiller::fillEventInfo
-      }
 
       passDRSel = false;
       passGenMatch = false;
@@ -135,15 +105,16 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       for (auto *gp : genphotons){
         if (PhysicsUtilities::deltaR2(*gp, *pho) < 0.01 && pho->pt()>0.5*gp->pt() && pho->pt()<2*gp->pt()){
           passGenMatch = true;
-          boson = gp;
-          genmet->setP4(genmet->p4() + boson->p4());
+          genphoton = gp;
+          genmet->setP4(genmet->p4() + genphoton->p4());
           break;
         }
       }
 
       if (passGenMatch){
         double minDR = 0;
-        PhysicsUtilities::findNearestDRDeref(*boson, partons, minDR);
+        PhysicsUtilities::findNearestDRDeref(*genphoton, partons, minDR);
+        drphotonparton = minDR;
         if ( (minDR > DR_CUT && process == defaults::SINGLE_G) || (minDR <= DR_CUT && process == defaults::QCD) )
           passDRSel = !flagQCDFake;
       } else
@@ -159,24 +130,20 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
 
     bool fillEvent() {
-//      if(nVetoedLeptons > 0)                return false;
-//      if(nVetoedTracks > 0)                 return false;
-//      if(met->pt() < metcut_)               return false;
-      if(!passPhotonSel)                    return false;
+      if(!pho)                              return false;
       if(!passDRSel)                        return false;
       if(!goodvertex)                       return false;
-      filler.fillEventInfo(&data, this);
-      filler.fillJetInfo  (&data, jets, bJets, met);
-      if (isMC()) filler.fillGenInfo  (&data, boson, genJets);
 
-      data.fill<float>(i_origmet, origMET);
-      data.fill<float>(i_origmetnohf, origMETNoHF);
+      MomentumF metpluspho;
+      metpluspho.setP4(met->p4() + pho->p4());
+
+      filler.fillEventInfo(&data, this, true, &metpluspho);
+
       data.fill<int>(i_npho, selectedPhotons.size());
-      if (pho){
-        data.fill<float>(i_phopt, pho->pt());
-        data.fill<float>(i_phoeta, pho->eta());
-      }
+      data.fill<float>(i_phopt, pho->pt());
+      data.fill<float>(i_phoeta, pho->eta());
       data.fill<bool>(i_passgenmatch, passGenMatch);
+      data.fill<float>(i_drphotonparton, drphotonparton);
       return true;
     }
 

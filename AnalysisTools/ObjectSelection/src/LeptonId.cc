@@ -63,7 +63,7 @@ namespace LeptonSelection {
                              &ElectronISO::medMini,
                              ZL_CTR_ELE);
   Electron zl_ctr_diLep_electrons(
-                              20,
+                              25,
                               2.4,
                               -1,
                               -1,

@@ -206,7 +206,7 @@ class Datacard:
             if self.has_data and not (self.blind_sr and fitregion.type == 'signal') :
                 datayield = int(fitregion.get(fitregion.dataname, bin)[0])
             else :
-                datayield = int(sum(nBkgEvts))
+                datayield = int(round(sum(nBkgEvts)))
 
             lineSObs = 'observation'.ljust(self.yieldwidth) + str(datayield)
 
@@ -424,8 +424,8 @@ class Datacard:
                                     crbinname = srtocrbinmap[binname]
                                     if not unc.cr_nevts.has_key(binname):
                                         unc.cr_nevts[binname] = {}
-                                    unc.cr_nevts[binname]['mcsr'] = max(cr.get(cr.srmcname, binname)[0], 0.00000001)
-                                    crnevts = int(cr.get(cr.dataname, crbinname)[0])
+                                    unc.cr_nevts[binname]['mcsr'] = max(cr.get(cr.srmcname, binname)[0], 0.000000001)
+                                    crnevts = int(round(cr.get(cr.dataname, crbinname)[0]))
                                     unc.cr_nevts[binname]['data'] = max(crnevts, 1)
                                     unc.cr_nevts[binname]['mc'] = max(cr.get(cr.crmcname, crbinname)[0], 0.00000001)
                                     unc.cr_nevts[binname]['mcsub'] = max(cr.get(cr.crsubname, crbinname)[0], 0.00000001) if cr.crsubname else 0.0

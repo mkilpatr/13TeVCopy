@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetReader
-// 
+//
 // Class for reading electron object information from TTree.
-// 
-// ElectronReader.cc created on Wed Oct 22 01:39:44 CEST 2014 
-// 
+//
+// ElectronReader.cc created on Wed Oct 22 01:39:44 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
@@ -19,11 +19,8 @@ const int CMSTopReader::defaultOptions = CMSTopReader::LOADRECO | CMSTopReader::
 
 //--------------------------------------------------------------------------------------------------
 CMSTopReader::CMSTopReader() : BaseReader(){
-  toprawmass_       = new vector<float>;
+  topallsubjetmass_ = new vector<float>;
   topcmstoptagmass_ = new vector<float>;
-  toptau1_          = new vector<float>;
-  toptau2_          = new vector<float>;
-  toptau3_          = new vector<float>;
   toppt_            = new vector<float>;
   topeta_           = new vector<float>;
   topphi_           = new vector<float>;
@@ -41,31 +38,13 @@ void CMSTopReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    if(options_ & LOADPHYS14) {
-      treeReader->setBranchAddress(branchName_, "fatjet_mass"      , &toprawmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "top_topmass"         , &topcmstoptagmass_,true);    
-      treeReader->setBranchAddress(branchName_, "fatjet_tau1"         , &toptau1_         ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_tau2"         , &toptau2_         ,true);
-      treeReader->setBranchAddress(branchName_, "fatjet_tau3"         , &toptau3_         ,true);
-      treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
-      treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
-    }
-    else {
-      treeReader->setBranchAddress(branchName_, "top_rawmass"      , &toprawmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "top_cmstoptagmass", &topcmstoptagmass_,true);    
-      treeReader->setBranchAddress(branchName_, "top_tau1"         , &toptau1_         ,true);
-      treeReader->setBranchAddress(branchName_, "top_tau2"         , &toptau2_         ,true);
-      treeReader->setBranchAddress(branchName_, "top_tau3"         , &toptau3_         ,true);
-      treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
-      treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
-      treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
-      treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
-    }
-
+    treeReader->setBranchAddress(branchName_, "top_allsubjetmass", &topallsubjetmass_,true);
+    treeReader->setBranchAddress(branchName_, "top_cmstoptagmass", &topcmstoptagmass_,true);
+    treeReader->setBranchAddress(branchName_, "top_pt"           , &toppt_           ,true);
+    treeReader->setBranchAddress(branchName_, "top_eta"          , &topeta_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_phi"          , &topphi_          ,true);
+    treeReader->setBranchAddress(branchName_, "top_minmass"      , &topminmass_      ,true);
+    treeReader->setBranchAddress(branchName_, "top_nsubjets"     , &topnsubjets_     ,true);
 
     if(options_ & FILLOBJ)
       clog << "+Objects";
@@ -78,19 +57,16 @@ void CMSTopReader::refresh(){
   if(!(options_ & FILLOBJ)) return;
 
   cmsTops.clear();
-  cmsTops.reserve(toppt_->size()); 
+  cmsTops.reserve(toppt_->size());
   for(unsigned int iJ = 0; iJ < toppt_->size(); ++iJ){
 
     cmsTops.emplace_back(CylLorentzVectorF(toppt_->at(iJ),topeta_->at(iJ),topphi_->at(iJ),topcmstoptagmass_->at(iJ)),iJ);
-    cmsTops.back().setTopRawMass(toprawmass_->at(iJ));
+    cmsTops.back().setTopAllSubjetMass(topallsubjetmass_->at(iJ));
     cmsTops.back().setTopCmsTopTagMass(topcmstoptagmass_->at(iJ));
-    cmsTops.back().setTopTau1(toptau1_->at(iJ));
-    cmsTops.back().setTopTau2(toptau2_->at(iJ));
-    cmsTops.back().setTopTau3(toptau3_->at(iJ));
     cmsTops.back().setTopMinMass(topminmass_->at(iJ));
     cmsTops.back().setTopNSubJets(topnsubjets_->at(iJ));
 
-  } 
+  }
   std::sort(cmsTops.begin(),cmsTops.end(),PhysicsUtilities::greaterPT<CMSTopF>());
 
 }

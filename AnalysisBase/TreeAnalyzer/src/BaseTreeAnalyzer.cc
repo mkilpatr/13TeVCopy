@@ -1,9 +1,9 @@
 //--------------------------------------------------------------------------------------------------
-// 
-// BaseTreeAnalyzer
-// 
 //
-// 
+// BaseTreeAnalyzer
+//
+//
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
@@ -62,7 +62,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     puppimet          (0),
     genmet            (0),
     goodvertex        (false),
-    zIsInvisible      (false),
     defaultJets       (0),
     isMC_             (isMCTree),
     configSet         (pars ? *pars : cfgSet::ConfigSet())
@@ -81,7 +80,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   if(configSet.taus     .isConfig()) clog << configSet.taus      <<" ";
   if(configSet.photons.isConfig()) clog << configSet.photons <<" ";
   if(configSet.corrections.isConfig())     clog << configSet.corrections     <<" ";
- 
+
   clog << endl;
 
   if(configSet.jets.isConfig()){
@@ -208,7 +207,7 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
       break;
     }
-      
+
     case cfgSet::CMSTOPS : {
       int defaultOptions = CMSTopReader::defaultOptions;
       reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
@@ -410,11 +409,12 @@ void BaseTreeAnalyzer::processVariables()
     cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.taus);
   nVetoHPSTaus = vetoedTaus.size();
 
-  jets.clear(); bJets.clear(); nonBJets.clear();
+  jets.clear(); bJets.clear(); nonBJets.clear(); isrJets.clear();
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
 
     cfgSet::selectJets(jets, &bJets, &nonBJets, defaultJets->recoJets,&selectedLeptons,&primaryLeptons,&selectedPhotons,&vetoedTracks,configSet.jets);
+    cfgSet::selectISRJets(jets, &isrJets);
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
@@ -424,7 +424,7 @@ void BaseTreeAnalyzer::processVariables()
     iC->processCorrection(this);
   }
 
- 
+
 
 
 }

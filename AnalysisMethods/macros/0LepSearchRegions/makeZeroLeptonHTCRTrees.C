@@ -40,8 +40,6 @@ class OneLepCRAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < 50.)  return false;
 
       filler.fillEventInfo(&data, this);
-      if(isMC()) filler.fillGenInfo  (&data, 0, genJets, false);
-      filler.fillJetInfo  (&data, jets, bJets, met);
       //m2Filler.fillM2Info(&data,this,M2TreeFiller::TTBAR_1L);
       //cttFiller.fillTopTagInfo(&data,this,jets);
       //hettFiller.fillHettInfo(&data,this,jets,hettTops);
@@ -59,7 +57,7 @@ void makeZeroLeptonHTCRTrees(TString sname = "ww2l",
 			     const TString fileprefix = "root://cmseos:1094/",
 			     const TString json = TString::Format("%s/src/data/JSON/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt",getenv("CMSSW_BASE")))
 {
-  
+
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
   if(fileindex > -1)
