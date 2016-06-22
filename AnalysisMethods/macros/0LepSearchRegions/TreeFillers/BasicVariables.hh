@@ -87,6 +87,7 @@ struct BasicVarsFiller {
   size i_leptonpdgid;
   size i_leptonq   ;
   size i_mtlepmet  ;
+  size i_lp        ;
   size i_dileppt   ;
   size i_dilepmass ;
 
@@ -94,6 +95,7 @@ struct BasicVarsFiller {
   size i_ngoodgenmu;
   size i_ngoodgenele;
   size i_npromptgentau;
+  size i_genwpt;
 
   void book(TreeWriterData *data) {
     // Process and weights
@@ -170,6 +172,7 @@ struct BasicVarsFiller {
     i_leptonpdgid    = data->add<int>("","leptonpdgid","I",0);
     i_leptonq        = data->add<int>("","leptonq","I",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
+    i_lp             = data->add<float>("","lp","F",-9);
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
 
@@ -177,6 +180,7 @@ struct BasicVarsFiller {
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
     i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
     i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
+    i_genwpt         = data->add<float>("","genwpt","F",-1);
 
   }
 
@@ -279,14 +283,18 @@ struct BasicVarsFiller {
 
     vector<RecoJetF*> jetsCSVranked(jets);
     cfgSet::sortByCSV(jetsCSVranked);
-    double mtcsv1met = 0, mtcsv2met = 0, mtcsv12met = 0;
+    double mtcsv1met = -99, mtcsv2met = -99, mtcsv12met = -99;
     if(jetsCSVranked.size() > 0) {
       data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
-      mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
-      mtcsv12met = mtcsv1met;
+      if(jetsCSVranked[0]->csv() > defaults::CSV_LOOSE){
+        mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
+        mtcsv12met = mtcsv1met;
+      }
       if(jetsCSVranked.size() > 1){
-        mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
-        mtcsv12met = min(mtcsv1met, mtcsv2met);
+        if (jetsCSVranked[1]->csv() > defaults::CSV_LOOSE){
+          mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
+          mtcsv12met = min(mtcsv1met, mtcsv2met);
+        }
       }
     }
     data->fill<float>(i_mtcsv1met, mtcsv1met);
@@ -302,11 +310,14 @@ struct BasicVarsFiller {
     // Lepton variables
     if(ana->selectedLepton) {
       const auto * lep = ana->selectedLepton;
+      auto WP4 = lep->p4() + ana->met->p4();
       data->fill<float>(i_leptonpt,     lep->pt());
       data->fill<float>(i_leptoneta,    lep->eta());
       data->fill<int  >(i_leptonpdgid,  lep->pdgid());
       data->fill<int  >(i_leptonq,      lep->q());
       data->fill<float>(i_mtlepmet,     JetKinematics::transverseMass(*lep, *ana->met)); // use the original met for MT
+      data->fill<float>(i_lp,           (lep->px()*WP4.px() + lep->py()*WP4.py()) / (WP4.pt()*WP4.pt()) );
+
       if(ana->nSelLeptons > 1) {
         auto dilepp4 = ana->selectedLeptons.at(0)->p4() + ana->selectedLeptons.at(1)->p4();
         data->fill<float>(i_dileppt, dilepp4.pt());
@@ -315,9 +326,12 @@ struct BasicVarsFiller {
     }
 
     // Gen-level variables
-    int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
     if(ana->isMC()) {
+      int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
+      std::vector<GenParticleF*> genw;
       for(auto* p : ana->genParts) {
+        if (abs(p->pdgId())==24){ genw.push_back(p); }
+
         if (p->numberOfMothers()==0) continue;
 
         const auto *genPartMom = p->mother(0);
@@ -338,10 +352,11 @@ struct BasicVarsFiller {
             nPromptTaus++;
         }
       }
+      data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
+      data->fill<int  >(i_ngoodgenele, nGoodGenEle);
+      data->fill<int  >(i_npromptgentau, nPromptTaus);
+      if (genw.size()>0) { data->fill<float>(i_genwpt, genw[0]->pt()); }
     }
-    data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
-    data->fill<int  >(i_ngoodgenele, nGoodGenEle);
-    data->fill<int  >(i_npromptgentau, nPromptTaus);
   }
 
 };
