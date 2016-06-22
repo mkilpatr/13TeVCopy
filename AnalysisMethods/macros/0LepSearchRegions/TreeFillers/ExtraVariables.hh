@@ -14,7 +14,7 @@ struct ExtraVarsFiller {
   ExtraVarsFiller() {}
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
-  size i_test;
+  size i_test_genwpt;
 
   // Syst. studies
   size i_systweights;
@@ -104,7 +104,7 @@ struct ExtraVarsFiller {
   size i_genwpt;
 
   void bookTest(TreeWriterData* data){
-    i_test         = data->add<float>("","test","F",-1);
+    i_test_genwpt         = data->add<float>("","test_genwpt","F",-1);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -203,7 +203,7 @@ struct ExtraVarsFiller {
     if (ana->isMC()){
       for (const auto *p : ana->genParts){
         if (ParticleInfo::isA(ParticleInfo::p_Wplus, p)){
-          data->fill<float>(i_test, p->pt());
+          data->fill<float>(i_test_genwpt, p->pt());
           break;
         }
       }
