@@ -50,6 +50,7 @@ for filepath in filelist:
         sname = re.sub(r'(-ext[0-9]*|)(-genjets5|)(_[0-9]+|)_ntuple_%s.root'%args.suffix, '', file)
     else:
         sname = re.sub(r'(_ht[0-9]+to(inf|[0-9]+)|)(-ext[0-9]*|)(-genjets5|)(_[0-9]+|)_ntuple_%s.root'%args.suffix, '', file)
+        sname = re.sub(r'-[0-9]{4}[a-z]-.+$', '', sname)
     if sname.startswith('T2'):
         r = re.search('(T2.+_[0-9]+_[0-9]+.*)_ntuple', file)
         if r:

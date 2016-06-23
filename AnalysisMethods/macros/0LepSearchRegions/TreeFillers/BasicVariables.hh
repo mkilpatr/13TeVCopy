@@ -212,8 +212,8 @@ struct BasicVarsFiller {
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
-    data->fill<bool>(i_passmetmht90,   ana->isMC() || (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight : false));
-    data->fill<bool>(i_passmetmht100,  ana->isMC() || (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET100_PFMHT100_IDTight : false));
+    data->fill<bool>(i_passmetmht90,   ana->isMC() || (ana->process==defaults::DATA_MET ? (ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu90_PFMHTNoMu90_IDTight): false));
+    data->fill<bool>(i_passmetmht100,  ana->isMC() || (ana->process==defaults::DATA_MET ? (ana->triggerflag & kHLT_PFMET100_PFMHT100_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight): false));
     data->fill<bool>(i_passtrigphoton165, ana->isMC() || (ana->triggerflag & kHLT_Photon165_HE10));
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false));
 
