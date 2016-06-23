@@ -80,6 +80,7 @@ struct BasicVarsFiller {
   size i_j1lpt;
   size i_csvj1pt   ;
   size i_dphij1lmet;
+  size i_nivf;
 
   // Lepton variables
   size i_leptonpt  ;
@@ -165,6 +166,7 @@ struct BasicVarsFiller {
     i_j1lpt          = data->add<float>("","j1lpt","F",0);
     i_dphij1lmet     = data->add<float>("","dphij1lmet","F",0);
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_nivf           = data->add<int>("","nivf","I",0);
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -306,6 +308,29 @@ struct BasicVarsFiller {
       data->fill<float>(i_j1lpt,      ana->isrJets[0]->pt());
       data->fill<float>(i_dphij1lmet, fabs(PhysicsUtilities::deltaPhi(*ana->isrJets[0],*met)));
     }
+
+    int nivf_ = 0;
+    for (unsigned int iivf=0; iivf<ana->SVs.size(); ++iivf) {
+
+      //DR between jets
+      float mindrjetivf = 999999.;
+      for (unsigned int ij = 0; ij<ana->jets.size(); ++ij) {
+
+        if ( (ana->jets[ij]->pt()>20.)  && (fabs(ana->jets[ij]->eta())<2.4)) {
+          float tmpdr =  PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[ij]->p4());
+          if (tmpdr<mindrjetivf) { mindrjetivf = tmpdr; }
+        }
+      }
+
+      if (fabs(ana->SVs[iivf]->svdxy()) < 3  &&
+          ana->SVs[iivf]->svCosSVPV() > 0.98 &&
+          ana->SVs[iivf]->pt()< 20.          &&
+          ana->SVs[iivf]->svNTracks() >=3    &&
+          mindrjetivf                 > 0.4
+	  ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4                                                                    
+          ) { ++nivf; }
+    }
+    data->fill<int>(i_nivf, nivf_);
 
     // Lepton variables
     if(ana->selectedLepton) {
