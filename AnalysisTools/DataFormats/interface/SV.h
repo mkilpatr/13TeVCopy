@@ -27,7 +27,7 @@ class SV : public Momentum<CoordSystem>
   {
   public :
   SV() : 
-    index_(-1), svNTracks_(-9.), svChi2_(-9.), svNdf_(-9.), svdxy_(-9.), svd3D_(-9.), svCosSVPV_(-9.) {}
+    index_(-1), svNTracks_(-9.), svChi2_(-9.), svNdf_(-9.), svdxy_(-9.), svd3D_(-9.), svd3Derr_(-9.), svCosSVPV_(-9.) {}
     
 
     template <class InputCoordSystem>
@@ -39,6 +39,7 @@ class SV : public Momentum<CoordSystem>
 	 const float inNdf     = -9.,
 	 const float indxy     = -9.,
 	 const float ind3D     = -9.,
+	 const float ind3Derr  = -9.,
 	 const float inCosSVPV = -9.
 	     )
       : Momentum<CoordSystem>(inMomentum), index_(inIndex), svNTracks_(inNTracks), svChi2_(inChi2), svNdf_(inNdf), 
@@ -52,6 +53,7 @@ class SV : public Momentum<CoordSystem>
     float svNdf()     const { return svNdf_;     }
     float svdxy()     const { return svdxy_;     }
     float svd3D()     const { return svd3D_;     }
+    float svd3Derr()  const { return svd3Derr_;  }
     float svCosSVPV() const { return svCosSVPV_; }
 
 
@@ -61,6 +63,7 @@ class SV : public Momentum<CoordSystem>
     void setSVNdf(const float& inNdf)         { svNdf_     = inNdf;       }
     void setSVdxy(const float& indxy)         { svdxy_     = indxy;       }
     void setSVd3D(const float& ind3D)         { svd3D_     = ind3D;       }
+    void setSVd3Derr(const float& ind3Derr)   { svd3Derr_  = ind3Derr;    }
     void setSVCosSVPV(const float& inCosSVPV) { svCosSVPV_ = inCosSVPV;   }
     
 
@@ -76,6 +79,7 @@ class SV : public Momentum<CoordSystem>
     float svNdf_;
     float svdxy_;
     float svd3D_;
+    float svd3Derr_;
     float svCosSVPV_;
     
   };
