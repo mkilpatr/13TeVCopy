@@ -47,6 +47,7 @@ namespace ucsbsusy {
     std::vector<float>* svndf_;
     std::vector<float>* svdxy_;
     std::vector<float>* svd3d_;
+    std::vector<float>* svd3derr_;
     std::vector<float>* svcossvpv_;
 
     //the actual sv collection

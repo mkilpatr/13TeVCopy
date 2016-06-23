@@ -80,6 +80,7 @@ struct BasicVarsFiller {
   size i_j1lpt;
   size i_csvj1pt   ;
   size i_dphij1lmet;
+  size i_nivf;
 
   // Lepton variables
   size i_leptonpt  ;
@@ -90,6 +91,7 @@ struct BasicVarsFiller {
   size i_lp        ;
   size i_dileppt   ;
   size i_dilepmass ;
+  size i_recolepinwortop;
 
   // Gen-level variables
   size i_ngoodgenmu;
@@ -165,6 +167,7 @@ struct BasicVarsFiller {
     i_j1lpt          = data->add<float>("","j1lpt","F",0);
     i_dphij1lmet     = data->add<float>("","dphij1lmet","F",0);
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_nivf           = data->add<int>("","nivf","I",0);
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -175,6 +178,7 @@ struct BasicVarsFiller {
     i_lp             = data->add<float>("","lp","F",-9);
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
+    i_recolepinwortop = data->add<bool>("","recolepinwortop","O",0);
 
     // Gen-level variables
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
@@ -244,10 +248,20 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
     data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
+    std::vector<MomentumF> recow_;   recow_.clear();
+    std::vector<MomentumF> recotop_; recotop_.clear();
     int nsdtoploose = 0, nsdwloose = 0;
     for (const auto *fj : ana->fatJets){
-      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9))    { ++nsdtoploose; }
-      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60))   { ++nsdwloose;   }
+      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9))    { 
+	++nsdtoploose; 
+	MomentumF tmplv; tmplv.setP4(fj->p4());
+	recotop_.push_back(tmplv);
+      }
+      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60))   { 
+	++nsdwloose;   
+	MomentumF tmplv; tmplv.setP4(fj->p4());
+	recow_.push_back(tmplv);
+      }
     }
     data->fill<int  >(i_nsdtoploose,  nsdtoploose);
     data->fill<int  >(i_nsdwloose,    nsdwloose);
@@ -307,7 +321,32 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij1lmet, fabs(PhysicsUtilities::deltaPhi(*ana->isrJets[0],*met)));
     }
 
+    int nivf_ = 0;
+    for (unsigned int iivf=0; iivf<ana->SVs.size(); ++iivf) {
+
+      //DR between jets
+      float mindrjetivf = 999999.;
+      for (unsigned int ij = 0; ij<ana->jets.size(); ++ij) {
+
+        if ( (ana->jets[ij]->pt()>20.)  && (fabs(ana->jets[ij]->eta())<2.4)) {
+          float tmpdr =  PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[ij]->p4());
+          if (tmpdr<mindrjetivf) { mindrjetivf = tmpdr; }
+        }
+      }
+
+      if (fabs(ana->SVs[iivf]->svdxy()) < 3  &&
+          ana->SVs[iivf]->svCosSVPV() > 0.98 &&
+          ana->SVs[iivf]->pt()< 20.          &&
+          ana->SVs[iivf]->svNTracks() >=3    &&
+          mindrjetivf                 > 0.4  &&
+	  ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4                                                                    
+          ) { ++nivf_; }
+    }
+    data->fill<int>(i_nivf, nivf_);
+
     // Lepton variables
+    float drrecoleprecow_ = 999.;
+    float drrecoleprecotop_ = 999.;
     if(ana->selectedLepton) {
       const auto * lep = ana->selectedLepton;
       auto WP4 = lep->p4() + ana->met->p4();
@@ -318,12 +357,27 @@ struct BasicVarsFiller {
       data->fill<float>(i_mtlepmet,     JetKinematics::transverseMass(*lep, *ana->met)); // use the original met for MT
       data->fill<float>(i_lp,           (lep->px()*WP4.px() + lep->py()*WP4.py()) / (WP4.pt()*WP4.pt()) );
 
+
+      for (unsigned int iw=0; iw<recow_.size(); ++iw) {
+	float tmdr_ = PhysicsUtilities::deltaR(recow_[iw].p4(), lep->p4());
+	if (tmdr_<drrecoleprecow_) { drrecoleprecow_ = tmdr_; }
+      }
+
+      for (unsigned int itop=0; itop<recotop_.size(); ++itop) {
+	float tmdr_ = PhysicsUtilities::deltaR(recotop_[itop].p4(), lep->p4());
+	if (tmdr_<drrecoleprecotop_) { drrecoleprecotop_ = tmdr_; }
+      }
+
       if(ana->nSelLeptons > 1) {
         auto dilepp4 = ana->selectedLeptons.at(0)->p4() + ana->selectedLeptons.at(1)->p4();
         data->fill<float>(i_dileppt, dilepp4.pt());
         data->fill<float>(i_dilepmass, dilepp4.mass());
       }
     }
+
+    if ((drrecoleprecow_<0.8) || (drrecoleprecotop_<0.8))        { data->fill<bool>(i_recolepinwortop, true); }
+    else if ((drrecoleprecow_>=0.8) && (drrecoleprecotop_>=0.8)) { data->fill<bool>(i_recolepinwortop, false); } //for safety
+
 
     // Gen-level variables
     if(ana->isMC()) {
