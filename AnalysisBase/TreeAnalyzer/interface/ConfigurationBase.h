@@ -197,6 +197,8 @@ namespace cfgSet {
 
     TString triggerCorrectionFile;
     ucsbsusy::CORRTYPE trigPhotonCorrType;
+    ucsbsusy::CORRTYPE trigElectronCorrType;
+    ucsbsusy::CORRTYPE trigMuonCorrType;
 
 
     TString leptonCorrectionFile;
@@ -241,6 +243,8 @@ namespace cfgSet {
         cttEffSFType(ucsbsusy::NONE),
         cttMistagSFType(ucsbsusy::NONE),
         trigPhotonCorrType(ucsbsusy::NONE),
+        trigElectronCorrType(ucsbsusy::NONE),
+        trigMuonCorrType(ucsbsusy::NONE),
 
         tnpElCorrType(ucsbsusy::NONE),
         tnpMuCorrType(ucsbsusy::NONE),

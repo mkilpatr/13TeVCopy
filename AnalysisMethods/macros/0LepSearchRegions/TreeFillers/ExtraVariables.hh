@@ -14,6 +14,8 @@ struct ExtraVarsFiller {
   ExtraVarsFiller() {}
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
+  size i_nvetoele  ;
+  size i_nvetomu   ;
 
   // Syst. studies
   size i_systweights;
@@ -101,6 +103,8 @@ struct ExtraVarsFiller {
   size i_genlepq ;
 
   void bookTest(TreeWriterData* data){
+    i_nvetoele       = data->add<int>("","nvetoele","I",0);
+    i_nvetomu        = data->add<int>("","nvetomu","I",0);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -194,7 +198,13 @@ struct ExtraVarsFiller {
 
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-
+    int nVetoEle = 0; int nVetoMu = 0;
+    for(auto i: ana->selectedLeptons){
+      if(fabs(i->pdgid()) == 11) nVetoEle++;
+      if(fabs(i->pdgid()) == 13) nVetoMu++;
+    }
+    data->fill<int  >(i_nvetomu, nVetoMu);
+    data->fill<int  >(i_nvetoele, nVetoEle);
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){

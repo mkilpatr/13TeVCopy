@@ -109,9 +109,11 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
 
-  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON;
+  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON | ucsbsusy::TriggerCorrectionSet::ELECTRON | ucsbsusy::TriggerCorrectionSet::MUON;
   standardCorrections.triggerCorrectionFile    =  TString::Format("%s/src/data/corrections/2016/trigCorr.root",CMSSW_BASE);
   standardCorrections.trigPhotonCorrType       = ucsbsusy::NOMINAL;
+  standardCorrections.trigElectronCorrType     = ucsbsusy::NOMINAL;
+  standardCorrections.trigMuonCorrType         = ucsbsusy::NOMINAL;
 
   standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::NULLOPT;
 
