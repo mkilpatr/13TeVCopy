@@ -132,6 +132,12 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
+
+    if(configSet.corrections.triggerCorrections != TriggerCorrectionSet::NULLOPT){
+      triggerCorrections.load(configSet.corrections.triggerCorrectionFile, configSet.corrections.triggerCorrections);
+      corrections.push_back(&triggerCorrections);
+    }
+
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
       leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);

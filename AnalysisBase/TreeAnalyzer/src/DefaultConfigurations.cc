@@ -89,7 +89,7 @@ void cfgSet::loadDefaultTauConfigurations() {
 cfgSet::PhotonConfig cfgSet::zl_sel_photons("zl_sel_photons");
 
 void cfgSet::loadDefaultPhotonConfigurations() {
-  zl_sel_photons.minPt    = 180;
+  zl_sel_photons.minPt    = 200;
   zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
   zl_sel_photons.usePixelSeedVeto = true;
@@ -108,6 +108,12 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
+
+  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON | ucsbsusy::TriggerCorrectionSet::ELECTRON | ucsbsusy::TriggerCorrectionSet::MUON;
+  standardCorrections.triggerCorrectionFile    =  TString::Format("%s/src/data/corrections/2016/trigCorr.root",CMSSW_BASE);
+  standardCorrections.trigPhotonCorrType       = ucsbsusy::NOMINAL;
+  standardCorrections.trigElectronCorrType     = ucsbsusy::NOMINAL;
+  standardCorrections.trigMuonCorrType         = ucsbsusy::NOMINAL;
 
   standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::NULLOPT;
 
