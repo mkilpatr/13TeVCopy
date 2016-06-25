@@ -89,7 +89,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   int nbins = 2, nhpsbins = 1;
 
   data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_mu", 1, dummybins));
-  data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_ele", 1, dummybins));
+  data_incl.push_back       (getHist(datatree, sel["inclcrnomu"],  "data_incl_ele", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_tau", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_hpstau", 1, dummybins));
   data_sel.push_back        (getHist(datatree, sel["mucr"],     "data_sel_mu", nbins, ptbins, "1.0", "mupt[0]"));
