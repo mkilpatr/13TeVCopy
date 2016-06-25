@@ -6,6 +6,9 @@
  */
 #include <assert.h>
 #include "TFile.h"
+#include "TMath.h"
+#include "TList.h"
+#include "TF1.h"
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
 
@@ -79,7 +82,7 @@ void CorrectionSet::loadFile(TString correctionSetName, TString fileName, int co
   options_ |=correctionOptions;
 
   std::clog << "Loading file: "<< fileName <<" and correctionSet: " << correctionSetName <<std::endl;
-  file = TFile::Open(fileName,"read");
+  if(!file) file = TFile::Open(fileName,"read");
   if(!file) throw std::invalid_argument("CorrectionSet::loadFile: File could not be found!");
 }
 
@@ -91,4 +94,33 @@ CorrectionSet::~CorrectionSet() {
   for(auto correction : corrections)
     delete correction;
 }
+
+GraphAsymmErrorsCorrectionHelper::GraphAsymmErrorsCorrectionHelper(TString corrName, TFile* file) : targetBin(0), corrGraph(0) {
+  if(!file) throw std::invalid_argument("GraphAsymmErrorsCorrection::GraphAsymmErrorsCorrection: file could not be found!");
+  corrGraph = (TGraphAsymmErrors*)(file->Get(corrName));
+  if(!corrGraph) throw std::invalid_argument("GraphAsymmErrorsCorrection::GraphAsymmErrorsCorrection: Graph could not be found!");
+}
+
+void GraphAsymmErrorsCorrectionHelper::findBin(double x)  {
+  // Adapted from TGraph::Eval()
+  auto fX = corrGraph->GetX();
+  auto fNpoints = corrGraph->GetN();
+
+  if (fX==0) throw std::invalid_argument("[GraphAsymmErrorsCorrection::findBin] Empty graph!");
+
+  if (x <= fX[0]) targetBin = 0;
+  else if (x >= fX[fNpoints-1]) targetBin = fNpoints-1;
+  else targetBin = TMath::BinarySearch(fNpoints, fX, x);
+//  else if (corrGraph->TestBit(TGraph::kIsSortedX) ) targetBin = TMath::BinarySearch(fNpoints, fX, x);
+//  else throw std::invalid_argument("[GraphAsymmErrorsCorrection::findBin] Unable to find the bin: points not sorted!");
+}
+
+double GraphAsymmErrorsCorrectionHelper::getFromFunction(double x) const  {
+  auto *funcs = corrGraph->GetListOfFunctions();
+  if(funcs && funcs->At(0)) return ((TF1*)funcs->At(0))->Eval(x);
+  else throw std::invalid_argument("[GraphAsymmErrorsCorrection::getFromFunction] No valid fit function!");
+}
+
 } /* namespace ucsbsusy */
+
+

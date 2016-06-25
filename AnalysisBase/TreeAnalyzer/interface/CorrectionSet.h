@@ -10,6 +10,7 @@
 
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "TGraphAsymmErrors.h"
 
 class TFile;
 
@@ -75,6 +76,26 @@ protected:
   TH2F* corrHist;
 
 };
+
+class GraphAsymmErrorsCorrectionHelper{
+public:
+  GraphAsymmErrorsCorrectionHelper(TString corrName, TFile * file);
+  ~GraphAsymmErrorsCorrectionHelper() {}
+
+  void findBin(double x);
+  double get()          const { return corrGraph->GetY()[targetBin]; }
+  double getErrorHigh() const { return corrGraph->GetErrorYhigh(targetBin);}
+  double getErrorLow()  const { return corrGraph->GetErrorYlow(targetBin);}
+
+  double getFromFunction(double x) const;
+
+  TGraphAsymmErrors* getGraph()        { return corrGraph; }
+protected:
+  mutable unsigned int targetBin;
+  TGraphAsymmErrors* corrGraph;
+
+};
+
 
 class CorrectionSet {
 public:

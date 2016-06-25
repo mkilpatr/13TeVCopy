@@ -195,6 +195,7 @@ public:
     TtbarCorrectionSet  ttbarCorrections;
     WPolCorrectionSet   wpolCorrections;
     EventCorrectionSet  eventCorrections;
+    TriggerCorrectionSet triggerCorrections;
     LeptonCorrectionSet leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
     BTagCorrectionSet    bTagCorrections;

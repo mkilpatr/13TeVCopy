@@ -21,6 +21,8 @@ struct BasicVarsFiller {
   size i_ismc      ;
   size i_weight    ;
   size i_truePUWeight;
+  size i_trigEleWeight;
+  size i_trigMuWeight;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
@@ -80,6 +82,7 @@ struct BasicVarsFiller {
   size i_j1lpt;
   size i_csvj1pt   ;
   size i_dphij1lmet;
+  size i_nivf;
 
   // Lepton variables
   size i_leptonpt  ;
@@ -87,13 +90,16 @@ struct BasicVarsFiller {
   size i_leptonpdgid;
   size i_leptonq   ;
   size i_mtlepmet  ;
+  size i_lp        ;
   size i_dileppt   ;
   size i_dilepmass ;
+  size i_recolepinwortop;
 
   // Gen-level variables
   size i_ngoodgenmu;
   size i_ngoodgenele;
   size i_npromptgentau;
+  size i_genwpt;
 
   void book(TreeWriterData *data) {
     // Process and weights
@@ -104,6 +110,8 @@ struct BasicVarsFiller {
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
+    i_trigEleWeight  = data->add<float>("","trigEleWeight","F",1);
+    i_trigMuWeight   = data->add<float>("","trigMuWeight","F",1);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
@@ -163,6 +171,7 @@ struct BasicVarsFiller {
     i_j1lpt          = data->add<float>("","j1lpt","F",0);
     i_dphij1lmet     = data->add<float>("","dphij1lmet","F",0);
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_nivf           = data->add<int>("","nivf","I",0);
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -170,13 +179,16 @@ struct BasicVarsFiller {
     i_leptonpdgid    = data->add<int>("","leptonpdgid","I",0);
     i_leptonq        = data->add<int>("","leptonq","I",0);
     i_mtlepmet       = data->add<float>("","mtlepmet","F",0);
+    i_lp             = data->add<float>("","lp","F",-9);
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
+    i_recolepinwortop = data->add<bool>("","recolepinwortop","O",0);
 
     // Gen-level variables
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
     i_ngoodgenele    = data->add<int>("","ngoodgenele","I",0);
     i_npromptgentau  = data->add<int>("","npromptgentau","I",0);
+    i_genwpt         = data->add<float>("","genwpt","F",-1);
 
   }
 
@@ -184,6 +196,11 @@ struct BasicVarsFiller {
 
     const auto &jets = ana->jets;
     const MomentumF *met = useModifiedMET ? metn : ana->met;
+    /* current set-up:
+     * if useModifiedMET = true: all variables will be calcuated with metn, except for mtlepmet and WP4
+     * else: use original met for everything, but the "met" variable will be *metn* if given
+     */
+
 
     // Process and weights
     data->fill<unsigned int>(i_run, ana->run);
@@ -193,6 +210,8 @@ struct BasicVarsFiller {
     data->fill<bool >(i_ismc,   ana->isMC());
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_truePUWeight,       ana->eventCorrections.getTruePUWeight());
+    data->fill<float>(i_trigEleWeight,      ana->triggerCorrections.getTrigEleWeight());
+    data->fill<float>(i_trigMuWeight,       ana->triggerCorrections.getTrigMuWeight());
     data->fill<float>(i_btagWeight,         ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight,  ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight,  ana->jetAndMETCorrections.getQCDRespTailWeight());
@@ -204,8 +223,8 @@ struct BasicVarsFiller {
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
-    data->fill<bool>(i_passmetmht90,   ana->isMC() || (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight : false));
-    data->fill<bool>(i_passmetmht100,  ana->isMC() || (ana->process==defaults::DATA_MET ? ana->triggerflag & kHLT_PFMET100_PFMHT100_IDTight : false));
+    data->fill<bool>(i_passmetmht90,   ana->isMC() || (ana->process==defaults::DATA_MET ? (ana->triggerflag & kHLT_PFMET90_PFMHT90_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu90_PFMHTNoMu90_IDTight): false));
+    data->fill<bool>(i_passmetmht100,  ana->isMC() || (ana->process==defaults::DATA_MET ? (ana->triggerflag & kHLT_PFMET100_PFMHT100_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight): false));
     data->fill<bool>(i_passtrigphoton165, ana->isMC() || (ana->triggerflag & kHLT_Photon165_HE10));
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false));
 
@@ -233,20 +252,21 @@ struct BasicVarsFiller {
     // Basic event variables
     data->fill<float>(i_genmet, ana->genmet->pt());
     data->fill<float>(i_origmet, ana->met->pt());
-    data->fill<float>(i_met, met->pt());
+    data->fill<float>(i_met, metn ? metn->pt() : ana->met->pt()); // fill modified met if given
     data->fill<int  >(i_npv, ana->nPV);
     data->fill<int  >(i_nvetolep, ana->nSelLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
     data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
-    int nsdtoploose = 0, nsdwloose = 0;
+    std::vector<const FatJetF*> recow_;
+    std::vector<const FatJetF*> recotop_;
     for (const auto *fj : ana->fatJets){
-      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9))    { ++nsdtoploose; }
-      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60))   { ++nsdwloose;   }
+      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) recotop_.push_back(fj);
+      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) recow_.push_back(fj);
     }
-    data->fill<int  >(i_nsdtoploose,  nsdtoploose);
-    data->fill<int  >(i_nsdwloose,    nsdwloose);
+    data->fill<int  >(i_nsdtoploose,  recotop_.size());
+    data->fill<int  >(i_nsdwloose,    recow_.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;
@@ -279,14 +299,18 @@ struct BasicVarsFiller {
 
     vector<RecoJetF*> jetsCSVranked(jets);
     cfgSet::sortByCSV(jetsCSVranked);
-    double mtcsv1met = 0, mtcsv2met = 0, mtcsv12met = 0;
+    double mtcsv1met = -99, mtcsv2met = -99, mtcsv12met = -99;
     if(jetsCSVranked.size() > 0) {
       data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
-      mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
-      mtcsv12met = mtcsv1met;
+      if(jetsCSVranked[0]->csv() > defaults::CSV_LOOSE){
+        mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
+        mtcsv12met = mtcsv1met;
+      }
       if(jetsCSVranked.size() > 1){
-        mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
-        mtcsv12met = min(mtcsv1met, mtcsv2met);
+        if (jetsCSVranked[1]->csv() > defaults::CSV_LOOSE){
+          mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
+          mtcsv12met = min(mtcsv1met, mtcsv2met);
+        }
       }
     }
     data->fill<float>(i_mtcsv1met, mtcsv1met);
@@ -299,14 +323,53 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij1lmet, fabs(PhysicsUtilities::deltaPhi(*ana->isrJets[0],*met)));
     }
 
+    int nivf_ = 0;
+    for (unsigned int iivf=0; iivf<ana->SVs.size(); ++iivf) {
+
+      //DR between jets
+      float mindrjetivf = 999999.;
+      for (unsigned int ij = 0; ij<ana->jets.size(); ++ij) {
+
+        if ( (ana->jets[ij]->pt()>20.)  && (fabs(ana->jets[ij]->eta())<2.4)) {
+          float tmpdr =  PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[ij]->p4());
+          if (tmpdr<mindrjetivf) { mindrjetivf = tmpdr; }
+        }
+      }
+
+      if (fabs(ana->SVs[iivf]->svdxy()) < 3  &&
+          ana->SVs[iivf]->svCosSVPV() > 0.98 &&
+          ana->SVs[iivf]->pt()< 20.          &&
+          ana->SVs[iivf]->svNTracks() >=3    &&
+          mindrjetivf                 > 0.4  &&
+          ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4 ) { ++nivf_; }
+    }
+    data->fill<int>(i_nivf, nivf_);
+
     // Lepton variables
     if(ana->selectedLepton) {
       const auto * lep = ana->selectedLepton;
+      auto WP4 = lep->p4() + ana->met->p4();
       data->fill<float>(i_leptonpt,     lep->pt());
       data->fill<float>(i_leptoneta,    lep->eta());
       data->fill<int  >(i_leptonpdgid,  lep->pdgid());
       data->fill<int  >(i_leptonq,      lep->q());
       data->fill<float>(i_mtlepmet,     JetKinematics::transverseMass(*lep, *ana->met)); // use the original met for MT
+      data->fill<float>(i_lp,           (lep->px()*WP4.px() + lep->py()*WP4.py()) / (WP4.pt()*WP4.pt()) );
+
+      double drrecoleprecow_ = 999.;
+      double drrecoleprecotop_ = 999.;
+      for (const auto *fj : recow_) {
+        double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
+        if (tmdr_<drrecoleprecow_) { drrecoleprecow_ = tmdr_; }
+      }
+
+      for (const auto *fj : recotop_) {
+        double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
+        if (tmdr_<drrecoleprecotop_) { drrecoleprecotop_ = tmdr_; }
+      }
+      if ((drrecoleprecow_<0.8) || (drrecoleprecotop_<0.8)) { data->fill<bool>(i_recolepinwortop, true); }
+      else { data->fill<bool>(i_recolepinwortop, false); }
+
       if(ana->nSelLeptons > 1) {
         auto dilepp4 = ana->selectedLeptons.at(0)->p4() + ana->selectedLeptons.at(1)->p4();
         data->fill<float>(i_dileppt, dilepp4.pt());
@@ -315,9 +378,12 @@ struct BasicVarsFiller {
     }
 
     // Gen-level variables
-    int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
     if(ana->isMC()) {
+      int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
+      std::vector<GenParticleF*> genw;
       for(auto* p : ana->genParts) {
+        if (abs(p->pdgId())==24){ genw.push_back(p); }
+
         if (p->numberOfMothers()==0) continue;
 
         const auto *genPartMom = p->mother(0);
@@ -338,10 +404,11 @@ struct BasicVarsFiller {
             nPromptTaus++;
         }
       }
+      data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
+      data->fill<int  >(i_ngoodgenele, nGoodGenEle);
+      data->fill<int  >(i_npromptgentau, nPromptTaus);
+      if (genw.size()>0) { data->fill<float>(i_genwpt, genw[0]->pt()); }
     }
-    data->fill<int  >(i_ngoodgenmu, nGoodGenMu);
-    data->fill<int  >(i_ngoodgenele, nGoodGenEle);
-    data->fill<int  >(i_npromptgentau, nPromptTaus);
   }
 
 };
