@@ -89,7 +89,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   int nbins = 2, nhpsbins = 1;
 
   data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_mu", 1, dummybins));
-  data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_ele", 1, dummybins));
+  data_incl.push_back       (getHist(datatree, sel["inclcrnomu"],  "data_incl_ele", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_tau", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_hpstau", 1, dummybins));
   data_sel.push_back        (getHist(datatree, sel["mucr"],     "data_sel_mu", nbins, ptbins, "1.0", "mupt[0]"));
@@ -141,8 +141,8 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
 
   vector<TH1F*> corr;
   TH1F* lepCor = new TH1F("LEP", "LEP", 9, 0, 9); lepCor->Sumw2();
-  lepCor->SetBinContent(1,0); /// default bin
-  lepCor->SetBinError(1,0);
+  lepCor->SetBinContent(1,1); /// default bin
+  lepCor->SetBinError(1,1);
   int nlepcorbin = 2;
 
   for(unsigned int i = 0; i < sf.size(); ++i) {
@@ -152,7 +152,8 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
       cout << "\nEFF_TERM in bin " << ibin << ": " << h->GetBinContent(ibin) << " +/- " << h->GetBinError(ibin) << endl;
       cout << "\nFAKE_TERM in bin " << ibin << ": " << fake_term[i]->GetBinContent(ibin) << " +/- " << fake_term[i]->GetBinError(ibin) << endl;
     }
-    h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1));
+    //h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1)); // independent corrections
+    h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1)); // stacked corrections
     h->Add(fake_term[i], -1);
     corr.push_back(h);
     for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {
