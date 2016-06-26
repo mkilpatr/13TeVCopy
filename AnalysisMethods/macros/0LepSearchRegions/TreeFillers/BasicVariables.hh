@@ -81,6 +81,7 @@ struct BasicVarsFiller {
   size i_njl;
   size i_j1lpt;
   size i_csvj1pt   ;
+  size i_csvj2pt   ;
   size i_dphij1lmet;
   size i_nivf;
 
@@ -171,6 +172,7 @@ struct BasicVarsFiller {
     i_j1lpt          = data->add<float>("","j1lpt","F",0);
     i_dphij1lmet     = data->add<float>("","dphij1lmet","F",0);
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
+    i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
 
     // Lepton variables
@@ -307,6 +309,7 @@ struct BasicVarsFiller {
         mtcsv12met = mtcsv1met;
       }
       if(jetsCSVranked.size() > 1){
+        data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
         if (jetsCSVranked[1]->csv() > defaults::CSV_LOOSE){
           mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
           mtcsv12met = min(mtcsv1met, mtcsv2met);
