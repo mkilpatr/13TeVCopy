@@ -10,7 +10,7 @@
 
 void reweight_gen() {
 
-  TH1D* pu_generated = new TH1D("pu_generated","Generated pileup distribution (i.e., MC)",52,0,52);
+  TH1D* pu_generated = new TH1D("pu_generated","Generated pileup distribution (i.e., MC)",50,0,50);
 
   TFile* data_pufile = new TFile("pileup_data_2016b_4ifb_50bins_69p735mb.root");
   TH1D* data_puhist = (TH1D*)data_pufile->Get("pileup");
