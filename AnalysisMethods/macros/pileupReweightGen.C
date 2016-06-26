@@ -132,9 +132,6 @@ void reweight_gen() {
   pu_generated->Scale(1.0/pu_generated->Integral(0,pu_generated->GetNbinsX()+1));
   data_puhist->Scale(1.0/data_puhist->Integral(0,data_puhist->GetNbinsX()+1));
 
-  std::cout << "Data integral: " << data_puhist->Integral(0,data_puhist->GetNbinsX()+1) << std::endl;
-  std::cout << "MC integral: " << pu_generated->Integral(0,pu_generated->GetNbinsX()+1) << std::endl;
-
   data_puhist->Divide(pu_generated);
 
   std::cout << "Bin Contents" << std::endl;
