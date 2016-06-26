@@ -245,6 +245,8 @@ def fillAsymptoticLimits(config, limfilename, excfilename, interpolate):
         if mlsp < minmlsp: minmlsp = mlsp
     nbinsx = int((maxmstop - minmstop) / mstop_step)
     nbinsy = int((maxmlsp - minmlsp) / mlsp_step)
+    minmstop -= 0.5*mstop_step
+    maxmstop -= 0.5*mstop_step
     print 'XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d' % (minmstop, maxmstop, minmlsp, maxmlsp, nbinsx, nbinsy)
 
     hexp = TH2D('hexp', '', nbinsx, minmstop, maxmstop, nbinsy, minmlsp, maxmlsp)
@@ -357,7 +359,7 @@ def calcLimit(config, signal):
     combineDatacardsCommand += ' > ' + combinedDatacard
     output = commands.getoutput(combineDatacardsCommand)
 
-#     lprint(combineDatacardsCommand, output)
+    #lprint(combineDatacardsCommand, output)
 
     # ===== run the limits =====
     #
