@@ -31,7 +31,7 @@ cfgSet::ConfigSet pars1LCR(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
-  cfg.jets.cleanJetsvLeptons = true;
+//  cfg.jets.cleanJetsvLeptons = true;  // Do not clean jets vs leptons
   cfg.electrons              = LeptonSelection::zl_ctr_sLep_electrons;
   cfg.muons                  = LeptonSelection::zl_ctr_sLep_muons;
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
