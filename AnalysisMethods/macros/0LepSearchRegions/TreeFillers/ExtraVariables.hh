@@ -14,8 +14,6 @@ struct ExtraVarsFiller {
   ExtraVarsFiller() {}
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
-  size i_nvetoele  ;
-  size i_nvetomu   ;
 
   // Syst. studies
   size i_systweights;
@@ -53,12 +51,12 @@ struct ExtraVarsFiller {
   size i_drj1lj2l;
 
   // Lepton extra
+  size i_nvetoele  ;
+  size i_nvetomu   ;
   size i_absdphilepmet;
   size i_absdphilepw;
   size i_htalonglep;
   size i_annulus   ;
-  size i_nvetolele ;
-  size i_nvetomu   ;
   size i_leptonmatchtrigmu;
   size i_leptonmatchtrige;
   size i_lepton2pt ;
@@ -105,8 +103,6 @@ struct ExtraVarsFiller {
   size i_genlepq ;
 
   void bookTest(TreeWriterData* data){
-    i_nvetoele       = data->add<int>("","nvetoele","I",0);
-    i_nvetomu        = data->add<int>("","nvetomu","I",0);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -147,12 +143,12 @@ struct ExtraVarsFiller {
   }
 
   void bookLepton(TreeWriterData* data){
+    i_nvetoele       = data->add<int>("","nvetoele","I",0);
+    i_nvetomu        = data->add<int>("","nvetomu","I",0);
     i_absdphilepmet  = data->add<float>("","absdphilepmet","F",-1);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
     i_htalonglep     = data->add<float>("","htalonglep","F",0);
     i_annulus        = data->add<float>("","annulus","F",0);
-    i_nvetomu        = data->add<int>("","nvetomu","I",0);
-    i_nvetolele      = data->add<int>("","nvetolele","I",0);
     i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
     i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_lepton2pt      = data->add<float>("","lepton2pt","F",0);
@@ -202,13 +198,6 @@ struct ExtraVarsFiller {
 
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    int nVetoEle = 0; int nVetoMu = 0;
-    for(auto i: ana->selectedLeptons){
-      if(fabs(i->pdgid()) == 11) nVetoEle++;
-      if(fabs(i->pdgid()) == 13) nVetoMu++;
-    }
-    data->fill<int  >(i_nvetomu, nVetoMu);
-    data->fill<int  >(i_nvetoele, nVetoEle);
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -290,6 +279,14 @@ struct ExtraVarsFiller {
   void fillLeptonInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     if (ana->selectedLepton){
+      int nVetoEle = 0; int nVetoMu = 0;
+      for(auto i: ana->selectedLeptons){
+        if(fabs(i->pdgid()) == 11) nVetoEle++;
+        if(fabs(i->pdgid()) == 13) nVetoMu++;
+      }
+      data->fill<int  >(i_nvetomu, nVetoMu);
+      data->fill<int  >(i_nvetoele, nVetoEle);
+
       const auto * lep = ana->selectedLepton;
       auto WP4 = lep->p4() + ana->met->p4();
       data->fill<float>(i_absdphilepmet, fabs(PhysicsUtilities::deltaPhi(*lep, *ana->met)));
@@ -345,14 +342,6 @@ struct ExtraVarsFiller {
       data->fillMulti<float>(i_chhdphimet, fabs(pfc.dphimet()));
       data->fillMulti<float>(i_chhtaudisc, pfc.taudisc());
     }
-
-    int nVetoEle = 0; int nVetoMu = 0;
-    for(auto i: ana->selectedLeptons){
-                  if(fabs(i->pdgid()) == 11) nVetoEle++;
-                  if(fabs(i->pdgid()) == 13) nVetoMu++;
-    }
-    data->fill<int  >(i_nvetomu, nVetoMu);
-    data->fill<int  >(i_nvetolele, nVetoEle);
 
     if(ana->nSelLeptons > 0) {
       for(auto* l : ana->selectedLeptons) {
