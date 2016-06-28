@@ -30,7 +30,6 @@ struct ExtraVarsFiller {
   size i_j3pt      ;
   size i_j3eta     ;
   size i_csvj1eta  ;
-  size i_csvj2pt   ;
   size i_csvj2eta  ;
   size i_csv1      ;
   size i_csv2      ;
@@ -51,12 +50,12 @@ struct ExtraVarsFiller {
   size i_drj1lj2l;
 
   // Lepton extra
-  size i_nvetoele  ;
-  size i_nvetomu   ;
   size i_absdphilepmet;
   size i_absdphilepw;
   size i_htalonglep;
   size i_annulus   ;
+  size i_nvetoele  ;
+  size i_nvetomu   ;
   size i_leptonmatchtrigmu;
   size i_leptonmatchtrige;
   size i_lepton2pt ;
@@ -121,7 +120,6 @@ struct ExtraVarsFiller {
     i_j3pt           = data->add<float>("","j3pt","F",0);
     i_j3eta          = data->add<float>("","j3eta","F",0);
     i_csvj1eta       = data->add<float>("","csvj1eta","F",0);
-    i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_csvj2eta       = data->add<float>("","csvj2eta","F",0);
     i_csv1           = data->add<float>("","csv1","F",0);
     i_csv2           = data->add<float>("","csv2","F",0);
@@ -143,12 +141,12 @@ struct ExtraVarsFiller {
   }
 
   void bookLepton(TreeWriterData* data){
-    i_nvetoele       = data->add<int>("","nvetoele","I",0);
-    i_nvetomu        = data->add<int>("","nvetomu","I",0);
     i_absdphilepmet  = data->add<float>("","absdphilepmet","F",-1);
     i_absdphilepw    = data->add<float>("","absdphilepw","F",0);
     i_htalonglep     = data->add<float>("","htalonglep","F",0);
     i_annulus        = data->add<float>("","annulus","F",0);
+    i_nvetoele       = data->add<int>("","nvetoele","I",0);
+    i_nvetomu        = data->add<int>("","nvetomu","I",0);
     i_leptonmatchtrigmu  = data->add<bool>("","leptonmatchtrigmu","O",0);
     i_leptonmatchtrige   = data->add<bool>("","leptonmatchtrige","O",0);
     i_lepton2pt      = data->add<float>("","lepton2pt","F",0);
@@ -248,7 +246,6 @@ struct ExtraVarsFiller {
         dphicsv2met = fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[1], *met));
         dphicsv12met = min(dphicsv1met, dphicsv2met);
         data->fill<float>(i_dphicsv2met, dphicsv2met);
-        data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
         data->fill<float>(i_csvj2eta, jetsCSVranked[1]->eta());
         data->fill<float>(i_csv2, jetsCSVranked[1]->csv());
         data->fill<float>(i_dphicsv1csv2,fabs(PhysicsUtilities::deltaPhi(*jetsCSVranked[0], *jetsCSVranked[1])));
@@ -277,6 +274,14 @@ struct ExtraVarsFiller {
   }
 
   void fillLeptonInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+    int nVetoEle = 0; int nVetoMu = 0;
+    for(auto i: ana->selectedLeptons){
+      if(fabs(i->pdgid()) == 11) nVetoEle++;
+      if(fabs(i->pdgid()) == 13) nVetoMu++;
+    }
+    data->fill<int  >(i_nvetomu, nVetoMu);
+    data->fill<int  >(i_nvetoele, nVetoEle);
 
     if (ana->selectedLepton){
       int nVetoEle = 0; int nVetoMu = 0;
