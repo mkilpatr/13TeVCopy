@@ -141,8 +141,8 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
 
   vector<TH1F*> corr;
   TH1F* lepCor = new TH1F("LEP", "LEP", 9, 0, 9); lepCor->Sumw2();
-  lepCor->SetBinContent(1,1); /// default bin
-  lepCor->SetBinError(1,1);
+  lepCor->SetBinContent(1,0); /// default bin
+  lepCor->SetBinError(1,0);
   int nlepcorbin = 2;
 
   for(unsigned int i = 0; i < sf.size(); ++i) {
