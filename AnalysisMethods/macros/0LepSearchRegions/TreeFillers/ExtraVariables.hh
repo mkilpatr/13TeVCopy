@@ -284,14 +284,6 @@ struct ExtraVarsFiller {
     data->fill<int  >(i_nvetoele, nVetoEle);
 
     if (ana->selectedLepton){
-      int nVetoEle = 0; int nVetoMu = 0;
-      for(auto i: ana->selectedLeptons){
-        if(fabs(i->pdgid()) == 11) nVetoEle++;
-        if(fabs(i->pdgid()) == 13) nVetoMu++;
-      }
-      data->fill<int  >(i_nvetomu, nVetoMu);
-      data->fill<int  >(i_nvetoele, nVetoEle);
-
       const auto * lep = ana->selectedLepton;
       auto WP4 = lep->p4() + ana->met->p4();
       data->fill<float>(i_absdphilepmet, fabs(PhysicsUtilities::deltaPhi(*lep, *ana->met)));
