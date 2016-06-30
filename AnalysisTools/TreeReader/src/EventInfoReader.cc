@@ -56,7 +56,7 @@ EventInfoReader::EventInfoReader()
   massparams = new vector<size16>;
   HBHENoiseFilter                      = false;
   HBHENoiseIsoFilter                   = false;
-  CSCTightHalo2015Filter               = false;
+  globalTightHalo2016Filter            = false;
   EcalDeadCellTriggerPrimitiveFilter   = false;
   goodVertices                         = false;
   eeBadScFilter                        = false;
@@ -123,14 +123,14 @@ void EventInfoReader::refresh()
   if(metfilterbitpass_old->size()){
     HBHENoiseFilter                    = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseFilter                   ) : true;
     HBHENoiseIsoFilter                 = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseIsoFilter                ) : true;
-    CSCTightHalo2015Filter             = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_CSCTightHalo2015Filter            ) : true;
+    globalTightHalo2016Filter          = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_globalTightHalo2016Filter         ) : true;
     EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_EcalDeadCellTriggerPrimitiveFilter) : true;
     goodVertices                       = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_goodVertices                      ) : true;
     eeBadScFilter                      = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_eeBadScFilter                     ) : true;
   } else {
     HBHENoiseFilter                    = metfilterbitpass & fFlag_HBHENoiseFilter                   ;
     HBHENoiseIsoFilter                 = metfilterbitpass & fFlag_HBHENoiseIsoFilter                ;
-    CSCTightHalo2015Filter             = metfilterbitpass & fFlag_CSCTightHalo2015Filter            ;
+    globalTightHalo2016Filter          = metfilterbitpass & fFlag_globalTightHalo2016Filter         ;
     EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass & fFlag_EcalDeadCellTriggerPrimitiveFilter;
     goodVertices                       = metfilterbitpass & fFlag_goodVertices                      ;
     eeBadScFilter                      = metfilterbitpass & fFlag_eeBadScFilter                     ;

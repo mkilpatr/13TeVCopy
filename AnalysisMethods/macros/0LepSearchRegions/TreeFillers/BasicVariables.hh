@@ -242,7 +242,7 @@ struct BasicVarsFiller {
     data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());
 
     const auto &evt = ana->evtInfoReader;
-    bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.CSCTightHalo2015Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter;
+    bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter;
     data->fill<bool>(i_passmetfilters,  passmetfilters);
 //    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
 //    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
