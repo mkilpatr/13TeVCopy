@@ -91,8 +91,8 @@ if 'QCD' in DatasetName:
 ISDATA = False
 ISFASTSIM = False
 ISMINIAODV1 = False
-runMetCorrAndUnc = True
-updateJECs = True
+runMetCorrAndUnc = False
+updateJECs = False
 JECUNCFILE = 'data/JEC/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
@@ -114,6 +114,8 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
+    runMetCorrAndUnc = True
+    updateJECs = True
     JECUNCFILE = 'data/JEC/Spring16_25nsV3_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
@@ -135,6 +137,8 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
 
+#==============================================================================================================================#
+# badMuon and badChargedHadron Filters
 #from RecoMET.METFilters.chargedHadronTrackResolutionFilter_cfi import *
 process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
 process.BadChargedCandidateFilter.muons = cms.InputTag("slimmedMuons")
@@ -250,7 +254,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = True  # use external JECs (sqlite file)
+usePrivateSQlite = ISDATA  # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -466,11 +470,12 @@ if updateJECs:
 
 else :
     process.seq = cms.Sequence(process.met131TeVFilter *
+                               process.BadChargedCandidateFilter *
+                               process.BadPFMuonFilter *
                                process.ak4PatAssocSeq *
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
-                               process.egmPhotonIDSequence *
-                               process.QGTagger)
+                               process.egmPhotonIDSequence)
 
 if ISFASTSIM :
     process.p = cms.Path(process.seq * process.TestAnalyzer)
