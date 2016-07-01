@@ -92,7 +92,7 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
   iEvent.getByToken(puppimetToken_, puppimets_);
   if(options_ & LOADGEN)
    iEvent.getByToken(genEvtInfoToken_, genEvtInfo_);
-  if(options_ & LOADLHE)
+  if(options_ & LOADLHE && !(options_ & SAVEMASSES))
     iEvent.getByToken(lheEvtInfoToken_, lheEvtInfo_);
   if(options_ & LOADGENJETS)
     iEvent.getByToken(stdGenJetToken_, stdGenJets_);
@@ -177,27 +177,39 @@ void EventInfoFiller::fill()
   }
   if(options_ & LOADLHE) {
     // save all of them if no specific weights are specified
-    if(!systWgtIndices_.size()) {
-      for(auto weight : lheEvtInfo_->weights()) {
-        data.fillMulti<float>(isystwgts_   ,weight.wgt);
+    if(options_ & SAVEMASSES) {
+      if(!systWgtIndices_.size()) {
+        for(auto weight : genEvtInfo_->weights()) {
+          data.fillMulti<float>(isystwgts_   ,weight);
+        }
+      } else {
+        for(auto index : systWgtIndices_) {
+          data.fillMulti<float>(isystwgts_   ,genEvtInfo_->weights()[index]);
+        }
+      }
+      TString massstring(modelString_);
+      while(massstring.Index("_") != TString::kNPOS) {
+        massstring.Remove(0,massstring.Index("_")+1);
+        TString mstr;
+        if(massstring.Index("_") != TString::kNPOS)
+          mstr = TString(massstring(0,massstring.First('_')));
+        else
+          mstr = TString(massstring(0,massstring.Length()));
+        if(options_ & SAVEMASSES)
+          data.fillMulti<size16>(imasspar_, convertTo<size16>(mstr.Atoi(),"EventInfoFiller::massparams"));
       }
     } else {
-      for(auto index : systWgtIndices_) {
-        data.fillMulti<float>(isystwgts_   ,lheEvtInfo_->weights()[index].wgt);
+      if(!systWgtIndices_.size()) {
+        for(auto weight : lheEvtInfo_->weights()) {
+          data.fillMulti<float>(isystwgts_   ,weight.wgt);
+        }
+      } else {
+        for(auto index : systWgtIndices_) {
+          data.fillMulti<float>(isystwgts_   ,lheEvtInfo_->weights()[index].wgt);
+        }
       }
+      data.fill<float>     (ilhecentralwgt_,lheEvtInfo_->originalXWGTUP());
     }
-    TString massstring(lheEvtInfo_->getComment(0));
-    while(massstring.Index("_") != TString::kNPOS) {
-      massstring.Remove(0,massstring.Index("_")+1);
-      TString mstr;
-      if(massstring.Index("_") != TString::kNPOS)
-        mstr = TString(massstring(0,massstring.First('_')));
-      else
-        mstr = TString(massstring(0,massstring.Length()-1));
-      if(options_ & SAVEMASSES)
-        data.fillMulti<size16>(imasspar_, convertTo<size16>(mstr.Atoi(),"EventInfoFiller::massparams"));
-    }
-    data.fill<float>     (ilhecentralwgt_,lheEvtInfo_->originalXWGTUP());
   }
   if(options_ & LOADGENJETS) {
     int ngenj = 0;
