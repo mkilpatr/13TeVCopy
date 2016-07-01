@@ -24,14 +24,8 @@ struct CttTreeFiller {
   size i_sfncttcand  ;
   size i_sfcttcandpt ;
   size i_sfcttcandeta;
-  size i_sfcttcandrawmass;
-  size i_sfcttcandtrimmedmass;
-  size i_sfcttcandprunedmass;
-  size i_sfcttcandsoftdropmass;
+  size i_sfcttcandallsubjetmass;
   size i_sfcttcandcmstoptagmass;
-  size i_sfcttcandtau1;
-  size i_sfcttcandtau2;
-  size i_sfcttcandtau3;
   size i_sfcttcandnsubjets;
   size i_sfcttcandminmass;
   size i_sfncttpass  ;
@@ -79,14 +73,8 @@ struct CttTreeFiller {
     i_sfncttcand       = data->add<unsigned int>("","sfncttcand","i",0);
     i_sfcttcandpt      = data->add<float>("","sfcttcandpt","F",0);
     i_sfcttcandeta     = data->add<float>("","sfcttcandeta","F",0);
-    i_sfcttcandrawmass       = data->add<float>("","sfcttcandrawmass","F",0);
-    i_sfcttcandtrimmedmass   = data->add<float>("","sfcttcandtrimmedmass","F",0);
-    i_sfcttcandprunedmass    = data->add<float>("","sfcttcandprunedmass","F",0);
-    i_sfcttcandsoftdropmass  = data->add<float>("","sfcttcandsoftdropmass","F",0);
+    i_sfcttcandallsubjetmass       = data->add<float>("","sfcttcandallsubjetmass","F",0);
     i_sfcttcandcmstoptagmass = data->add<float>("","sfcttcandcmstoptagmass","F",0);
-    i_sfcttcandtau1 = data->add<float>("","sfcttcandtau1","F",0);
-    i_sfcttcandtau2 = data->add<float>("","sfcttcandtau2","F",0);
-    i_sfcttcandtau3 = data->add<float>("","sfcttcandtau3","F",0);
     i_sfcttcandnsubjets = data->add<int>("","sfcttcandnsubjets","I",0);
     i_sfcttcandminmass = data->add<float>("","sfcttcandminmass","F",0);
     i_sfncttpass       = data->add<unsigned int>("","sfncttpass","i",0);
@@ -137,15 +125,6 @@ struct CttTreeFiller {
     return ( (fj->fjPrunedMass() > minMass) && (fj->fjPrunedMass() < maxMass) && fabs(fj->p4().eta())<=2.4 );
   }
 
-  bool passSoftDropTaggerCTT(const CMSTopF* ctt,float minMass,float maxMass,int nsubjet, float t2ovt1) {
-
-    float mass_   = ctt->topSoftDropMass();
-    int nsubjts_  = ctt->topNsubJets();
-    float t2ovt1_ = (ctt->topTau2())/(ctt->topTau1());
-
-    return ( (mass_ > minMass) && (mass_ < maxMass) && (nsubjts_ >= nsubjet)  && (t2ovt1_<= t2ovt1));
-  }
-
   // fill HPTT (CTT) branches
   void fillTopTagInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets) {
 
@@ -153,14 +132,8 @@ struct CttTreeFiller {
     unsigned int sfncttcand_      = 0;
     float sfcttcandpt_            = -9.;
     float sfcttcandeta_           = -9.;
-    float sfcttcandrawmass_       = -9.;
-    float sfcttcandtrimmedmass_   = -9.;
-    float sfcttcandprunedmass_    = -9.;
-    float sfcttcandsoftdropmass_  = -9.;
+    float sfcttcandallsubjetmass_ = -9.;
     float sfcttcandcmstoptagmass_ = -9.;
-    float sfcttcandtau1_          = -9.;
-    float sfcttcandtau2_          = -9.;
-    float sfcttcandtau3_          = -9.;
     int sfcttcandnsubjets_        = -1;
     float sfcttcandminmass_       = -9.;
 
@@ -209,7 +182,7 @@ struct CttTreeFiller {
       vector<float> canddr6pt, canddr6eta, passdr6pt, passdr6eta;
 
       for(auto* p : ana->genParts) {
-        if ((abs(p->pdgId()) == ParticleInfo::p_t) 
+        if ((abs(p->pdgId()) == ParticleInfo::p_t)
             && ParticleInfo::isGenTopHadronic(p)
             && ParticleInfo::isLastInChain(p)) {
           nhadronicgentops_++;
@@ -372,14 +345,8 @@ struct CttTreeFiller {
 	sfncttcand_             = 1;
 	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt();
 	sfcttcandeta_           = ana->cttTops[indxctt]->p4().eta();
-	sfcttcandrawmass_       = ana->cttTops[indxctt]->topRawMass();
-	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
-	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
-	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
+	sfcttcandallsubjetmass_ = ana->cttTops[indxctt]->topAllSubjetMass();
 	sfcttcandcmstoptagmass_ = ana->cttTops[indxctt]->topCmsTopTagMass();
-	sfcttcandtau1_          = ana->cttTops[indxctt]->topTau1();
-	sfcttcandtau2_          = ana->cttTops[indxctt]->topTau2();
-	sfcttcandtau3_          = ana->cttTops[indxctt]->topTau3();
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
@@ -451,14 +418,8 @@ struct CttTreeFiller {
 	sfncttcand_             = 1;
 	sfcttcandpt_            = ana->cttTops[indxctt]->p4().pt();
 	sfcttcandeta_           = ana->cttTops[indxctt]->p4().eta();
-	sfcttcandrawmass_       = ana->cttTops[indxctt]->topRawMass();
-	sfcttcandtrimmedmass_   = ana->cttTops[indxctt]->topTrimmedMass();
-	sfcttcandprunedmass_    = ana->cttTops[indxctt]->topPrunedMass();
-	sfcttcandsoftdropmass_  = ana->cttTops[indxctt]->topSoftDropMass();
+	sfcttcandallsubjetmass_ = ana->cttTops[indxctt]->topAllSubjetMass();
 	sfcttcandcmstoptagmass_ = ana->cttTops[indxctt]->topCmsTopTagMass();
-	sfcttcandtau1_          = ana->cttTops[indxctt]->topTau1();
-	sfcttcandtau2_          = ana->cttTops[indxctt]->topTau2();
-	sfcttcandtau3_          = ana->cttTops[indxctt]->topTau3();
 	sfcttcandnsubjets_      = ana->cttTops[indxctt]->topNsubJets();
 	sfcttcandminmass_       = ana->cttTops[indxctt]->topMinMass();
 
@@ -510,14 +471,8 @@ struct CttTreeFiller {
     data->fill<unsigned int>(i_sfncttcand     , sfncttcand_);
     data->fill<float>(i_sfcttcandpt           , sfcttcandpt_);
     data->fill<float>(i_sfcttcandeta          , sfcttcandeta_);
-    data->fill<float>(i_sfcttcandrawmass      , sfcttcandrawmass_);
-    data->fill<float>(i_sfcttcandtrimmedmass  , sfcttcandtrimmedmass_);
-    data->fill<float>(i_sfcttcandprunedmass   , sfcttcandprunedmass_);
-    data->fill<float>(i_sfcttcandsoftdropmass , sfcttcandsoftdropmass_);
+    data->fill<float>(i_sfcttcandallsubjetmass, sfcttcandallsubjetmass_);
     data->fill<float>(i_sfcttcandcmstoptagmass, sfcttcandcmstoptagmass_);
-    data->fill<float>(i_sfcttcandtau1         , sfcttcandtau1_);
-    data->fill<float>(i_sfcttcandtau2         , sfcttcandtau2_);
-    data->fill<float>(i_sfcttcandtau3         , sfcttcandtau3_);
     data->fill<int>(i_sfcttcandnsubjets       , sfcttcandnsubjets_);
     data->fill<float>(i_sfcttcandminmass      , sfcttcandminmass_);
     data->fill<unsigned int>(i_sfncttpass     , sfncttpass_);

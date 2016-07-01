@@ -12,31 +12,11 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
     ZtoLLCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
       ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
 
-    // booking
-    size i_origmet = 0;
-    size i_origmetnohf = 0;
-    size i_iselectron = 0;
-    size i_passTrig = 0;
-
-    bool  passTrig = false;
     bool  passZtoLLSel = false;
-    bool  iselectron;
-    float origMET = 0;
-    float origMETNoHF = 0;
-
-    void book() {
-      ZeroLeptonAnalyzer::book();
-
-      i_origmet           = data.add<float>("","origmet","F",0);
-      i_origmetnohf       = data.add<float>("","origmetnohf","F",0);
-      i_iselectron        = data.add<bool>("", "iselectron", "O", 0);
-      i_passTrig          = data.add<bool>("", "passTrig", "O", 0);
-    }
+    MomentumF metplusdilep;
 
     void processVariables(){
       ZeroLeptonAnalyzer::processVariables();
-      origMET = met->pt();
-      origMETNoHF = metNoHF->pt();
 
       // selections: exactly two same flavor leptons, inv mass in (80, 100)
       passZtoLLSel = false;
@@ -50,10 +30,8 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
         return;
 
       if (lep0->iselectron() == lep1->iselectron() && lep0->q()*lep1->q() < 0){
-        auto z_p4 = lep0->p4() + lep1->p4();
         passZtoLLSel = true;
-        met->setP4(met->p4() + z_p4);
-        metNoHF->setP4(metNoHF->p4() + z_p4);
+        metplusdilep.setP4(met->p4() + lep0->p4() + lep1->p4());
 
         // clean vetoedTracks vs selectedLeptons
         vector<bool> isOverlapTrack(vetoedTracks.size(),false);
@@ -73,33 +51,17 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
         nVetoedTracks = vetoedTracks.size();
       }
 
-      iselectron = lep0->iselectron();
-
-      // avoid picking up same event twice
-      if (process==defaults::DATA_DOUBLEEG){
-        passTrig = triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
-      }else if (process==defaults::DATA_DOUBLEMU){
-        passTrig = (triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ)
-            && (!(triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ));
-      }else if (isMC()){
-        passTrig = iselectron ? (triggerflag & kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ) :
-            (triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
-      }
-
-
     }
 
 
     bool fillEvent() {
       if(!passZtoLLSel)                     return false;
       if(!goodvertex)                       return false;
-      filler.fillEventInfo(&data, this);
-      filler.fillJetInfo  (&data, jets, bJets, met);
+      if(nJets < 2)                         return false;
+      if(metplusdilep.pt() < 100)           return false;
 
-      data.fill<float>(i_origmet, origMET);
-      data.fill<float>(i_origmetnohf, origMETNoHF);
-      data.fill<bool>(i_iselectron, iselectron);
-      data.fill<bool>(i_passTrig, passTrig);
+      filler.fillEventInfo(&data, this, true, &metplusdilep);
+
       return true;
     }
 
@@ -124,10 +86,7 @@ void makeZeroLeptonZtoLLCRTrees(TString sname = "dyjetstoll_cr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-
   cfgSet::ConfigSet pars = pars0lepDiLepCR(json);
-//  pars.corrections.jetAndMETCorrections |= JetAndMETCorrectionSet::METSCALE | JetAndMETCorrectionSet::METRESOLUTION;
-//  pars.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
 
   ZtoLLCRAnalyzer a(fullname, "Events", outfilename, fileindex+2, isMC, &pars);
   a.analyze(100000);

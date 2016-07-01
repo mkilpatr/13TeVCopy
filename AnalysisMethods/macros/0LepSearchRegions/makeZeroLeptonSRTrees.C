@@ -27,13 +27,13 @@ void makeZeroLeptonSRTrees(TString sname = "T2tt_750_100",
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
   // disable JetID for signal samples
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW")) pars.jets.applyJetID = false;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) pars.jets.applyJetID = false;
 
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
   // CHF filter for FastSim
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) a.applyCHFFilter = true;
 
 
   a.analyze(10000);

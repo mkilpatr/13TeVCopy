@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetReader
-// 
+//
 // Class for reading electron object information from TTree.
-// 
-// ElectronReader.cc created on Wed Oct 22 01:39:44 CEST 2014 
-// 
+//
+// ElectronReader.cc created on Wed Oct 22 01:39:44 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisTools/TreeReader/interface/JetReader.h"
@@ -94,12 +94,12 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
     treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_);
-    treeReader->setBranchAddress(branchName_,"jet_chHadEnFrac"  ,&jetchHadEnFrac_  );
+    treeReader->setBranchAddress(branchName_, "jet_chHadEnFrac", &jetchHadEnFrac_  );
 
   }
   if(options_ & LOADGEN){
     clog << "gen ";
-    treeReader->setBranchAddress(branchName_, "jet_genIndex", &jetgenindex_ ,true);
+    treeReader->setBranchAddress(branchName_,"jet_genIndex",  &jetgenindex_ ,true);
     treeReader->setBranchAddress(branchName_,"genjet_pt"    , &genjetpt_    ,true);
     treeReader->setBranchAddress(branchName_,"genjet_eta"   , &genjeteta_   ,true);
     treeReader->setBranchAddress(branchName_,"genjet_phi"   , &genjetphi_   ,true);
@@ -115,7 +115,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"jet_axis1"   , &jetaxis1_    );
     treeReader->setBranchAddress(branchName_,"jet_axis2"   , &jetaxis2_    );
     treeReader->setBranchAddress(branchName_,"jet_jetMult" , &jetMult_     );
-    treeReader->setBranchAddress(branchName_,"jet_charge" , &jetcharge_     );
+    treeReader->setBranchAddress(branchName_,"jet_charge" ,  &jetcharge_     );
     treeReader->setBranchAddress(branchName_,"jet_pullrap" , &jetpullrap_     );
     treeReader->setBranchAddress(branchName_,"jet_pullphi" , &jetpullphi_    );
     if(options_ & LOADGEN){
@@ -137,7 +137,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
   if(options_ & LOADJETEXTRA){
     clog <<"jetextra ";
     treeReader->setBranchAddress(branchName_,"jet_chEmEnFrac"   ,&jetchEmEnFrac_   );
-//    treeReader->setBranchAddress(branchName_,"jet_muEnFrac"     ,&jetmuEnFrac_     ); //I think ttbar must ahve this branch already???
+    treeReader->setBranchAddress(branchName_,"jet_muEnFrac"     ,&jetmuEnFrac_     );
     treeReader->setBranchAddress(branchName_,"jet_elEnFrac"     ,&jetelEnFrac_     );
     treeReader->setBranchAddress(branchName_,"jet_neuHadEnFrac" ,&jetneuHadEnFrac_ );
     treeReader->setBranchAddress(branchName_,"jet_neuEmEnFrac"  ,&jetneuEmEnFrac_  );
