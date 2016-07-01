@@ -67,7 +67,7 @@ DatasetName = options.inputDataset if options.inputDataset else options.inputFil
 print DatasetName
 
 # MC theory systematic weights only saved for specific samples
-if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'tZq' in DatasetName or 'SMS' in DatasetName or 'T2bW' in DatasetName :
+if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'tZq' in DatasetName or 'SMS' in DatasetName or 'T2bW' in DatasetName or 'TTJets' in DatasetName or 'WJets' in DatasetName :
     print 'Adding theory weights'
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
     if 'SMS' in DatasetName or 'T2bW' in DatasetName :
@@ -115,7 +115,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     JECUNCFILE = 'data/JEC/Spring16_25nsV3_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_275376_21Jun2016.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_275067_275376_21Jun2016.txt")
     # jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
