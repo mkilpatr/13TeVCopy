@@ -16,11 +16,15 @@ using namespace ucsbsusy;
 METFiltersFiller::METFiltersFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
   triggerBitToken_            (cc.consumes<edm::TriggerResults> (cfg.getParameter<edm::InputTag>("bits"))),
-  triggerNames_(0)
+  triggerNames_(0),
+  badChCandToken_  (cc.consumes<bool>(cfg.getParameter<edm::InputTag>("badchcandfilter"))),
+  badPFMuonToken_  (cc.consumes<bool>(cfg.getParameter<edm::InputTag>("badpfmuonfilter")))
 {
 
   initTriggerNames();
   itrig_bit_pass        = data.add<size>(branchName_,"int_bit_pass","i",0);
+  ibadchcand_           =  data.add<bool>(branchName_,"badchcand"     ,"O",false);
+  ibadpfmuon_           =  data.add<bool>(branchName_,"badpfmuon"     ,"O",false);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -52,6 +56,8 @@ void METFiltersFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSe
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
   triggerNames_ = &iEvent.triggerNames(*triggerBits_);
+  iEvent.getByToken(badChCandToken_, badChCand_);
+  iEvent.getByToken(badPFMuonToken_, badPFMuon_);
   isLoaded_ = true;
 
 }
@@ -66,5 +72,10 @@ void METFiltersFiller::fill()
       trigPass |= trigindex->second;
     }
   }
+
+  bool  filterbadChCandidate = *badChCand_;
+  bool  filterbadPFMuon = *badPFMuon_;
+  data.fill<bool> (ibadchcand_, filterbadChCandidate);
+  data.fill<bool> (ibadpfmuon_, filterbadPFMuon);
   data.fill<size>     (itrig_bit_pass    ,trigPass);
 } // end of METFiltersFiller::fill()
