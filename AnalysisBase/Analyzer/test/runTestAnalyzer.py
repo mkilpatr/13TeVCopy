@@ -25,8 +25,9 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
-options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
+options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
 
 options.maxEvents = -1
 
@@ -132,6 +133,17 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = process.TestAnalyzer.globalTag
+
+#from RecoMET.METFilters.chargedHadronTrackResolutionFilter_cfi import *
+process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
+process.BadChargedCandidateFilter.muons = cms.InputTag("slimmedMuons")
+process.BadChargedCandidateFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+process.BadChargedCandidateFilter.taggingMode = cms.bool(True)
+
+process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+process.BadPFMuonFilter.muons = cms.InputTag("slimmedMuons")
+process.BadPFMuonFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+process.BadPFMuonFilter.taggingMode = cms.bool(True)
 
 
 #==============================================================================================================================#
@@ -446,7 +458,8 @@ if updateJECs:
                                process.ak4PatAssocSeq *
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
-                               process.egmPhotonIDSequence)
+                               process.egmPhotonIDSequence*
+                               process.BadChargedCandidateFilter)
 
 
 else :

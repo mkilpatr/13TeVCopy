@@ -42,11 +42,16 @@ namespace ucsbsusy {
     edm::EDGetTokenT<edm::TriggerResults>  triggerBitToken_;
     const edm::TriggerNames *              triggerNames_;
     TrigIdMap                              trigIds_;
-
+    edm::EDGetTokenT<bool>                 badChCandToken_;
+    edm::EDGetTokenT<bool>                 badPFMuonToken_;
     size itrig_bit_pass;
+    size ibadchcand_;
+    bool ibadpfmuon_;
 
   public :
     edm::Handle<edm::TriggerResults> triggerBits_;
+    edm::Handle<bool>                badChCand_;
+    edm::Handle<bool>                badPFMuon_;
 
   };
 
