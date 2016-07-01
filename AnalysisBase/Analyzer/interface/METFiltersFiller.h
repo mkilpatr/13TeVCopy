@@ -46,7 +46,7 @@ namespace ucsbsusy {
     edm::EDGetTokenT<bool>                 badPFMuonToken_;
     size itrig_bit_pass;
     size ibadchcand_;
-    bool ibadpfmuon_;
+    size ibadpfmuon_;
 
   public :
     edm::Handle<edm::TriggerResults> triggerBits_;

@@ -460,7 +460,8 @@ if updateJECs:
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
                                process.egmPhotonIDSequence*
-                               process.BadChargedCandidateFilter)
+                               process.BadChargedCandidateFilter *
+                               process.BadPFMuonFilter)
 
 
 else :
