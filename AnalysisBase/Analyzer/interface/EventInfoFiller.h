@@ -109,6 +109,8 @@ namespace ucsbsusy {
       size isystwgts_     ;
       size imasspar_      ;
       size instdgenjets_  ;
+      size imetunclustrun2uppt_ ;
+      size imetunclustrun2dnpt_ ;
 
     public:
       // Data members
