@@ -9,7 +9,7 @@ using namespace ucsbsusy;
 class JSONAnalyzer : public BaseTreeAnalyzer {
 
   public :
-    JSONAnalyzer(TString fileName, TString treeName, TString outdirName, TString outfileName) : BaseTreeAnalyzer(fileName, treeName, 1, false, 0), outputDir_(outdirName), outputFile_(outfileName), lastRunLumi_(cfgSet::JSONProcessing::RunLumiPair(0,0)), jsonProc_(new cfgSet::JSONProcessing()) {}
+    JSONAnalyzer(TString fileName, TString treeName, TString outfileName) : BaseTreeAnalyzer(fileName, treeName, 1, false, 0), outputFile_(outfileName), lastRunLumi_(cfgSet::JSONProcessing::RunLumiPair(0,0)), jsonProc_(new cfgSet::JSONProcessing()) {}
 
     virtual ~JSONAnalyzer() {}
 
@@ -31,28 +31,35 @@ class JSONAnalyzer : public BaseTreeAnalyzer {
     }
 
     void writeJSON() {
-      TString outfilename = outputDir_ + "/" + outputFile_;
-      gSystem->mkdir(outputDir_, true);
-      jsonProc_->dumpJSONFile(outfilename);
+      jsonProc_->dumpJSONFile(outputFile_);
     }
 
 };
 
 
 
-void dumpJSON(TString outputname = "htmht-2015c-pr_1.json",
-              const TString fname = "/store/user/apatters/13TeV/290915/merged/htmht-2015c-pr_1_ntuple_postproc.root",
-              const TString outputdir = "json",
-              const TString fileprefix = "root://cmseos:1094/")
+void dumpJSON(TString sname = "met",
+    const int fileindex = -1,
+    const bool isMC = false,
+    const TString fname = "/store/user/hqu/13TeV/271115/merged/met-2015c-05oct15_1_ntuple_postproc.root",
+    const TString outputdir = "json",
+    const TString fileprefix = "root://cmseos:1094/",
+    const TString json="")
 {
 
   printf("Processing file %s\n", fname.Data());
 
+  if(fileindex > -1)
+    sname += TString::Format("_%d",fileindex);
+
+  gSystem->mkdir(outputdir,true);
+  TString outputname = outputdir+"/"+sname+".json";
+
   TString fullname = fileprefix+fname;
 
-  JSONAnalyzer a (fullname, "Events", outputdir, outputname);
+  JSONAnalyzer a (fullname, "Events", outputname);
 
-  a.analyze(1000000);
+  a.analyze(100000);
 
   a.writeJSON();
 
