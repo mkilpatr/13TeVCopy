@@ -16,7 +16,9 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , isRealData          (iConfig.getParameter<int             >("isData"                 ))
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
 , printLHERunInfo     (iConfig.getUntrackedParameter<bool   >("printLHERunInfo",false))
+, printGenLumiInfo    (iConfig.getUntrackedParameter<bool   >("printGenLumiInfo",false))
 , lheInfoToken_       (consumes<LHERunInfoProduct>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("lheEvtInfo")))
+, genLumiHeaderToken_ (consumes<GenLumiInfoHeader,edm::InLumi>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("genEvtInfo")))
 // ---- Configure event information
 , eventInfo           (0)
 , ak4Jets             (0)
@@ -71,6 +73,24 @@ void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
     for (unsigned int iLine = 0; iLine<lines.size(); iLine++) {
      std::cout << lines.at(iLine);
     }
+  }
+
+}
+
+//--------------------------------------------------------------------------------------------------
+void PhysicsAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& es)
+{
+
+  if(!printGenLumiInfo) return;
+
+  edm::Handle<GenLumiInfoHeader> gen_header;
+  lumi.getByToken(genLumiHeaderToken_, gen_header);
+  std::string model = gen_header->configDescription();
+  std::cout << model << std::endl;
+  eventInfo->setModelString(model);
+
+  for(auto name : gen_header->weightNames()) {
+    std::cout << name << std::endl;
   }
 
 }
