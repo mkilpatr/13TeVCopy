@@ -19,3 +19,6 @@
 [submodule "AnalysisMethods/EstTools"]
 	path = AnalysisMethods/EstTools
 	url = git@github.com:UCSBSusy/EstTools.git
+[submodule "RecoMET"]
+	path = RecoMET
+	url = git@github.com:hqucms/RecoMET.git

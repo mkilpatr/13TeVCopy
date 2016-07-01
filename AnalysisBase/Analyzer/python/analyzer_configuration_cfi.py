@@ -279,6 +279,8 @@ nominal_configuration = cms.PSet(
                                       hbheiso       = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
                                       hbherun2loose = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Loose'),
                                       hbherun2tight = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
+                                      badchcandfilter = cms.InputTag('BadChargedCandidateFilter'),
+                                      badpfmuonfilter = cms.InputTag('BadPFMuonFilter'),
                                       ),
 
                                   SecondaryVertices = cms.untracked.PSet(

@@ -97,18 +97,24 @@ void WPolCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   float wgtnormup = 1.; 
   float wgtnormdn = 1.;
- 
+
+  // 74X
   // ttbar   : sumwgt sumwgtpolup sumwgtpoldn = 452650. 487884. 417416.
   // w+jets  : sumwgt sumwgtpolup sumwgtpoldn = 2.14475e+06 2.45384e+06 1.83567e+06
   // single-t: sumwgt sumwgtpolup sumwgtpoldn = 71200 72815.9 69584.1 --- negative weights
-  if ((ana->process == defaults::TTBAR)    && (wpolweightup_.size()>0)) { wgtnormup = 452650./487884.;         wgtnormdn = 452650./417416.;         }
-  if ((ana->process == defaults::SINGLE_W) && (wpolweightup_.size()>0)) { wgtnormup = 2.14475e+06/2.45384e+06; wgtnormdn = 2.14475e+06/1.83567e+06; }
+
+  // 80X
+  // ttbar : sumwgt,sumwgtpolup,sumwgtpoldn final = 451670 486828 416512
+  // wjets :sumwgt,sumwgtpolup,sumwgtpoldn final = 2.14345e+06 2.45234e+06 1.83455e+06
+
+  if ((ana->process == defaults::TTBAR)    && (wpolweightup_.size()>0)) { wgtnormup = 451670./486828.;         wgtnormdn = 451670./416512.;         }
+  if ((ana->process == defaults::SINGLE_W) && (wpolweightup_.size()>0)) { wgtnormup = 2.14345e+06/2.45234e+06; wgtnormdn = 2.14345e+06/1.83455e+06; }
   //  if ((ana->process == defaults::SINGLE_T) && (wpolweightup_.size()>0)) { wgtnormup = 71200./72815.9;          wgtnormdn = 71200./69584.1; }
 
   if (wpolweightup_.size()>0) { wpolweightup = wpolweightup_[0]*wgtnormup; } else { wpolweightup = 1.;  }
   if (wpolweightdn_.size()>0) { wpolweightdn = wpolweightdn_[0]*wgtnormdn; } else { wpolweightdn = 1.;  }
-  //  if (wpolweightup_.size()>0) { wpolweightup = wpolweightup_[0]; } else { wpolweightup = 1.;  }
-  //  if (wpolweightdn_.size()>0) { wpolweightdn = wpolweightdn_[0]; } else { wpolweightdn = 1.;  }
+  //if (wpolweightup_.size()>0) { wpolweightup = wpolweightup_[0]; } else { wpolweightup = 1.;  }
+  //if (wpolweightdn_.size()>0) { wpolweightdn = wpolweightdn_[0]; } else { wpolweightdn = 1.;  }
   if (costhetastar_.size()>0) { costhetastar = costhetastar_[0];                 } else { costhetastar = -2.; }
 }
 
