@@ -115,7 +115,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.trigElectronCorrType     = ucsbsusy::NOMINAL;
   standardCorrections.trigMuonCorrType         = ucsbsusy::NOMINAL;
 
-  standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::NULLOPT;
+  standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::WPOLWGT;
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
   standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorr.root",CMSSW_BASE);
