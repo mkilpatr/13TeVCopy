@@ -72,6 +72,8 @@ EventInfoFiller::EventInfoFiller(
   ilhecentralwgt_ =  data.add<float>       (branchName_,"lhecentralweight","F",1);
   isystwgts_      =  data.addMulti<float>  (branchName_,"systweights",0);
   instdgenjets_   =  data.add<int>         (branchName_,"nstdgenjets","I",0);
+  imetunclustrun2uppt_ =  data.add<float>       (branchName_,"metunclustrun2up_pt"    ,"F",0);
+  imetunclustrun2dnpt_ =  data.add<float>       (branchName_,"metunclustrun2dn_pt"    ,"F",0);
   if(options_ & LOADLHE && options_ & SAVEMASSES)
     imasspar_     =  data.addMulti<size16> (branchName_,"massparams",0);
 
@@ -154,6 +156,7 @@ void EventInfoFiller::fill()
     data.fill<int>       (inpuvertsbxm1_  ,num_pu_verts_bxm1);
   }
 
+
   data.fill<float>       (imetpt_            ,met_->pt());
   data.fill<float>       (imetphi_           ,met_->phi());
   data.fill<float>       (imetsumEt_         ,met_->sumEt());
@@ -166,6 +169,8 @@ void EventInfoFiller::fill()
   data.fill<float>       (ipuppimetpt_       ,puppimet_->pt());
   data.fill<float>       (ipuppimetphi_      ,puppimet_->phi());
   data.fill<float>       (ipuppimetsumEt_    ,puppimet_->sumEt());
+  data.fill<float>       (imetunclustrun2uppt_, met_->shiftedPt(pat::MET::UnclusteredEnUp));
+  data.fill<float>       (imetunclustrun2dnpt_, met_->shiftedPt(pat::MET::UnclusteredEnDown));
 
   if(options_ & LOADGEN) {
     data.fill<float>     (igenmetpt_    ,metOOB_->genMET()->pt());
