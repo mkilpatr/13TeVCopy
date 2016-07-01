@@ -16,3 +16,6 @@
 [submodule "PhysicsTools"]
 	path = PhysicsTools
 	url = https://github.com/vdutta/PhysicsTools
+[submodule "AnalysisMethods/EstTools"]
+	path = AnalysisMethods/EstTools
+	url = git@github.com:UCSBSusy/EstTools.git
