@@ -27,8 +27,8 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
-#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
-options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
+options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
 
 options.maxEvents = -1
 
@@ -99,7 +99,7 @@ JECUNCFILE = 'data/JEC/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt'
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName or 'PUSpring16Fast' in DatasetName :
     print 'Running on FastSim'
     ISFASTSIM = True
-    JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
+    #JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
@@ -267,8 +267,8 @@ if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
     era = "Spring16_25nsV3_DATA" if ISDATA else "Spring16_25nsV3_MC"
-    if ISFASTSIM :
-        era = "MCRUN2_74_V9"
+    #if ISFASTSIM :
+    #    era = "MCRUN2_74_V9"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
     print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource", CondDBSetup,
