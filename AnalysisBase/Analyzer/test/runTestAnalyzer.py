@@ -475,7 +475,9 @@ else :
                                process.ak4PatAssocSeq *
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
-                               process.egmPhotonIDSequence)
+                               process.egmPhotonIDSequence *
+                               process.BadChargedCandidateFilter *
+                               process.BadPFMuonFilter)
 
 if ISFASTSIM :
     process.p = cms.Path(process.seq * process.TestAnalyzer)
