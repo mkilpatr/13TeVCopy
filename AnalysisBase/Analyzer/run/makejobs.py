@@ -77,7 +77,7 @@ def parseConfig(removeExtension=False, removeGenJets5=False):
             if "#" in content[0] :
                 continue
             if removeExtension and re.search(r'-ext[0-9]*$', content[1]) and re.sub(r'-ext[0-9]*$', '', content[1]) in samples:
-                print content[1], 'is an extension sample, will not be proecessed in this step...'
+                print content[1], 'is an extension sample, will be treated together with the non-extension sample...'
                 continue
             if removeGenJets5 and re.search(r'-genjets5$', content[1]) and re.sub(r'-genjets5$', '', content[1]) in samples:
                 print content[1], 'is a genjets5 filtered sample, will be treated together with the inclusive sample...'
@@ -380,6 +380,7 @@ elif args.runmerge :
         if args.splitmerge :
             numfilespermerge = int(input("How many input files per merge? "))
             nummergedfiles = 0 if numfilespermerge==0 else max(int((len(filelist)-1) / numfilespermerge), 1)
+            if ((len(filelist)-1) % numfilespermerge) > numfilespermerge/2: nummergedfiles = nummergedfiles+1
             print "Will produce %d merged files." % nummergedfiles
             for imerge in range(1, nummergedfiles + 1) :
                 start = ((imerge - 1) * numfilespermerge) + 2
