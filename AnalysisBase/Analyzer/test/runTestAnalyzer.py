@@ -99,7 +99,9 @@ JECUNCFILE = 'data/JEC/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt'
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName or 'PUSpring16Fast' in DatasetName :
     print 'Running on FastSim'
     ISFASTSIM = True
-    #JECUNCFILE = 'data/JEC/MCRUN2_74_V9_Uncertainty_AK4PFchs.txt'
+    runMetCorrAndUnc = True
+    updateJECs = True
+    JECUNCFILE = 'data/JEC/Spring16_FastSimV1_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
@@ -119,7 +121,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     JECUNCFILE = 'data/JEC/Spring16_25nsV3_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/json_DCSONLY_275376_21Jun2016.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt")
     # jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
@@ -254,7 +256,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = ISDATA  # use external JECs (sqlite file)
+usePrivateSQlite = (ISDATA or ISFASTSIM) # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -271,8 +273,8 @@ if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
     era = "Spring16_25nsV3_DATA" if ISDATA else "Spring16_25nsV3_MC"
-    #if ISFASTSIM :
-    #    era = "MCRUN2_74_V9"
+    if ISFASTSIM :
+        era = "Spring16_25nsFastSimMC_V1"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
     print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource", CondDBSetup,
