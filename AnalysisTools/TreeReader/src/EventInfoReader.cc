@@ -37,6 +37,8 @@ EventInfoReader::EventInfoReader()
   puppimetsumEt = 0;
   genmet_pt = 0;
   genmet_phi = 0;
+  metunclusterup = 0;
+  metunclusterdn = 0;
   goodvertex = false;
   genweight = 1;
   genqscale = 0;
@@ -93,6 +95,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"puppimet_sumEt", &puppimetsumEt);
   treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
+  treeReader->setBranchAddress(branchName,"metunclustrun2up_pt", &metunclusterup);
+  treeReader->setBranchAddress(branchName,"metunclustrun2dn_pt", &metunclusterdn);
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
   treeReader->setBranchAddress(branchName,"genweight", &genweight);
   treeReader->setBranchAddress(branchName,"genqscale", &genqscale);

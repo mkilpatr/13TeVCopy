@@ -47,6 +47,8 @@ namespace ucsbsusy {
       float         puppimetsumEt;
       float         genmet_pt;
       float         genmet_phi;
+      float         metunclusterup;
+      float         metunclusterdn;
       bool          goodvertex;
       float         genweight;
       float         genqscale;
