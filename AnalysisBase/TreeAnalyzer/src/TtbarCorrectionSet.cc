@@ -28,7 +28,8 @@ void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     if(top1) top2 = g;
     else top1 = g;
   }
-  if(!top1 || !top2)       throw std::invalid_argument("TtbarCorrectionSet::processVariables: two gen tops were not found!");
+  //  if(!top1 || !top2)       throw std::invalid_argument("TtbarCorrectionSet::processVariables: two gen tops were not found!");
+  if(!top1 || !top2) { topPTWeight = 1; return; }
   //float topPT = top1->pt() + top2->pt();
 
   if(topPTCorr) {
@@ -40,7 +41,10 @@ void TtbarCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     float top2PTWeight = 1.;
     if (top1->pt()>400.) { top1PTWeight = exp(0.199-0.00166*400.); } else { top1PTWeight = exp(0.199-0.00166*top1->pt()); }
     if (top2->pt()>400.) { top2PTWeight = exp(0.199-0.00166*400.); } else { top2PTWeight = exp(0.199-0.00166*top2->pt()); }
-    topPTWeight = sqrt(top1PTWeight*top2PTWeight);
+    //   topPTWeight = sqrt(top1PTWeight*top2PTWeight);
+    //sumwgt, ttbarfinal = 451670 452344
+    float wgtnorm = 451670./452344.;
+    topPTWeight = wgtnorm*(sqrt(top1PTWeight*top2PTWeight));
 
   }
 }
