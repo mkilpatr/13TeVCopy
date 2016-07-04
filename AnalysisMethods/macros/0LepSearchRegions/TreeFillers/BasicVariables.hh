@@ -45,10 +45,12 @@ struct BasicVarsFiller {
   size i_passmetfilters;
 //  size i_pass_HBHENoiseFilter                    ;
 //  size i_pass_HBHENoiseIsoFilter                 ;
-//  size i_pass_CSCTightHalo2015Filter             ;
+//  size i_pass_globalTightHalo2016Filter          ;
 //  size i_pass_EcalDeadCellTriggerPrimitiveFilter ;
 //  size i_pass_goodVertices                       ;
 //  size i_pass_eeBadScFilter                      ;
+//  size i_pass_badChCand                          ;
+//  size i_pass_badPFMuon                          ;
 
   // Basic event variables
   size i_genmet    ;
@@ -135,10 +137,12 @@ struct BasicVarsFiller {
     i_passmetfilters = data->add<bool>("","passmetfilters","O",0);
 //    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
 //    i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
-//    i_pass_CSCTightHalo2015Filter               = data->add<bool>("","pass_CSCTightHalo2015Filter"            ,"O",0);
+//    i_pass_globalTightHalo2016Filter            = data->add<bool>("","pass_globalTightHalo2016Filter"         ,"O",0);
 //    i_pass_EcalDeadCellTriggerPrimitiveFilter   = data->add<bool>("","pass_EcalDeadCellTriggerPrimitiveFilter","O",0);
 //    i_pass_goodVertices                         = data->add<bool>("","pass_goodVertices"                      ,"O",0);
 //    i_pass_eeBadScFilter                        = data->add<bool>("","pass_eeBadScFilter"                     ,"O",0);
+//    i_pass_badChCand                            = data->add<bool>("","pass_badChCand"                         ,"O",0);
+//    i_pass_badPFMuon                            = data->add<bool>("","pass_badPFMuon"                         ,"O",0);
 
     // Basic event variables
     i_genmet         = data->add<float>("","genmet","F",0);
@@ -242,14 +246,16 @@ struct BasicVarsFiller {
     data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());
 
     const auto &evt = ana->evtInfoReader;
-    bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter;
+    bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
     data->fill<bool>(i_passmetfilters,  passmetfilters);
 //    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
 //    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
-//    data->fill<bool>(i_pass_CSCTightHalo2015Filter            ,ana->evtInfoReader.CSCTightHalo2015Filter            );
+//    data->fill<bool>(i_pass_globalTightHalo2016Filter         ,ana->evtInfoReader.globalTightHalo2016Filter         );
 //    data->fill<bool>(i_pass_EcalDeadCellTriggerPrimitiveFilter,ana->evtInfoReader.EcalDeadCellTriggerPrimitiveFilter);
 //    data->fill<bool>(i_pass_goodVertices                      ,ana->evtInfoReader.goodVertices                      );
 //    data->fill<bool>(i_pass_eeBadScFilter                     ,ana->evtInfoReader.eeBadScFilter                     );
+//    data->fill<bool>(i_pass_badChCand                         ,ana->evtInfoReader.badChCand                         );
+//    data->fill<bool>(i_pass_badPFMuon                         ,ana->evtInfoReader.badPFMuon                         );
 
     // Basic event variables
     data->fill<float>(i_genmet, ana->genmet->pt());
