@@ -11,8 +11,20 @@
 // deltaR values for the matching are configurable
 // mass window will have to be adjusted if we fit non-Z resonances
 
+
 using namespace ucsbsusy;
-using namespace std; // remove for committing?
+//using namespace std; // remove for committing?
+
+cfgSet::ConfigSet pars1LCR(TString json) {
+  cfgSet::loadDefaultConfigurations();
+  cfgSet::setJSONFile(json);
+  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+//  cfg.jets.cleanJetsvLeptons = true;  // Do not clean jets vs leptons
+  cfg.electrons              = LeptonSelection::zl_ctr_sLep_electrons;
+  cfg.muons                  = LeptonSelection::zl_ctr_sLep_muons;
+  cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
+  return cfg;
+}
 
 class TnPAnalyzer : public BaseTreeAnalyzer {
 
@@ -168,11 +180,14 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
       // need two leptons
       if(tnpLeptons_.size() < 2) return;
 
-      // apply trigger
-      if(lepId_ == 13 && !(triggerflag & kHLT_IsoTkMu24_eta2p1)) return; // kHLT_IsoMu24_eta2p1
+      // apply trigger to event
+      ////if(lepId_ == 13 && !(triggerflag & kHLT_IsoTkMu24_eta2p1)) return; // kHLT_IsoMu24_eta2p1
+      if(lepId_ == 13 && !( (triggerflag & kHLT_IsoMu22) || (triggerflag & kHLT_IsoTkMu22) )) return;
       else if(lepId_ == 11) {
-        if (!isMC() && !(triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf)) return;
-        else if (isMC() && !(triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf)) return;
+        ////if (!isMC() && !(triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf)) return;
+        ////else if (isMC() && !(triggerflag & kHLT_Ele22_eta2p1_WP75_Gsf)) return;
+        if (    !isMC() && !(triggerflag & kHLT_Ele25_eta2p1_WPTight_Gsf)) return;
+        else if( isMC() && !(triggerflag & kHLT_Ele25_eta2p1_WPTight_Gsf)) return;
       }
 
       // tnp selection
@@ -183,27 +198,33 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
         else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, goodLeptonConfig_)) continue;
 
         // check the trigger turn-on
-        if(lepId_==13 && tag->pt()<27) continue;
-        else if(lepId_==11 && tag->pt()<35) continue;
+        ////if(lepId_==13 && tag->pt()<27) continue;
+        if(lepId_==13 && tag->pt()<22) continue; // at trig for now (bin?)
+        else if(lepId_==11 && tag->pt()<25) continue;
+        ////else if(lepId_==11 && tag->pt()<35) continue;
         if(fabs(tag->eta())>2.1) continue;
 
-        // require trigger matching
+        // require trigger matching of lepton to trigger object
         trgmatch = false;
         bool trigmatch = false;
         for(auto* to : triggerObjects) {
-          if(lepId_ == 13 && (to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          ////if(lepId_ == 13 && (to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24_eta2p1) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          if(lepId_ == 13 && (to->filterflags() & kSingleIsoTkMu22) && ( (to->pathflags() & kHLT_IsoMu22 || (to->pathflags() & kHLT_IsoTkMu22)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
             trgmatch = true;
             trigmatch = true;
             break;
           }
-          else if(lepId_ == 11 && (to->filterflags() & kSingleEle27) && (isMC() ? (to->pathflags() & kHLT_Ele22_eta2p1_WP75_Gsf) : (to->pathflags() & kHLT_Ele27_eta2p1_WPLoose_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          ////else if(lepId_ == 11 && (to->filterflags() & kSingleEle27) && (isMC() ? (to->pathflags() & kHLT_Ele22_eta2p1_WP75_Gsf) : 
+          ////                                                                        (to->pathflags() & kHLT_Ele27_eta2p1_WPLoose_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
+          else if(lepId_ == 11 && (to->filterflags() & kSingleEle25WPTight) && (isMC() ? (to->pathflags() & kHLT_Ele25_eta2p1_WPTight_Gsf) : 
+                                                                                         (to->pathflags() & kHLT_Ele25_eta2p1_WPTight_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
             trgmatch = true;
             trigmatch = true;
             break;
           }
         }
-        if(lepId_==11 && isMC()) trigmatch=true;
-        if(!trigmatch) continue;
+        if(lepId_==11 && isMC()) trigmatch=true; // ??
+        if(!trigmatch) continue; // trigmatch is a hack to allow failing MC ele to pass? trgmatch is recorded in tree; trigmatch isn't.
 
         for(auto* probe : tnpLeptons_) {
           // make sure it's not the tag
@@ -221,7 +242,8 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
           pass = probe->ismuon() ? cfgSet::isSelMuon(*(MuonF*)probe, goodLeptonConfig_) : cfgSet::isSelElectron(*(ElectronF*)probe, goodLeptonConfig_);
 
           // in principle should be accounting for negative weight events here
-          treeweight = is50ns_ ? weight*eventCorrections.get50NSPUWeight() : weight*eventCorrections.getPUWeight();
+          ////treeweight = is50ns_ ? weight*eventCorrections.get50NSPUWeight() : weight*eventCorrections.getPUWeight();
+          treeweight = weight;
 
           mass    = dilep->mass();
           pt      = probe->pt();
@@ -243,7 +265,7 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
             }
           }
           if(cleanHttag)   htalong -= tag->pt();
-          if(cleanHtprobe) htalong -= pt;
+          if(cleanHtprobe) htalong -= pt; // probe pt
 
           // fill tree
           ++matchnum;
@@ -258,14 +280,14 @@ class TnPAnalyzer : public BaseTreeAnalyzer {
 };
 
 // remember to set the correct leptonId (11 == electrons, 13 == muons)
-void produceTnPTree(TString sname = "dyjets_el",
+void produceTnPTree(TString sname = "dyjets",
                     const int fileindex = 0,
                     const bool isMC = true,
-                    const TString fname = "/store/user/ocolegro/13TeV/130815/merged/dyjetstoll_mll50-madgraphmlm-50ns_1_ntuple_postproc.root",
+                    const TString fname = "/store/user/jzabel/13TeV/110616/merged/dy1jetstoll-m50-madgraph_1_ntuple_postproc.root",
                     const double xsec = 1.0,
                     const TString outputdir = "trees",
                     const TString fileprefix = "root://cmseos:1094/",
-                    const TString json="Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON_v2.txt",
+                    const TString json=TString::Format("%s/src/data/JSON/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt",getenv("CMSSW_BASE")),
                     const int leptonId = 13)
 {
 
@@ -282,15 +304,17 @@ void produceTnPTree(TString sname = "dyjets_el",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
-  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  ////cfgSet::loadDefaultConfigurations();
+  ////cfgSet::setJSONFile(TString::Format("%s/src/data/JSON/%s", getenv("CMSSW_BASE"), json.Data()));
+  ////cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+  cfgSet::ConfigSet cfg = pars1LCR(json); // match this lep config with the region we apply these corrections: 1LCR now.
+  a.goodLeptonConfig_ = cfg;
 
   TString treeName = "Events";
   TnPAnalyzer a(fullname, treeName, outfilename, isMC, &cfg);
 
   // defines the lepton selection
-  a.goodLeptonConfig_ = cfgSet::zl_sel_leptons;
+  ////a.goodLeptonConfig_ = cfgSet::zl_sel_leptons;
 
   //a.is50ns_ = fname.Contains("50ns") || json.Contains("50ns");
   a.is50ns_ = false;
