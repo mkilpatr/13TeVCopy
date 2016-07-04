@@ -36,7 +36,6 @@ double ElectronTriggerCorrection::get(CORRTYPE corrType, double pt, double eta) 
   corr.findBin(pt);
   switch(corrType){
   case NOMINAL:
-    std::cout << "NOMINAL: " << corr.get() << std::endl;
     return corr.get();
     break;
   case UP:
