@@ -70,7 +70,6 @@ bool JetResolutionCorr::getCorrectedPT(const CORRTYPE corrType, const float rho,
   newPT += pt*(TMath::Sqrt(corr*corr -1)*res);
   if(newPT < 0) newPT = 0;
 
-//  std::cout << rho <<" "<< pt<< " "<< eta <<" "<< res<<" "<< corr<<" "<< newPT;
 
   return true;
 }
@@ -365,7 +364,7 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
     corrections.push_back(metResolutionSystRunI);
   }
 
-  if(options_ & METRESSYSTRUNII){ std::cout << " options_ & METRESSYSTRUNIIUP \n";
+  if(options_ & METRESSYSTRUNII){ 
     metResolutionSystRunII = new METResSystRunII;
     corrections.push_back(metResolutionSystRunII);
   }
