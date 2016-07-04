@@ -100,7 +100,7 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
-  standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::NULLOPT;
+  standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::CTT;
