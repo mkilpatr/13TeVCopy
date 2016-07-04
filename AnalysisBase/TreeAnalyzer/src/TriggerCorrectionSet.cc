@@ -17,7 +17,7 @@ double PhotonTriggerCorrection::get(CORRTYPE corrType, double pt, double eta) {
     return corr->get() + corr->getErrorHigh();
     break;
   case DOWN:
-    return corr->get() + corr->getErrorLow();
+    return corr->get() - corr->getErrorLow();
     break;
   case NONE:
     return 1;
@@ -36,13 +36,14 @@ double ElectronTriggerCorrection::get(CORRTYPE corrType, double pt, double eta) 
   corr.findBin(pt);
   switch(corrType){
   case NOMINAL:
+    std::cout << "NOMINAL: " << corr.get() << std::endl;
     return corr.get();
     break;
   case UP:
     return corr.get() + corr.getErrorHigh();
     break;
   case DOWN:
-    return corr.get() + corr.getErrorLow();
+    return corr.get() - corr.getErrorLow();
     break;
   case NONE:
     return 1;
@@ -67,7 +68,7 @@ double MuonTriggerCorrection::get(CORRTYPE corrType, double pt, double eta) {
     return corr.get() + corr.getErrorHigh();
     break;
   case DOWN:
-    return corr.get() + corr.getErrorLow();
+    return corr.get() - corr.getErrorLow();
     break;
   case NONE:
     return 1;
