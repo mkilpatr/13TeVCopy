@@ -62,6 +62,8 @@ EventInfoReader::EventInfoReader()
   EcalDeadCellTriggerPrimitiveFilter   = false;
   goodVertices                         = false;
   eeBadScFilter                        = false;
+  badChCand                            = false;
+  badPFMuon                            = false;
   massPar1 = 0;
   massPar2 = 0;
   massPar3 = 0;
@@ -109,6 +111,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"systweights", &systweights);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass_old);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"int_bit_pass", &metfilterbitpass);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badchcand", &badChCand);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badpfmuon", &badPFMuon);
 
   clog << endl;
 }
