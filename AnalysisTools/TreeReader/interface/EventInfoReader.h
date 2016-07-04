@@ -72,6 +72,8 @@ namespace ucsbsusy {
       bool EcalDeadCellTriggerPrimitiveFilter;
       bool goodVertices;
       bool eeBadScFilter;
+      bool badChCand;
+      bool badPFMuon;
 
 
       int  massPar1;
