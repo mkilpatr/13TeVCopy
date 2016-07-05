@@ -24,6 +24,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     bool             flagBypassDRSel= false;
     float            drphotonparton = -1;
 
+    size i_trigPhoWeight = 0;
     size i_npho = 0;
     size i_phopt = 0;
     size i_phoeta = 0;
@@ -33,6 +34,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     void book() {
       ZeroLeptonAnalyzer::book();
 
+      i_trigPhoWeight     = data.add<float>("","trigPhoWeight","F",1);
       i_npho              = data.add<int>("","npho","I",0);
       i_phopt             = data.add<float>("","phopt","F",0);
       i_phoeta            = data.add<float>("","phoeta","F",0);
@@ -139,6 +141,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
       filler.fillEventInfo(&data, this, true, &metpluspho);
 
+      data.fill<float>(i_trigPhoWeight, triggerCorrections.getTrigPhoWeight());
       data.fill<int>(i_npho, selectedPhotons.size());
       data.fill<float>(i_phopt, pho->pt());
       data.fill<float>(i_phoeta, pho->eta());

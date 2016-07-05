@@ -47,6 +47,8 @@ namespace ucsbsusy {
       float         puppimetsumEt;
       float         genmet_pt;
       float         genmet_phi;
+      float         metunclusterup;
+      float         metunclusterdn;
       bool          goodvertex;
       float         genweight;
       float         genqscale;
@@ -68,10 +70,12 @@ namespace ucsbsusy {
 
       bool HBHENoiseFilter;
       bool HBHENoiseIsoFilter;
-      bool CSCTightHalo2015Filter;
+      bool globalTightHalo2016Filter;
       bool EcalDeadCellTriggerPrimitiveFilter;
       bool goodVertices;
       bool eeBadScFilter;
+      bool badChCand;
+      bool badPFMuon;
 
 
       int  massPar1;

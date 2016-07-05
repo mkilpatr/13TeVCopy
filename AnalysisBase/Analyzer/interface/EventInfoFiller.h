@@ -50,6 +50,8 @@ namespace ucsbsusy {
       void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
 
+      void setModelString(std::string modstring) { modelString_ = modstring; }
+
       reco::Vertex::Point primaryVertex() const { return primaryVertexIndex_ >= 0 ? (*vertices_)[primaryVertexIndex_].position() : reco::Vertex::Point(); }
       const pat::MET*     met()           const { return met_; }
       const pat::MET*     metNoHF()       const { return metNoHF_; }
@@ -67,6 +69,8 @@ namespace ucsbsusy {
       edm::EDGetTokenT<LHEEventProduct>                 lheEvtInfoToken_;
       std::vector<unsigned int>                         systWgtIndices_;
       edm::EDGetTokenT<reco::GenJetCollection>          stdGenJetToken_;
+
+      std::string modelString_;
 
       // Members to hold index of most recently filled tree data
       size irun_          ;
@@ -105,6 +109,8 @@ namespace ucsbsusy {
       size isystwgts_     ;
       size imasspar_      ;
       size instdgenjets_  ;
+      size imetunclustrun2uppt_ ;
+      size imetunclustrun2dnpt_ ;
 
     public:
       // Data members

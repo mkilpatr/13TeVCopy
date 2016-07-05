@@ -116,9 +116,15 @@ namespace ucsbsusy {
         NULLOPT       = 0,        // no correction
         LEP           = (1 << 0), // apply lepton corrections
         TNP           = (1 << 1), // apply tnp lepton corrections
-        LEP_VARY_UP   = (1 << 2), // systematic variation up
-        LEP_VARY_DOWN = (1 << 3), // systematic variation down
-        USE_HPSTAUS   = (1 << 4)
+        LEP_VARY_UP   = (1 << 2), // systematic variation up, all flavours
+        LEP_VARY_DOWN = (1 << 3), // systematic variation down, all flavours
+        ELE_VARY_UP   = (1 << 4), // systematic variation up, specific flavour
+        ELE_VARY_DOWN = (1 << 5), // systematic variation down, specific flavour
+        MU_VARY_UP    = (1 << 6), //
+        MU_VARY_DOWN  = (1 << 7), //
+        TAU_VARY_UP   = (1 << 8), //
+        TAU_VARY_DOWN = (1 << 9), //
+        USE_HPSTAUS   = (1 << 10)
       }; 
 
       LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}

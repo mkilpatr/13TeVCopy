@@ -27,14 +27,15 @@ void makeZeroLeptonMETplusLepCRTrees(TString sname = "htmht",
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
   // disable jetID for FastSim
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) pars.jets.applyJetID = false;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) pars.jets.applyJetID = false;
 
   TString treeName = "Events";
   ZeroLeptonAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
-  a.addlep2met = true;
+  a.islepcr = true;
+  a.addlep2met = true; // comment this line if you want to use orignal MET to compute mtb, dphi, etc.
 
   // CHF filter for FastSim
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) a.applyCHFFilter = true;
 
   a.analyze(1000000);
 

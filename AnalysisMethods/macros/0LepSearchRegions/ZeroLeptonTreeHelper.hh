@@ -31,7 +31,7 @@ cfgSet::ConfigSet pars1LCR(TString json) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::setJSONFile(json);
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
-  cfg.jets.cleanJetsvLeptons = true;
+//  cfg.jets.cleanJetsvLeptons = true;  // Do not clean jets vs leptons
   cfg.electrons              = LeptonSelection::zl_ctr_sLep_electrons;
   cfg.muons                  = LeptonSelection::zl_ctr_sLep_muons;
   cfg.corrections.eventCorrections |= ucsbsusy::EventCorrectionSet::NORM;
@@ -69,6 +69,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     unsigned int minnisrj_ =   0   ;
     double       isrptcut_ =   0.0 ;
 
+    bool   islepcr    = false;
     bool   addlep2met = false;
     bool   applyCHFFilter = false ;
 
@@ -95,7 +96,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
 
-      if (addlep2met) {
+      if (islepcr) {
         if (nSelLeptons < 1    )        return false;
 
         MomentumF lepplusmet;
@@ -103,7 +104,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         if (lepplusmet.pt() < metcut_)  return false;
 
-        filler.fillEventInfo(&data, this, true, &lepplusmet);
+        filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
 //        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;

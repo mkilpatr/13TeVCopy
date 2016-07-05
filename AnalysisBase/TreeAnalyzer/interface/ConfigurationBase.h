@@ -11,6 +11,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/WPolCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TriggerCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
@@ -130,7 +131,7 @@ namespace cfgSet {
     float   minPt;
     float   maxEta;
     float    minDeltaRFromSelLepton;
-    bool    requireOppositeQToSelLepton; 
+    bool    requireOppositeQToSelLepton;
     bool    (ucsbsusy::TauF::*selected)() const;
 
     TauConfig(TString inName = "NULL") :BaseConfig(inName),
@@ -180,6 +181,7 @@ namespace cfgSet {
     int ttbarCorrections;
     int wpolCorrections;
     int eventCorrections;
+    int triggerCorrections;
     int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
@@ -191,6 +193,12 @@ namespace cfgSet {
     TString puCorrectionFile;
     ucsbsusy::CORRTYPE cttEffSFType;
     ucsbsusy::CORRTYPE cttMistagSFType;
+
+
+    TString triggerCorrectionFile;
+    ucsbsusy::CORRTYPE trigPhotonCorrType;
+    ucsbsusy::CORRTYPE trigElectronCorrType;
+    ucsbsusy::CORRTYPE trigMuonCorrType;
 
 
     TString leptonCorrectionFile;
@@ -223,16 +231,22 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE jetResTailCorrType;
 
     ucsbsusy::CORRTYPE metResSystRunIType;
+    ucsbsusy::CORRTYPE metResSystRunIIType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         wpolCorrections(ucsbsusy::WPolCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        triggerCorrections(ucsbsusy::TriggerCorrectionSet::NULLOPT),
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         cttEffSFType(ucsbsusy::NONE),
         cttMistagSFType(ucsbsusy::NONE),
+        trigPhotonCorrType(ucsbsusy::NONE),
+        trigElectronCorrType(ucsbsusy::NONE),
+        trigMuonCorrType(ucsbsusy::NONE),
+
         tnpElCorrType(ucsbsusy::NONE),
         tnpMuCorrType(ucsbsusy::NONE),
         //tnpElIdCorrType(ucsbsusy::NONE),
@@ -248,7 +262,8 @@ namespace cfgSet {
         jetScaleCorr(ucsbsusy::NONE),
         jetResTailFile(1),
       jetResTailCorrType(ucsbsusy::NONE),
-      metResSystRunIType(ucsbsusy::NONE)
+      metResSystRunIType(ucsbsusy::NONE),
+      metResSystRunIIType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -277,6 +292,20 @@ namespace cfgSet {
         os << std::endl;
 
       }
+
+      if(a.triggerCorrections != ucsbsusy::TriggerCorrectionSet::NULLOPT){
+        os << "Applying trigger corrections from " << a.triggerCorrectionFile.Data() <<" -> ";
+        if(a.triggerCorrections & ucsbsusy::TriggerCorrectionSet::PHOTON)
+          os << "TrigPhoton ";
+        if(a.triggerCorrections & ucsbsusy::TriggerCorrectionSet::ELECTRON)
+          os << "TrigElectron ";
+        if(a.triggerCorrections & ucsbsusy::TriggerCorrectionSet::MUON)
+          os << "TrigMuon ";
+        os << std::endl;
+
+      }
+
+
       if(a.bTagCorrections != ucsbsusy::BTagCorrectionSet::NULLOPT){
         if(a.bTagCorrections & ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT){
           os << "Applying bTag corrections from " << a.bTagEffFile.Data()<<","<<a.bTagSFFile.Data() <<" -> ";
@@ -325,6 +354,8 @@ namespace cfgSet {
           os << "QCDJetRespTail ("<< a.jetResTailCorrType<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNI)
           os << "METResolutionSystRunI ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNII)
+          os << "METResolutionSystRunII  ";
         os << std::endl;
       }
       return os;

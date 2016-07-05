@@ -15,6 +15,7 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
 
 #include "AnalysisBase/Analyzer/interface/BaseAnalyzer.h"
 //#include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
@@ -50,6 +51,7 @@ namespace ucsbsusy {
 
       virtual void beginJob() override;
       virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+      virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
       virtual void book();
       virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       virtual bool filter(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
@@ -77,8 +79,10 @@ namespace ucsbsusy {
     public :
       const int     isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
       const TString globalTag;             // Global tag name
-      const bool    printLHERunInfo;  // print LHERunInfo: useful to determine which systematic weights are available
+      const bool    printLHERunInfo;       // print LHERunInfo: useful to determine which systematic weights are available
+      const bool    printGenLumiInfo;      // print GenLumiInfo: print info contained in lumi header for signal
       edm::EDGetTokenT<LHERunInfoProduct> lheInfoToken_;
+      edm::EDGetTokenT<GenLumiInfoHeader> genLumiHeaderToken_;
 
       //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information

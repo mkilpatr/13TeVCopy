@@ -4,7 +4,7 @@ import sys
 import re
 import argparse
 import subprocess
-from ROOT import gROOT, TFile, TTree
+from ROOT import gROOT, TFile, TTree, TH2F, TChain
 gROOT.SetBatch(True)
 
 # script to help with submission of ntupling jobs, either interactively or using a batch system (LSF on lxplus CERN or condor on cmslpc at FNAL)
@@ -22,6 +22,10 @@ parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
 parser.add_argument("--makegrid", dest="makegrid", action='store_true', help="Make jobs for producing mass grid from SMS scans. [Default: False]")
 parser.add_argument("--mstopsteps", dest="mstopsteps", type=int, default=25, help="Step size in m(stop) in GeV for making grid. [Default: 25]")
 parser.add_argument("--mlspsteps", dest="mlspsteps", type=int, default=25, help="Step size in m(lsp) in GeV for making grid. [Default: 25]")
+parser.add_argument("--mstopmin", dest="mstopmin", type=int, default=100, help="Minimum m(stop) in GeV for making grid. [Default: 100]")
+parser.add_argument("--mstopmax", dest="mstopmax", type=int, default=1250, help="Maximum m(stop) in GeV for making grid. [Default: 1250]")
+parser.add_argument("--mlspmin", dest="mlspmin", type=int, default=0, help="Minimum m(lsp) in GeV for making grid. [Default: 0]")
+parser.add_argument("--mlspmax", dest="mlspmax", type=int, default=800, help="Maximum m(lsp) in GeV for making grid. [Default: 800]")
 parser.add_argument("--postprocess", dest="postprocess", action='store_true', help="Run postprocessing instead of job submission. [Default: False]")
 parser.add_argument("--treename", dest="treename", default="TestAnalyzer/Events", help="Name of trees in merged input files, needed for postprocessing. [Default: TestAnalyzer/Events]")
 parser.add_argument("--lumi", dest="lumi", type=float, default=1., help="Integrated luminosity to be used for calculating cross section weights in postprocessing. [Default: 1.]")
@@ -29,6 +33,7 @@ parser.add_argument("--postsuffix", dest="postsuffix", default="postproc", help=
 parser.add_argument("--runmerge", dest="runmerge", action='store_true', help="Run file merging instead of job submission. [Default: False]")
 parser.add_argument("--splitmerge", dest="splitmerge", action='store_true', help="Split file merging into multiple output files. [Default: False]")
 parser.add_argument("--inputdir", dest="inputdir", default="/eos/uscms/store/user/${USER}/13TeV/ntuples", help="Input directory with unmerged ntuples. [Default: \"/eos/uscms/store/user/${USER}/13TeV/ntuples\"]")
+parser.add_argument("--resubmit", dest="resubmit", action='store_true', help="Resubmit jobs for which output files do not exist. [Default: False]")
 parser.add_argument("-i", "--input", dest="input", default="datasets.conf", help="Input configuration file with list of datasets. [Default: datasets.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
 parser.add_argument("-n", "--numperjob", dest="numperjob", type=int, default=5, help="Number of files or events per job. Splittype determines whether splitting is by number of files (default) or by number of events. [Default: 5]")
@@ -61,6 +66,35 @@ def get_num_events(filelist, prefix='', wgtsign=1, treename='TestAnalyzer/Events
             totentries += tree.GetEntries('genweight<0' + selection)
     return totentries
 
+def get_all_masspoints(filelist, mstopmin, mstopmax, mlspmin, mlspmax, sigbase, sigsuffix='', treename='Events') :
+    mstopbins = int(mstopmax - mstopmin)
+    mlspbins = int(mlspmax - mlspmin)
+    massgrid = TH2F('massgrid', '', mstopbins, mstopmin, mstopmax, mlspbins, mlspmin, mlspmax)
+    chain = TChain(treename)
+    for filename in filelist :
+        chain.Add(filename)
+
+    chain.SetBranchStatus('*',0)
+    chain.SetBranchStatus('massparams',1)
+
+    chain.Draw('massparams[1]:massparams[0]>>massgrid')
+
+    snames = []
+    masspoints = []
+
+    for ibinx in range(mstopbins+1) :
+        for ibiny in range(mlspbins+1) :
+            if massgrid.GetBinContent(ibinx,ibiny) > 0 :
+                mstop = int(massgrid.GetXaxis().GetBinLowEdge(ibinx))
+                mlsp = int(massgrid.GetYaxis().GetBinLowEdge(ibiny))
+                snames.append('_'.join([sigbase, str(mstop), str(mlsp)]))
+                masspoints.append(('_').join([sigbase, str(mstop), str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join([sigbase, str(mstop), '1']))
+                if len(sigsuffix) :
+                    snames[-1] += '_' + sigsuffix
+                    masspoints[-1] += '_' + sigsuffix
+
+    return (snames,masspoints)
+
 processes = []
 samples = []
 xsecs = []
@@ -77,7 +111,7 @@ def parseConfig(removeExtension=False, removeGenJets5=False):
             if "#" in content[0] :
                 continue
             if removeExtension and re.search(r'-ext[0-9]*$', content[1]) and re.sub(r'-ext[0-9]*$', '', content[1]) in samples:
-                print content[1], 'is an extension sample, will not be proecessed in this step...'
+                print content[1], 'is an extension sample, will be treated together with the non-extension sample...'
                 continue
             if removeGenJets5 and re.search(r'-genjets5$', content[1]) and re.sub(r'-genjets5$', '', content[1]) in samples:
                 print content[1], 'is a genjets5 filtered sample, will be treated together with the inclusive sample...'
@@ -123,21 +157,16 @@ if args.makegrid :
             filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext[0-9]*|)(_[0-9]+|)_ntuple_%s.root' % (sample, args.postsuffix), f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
-        mstopmin = sample.split('_')[1][:3]
-        mstopmax = sample.split('_')[1][-4:] if len(sample.split('_')[1]) > 3 and sample.split('_')[1][-4].isdigit() else sample.split('_')[1][-3:]
+        mstopmin = sample.split('_')[1][:3] if len(sample.split('_')) > 1 and len(sample.split('_')[1]) > 2 and sample.split('_')[1][:3].isdigit() else args.mstopmin
+        mstopmax = args.mstopmax
+        if len(sample.split('_')) > 1 :
+            mstopmax = sample.split('_')[1][-4:] if len(sample.split('_')[1]) > 3 and sample.split('_')[1][-4].isdigit() else sample.split('_')[1][-3:]
         sigbase = sample.split('_')[0]
         sigsuffix = sample.split('_')[3] if len(sample.split('_')) > 3 else ''
         infiles = [prefix + f for f in filelist]
         files[sample] = infiles
         print mstopmin, mstopmax
-        for mstop in range(int(mstopmin), int(mstopmax) + args.mstopsteps, args.mstopsteps) :
-            mlspmax = mstop
-            for mlsp in range(0, mlspmax + args.mlspsteps, args.mlspsteps) :
-                snames[sample].append('_'.join([sigbase, str(mstop), str(mlsp)]))
-                masspoints.append(('_').join([sigbase, str(mstop), str(mlsp)])) if mlsp != 0 else masspoints.append(('_').join([sigbase, str(mstop), '1']))
-                if len(sigsuffix) :
-                    snames[sample][-1] += '_' + sigsuffix
-                    masspoints[-1] += '_' + sigsuffix
+        (snames[sample],masspoints) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
 
     print 'Creating submission file: submit_makegrid.sh'
     script = open('submit_makegrid.sh', 'w')
@@ -380,6 +409,7 @@ elif args.runmerge :
         if args.splitmerge :
             numfilespermerge = int(input("How many input files per merge? "))
             nummergedfiles = 0 if numfilespermerge==0 else max(int((len(filelist)-1) / numfilespermerge), 1)
+            if ((len(filelist)-1) % numfilespermerge) > numfilespermerge/2: nummergedfiles = nummergedfiles+1
             print "Will produce %d merged files." % nummergedfiles
             for imerge in range(1, nummergedfiles + 1) :
                 start = ((imerge - 1) * numfilespermerge) + 2
@@ -552,13 +582,17 @@ echo "$cfgfile $runscript $workdir $outputdir"
         ))
     for isam in range(len(samples)) :
         if not datasets[isam]: continue
-        if args.arrangement == "das" :
-            cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
-        elif args.arrangement == "local" and args.splittype == "file" :
-            cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
-        else :
-            print "Fatal error: File-based splitting (splittype == \"file\") required if local."
-        subprocess.call(cmd, shell=True)
+        if not args.resubmit :
+            if args.arrangement == "das" :
+                cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
+                subprocess.call(cmd, shell=True)
+            elif args.arrangement == "local" and args.splittype == "file" :
+                cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
+                subprocess.call(cmd, shell=True)
+            else :
+                print "Fatal error: File-based splitting (splittype == \"file\") required if local."
+        elif args.resubmit and not os.path.isfile("%s/filelist_%s.txt" % (args.jobdir, samples[isam])) :
+            print "Error: Trying to resubmit jobs without filelist!"
         if args.arrangement == "das" :
             cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)

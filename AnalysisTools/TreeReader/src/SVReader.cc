@@ -28,6 +28,7 @@ SVReader::SVReader() : BaseReader(){
   svndf_     = new vector<float>;
   svdxy_     = new vector<float>;
   svd3d_     = new vector<float>;
+  svd3derr_  = new vector<float>;
   svcossvpv_ = new vector<float>;
 
 }
@@ -51,6 +52,7 @@ void SVReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "sv_ndf"         , &svndf_    ,true);
       treeReader->setBranchAddress(branchName_, "sv_dxy"         , &svdxy_    ,true);
       treeReader->setBranchAddress(branchName_, "sv_d3d"         , &svd3d_    ,true);
+      treeReader->setBranchAddress(branchName_, "sv_d3derr"      , &svd3derr_ ,true);
       treeReader->setBranchAddress(branchName_, "sv_costhetasvpv", &svcossvpv_,true);
 
     }
@@ -75,6 +77,7 @@ void SVReader::refresh(){
     SVs.back().setSVNdf(svndf_->at(iJ));
     SVs.back().setSVdxy(svdxy_->at(iJ));
     SVs.back().setSVd3D(svd3d_->at(iJ));
+    SVs.back().setSVd3Derr(svd3derr_->at(iJ));
     SVs.back().setSVCosSVPV(svcossvpv_->at(iJ));
 
   } 

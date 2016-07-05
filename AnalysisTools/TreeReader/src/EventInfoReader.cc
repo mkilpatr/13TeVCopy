@@ -37,6 +37,8 @@ EventInfoReader::EventInfoReader()
   puppimetsumEt = 0;
   genmet_pt = 0;
   genmet_phi = 0;
+  metunclusterup = 0;
+  metunclusterdn = 0;
   goodvertex = false;
   genweight = 1;
   genqscale = 0;
@@ -56,10 +58,12 @@ EventInfoReader::EventInfoReader()
   massparams = new vector<size16>;
   HBHENoiseFilter                      = false;
   HBHENoiseIsoFilter                   = false;
-  CSCTightHalo2015Filter               = false;
+  globalTightHalo2016Filter            = false;
   EcalDeadCellTriggerPrimitiveFilter   = false;
   goodVertices                         = false;
   eeBadScFilter                        = false;
+  badChCand                            = false;
+  badPFMuon                            = false;
   massPar1 = 0;
   massPar2 = 0;
   massPar3 = 0;
@@ -91,6 +95,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"puppimet_sumEt", &puppimetsumEt);
   treeReader->setBranchAddress(branchName,"genmet_pt", &genmet_pt);
   treeReader->setBranchAddress(branchName,"genmet_phi", &genmet_phi);
+  treeReader->setBranchAddress(branchName,"metunclustrun2up_pt", &metunclusterup);
+  treeReader->setBranchAddress(branchName,"metunclustrun2dn_pt", &metunclusterdn);
   treeReader->setBranchAddress(branchName,"goodvertex", &goodvertex);
   treeReader->setBranchAddress(branchName,"genweight", &genweight);
   treeReader->setBranchAddress(branchName,"genqscale", &genqscale);
@@ -105,6 +111,8 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"systweights", &systweights);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"bit_pass", &metfilterbitpass_old);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"int_bit_pass", &metfilterbitpass);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badchcand", &badChCand);
+  treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badpfmuon", &badPFMuon);
 
   clog << endl;
 }
@@ -123,14 +131,14 @@ void EventInfoReader::refresh()
   if(metfilterbitpass_old->size()){
     HBHENoiseFilter                    = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseFilter                   ) : true;
     HBHENoiseIsoFilter                 = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_HBHENoiseIsoFilter                ) : true;
-    CSCTightHalo2015Filter             = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_CSCTightHalo2015Filter            ) : true;
+    globalTightHalo2016Filter          = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_globalTightHalo2016Filter         ) : true;
     EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_EcalDeadCellTriggerPrimitiveFilter) : true;
     goodVertices                       = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_goodVertices                      ) : true;
     eeBadScFilter                      = metfilterbitpass_old->size() ? metfilterbitpass_old->at(fFlag_idx_eeBadScFilter                     ) : true;
   } else {
     HBHENoiseFilter                    = metfilterbitpass & fFlag_HBHENoiseFilter                   ;
     HBHENoiseIsoFilter                 = metfilterbitpass & fFlag_HBHENoiseIsoFilter                ;
-    CSCTightHalo2015Filter             = metfilterbitpass & fFlag_CSCTightHalo2015Filter            ;
+    globalTightHalo2016Filter          = metfilterbitpass & fFlag_globalTightHalo2016Filter         ;
     EcalDeadCellTriggerPrimitiveFilter = metfilterbitpass & fFlag_EcalDeadCellTriggerPrimitiveFilter;
     goodVertices                       = metfilterbitpass & fFlag_goodVertices                      ;
     eeBadScFilter                      = metfilterbitpass & fFlag_eeBadScFilter                     ;
