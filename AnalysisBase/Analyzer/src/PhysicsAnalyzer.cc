@@ -81,13 +81,15 @@ void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
 void PhysicsAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& es)
 {
 
-  if(!printGenLumiInfo) return;
-
   edm::Handle<GenLumiInfoHeader> gen_header;
   lumi.getByToken(genLumiHeaderToken_, gen_header);
   std::string model = gen_header->configDescription();
-  std::cout << model << std::endl;
   eventInfo->setModelString(model);
+
+  if(!printGenLumiInfo) return;
+
+  std::cout << "Printing GenLumiInfo!" << std::endl;
+  std::cout << model << std::endl;
 
   for(auto name : gen_header->weightNames()) {
     std::cout << name << std::endl;
