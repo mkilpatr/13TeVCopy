@@ -18,6 +18,7 @@
 # git checkout v5.0.1
 # scramv1 b clean; scramv1 b # always make a clean build, as scram doesn't always see updates to src/LinkDef.h
 #
+import multiprocessing
 
 """This takes all the per-bin datacards from makeDatacards.py, combines them into a single
 datacard and then runs the limits. At the moment it assumes that the datacards for each
@@ -484,7 +485,7 @@ def runLimits(config):
 
     # run limits in parallel
     signals = config.signals[:]
-    pool = Pool()
+    pool = Pool(multiprocessing.cpu_count()-2)
     results = pool.map(functools.partial(calcLimit, config), signals)
 
     # print the significances
