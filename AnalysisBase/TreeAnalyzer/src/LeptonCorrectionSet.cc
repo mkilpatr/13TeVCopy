@@ -360,52 +360,20 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     if (nSelectedMuons >= 1 && nGoodGenMu >= 1) {
       if(ishighptmu) lepCorr->setTargetBin(LepCorr::muCorrBinHighPt);
       else           lepCorr->setTargetBin(LepCorr::muCorrBinLowPt);
-      if((options_ & LEP_VARY_UP) || (options_ & MU_VARY_UP)) {
-        vetoLepWeight -= lepCorr->getError();
-        selLepWeight  += lepCorr->getError();
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & MU_VARY_DOWN)) {
-        vetoLepWeight += lepCorr->getError();
-        selLepWeight  -= lepCorr->getError();
-      }
     }
     // electron selected region
     else if (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle >= 1){
       if(ishighptele) lepCorr->setTargetBin(LepCorr::eleCorrBinHighPt);
       else            lepCorr->setTargetBin(LepCorr::eleCorrBinLowPt);
-      if((options_ & LEP_VARY_UP) || (options_ & ELE_VARY_UP)) {
-        vetoLepWeight -= lepCorr->getError();
-        selLepWeight  += lepCorr->getError();
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & ELE_VARY_DOWN)) {
-        vetoLepWeight += lepCorr->getError();
-        selLepWeight  -= lepCorr->getError();
-      }
     }
     // tau selected region
     else if (!useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
       if(ana->vetoedTracks[0]->pt() > 20.0) lepCorr->setTargetBin(LepCorr::tauCorrBinHighPt);
       else                                  lepCorr->setTargetBin(LepCorr::tauCorrBinLowPt);
-      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
-        vetoLepWeight -= lepCorr->getError();
-        selLepWeight  += lepCorr->getError();
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
-        vetoLepWeight += lepCorr->getError();
-        selLepWeight  -= lepCorr->getError();
-      }
     }
     // HPS tau selected region
     else if (useHPS && ana->nVetoHPSTaus >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
       lepCorr->setTargetBin(LepCorr::hpsTauCorrBin);
-      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
-        vetoLepWeight -= lepCorr->getError();
-        selLepWeight  += lepCorr->getError();
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
-        vetoLepWeight += lepCorr->getError();
-        selLepWeight  -= lepCorr->getError();
-      }
     }
     // fake region
     else  if ((nSelectedMuons >= 1) || (nSelectedElectrons >= 1) || (ana->nVetoedTracks >= 1)) {
@@ -418,7 +386,60 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
     vetoLepWeight = 1 - lepCorr->get();
     selLepWeight  = lepCorr->get();
-                 
+
+    // muon selected region
+    if (nSelectedMuons >= 1 && nGoodGenMu >= 1) {
+      if((options_ & LEP_VARY_UP) || (options_ & MU_VARY_UP)) {
+        vetoLepWeight -= lepCorr->getError();
+        selLepWeight  += lepCorr->getError();
+      }
+      else if((options_ & LEP_VARY_DOWN) || (options_ & MU_VARY_DOWN)) {
+        vetoLepWeight += lepCorr->getError();
+        selLepWeight  -= lepCorr->getError();
+      }
+    }
+    // electron selected region
+    else if (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle >= 1){
+      if((options_ & LEP_VARY_UP) || (options_ & ELE_VARY_UP)) {
+        vetoLepWeight -= lepCorr->getError();
+        selLepWeight  += lepCorr->getError();
+      }
+      else if((options_ & LEP_VARY_DOWN) || (options_ & ELE_VARY_DOWN)) {
+        vetoLepWeight += lepCorr->getError();
+        selLepWeight  -= lepCorr->getError();
+      }
+    }
+    // tau selected region
+    else if (!useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
+      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
+        vetoLepWeight -= lepCorr->getError();
+        selLepWeight  += lepCorr->getError();
+      }
+      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
+        vetoLepWeight += lepCorr->getError();
+        selLepWeight  -= lepCorr->getError();
+      }
+    }
+    // HPS tau selected region
+    else if (useHPS && ana->nVetoHPSTaus >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
+      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
+        vetoLepWeight -= lepCorr->getError();
+        selLepWeight  += lepCorr->getError();
+      }
+      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
+        vetoLepWeight += lepCorr->getError();
+        selLepWeight  -= lepCorr->getError();
+      }
+    }
+    // fake region
+    else  if ((nSelectedMuons >= 1) || (nSelectedElectrons >= 1) || (ana->nVetoedTracks >= 1)) {
+
+    }
+    // veto region
+    else {
+
+    }
+
 /*
     if(options_ & LEP_VARY_UP) {
       vetoLepWeight -= lepCorr->getError();
