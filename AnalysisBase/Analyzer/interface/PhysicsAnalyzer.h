@@ -81,6 +81,7 @@ namespace ucsbsusy {
       const TString globalTag;             // Global tag name
       const bool    printLHERunInfo;       // print LHERunInfo: useful to determine which systematic weights are available
       const bool    printGenLumiInfo;      // print GenLumiInfo: print info contained in lumi header for signal
+      const bool    getGenLumiHeader;      // get GenLumiHeader: relevant to get signal model info
       edm::EDGetTokenT<LHERunInfoProduct> lheInfoToken_;
       edm::EDGetTokenT<GenLumiInfoHeader> genLumiHeaderToken_;
 
