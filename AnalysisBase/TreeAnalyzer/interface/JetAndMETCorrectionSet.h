@@ -10,6 +10,7 @@
 
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
+#include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
 
 class TRandom3;
 class TFormula;
@@ -106,6 +107,13 @@ public:
   //  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const;
 };
 
+class METResSystRunII : public Correction {
+public:
+  METResSystRunII();
+  float get() const {return 1.0;}
+  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, CylLorentzVectorF met, EventInfoReader evtreader) const;
+};
+
 class METNoHFScaleCorr : public Correction {
 public:
   METNoHFScaleCorr() : Correction("METNoHFScale") {}
@@ -131,6 +139,7 @@ public:
                           , JETSCALE              = (1 <<  3)   ///< Correct jet Scale
                           , QCDRESPTAIL           = (1 <<  4)   ///< Correct response tail in QCD
 			  , METRESSYSTRUNI        = (1 <<  5)   ///< MET Resolution RunI syst
+			  , METRESSYSTRUNII       = (1 <<  6)   ///< MET Resolution RunII syst
   };
   JetAndMETCorrectionSet();
   virtual ~JetAndMETCorrectionSet();
@@ -174,7 +183,8 @@ private:
 
   float respTailWeight;
 
-  METResSystRunI *metResolutionSystRunI;
+  METResSystRunI  *metResolutionSystRunI;
+  METResSystRunII *metResolutionSystRunII;
 };
 
 

@@ -231,6 +231,7 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE jetResTailCorrType;
 
     ucsbsusy::CORRTYPE metResSystRunIType;
+    ucsbsusy::CORRTYPE metResSystRunIIType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
@@ -261,7 +262,8 @@ namespace cfgSet {
         jetScaleCorr(ucsbsusy::NONE),
         jetResTailFile(1),
       jetResTailCorrType(ucsbsusy::NONE),
-      metResSystRunIType(ucsbsusy::NONE)
+      metResSystRunIType(ucsbsusy::NONE),
+      metResSystRunIIType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -352,6 +354,8 @@ namespace cfgSet {
           os << "QCDJetRespTail ("<< a.jetResTailCorrType<<")";
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNI)
           os << "METResolutionSystRunI ";
+        if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNII)
+          os << "METResolutionSystRunII  ";
         os << std::endl;
       }
       return os;
