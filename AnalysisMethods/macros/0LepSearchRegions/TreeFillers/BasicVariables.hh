@@ -133,7 +133,7 @@ struct BasicVarsFiller {
     i_passtrigphoton165 = data->add<bool>("","passtrigphoton165", "O",0);
     i_passtright800  = data->add<bool>("","passtright800","O",0);
     i_passtrigdilep  = data->add<bool>("", "passtrigdilep", "O", 0);
-    i_j1chEnFrac         = data->add<float>("","j1chEnFrac","F",2);
+    i_j1chEnFrac     = data->add<float>("","j1chEnFrac","F",2);
     i_passmetfilters = data->add<bool>("","passmetfilters","O",0);
 //    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
 //    i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
@@ -234,7 +234,7 @@ struct BasicVarsFiller {
     data->fill<bool>(i_passtrigphoton165, ana->isMC() || (ana->triggerflag & kHLT_Photon165_HE10));
     data->fill<bool >(i_passtright800, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? ana->triggerflag & kHLT_PFHT800 : false));
 
-    bool passTrigEl = ana->triggerflag & kHLT_Ele25_eta2p1_WPTight_Gsf;
+    bool passTrigEl = ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
     bool passTrigMu = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22);
     data->fill<bool>(i_passtrigmu,     ana->isMC() || (ana->process==defaults::DATA_SINGLEMU ? passTrigMu: false));
     data->fill<bool>(i_passtrige,      ana->isMC() || (ana->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
@@ -243,7 +243,8 @@ struct BasicVarsFiller {
     bool passTrigMuMu = (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
     data->fill<bool>(i_passtrigdilep,  ana->isMC() || ((ana->process==defaults::DATA_DOUBLEMU && passTrigMuMu) || (ana->process==defaults::DATA_DOUBLEEG && passTrigElEl && (!passTrigMuMu))));
 
-    data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());
+    data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());  // take the leading jet after cleaning/jetid/etc.
+//    data->fill<float>(i_j1chEnFrac, ana->defaultJets->recoJets.front().chHadFrac());
 
     const auto &evt = ana->evtInfoReader;
     bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
