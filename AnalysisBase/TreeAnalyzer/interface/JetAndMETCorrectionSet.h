@@ -111,7 +111,7 @@ class METResSystRunII : public Correction {
 public:
   METResSystRunII();
   float get() const {return 1.0;}
-  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, CylLorentzVectorF met, EventInfoReader evtreader) const;
+  CylLorentzVectorF getCorrectedMET(const CORRTYPE corrType, CylLorentzVectorF met, const EventInfoReader &evtreader) const;
 };
 
 class METNoHFScaleCorr : public Correction {

@@ -68,6 +68,16 @@ def writeSamples(fout, samples):
         for filepath in samples[sname]:
             fout.write(filepath+'\n')
 
+def printSignalList(samples):
+    sigtype = []
+    for sname in samples:
+        sig = sname.split('_')[0]
+        if sig not in sigtype:
+            sigtype.append(sig)
+            print '\n\n'+sig+':\n\n'
+        print sname+',',
+    print '\n\n'
+
 with open(args.conf, 'w') as fout:
     sep = '#'*70
     fout.write('%s\n# data\n%s\n'%(sep, sep))
@@ -77,5 +87,6 @@ with open(args.conf, 'w') as fout:
     writeSamples(fout, mc_samples)
     fout.write('%s\n# signals\n%s\n'%(sep, sep))
     writeSamples(fout, signal_samples)
+    printSignalList(signal_samples)
 
 
