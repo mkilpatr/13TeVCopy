@@ -109,16 +109,17 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
 
-  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON | ucsbsusy::TriggerCorrectionSet::ELECTRON | ucsbsusy::TriggerCorrectionSet::MUON;
+  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON | ucsbsusy::TriggerCorrectionSet::ELECTRON | ucsbsusy::TriggerCorrectionSet::MUON | ucsbsusy::TriggerCorrectionSet::MET_OR_LEP;
   standardCorrections.triggerCorrectionFile    =  TString::Format("%s/src/data/corrections/2016/trigCorr.root",CMSSW_BASE);
   standardCorrections.trigPhotonCorrType       = ucsbsusy::NOMINAL;
   standardCorrections.trigElectronCorrType     = ucsbsusy::NOMINAL;
   standardCorrections.trigMuonCorrType         = ucsbsusy::NOMINAL;
+  standardCorrections.trigMetOrLepCorrType     = ucsbsusy::NOMINAL;
 
   standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::WPOLWGT;
 
-  standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::TNP;
-  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorr.root",CMSSW_BASE);
+  standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::MULTI_PT_BINS | ucsbsusy::LeptonCorrectionSet::TNP;
+  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorr_morebins.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
   //standardCorrections.tnpElIdCorrType          = ucsbsusy::NOMINAL;
