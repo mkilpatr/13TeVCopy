@@ -32,6 +32,10 @@ namespace ucsbsusy {
       static const unsigned int hpsTauCorrBin    = 8;
       static const unsigned int fakeBin          = 9;
 
+      static const std::vector<double> eleCorrPtBins;
+      static const std::vector<double> muCorrPtBins;
+      static const std::vector<double> tauCorrPtBins;
+
   };
 
   class TnPCorr : public Correction {
@@ -124,10 +128,11 @@ namespace ucsbsusy {
         MU_VARY_DOWN  = (1 << 7), //
         TAU_VARY_UP   = (1 << 8), //
         TAU_VARY_DOWN = (1 << 9), //
-        USE_HPSTAUS   = (1 << 10)
+        USE_HPSTAUS   = (1 << 10), //
+        MULTI_PT_BINS = (1 << 11)
       }; 
 
-      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), tnpEvtWeight(1) {}
+      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeight(1), selLepWeight(1), useHPS(false), multiPtBins(false), tnpEvtWeight(1) {}
       virtual ~LeptonCorrectionSet() {}
       virtual void load(TString fileName,
                         const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
@@ -138,6 +143,7 @@ namespace ucsbsusy {
       float getVetoLepWeight()     const { return vetoLepWeight; }
       float getSelLepWeight()      const { return selLepWeight;  }
       void  setUseHPSTaus(bool setHPS)   { useHPS = setHPS;      }
+      void  setMultiPtBins(bool setBins) { multiPtBins = setBins; }
       float getTnPLepWeight()      const { return tnpEvtWeight;  }
 
     private :
@@ -147,6 +153,7 @@ namespace ucsbsusy {
       float vetoLepWeight;
       float selLepWeight;
       bool  useHPS;
+      bool  multiPtBins;
       float tnpEvtWeight;
   };
 

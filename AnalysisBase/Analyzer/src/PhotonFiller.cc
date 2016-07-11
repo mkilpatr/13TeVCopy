@@ -36,13 +36,17 @@ PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
     imediumid_   = data.addMulti<bool >(branchName_,"mediumid",false);
     itightid_    = data.addMulti<bool >(branchName_,"tightid",false);
     ipfdbetaiso_ = data.addMulti<float>(branchName_,"pfdbetaiso",0);
-    ipassElectronVeto_   = data.addMulti<bool >(branchName_,"passConvVeto",false);
+    ipassElectronVeto_   = data.addMulti<bool >(branchName_,"passElectronVeto",false);
     ihasPixelSeed_       = data.addMulti<bool >(branchName_,"hasPixelSeed",false);
+    isigietaieta_        = data.addMulti<float>(branchName_,"sigietaieta",0);
+    ifull5x5sigietaieta_ = data.addMulti<float>(branchName_,"full5x5sigietaieta",0);
+    ihOverE_             = data.addMulti<float>(branchName_,"hOverE",0);
+    ipfchargedHadronIso_ = data.addMulti<float>(branchName_,"pfchargediso",0);
+    ipfneutralHadronIso_ = data.addMulti<float>(branchName_,"pfneutraliso",0);
+    ipfphotonIso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
+    ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
 
     if(options_ & FILLIDVARS) {
-      isigietaieta_        = data.addMulti<float>(branchName_,"sigietaieta",0);
-      ifull5x5sigietaieta_ = data.addMulti<float>(branchName_,"full5x5sigietaieta",0);
-      ihOverE_             = data.addMulti<float>(branchName_,"hOverE",0);
       irhoPFchargedHadronIso_ = data.addMulti<float>(branchName_,"rhoPFchargedHadronIso",0);
       irhoPFneutralHadronIso_ = data.addMulti<float>(branchName_,"rhoPFneutralHadronIso",0);
       irhoPFphotonIso_        = data.addMulti<float>(branchName_,"rhoPFphotonIso",0);
@@ -57,10 +61,6 @@ PhotonFiller::PhotonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
       itrackiso_     = data.addMulti<float>(branchName_,"trackiso",0);
       iecaliso_      = data.addMulti<float>(branchName_,"ecaliso",0);
       ihcaliso_      = data.addMulti<float>(branchName_,"hcaliso",0);
-      ipfchargedHadronIso_ = data.addMulti<float>(branchName_,"pfchargediso",0);
-      ipfneutralHadronIso_ = data.addMulti<float>(branchName_,"pfneutraliso",0);
-      ipfphotonIso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
-      ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
     }
 }
 
@@ -109,7 +109,7 @@ void PhotonFiller::fill()
   
   for (auto pho = photons_->begin(); pho != photons_->end(); pho++) {
     if (pho->pt() < phoptMin_) continue;
-    if(!pho->passElectronVeto()) continue;
+    if(options_ & APPLYELEVETO && !pho->passElectronVeto()) continue;
     
     //MP ISO
     SuperClusterFootprintRemoval remover(electrons_,muons_,photons_,jets_,pfcandidates_,barrelGeometry,endcapGeometry,magField,phoptMinRC_,jetptMinRC_,leptonptMinRC_,edm::ParameterSet()); 
@@ -157,10 +157,14 @@ void PhotonFiller::fill()
     data.fillMulti<bool >(itightid_, passtight);
     data.fillMulti<bool >(ipassElectronVeto_, pho->passElectronVeto());
     data.fillMulti<bool >(ihasPixelSeed_, pho->hasPixelSeed());
+    data.fillMulti<float>(isigietaieta_, pho->sigmaIetaIeta());
+    data.fillMulti<float>(ifull5x5sigietaieta_, pho->full5x5_sigmaIetaIeta());
+    data.fillMulti<float>(ihOverE_, pho->hadronicOverEm());
+    data.fillMulti<float>(ipfchargedHadronIso_, pho->chargedHadronIso());
+    data.fillMulti<float>(ipfneutralHadronIso_, pho->neutralHadronIso());
+    data.fillMulti<float>(ipfphotonIso_, pho->photonIso());
+    data.fillMulti<float>(ipfpuiso_, pho->sumPUPt());
     if(options_ & FILLIDVARS) {
-      data.fillMulti<float>(isigietaieta_, pho->sigmaIetaIeta());
-      data.fillMulti<float>(ifull5x5sigietaieta_, pho->full5x5_sigmaIetaIeta());
-      data.fillMulti<float>(ihOverE_, pho->hadronicOverEm());
       data.fillMulti<float>(irhoPFchargedHadronIso_, calculateRhoIso(pho->eta(), pho->chargedHadronIso(), *rho_, CHARGED));
       data.fillMulti<float>(irhoPFneutralHadronIso_, calculateRhoIso(pho->eta(), pho->neutralHadronIso(), *rho_, NEUTRAL));
       data.fillMulti<float>(irhoPFphotonIso_,        calculateRhoIso(pho->eta(), pho->photonIso(),        *rho_, PHOTON));
@@ -181,10 +185,6 @@ void PhotonFiller::fill()
       data.fillMulti<float>(itrackiso_, pho->trackIso());
       data.fillMulti<float>(iecaliso_, pho->ecalIso());
       data.fillMulti<float>(ihcaliso_, pho->hcalIso());
-      data.fillMulti<float>(ipfchargedHadronIso_, pho->chargedHadronIso());
-      data.fillMulti<float>(ipfneutralHadronIso_, pho->neutralHadronIso());
-      data.fillMulti<float>(ipfphotonIso_, pho->photonIso());
-      data.fillMulti<float>(ipfpuiso_, pho->sumPUPt());
     }
 
   }

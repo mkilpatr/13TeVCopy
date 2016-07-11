@@ -11,6 +11,7 @@
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "TGraphAsymmErrors.h"
+#include "TEfficiency.h"
 
 class TFile;
 
@@ -96,6 +97,22 @@ protected:
 
 };
 
+class EfficiencyCorrectionHelper{
+public:
+  EfficiencyCorrectionHelper(TString corrName, TFile * file);
+  ~EfficiencyCorrectionHelper() {}
+
+  void findBin(double x, double y);
+  double get()          const { return corrEff->GetEfficiency(targetBin); }
+  double getErrorHigh() const { return corrEff->GetEfficiencyErrorUp(targetBin);}
+  double getErrorLow()  const { return corrEff->GetEfficiencyErrorLow(targetBin);}
+
+  TEfficiency* getEff()       { return corrEff; }
+protected:
+  mutable unsigned int targetBin;
+  TEfficiency* corrEff;
+
+};
 
 class CorrectionSet {
 public:

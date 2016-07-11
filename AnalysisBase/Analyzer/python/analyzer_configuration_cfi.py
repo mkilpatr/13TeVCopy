@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2'),
+                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2_v1'),
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2'),      #Global tag
+                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2_v1'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -34,6 +34,7 @@ nominal_configuration = cms.PSet(
                                       crossSectionScaling     = cms.double (1),                 #Luminosity to scale to (given the cross section and total events)
                                       printLHERunInfo  = cms.untracked.bool(False),
                                       printGenLumiInfo = cms.untracked.bool(False),
+                                      getGenLumiHeader = cms.untracked.bool(False),
 
                                   Gen = cms.untracked.PSet(
                                       isFilled            = cms.untracked.bool(True),
@@ -229,6 +230,7 @@ nominal_configuration = cms.PSet(
                                       minLeptonPtRC             = cms.untracked.double(10.0),
                                       fillPhotonIDVars          = cms.untracked.bool(True),
                                       fillPhotonIsoVars         = cms.untracked.bool(True),
+                                      requireElectronVeto       = cms.untracked.bool(False),
                                   ),
 
                                   PFCandidates = cms.untracked.PSet(

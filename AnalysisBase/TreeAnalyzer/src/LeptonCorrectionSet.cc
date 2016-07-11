@@ -3,8 +3,12 @@
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "TFile.h"
 
+
 namespace ucsbsusy {
 
+const std::vector<double> LepCorr::eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
+const std::vector<double> LepCorr::muCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
+const std::vector<double> LepCorr::tauCorrPtBins = {0., 20., 40., 1000.};
 TnPCorr::TnPCorr(TString corrName,
                  const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
                  const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel
@@ -295,6 +299,8 @@ void LeptonCorrectionSet::load(TString fileName,
       corrections.push_back(lepCorr);
       if(options_ & USE_HPSTAUS)
         setUseHPSTaus(true);
+      if(options_ & MULTI_PT_BINS)
+        setMultiPtBins(true);
     }
   }
   if(correctionOptions & TNP) {
@@ -341,15 +347,52 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
       }
     }
 
-    bool ishighptmu = false, ishighptele = false;
-    for(auto* i : ana->selectedLeptons) {
-      if(fabs(i->pdgid()) == 11) {
-        nSelectedElectrons++;
-        if(i->pt() > 20.0) ishighptele = true;
+    unsigned int targetBinMu = LepCorr::defaultBin;
+    unsigned int targetBinEl = LepCorr::defaultBin;
+
+    if(multiPtBins) {
+      for(auto* i : ana->selectedLeptons) {
+        if(fabs(i->pdgid()) == 11) {
+          nSelectedElectrons++;
+          for(unsigned int iptbin = 0; iptbin < LepCorr::eleCorrPtBins.size()-1; ++iptbin) {
+            if(iptbin == LepCorr::eleCorrPtBins.size()-2) {
+              if(i->pt() > LepCorr::eleCorrPtBins[iptbin]) {
+                targetBinEl = LepCorr::muCorrPtBins.size() + 1 + iptbin;
+              }
+            } else {
+              if(i->pt() > LepCorr::eleCorrPtBins[iptbin] && i->pt() <= LepCorr::eleCorrPtBins[iptbin+1]) {
+                targetBinEl = LepCorr::muCorrPtBins.size() + 1 + iptbin;
+              }
+            }
+          }
+        }
+        if(fabs(i->pdgid()) == 13) {
+          nSelectedMuons++;
+          for(unsigned int iptbin = 0; iptbin < LepCorr::muCorrPtBins.size()-1; ++iptbin) {
+            if(iptbin == LepCorr::muCorrPtBins.size()-2) {
+              if(i->pt() > LepCorr::muCorrPtBins[iptbin]) {
+                targetBinMu = 2 + iptbin;
+              }
+            } else {
+              if(i->pt() > LepCorr::muCorrPtBins[iptbin] && i->pt() <= LepCorr::muCorrPtBins[iptbin+1]) {
+                targetBinMu = 2 +  iptbin;
+              }
+            }
+          }
+        }
       }
-      if(fabs(i->pdgid()) == 13) {
-        nSelectedMuons++;
-        if(i->pt() > 20.0) ishighptmu = true;
+    } else {
+      for(auto* i : ana->selectedLeptons) {
+        if(fabs(i->pdgid()) == 11) {
+          nSelectedElectrons++;
+          if(i->pt() > 20.0) targetBinEl = LepCorr::eleCorrBinHighPt;
+          else targetBinEl = LepCorr::eleCorrBinLowPt;
+        }
+        if(fabs(i->pdgid()) == 13) {
+          nSelectedMuons++;
+          if(i->pt() > 20.0) targetBinMu = LepCorr::muCorrBinHighPt;
+          else targetBinMu = LepCorr::muCorrBinLowPt;
+        }
       }
     }
 
@@ -358,8 +401,9 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
     // muon selected region
     if (nSelectedMuons >= 1 && nGoodGenMu >= 1) {
-      if(ishighptmu) lepCorr->setTargetBin(LepCorr::muCorrBinHighPt);
-      else           lepCorr->setTargetBin(LepCorr::muCorrBinLowPt);
+      //if(ishighptmu) lepCorr->setTargetBin(LepCorr::muCorrBinHighPt);
+      //else           lepCorr->setTargetBin(LepCorr::muCorrBinLowPt);
+      lepCorr->setTargetBin(targetBinMu);
       if((options_ & LEP_VARY_UP) || (options_ & MU_VARY_UP)) {
         vetoLepWeight -= lepCorr->getError();
         selLepWeight  += lepCorr->getError();
@@ -371,8 +415,9 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }
     // electron selected region
     else if (nSelectedElectrons >= 1 && nSelectedMuons == 0 && nGoodGenEle >= 1){
-      if(ishighptele) lepCorr->setTargetBin(LepCorr::eleCorrBinHighPt);
-      else            lepCorr->setTargetBin(LepCorr::eleCorrBinLowPt);
+      //if(ishighptele) lepCorr->setTargetBin(LepCorr::eleCorrBinHighPt);
+      //else            lepCorr->setTargetBin(LepCorr::eleCorrBinLowPt);
+      lepCorr->setTargetBin(targetBinEl);
       if((options_ & LEP_VARY_UP) || (options_ & ELE_VARY_UP)) {
         vetoLepWeight -= lepCorr->getError();
         selLepWeight  += lepCorr->getError();
@@ -384,8 +429,22 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }
     // tau selected region
     else if (!useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      if(ana->vetoedTracks[0]->pt() > 20.0) lepCorr->setTargetBin(LepCorr::tauCorrBinHighPt);
-      else                                  lepCorr->setTargetBin(LepCorr::tauCorrBinLowPt);
+      if(multiPtBins) {
+        for(unsigned int iptbin = 0; iptbin < LepCorr::tauCorrPtBins.size()-1; ++iptbin) {
+          if(iptbin == LepCorr::tauCorrPtBins.size()-2) {
+            if(ana->vetoedTracks[0]->pt() > LepCorr::tauCorrPtBins[iptbin]) {
+            lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin);
+            }
+          } else {
+            if(ana->vetoedTracks[0]->pt() > LepCorr::tauCorrPtBins[iptbin] && ana->vetoedTracks[0]->pt() <= LepCorr::tauCorrPtBins[iptbin+1]) {
+              lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin);
+            }
+          }
+        }
+      } else {
+        if(ana->vetoedTracks[0]->pt() > 20.0) lepCorr->setTargetBin(LepCorr::tauCorrBinHighPt);
+        else                                  lepCorr->setTargetBin(LepCorr::tauCorrBinLowPt);
+      }
       if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
         vetoLepWeight -= lepCorr->getError();
         selLepWeight  += lepCorr->getError();
@@ -397,7 +456,10 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }
     // HPS tau selected region
     else if (useHPS && ana->nVetoHPSTaus >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      lepCorr->setTargetBin(LepCorr::hpsTauCorrBin);
+      if(multiPtBins)
+        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size() - 1);
+      else 
+        lepCorr->setTargetBin(LepCorr::hpsTauCorrBin);
       if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
         vetoLepWeight -= lepCorr->getError();
         selLepWeight  += lepCorr->getError();
@@ -409,7 +471,11 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }
     // fake region
     else  if ((nSelectedMuons >= 1) || (nSelectedElectrons >= 1) || (ana->nVetoedTracks >= 1)) {
-      lepCorr->setTargetBin(LepCorr::fakeBin);
+      if(multiPtBins) {
+        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size());
+      }
+      else
+        lepCorr->setTargetBin(LepCorr::fakeBin);
     }
     // veto region
     else {

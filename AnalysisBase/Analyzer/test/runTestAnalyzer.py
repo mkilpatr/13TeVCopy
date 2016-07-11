@@ -27,8 +27,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
-options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
+options.inputFiles = '/store/data/Run2016B/SinglePhoton/MINIAOD/PromptReco-v2/000/273/158/00000/3C2DAC51-3C1A-E611-A74D-02163E013926.root'
 
 options.maxEvents = -1
 
@@ -91,17 +92,18 @@ if 'QCD' in DatasetName:
 ISDATA = False
 ISFASTSIM = False
 ISMINIAODV1 = False
-runMetCorrAndUnc = False
-updateJECs = False
-JECUNCFILE = 'data/JEC/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt'
+runMetCorrAndUnc = True
+updateJECs = True
+JECUNCFILE = 'data/JEC/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName or 'PUSpring16Fast' in DatasetName :
     print 'Running on FastSim'
     ISFASTSIM = True
-#    runMetCorrAndUnc = True
-#    updateJECs = True
-    JECUNCFILE = 'data/JEC/Spring16_FastSimV1_Uncertainty_AK4PFchs.txt'
+    #runMetCorrAndUnc = True
+    #updateJECs = True
+    JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
+    process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
@@ -116,16 +118,16 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    runMetCorrAndUnc = True
-    updateJECs = True
-    JECUNCFILE = 'data/JEC/Spring16_25nsV3_DATA_Uncertainty_AK4PFchs.txt'
+    #runMetCorrAndUnc = True
+    #updateJECs = True
+    JECUNCFILE = 'data/JEC/Spring16_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-276097_13TeV_PromptReco_Collisions16_JSON_NoL1T_v2.txt")
     # jsonFile = os.path.expandvars("tmp.json")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_v8')
+    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -214,6 +216,7 @@ process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhoton
 if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'QCD' in DatasetName :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
+    process.TestAnalyzer.Photons.requireElectronVeto = cms.untracked.bool(True)
 
 #==============================================================================================================================#
 # HCAL Noise Filter
@@ -256,7 +259,7 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = ISDATA # use external JECs (sqlite file)
+usePrivateSQlite = ISFASTSIM # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -272,7 +275,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Spring16_25nsV3_DATA" if ISDATA else "Spring16_25nsV3_MC"
+    era = "Spring16_25nsV6_DATA" if ISDATA else "Spring16_25nsV6_MC"
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
     dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")

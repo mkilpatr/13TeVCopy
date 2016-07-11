@@ -229,14 +229,14 @@ CylLorentzVectorF METResCorr::getCorrectedMET(const CylLorentzVectorF& trueBoson
 
 }
 
-  
+
   METResSystRunI::METResSystRunI() : Correction("METResSyst"){}
   //  CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF*> jets, CylLorentzVectorF met) const {
   CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const {
     //  CylLorentzVectorF METResSystRunI::getCorrectedMET(const CORRTYPE corrType, const std::vector<RecoJetF>& jets, CylLorentzVectorF met) const {
-    
+
     if(corrType == NONE || corrType == NOMINAL) { return met; }
-    
+
     // calculate clustered met
     CylLorentzVectorF clusteredmet; clusteredmet.SetPxPyPzE(0.,0.,0.,0.);
     for (auto& j : jets) {
@@ -262,22 +262,22 @@ CylLorentzVectorF METResCorr::getCorrectedMET(const CylLorentzVectorF& trueBoson
 
 
   METResSystRunII::METResSystRunII() : Correction("METResSystII"){}
-  CylLorentzVectorF METResSystRunII::getCorrectedMET(const CORRTYPE corrType,  CylLorentzVectorF met, EventInfoReader evtreader) const {
+  CylLorentzVectorF METResSystRunII::getCorrectedMET(const CORRTYPE corrType,  CylLorentzVectorF met, const EventInfoReader &evtreader) const {
 
     CylLorentzVectorF modifiedmet; modifiedmet.SetPt(0.); modifiedmet.SetEta(0.); modifiedmet.SetPhi(0.); modifiedmet.SetM(0.);
     if(corrType == NONE || corrType == NOMINAL) { return met; }
-    if (corrType == UP) { 
-      modifiedmet.SetPt(evtreader.metunclusterup); 
-      modifiedmet.SetEta(met.eta()); 
-      modifiedmet.SetPhi(met.phi()); 
-      modifiedmet.SetM(met.mass()); 
+    if (corrType == UP) {
+      modifiedmet.SetPt(evtreader.metunclusterup);
+      modifiedmet.SetEta(met.eta());
+      modifiedmet.SetPhi(met.phi());
+      modifiedmet.SetM(met.mass());
     }
 
-    if (corrType == DOWN) { 
-      modifiedmet.SetPt(evtreader.metunclusterdn); 
-      modifiedmet.SetEta(met.eta()); 
-      modifiedmet.SetPhi(met.phi()); 
-      modifiedmet.SetM(met.mass()); 
+    if (corrType == DOWN) {
+      modifiedmet.SetPt(evtreader.metunclusterdn);
+      modifiedmet.SetEta(met.eta());
+      modifiedmet.SetPhi(met.phi());
+      modifiedmet.SetM(met.mass());
     }
 
     return modifiedmet;
@@ -364,7 +364,7 @@ void JetAndMETCorrectionSet::load(int correctionOptions,TString jetResolutionFil
     corrections.push_back(metResolutionSystRunI);
   }
 
-  if(options_ & METRESSYSTRUNII){ 
+  if(options_ & METRESSYSTRUNII){
     metResolutionSystRunII = new METResSystRunII;
     corrections.push_back(metResolutionSystRunII);
   }
@@ -438,13 +438,13 @@ void JetAndMETCorrectionSet::processMET(const BaseTreeAnalyzer * ana) {
   if(metScale) {
     tempMET = metScale->getCorrectedMET(*trueBosons,tempMET);
   }
-  if(metResolutionSystRunI) { 
+  if(metResolutionSystRunI) {
     //    tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets->recoJets, origMET);
     tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets->recoJets, origMET);
     //    tempMET = metResolutionSystRunI->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIType, ana->defaultJets, origMET);
   }
 
-  if(metResolutionSystRunII) {  
+  if(metResolutionSystRunII) {
     tempMET = metResolutionSystRunII->getCorrectedMET(ana->getAnaCfg().corrections.metResSystRunIIType, origMET, ana->evtInfoReader);
   }
 

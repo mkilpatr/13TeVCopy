@@ -17,6 +17,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
 , printLHERunInfo     (iConfig.getUntrackedParameter<bool   >("printLHERunInfo",false))
 , printGenLumiInfo    (iConfig.getUntrackedParameter<bool   >("printGenLumiInfo",false))
+, getGenLumiHeader    (iConfig.getUntrackedParameter<bool   >("getGenLumiHeader",false))
 , lheInfoToken_       (consumes<LHERunInfoProduct>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("lheEvtInfo")))
 , genLumiHeaderToken_ (consumes<GenLumiInfoHeader,edm::InLumi>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("genEvtInfo")))
 // ---- Configure event information
@@ -81,18 +82,20 @@ void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
 void PhysicsAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& es)
 {
 
-  edm::Handle<GenLumiInfoHeader> gen_header;
-  lumi.getByToken(genLumiHeaderToken_, gen_header);
-  std::string model = gen_header->configDescription();
-  eventInfo->setModelString(model);
+  if(getGenLumiHeader) {
+    edm::Handle<GenLumiInfoHeader> gen_header;
+    lumi.getByToken(genLumiHeaderToken_, gen_header);
+    std::string model = gen_header->configDescription();
+    eventInfo->setModelString(model);
 
-  if(!printGenLumiInfo) return;
+    if(!printGenLumiInfo) return;
 
-  std::cout << "Printing GenLumiInfo!" << std::endl;
-  std::cout << model << std::endl;
+    std::cout << "Printing GenLumiInfo!" << std::endl;
+    std::cout << model << std::endl;
 
-  for(auto name : gen_header->weightNames()) {
-    std::cout << name << std::endl;
+    for(auto name : gen_header->weightNames()) {
+      std::cout << name << std::endl;
+    }
   }
 
 }
@@ -355,6 +358,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = PhotonFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+      if(cfg.getUntrackedParameter<bool>("requireElectronVeto"))      defaultOptions |= PhotonFiller::APPLYELEVETO;
 
       photons = new PhotonFiller(cfg, consumesCollector(),
 			       options < 0 ? defaultOptions : options,
