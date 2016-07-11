@@ -14,6 +14,7 @@ parser.add_argument("-r", "--runscript", dest="script", default="runjobs", help=
 parser.add_argument("-t", "--submittype", dest="submittype", default="condor", choices=["interactive","lsf","condor"], help="Method of job submission. [Options: interactive, lsf, condor. Default: condor]")
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
 parser.add_argument("-j", "--json", dest="json", default="Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt", help="json file to use. [Default: %(default)s]")
+parser.add_argument("-u", "--unique", dest="unique", default="", help="Unique identifier for shell scripts, so as to keep several versions ready [No default]")
 parser.add_argument("--output-suffix", dest="suffix", default="_tree.root", help="Suffix of output file. [Default: %(default)s. Use '.json' with dumpJSON.C.]")
 #parser.print_help()
 args = parser.parse_args()
@@ -86,7 +87,7 @@ for isam in range(len(samples)) :
             ))
         elif args.submittype == "condor" :
             os.system("mkdir -p %s/logs" % args.outdir)
-            jobscript = open("submit_{}_{}.sh".format(samples[isam],ifile),"w")
+            jobscript = open("submit_{}_{}_{}.sh".format(args.unique,samples[isam],ifile),"w")
             outputname = samples[isam]+args.suffix if findex == -1 else samples[isam]+"_{}".format(findex)+args.suffix
             addJSON = ',${CMSSW_BASE}/'+args.json if args.json !='' else ''
             jobscript.write("""
@@ -113,8 +114,8 @@ EOF
             runscript=args.script, stype=args.submittype, pathtomacro=args.path, macro=args.macro, prefix=args.prefix, workdir="${CMSSW_BASE}", sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], num=ifile, outdir=args.outdir, abspathtomacro=os.path.abspath(args.path+"/"+args.macro), abspathtorlogon=os.path.abspath(args.path+"/rootlogon.C"), outname=outputname, addjson=addJSON, json=args.json
             ))
             jobscript.close()
-            script.write("./submit_{name}_{j}.sh\n".format(name=samples[isam], j=ifile))
-            os.system("chmod +x submit_%s_%d.sh" %(samples[isam], ifile))
+            script.write("./submit_{pref}_{name}_{j}.sh\n".format(pref=args.unique, name=samples[isam], j=ifile))
+            os.system("chmod +x submit_%s_%s_%d.sh" %(args.submit, samples[isam], ifile))
 
 
 script.close()
