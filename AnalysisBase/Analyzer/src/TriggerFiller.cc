@@ -293,6 +293,26 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8"] = kMu8Ele17MuLeg;
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele17EleLeg;
 
+  // lep x ht triggers
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v1"] = kEl15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v2"] = kEl15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v3"] = kEl15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v1"]         = kEl15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v2"]         = kEl15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v3"]         = kEl15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v1"]         = kEl15IsoVVVLPFHT600;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v2"]         = kEl15IsoVVVLPFHT600;
+  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v3"]         = kEl15IsoVVVLPFHT600;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v1"]  = kMu15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v2"]  = kMu15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v3"]  = kMu15IsoVVVLPFHT350PFMET50;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v1"]          = kMu15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v2"]          = kMu15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v3"]          = kMu15IsoVVVLPFHT350;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v1"]          = kMu15IsoVVVLPFHT600;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v2"]          = kMu15IsoVVVLPFHT600;
+  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v3"]          = kMu15IsoVVVLPFHT600;
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -316,6 +336,7 @@ void TriggerFiller::fill()
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     if(options_ & PRINTTRIGGERNAMES) cout << triggerNames_->triggerName(i) << endl;
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
+
     if(trigindex != trigIds_.end()) {
       data.fillMulti<unsigned long>(itrig_bit_flag, trigindex->second);
       data.fillMulti<bool         >(itrig_bit_pass, triggerBits_->accept(i));
