@@ -199,6 +199,7 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE trigPhotonCorrType;
     ucsbsusy::CORRTYPE trigElectronCorrType;
     ucsbsusy::CORRTYPE trigMuonCorrType;
+    ucsbsusy::CORRTYPE trigMetOrLepCorrType;
 
 
     TString leptonCorrectionFile;
@@ -301,6 +302,8 @@ namespace cfgSet {
           os << "TrigElectron ";
         if(a.triggerCorrections & ucsbsusy::TriggerCorrectionSet::MUON)
           os << "TrigMuon ";
+        if(a.triggerCorrections & ucsbsusy::TriggerCorrectionSet::MET_OR_LEP)
+          os << "TrigMetOrLep ";
         os << std::endl;
 
       }
