@@ -255,7 +255,25 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v4"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v5"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v6"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
-
+  // lep x ht triggers
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v1"] = kHLT_El15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v2"] = kHLT_El15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v3"] = kHLT_El15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v1"]         = kHLT_El15IsoVVVLPFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v2"]         = kHLT_El15IsoVVVLPFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v3"]         = kHLT_El15IsoVVVLPFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v1"]         = kHLT_El15IsoVVVLPFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v2"]         = kHLT_El15IsoVVVLPFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v3"]         = kHLT_El15IsoVVVLPFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v1"]  = kHLT_Mu15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v2"]  = kHLT_Mu15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v3"]  = kHLT_Mu15IsoVVVLPFHT350PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v1"]          = kHLT_Mu15IsoVVVLPFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v2"]          = kHLT_Mu15IsoVVVLPFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v3"]          = kHLT_Mu15IsoVVVLPFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v1"]          = kHLT_Mu15IsoVVVLPFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v2"]          = kHLT_Mu15IsoVVVLPFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v3"]          = kHLT_Mu15IsoVVVLPFHT600;
 
   trigFilterIds_["hltPFMET100Filter"] = kPFMET100;
   trigFilterIds_["hltPFMET110Filter"] = kPFMET110;
@@ -292,27 +310,6 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele23EleLeg;
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8"] = kMu8Ele17MuLeg;
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele17EleLeg;
-
-  // lep x ht triggers
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v1"] = kEl15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v2"] = kEl15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v3"] = kEl15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v1"]         = kEl15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v2"]         = kEl15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT350_v3"]         = kEl15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v1"]         = kEl15IsoVVVLPFHT600;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v2"]         = kEl15IsoVVVLPFHT600;
-  trigFilterIds_["HLT_Ele15_IsoVVVL_PFHT600_v3"]         = kEl15IsoVVVLPFHT600;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v1"]  = kMu15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v2"]  = kMu15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v3"]  = kMu15IsoVVVLPFHT350PFMET50;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v1"]          = kMu15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v2"]          = kMu15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT350_v3"]          = kMu15IsoVVVLPFHT350;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v1"]          = kMu15IsoVVVLPFHT600;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v2"]          = kMu15IsoVVVLPFHT600;
-  trigFilterIds_["HLT_Mu15_IsoVVVL_PFHT600_v3"]          = kMu15IsoVVVLPFHT600;
-
 }
 
 //--------------------------------------------------------------------------------------------------
