@@ -35,6 +35,7 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
   ipfdbetaiso_   = data.addMulti<float>(branchName_,"pfdbetaiso",0);
   iisloose_      = data.addMulti<bool >(branchName_,"isLoose",false);
   iismedium_     = data.addMulti<bool >(branchName_,"isMedium",false);
+  iismediumhip_  = data.addMulti<bool >(branchName_,"isMediumHIP",false);
   iistight_      = data.addMulti<bool >(branchName_,"isTight",false);
   iispf_         = data.addMulti<bool >(branchName_,"isPF",false);
   iisglobal_     = data.addMulti<bool >(branchName_,"isGlobal",false);
@@ -145,6 +146,16 @@ void MuonFiller::fill()
 
     data.fillMulti<float>(iptrel_, Isolation::leptonPtRel(mu, *ak4jets_));
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(mu, *ak4jets_));
+
+
+    bool goodGlob = mu.isGlobalMuon() && 
+      mu.globalTrack()->normalizedChi2() < 3 && 
+      mu.combinedQuality().chi2LocalPosition < 12 && 
+      mu.combinedQuality().trkKink < 20; 
+    bool isMediumHIP_ = mu.isLooseMuon() && 
+      mu.innerTrack()->validFraction() > 0.49 && 
+      mu.segmentCompatibility() > (goodGlob ? 0.303 : 0.451);
+    data.fillMulti<bool >(iismediumhip_,isMediumHIP_);
 
     if(options_ & FILLIDVARS) {
       data.fillMulti<float>(inChi2_, mu.globalTrack().isNonnull() ? mu.normChi2() : 0.0);
