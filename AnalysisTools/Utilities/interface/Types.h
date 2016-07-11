@@ -128,7 +128,14 @@ namespace ucsbsusy {
     kVTightIsoMVARun2dR03oldDMwLT = 1UL<<46,
     kLooseIsoDB3HitsdR03          = 1UL<<47,
     kMediumIsoDB3HitsdR03         = 1UL<<48,
-    kTightIsoDB3HitsdR03          = 1UL<<49
+    kTightIsoDB3HitsdR03          = 1UL<<49,
+    kEl15IsoVVVLPFHT350PFMET50    = 1UL<<50,
+    kEl15IsoVVVLPFHT350           = 1UL<<51,
+    kEl15IsoVVVLPFHT600           = 1UL<<52,
+    kMu15IsoVVVLPFHT350PFMET50    = 1UL<<53,
+    kMu15IsoVVVLPFHT350           = 1UL<<54,
+    kMu15IsoVVVLPFHT600           = 1UL<<55
+
 
   };
 
