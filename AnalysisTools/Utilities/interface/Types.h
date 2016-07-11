@@ -129,14 +129,6 @@ namespace ucsbsusy {
     kLooseIsoDB3HitsdR03          = 1UL<<47,
     kMediumIsoDB3HitsdR03         = 1UL<<48,
     kTightIsoDB3HitsdR03          = 1UL<<49,
-    kEl15IsoVVVLPFHT350PFMET50    = 1UL<<50,
-    kEl15IsoVVVLPFHT350           = 1UL<<51,
-    kEl15IsoVVVLPFHT600           = 1UL<<52,
-    kMu15IsoVVVLPFHT350PFMET50    = 1UL<<53,
-    kMu15IsoVVVLPFHT350           = 1UL<<54,
-    kMu15IsoVVVLPFHT600           = 1UL<<55
-
-
   };
 
   enum TriggerBits {
@@ -206,7 +198,14 @@ namespace ucsbsusy {
     kHLT_IsoMu20 = 1UL<<60,
     kHLT_PFMET90_PFMHT90_IDTight = 1UL<<61,
     kHLT_PFMET100_PFMHT100_IDTight = 1UL<<62,
-    kHLT_PFMET110_PFMHT110_IDTight = 1UL<<63
+    kHLT_PFMET110_PFMHT110_IDTight = 1UL<<63,
+    kEl15IsoVVVLPFHT350PFMET50     = 1UL<<64,
+    kEl15IsoVVVLPFHT350            = 1UL<<65,
+    kEl15IsoVVVLPFHT600            = 1UL<<66,
+    kMu15IsoVVVLPFHT350PFMET50     = 1UL<<67,
+    kMu15IsoVVVLPFHT350            = 1UL<<68,
+    kMu15IsoVVVLPFHT600            = 1UL<<69
+
   };
 
   enum TriggerFilters {
