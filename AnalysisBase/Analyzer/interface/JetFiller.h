@@ -14,6 +14,7 @@
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "AnalysisTools/Utilities/interface/TreeWriterData.h"
 
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -26,6 +27,7 @@
 namespace ucsbsusy {
 class EventInfoFiller;
 class GenParticleFiller;
+class PFCandidateFiller;
 class QuarkGluonTagInterface;
 class QuarkGluonTaggingVariables;
 
@@ -33,6 +35,7 @@ namespace JetFunctions {
 template<typename Jet> bool passLooseJetId(const Jet& j);
 template<typename Jet> bool passTightJetId(const Jet& j);
 template<typename Jet> bool passMuonEnergyFraction(const Jet& j);
+template<typename Jet> unsigned int countNChargedHadrons(const float threshpt, const Jet& j);
 }
 
 class JetFillerBase {
@@ -47,6 +50,7 @@ public:
                           , LOADSUPER       = (1 <<  5)   ///< load links to super jets
                           , LOADUNCFROMFILE = (1 <<  6)   ///< load jet uncertainties from external file
                           , FILLJETEXTRA    = (1 <<  7)   ///< additional info about jet energy fractions and multiplicities
+                          , FILLJETCHHADN   = (1 <<  8)   ///< additional info about jet content: charged hadron multiplicity
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
@@ -56,7 +60,7 @@ public:
   template<typename Jet>
   class JetFiller : public JetFillerBase, public BaseFiller {
     public:
-      JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
+      JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller);
       ~JetFiller() {}
 
       virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
@@ -77,6 +81,7 @@ public:
     protected:
       // Input from the config file
       edm::EDGetTokenT<std::vector<Jet> >          jetToken_;
+      edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandToken_;
       edm::EDGetTokenT<reco::GenJetCollection>     reGenJetToken_;
       edm::EDGetTokenT<reco::GenJetCollection>     stdGenJetToken_;
       edm::EDGetTokenT<std::vector<size8> >        flvAssocToken_;
@@ -86,6 +91,7 @@ public:
       edm::EDGetTokenT<std::vector<unsigned int> > superJetNsubToken_;
       const EventInfoFiller   * evtInfofiller_;
       const GenParticleFiller * genParticleFiller_;
+      const PFCandidateFiller * pfCandidateFiller_;
 
     protected:
       // Members to hold index of most recently filled tree data
@@ -100,6 +106,9 @@ public:
       size ijetlooseId_  ;
       size ijettightId_  ;
       size ijetchHadEnFrac_ ;
+      size ijetchHadN4_     ;
+      size ijetchHadN6_     ;
+      size ijetchHadN8_     ;
       size ijetchEmEnFrac_  ;
       size ijetmuEnFrac_    ;
       size ijetelEnFrac_    ;
@@ -168,6 +177,7 @@ public:
       const double                            jptCompleteMin_; //To save all info
       const double                            jptMin_; //To save just basic info
       edm::Handle<std::vector<Jet>>           jets_;
+      edm::Handle<pat::PackedCandidateCollection> pfcands_;
       edm::Handle<reco::GenJetCollection>     reGenJets_;
       edm::Handle<reco::GenJetCollection>     stdGenJets_;
       edm::Handle<std::vector<size8   > >     flvAssoc_;

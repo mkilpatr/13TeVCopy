@@ -7,6 +7,7 @@
 #include "AnalysisTools/Utilities/interface/Types.h"
 
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
+#include "AnalysisBase/Analyzer/interface/PFCandidateFiller.h"
 #include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
@@ -55,11 +56,13 @@ namespace JetFunctions{
     return true;
   }
 }
+
 //--------------------------------------------------------------------------------------------------
 template<typename Jet>
-JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
+JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller) :
   BaseFiller(options, branchName),
   jetToken_          (cc.consumes<std::vector<Jet> >         (cfg.getParameter<edm::InputTag>("jets"))),
+  pfCandToken_       (cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("pfcands"))),
   reGenJetToken_     (cc.consumes<reco::GenJetCollection>    (cfg.getParameter<edm::InputTag>("reGenJets"))),
   stdGenJetToken_    (cc.consumes<reco::GenJetCollection>    (cfg.getParameter<edm::InputTag>("stdGenJets"))),
   flvAssocToken_     (cc.consumes<std::vector<size8> >       (cfg.getParameter<edm::InputTag>("flvAssoc"))),
@@ -69,6 +72,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   superJetNsubToken_ (cc.consumes<std::vector<unsigned int> >(cfg.getUntrackedParameter<edm::InputTag>("superJetNsub"))),
   evtInfofiller_     (evtInfoFiller),
   genParticleFiller_ (genParticleFiller),
+  pfCandidateFiller_ (pfCandidateFiller),
   qglInterface_      (new QuarkGluonTagInterface),
   qgTaggingVar_      (new QuarkGluonTaggingVariables),
   fillReGenJets_     (cfg.getUntrackedParameter<bool>        ("fillReGenJets")),
@@ -105,6 +109,11 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   ijetpuId_        = data.addMulti<float>(branchName_,"jet_puId"        , 0);
   ijetlooseId_     = data.addMulti<bool> (branchName_,"jet_looseId"     , 0);
   ijettightId_     = data.addMulti<bool> (branchName_,"jet_tightId"     , 0);
+  if(options_ & FILLJETCHHADN){
+    ijetchHadN4_       = data.addMulti<float> (branchName_,"jet_chHadN4"       , 0);
+    ijetchHadN6_       = data.addMulti<float> (branchName_,"jet_chHadN6"       , 0);
+    ijetchHadN8_       = data.addMulti<float> (branchName_,"jet_chHadN8"       , 0);
+  }
   if(options_ & FILLJETEXTRA) {
     ijetchHadEnFrac_   = data.addMulti<float> (branchName_,"jet_chHadEnFrac"   , 0);
     ijetchEmEnFrac_    = data.addMulti<float> (branchName_,"jet_chEmEnFrac"    , 0);
@@ -182,6 +191,7 @@ void JetFiller<Jet>::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
 {
   reset();
   iEvent.getByToken(jetToken_,jets_);
+  iEvent.getByToken(pfCandToken_, pfcands_);
 
   if(options_ & LOADGEN) {
     if(fillReGenJets_) iEvent.getByToken(reGenJetToken_,reGenJets_);
@@ -349,6 +359,11 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetcvsb_    ,0);		
       data.fillMulti<bool> (ijetlooseId_ ,false);
       data.fillMulti<bool> (ijettightId_ ,false);
+      if(options_ & FILLJETCHHADN){
+        data.fillMulti<float> (ijetchHadN4_       ,0);
+        data.fillMulti<float> (ijetchHadN6_       ,0);
+        data.fillMulti<float> (ijetchHadN8_       ,0);
+      }
       if(options_ & FILLJETEXTRA) {
         data.fillMulti<float> (ijetchHadEnFrac_   ,0);
         data.fillMulti<float> (ijetchEmEnFrac_    ,0);
@@ -393,6 +408,25 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));		
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
     data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
+
+    if(options_ & FILLJETCHHADN) {
+      assert(pfCandidateFiller_->isLoaded());
+      int jetchHadN4_=0, jetchHadN6_=0, jetchHadN8_=0;
+      for(unsigned int iPF = 0; iPF < pfcands_->size(); ++iPF){
+        const auto* p = &pfcands_->at(iPF);
+        int ipfjet = pfCandidateFiller_->getContainingJetIndex(p);
+        if(ipfjet<0) continue;
+        const pat::Jet &pfjet = (*jets_)[ipfjet];
+        if(pfjet.pt() != j.pt()) continue;
+        if(p->pt() > 4.) jetchHadN4_++;
+        if(p->pt() > 6.) jetchHadN6_++;
+        if(p->pt() > 8.) jetchHadN8_++;        
+      }
+      data.fillMulti<int>   (ijetchHadN4_       ,jetchHadN4_);
+      data.fillMulti<int>   (ijetchHadN6_       ,jetchHadN6_);
+      data.fillMulti<int>   (ijetchHadN8_       ,jetchHadN8_);
+    }
+
     if(options_ & FILLJETEXTRA) {
       data.fillMulti<float> (ijetchHadEnFrac_   ,j.chargedHadronEnergyFraction());
       data.fillMulti<float> (ijetchEmEnFrac_    ,j.chargedEmEnergyFraction());

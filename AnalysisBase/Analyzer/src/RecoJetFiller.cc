@@ -1,7 +1,7 @@
 #include "AnalysisBase/Analyzer/interface/RecoJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-RecoJetFiller::RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
-  JetFiller<reco::PFJet>(cfg, static_cast<edm::ConsumesCollector&&>(cc), options, branchName, evtInfoFiller, genParticleFiller),
+RecoJetFiller::RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller) :
+  JetFiller<reco::PFJet>(cfg, static_cast<edm::ConsumesCollector&&>(cc), options, branchName, evtInfoFiller, genParticleFiller, pfCandidateFiller),
   bTagsToken_           (cc.consumes<reco::JetTagCollection>(cfg.getParameter<edm::InputTag>("btags"))),
   reGenJetAssocToken_   (cc.consumes<edm::ValueMap<reco::CandidatePtr> >(cfg.getParameter<edm::InputTag>("reGenJetAssoc")))
 {}

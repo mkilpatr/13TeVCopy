@@ -61,7 +61,7 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
 }
 
 
-int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
+int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc) const
 {
 
   int index = -1;
@@ -283,7 +283,7 @@ void PFCandidateFiller::fill()
     data.fillMulti<float>(inearphoeta_, photonIndex > -1 ? pfcands_->at(photonIndex).eta() : -1.0);
     data.fillMulti<float>(inearphophi_, photonIndex > -1 ? pfcands_->at(photonIndex).phi() : -1.0);
     data.fillMulti<float>(inearestTrkDR_, nearesttrkdr);
-//    data.fillMulti<int  >(icontJetIndex_, jetIndex);
+    data.fillMulti<int  >(icontJetIndex_, jetIndex);
 
     //Store in the tree jet pt -> 20 so that in the next round we can go that low
     jetmatch = jetIndex > -1 && jet->pt() >= 20.0 && fabs(jet->eta()) < 2.4;
