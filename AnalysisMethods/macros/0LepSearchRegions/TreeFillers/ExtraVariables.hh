@@ -49,6 +49,17 @@ struct ExtraVarsFiller {
   size i_detaj1lj2l;
   size i_drj1lj2l;
 
+  size i_j1chhadn2;
+  size i_j1chhadn4;
+  size i_j1chhadn6;
+
+  // sd tagging extra
+  size i_mbclose2lep;
+  size i_sdtopcandpt;
+  size i_sdtoppasspt;
+  size i_sdtopcandptnolep;
+  size i_sdtoppassptnolep;
+
   // Lepton extra
   size i_absdphilepmet;
   size i_absdphilepw;
@@ -138,6 +149,19 @@ struct ExtraVarsFiller {
     i_drj1lj2l       = data->add<float>("","drj1lj2l","F",0);
     i_dphicsv1csv2   = data->add<float>("","dphicsv1csv2","F",0);
     i_drcsv1csv2     = data->add<float>("","drcsv1csv2","F",0);
+
+    i_j1chhadn2      = data->add<int>("","j1chhadn2","I",0);
+    i_j1chhadn4      = data->add<int>("","j1chhadn4","I",0);
+    i_j1chhadn6      = data->add<int>("","j1chhadn6","I",0);
+
+  }
+
+  void bookSd(TreeWriterData* data){
+    i_mbclose2lep         = data->add<bool>("","mbclose2lep","O",0);
+    i_sdtopcandpt         = data->add<float>("","sdtopcandpt","F",0);
+    i_sdtoppasspt         = data->add<float>("","sdtoppasspt","F",0);
+    i_sdtopcandptnolep    = data->add<float>("","sdtopcandptnolep","F",0);
+    i_sdtoppassptnolep    = data->add<float>("","sdtoppassptnolep","F",0);
   }
 
   void bookLepton(TreeWriterData* data){
@@ -271,6 +295,66 @@ struct ExtraVarsFiller {
       data->fill<float>(i_drj1lj2l,fabs(PhysicsUtilities::deltaR(*ana->isrJets[0],*ana->isrJets[1])));
     }
 
+    int j1chhadn2_ = -1;  
+    int j1chhadn4_ = -1;
+    int j1chhadn6_ = -1;
+    if(jets.size()>0){
+      j1chhadn2_ = jets.at(0)->chHadN2();
+      j1chhadn4_ = jets.at(0)->chHadN4();
+      j1chhadn6_ = jets.at(0)->chHadN6();
+    }
+    data->fill<int>(i_j1chhadn2, j1chhadn2_);
+    data->fill<int>(i_j1chhadn4, j1chhadn4_);
+    data->fill<int>(i_j1chhadn6, j1chhadn6_);
+
+  }
+
+  void fillSdInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    // sd top eff/mistag rate
+    //   candidates are fatJets. nolep is for mistag rate -- removes the req't dR(sd,lep)<pi/2 on sd objects
+    //   sd eff    = sdtoppasspt/sdtopcandpt in ttbar-enhanced region with mbclose2lep in cutstring
+    //   sd mistag = sdtoppassptnolep/sdtopcandptnolep in qcd-enhanced region (ht>1TeV,2+jets,met>250,jetht data) without mbclose2lep in cutstring
+    int ihardfj         = -1;
+    int ihardfjnolep    = -1;
+    float         hardfjpt_      = -1;
+    float         hardfjptnolep_ = -1;
+    unsigned int ifj = 0;
+    for (const auto *fj : ana->fatJets){
+      if(ana->selectedLepton) { //lep
+        const auto * lep = ana->selectedLepton;
+        float drlepfj_ = PhysicsUtilities::deltaR(*lep, fj->p4());
+        if(drlepfj_ >= (3.1415/2.) && fj->p4().pt() > hardfjpt_){
+          ihardfj = ifj;
+          hardfjpt_ = fj->p4().pt();
+        }
+      }else{ //no lep
+        if(fj->p4().pt() > hardfjpt_){
+          ihardfjnolep = ifj;
+          hardfjptnolep_ = fj->p4().pt();
+        }
+      }
+      ifj++;
+    }
+    float sdtopcandpt_ = -9.;
+    float sdtoppasspt_ = -9.;
+    float sdtopcandptnolep_ = -9.;
+    float sdtoppassptnolep_ = -9.;
+    if(ihardfj>-1 && ana->selectedLepton){ //lep
+      sdtopcandpt_ = ana->fatJets[ihardfj]->p4().pt();
+      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfj], 400, 110, 210, 0.69, 1e9)){
+        sdtoppasspt_ = sdtopcandpt_;
+      }
+    }
+    if(ihardfjnolep>-1 && !(ana->selectedLepton)){ //no lep
+      sdtopcandptnolep_ = ana->fatJets[ihardfjnolep]->p4().pt();
+      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfjnolep], 400, 110, 210, 0.69, 1e9)){
+        sdtoppassptnolep_ = sdtopcandptnolep_;
+      }
+    }
+    data->fill<float>(i_sdtopcandpt, sdtopcandpt_);
+    data->fill<float>(i_sdtoppasspt, sdtoppasspt_);
+    data->fill<float>(i_sdtopcandptnolep, sdtopcandptnolep_);
+    data->fill<float>(i_sdtoppassptnolep, sdtoppassptnolep_);
   }
 
   void fillLeptonInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){

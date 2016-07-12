@@ -1,13 +1,14 @@
 #ifndef ANALYSISBASE_ANALYZER_PATJETFILLER_H
 #define ANALYSISBASE_ANALYZER_PATJETFILLER_H
 
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 
 namespace ucsbsusy {
   class PatJetFiller : public JetFiller<pat::Jet> {
     public:
-    PatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
+    PatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller);
       ~PatJetFiller() {}
 
       reco::GenJetRef getReGenJet(const pat::Jet& jet,const int index = -1, const bool enforce = false)  const;

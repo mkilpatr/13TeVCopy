@@ -61,7 +61,7 @@ PFCandidateFiller::PFCandidateFiller(const edm::ParameterSet& cfg, edm::Consumes
 }
 
 
-int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc)
+int PFCandidateFiller::getContainingJetIndex(const pat::PackedCandidate* pfc) const
 {
 
   int index = -1;

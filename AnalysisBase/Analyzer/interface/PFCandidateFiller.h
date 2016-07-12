@@ -41,7 +41,7 @@ namespace ucsbsusy {
       void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
       void fill();
 
-      int   getContainingJetIndex(const pat::PackedCandidate* pfc);
+      int   getContainingJetIndex(const pat::PackedCandidate* pfc) const;
       int   getHPSTauIndex(const unsigned int pfInd);
       int   getNearPhotonIndex(const pat::PackedCandidate* pfc);
       float getDRNearestTrack(const pat::PackedCandidate* particle, const float minTrackPt=1.0);
