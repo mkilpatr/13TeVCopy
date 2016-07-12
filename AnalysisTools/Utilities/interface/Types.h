@@ -128,8 +128,7 @@ namespace ucsbsusy {
     kVTightIsoMVARun2dR03oldDMwLT = 1UL<<46,
     kLooseIsoDB3HitsdR03          = 1UL<<47,
     kMediumIsoDB3HitsdR03         = 1UL<<48,
-    kTightIsoDB3HitsdR03          = 1UL<<49
-
+    kTightIsoDB3HitsdR03          = 1UL<<49,
   };
 
   enum TriggerBits {
@@ -163,6 +162,16 @@ namespace ucsbsusy {
     kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight = 1UL<<27,
     kHLT_Ele25_eta2p1_WPLoose_Gsf = 1UL<<28,
     kHLT_Ele25_eta2p1_WPTight_Gsf = 1UL<<29,
+    kHLT_Ele15_IsoVVVL_PFHT350_PFMET50 = 1UL<<30,
+    kHLT_Ele15_IsoVVVL_PFHT400_PFMET50 = 1UL<<31,
+    kHLT_Ele15_IsoVVVL_PFHT350 = 1UL<<32,
+    kHLT_Ele15_IsoVVVL_PFHT400 = 1UL<<33,
+    kHLT_Ele15_IsoVVVL_PFHT600 = 1UL<<34,
+    kHLT_Mu15_IsoVVVL_PFHT350_PFMET50 = 1UL<<35,
+    kHLT_Mu15_IsoVVVL_PFHT400_PFMET50 = 1UL<<36,
+    kHLT_Mu15_IsoVVVL_PFHT350 = 1UL<<37,
+    kHLT_Mu15_IsoVVVL_PFHT400 = 1UL<<38,
+    kHLT_Mu15_IsoVVVL_PFHT600 = 1UL<<39,
     /*kHLT_DiPFJetAve100_HFJEC = 1UL<<27,
     kHLT_DiPFJetAve140 = 1UL<<28,
     kHLT_DiPFJetAve160_HFJEC = 1UL<<29,
@@ -235,7 +244,9 @@ namespace ucsbsusy {
     kSingleIsoTkMu20 = 1UL<<29,
     kSingleEle25WPTightNoER = 1UL<<30,
     kSingleEle25WPLoose = 1UL<<31,
-    kSingleEle25WPTight = 1UL<<32
+    kSingleEle25WPTight = 1UL<<32,
+    kEle15IsoVVVL = 1UL<<33,
+    kMu15IsoVVVL = 1UL<<34
   };
 
   enum METFilterBits {

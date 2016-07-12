@@ -255,7 +255,46 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v4"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v5"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
   trigIds_["HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v6"] = kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL;
-
+  // lep x ht triggers
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v1"] = kHLT_Ele15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v2"] = kHLT_Ele15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v3"] = kHLT_Ele15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v4"] = kHLT_Ele15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_PFMET50_v5"] = kHLT_Ele15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_PFMET50_v1"] = kHLT_Ele15_IsoVVVL_PFHT400_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_PFMET50_v2"] = kHLT_Ele15_IsoVVVL_PFHT400_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_PFMET50_v3"] = kHLT_Ele15_IsoVVVL_PFHT400_PFMET50;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v1"]         = kHLT_Ele15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v2"]         = kHLT_Ele15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v3"]         = kHLT_Ele15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v4"]         = kHLT_Ele15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT350_v5"]         = kHLT_Ele15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_v1"]         = kHLT_Ele15_IsoVVVL_PFHT400;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_v2"]         = kHLT_Ele15_IsoVVVL_PFHT400;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT400_v3"]         = kHLT_Ele15_IsoVVVL_PFHT400;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v1"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v2"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v3"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v4"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v5"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Ele15_IsoVVVL_PFHT600_v6"]         = kHLT_Ele15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v1"]  = kHLT_Mu15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v2"]  = kHLT_Mu15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v3"]  = kHLT_Mu15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_PFMET50_v4"]  = kHLT_Mu15_IsoVVVL_PFHT350_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT400_PFMET50_v1"]  = kHLT_Mu15_IsoVVVL_PFHT400_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT400_PFMET50_v2"]  = kHLT_Mu15_IsoVVVL_PFHT400_PFMET50;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v1"]          = kHLT_Mu15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v2"]          = kHLT_Mu15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v3"]          = kHLT_Mu15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT350_v4"]          = kHLT_Mu15_IsoVVVL_PFHT350;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT400_v1"]          = kHLT_Mu15_IsoVVVL_PFHT400;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT400_v2"]          = kHLT_Mu15_IsoVVVL_PFHT400;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v1"]          = kHLT_Mu15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v2"]          = kHLT_Mu15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v3"]          = kHLT_Mu15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v4"]          = kHLT_Mu15_IsoVVVL_PFHT600;
+  trigIds_["HLT_Mu15_IsoVVVL_PFHT600_v5"]          = kHLT_Mu15_IsoVVVL_PFHT600;
 
   trigFilterIds_["hltPFMET100Filter"] = kPFMET100;
   trigFilterIds_["hltPFMET110Filter"] = kPFMET110;
@@ -284,6 +323,8 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltEle27WP75GsfTrackIsoFilter"] = kSingleEle27;
   trigFilterIds_["hltEle27WPTightGsfTrackIsoFilter"] = kSingleEle27WPTight;
   trigFilterIds_["hltEle27erWPTightGsfTrackIsoFilter"] = kSingleEle27WPTight;
+  trigFilterIds_["hltEle15VVVLGsfTrackIsoFilter"] = kEle15IsoVVVL;
+  trigFilterIds_["hltL3MuVVVLIsoFIlter"] = kMu15IsoVVVL;
   trigFilterIds_["hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered17"] = kMu17Ele12MuLeg;
   trigFilterIds_["hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu17Ele12EleLeg;
   trigFilterIds_["hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered23"] = kMu23Ele12MuLeg;
@@ -292,7 +333,6 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele23EleLeg;
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8"] = kMu8Ele17MuLeg;
   trigFilterIds_["hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter"] = kMu8Ele17EleLeg;
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -316,6 +356,7 @@ void TriggerFiller::fill()
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     if(options_ & PRINTTRIGGERNAMES) cout << triggerNames_->triggerName(i) << endl;
     auto trigindex = trigIds_.find(triggerNames_->triggerName(i));
+
     if(trigindex != trigIds_.end()) {
       data.fillMulti<unsigned long>(itrig_bit_flag, trigindex->second);
       data.fillMulti<bool         >(itrig_bit_pass, triggerBits_->accept(i));
