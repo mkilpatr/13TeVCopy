@@ -15,8 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-//const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
-const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ | JetReader::LOADJETEXTRA;
+const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
 
 //--------------------------------------------------------------------------------------------------
 JetReader::JetReader() : BaseReader(){
