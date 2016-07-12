@@ -20,6 +20,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
     ANALYZER_MODE
     TestAnalyzer(const edm::ParameterSet &cfg) : PhysicsAnalyzer(cfg)
     {
+      initialize(cfg, "PFCandidates", PFCANDS);
       initialize(cfg, "EventInfo", EVTINFO);
       if(isMC()) initialize(cfg, "Gen", GENPARTICLES);
       initialize(cfg, "Jets", AK4JETS);
@@ -30,7 +31,6 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Muons", MUONS);
       initialize(cfg, "Taus", TAUS);
       initialize(cfg, "Photons", PHOTONS);
-      initialize(cfg, "PFCandidates", PFCANDS);
       initialize(cfg, "CMSTops", CMSTOPS);
       initialize(cfg, "AK8FatJets", AK8FATJETS);
       initialize(cfg, "AK8PuppiFatJets", AK8PUPPIFATJETS);
