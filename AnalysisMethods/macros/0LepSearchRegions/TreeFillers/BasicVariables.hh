@@ -63,6 +63,11 @@ struct BasicVarsFiller {
   size i_ncttstd   ;
   size i_nsdtoploose;
   size i_nsdwloose;
+  size i_mbclose2lep;
+  size i_sdtopcandpt;
+  size i_sdtoppasspt;
+  size i_sdtopcandptnolep;
+  size i_sdtoppassptnolep;
 
   // Jet & MET variables
   size i_njets     ;
@@ -86,6 +91,9 @@ struct BasicVarsFiller {
   size i_csvj2pt   ;
   size i_dphij1lmet;
   size i_nivf;
+  size i_j1chhadn4;
+  size i_j1chhadn6;
+  size i_j1chhadn8;
 
   // Lepton variables
   size i_leptonpt  ;
@@ -155,6 +163,11 @@ struct BasicVarsFiller {
     i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_nsdtoploose    = data->add<int>("","nsdtoploose","I",0);
     i_nsdwloose      = data->add<int>("","nsdwloose","I",0);
+    i_mbclose2lep     = data->add<bool>("","mbclose2lep","O",0);
+    i_sdtopcandpt    = data->add<float>("","sdtopcandpt","F",0);
+    i_sdtoppasspt    = data->add<float>("","sdtoppasspt","F",0);
+    i_sdtopcandptnolep    = data->add<float>("","sdtopcandptnolep","F",0);
+    i_sdtoppassptnolep    = data->add<float>("","sdtoppassptnolep","F",0);
 
     // Jet & MET variables
     i_njets          = data->add<int>("","njets","I",0);
@@ -178,6 +191,9 @@ struct BasicVarsFiller {
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
+    i_j1chhadn4      = data->add<int>("","j1chhadn4","I",0);
+    i_j1chhadn6      = data->add<int>("","j1chhadn6","I",0);
+    i_j1chhadn8      = data->add<int>("","j1chhadn8","I",0);
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -355,6 +371,64 @@ struct BasicVarsFiller {
     }
     data->fill<int>(i_nivf, nivf_);
 
+    // sd top eff/mistag rate
+    //   candidates are fatJets. nolep is for mistag rate -- removes the req't dR(sd,lep)<pi/2 on sd objects
+    //   sd eff    = sdtoppasspt/sdtopcandpt in ttbar-enhanced region with mbclose2lep in cutstring
+    //   sd mistag = sdtoppassptnolep/sdtopcandptnolep in qcd-enhanced region (ht>1TeV,2+jets,met>250,jetht data) without mbclose2lep in cutstring
+    int ihardfj         = -1;
+    int ihardfjnolep    = -1;
+    float         hardfjpt_      = -1;
+    float         hardfjptnolep_ = -1;
+    unsigned int ifj = 0;
+    for (const auto *fj : ana->fatJets){
+      if(ana->selectedLepton) { //lep
+        const auto * lep = ana->selectedLepton;
+        float drlepfj_ = PhysicsUtilities::deltaR(*lep, fj->p4());
+        if(drlepfj_ >= (3.1415/2.) && fj->p4().pt() > hardfjpt_){ 
+          ihardfj = ifj;
+          hardfjpt_ = fj->p4().pt();
+        }
+      }else{ //no lep
+        if(fj->p4().pt() > hardfjpt_){
+          ihardfjnolep = ifj;
+          hardfjptnolep_ = fj->p4().pt();
+        }
+      }
+      ifj++;
+    }
+    float sdtopcandpt_ = -9.;
+    float sdtoppasspt_ = -9.;
+    float sdtopcandptnolep_ = -9.;
+    float sdtoppassptnolep_ = -9.;
+    if(ihardfj>-1 && ana->selectedLepton){ //lep
+      sdtopcandpt_ = ana->fatJets[ihardfj]->p4().pt();
+      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfj], 400, 110, 210, 0.69, 1e9)){
+        sdtoppasspt_ = sdtopcandpt_;
+      }
+    }
+    if(ihardfjnolep>-1 && !(ana->selectedLepton)){ //no lep
+      sdtopcandptnolep_ = ana->fatJets[ihardfjnolep]->p4().pt();
+      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfjnolep], 400, 110, 210, 0.69, 1e9)){
+        sdtoppassptnolep_ = sdtopcandptnolep_;
+      }
+    }
+    data->fill<float>(i_sdtopcandpt, sdtopcandpt_);
+    data->fill<float>(i_sdtoppasspt, sdtoppasspt_);
+    data->fill<float>(i_sdtopcandptnolep, sdtopcandptnolep_);
+    data->fill<float>(i_sdtoppassptnolep, sdtoppassptnolep_);
+
+    int j1chhadn4_ = -1;
+    int j1chhadn6_ = -1;
+    int j1chhadn8_ = -1;
+    if(jets.size()>0){
+      j1chhadn4_ = jets.at(0)->chHadN4();
+      j1chhadn6_ = jets.at(0)->chHadN6();
+      j1chhadn8_ = jets.at(0)->chHadN8();
+    } 
+    data->fill<int>(i_j1chhadn4, j1chhadn4_);
+    data->fill<int>(i_j1chhadn6, j1chhadn6_);
+    data->fill<int>(i_j1chhadn8, j1chhadn8_);
+
     // Lepton variables
     if(ana->selectedLepton) {
       const auto * lep = ana->selectedLepton;
@@ -365,6 +439,34 @@ struct BasicVarsFiller {
       data->fill<int  >(i_leptonq,      lep->q());
       data->fill<float>(i_mtlepmet,     JetKinematics::transverseMass(*lep, *ana->met)); // use the original met for MT
       data->fill<float>(i_lp,           (lep->px()*WP4.px() + lep->py()*WP4.py()) / (WP4.pt()*WP4.pt()) );
+
+      bool mbclose2lep_ = false;
+      for (unsigned int i0=0; i0<jetsCSVranked.size(); ++i0) {
+        float drlepbjet_ = PhysicsUtilities::deltaR(*lep,jetsCSVranked[i0]->p4());
+        if ((drlepbjet_<(3.14/2.)) && (jetsCSVranked[i0]->csv() > defaults::CSV_MEDIUM)) { mbclose2lep_ = true; }
+      }
+      data->fill<bool>(i_mbclose2lep, mbclose2lep_);
+
+      // sd top candidates are fatJets
+      unsigned int ihardfj    = -1;
+      float         hardfjpt_ = -1;
+      unsigned int ifj = 0;
+      for (const auto *fj : ana->fatJets){
+        float drlepfj_ = PhysicsUtilities::deltaR(*lep, fj->p4());
+        if(drlepfj_ >= (3.1415/2.) && fj->p4().pt() > hardfjpt_){
+          ihardfj = ifj;
+          hardfjpt_ = fj->p4().pt();
+        }
+        ifj++;
+      }
+      if(ihardfj > -1){
+        sdtopcandpt_ = ana->fatJets[ihardfj]->p4().pt();
+        if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfj], 400, 110, 210, 0.69, 1e9)){
+          sdtoppasspt_ = sdtopcandpt_;
+        }
+      }
+      data->fill<float>(i_sdtopcandpt, sdtopcandpt_);
+      data->fill<float>(i_sdtoppasspt, sdtoppasspt_);
 
       double drrecoleprecow_ = 999.;
       double drrecoleprecotop_ = 999.;
