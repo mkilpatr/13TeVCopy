@@ -106,9 +106,9 @@ public:
       size ijetlooseId_  ;
       size ijettightId_  ;
       size ijetchHadEnFrac_ ;
+      size ijetchHadN2_     ;
       size ijetchHadN4_     ;
       size ijetchHadN6_     ;
-      size ijetchHadN8_     ;
       size ijetchEmEnFrac_  ;
       size ijetmuEnFrac_    ;
       size ijetelEnFrac_    ;

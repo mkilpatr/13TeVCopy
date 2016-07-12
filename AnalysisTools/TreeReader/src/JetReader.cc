@@ -15,7 +15,8 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
+//const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
+const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ | JetReader::LOADJETEXTRA;
 
 //--------------------------------------------------------------------------------------------------
 JetReader::JetReader() : BaseReader(){
@@ -63,6 +64,9 @@ JetReader::JetReader() : BaseReader(){
   jetneuEmEnFrac_   = new std::vector<float>;
   jetphoEnFrac_     = new std::vector<float>;
   jetchMult_        = new std::vector<int>  ;
+  jetchHadN2_       = new std::vector<int>  ;
+  jetchHadN4_       = new std::vector<int>  ;
+  jetchHadN6_       = new std::vector<int>  ;
   jetneuMult_       = new std::vector<int>  ;
   jetchHadMult_     = new std::vector<int>  ;
   jetelMult_        = new std::vector<int>  ;
@@ -95,7 +99,9 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
     treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_);
     treeReader->setBranchAddress(branchName_, "jet_chHadEnFrac", &jetchHadEnFrac_  );
-
+    treeReader->setBranchAddress(branchName_, "jet_chHadN2", &jetchHadN2_ );
+    treeReader->setBranchAddress(branchName_, "jet_chHadN4", &jetchHadN4_ );
+    treeReader->setBranchAddress(branchName_, "jet_chHadN6", &jetchHadN6_ );
   }
   if(options_ & LOADGEN){
     clog << "gen ";
@@ -186,6 +192,9 @@ void JetReader::addRecoJetToObjectList(const int iJ){
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
   recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);
+  recoJets.back().setChHadN2((jetchHadN2_->size()) ? (jetchHadN2_->at(iJ)) : -1);
+  recoJets.back().setChHadN4((jetchHadN4_->size()) ? (jetchHadN4_->at(iJ)) : -1);
+  recoJets.back().setChHadN6((jetchHadN6_->size()) ? (jetchHadN6_->at(iJ)) : -1);
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -202,6 +211,9 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetlooseId_    ->push_back(inJet->looseid());
   jettightId_    ->push_back(1);
   jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
+  jetchHadN2_     ->push_back(inJet->chHadN2());
+  jetchHadN4_     ->push_back(inJet->chHadN4());
+  jetchHadN6_     ->push_back(inJet->chHadN6());
   jetcsv_        ->push_back(inJet->csv());
   jetarea_       ->push_back(0);
   jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );
