@@ -140,7 +140,7 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/2016/csvEffs.root",CMSSW_BASE);
-  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/CSVv2.csv",CMSSW_BASE);
+  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2016/CSVv2_4invfb.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/csvFastSimEffs.root",CMSSW_BASE);

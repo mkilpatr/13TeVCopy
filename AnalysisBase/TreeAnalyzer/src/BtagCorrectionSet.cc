@@ -15,7 +15,7 @@ BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput, bool
     calib(0),
     effGetter (isFastSim ? &BTagByEvtWeightCorr::getJetFastSimEff : &BTagByEvtWeightCorr::getJetEff),
     sfGetter  (isFastSim ? &BTagByEvtWeightCorr::getJetFastSimEffSF : &BTagByEvtWeightCorr::getJetEffSF),
-    corrReaders(isFastSim ? 1 : COMB +1,
+    corrReaders(isFastSim ? 1 : INCL +1,
         std::vector<std::vector<BTagCalibrationReader*> > ( defaults::CSVT+1,
             std::vector<BTagCalibrationReader*>(DOWN+1,0)
         )
@@ -24,14 +24,16 @@ BTagByEvtWeightCorr::BTagByEvtWeightCorr(TString effInput, TString sfInput, bool
     eff(0)
 {
   //Fill SF reading
-  std::clog << "Loading SF File: "<< sfInput;
+  std::clog << "Loading SF File: "<< sfInput<<std::endl;;
   calib = new BTagCalibration("csv",sfInput.Data());
+  std::clog << "Loaded: "<< sfInput <<std::endl;
+
 
   std::vector<std::string> measTypes;
   if(isFastSim) measTypes.push_back("fastsim");
   else{
-    measTypes.push_back("mujets");
     measTypes.push_back("comb");
+    measTypes.push_back("incl");
   }
 
 //  for(unsigned int iM = MUJET; iM <= COMB; ++iM ){
@@ -151,8 +153,8 @@ double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorIn
     sfFlavor = BTagEntry::FLAV_B;
   }
 
-  //light jets use combo...b/c use mujets
-  const BTagCalibrationReader * reader = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  COMB : MUJET ] [wp] [sytType];
+  //light jets use incl...b/c use comb
+  const BTagCalibrationReader * reader = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  INCL : COMB ] [wp] [sytType];
 
   //Current SFs are only valid between 30-670 GeV
   double newPT = -1;
@@ -165,7 +167,7 @@ double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorIn
   }
   if(newPT > 0){
     if(sytType == DOWN || sytType == UP){
-      const BTagCalibrationReader * readerNominal = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  COMB : MUJET ] [wp] [NOMINAL];
+      const BTagCalibrationReader * readerNominal = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  INCL : COMB ] [wp] [NOMINAL];
       return 2*reader->eval(sfFlavor,jetETA,newPT)- readerNominal->eval(sfFlavor,jetETA,newPT);
     }
     return reader->eval(sfFlavor,jetETA,newPT);
