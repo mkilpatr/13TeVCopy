@@ -121,4 +121,3 @@ script.close()
 os.system("chmod +x %s.sh" % args.submit)
 
 print "Done!"
-
