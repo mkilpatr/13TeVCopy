@@ -182,8 +182,8 @@ QCDRespSmearingBaseEventAnalyzer::QCDRespSmearingBaseEventAnalyzer() :  respFile
   smearOptions.nBootstraps = 50;
   smearOptions.winType = JetRespSmear::LINEAR_GRANULATED;
   smearOptions.doFlatSampling = true;
-  smearOptions.respFileName = TString::Format("%s/src/data/corrections/qcdResponseTails.root",cfgSet::CMSSW_BASE);;
-  smearOptions.respInputName = "JetRes";
+  smearOptions.respFileName = TString::Format("%s/src/data/corrections/2016/resTailOut_combined_filtered_puWeight_weight_WoH.root",cfgSet::CMSSW_BASE);;
+  smearOptions.respInputName = "JetResByFlav";
 }
 
 QCDRespSmearingBaseEventAnalyzer::~QCDRespSmearingBaseEventAnalyzer() {

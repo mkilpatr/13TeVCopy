@@ -64,6 +64,7 @@ namespace ucsbsusy {
     size ipfdbetaiso_;
     size iisloose_;
     size iismedium_;
+    size iismediumhip_;
     size iistight_;
     size iispf_;
     size iisglobal_;

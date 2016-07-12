@@ -44,10 +44,11 @@ namespace ucsbsusy {
     ~PhotonFiller() {}
 
     enum Options {
-      NULLOPT     = 0,
-      LOADGEN     = (1 << 0),
-      FILLIDVARS  = (1 << 1), // fill ID variables
-      FILLISOVARS = (1 << 2)  // fill isolation variables
+      NULLOPT      = 0,
+      LOADGEN      = (1 << 0),
+      FILLIDVARS   = (1 << 1), // fill ID variables
+      FILLISOVARS  = (1 << 2), // fill isolation variables
+      APPLYELEVETO = (1 << 3)  // only fill photons passing the electron veto
     };
     static const int defaultOptions = NULLOPT;
 

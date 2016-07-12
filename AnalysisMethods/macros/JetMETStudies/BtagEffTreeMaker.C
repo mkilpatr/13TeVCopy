@@ -12,7 +12,7 @@ using namespace ucsbsusy;
 
 class Copier : public TreeCopierManualBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, size rSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,rSeed,isMCTree,pars),
+  Copier(TString fileName, TString treeName, TString outFileName, size rSeed, bool isMCTree, cfgSet::ConfigSet * pars) : TreeCopierManualBranches(fileName,treeName,outFileName,rSeed,isMCTree,pars),
   i_process     (0),
   i_passBaseline(0),
   i_weight      (0),
@@ -36,6 +36,8 @@ public:
 
   virtual bool fillEvent() {
 
+    if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
+
     //If the event has gen leptons get a list so we can veto any jets near them
     //should make the efficiencies more pure
     vector<CylLorentzVectorF> genLeptons;
@@ -58,8 +60,7 @@ public:
 
     bool passBaseline = true;
     if(met->pt() < 175) passBaseline = false;
-    if(nJets < 2 || jets[1]->pt() < 75 ) passBaseline = false;
-    if(nJets < 5) passBaseline = false;
+    if(nJets < 4) passBaseline = false;
     if(!passBaseline) return false;
 
     data.fill<unsigned int>(i_process,process);
@@ -135,32 +136,50 @@ public:
   size i_csv         ;
   size i_flavor      ;
 
-
+  bool   applyCHFFilter = false ;
 };
 
 
 #endif
 
-void BtagEffTreeMaker(string fileName, int fileIndex = -1,  string treeName = "Events", string outPostfix ="btagEff",  bool isMC = true) {
+void BtagEffTreeMaker(TString sname = "T2tt_750_100",
+                             const int fileindex = -1,
+                             const bool isMC = true,
+                             const TString fname = "/store/user/apatters/13TeV/271115/merged/T2tt_750_100_ntuple_postproc.root",
+                             const TString outputdir = "trees",
+                             const TString fileprefix = "root://cmseos:1094/",
+                             const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
+  {
 
-  cfgSet::loadDefaultConfigurations();
-  cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
 
-  #ifdef TESTMODE
-  cfg.corrections.bTagCorrections = BTagCorrectionSet::BYEVTWEIGHT;
-  cfg.corrections.lightBTagCorrType = DOWN;
-  cfg.corrections.heavyBTagCorrType = DOWN;
-  #endif
+  printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 
-  //get the output name
-  TString prefix(fileName);
-  prefix.Remove(0,prefix.Last('/') + 1);
-  if(prefix.First('.') >= 0) prefix.Resize(prefix.First('.'));
-  TString outName = fileIndex < 0 ? TString::Format("%s_%s.root",prefix.Data(),outPostfix.c_str()) : TString::Format("%s_%i_%s.root",prefix.Data(),fileIndex,outPostfix.c_str());
+   if(fileindex > -1)
+     sname += TString::Format("_%d",fileindex);
 
-  Copier a(fileName,treeName,outName.Data(),fileIndex +2,isMC, &cfg);
+   TString fullname = fileprefix+fname;
 
-  a.analyze();
+   gSystem->mkdir(outputdir,true);
+   TString outfilename = outputdir+"/"+sname+"_tree.root";
+   cfgSet::loadDefaultConfigurations();
+   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
+
+   cfg.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
+
+   // disable JetID for signal samples
+    if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) cfg.jets.applyJetID = false;
+
+    TString treeName = "Events";
+    Copier a(fullname,treeName,outfilename.Data(),fileindex +2,isMC, &cfg);
+
+
+    // CHF filter for FastSim
+    if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) a.applyCHFFilter = true;
+
+
+
+    a.analyze();
+
 }
 
 

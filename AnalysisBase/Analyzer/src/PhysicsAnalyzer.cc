@@ -362,6 +362,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = PhotonFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIDVars"))         defaultOptions |= PhotonFiller::FILLIDVARS;
       if(cfg.getUntrackedParameter<bool>("fillPhotonIsoVars"))        defaultOptions |= PhotonFiller::FILLISOVARS;
+      if(cfg.getUntrackedParameter<bool>("requireElectronVeto"))      defaultOptions |= PhotonFiller::APPLYELEVETO;
 
       photons = new PhotonFiller(cfg, consumesCollector(),
 			       options < 0 ? defaultOptions : options,

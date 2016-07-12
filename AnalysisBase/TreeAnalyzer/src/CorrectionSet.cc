@@ -121,6 +121,17 @@ double GraphAsymmErrorsCorrectionHelper::getFromFunction(double x) const  {
   else throw std::invalid_argument("[GraphAsymmErrorsCorrection::getFromFunction] No valid fit function!");
 }
 
+EfficiencyCorrectionHelper::EfficiencyCorrectionHelper(TString corrName, TFile* file) : targetBin(0), corrEff(0) {
+  if(!file) throw std::invalid_argument("EfficiencyCorrection::EfficiencyCorrection: file could not be found!");
+  corrEff = (TEfficiency*)(file->Get(corrName));
+  std::cout << corrName << std::endl;
+  if(!corrEff) throw std::invalid_argument("EfficiencyCorrection::EfficiencyCorrection: Efficiency hist could not be found!");
+}
+
+void EfficiencyCorrectionHelper::findBin(double x, double y)  {
+  targetBin = corrEff->FindFixBin(x, y);
+}
+
 } /* namespace ucsbsusy */
 
 

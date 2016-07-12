@@ -21,7 +21,7 @@ void checkSelection(TString name, TTree * tree){
 
   TString SELS[] = {"passBaseline >= 0","","passBaseline >= 1",""};
   TString SELNAMES[] = {"","Baseline",""};
-  TString CSVSELS[] = {"csv >= 0.605","csv >= 0.890","csv >= 0.970",""};
+  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -106,7 +106,7 @@ void checkEtaBinning(TString name, TTree * tree){
   double jetETAs[] = {0,1.2,2.1,2.4};
   int nJetETAS = 3;
 
-  TString CSVSELS[] = {"csv >= 0.605","csv >= 0.890","csv >= 0.970",""};
+  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -245,6 +245,12 @@ void makeEffs(){
   double jetPT4s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,1000};
   int nJetPT4s = 13;
 
+  double jetPT5s[] = {20,25,30,40,45,50,60,80,100,150,180,220,1000};
+  int nJetPT5s = 12;
+
+  double jetPT6s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,270,350,1000};
+  int nJetPT6s = 15;
+
   double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,1000};
   int nJetPTDoubles = 10;
 
@@ -254,7 +260,7 @@ void makeEffs(){
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
 
-  TString CSVSELS[] = {"csv >= 0.605","csv >= 0.890","csv >= 0.970",""};
+  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -295,8 +301,11 @@ void makeEffs(){
           thisBin =nJetPTDoubles2;
           thisBinning =jetPTDoubles2;
         }else if ( iF == 2 ) {
-          thisBin =nJetPT3s;
-          thisBinning =jetPT3s;
+          thisBin =nJetPT6s;
+          thisBinning =jetPT6s;
+        }else if ( iF == 3 && name.BeginsWith("w") ) {
+          thisBin =nJetPT5s;
+          thisBinning =jetPT5s;
         }else if ( iF == 3) {
           thisBin =nJetPT4s;
           thisBinning =jetPT4s;
@@ -337,12 +346,15 @@ void makeEffs(){
           }else if ( name.BeginsWith("w") && (iF == 2)){
             thisBin =nJetPTDoubles2;
             thisBinning =jetPTDoubles2;
-            }else if ( iF == 2 ) {
-            thisBin =nJetPT3s;
-            thisBinning =jetPT3s;
-          }else if ( iF == 3) {
-            thisBin =nJetPT4s;
-            thisBinning =jetPT4s;
+          }else if ( iF == 2 ) {
+            thisBin =nJetPT6s;
+            thisBinning =jetPT6s;
+          }else if ( iF == 3 && name.BeginsWith("w") ) {
+            thisBin =nJetPT5s;
+            thisBinning =jetPT5s;
+            }else if ( iF == 3) {
+              thisBin =nJetPT4s;
+              thisBinning =jetPT4s;
           }else if ( iF == 1) {
             thisBin =nJetPT4s;
             thisBinning =jetPT4s;
@@ -419,7 +431,7 @@ void makeFastSimEffs(){
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
 
-  TString CSVSELS[] = {"csv >= 0.605","csv >= 0.890","csv >= 0.970",""};
+  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -883,24 +895,24 @@ void Test2(){
 #endif
 
 //plotting
-void GetBtagEff(const TString inFile="qcd_jetRes.root", const TString name = "znunu", const TString treeName = "Events")
-{
-  StyleTools::SetStyle();
-  TFile * mf = new TFile(inFile,"read");
-  TTree * mt =0;
-  mf->GetObject(treeName,mt);
-//  checkSelection(name,mt);
-//  checkEtaBinning(name,mt);
-//  testCSVCorrections();
-//  makeFastSimEffs();
-  Test2();
-}
-
-////producing
-//void GetBtagEff()
+//void GetBtagEff(const TString inFile="qcd_jetRes.root", const TString name = "znunu", const TString treeName = "Events")
 //{
 //  StyleTools::SetStyle();
-//  makeEffs();
-////  testEfficiencies();
-////  getUnc();
+//  TFile * mf = new TFile(inFile,"read");
+//  TTree * mt =0;
+//  mf->GetObject(treeName,mt);
+////  checkSelection(name,mt);
+////  checkEtaBinning(name,mt);
+////  testCSVCorrections();
+////  makeFastSimEffs();
+//  Test2();
 //}
+
+//producing
+void GetBtagEff()
+{
+  StyleTools::SetStyle();
+  makeEffs();
+//  testEfficiencies();
+//  getUnc();
+}
