@@ -66,7 +66,6 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele22_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele22_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPLoose_Gsf_v3"] = kHLT_Ele22_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPLoose_Gsf_v4"] = kHLT_Ele22_eta2p1_WPLoose_Gsf;
-  trigIds_["HLT_Ele22_eta2p1_WP75_Gsf_v1"] = kHLT_Ele22_eta2p1_WP75_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele22_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPTight_Gsf_v2"] = kHLT_Ele22_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele22_eta2p1_WPTight_Gsf_v3"] = kHLT_Ele22_eta2p1_WPTight_Gsf;
@@ -102,7 +101,6 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v3"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v4"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v5"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
-  trigIds_["HLT_Ele27_eta2p1_WP75_Gsf_v1"] = kHLT_Ele27_eta2p1_WP75_Gsf;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_JetIdCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_JetIdCleaned_v2"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
@@ -114,7 +112,6 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_PFHT350_PFMET100_JetIdCleaned_v1"] = kHLT_PFHT350_PFMET100_JetIdCleaned;
   trigIds_["HLT_PFHT350_PFMET100_JetIdCleaned_v2"] = kHLT_PFHT350_PFMET100_JetIdCleaned;
   trigIds_["HLT_PFHT350_PFMET100_v1"] = kHLT_PFHT350_PFMET100_JetIdCleaned;
-  trigIds_["HLT_PFHT350_PFMET120_NoiseCleaned_v1"] = kHLT_PFHT350_PFMET120_NoiseCleaned;
   trigIds_["HLT_PFHT300_PFMET100_v1"] = kHLT_PFHT300_PFMET100;
   trigIds_["HLT_PFHT300_PFMET100_v2"] = kHLT_PFHT300_PFMET100;
   trigIds_["HLT_PFHT300_PFMET100_v3"] = kHLT_PFHT300_PFMET100;
@@ -191,6 +188,10 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_PFHT900_v1"] = kHLT_PFHT900;
   trigIds_["HLT_PFHT900_v2"] = kHLT_PFHT900;
   trigIds_["HLT_PFHT900_v3"] = kHLT_PFHT900;
+  trigIds_["HLT_CaloJet500_NoJetID_v1"] = kHLT_CaloJet500_NoJetID;
+  trigIds_["HLT_CaloJet500_NoJetID_v2"] = kHLT_CaloJet500_NoJetID;
+  trigIds_["HLT_CaloJet500_NoJetID_v3"] = kHLT_CaloJet500_NoJetID;
+  trigIds_["HLT_CaloJet500_NoJetID_v4"] = kHLT_CaloJet500_NoJetID;
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v1"] = kHLT_Photon165_R9Id90_HE10_IsoM;
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v2"] = kHLT_Photon165_R9Id90_HE10_IsoM;
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v3"] = kHLT_Photon165_R9Id90_HE10_IsoM;
@@ -222,6 +223,24 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v4"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v5"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v6"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v1"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v4"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v5"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v6"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v7"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v1"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v2"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v3"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v4"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v5"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v6"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_Ele105_CaloIdVT_GsfTrkIdT_v7"] = kHLT_Ele105_CaloIdVT_GsfTrkIdT;
+  trigIds_["HLT_ECALHT800_v1"] = kHLT_ECALHT800;
+  trigIds_["HLT_ECALHT800_v2"] = kHLT_ECALHT800;
+  trigIds_["HLT_ECALHT800_v3"] = kHLT_ECALHT800;
+  trigIds_["HLT_ECALHT800_v4"] = kHLT_ECALHT800;
   // double muon
   trigIds_["HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v1"] = kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ;
   trigIds_["HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v2"] = kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ;
@@ -230,6 +249,16 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v1"] = kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
   trigIds_["HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v2"] = kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
   trigIds_["HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v3"] = kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+  trigIds_["HLT_Mu30_TkMu11_v1"] = kHLT_Mu30_TkMu11;
+  trigIds_["HLT_Mu30_TkMu11_v2"] = kHLT_Mu30_TkMu11;
+  trigIds_["HLT_Mu30_TkMu11_v3"] = kHLT_Mu30_TkMu11;
+  trigIds_["HLT_Mu50_v1"] = kHLT_Mu50;
+  trigIds_["HLT_Mu50_v2"] = kHLT_Mu50;
+  trigIds_["HLT_Mu50_v3"] = kHLT_Mu50;
+  trigIds_["HLT_Mu50_v4"] = kHLT_Mu50;
+  trigIds_["HLT_TkMu50_v1"] = kHLT_Mu50;
+  trigIds_["HLT_TkMu50_v2"] = kHLT_Mu50;
+  trigIds_["HLT_TkMu50_v3"] = kHLT_Mu50;
   // electron + muon
   trigIds_["HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v1"] = kHLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL;
   trigIds_["HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v2"] = kHLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL;
@@ -302,6 +331,7 @@ void TriggerFiller::initTriggerNames()
   trigFilterIds_["hltPFHT350Filter"] = kPFHT350;
   trigFilterIds_["hltDiCentralPFJet55"] = kDiCentralPFJet55;
   trigFilterIds_["hltDiCentralPFJet70"] = kDiCentralPFJet70;
+  trigFilterIds_["hltSingleCaloJet500"] = kCaloJet500;
   trigFilterIds_["hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"] = kSingleIsoMu20;
   trigFilterIds_["hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09"] = kSingleIsoMu20;
   trigFilterIds_["hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09"] = kSingleIsoMu22;
