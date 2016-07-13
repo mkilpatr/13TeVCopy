@@ -552,7 +552,7 @@ elif args.checkfailed :
         if args.splittype == "file" :
             cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam])
         else :
-            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}' | sed 's/.root/_numEvent%d.root/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam],args.numperjob)
+            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}' | sed 's/.root/_numEvent%d.root/'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam],args.numperjob)
         ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output= ps.communicate()[0].replace(':\n',': ')
         result = output.split('\n')
