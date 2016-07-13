@@ -112,6 +112,28 @@ struct ExtraVarsFiller {
   size i_ngenlep;
   size i_genlepq ;
 
+  //w-tag
+  size i_sfbclose2lep;
+  size i_ak8candmass;
+  size i_ak8candmasstau21;
+  size i_ak8candmasstau32;
+  size i_ak8candpt;
+  size i_ak8candpttau21;
+  size i_ak8candpttau32;
+  size i_ak8wpassmass;
+  size i_ak8wpasspt;
+  size i_ak8toppassmass;
+  size i_ak8toppasspt;
+  size i_ak8pt;
+  size i_ak8eta;
+  size i_ak8phi;
+  size i_ak8rawmass;
+  size i_ak8prunmass;
+  size i_ak8sdmass;
+  size i_ak8tau21;
+  size i_ak8tau31;
+  size i_ak8tau32;
+
   void bookTest(TreeWriterData* data){
   }
 
@@ -216,6 +238,30 @@ struct ExtraVarsFiller {
     i_ngenel         = data->add<int>("","ngenel","I",0);
     i_ngentau        = data->add<int>("","ngentau","I",0);
     i_ngenlep        = data->add<int>("","ngenlep","I",0);
+  }
+
+
+  void bookWTag(TreeWriterData* data) {
+    i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
+    i_ak8candmass      = data->add<float>("","ak8candmass","F",0.);
+    i_ak8candmasstau21 = data->add<float>("","ak8candmasstau21","F",0.);
+    i_ak8candmasstau32 = data->add<float>("","ak8candmasstau32","F",0.);
+    i_ak8candpt        = data->add<float>("","ak8candpt","F",0.);
+    i_ak8candpttau21   = data->add<float>("","ak8candpttau21","F",0.);
+    i_ak8candpttau32   = data->add<float>("","ak8candpttau32","F",0.);
+    i_ak8wpassmass     = data->add<float>("","ak8wpassmass","F",0.);
+    i_ak8wpasspt       = data->add<float>("","ak8wpasspt","F",0.);
+    i_ak8toppassmass   = data->add<float>("","ak8toppassmass","F",0.);
+    i_ak8toppasspt     = data->add<float>("","ak8toppasspt","F",0.);
+    i_ak8pt        = data->addMulti<float>("","ak8pt",0);
+    i_ak8eta       = data->addMulti<float>("","ak8eta",0);
+    i_ak8phi       = data->addMulti<float>("","ak8phi",0);
+    i_ak8rawmass   = data->addMulti<float>("","ak8rawmass",0);
+    i_ak8prunmass  = data->addMulti<float>("","ak8prunmass",0);
+    i_ak8sdmass    = data->addMulti<float>("","ak8sdmass",0);
+    i_ak8tau21     = data->addMulti<float>("","ak8tau21",0);
+    i_ak8tau31     = data->addMulti<float>("","ak8tau31",0);
+    i_ak8tau32     = data->addMulti<float>("","ak8tau32",0);
   }
 
 
@@ -484,6 +530,140 @@ struct ExtraVarsFiller {
     }
 
   }
+
+  void fillWTagInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana) {
+
+    bool  sfbclose2lep_     = false;
+    float ak8candmass_      = 0.;
+    float ak8candmasstau21_ = 0.;
+    float ak8candmasstau32_ = 0.;
+    float ak8candpt_        = 0.;
+    float ak8candpttau21_   = 0.;
+    float ak8candpttau32_   = 0.;
+    float ak8wpassmass_     = 0.;
+    float ak8wpasspt_       = 0.;
+    float ak8toppassmass_   = 0.;
+    float ak8toppasspt_     = 0.;
+
+    std::vector<MomentumF> csvmjets;
+    for(auto* j : ana->jets) {
+      if(j->csv() > defaults::CSV_MEDIUM) {
+        MomentumF tmpVecCSVMJets; tmpVecCSVMJets = j->p4();
+        csvmjets.push_back(tmpVecCSVMJets); }
+    }
+
+
+    // check if there is a lepton
+    if (ana->nSelLeptons > 0) {
+      MomentumF lepf(ana->selectedLeptons.at(0)->p4());
+      MomentumF* lep = &lepf;
+
+      // find a b close to the lepton
+      for (unsigned int i0=0; i0<csvmjets.size(); ++i0) {
+        float drlepbjet_ = PhysicsUtilities::deltaR(*lep,csvmjets[i0]);
+        if (drlepbjet_<(3.14/2.)) { sfbclose2lep_ = true; }
+      }
+
+      unsigned int count = 0;
+      for(auto* fj : ana->fatJets) {
+        MomentumF ak8tmp = fj->p4();
+        if (PhysicsUtilities::deltaR(*lep,ak8tmp)<(3.14/2.)) { continue; }
+        if (count >0) { continue; }
+        ak8candmass_ = fj->fjSoftDropMass();
+        ak8candpt_   = fj->pt();
+        // apply only the tau21 selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 1e9,  0.60)) {
+          ak8candmasstau21_ = fj->fjSoftDropMass();
+          ak8candpttau21_   = fj->pt();
+        }
+        // apply only the tau32 selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 0.69,  1e9)) {
+          ak8candmasstau32_ = fj->fjSoftDropMass();
+          ak8candpttau32_   = fj->pt();
+        }
+        // apply the w-tag selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) {
+          ak8wpassmass_ = fj->fjSoftDropMass();
+          ak8wpasspt_   = fj->pt();
+        }
+	// apply the top-tag selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 110,  210, 0.69,  1e9)) {
+          ak8toppassmass_ = fj->fjSoftDropMass();
+          ak8toppasspt_   = fj->pt();
+        }
+        ++count;
+      }
+
+    } // end of checking a sel lepton
+
+    else {
+
+      unsigned int count = 0;
+      for(auto* fj : ana->fatJets) {
+        MomentumF ak8tmp = fj->p4();
+
+        if (count >0) { continue; }
+        ak8candmass_ = fj->fjSoftDropMass();
+        ak8candpt_   = fj->pt();
+        // apply only the tau21 selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 1e9,  0.60)) {
+          ak8candmasstau21_ = fj->fjSoftDropMass();
+          ak8candpttau21_   = fj->pt();
+        }
+        // apply only the tau32 selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 0.69,  1e9)) {
+          ak8candmasstau32_ = fj->fjSoftDropMass();
+          ak8candpttau32_   = fj->pt();
+        }
+        // apply the w-tag selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) {
+          ak8wpassmass_ = fj->fjSoftDropMass();
+          ak8wpasspt_   = fj->pt();
+        }
+        // apply the top-tag selection
+        if (cfgSet::isSoftDropTagged(fj, 150, 110,  210, 0.69,  1e9)) {
+          ak8toppassmass_ = fj->fjSoftDropMass();
+          ak8toppasspt_   = fj->pt();
+        }
+        ++count;
+      }
+    } // end of lep = 0
+
+    if (ana->nSelLeptons==0) { sfbclose2lep_ = true; }
+    if (csvmjets.size()==0)  { sfbclose2lep_ = true; }
+
+    data->fill<bool> (i_sfbclose2lep     , sfbclose2lep_    );
+    data->fill<float>(i_ak8candmass      , ak8candmass_     );
+    data->fill<float>(i_ak8candmasstau21 , ak8candmasstau21_);
+    data->fill<float>(i_ak8candmasstau32 , ak8candmasstau32_);
+    data->fill<float>(i_ak8candpt        , ak8candpt_       );
+    data->fill<float>(i_ak8candpttau21   , ak8candpttau21_  );
+    data->fill<float>(i_ak8candpttau32   , ak8candpttau32_  );
+    data->fill<float>(i_ak8wpassmass     , ak8wpassmass_    );
+    data->fill<float>(i_ak8wpasspt       , ak8wpasspt_      );
+    data->fill<float>(i_ak8toppassmass   , ak8toppassmass_  );
+    data->fill<float>(i_ak8toppasspt     , ak8toppasspt_    );
+
+    /*
+    for(auto* fj : ana->fatJets) {
+      // if (passSoftDropTaggerFJ(fj,110.,210.,0.50))    { ++nsdtopjmewp1tight_; }
+      // if (passSoftDropTaggerFJ(fj,110.,210.,0.69))    { ++nsdtopjmewp1loose_; }
+      // if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.45)) { ++nsdwjmewp1tight_; }
+      // if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.60)) { ++nsdwjmewp1loose_; }
+
+      data->fillMulti<float>(i_ak8pt      , fj->pt());
+      data->fillMulti<float>(i_ak8eta     , fj->eta());
+      data->fillMulti<float>(i_ak8phi     , fj->phi());
+      data->fillMulti<float>(i_ak8rawmass , fj->fjRawMass());
+      data->fillMulti<float>(i_ak8prunmass, fj->fjPrunedMass());
+      data->fillMulti<float>(i_ak8sdmass  , fj->fjSoftDropMass());
+      data->fillMulti<float>(i_ak8tau21   , (fj->fjTau2())/(fj->fjTau1()));
+      data->fillMulti<float>(i_ak8tau31   , (fj->fjTau3())/(fj->fjTau1()));
+      data->fillMulti<float>(i_ak8tau32   , (fj->fjTau3())/(fj->fjTau2()));
+    }
+    */
+  }
+
 
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     if(!ana->isMC()) return;

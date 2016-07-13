@@ -37,7 +37,7 @@ typedef RecoJet<CylLorentzCoordF> RecoJetF;
 class BTagByEvtWeightCorr : public Correction {
 public:
   enum axes {TYPE,FLAVOR,ETA,WP};
-  enum meastype {MUJET,COMB};
+  enum meastype {COMB,INCL};
 
   BTagByEvtWeightCorr(TString effInput, TString sfInput, bool isFastSim );
   ~BTagByEvtWeightCorr();
