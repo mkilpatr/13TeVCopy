@@ -76,22 +76,27 @@ double MuonTriggerCorrection::get(CORRTYPE corrType, double pt, double eta) {
   throw std::invalid_argument("[MuonTriggerCorrection::get] Invalid correction type!");
 }
 
-double MetORLepTriggerCorrection::get(CORRTYPE corrType, int leppdgid, double leppt, double met) {
+double MetORLepTriggerCorrection::get(CORRTYPE corrType, int leppdgid, double leppt, double lepeta, double met) {
   if (corrType==NONE) return 1;
 
-  EfficiencyCorrectionHelper *corr = leppdgid==13 ? &corrMetOrMu : &corrMetOrEl;
+  unsigned idx = leppdgid == 13 ? TMath::BinarySearch(mu_eta_range.size(), mu_eta_range.data(), std::abs(lepeta)) : TMath::BinarySearch(el_eta_range.size(), el_eta_range.data(), std::abs(lepeta));
 
-  corr->findBin(leppt, met)
+  if(leppdgid == 13 && idx >= corrsMetOrMu.size()) idx = corrsMetOrMu.size() - 1;
+  else if(leppdgid == 11 && idx >= corrsMetOrEl.size()) idx = corrsMetOrEl.size() - 1;
+
+  EfficiencyCorrectionHelper &corr = leppdgid == 13 ? corrsMetOrMu.at(idx) : corrsMetOrEl.at(idx);
+
+  corr.findBin(leppt, met)
 ;
   switch(corrType){
   case NOMINAL:
-    return corr->get();
+    return corr.get();
     break;
   case UP:
-    return corr->get() + corr->getErrorHigh();
+    return corr.get() + corr.getErrorHigh();
     break;
   case DOWN:
-    return corr->get() - corr->getErrorLow();
+    return corr.get() - corr.getErrorLow();
     break;
   case NONE:
     return 1;
@@ -155,10 +160,10 @@ void TriggerCorrectionSet::processCorrection(const BaseTreeAnalyzer* ana) {
   if(options_ & MET_OR_LEP) {
     auto lep = ana->selectedLepton;
     if (lep && lep->ismuon()){
-      trigMetOrMuWeight = trigMetOrLepCorr->get(cfg.trigMetOrLepCorrType, lep->pdgid(), lep->pt(), ana->met->pt());
+      trigMetOrMuWeight = trigMetOrLepCorr->get(cfg.trigMetOrLepCorrType, lep->pdgid(), lep->pt(), lep->eta(), ana->met->pt());
     }
     else if (lep && lep->iselectron()){
-      trigMetOrElWeight = trigMetOrLepCorr->get(cfg.trigMetOrLepCorrType, lep->pdgid(), lep->pt(), ana->met->pt());
+      trigMetOrElWeight = trigMetOrLepCorr->get(cfg.trigMetOrLepCorrType, lep->pdgid(), lep->pt(), lep->eta(), ana->met->pt());
     }
   }
 
