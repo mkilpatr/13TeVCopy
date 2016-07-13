@@ -23,6 +23,8 @@ struct BasicVarsFiller {
   size i_truePUWeight;
   size i_trigEleWeight;
   size i_trigMuWeight;
+  size i_trigMetOrElWeight;
+  size i_trigMetOrMuWeight;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
@@ -115,6 +117,8 @@ struct BasicVarsFiller {
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
     i_trigEleWeight  = data->add<float>("","trigEleWeight","F",1);
     i_trigMuWeight   = data->add<float>("","trigMuWeight","F",1);
+    i_trigMetOrElWeight = data->add<float>("","trigMetOrElWeight","F",1);
+    i_trigMetOrMuWeight = data->add<float>("","trigMetOrMuWeight","F",1);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
@@ -218,6 +222,8 @@ struct BasicVarsFiller {
     data->fill<float>(i_truePUWeight,       ana->eventCorrections.getTruePUWeight());
     data->fill<float>(i_trigEleWeight,      ana->triggerCorrections.getTrigEleWeight());
     data->fill<float>(i_trigMuWeight,       ana->triggerCorrections.getTrigMuWeight());
+    data->fill<float>(i_trigMetOrElWeight,  ana->triggerCorrections.getTrigMetOrElWeight());
+    data->fill<float>(i_trigMetOrMuWeight,  ana->triggerCorrections.getTrigMetOrMuWeight());
     data->fill<float>(i_btagWeight,         ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight,  ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight,  ana->jetAndMETCorrections.getQCDRespTailWeight());

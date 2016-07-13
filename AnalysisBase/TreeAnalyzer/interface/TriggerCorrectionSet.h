@@ -63,14 +63,21 @@ private:
 class MetORLepTriggerCorrection : public Correction {
 public :
   MetORLepTriggerCorrection(TString corrName, TFile* file) :
-    Correction(corrName), corrMetOrMu("efftrig_met_or_singlemu_2d", file), corrMetOrEl("efftrig_met_or_singleel_2d", file) {}
+    Correction(corrName), mu_eta_range{0.0, 0.8, 2.4, 10.0}, el_eta_range{0.0, 0.8, 2.1, 10.0} {
+      corrsMetOrMu.emplace_back("efftrig_met_or_singlemu_2d_eta0p000to0p800", file);
+      corrsMetOrMu.emplace_back("efftrig_met_or_singlemu_2d_eta0p800to2p400", file);
+      corrsMetOrEl.emplace_back("efftrig_met_or_singleel_2d_eta0p000to0p800", file);
+      corrsMetOrEl.emplace_back("efftrig_met_or_singleel_2d_eta0p800to2p100", file);
+    }
   ~MetORLepTriggerCorrection() {}
 
-  double get(CORRTYPE corrType, int leppdgid, double leppt, double met);
+  double get(CORRTYPE corrType, int leppdgid, double leppt, double lepeta, double met);
 
 private:
-  EfficiencyCorrectionHelper corrMetOrMu;
-  EfficiencyCorrectionHelper corrMetOrEl;
+  std::vector<double> mu_eta_range;
+  std::vector<double> el_eta_range;
+  std::vector<EfficiencyCorrectionHelper> corrsMetOrMu;
+  std::vector<EfficiencyCorrectionHelper> corrsMetOrEl;
 };
 
 // ----------------------------------------------------
