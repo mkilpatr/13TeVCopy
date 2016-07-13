@@ -213,7 +213,7 @@ process.TestAnalyzer.Photons.looseId = cms.InputTag("egmPhotonIDs:cutBasedPhoton
 process.TestAnalyzer.Photons.mediumId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium")
 process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-tight")
 
-if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'QCD' in DatasetName :
+if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' in DatasetName and not 'QCD' in DatasetName :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.requireElectronVeto = cms.untracked.bool(True)
