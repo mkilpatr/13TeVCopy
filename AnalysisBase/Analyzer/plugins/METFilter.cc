@@ -21,7 +21,7 @@ class METFilter : public PhysicsAnalyzer {
 
       bool pass = true;
       //remove nan met!
-      if(eventInfo->met()->pt() != eventInfo->met()->pt()) pass = false;
+      if(std::isnan(eventInfo->met()->pt())) pass = false;
       if(minMET > 0 && eventInfo->met()->pt() < minMET) pass = false;
       if(maxMET > 0 && eventInfo->met()->pt() > maxMET) pass = false;
 
