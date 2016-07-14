@@ -18,18 +18,20 @@ void plotSdEff(){
   BaseEstimator z(config.outputdir);
   z.setConfig(config);
 
-  BinInfo num("sdtoppasspt","p_{T}", "GeV");
+  //BinInfo num("sdtoppasspt","p_{T}", "GeV");
+  BinInfo num("ak8toppasspt","p_{T}", "GeV");  
   num.setBinning(vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000});
   BinInfo denom = num;
-  denom.var = "sdtopcandpt";
+  //denom.var = "sdtopcandpt";
+  denom.var = "ak8candpt";
 
-  vector<TString> mc = {"ttbar", "wjets", "other", "znunu"};
+  vector<TString> mc = {"qcd-unsmeared","ttbar", "wjets", "other", "znunu"};
 
   TString data = "singlelep";
 
   z.plotDataMC(mc,data,false);
 
-  z.plotEfficiencyComp(num, denom, {"mc-noqcd", data});
+  z.plotEfficiencyComp(num, denom, {"mc-unsmeared", data});
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,13 +42,14 @@ void plotSdMistag(){
   BaseEstimator z(config.outputdir);
   z.setConfig(config);
 
-  BinInfo num("sdtoppassptnolep","p_{T}", "GeV");
-  num.setBinning(vector<int>{400, 500, 600, 700, 800, 1000});
+  //BinInfo num("sdtoppassptnolep","p_{T}", "GeV");
+  BinInfo num("ak8toppasspt","p_{T}", "GeV");
+  num.setBinning(vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000});
   BinInfo denom = num;
-  denom.var = "sdtopcandptnolep";
+  //denom.var = "sdtopcandptnolep";
+  denom.var = "ak8candpt";
 
   vector<TString> mc = {"qcd-unsmeared", "ttbar", "wjets", "other", "znunu"};
-
 
   TString data = "jetht";
 
