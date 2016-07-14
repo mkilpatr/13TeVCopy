@@ -158,7 +158,7 @@ if args.makegrid :
             filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext[0-9]*|)(_[0-9]+|)_ntuple_%s.root' % (sample, args.postsuffix), f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
-        mstopmin = int(sample.split('_')[1][:3]) if len(sample.split('_')) > 1 and len(sample.split('_')[1]) > 2 and sample.split('_')[1][:3].isdigit() else args.mstopmin
+        mstopmin = sample.split('_')[1][:3] if len(sample.split('_')) > 1 and len(sample.split('_')[1]) > 2 and sample.split('_')[1][:3].isdigit() else args.mstopmin
         mstopmax = args.mstopmax
         if len(sample.split('_')) > 1 :
             mstopmax = sample.split('_')[1][-4:] if len(sample.split('_')[1]) > 3 and sample.split('_')[1][-4].isdigit() else sample.split('_')[1][-3:]
@@ -166,6 +166,8 @@ if args.makegrid :
         sigsuffix = sample.split('_')[3] if len(sample.split('_')) > 3 else ''
         infiles = [prefix + f for f in filelist]
         files[sample] = infiles
+        mstopmin = int(mstopmin)
+        mstopmax = int(mstopmax)
         print mstopmin, mstopmax
         (snames[sample],masspoints) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
 

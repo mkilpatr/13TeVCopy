@@ -66,6 +66,7 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
 )
 
 # dataset name
+runCRAB = True if options.inputDataset else False
 DatasetName = options.inputDataset if options.inputDataset else options.inputFiles[0]
 print DatasetName
 
@@ -87,6 +88,9 @@ if 'Photon' in DatasetName or 'JetHT' in DatasetName or 'DoubleMu' in DatasetNam
 if 'QCD' in DatasetName:
     process.TestAnalyzer.EventInfo.fillNumStdGenJets = cms.untracked.bool(True)
 
+# For reHLT samples
+if 'reHLT' in DatasetName:
+    process.TestAnalyzer.Triggers.bits = cms.InputTag('TriggerResults','','HLT2')
 
 # Settings
 ISDATA = False
@@ -278,10 +282,10 @@ if usePrivateSQlite:
     era = "Spring16_25nsV6_DATA" if ISDATA else "Spring16_25nsV6_MC"
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
-    dBFile = os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
+    dBFile = era+'.db' if runCRAB else os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
     print 'Using sqlite file ', dBFile, ' for JECs'
     process.jec = cms.ESSource("PoolDBESSource", CondDBSetup,
-                               connect=cms.string("sqlite_file://" + dBFile),
+                               connect=cms.string("sqlite:///" + dBFile),
                                toGet=cms.VPSet(
             cms.PSet(
                 record=cms.string("JetCorrectionsRecord"),
