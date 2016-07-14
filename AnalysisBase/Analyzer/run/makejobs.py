@@ -33,6 +33,7 @@ parser.add_argument("--postsuffix", dest="postsuffix", default="postproc", help=
 parser.add_argument("--runmerge", dest="runmerge", action='store_true', help="Run file merging instead of job submission. [Default: False]")
 parser.add_argument("--splitmerge", dest="splitmerge", action='store_true', help="Split file merging into multiple output files. [Default: False]")
 parser.add_argument("--inputdir", dest="inputdir", default="/eos/uscms/store/user/${USER}/13TeV/ntuples", help="Input directory with unmerged ntuples. [Default: \"/eos/uscms/store/user/${USER}/13TeV/ntuples\"]")
+parser.add_argument("--checkfailed", dest="checkfailed", action='store_true', help="Check for failed jobs which result in corrupted files. Important for data. [Default: False]")
 parser.add_argument("--resubmit", dest="resubmit", action='store_true', help="Resubmit jobs for which output files do not exist. [Default: False]")
 parser.add_argument("-i", "--input", dest="input", default="datasets.conf", help="Input configuration file with list of datasets. [Default: datasets.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
@@ -543,6 +544,30 @@ elif args.submittype == 'crab':
     os.system("chmod +x %s.sh" % args.submit)
     print "Done!"
     exit()
+
+elif args.checkfailed :
+    parseConfig(False)
+    for isam in range(len(samples)) :
+        cmd = ""
+        if args.splittype == "file" :
+            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam])
+        else :
+            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}' | sed 's/.root/_numEvent%d.root/'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam],args.numperjob)
+        ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        output= ps.communicate()[0].replace(':\n',': ')
+        result = output.split('\n')
+        if len(result) > 1 :
+            print '\n'.join(result)
+            files = [line.split()[-1] for line in result if len(line) > 1]
+            removefiles = raw_input("Do you want to delete these output files? [y/n] ").lower()
+            yes = ['yes','y']
+            no = ['no','n']
+            if removefiles in yes :
+                print 'Will remove files!'
+                rmcmd = 'rm ' + ' '.join(files)
+                os.system(rmcmd)
+            elif not removefiles in no :
+                print 'Didn\'t get a y/n answer! Doing nothing ...'
 
 else :
     parseConfig(False)
