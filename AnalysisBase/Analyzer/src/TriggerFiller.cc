@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // TriggerFiller
-// 
+//
 // Filler for trigger decisions
-// 
-// TriggerFiller.cc created on Thu Jul 2 14:13:32 CEST 2015 
-// 
+//
+// TriggerFiller.cc created on Thu Jul 2 14:13:32 CEST 2015
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/TriggerFiller.h"
@@ -75,32 +75,39 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele23_WPLoose_Gsf_v4"] = kHLT_Ele23_WPLoose_Gsf;
   trigIds_["HLT_Ele23_WPLoose_Gsf_v5"] = kHLT_Ele23_WPLoose_Gsf;
   trigIds_["HLT_Ele23_WPLoose_Gsf_v6"] = kHLT_Ele23_WPLoose_Gsf;
+  trigIds_["HLT_Ele23_WPLoose_Gsf_v7"] = kHLT_Ele23_WPLoose_Gsf;
   trigIds_["HLT_Ele25_WPTight_Gsf_v1"] = kHLT_Ele25_WPTight_Gsf;
   trigIds_["HLT_Ele25_WPTight_Gsf_v2"] = kHLT_Ele25_WPTight_Gsf;
   trigIds_["HLT_Ele25_WPTight_Gsf_v3"] = kHLT_Ele25_WPTight_Gsf;
   trigIds_["HLT_Ele25_WPTight_Gsf_v4"] = kHLT_Ele25_WPTight_Gsf;
+  trigIds_["HLT_Ele25_WPTight_Gsf_v5"] = kHLT_Ele25_WPTight_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v1"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v2"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v3"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele27_WPLoose_Gsf_v4"] = kHLT_Ele27_WPLoose_Gsf;
+  trigIds_["HLT_Ele27_WPLoose_Gsf_v5"] = kHLT_Ele27_WPLoose_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v3"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v4"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPLoose_Gsf_v5"] = kHLT_Ele25_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v2"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v3"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v4"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
+  trigIds_["HLT_Ele25_eta2p1_WPTight_Gsf_v5"] = kHLT_Ele25_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v1"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v2"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v3"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v4"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v5"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
+  trigIds_["HLT_Ele27_eta2p1_WPLoose_Gsf_v6"] = kHLT_Ele27_eta2p1_WPLoose_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v1"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v2"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v3"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v4"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v5"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
+  trigIds_["HLT_Ele27_eta2p1_WPTight_Gsf_v6"] = kHLT_Ele27_eta2p1_WPTight_Gsf;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_NoiseCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_JetIdCleaned_v1"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
   trigIds_["HLT_DiCentralPFJet55_PFMET110_JetIdCleaned_v2"] = kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned;
@@ -198,18 +205,21 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v4"] = kHLT_Photon165_R9Id90_HE10_IsoM;
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v5"] = kHLT_Photon165_R9Id90_HE10_IsoM;
   trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v6"] = kHLT_Photon165_R9Id90_HE10_IsoM;
+  trigIds_["HLT_Photon165_R9Id90_HE10_IsoM_v7"] = kHLT_Photon165_R9Id90_HE10_IsoM;
   trigIds_["HLT_Photon165_HE10_v1"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon165_HE10_v2"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon165_HE10_v3"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon165_HE10_v4"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon165_HE10_v5"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon165_HE10_v6"] = kHLT_Photon165_HE10;
+  trigIds_["HLT_Photon165_HE10_v7"] = kHLT_Photon165_HE10;
   trigIds_["HLT_Photon175_v1"] = kHLT_Photon175;
   trigIds_["HLT_Photon175_v2"] = kHLT_Photon175;
   trigIds_["HLT_Photon175_v3"] = kHLT_Photon175;
   trigIds_["HLT_Photon175_v4"] = kHLT_Photon175;
   trigIds_["HLT_Photon175_v5"] = kHLT_Photon175;
   trigIds_["HLT_Photon175_v6"] = kHLT_Photon175;
+  trigIds_["HLT_Photon175_v7"] = kHLT_Photon175;
   // double electron
   trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v1"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v2"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
@@ -217,12 +227,14 @@ void TriggerFiller::initTriggerNames()
   trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v4"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v5"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v6"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+  trigIds_["HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v7"] = kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v1"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v2"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v3"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v4"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v5"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v6"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+  trigIds_["HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v7"] = kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
   trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v1"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
   trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v2"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
   trigIds_["HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW_v3"] = kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW;
