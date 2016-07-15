@@ -20,8 +20,6 @@ gROOT.SetBatch(True)
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
 parser.add_argument("--makegrid", dest="makegrid", action='store_true', help="Make jobs for producing mass grid from SMS scans. [Default: False]")
-parser.add_argument("--mstopsteps", dest="mstopsteps", type=int, default=25, help="Step size in m(stop) in GeV for making grid. [Default: 25]")
-parser.add_argument("--mlspsteps", dest="mlspsteps", type=int, default=25, help="Step size in m(lsp) in GeV for making grid. [Default: 25]")
 parser.add_argument("--mstopmin", dest="mstopmin", type=int, default=100, help="Minimum m(stop) in GeV for making grid. [Default: 100]")
 parser.add_argument("--mstopmax", dest="mstopmax", type=int, default=1250, help="Maximum m(stop) in GeV for making grid. [Default: 1250]")
 parser.add_argument("--mlspmin", dest="mlspmin", type=int, default=0, help="Minimum m(lsp) in GeV for making grid. [Default: 0]")
@@ -141,13 +139,14 @@ if args.makegrid :
     else :
         os.system("mkdir -p %s" % args.outdir)
 
-    masspoints = []
+    masspoints = {}
     files = {}
     prefix = ""
     snames = {}
     for sample in samples :
         filelist = []
         snames[sample] = []
+        masspoints[sample] = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             cmd = ("%s find -f %s | egrep '%s(-ext[0-9]*|)(_[0-9]+|)_ntuple_%s.root'" % (eos, args.outdir, sample, args.postsuffix))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -158,7 +157,7 @@ if args.makegrid :
             filelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s(-ext[0-9]*|)(_[0-9]+|)_ntuple_%s.root' % (sample, args.postsuffix), f)]
             if args.inputdir.startswith("/eos/uscms/store/user") :
                 prefix = "root://cmseos:1094/"
-        mstopmin = int(sample.split('_')[1][:3]) if len(sample.split('_')) > 1 and len(sample.split('_')[1]) > 2 and sample.split('_')[1][:3].isdigit() else args.mstopmin
+        mstopmin = sample.split('_')[1][:3] if len(sample.split('_')) > 1 and len(sample.split('_')[1]) > 2 and sample.split('_')[1][:3].isdigit() else args.mstopmin
         mstopmax = args.mstopmax
         if len(sample.split('_')) > 1 :
             mstopmax = sample.split('_')[1][-4:] if len(sample.split('_')[1]) > 3 and sample.split('_')[1][-4].isdigit() else sample.split('_')[1][-3:]
@@ -166,8 +165,10 @@ if args.makegrid :
         sigsuffix = sample.split('_')[3] if len(sample.split('_')) > 3 else ''
         infiles = [prefix + f for f in filelist]
         files[sample] = infiles
+        mstopmin = int(mstopmin)
+        mstopmax = int(mstopmax)+1
         print mstopmin, mstopmax
-        (snames[sample],masspoints) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
+        (snames[sample],masspoints[sample]) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
 
     print 'Creating submission file: submit_makegrid.sh'
     script = open('submit_makegrid.sh', 'w')
@@ -245,7 +246,9 @@ rm submit.cmd""".format(
 
     print "Done!"
 
-    print ', '.join(p for p in masspoints)
+    for sname in masspoints:
+        print sname
+        print ', '.join(masspoints[sname])
 
     exit()
 
@@ -714,7 +717,6 @@ rm submit.cmd""".format(
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" % (args.jobdir, samples[isam], ijob))
-# request_memory          = 199
 
 
     script.close()
