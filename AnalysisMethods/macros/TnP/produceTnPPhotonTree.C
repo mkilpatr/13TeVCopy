@@ -227,8 +227,9 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
         if(dbg) std::cout << "tag pt: " << tag->pt() << std::endl;
 
         // tags must pass id & iso
-        if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, LepConfig_.muons)) continue;
-        else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
+        //if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, LepConfig_.muons)) continue;
+        //else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
+        if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
 
         if(dbg) std::cout << "tag passed id/iso " << std::endl;
 
@@ -236,19 +237,15 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
         bool tagMatchesTrigObj   = false;
         if(!isMC()){
           for(auto* to : triggerObjects) {
-            if(lepIdChoice == 13 && (to->filterflags() & kSingleIsoTkMu22) && ( ((to->pathflags() & kHLT_IsoMu22) || (to->pathflags() & kHLT_IsoTkMu22))) 
-                                                     && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
-              tagMatchesTrigObj      = true;
-              break;
-            }else if(lepIdChoice == 11 && (to->filterflags() & kSingleEle25WPTight) && (isMC() ? (to->pathflags() & kHLT_Ele25_eta2p1_WPTight_Gsf) : 
-                                                     (to->pathflags() & kHLT_Ele25_eta2p1_WPTight_Gsf)) && PhysicsUtilities::deltaR(*to,*tag) < maxTrigMatchDR_) {
-              tagMatchesTrigObj      = true;
+            if ( (to->pathflags() &  kHLT_Photon165_HE10) ){ //no to->filterflags() for photons?
+              tagMatchesTrigObj = true;
               break;
             }
           }
-        }else{ //isMC
+        }else{ // isMC
           tagMatchesTrigObj = true;
         }
+
         if(!tagMatchesTrigObj) continue;
 
         if(dbg) std::cout << "tag passed trig obj matching: " << tag->pt() << std::endl;
@@ -330,10 +327,10 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 
 };
 
-void produceTnPPhotonTree(TString sname = "dyll-m50-madgraph-ext",
+void produceTnPPhotonTree(TString sname = "dyee-m50-powheg",
                     const int fileindex = 0,
                     const bool isMC = true,
-                    const TString fname = "/store/user/hqu/13TeV/020716/merged/dyll-m50-madgraph-ext_1_ntuple_postproc.root",
+                    const TString fname = "/store/user/apatters/13TeV/12072016/merged/dyee_10_ntuple_postproc.root",
                     const double xsec = 1.0,
                     const TString outputdir = "photontrees",
                     const TString fileprefix = "root://cmseos:1094/",
