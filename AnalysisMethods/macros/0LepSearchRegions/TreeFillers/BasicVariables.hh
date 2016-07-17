@@ -278,7 +278,7 @@ struct BasicVarsFiller {
     std::vector<const FatJetF*> recotop_;
     for (const auto *fj : ana->fatJets){
       if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) recotop_.push_back(fj);
-      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) recow_.push_back(fj);
+      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) recow_.push_back(fj);
     }
     data->fill<int  >(i_nsdtoploose,  recotop_.size());
     data->fill<int  >(i_nsdwloose,    recow_.size());
