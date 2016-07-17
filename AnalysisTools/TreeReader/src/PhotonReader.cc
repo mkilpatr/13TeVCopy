@@ -52,7 +52,7 @@ void PhotonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
-    treeReader->setBranchAddress(branchName , "passConvVeto", &passElectronVeto, true);
+    treeReader->setBranchAddress(branchName , "passElectronVeto", &passElectronVeto, true);
     treeReader->setBranchAddress(branchName , "hasPixelSeed", &hasPixelSeed    , true);
 
   }
