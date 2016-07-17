@@ -13,7 +13,12 @@ struct ExtraVarsFiller {
 
   ExtraVarsFiller() {}
 
+  // Histograms
+  TH1D* hsys = nullptr;
+  TH1D* hpartonht = nullptr;
+
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
+  size i_failtriglep;
 
   // Syst. studies
   size i_systweights;
@@ -134,7 +139,14 @@ struct ExtraVarsFiller {
   size i_ak8tau31;
   size i_ak8tau32;
 
+  void bookHist(TFile *outFile){
+    outFile->cd();
+    hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
+    hpartonht = new TH1D("hpartonht", ";parton HT;Events", 300, 0, 3000);
+  }
+
   void bookTest(TreeWriterData* data){
+    i_failtriglep    = data->add<bool>("","failtriglep","O",0);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -240,7 +252,6 @@ struct ExtraVarsFiller {
     i_ngenlep        = data->add<int>("","ngenlep","I",0);
   }
 
-
   void bookWTag(TreeWriterData* data) {
     i_sfbclose2lep     = data->add<bool>("","sfbclose2lep","O",0);
     i_ak8candmass      = data->add<float>("","ak8candmass","F",0.);
@@ -265,7 +276,27 @@ struct ExtraVarsFiller {
   }
 
 
+  void fillHistograms(const BaseTreeAnalyzer *ana){
+    if (ana->isMC()){
+      for(unsigned i=0; i < ana->evtInfoReader.systweights->size(); ++i) {
+        double syswgt = ana->evtInfoReader.systweights->at(i)/ana->evtInfoReader.lhecentralweight;
+        hsys->Fill(i, syswgt*ana->weight);
+      }
+
+      vector<GenParticleF*> partons;
+      for (auto *p : ana->genParts){
+        if (ParticleInfo::isDocOutgoing(p->status()) && ParticleInfo::isQuarkOrGluon(p->pdgId()))
+          partons.push_back(p);
+      }
+      hpartonht->Fill(JetKinematics::ht(partons), ana->weight);
+    }
+  }
+
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    bool passTrigEl = ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
+    bool passTrigMu = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22);
+    data->fill<bool>(i_failtriglep, ana->isMC() || (ana->process==defaults::DATA_MET ? ((!passTrigEl) && (!passTrigMu)): false));
+
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -341,7 +372,7 @@ struct ExtraVarsFiller {
       data->fill<float>(i_drj1lj2l,fabs(PhysicsUtilities::deltaR(*ana->isrJets[0],*ana->isrJets[1])));
     }
 
-    int j1chhadn2_ = -1;  
+    int j1chhadn2_ = -1;
     int j1chhadn4_ = -1;
     int j1chhadn6_ = -1;
     if(jets.size()>0){
@@ -586,7 +617,7 @@ struct ExtraVarsFiller {
           ak8wpassmass_ = fj->fjSoftDropMass();
           ak8wpasspt_   = fj->pt();
         }
-	// apply the top-tag selection
+  // apply the top-tag selection
         if (cfgSet::isSoftDropTagged(fj, 150, 110,  210, 0.69,  1e9)) {
           ak8toppassmass_ = fj->fjSoftDropMass();
           ak8toppasspt_   = fj->pt();

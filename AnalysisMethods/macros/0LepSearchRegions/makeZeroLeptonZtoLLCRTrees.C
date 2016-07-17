@@ -55,12 +55,16 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
 
     bool fillEvent() {
+      // fill inclusive histograms
+      extraFiller.fillHistograms(this);
+
       if(!passZtoLLSel)                     return false;
       if(!goodvertex)                       return false;
       if(nJets < 2)                         return false;
       if(metplusdilep.pt() < 100)           return false;
 
       filler.fillEventInfo(&data, this, true, &metplusdilep);
+      extraFiller.fillTestVars(&data, this);
 
       return true;
     }

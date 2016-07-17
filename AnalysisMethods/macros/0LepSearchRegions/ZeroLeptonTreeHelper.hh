@@ -75,6 +75,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     void book() {
       filler.book(&data);
+      extraFiller.bookHist(outFile_);
       extraFiller.bookTest(&data);
 //      extraFiller.bookSyst(&data);
 //      extraFiller.bookJetMET(&data);
@@ -86,6 +87,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
+
+      // fill inclusive histograms
+      extraFiller.fillHistograms(this);
 
       if(!goodvertex) return false;
 
@@ -108,6 +112,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;
+
         filler.fillEventInfo(&data, this);
 //        extraFiller.fillJetMETInfo(&data, this);
       }
