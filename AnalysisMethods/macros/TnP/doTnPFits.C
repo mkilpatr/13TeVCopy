@@ -2,6 +2,8 @@
 #include "AnalysisMethods/TnPUtils/interface/TagProbeFitter.h"
 #endif
 
+
+#include "AnalysisMethods/TnPUtils/interface/TagProbeFitter.h"
 using namespace std;
 
 // map of PDF labels and vector holding the corresponding PDF commands
@@ -96,14 +98,14 @@ void TnPFitter::calculateEfficiencies()
 // will need MC templates for any "MCConv" PDF
 // basic idea: we do a simultaneous fit of the the "passing" and "failing" samples to the assigned signal+background PDF
 // the choices of fit model, binning are sources of systematic uncertainties, which can be estimated by varying those choices
-void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",             // MC file ... leave blank if don't want to do MC effs
-               const string dataFile     = "trees/singlemu-50ns_tree.root",         // data file ... leave blank if don't want to do data effs
+void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees/17072016-tnpphoton/dyee_small_tree.root",             // MC file ... leave blank if don't want to do MC effs
+               const string dataFile     = "",//"/eos/uscms/store/user/apatters/trees/17072016-tnpphoton/singleel9ifb_tree.root",         // data file ... leave blank if don't want to do data effs
                const string dirName      = "fits",                                  // directory name in output file in which fits will be saved
                const string outFileMC    = "fitResults_mu_mc.root",                 // MC output file name
                const string outFileData  = "fitResults_mu_data.root",               // data output file name
-               const string fitModel     = "MCConvGaussPlusExp",                    // options for fit model
-               const string templateFile = "AnalysisMethods/macros/TnP/MCTemplates/zmm_templates.root", // file with MC templates, relevant for PDFs using MC-based Z-shape
-               const bool   doPtEtaEff   = true,          // 2D pt-eta binning of efficiencies
+               const string fitModel     = "VPVPlusExpo",                    // options for fit model
+               const string templateFile = "MCTemplates/zee_templates.root", // file with MC templates, relevant for PDFs using MC-based Z-shape
+               const bool   doPtEtaEff   = false,          // 2D pt-eta binning of efficiencies
                const bool   doPtEff      = true,          // pt-binned efficiencies
                const bool   doEtaEff     = true,          // eta-binned efficiencies
                const bool   doHtEff      = false,          // htalong-binned eff
@@ -112,25 +114,27 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
                const bool   doPtAnEff    = false)          // 2D pt-annulus binning
 {
 
+
   // 2D pt/eta binning for effs
   EfficiencySet pt_eta_effset("pt_eta_eff");
-  pt_eta_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_eta_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
   //pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.6, 2.4}; // muons
   pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.5, 2.4}; // electrons
 
+
   // 2D pt/htalong binning for effs
   EfficiencySet pt_ht_effset("pt_eta_eff");
-  pt_ht_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_ht_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
   pt_ht_effset.binning["htalong"] = {0.0, 50.0, 100.0, 300.0};   // htalong
 
   // 2D pt/annulus binning for effs
-  EfficiencySet pt_an_effset("pt_eta_eff");
-  pt_an_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
-  pt_an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
+  //EfficiencySet pt_an_effset("pt_eta_eff");
+  //pt_an_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  //pt_an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
 
   // effs vs pt
   EfficiencySet pt_effset("pt_eff");
-  pt_effset.binning["pt"] = {10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
 
   // effs vs eta
   EfficiencySet eta_effset("eta_eff");
@@ -142,8 +146,8 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
   ht_effset.binning["htalong"] = {0.0, 50.0, 100.0, 300.0};   // htalong
 
   // effs vs annulus
-  EfficiencySet an_effset("eta_eff");
-  an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
+  //EfficiencySet an_effset("eta_eff");
+  //an_effset.binning["annulus"] = {0.0, 1.0, 2.0, 3.0, 10.0};   // annulus
 
   // which efficiency parametrizations to evaluate
   vector<EfficiencySet> effsets;
@@ -152,8 +156,8 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
   if(doEtaEff)   effsets.push_back(eta_effset);
   if(doHtEff)    effsets.push_back(ht_effset);
   if(doPtHtEff)  effsets.push_back(pt_ht_effset);
-  if(doAnEff)    effsets.push_back(an_effset);
-  if(doPtAnEff)  effsets.push_back(pt_an_effset);
+  //if(doAnEff)    effsets.push_back(an_effset);
+  //if(doPtAnEff)  effsets.push_back(pt_an_effset);
 
   // add relevant variables from tree: parameters are name, title, min, max, units
   vector<TnPVariable> vars;
@@ -161,12 +165,13 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
   vars.push_back(TnPVariable("weight","weight",0,1e+08,""));
   vars.push_back(TnPVariable("pt","Probe p_{T}",0,1000,"GeV"));
   vars.push_back(TnPVariable("eta","Probe #eta",-2.4,2.4,""));
-  vars.push_back(TnPVariable("abseta","Probe |#eta|",0,2.4,""));
+  //vars.push_back(TnPVariable("abseta","Probe |#eta|",0,2.4,""));
   vars.push_back(TnPVariable("htalong","Probe ht_{along}",0,1000,"GeV"));
-  vars.push_back(TnPVariable("annulus","Probe annulus",0,1,""));
 
   // hold default PDF name (first entry), and, if there are different PDFs used for different bins/categories, hold pairs of bin name - PDF name
   vector<string> binToPDFmap;
+
+  std::cout << "****************** on to fit models" << std::endl;
 
   // definition of various signal + background PDF options. Needs a bit of trial-and-error to see what works best
   if(fitModel=="VPVPlusExpo") {              // signal: sum of 2 Voigtians, background: exponential
@@ -338,6 +343,7 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
     }
   }
 
+/*
   if(doPtAnEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_an_effset.binning["pt"].size()-1; ++ipt) {
       for(int iht = 0; iht < pt_an_effset.binning["annulus"].size()-1; ++iht) {
@@ -386,6 +392,7 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
       }
     }
   }
+*/
 
   if(doPtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_effset.binning["pt"].size()-1; ++ipt) {
@@ -526,6 +533,7 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
     }
   }
 
+/*
   if(doAnEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int iht = 0; iht < an_effset.binning["annulus"].size()-1; ++iht) {
       double minannulus = min(fabs(an_effset.binning["annulus"][iht]), fabs(an_effset.binning["annulus"][iht+1]));
@@ -572,20 +580,21 @@ void doTnPFits(const string mcFile       = "trees/dyjets_mu_tree.root",         
       }
     }
   }
+*/
 
   vector<string> fileNames;
 
   // do MC efficiencies
   if(mcFile != "") {
     fileNames = {mcFile};
-    TnPFitter mcTnPFitter(fileNames, dirName, "Probes", outFileMC, vars, effsets, binToPDFmap);
+    TnPFitter mcTnPFitter(fileNames, dirName, "Events", outFileMC, vars, effsets, binToPDFmap);
     mcTnPFitter.calculateEfficiencies();
   }
 
   // do data efficiencies
   if(dataFile != "") {
     fileNames = {dataFile};
-    TnPFitter dataTnPFitter(fileNames, dirName, "Probes", outFileData, vars, effsets, binToPDFmap);
+    TnPFitter dataTnPFitter(fileNames, dirName, "Events", outFileData, vars, effsets, binToPDFmap);
     dataTnPFitter.calculateEfficiencies();
   }
 
