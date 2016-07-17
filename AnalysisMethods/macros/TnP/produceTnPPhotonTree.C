@@ -1,5 +1,5 @@
 
-bool dbg = true;
+bool dbg = false;
 /*
 
 current singlelep triggers
@@ -44,9 +44,8 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     // trigger and filters
     size i_ismc      ;
     size i_passjson   ;
-    //size i_passtrige ;
+    size i_passtrige ;
     //size i_passtrigmu;
-    size i_passtrigphoton165;
     size i_passmetfilters;
     // tnp vars
     size i_diMass      ;
@@ -71,9 +70,14 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     bool  applyPixelSeedVeto      = true;    // default in DefaultConfigurations is true
     bool  applyCHFFilter          = false;
     int   lepIdChoice             = 11; // never change
+    bool  useHardestTag           = false;
+    bool  useHardestProbe         = false;
+    bool  useHardestMatchedProbe  = false;
+    LeptonF* hardestTag = 0;
+    PhotonF* hardestProbe = 0;
 
     vector<const GenParticleF*> genLeptons_; // hold gen leptons for matching
-    vector<LeptonF*>            tnpLeptons_; // hold tag and probe candidates
+    vector<LeptonF*>            tnpLeptons_; // hold tag lepton candidates
     vector<PhotonF*>            tnpPhotons_; // hold probe photon candidates
 
     cfgSet::ConfigSet LepConfig_;   // tag lep config
@@ -89,9 +93,8 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       i_weight         = data.add<float>("","weight","F",0);
       // Trigger and filters
       i_passjson       = data.add<bool>("","passjson","O",0);
-      //i_passtrige      = data.add<bool>("","passtrige","O",0);
+      i_passtrige      = data.add<bool>("","passtrige","O",0);
       //i_passtrigmu     = data.add<bool>("","passtrigmu","O",0);
-      i_passtrigphoton165 = data.add<bool>("","passtrigphoton165","O",0);
       i_passmetfilters = data.add<bool>("","passmetfilters","O",0);
       // tnp vars
       i_diMass          = data.addMulti<float>("","diMass",-9);
@@ -125,11 +128,10 @@ class TnPAnalyzer : public TreeCopierManualBranches {
 
       // fill Trigger and filters
       data.fill<bool>(i_passjson,       this->isMC() || (this->hasJSONFile() && this->passesLumiMask()));
-      //bool passTrigEl = this->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
-      //bool passTrigMu = (this->triggerflag & kHLT_IsoMu22) || (this->triggerflag & kHLT_IsoTkMu22);
+      bool passTrigEl = this->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
+      bool passTrigMu = (this->triggerflag & kHLT_IsoMu22) || (this->triggerflag & kHLT_IsoTkMu22);
       //data.fill<bool>(i_passtrigmu,     this->isMC() || (this->process==defaults::DATA_SINGLEMU ? passTrigMu: false));
-      //data.fill<bool>(i_passtrige,      this->isMC() || (this->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
-      data.fill<bool>(i_passtrigphoton165, this->isMC() || (this->triggerflag & kHLT_Photon165_HE10));
+      data.fill<bool>(i_passtrige,      this->isMC() || (this->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
 
       const auto &evt = this->evtInfoReader;
       bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
@@ -137,7 +139,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
 
       // require event to pass trigger, so that we can match tags to trigger objects
       //if (!(passTrigEl || passTrigMu)) return false;
-      //if(!passtrigphoton165) return false; // uncomment for final results
+      if(!passTrigEl) return false;
 
       if(dbg) std::cout << "*******************plugged event vars" << std::endl;
 
@@ -165,6 +167,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       // store tag lep candidates: allLeptons, choice of flavor, choice of genmatching if MC
       tnpLeptons_.clear();
       tnpLeptons_.reserve(allLeptons.size());
+      float hardestTagPt = -1;
       for(auto* l : allLeptons) {
         if(l->pdgid() != lepIdChoice) continue;
         if(abs(l->eta()) > 2.1 || l->pt() < 30) continue;
@@ -173,7 +176,37 @@ class TnPAnalyzer : public TreeCopierManualBranches {
           int near = PhysicsUtilities::findNearestDRDeref(*l, genLeptons_, nearDR, maxGenMatchDR_, 10.0, 0, genLeptons_.size());
           if(near < 0) continue;
         }
+
+        // tags must pass id & iso
+        //if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, LepConfig_.muons)) continue;
+        //else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
+        if(l->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)l, LepConfig_.electrons)) continue;
+
+        if(dbg) std::cout << "tag passed id/iso " << std::endl;
+
+        // tag must pass trig obj match in data, or gen match in mc
+        bool tagMatchesTrigObj   = false;
+        if(!isMC()){
+          for(auto* to : triggerObjects) {
+            if ( (to->pathflags() & kHLT_Ele27_eta2p1_WPLoose_Gsf) && PhysicsUtilities::deltaR(*to,*l) < maxTrigMatchDR_){ //no to->filterflags() for photons?
+              tagMatchesTrigObj = true;
+              break;
+            }
+          }
+        }else{ // isMC
+          tagMatchesTrigObj = true;
+        }
+        data.fillMulti<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj); // just to record how often it happens
+
+        if(!tagMatchesTrigObj) continue;
+
+        if(dbg) std::cout << "tag passed trig obj matching: " << l->pt() << std::endl;
+
         tnpLeptons_.push_back(l);
+        if( useHardestTag && (l->pt() > hardestTagPt) ) {
+          hardestTag = l;
+          hardestTagPt = l->pt();
+        }
       }
 
       if(dbg) std::cout << "plugged tag leps: " << tnpLeptons_.size() << std::endl;
@@ -189,12 +222,17 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       for(unsigned int i = 0; i < photonReader.photons.size(); i++){
         allPhotons_.push_back(&photonReader.photons[i]);
       }
+      float hardestProbePt = -1;
       for(auto* pho : allPhotons_) {
         if(dbg) std::cout << "photon in allPhotons: " << pho << " " << pho->pt() << " " << pho->passElectronVeto() << " " << pho->eta() << std::endl;
         //if(pho->passElectronVeto()) continue; /// uncomment for real run. want denom to fail electron veto.
         if(fabs(pho->eta())>2.1 || pho->pt() < 20) continue;
         tnpPhotons_.push_back(pho);
         if(dbg) std::cout << "** added a photon to tnpPhotons_" << std::endl;
+        if( useHardestProbe && (pho->pt() > hardestProbePt) ) {
+          hardestProbe = pho;
+          hardestProbePt = pho->pt();
+        }
       }
 
       if(dbg) std::cout << "plugged probe photons: " << tnpPhotons_.size() << std::endl;
@@ -223,45 +261,22 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
       // nested tnp loop: for(tag){for(probe){..}}
       int nTags = 0;
       for(auto* tag : tnpLeptons_) {
-
+        if( useHardestTag && hardestTag && (tag != hardestTag) ) continue;
         if(dbg) std::cout << "tag pt: " << tag->pt() << std::endl;
-
-        // tags must pass id & iso
-        //if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, LepConfig_.muons)) continue;
-        //else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
-        if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
-
-        if(dbg) std::cout << "tag passed id/iso " << std::endl;
-
-        // tag must pass trig obj match in data, or gen match in mc
-        bool tagMatchesTrigObj   = false;
-        if(!isMC()){
-          for(auto* to : triggerObjects) {
-            if ( (to->pathflags() &  kHLT_Photon165_HE10) ){ //no to->filterflags() for photons?
-              tagMatchesTrigObj = true;
-              break;
-            }
-          }
-        }else{ // isMC
-          tagMatchesTrigObj = true;
-        }
-
-        if(!tagMatchesTrigObj) continue;
-
-        if(dbg) std::cout << "tag passed trig obj matching: " << tag->pt() << std::endl;
-
-        // tag is now a good tag. look for probes
         nTags++;
         int nProbesMatchedToTag = 0; // number of probes to which the tag matches
+        PhotonF* hardestMatchedProbe = 0;
+        float    hardestMatchedProbePt = -1;
+        bool hardpasspho = false; // scope
+
         for(auto* probe : tnpPhotons_) {
 
+          //if(useHardestProbe && (nProbesMatchedToTag>0)) continue;
+          if(useHardestProbe && probe != hardestProbe) continue;
           if(dbg) std::cout << "looking at probe: " << probe->pt() << std::endl;
 
           // probe isn't tag
           if(probe->index() == tag->index()) continue;
-
-          // probe must have opposite charge as tag
-          //if(probe->q() == tag->q()) continue;
 
           if(dbg) std::cout << "passed index" << std::endl;
 
@@ -291,31 +306,70 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
             if (PhysicsUtilities::absDeltaPhi(*jet,*probe) < TMath::PiOver2()) {
               htalong += jet->pt();
               if(PhysicsUtilities::deltaR(*jet,*tag  ) < 0.4) cleanHttag   = true;
-              if(PhysicsUtilities::deltaR(*jet,*probe) < 0.4) cleanHtprobe = true;
-            }
+             if(PhysicsUtilities::deltaR(*jet,*probe) < 0.4) cleanHtprobe = true;
+             }
           }
           if(cleanHttag)   htalong -= tag->pt();
           if(cleanHtprobe) htalong -= probe->pt();
 
-          // fill probe vars
+          if(!useHardestMatchedProbe){
+            // fill probe vars in case of multiple matching probes
+            data.fillMulti<float>(i_diMass, dilep->mass());
+            data.fillMulti<float>(i_probePt, probe->pt());
+            data.fillMulti<float>(i_probeEta, probe->eta());
+            //data.fillMulti<float>(i_probeAnnulus, (probe->pt())*(probe->annulusactivity()) );
+            data.fillMulti<float>(i_probePhi, probe->phi());
+            //data.fillMulti<float>(i_probeCharge, probe->q());
+            data.fillMulti<bool >(i_probePass, passpho);
+            //data.fillMulti<bool >(i_probePassIdIso, passidiso); // id and iso combined for now
+            //data.fillMulti<bool >(i_probePassIdNoIso, passidnoiso);
+            data.fillMulti<float>(i_probeHtAlong, htalong);
+            ++nProbesMatchedToTag;
+          }else{ // useHardestMatchedProbe
+            if(probe->pt() > hardestMatchedProbePt){
+              hardestMatchedProbe = probe;
+              hardestMatchedProbePt = probe->pt();
+            }
+          }
+          delete dilep;
+        }//forProbe
+
+        // fill probe vars in case of one (hardest) matching probe
+        if(useHardestMatchedProbe && hardestMatchedProbePt > 0){
+          PhotonF* probe = hardestMatchedProbe;
+          MomentumF* dilep = new MomentumF(tag->p4() + probe->p4());
+
+          // measure the probe pass efficiencies
+          bool passpho = ((*probe).*PhoConfig_.selected)();
+          if(applyPixelSeedVeto) passpho &= !(probe->hasPixelSeed());
+
+          // extra variables ...
+          float htalong = -9;
+          bool cleanHttag   = false;
+          bool cleanHtprobe = false;
+          for(const auto* jet : jets ){
+            if (PhysicsUtilities::absDeltaPhi(*jet,*probe) < TMath::PiOver2()) {
+              htalong += jet->pt();
+              if(PhysicsUtilities::deltaR(*jet,*tag  ) < 0.4) cleanHttag   = true;
+             if(PhysicsUtilities::deltaR(*jet,*probe) < 0.4) cleanHtprobe = true;
+             }
+          }
+          if(cleanHttag)   htalong -= tag->pt();
+          if(cleanHtprobe) htalong -= probe->pt();
+
           data.fillMulti<float>(i_diMass, dilep->mass());
           data.fillMulti<float>(i_probePt, probe->pt());
           data.fillMulti<float>(i_probeEta, probe->eta());
-          //data.fillMulti<float>(i_probeAnnulus, (probe->pt())*(probe->annulusactivity()) );
           data.fillMulti<float>(i_probePhi, probe->phi());
-          //data.fillMulti<float>(i_probeCharge, probe->q());
           data.fillMulti<bool >(i_probePass, passpho);
-          //data.fillMulti<bool >(i_probePassIdIso, passidiso); // id and iso combined for now
-          //data.fillMulti<bool >(i_probePassIdNoIso, passidnoiso);
           data.fillMulti<float>(i_probeHtAlong, htalong);
-
           ++nProbesMatchedToTag;
 
-          // NB: at the moment if there are multiple T-P pairs in an event, we save all of them. Might want to try the other options
-        }//forProbe
+          delete dilep;
+        }
 
         // fill tag vars
-        data.fillMulti<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj);
+        //data.fillMulti<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj);
         data.fillMulti<int  >(i_nProbesMatchedToTag, nProbesMatchedToTag);
       }//forTag
 
@@ -328,10 +382,9 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 };
 
 void produceTnPPhotonTree(TString sname = "dyee-m50-powheg",
-                    const int fileindex = 0,
-                    const bool isMC = true,
+                    const int fileindex = -1,
+                    const bool isMC = false,
                     const TString fname = "/store/user/apatters/13TeV/12072016/merged/dyee_10_ntuple_postproc.root",
-                    const double xsec = 1.0,
                     const TString outputdir = "photontrees",
                     const TString fileprefix = "root://cmseos:1094/",
                     const TString json=TString::Format("%s/src/data/JSON/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt",getenv("CMSSW_BASE")))
@@ -341,9 +394,6 @@ void produceTnPPhotonTree(TString sname = "dyee-m50-powheg",
 
   if(fileindex > -1)
     sname += TString::Format("_%d",fileindex);
-
-  if(isMC)
-    printf("Cross section: %5.2f pb\n", xsec);
 
   TString fullname = fileprefix+fname;
 
@@ -355,7 +405,7 @@ void produceTnPPhotonTree(TString sname = "dyee-m50-powheg",
   // see AnalysisBase/TreeAnalyzer/src/DefaultConfigurations.cc
   cfgSet::ConfigSet cfg    = pars1LCR(json); // match with desired region
   cfgSet::ConfigSet phocfg = pars0LepPhoton(json); // for photon id & iso
-  //phocfg.photons.selected           = &ucsbsusy::PhotonF::isloose; // default photon configuration. medium or tight also available
+  //phocfg.photons.selected         = &ucsbsusy::PhotonF::isloose; // default photon configuration. medium or tight also available
   //phocfg.photons.minPt            = 20;   // don't need to change - done manually above
   //phocfg.photons.maxEta           = 2.1;  // --
   //phocfg.photons.usePixelSeedVeto = true; // --
@@ -363,12 +413,12 @@ void produceTnPPhotonTree(TString sname = "dyee-m50-powheg",
 
   TnPAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &cfg);
 
-  a.LepConfig_ = cfg; // for tag electrons
-  a.PhoConfig_ = phocfg.photons; // for tag photons
-  a.applyPixelSeedVeto = false;
+  a.LepConfig_             = cfg; // for tag electrons
+  a.PhoConfig_             = phocfg.photons; // for tag photons
+  a.applyPixelSeedVeto     = false; // true in our FW. toggle me.
+  a.useHardestTag          = false; // uses hardest tag in event
+  a.useHardestProbe        = false; // use with caution. uses only the hardest probe in _event_, which usually doesn't match a tag!
+  a.useHardestMatchedProbe = false; // uses the hardest probe matched to each tag
 
-  if(dbg) std::cout << "analyzing" << std::endl;
-
-  a.analyze(10000,1000);
-
+  a.analyze(10000,-1);
 }
