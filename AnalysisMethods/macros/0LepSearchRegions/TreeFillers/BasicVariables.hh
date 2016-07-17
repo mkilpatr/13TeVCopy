@@ -265,13 +265,17 @@ struct BasicVarsFiller {
     data->fill<bool>(i_passtrige,      ana->isMC() || (ana->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
 
     // single lepton trigger OR:
-    // SingleMuon: kHLT_IsoMu22 || kHLT_IsoTkMu22 || kHLT_Mu15_IsoVVVL_PFHT400
-    // SingleElectron: kHLT_Ele27_eta2p1_WPLoose_Gsf || kHLT_Ele15_IsoVVVL_PFHT400
+    // SingleMuon: kHLT_IsoMu22 || kHLT_IsoTkMu22 || kHLT_Mu15_IsoVVVL_PFHT(350|400|600)(_PFMET50)
+    // SingleElectron: kHLT_Ele27_eta2p1_WPLoose_Gsf || kHLT_Ele15_IsoVVVL_PFHT(350|400|600)(_PFMET50)
     // MET: kHLT_PFMET100_PFMHT100_IDTight || kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight
     // JetHT: HLT_CaloJet500_NoJetID
     // DoubleEG: kHLT_ECALHT800
-    bool passTrigMuHT = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT400);
-    bool passTrigElHT = (ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT400);
+    bool passTrigMuHT = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22)
+        || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT350_PFMET50) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT400_PFMET50)
+        || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT350) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT400) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT600);
+    bool passTrigElHT = (ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf)
+        || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT350_PFMET50) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT400_PFMET50)
+        || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT350) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT400) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT600);
     bool passtriglepOR = (ana->process==defaults::DATA_SINGLEMU && passTrigMuHT)
         || (ana->process==defaults::DATA_SINGLEEL && !passTrigMuHT && passTrigElHT)
         || (ana->process==defaults::DATA_MET && !passTrigMuHT && !passTrigElHT && passTrigMETMHT100)
