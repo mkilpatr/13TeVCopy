@@ -140,7 +140,7 @@ struct BasicVarsFiller {
     i_passtrigphoOR  = data->add<bool>("","passtrigphoOR", "O",0);
     i_passtright800  = data->add<bool>("","passtright800","O",0);
     i_passtrigdilep  = data->add<bool>("", "passtrigdilep", "O", 0);
-    i_passtrigdilepOR   = data->add<bool>("", "passtrigdilepPR", "O", 0);
+    i_passtrigdilepOR   = data->add<bool>("", "passtrigdilepOR", "O", 0);
     i_j1chEnFrac     = data->add<float>("","j1chEnFrac","F",2);
     i_passmetfilters = data->add<bool>("","passmetfilters","O",0);
 //    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
@@ -301,6 +301,7 @@ struct BasicVarsFiller {
         || (ana->process==defaults::DATA_DOUBLEEG && !passTrigMuMuOR && passTrigElElOR)
         || (ana->process==defaults::DATA_SINGLEMU && !passTrigMuMuOR && !passTrigElElOR && passTrigMu50)
         || (ana->process==defaults::DATA_SINGLEEL && !passTrigMuMuOR && !passTrigElElOR && !passTrigMu50 && passTrigEle105);
+    data->fill<bool>(i_passtrigdilepOR,  ana->isMC() || passtrigdilepOR);
 
     data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());  // take the leading jet after cleaning/jetid/etc.
 //    data->fill<float>(i_j1chEnFrac, ana->defaultJets->recoJets.front().chHadFrac());
