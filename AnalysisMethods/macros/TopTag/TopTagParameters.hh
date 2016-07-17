@@ -6,14 +6,17 @@
 namespace EstTools{
 
 // top tag strings
-const TString effsel = "leptonpdgid==13 && passtrigmu && njets>=2 && nbjets>=1 && met>50 && leptonpt>30 && sfclose2lep && nvetolep==1";
-const TString fakesel = "nvetolep==0 && passtright800 && njets>=2 && ht>1000 && met>200";
+const TString effsel = "leptonpdgid==13 && passtrigmu && njets>=2 && nbjets>=1 && met>50 && leptonpt>30 && sfbclose2lep && nvetolep==1";
+//const TString fakesel = "nvetolep==0 && passtright800 && njets>=2 && ht>1000 && met>200";
+const TString fakesel = "passjson && passtright800 && nvetolep==0 && met>200 && njets>=2 && nbjets>=0 && ht>1000";
 const TString datasel = " && passjson && passmetfilters";
 
 const TString lumistr = "6.26";
 const TString mcwgt = lumistr + "*weight";
 //const TString wgtvar = lumistr+"*weight*truePUWeight*btagWeight";
-const TString wgtvar = lumistr + "*weight*truePUWeight";
+const TString wgtvar = lumistr + "*weight";
+const TString effwgtvar = wgtvar+"*lepselweight*trigEleWeight*trigMuWeight";
+const TString fakewgtvar = wgtvar+"*lepvetoweight";
 
 map<TString, Category> cttEffCatMap{ // keep extra cut as 1==1 on cands to plot sfcttcandpt below 400 GeV
   {"num", Category("num", "sfcttpasspt > 400", "Pass", BinInfo("sfcttpasspt", "Pass p_{T}", vector<int>{400, 500, 600, 700, 800, 900, 1000}, "GeV"))},
@@ -26,13 +29,17 @@ map<TString, Category> cttMistagCatMap{
 };
 
 map<TString, Category> sdEffCatMap{ // keep extra cut as 1==1 on cands to plot sfcttcandpt below 400 GeV
-  {"num", Category("num", "sdtoppasspt > 400", "Pass", BinInfo("sdtoppasspt", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
-  {"denom", Category("denom", "1==1",          "Cand", BinInfo("sdtopcandpt", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
+  //{"num", Category("num", "sdtoppasspt > 400", "Pass", BinInfo("sdtoppasspt", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
+  //{"denom", Category("denom", "1==1",          "Cand", BinInfo("sdtopcandpt", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
+  {"num", Category("num", "ak8toppasspt > 400", "Pass", BinInfo("ak8toppasspt", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
+  {"denom", Category("denom", "1==1",          "Cand", BinInfo("ak8candpt", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
 };
 
 map<TString, Category> sdMistagCatMap{
-  {"num", Category("num", "sdtoppassptnolep > 400", "Pass", BinInfo("sdtoppassptnolep", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
-  {"denom", Category("denom", "1==1",          "Cand", BinInfo("sdtopcandptnolep", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
+  //{"num", Category("num", "sdtoppassptnolep > 400", "Pass", BinInfo("sdtoppassptnolep", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
+  //{"denom", Category("denom", "1==1",          "Cand", BinInfo("sdtopcandptnolep", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
+  {"num", Category("num", "ak8toppasspt > 400", "Pass", BinInfo("ak8toppasspt", "Pass p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))},
+  {"denom", Category("denom", "1==1",          "Cand", BinInfo("ak8candpt", "Cand p_{T}", vector<int>{400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000}, "GeV"))}
 };
 
 
@@ -48,16 +55,17 @@ BaseConfig sdEffConfig(){
 
   config.addSample("singlelep",     "Data",                   "singlelep",            "1.0",  datasel);
 
-  config.addSample("gjets",          "#gamma+jets",      "gjets",         wgtvar, datasel);
-  config.addSample("ttbar",          "t#bar{t}",         "ttbar-mg",      wgtvar, datasel);
-  config.addSample("tW",             "tW",               "tW",            wgtvar, datasel);
-  config.addSample("ttW",            "ttW",              "ttW",           wgtvar, datasel);
-  config.addSample("ttZ",            "ttZ",              "ttZ",           wgtvar, datasel);
-  config.addSample("wjets",          "W+jets",           "wjets-ht",      wgtvar, datasel);
-  config.addSample("qcd-unsmeared",  "QCD",              "qcd-unsmeared", wgtvar, datasel);
-  config.addSample("mc-unsmeared",   "MC",               "mc-unsmeared",  wgtvar, datasel);
-  config.addSample("znunu",          "znunu",            "znunu",         wgtvar, datasel);
-  config.addSample("other",          "Gamma/tW/ttW/ttZ", "other",         wgtvar, datasel);
+  config.addSample("gjets",          "#gamma+jets",      "gjets",         effwgtvar, datasel);
+  config.addSample("ttbar",          "t#bar{t}",         "ttbar-mg",      effwgtvar, datasel);
+  config.addSample("tW",             "tW",               "tW",            effwgtvar, datasel);
+  config.addSample("ttW",            "ttW",              "ttW",           effwgtvar, datasel);
+  config.addSample("ttZ",            "ttZ",              "ttZ",           effwgtvar, datasel);
+  config.addSample("wjets",          "W+jets",           "wjets-ht",      effwgtvar, datasel);
+  config.addSample("qcd-unsmeared",  "QCD",              "qcd-unsmeared", effwgtvar, datasel);
+  config.addSample("mc-unsmeared",   "MC",               "mc-unsmeared",  effwgtvar, datasel);
+  config.addSample("mc-noqcd",       "MC",               "mc-noqcd",      effwgtvar, datasel);
+  config.addSample("znunu",          "znunu",            "znunu",         effwgtvar, datasel);
+  config.addSample("other",          "Gamma/tW/ttW/ttZ", "other",         effwgtvar, datasel);
 
   config.catMaps = sdEffCatMap;
   for (auto &c : sdEffCatMap) config.categories.push_back(c.first);
@@ -72,21 +80,21 @@ BaseConfig sdMistagConfig(){
   config.outputdir = "./plots/sdMistagPlots";
   config.plotFormat = "svg";
 
-  config.sel = fakesel + " && nbjets==0";
+  config.sel = fakesel;
 
 
   config.addSample("jetht",     "Data",                   "jetht",            "1.0",  datasel);
 
-  config.addSample("gjets",          "#gamma+jets",      "gjets",         wgtvar, datasel);
-  config.addSample("ttbar",          "t#bar{t}",         "ttbar-mg",      wgtvar, datasel);
-  config.addSample("tW",             "tW",               "tW",            wgtvar, datasel);
-  config.addSample("ttW",            "ttW",              "ttW",           wgtvar, datasel);
-  config.addSample("ttZ",            "ttZ",              "ttZ",           wgtvar, datasel);
-  config.addSample("wjets",          "W+jets",           "wjets-ht",      wgtvar, datasel);
-  config.addSample("qcd-unsmeared",  "QCD",              "qcd-unsmeared", wgtvar, datasel);
-  config.addSample("mc-unsmeared",   "MC",               "mc-unsmeared",  wgtvar, datasel);
-  config.addSample("znunu",          "znunu",            "znunu",         wgtvar, datasel);
-  config.addSample("other",          "Gamma/tW/ttW/ttZ", "other",         wgtvar, datasel);
+  config.addSample("gjets",          "#gamma+jets",      "gjets",         fakewgtvar, datasel);
+  config.addSample("ttbar",          "t#bar{t}",         "ttbar-mg",      fakewgtvar, datasel);
+  config.addSample("tW",             "tW",               "tW",            fakewgtvar, datasel);
+  config.addSample("ttW",            "ttW",              "ttW",           fakewgtvar, datasel);
+  config.addSample("ttZ",            "ttZ",              "ttZ",           fakewgtvar, datasel);
+  config.addSample("wjets",          "W+jets",           "wjets-ht",      fakewgtvar, datasel);
+  config.addSample("qcd-unsmeared",  "QCD",              "qcd-unsmeared", fakewgtvar, datasel);
+  config.addSample("mc-unsmeared",   "MC",               "mc-unsmeared",  fakewgtvar, datasel);
+  config.addSample("znunu",          "znunu",            "znunu",         fakewgtvar, datasel);
+  config.addSample("other",          "Gamma/tW/ttW/ttZ", "other",         fakewgtvar, datasel);
 
   config.catMaps = sdMistagCatMap;
   for (auto &c : sdMistagCatMap) config.categories.push_back(c.first);
