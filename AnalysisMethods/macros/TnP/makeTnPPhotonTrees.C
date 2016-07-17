@@ -115,12 +115,12 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       //i_passtrigmu     = data.add<bool>("","passtrigmu","O",0);
       i_passmetfilters = data.add<bool>("","passmetfilters","O",0);
       // tnp vars
-      i_mass          = data.add<float>("","mass","F",-9);
-      i_pt            = data.add<float>("","pt","F",-9);
-      i_eta           = data.add<float>("","eta","F",-9);
-      i_abseta           = data.add<float>("","abseta","F",-9);
-      i_htalong       = data.add<float>("","htalong","F",-9);
-      i_phi           = data.add<float>("","phi","F",-9);
+      i_mass          = data.add<float>("","mass","F",0);
+      i_pt            = data.add<float>("","pt","F",0);
+      i_eta           = data.add<float>("","eta","F",0);
+      i_abseta           = data.add<float>("","abseta","F",0);
+      i_htalong       = data.add<float>("","htalong","F",0);
+      i_phi           = data.add<float>("","phi","F",0);
       i_pass          = data.add<bool>("","pass","O",false);
       i_tagMatchesTrigObj       = data.add<bool>("","tagMatchesTrigObj","O",false);
       i_nProbesMatchedToTag      = data.add<int>("","nProbesMatchedToTag","I",0);
