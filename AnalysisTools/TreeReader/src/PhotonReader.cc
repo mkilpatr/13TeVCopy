@@ -28,6 +28,7 @@ PhotonReader::PhotonReader() : BaseReader(){
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
   hasPixelSeed = new vector<bool>  ;
+  passElectronVeto_old = new vector<bool>;
   passElectronVeto = new vector<bool>;
 }
 
