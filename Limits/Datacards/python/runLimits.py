@@ -235,8 +235,8 @@ def fillAsymptoticLimits(config, limfilename, excfilename, interpolate):
     minmstop = 0.0
     maxmlsp = 0.0
     minmlsp = 0.0
-    mstop_step = 25
-    mlsp_step = 10 if 'fbd' in limfilename else 25
+    mstop_step = 1
+    mlsp_step = 1
     for signal in config.signals:
         mstop = int(signal.split('_')[1])
         mlsp = int(signal.split('_')[2])
@@ -378,8 +378,10 @@ def calcLimit(config, signal):
         mstop = int(signal.split('_')[1])
         sigtype = signal.split('_')[0]
         runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' -n ' + signal
-        if mstop >= 400:
+        if mstop >= 350:
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 10 -n ' + signal
+        if ('fbd' in sigtype or '4bd' in sigtype) and (mstop<=200):
+            runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 1 -n ' + signal
         output = commands.getoutput(runLimitsCommand)
         lprint(runLimitsCommand, output)
 
