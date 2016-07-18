@@ -47,9 +47,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     size i_leptnpweight ;
     // trigger and filters
     size i_ismc      ;
-    size i_passjson   ;
     size i_passtrige ;
-    //size i_passtrigmu;
     size i_passmetfilters;
     // tnp vars
     size i_mass;
@@ -59,18 +57,6 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     size i_htalong;
     size i_phi;
     size i_pass;
-/*
-    size i_diMass      ;
-    size i_probePt        ;
-    size i_probeEta       ;
-    size i_probeHtAlong   ;
-    //size i_probeAnnulus   ;
-    size i_probePhi       ;
-    //size i_probeCharge    ;
-    size i_probePass;
-    //size i_probePassIdIso      ;
-    //size i_probePassIdNoIso    ;
-*/
     size i_tagMatchesTrigObj  ;
     size i_nProbesMatchedToTag  ;
     size i_nTags;
@@ -110,32 +96,19 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       i_lepselweight   = data.add<float>("","lepselweight","F",0);
       i_leptnpweight   = data.add<float>("","leptnpweight","F",0);
       // Trigger and filters
-      i_passjson       = data.add<bool>("","passjson","O",0);
       i_passtrige      = data.add<bool>("","passtrige","O",0);
-      //i_passtrigmu     = data.add<bool>("","passtrigmu","O",0);
       i_passmetfilters = data.add<bool>("","passmetfilters","O",0);
       // tnp vars
       i_mass          = data.add<float>("","mass","F",0);
       i_pt            = data.add<float>("","pt","F",0);
       i_eta           = data.add<float>("","eta","F",0);
-      i_abseta           = data.add<float>("","abseta","F",0);
+      i_abseta        = data.add<float>("","abseta","F",0);
       i_htalong       = data.add<float>("","htalong","F",0);
       i_phi           = data.add<float>("","phi","F",0);
-      i_pass          = data.add<bool>("","pass","O",false);
-      i_tagMatchesTrigObj       = data.add<bool>("","tagMatchesTrigObj","O",false);
-      i_nProbesMatchedToTag      = data.add<int>("","nProbesMatchedToTag","I",0);
-/*
-      i_mass          = data.addMulti<float>("","mass",-9);
-      i_pt            = data.addMulti<float>("","pt",-9);
-      i_eta           = data.addMulti<float>("","eta",-9);
-      i_abseta           = data.addMulti<float>("","abseta",-9);
-      i_htalong       = data.addMulti<float>("","htalong",-9);
-      i_phi           = data.addMulti<float>("","phi",-9);
-      i_pass          = data.addMulti<bool>("","pass",false);
-      i_tagMatchesTrigObj       = data.addMulti<bool>("","tagMatchesTrigObj",false);
-      i_nProbesMatchedToTag      = data.addMulti<int>("","nProbesMatchedToTag",0);
-*/
-      i_nTags                    = data.add<int  >("","nTags","I",0);
+      i_pass          = data.add<int  >("","pass","I",0);
+      i_tagMatchesTrigObj     = data.add<bool>("","tagMatchesTrigObj","O",false);
+      i_nProbesMatchedToTag   = data.add<int >("","nProbesMatchedToTag","I",0);
+      i_nTags                 = data.add<int >("","nTags","I",0);
     }
 
     bool fillEvent() {
@@ -143,33 +116,30 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       // apply some event filters
       if(!goodvertex) return false;
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
+      if(!isMC() && hasJSONFile() && !passesLumiMask()) return false;
 
       // fill event vars
-      data.fill<unsigned int>(i_run, this->run);
-      data.fill<unsigned int>(i_lumi, this->lumi);
-      data.fill<unsigned int>(i_event, this->event);
-      data.fill<unsigned int>(i_process, this->process);
-      data.fill<bool >(i_ismc,   this->isMC());
-      data.fill<float>(i_weight, this->weight);
-      data.fill<float>(i_truePUWeight,       this->eventCorrections.getTruePUWeight());
-      data.fill<float>(i_trigEleWeight,      this->triggerCorrections.getTrigEleWeight());
-      data.fill<float>(i_lepselweight,       this->leptonCorrections.getSelLepWeight());
-      data.fill<float>(i_leptnpweight,       this->leptonCorrections.getTnPLepWeight());
+      data.fill<unsigned int>(i_run, run);
+      data.fill<unsigned int>(i_lumi, lumi);
+      data.fill<unsigned int>(i_event, event);
+      data.fill<unsigned int>(i_process, process);
+      data.fill<bool >(i_ismc,   isMC());
+      data.fill<float>(i_weight, weight);
+      data.fill<float>(i_truePUWeight,       eventCorrections.getTruePUWeight());
+      data.fill<float>(i_trigEleWeight,      triggerCorrections.getTrigEleWeight());
+      data.fill<float>(i_lepselweight,       leptonCorrections.getSelLepWeight());
+      data.fill<float>(i_leptnpweight,       leptonCorrections.getTnPLepWeight());
 
       // fill Trigger and filters
-      data.fill<bool>(i_passjson,       this->isMC() || (this->hasJSONFile() && this->passesLumiMask()));
-      bool passTrigEl = this->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
-      bool passTrigMu = (this->triggerflag & kHLT_IsoMu22) || (this->triggerflag & kHLT_IsoTkMu22);
-      //data.fill<bool>(i_passtrigmu,     this->isMC() || (this->process==defaults::DATA_SINGLEMU ? passTrigMu: false));
-      data.fill<bool>(i_passtrige,      this->isMC() || (this->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
+      bool passTrigEl = triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
+      data.fill<bool>(i_passtrige,      isMC() || (process==defaults::DATA_SINGLEEL ? passTrigEl : false));
 
-      const auto &evt = this->evtInfoReader;
+      const auto &evt = evtInfoReader;
       bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
       data.fill<bool>(i_passmetfilters,  passmetfilters);
 
       // require event to pass trigger, so that we can match tags to trigger objects
-      //if (!(passTrigEl || passTrigMu)) return false;
-      if(!(this->isMC() || passTrigEl)) return false;
+      if(!(isMC() || passTrigEl)) return false;
 
       if(dbg) std::cout << "*******************plugged event vars" << std::endl;
 
@@ -183,8 +153,6 @@ class TnPAnalyzer : public TreeCopierManualBranches {
             for(unsigned int id = 0; id < p->numberOfDaughters(); ++id) {
               const GenParticleF* dau = p->daughter(id);
               if(lepIdChoice == 11 && ParticleInfo::isA(ParticleInfo::p_eminus, dau)){
-                genLeptons_.push_back(dau);
-              }else if(lepIdChoice == 13 && ParticleInfo::isA(ParticleInfo::p_muminus, dau)){
                 genLeptons_.push_back(dau);
               }
             }
@@ -208,8 +176,6 @@ class TnPAnalyzer : public TreeCopierManualBranches {
         }
 
         // tags must pass id & iso
-        //if(tag->ismuon() && !cfgSet::isSelMuon(*(MuonF*)tag, LepConfig_.muons)) continue;
-        //else if(tag->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)tag, LepConfig_.electrons)) continue;
         if(l->iselectron() && !cfgSet::isSelElectron(*(ElectronF*)l, LepConfig_.electrons)) continue;
 
         if(dbg) std::cout << "tag passed id/iso " << std::endl;
@@ -226,7 +192,6 @@ class TnPAnalyzer : public TreeCopierManualBranches {
         }else{ // isMC
           tagMatchesTrigObj = true;
         }
-        //data.fillMulti<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj); // just to record how often it happens
         data.fill<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj); // just to record how often it happens
 
         if(!tagMatchesTrigObj) continue;
@@ -248,16 +213,16 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       // store probe photon candidates: allPhotons
       // see AnalysisBase/TreeAnalyzer/src/DefaultProcessing.cc
       tnpPhotons_.clear();
-      tnpPhotons_.reserve(this->photonReader.photons.size());
+      tnpPhotons_.reserve(photonReader.photons.size());
       vector<PhotonF*> allPhotons_;
       for(unsigned int i = 0; i < photonReader.photons.size(); i++){
         allPhotons_.push_back(&photonReader.photons[i]);
       }
       float hardestProbePt = -1;
       for(auto* pho : allPhotons_) {
-        if(dbg) std::cout << "photon in allPhotons: " << pho << " " << pho->pt() << " " << pho->passElectronVeto() << " " << pho->eta() << std::endl;
-        //if(pho->passElectronVeto()) continue; /// uncomment for real run. want denom to fail electron veto.
-        if(fabs(pho->eta())>2.1 || pho->pt() < 20) continue;
+        if(dbg) std::cout << "photon in allPhotons: " << pho << " " << pho->pt() << " " << pho->passElectronVeto() << " " << pho->scEta() << std::endl;
+        if(pho->passElectronVeto()) continue; /// want denom to fail electron veto.
+        if(fabs(pho->scEta())>2.5 || pho->pt() < 20) continue;
         tnpPhotons_.push_back(pho);
         if(dbg) std::cout << "** added a photon to tnpPhotons_" << std::endl;
         if( useHardestProbe && (pho->pt() > hardestProbePt) ) {
@@ -307,9 +272,9 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
           if(dbg) std::cout << "looking at probe: " << probe->pt() << std::endl;
 
           // probe isn't tag
-          if(probe->index() == tag->index()) continue;
+          if(PhysicsUtilities::deltaR(*tag, *probe) < 0.1) continue;
 
-          if(dbg) std::cout << "passed index" << std::endl;
+          if(dbg) std::cout << "passed deltaR" << std::endl;
 
           MomentumF* dilep = new MomentumF(tag->p4() + probe->p4());
 
@@ -347,20 +312,11 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
             // fill probe vars in case of multiple matching probes
             data.fill<float>(i_mass, dilep->mass());
             data.fill<float>(i_pt, probe->pt());
-            data.fill<float>(i_eta, probe->eta());
-            data.fill<float>(i_abseta, abs(probe->eta()));
+            data.fill<float>(i_eta, probe->scEta());
+            data.fill<float>(i_abseta, abs(probe->scEta()));
             data.fill<float>(i_phi, probe->phi());
-            data.fill<bool >(i_pass, passpho);
+            data.fill<int  >(i_pass, passpho? 1 : 0);
             data.fill<float>(i_htalong, htalong);
-/*
-            data.fillMulti<float>(i_mass, dilep->mass());
-            data.fillMulti<float>(i_pt, probe->pt());
-            data.fillMulti<float>(i_eta, probe->eta());
-            data.fillMulti<float>(i_abseta, abs(probe->eta()));
-            data.fillMulti<float>(i_phi, probe->phi());
-            data.fillMulti<bool >(i_pass, passpho);
-            data.fillMulti<float>(i_htalong, htalong);
-*/
             ++nProbesMatchedToTag;
           }else{ // useHardestMatchedProbe
             if(probe->pt() > hardestMatchedProbePt){
@@ -396,28 +352,17 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 
           data.fill<float>(i_mass, dilep->mass());
           data.fill<float>(i_pt, probe->pt());
-          data.fill<float>(i_eta, probe->eta());
-          data.fill<float>(i_abseta, abs(probe->eta()));
+          data.fill<float>(i_eta, probe->scEta());
+          data.fill<float>(i_abseta, abs(probe->scEta()));
           data.fill<float>(i_phi, probe->phi());
-          data.fill<bool >(i_pass, passpho);
+          data.fill<int >(i_pass, passpho ? 1 : 0);
           data.fill<float>(i_htalong, htalong);
-/*
-          data.fillMulti<float>(i_mass, dilep->mass());
-          data.fillMulti<float>(i_pt, probe->pt());
-          data.fillMulti<float>(i_eta, probe->eta());
-          data.fillMulti<float>(i_abseta, abs(probe->eta()));
-          data.fillMulti<float>(i_phi, probe->phi());
-          data.fillMulti<bool >(i_pass, passpho);
-          data.fillMulti<float>(i_htalong, htalong);
-*/
           ++nProbesMatchedToTag;
 
           delete dilep;
         }
 
         // fill tag vars
-        //data.fillMulti<bool >(i_tagMatchesTrigObj, tagMatchesTrigObj);
-//        data.fillMulti<int  >(i_nProbesMatchedToTag, nProbesMatchedToTag);
         data.fill<int  >(i_nProbesMatchedToTag, nProbesMatchedToTag);
       }//forTag
 
@@ -431,7 +376,7 @@ bool cfgSet::isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf 
 
 void makeTnPPhotonTrees(TString sname = "dyee-m50-powheg",
                     const int fileindex = -1,
-                    const bool isMC = false,
+                    const bool isMC = true,
                     const TString fname = "/store/user/apatters/13TeV/12072016/merged/dyee_10_ntuple_postproc.root",
                     const TString outputdir = "photontrees",
                     const TString fileprefix = "root://cmseos:1094/",

@@ -2,8 +2,6 @@
 #include "AnalysisMethods/TnPUtils/interface/TagProbeFitter.h"
 #endif
 
-
-#include "AnalysisMethods/TnPUtils/interface/TagProbeFitter.h"
 using namespace std;
 
 // map of PDF labels and vector holding the corresponding PDF commands
@@ -40,11 +38,11 @@ struct EfficiencySet {
 // helper class to interface with TagProbeFitter (from official TagAndProbe package) and to set up the fits
 class TnPFitter {
   public:
-    TnPFitter(vector<string> fileNames, string dirName, string treeName, string outfileName, vector<TnPVariable> tnpVars, vector<EfficiencySet> effSets, vector<string> binToPdfMap, unsigned int numCPU=1, bool saveWS=false);
+    TnPFitter(vector<string> fileNames, string dirName, string treeName, string outfileName, vector<TnPVariable> tnpVars, vector<EfficiencySet> effSets, vector<string> binToPdfMap, unsigned int numCPU=1, bool saveWS=false, bool doCnC=false);
     virtual ~TnPFitter(){};
 
     bool verbose = false;
-    vector<string> unbinnedVariables = {"mass","weight"};
+    vector<string> unbinnedVariables = {"mass","truePUWeight"};
 
     void calculateEfficiencies();
 
@@ -55,16 +53,16 @@ class TnPFitter {
 };
 
 // constructor and setup for TagProbeFitter
-TnPFitter::TnPFitter(vector<string> fileNames, string dirName, string treeName, string outfileName, vector<TnPVariable> tnpVars, vector<EfficiencySet> effSets, vector<string> binToPdfMap, unsigned int numCPU, bool saveWS) :
+TnPFitter::TnPFitter(vector<string> fileNames, string dirName, string treeName, string outfileName, vector<TnPVariable> tnpVars, vector<EfficiencySet> effSets, vector<string> binToPdfMap, unsigned int numCPU, bool saveWS, bool doCnC) :
   effCalcs(effSets),
   pdfMapInput(binToPdfMap),
-  fitter(fileNames, dirName, treeName, outfileName, numCPU, saveWS)
+  fitter(fileNames, dirName, treeName, outfileName, numCPU, saveWS, doCnC)
 {
   // do setup
   fitter.setQuiet(verbose);
-  fitter.setBinnedFit(true, 60);
-  fitter.setSaveDistributionsPlot(true);
-  fitter.setWeightVar("weight");
+  fitter.setBinnedFit(true, 40);
+  //fitter.setSaveDistributionsPlot(true);
+  fitter.setWeightVar("truePUWeight");
 
   // add variables of interest
   for(auto var : tnpVars) {
@@ -72,7 +70,7 @@ TnPFitter::TnPFitter(vector<string> fileNames, string dirName, string treeName, 
   }
 
   // define flags
-  fitter.addCategory("pass","selected","dummy[true=1,false=0]");
+  fitter.addCategory("pass","selected","dummy[pass=1,fail=0]");
 
   // add PDFs to be used for fitting
   assert(pdfMapInput.size()>=1);
@@ -89,7 +87,7 @@ TnPFitter::TnPFitter(vector<string> fileNames, string dirName, string treeName, 
 void TnPFitter::calculateEfficiencies()
 {
   for (auto effset : effCalcs) {
-    fitter.calculateEfficiency(effset.name, "pass", "true", unbinnedVariables, effset.binning, effset.categories, pdfMapInput);
+    fitter.calculateEfficiency(effset.name, "pass", "pass", unbinnedVariables, effset.binning, effset.categories, pdfMapInput);
   }
 }
 
@@ -98,16 +96,18 @@ void TnPFitter::calculateEfficiencies()
 // will need MC templates for any "MCConv" PDF
 // basic idea: we do a simultaneous fit of the the "passing" and "failing" samples to the assigned signal+background PDF
 // the choices of fit model, binning are sources of systematic uncertainties, which can be estimated by varying those choices
-void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees/17072016-tnpphoton/dyee_small_tree.root",             // MC file ... leave blank if don't want to do MC effs
-               const string dataFile     = "",//"/eos/uscms/store/user/apatters/trees/17072016-tnpphoton/singleel9ifb_tree.root",         // data file ... leave blank if don't want to do data effs
+void doTnPFits(const string mcFile       = "", //"/uscmst1b_scratch/lpc1/3DayLifetime/vdutta/trees_071716/photontnp/dyee_tree.root",      // MC file ... leave blank if don't want to do MC effs
+               const string dataFile     = "/uscmst1b_scratch/lpc1/3DayLifetime/vdutta/trees_071716/photontnp/singleel_tree.root",         // data file ... leave blank if don't want to do data effs
                const string dirName      = "fits",                                  // directory name in output file in which fits will be saved
-               const string outFileMC    = "fitResults_mu_mc.root",                 // MC output file name
-               const string outFileData  = "fitResults_mu_data.root",               // data output file name
-               const string fitModel     = "VPVPlusExpo",                    // options for fit model
+               const string outFileMC    = "fitResults_pho_mc.root",                 // MC output file name
+               const string outFileData  = "fitResults_pho_data.root",               // data output file name
+               const string fitModel     = "MCConvGaussPlusErfExp", //"ZGenLinePlusErfExp", //"MCConvGaussPlusExp",                    // options for fit model
                const string templateFile = "MCTemplates/zee_templates.root", // file with MC templates, relevant for PDFs using MC-based Z-shape
-               const bool   doPtEtaEff   = false,          // 2D pt-eta binning of efficiencies
-               const bool   doPtEff      = true,          // pt-binned efficiencies
-               const bool   doEtaEff     = true,          // eta-binned efficiencies
+               const string zGenFile     = string(getenv("CMSSW_BASE"))+"/src/data/TnP/ZeeGenLevel.root",
+               const bool   doMCCnC      = true,           // cut-and-count for MC efficiencies
+               const bool   doPtEtaEff   = true,           // 2D pt-eta binning of efficiencies
+               const bool   doPtEff      = false,          // pt-binned efficiencies
+               const bool   doEtaEff     = false,          // eta-binned efficiencies
                const bool   doHtEff      = false,          // htalong-binned eff
                const bool   doPtHtEff    = false,          // 2D pt-htalong binning
                const bool   doAnEff      = false,          // annulus-binned eff
@@ -117,9 +117,11 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
 
   // 2D pt/eta binning for effs
   EfficiencySet pt_eta_effset("pt_eta_eff");
-  pt_eta_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
+  //pt_eta_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_eta_effset.binning["pt"] = {20.0, 30.0, 40.0, 60.0, 100.0, 200.0, 1000.0}; // photons
   //pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.6, 2.4}; // muons
-  pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.5, 2.4}; // electrons
+  //pt_eta_effset.binning["abseta"] = {0.0, 0.8, 1.5, 2.4}; // electrons
+  pt_eta_effset.binning["abseta"] = {0.0, 1.479, 2.5}; // electrons
 
 
   // 2D pt/htalong binning for effs
@@ -134,12 +136,14 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
 
   // effs vs pt
   EfficiencySet pt_effset("pt_eff");
-  pt_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
+  //pt_effset.binning["pt"] = {0.,10.,20.0, 30.0, 40.0, 60.0, 100.0};
+  pt_effset.binning["pt"] = {20.0, 30.0, 40.0, 60.0, 100.0, 200.0, 1000.0}; // photons
 
   // effs vs eta
   EfficiencySet eta_effset("eta_eff");
   //eta_effset.binning["eta"] = {-2.4, -1.6, -0.8, 0.0, 0.8, 1.6, 2.4}; // muons
-  eta_effset.binning["eta"] = {-2.4, -1.5, -0.8, 0.0, 0.8, 1.5, 2.4}; // electrons
+  //eta_effset.binning["eta"] = {-2.4, -1.5, -0.8, 0.0, 0.8, 1.5, 2.4}; // electrons
+  eta_effset.binning["eta"] = {-2.5, -1.479, 0.0, 1.479, 2.5}; // photons
 
   // effs vs htalong
   EfficiencySet ht_effset("eta_eff");
@@ -163,10 +167,11 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
   vector<TnPVariable> vars;
   vars.push_back(TnPVariable("mass","m_{ll}",70,110,"GeV")); // was 60,120, try with 75,105
   vars.push_back(TnPVariable("weight","weight",0,1e+08,""));
+  vars.push_back(TnPVariable("truePUWeight","truePUWeight",0,1e+08,""));
   vars.push_back(TnPVariable("pt","Probe p_{T}",0,1000,"GeV"));
-  vars.push_back(TnPVariable("eta","Probe #eta",-2.4,2.4,""));
-  //vars.push_back(TnPVariable("abseta","Probe |#eta|",0,2.4,""));
-  vars.push_back(TnPVariable("htalong","Probe ht_{along}",0,1000,"GeV"));
+  vars.push_back(TnPVariable("eta","Probe #eta",-2.5,2.5,""));
+  vars.push_back(TnPVariable("abseta","Probe |#eta|",0,2.5,""));
+  //vars.push_back(TnPVariable("htalong","Probe ht_{along}",0,1000,"GeV"));
 
   // hold default PDF name (first entry), and, if there are different PDFs used for different bins/categories, hold pairs of bin name - PDF name
   vector<string> binToPDFmap;
@@ -190,7 +195,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
     fitPDFs["ZGenLinePlusErfExp"] = {
             "RooCBExGaussShape::signalResPass(mass,meanP[-0.0,-5.000,5.000],sigmaP[0.956,0.00,5.000],alphaP[0.999, 0.0,50.0],nP[1.405,0.000,50.000],sigmaP_2[1.000,0.500,15.00])",
             "RooCBExGaussShape::signalResFail(mass,meanF[-0.0,-5.000,5.000],sigmaF[3.331,0.00,5.000],alphaF[1.586, 0.0,50.0],nF[0.464,0.000,20.00],sigmaF_2[1.675,0.500,2.000])",                                   
-            "ZGeneratorLineShape::signalPhy(mass)", // NLO line shape
+            "ZGeneratorLineShape::signalPhy(mass,\""+zGenFile+"\"\")", // NLO line shape
             "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",             
             "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
             "FCONV::signalPass(mass, signalPhy, signalResPass)",
@@ -204,7 +209,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
     fitPDFs["ZGenLinePlusExp"] = {
             "RooCBExGaussShape::signalResPass(mass,meanP[0,-5.000,5.000],sigmaP[1.419,1.00,15.000],alphaP[0.130],nP[50.08],sigmaP_2[1, 1, 15.000])",
             "RooCBExGaussShape::signalResFail(mass,meanF[1.1,-5.000,5.000],sigmaF[1.331,0.100,15.000],alphaF[0.284], nF[3.350],sigmaF_2[1, 1, 15.000])",
-            "ZGeneratorLineShape::signalPhy(mass)", // NLO line shape
+            "ZGeneratorLineShape::signalPhy(mass,\""+zGenFile+"\"\")", // NLO line shape
             "RooExponential::backgroundPass(mass, aPass[-0.1, -1., 0])",
             "RooExponential::backgroundFail(mass, aFail[-0.1, -1., 0])",
             "FCONV::signalPass(mass, signalPhy, signalResPass)",
@@ -248,7 +253,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
   if(doPtEtaEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_eta_effset.binning["pt"].size()-1; ++ipt) {
       for(int ieta = 0; ieta < pt_eta_effset.binning["abseta"].size()-1; ++ieta) {
-        TString ptetabinstr = TString::Format("%2.1fTo%2.1f_%2.1fTo%2.1f", pt_eta_effset.binning["pt"][ipt], pt_eta_effset.binning["pt"][ipt+1], pt_eta_effset.binning["abseta"][ieta], pt_eta_effset.binning["abseta"][ieta+1]);
+        TString ptetabinstr = TString::Format("%4.3fTo%4.3f_%4.3fTo%4.3f", pt_eta_effset.binning["pt"][ipt], pt_eta_effset.binning["pt"][ipt+1], pt_eta_effset.binning["abseta"][ieta], pt_eta_effset.binning["abseta"][ieta+1]);
         TString ptetabinlabel = TString::Format("abseta_bin%d;pt_bin%d",ieta,ipt);
 
         string catlabel = "{" + string(ptetabinlabel.Data()) + "}";
@@ -297,7 +302,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
   if(doPtHtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_ht_effset.binning["pt"].size()-1; ++ipt) {
       for(int iht = 0; iht < pt_ht_effset.binning["htalong"].size()-1; ++iht) {
-        TString pthtbinstr = TString::Format("%2.1fTo%2.1f_%2.1fTo%2.1f", pt_ht_effset.binning["pt"][ipt], pt_ht_effset.binning["pt"][ipt+1], pt_ht_effset.binning["htalong"][iht], pt_ht_effset.binning["htalong"][iht+1]);
+        TString pthtbinstr = TString::Format("%4.3fTo%4.3f_%4.3fTo%4.3f", pt_ht_effset.binning["pt"][ipt], pt_ht_effset.binning["pt"][ipt+1], pt_ht_effset.binning["htalong"][iht], pt_ht_effset.binning["htalong"][iht+1]);
         TString pthtbinlabel = TString::Format("htalong_bin%d;pt_bin%d",iht,ipt);
 
         string catlabel = "{" + string(pthtbinlabel.Data()) + "}";
@@ -347,7 +352,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
   if(doPtAnEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_an_effset.binning["pt"].size()-1; ++ipt) {
       for(int iht = 0; iht < pt_an_effset.binning["annulus"].size()-1; ++iht) {
-        TString ptanbinstr = TString::Format("%2.1fTo%2.1f_%2.1fTo%2.1f", pt_an_effset.binning["pt"][ipt], pt_an_effset.binning["pt"][ipt+1], pt_an_effset.binning["annulus"][iht], pt_an_effset.binning["annulus"][iht+1]);
+        TString ptanbinstr = TString::Format("%4.3fTo%4.3f_%4.3fTo%4.3f", pt_an_effset.binning["pt"][ipt], pt_an_effset.binning["pt"][ipt+1], pt_an_effset.binning["annulus"][iht], pt_an_effset.binning["annulus"][iht+1]);
         TString ptanbinlabel = TString::Format("annulus_bin%d;pt_bin%d",iht,ipt);
 
         string catlabel = "{" + string(ptanbinlabel.Data()) + "}";
@@ -396,7 +401,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
 
   if(doPtEff && (fitModel=="MCConvGaussPlusErfExp" || fitModel=="MCConvGaussPlusExp")) {
     for(int ipt = 0; ipt < pt_effset.binning["pt"].size()-1; ++ipt) {
-      TString ptbinstr = TString::Format("%2.1fTo%2.1f", pt_effset.binning["pt"][ipt], pt_effset.binning["pt"][ipt+1]);
+      TString ptbinstr = TString::Format("%4.3fTo%4.3f", pt_effset.binning["pt"][ipt], pt_effset.binning["pt"][ipt+1]);
       TString ptbinlabel = TString::Format("pt_bin%d",ipt);
 
       string catlabel = "{" + string(ptbinlabel.Data()) + "}";
@@ -443,7 +448,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
     for(int ieta = 0; ieta < eta_effset.binning["eta"].size()-1; ++ieta) {
       double mineta = min(fabs(eta_effset.binning["eta"][ieta]), fabs(eta_effset.binning["eta"][ieta+1]));
       double maxeta = max(fabs(eta_effset.binning["eta"][ieta]), fabs(eta_effset.binning["eta"][ieta+1]));
-      TString etabinstr = TString::Format("%2.1fTo%2.1f", mineta, maxeta);
+      TString etabinstr = TString::Format("%4.3fTo%4.3f", mineta, maxeta);
       TString etabinlabel = TString::Format("eta_bin%d",ieta);
 
       string catlabel = "{" + string(etabinlabel.Data()) + "}";
@@ -490,7 +495,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
     for(int iht = 0; iht < ht_effset.binning["htalong"].size()-1; ++iht) {
       double minhtalong = min(fabs(ht_effset.binning["htalong"][iht]), fabs(ht_effset.binning["htalong"][iht+1]));
       double maxhtalong = max(fabs(ht_effset.binning["htalong"][iht]), fabs(ht_effset.binning["htalong"][iht+1]));
-      TString htalongbinstr = TString::Format("%2.1fTo%2.1f", minhtalong, maxhtalong);
+      TString htalongbinstr = TString::Format("%4.3fTo%4.3f", minhtalong, maxhtalong);
       TString htalongbinlabel = TString::Format("htalong_bin%d",iht);
 
       string catlabel = "{" + string(htalongbinlabel.Data()) + "}";
@@ -538,7 +543,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
     for(int iht = 0; iht < an_effset.binning["annulus"].size()-1; ++iht) {
       double minannulus = min(fabs(an_effset.binning["annulus"][iht]), fabs(an_effset.binning["annulus"][iht+1]));
       double maxannulus = max(fabs(an_effset.binning["annulus"][iht]), fabs(an_effset.binning["annulus"][iht+1]));
-      TString anbinstr = TString::Format("%2.1fTo%2.1f", minannulus, maxannulus);
+      TString anbinstr = TString::Format("%4.3fTo%4.3f", minannulus, maxannulus);
       TString anbinlabel = TString::Format("annulus%d",iht);
 
       string catlabel = "{" + string(anbinlabel.Data()) + "}";
@@ -587,7 +592,7 @@ void doTnPFits(const string mcFile       = "/eos/uscms/store/user/apatters/trees
   // do MC efficiencies
   if(mcFile != "") {
     fileNames = {mcFile};
-    TnPFitter mcTnPFitter(fileNames, dirName, "Events", outFileMC, vars, effsets, binToPDFmap);
+    TnPFitter mcTnPFitter(fileNames, dirName, "Events", outFileMC, vars, effsets, binToPDFmap, 1, false, doMCCnC);
     mcTnPFitter.calculateEfficiencies();
   }
 
