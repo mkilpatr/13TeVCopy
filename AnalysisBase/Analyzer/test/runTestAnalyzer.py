@@ -220,7 +220,6 @@ process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhoton
 if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' in DatasetName and not 'QCD' in DatasetName :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
-    process.TestAnalyzer.Photons.requireElectronVeto = cms.untracked.bool(True)
 
 #==============================================================================================================================#
 # HCAL Noise Filter
