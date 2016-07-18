@@ -97,11 +97,11 @@ void TnPFitter::calculateEfficiencies()
 // basic idea: we do a simultaneous fit of the the "passing" and "failing" samples to the assigned signal+background PDF
 // the choices of fit model, binning are sources of systematic uncertainties, which can be estimated by varying those choices
 void doTnPFits(const string mcFile       = "", //"/uscmst1b_scratch/lpc1/3DayLifetime/vdutta/trees_071716/photontnp/dyee_tree.root",      // MC file ... leave blank if don't want to do MC effs
-               const string dataFile     = "/uscmst1b_scratch/lpc1/3DayLifetime/vdutta/trees_071716/photontnp/singleel_tree.root",         // data file ... leave blank if don't want to do data effs
-               const string dirName      = "fits",                                  // directory name in output file in which fits will be saved
+               const string dataFile     = "/uscmst1b_scratch/lpc1/3DayLifetime/vdutta/trees_071716/photontnp/singleel_tree.root",        // data file ... leave blank if don't want to do data effs
+               const string dirName      = "fits",                                   // directory name in output file in which fits will be saved
                const string outFileMC    = "fitResults_pho_mc.root",                 // MC output file name
                const string outFileData  = "fitResults_pho_data.root",               // data output file name
-               const string fitModel     = "MCConvGaussPlusErfExp", //"ZGenLinePlusErfExp", //"MCConvGaussPlusExp",                    // options for fit model
+               const string fitModel     = "MCConvGaussPlusExp", //"ZGenLinePlusErfExp", //"MCConvGaussPlusErfExp",                    // options for fit model
                const string templateFile = "MCTemplates/zee_templates.root", // file with MC templates, relevant for PDFs using MC-based Z-shape
                const string zGenFile     = string(getenv("CMSSW_BASE"))+"/src/data/TnP/ZeeGenLevel.root",
                const bool   doMCCnC      = true,           // cut-and-count for MC efficiencies
