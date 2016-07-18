@@ -89,6 +89,9 @@ public:
   std::vector<float>* jetneuEmEnFrac_ ;
   std::vector<float>* jetphoEnFrac_   ;
   std::vector<int>  * jetchMult_      ;
+  std::vector<int>  * jetchHadN2_     ;
+  std::vector<int>  * jetchHadN4_     ;
+  std::vector<int>  * jetchHadN6_     ;
   std::vector<int>  * jetneuMult_     ;
   std::vector<int>  * jetchHadMult_   ;
   std::vector<int>  * jetelMult_      ;

@@ -40,6 +40,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       i_phoeta            = data.add<float>("","phoeta","F",0);
       i_passgenmatch      = data.add<bool>("","passgenmatch","O",0);
       i_drphotonparton    = data.add<float>("","drphotonparton","F",-1);
+
     }
 
     void processVariables(){
@@ -132,6 +133,9 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
 
 
     bool fillEvent() {
+      // fill inclusive histograms
+      extraFiller.fillHistograms(this);
+
       if(!pho)                              return false;
       if(!passDRSel)                        return false;
       if(!goodvertex)                       return false;
@@ -140,6 +144,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       metpluspho.setP4(met->p4() + pho->p4());
 
       filler.fillEventInfo(&data, this, true, &metpluspho);
+      extraFiller.fillTestVars(&data, this);
 
       data.fill<float>(i_trigPhoWeight, triggerCorrections.getTrigPhoWeight());
       data.fill<int>(i_npho, selectedPhotons.size());
@@ -147,6 +152,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<float>(i_phoeta, pho->eta());
       data.fill<bool>(i_passgenmatch, passGenMatch);
       data.fill<float>(i_drphotonparton, drphotonparton);
+
       return true;
     }
 

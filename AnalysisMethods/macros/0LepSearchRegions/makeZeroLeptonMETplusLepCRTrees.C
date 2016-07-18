@@ -23,6 +23,7 @@ void makeZeroLeptonMETplusLepCRTrees(TString sname = "htmht",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars1LCR(json);
+//  cfgSet::ConfigSet pars = pars0lepCR(json); // this defines also the secondary leptons
 
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 

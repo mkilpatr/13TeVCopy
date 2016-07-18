@@ -28,6 +28,7 @@ PhotonReader::PhotonReader() : BaseReader(){
   ismedium     = new vector<bool>  ;
   istight      = new vector<bool>  ;
   hasPixelSeed = new vector<bool>  ;
+  passElectronVeto_old = new vector<bool>;
   passElectronVeto = new vector<bool>;
 }
 
@@ -52,7 +53,8 @@ void PhotonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName , "looseid"     , &isloose     , true);
     treeReader->setBranchAddress(branchName , "mediumid"    , &ismedium    , true);
     treeReader->setBranchAddress(branchName , "tightid"     , &istight     , true);
-    treeReader->setBranchAddress(branchName , "passConvVeto", &passElectronVeto, true);
+    treeReader->setBranchAddress(branchName , "passConvVeto", &passElectronVeto_old, false);
+    treeReader->setBranchAddress(branchName , "passElectronVeto", &passElectronVeto, false);//FIXME
     treeReader->setBranchAddress(branchName , "hasPixelSeed", &hasPixelSeed    , true);
 
   }
@@ -77,7 +79,10 @@ void PhotonReader::refresh(){
       photons.back().setIsMedium(ismedium->at(iL));
       photons.back().setIsTight(istight->at(iL));
       photons.back().setHasPixelSeed(hasPixelSeed->at(iL));
-      photons.back().setPassElectronVeto(passElectronVeto->at(iL));
+      if (passElectronVeto_old->size()>0)
+        photons.back().setPassElectronVeto(passElectronVeto_old->at(iL));
+      else
+        photons.back().setPassElectronVeto(passElectronVeto->at(iL));
     }
     std::sort(photons.begin(), photons.end(), PhysicsUtilities::greaterPT<PhotonF>());
   }

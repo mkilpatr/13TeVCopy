@@ -3,12 +3,13 @@
 
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/JetReco/interface/Jet.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
 
 namespace ucsbsusy {
   class RecoJetFiller : public JetFiller<reco::PFJet> {
     public:
-      RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller);
+      RecoJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller);
       virtual ~RecoJetFiller() {}
 
       virtual void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);

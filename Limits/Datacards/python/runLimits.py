@@ -378,8 +378,10 @@ def calcLimit(config, signal):
         mstop = int(signal.split('_')[1])
         sigtype = signal.split('_')[0]
         runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' -n ' + signal
-        if mstop >= 400:
+        if mstop >= 350:
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 10 -n ' + signal
+        if ('fbd' in sigtype or '4bd' in sigtype) and (mstop<=200):
+            runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 1 -n ' + signal
         output = commands.getoutput(runLimitsCommand)
         lprint(runLimitsCommand, output)
 

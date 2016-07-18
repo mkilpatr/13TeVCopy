@@ -1,7 +1,7 @@
 #include "AnalysisBase/Analyzer/interface/PatJetFiller.h"
 //--------------------------------------------------------------------------------------------------
-PatJetFiller::PatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller) :
- JetFiller<pat::Jet>(cfg, static_cast<edm::ConsumesCollector&&>(cc), options, branchName, evtInfoFiller, genParticleFiller)
+PatJetFiller::PatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller * evtInfoFiller, const GenParticleFiller * genParticleFiller, const PFCandidateFiller * pfCandidateFiller) :
+ JetFiller<pat::Jet>(cfg, static_cast<edm::ConsumesCollector&&>(cc), options, branchName, evtInfoFiller, genParticleFiller, pfCandidateFiller)
 {}
 
 //--------------------------------------------------------------------------------------------------

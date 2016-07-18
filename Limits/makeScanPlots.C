@@ -33,7 +33,7 @@ vector<TGraph*> DrawContours(TGraph2D &g2, int color, int style,
   }
   return out;
 }
-  
+
 void SetupColors(){
   const unsigned num = 5;
   const int bands = 255;
@@ -139,8 +139,8 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
   double ymax = *max_element(mlsps.cbegin(), mlsps.cend());
   double bin_size = 12.5;
 
-  int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/bin_size))));
-  int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/bin_size))));
+  int nxbins = max(1, min(1000, static_cast<int>(ceil((xmax-xmin)/bin_size))));
+  int nybins = max(1, min(1000, static_cast<int>(ceil((ymax-ymin)/bin_size))));
   printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
   glimexp.SetNpx(nxbins);
   glimexp.SetNpy(nybins);

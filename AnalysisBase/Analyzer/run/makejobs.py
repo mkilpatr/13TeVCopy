@@ -20,8 +20,6 @@ gROOT.SetBatch(True)
 
 parser = argparse.ArgumentParser(description='Prepare and submit ntupling jobs')
 parser.add_argument("--makegrid", dest="makegrid", action='store_true', help="Make jobs for producing mass grid from SMS scans. [Default: False]")
-parser.add_argument("--mstopsteps", dest="mstopsteps", type=int, default=25, help="Step size in m(stop) in GeV for making grid. [Default: 25]")
-parser.add_argument("--mlspsteps", dest="mlspsteps", type=int, default=25, help="Step size in m(lsp) in GeV for making grid. [Default: 25]")
 parser.add_argument("--mstopmin", dest="mstopmin", type=int, default=100, help="Minimum m(stop) in GeV for making grid. [Default: 100]")
 parser.add_argument("--mstopmax", dest="mstopmax", type=int, default=1250, help="Maximum m(stop) in GeV for making grid. [Default: 1250]")
 parser.add_argument("--mlspmin", dest="mlspmin", type=int, default=0, help="Minimum m(lsp) in GeV for making grid. [Default: 0]")
@@ -33,6 +31,7 @@ parser.add_argument("--postsuffix", dest="postsuffix", default="postproc", help=
 parser.add_argument("--runmerge", dest="runmerge", action='store_true', help="Run file merging instead of job submission. [Default: False]")
 parser.add_argument("--splitmerge", dest="splitmerge", action='store_true', help="Split file merging into multiple output files. [Default: False]")
 parser.add_argument("--inputdir", dest="inputdir", default="/eos/uscms/store/user/${USER}/13TeV/ntuples", help="Input directory with unmerged ntuples. [Default: \"/eos/uscms/store/user/${USER}/13TeV/ntuples\"]")
+parser.add_argument("--checkfailed", dest="checkfailed", action='store_true', help="Check for failed jobs which result in corrupted files. Important for data. [Default: False]")
 parser.add_argument("--resubmit", dest="resubmit", action='store_true', help="Resubmit jobs for which output files do not exist. [Default: False]")
 parser.add_argument("-i", "--input", dest="input", default="datasets.conf", help="Input configuration file with list of datasets. [Default: datasets.conf]")
 parser.add_argument("-s", "--submit", dest="submit", default="submitall", help="Name of shell script to run for job submission. [Default: submitall]")
@@ -140,13 +139,14 @@ if args.makegrid :
     else :
         os.system("mkdir -p %s" % args.outdir)
 
-    masspoints = []
+    masspoints = {}
     files = {}
     prefix = ""
     snames = {}
     for sample in samples :
         filelist = []
         snames[sample] = []
+        masspoints[sample] = []
         if args.inputdir.startswith("/eos/cms/store/user") or args.inputdir.startswith("/store/user") :
             cmd = ("%s find -f %s | egrep '%s(-ext[0-9]*|)(_[0-9]+|)_ntuple_%s.root'" % (eos, args.outdir, sample, args.postsuffix))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -165,8 +165,10 @@ if args.makegrid :
         sigsuffix = sample.split('_')[3] if len(sample.split('_')) > 3 else ''
         infiles = [prefix + f for f in filelist]
         files[sample] = infiles
+        mstopmin = int(mstopmin)
+        mstopmax = int(mstopmax)+1
         print mstopmin, mstopmax
-        (snames[sample],masspoints) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
+        (snames[sample],masspoints[sample]) = get_all_masspoints(infiles, mstopmin, mstopmax, args.mlspmin, args.mlspmax, sigbase, sigsuffix)
 
     print 'Creating submission file: submit_makegrid.sh'
     script = open('submit_makegrid.sh', 'w')
@@ -244,7 +246,9 @@ rm submit.cmd""".format(
 
     print "Done!"
 
-    print ', '.join(p for p in masspoints)
+    for sname in masspoints:
+        print sname
+        print ', '.join(masspoints[sname])
 
     exit()
 
@@ -544,6 +548,30 @@ elif args.submittype == 'crab':
     print "Done!"
     exit()
 
+elif args.checkfailed :
+    parseConfig(False)
+    for isam in range(len(samples)) :
+        cmd = ""
+        if args.splittype == "file" :
+            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam])
+        else :
+            cmd = "for i in `grep -cH ERROR %s/logs/%s*.err | grep -v :0 | sed 's/.err:.*/.out/'` ; do for j in `grep -cH \"Status = 0\" $i | grep -v :1 | sed 's/:0//'` ; do file=`cat $j | grep \"args:\" | awk '{print $4\"/\"$5}' | sed 's/.root/_numEvent%d.root/'` ; logfile=`echo $i | sed 's/out/err/'` ; echo \"log file: \"$logfile\", output file:\"; ls -lrth $file ; done ; done" % (args.jobdir,samples[isam],args.numperjob)
+        ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        output= ps.communicate()[0].replace(':\n',': ')
+        result = output.split('\n')
+        if len(result) > 1 :
+            print '\n'.join(result)
+            files = [line.split()[-1] for line in result if len(line) > 1]
+            removefiles = raw_input("Do you want to delete these output files? [y/n] ").lower()
+            yes = ['yes','y']
+            no = ['no','n']
+            if removefiles in yes :
+                print 'Will remove files!'
+                rmcmd = 'rm ' + ' '.join(files)
+                os.system(rmcmd)
+            elif not removefiles in no :
+                print 'Didn\'t get a y/n answer! Doing nothing ...'
+
 else :
     parseConfig(False)
 
@@ -689,7 +717,6 @@ rm submit.cmd""".format(
                     cpinput = "\ncp $jobdir/%s $workdir \n" % (jobfile)
                 script.write("{cptxt}./$jobdir/submit_{name}_{j}.sh\n".format(cptxt=cpinput, name=samples[isam], j=ijob))
                 os.system("chmod +x %s/submit_%s_%d.sh" % (args.jobdir, samples[isam], ijob))
-# request_memory          = 199
 
 
     script.close()
