@@ -62,7 +62,8 @@ TnPCorr::TnPCorr(TString corrName,
   muConfKin.passID  = &MuonID::inclusive;
   muConfKin.passISO = &MuonISO::inclusive;
 
-  TString baseDir = TString::Format("%s/src/data/corrections/",getenv("CMSSW_BASE"));
+  //TString baseDir = TString::Format("%s/src/data/corrections/",getenv("CMSSW_BASE"));
+  TString baseDir = TString::Format("%s/src/data/corrections/2016/",getenv("CMSSW_BASE"));
 
   if(loadElectrons) {
     elConfNoIso = elConf;
@@ -74,18 +75,25 @@ TnPCorr::TnPCorr(TString corrName,
     TString elIdHistName, elIsoHistName, elMCVetoIdEffHistName, elMCVetoIsoEffHistName;
 
     // electron files and histograms
-    fileEl = TFile::Open(baseDir+"kinematicBinSFele.root","read");
+    //fileEl = TFile::Open(baseDir+"kinematicBinSFele.root","read");
+    fileEl = TFile::Open(baseDir+"scaleFactors.root","read");
     if(elConf.type==LeptonSelection::ZL_SEL_ELE){
-      elMCVetoIdEffFileName  = "tnpMCEffEl_ID_SR.root";
-      elMCVetoIsoEffFileName = "tnpMCEffEl_Iso_SR.root";
-      elIdHistName  = "CutBasedVeto";
-      elIsoHistName = "MiniIso0p1_vs_RelActivity";
+      //elMCVetoIdEffFileName  = "tnpMCEffEl_ID_SR.root";
+      //elMCVetoIsoEffFileName = "tnpMCEffEl_Iso_SR.root";
+      //elIsoHistName = "MiniIso0p1_vs_RelActivity";
+      elMCVetoIdEffFileName  = "lepCorMCEff_El_Id_SR.root";
+      elMCVetoIsoEffFileName = "lepCorMCEff_El_Iso_SR.root";
+      elIdHistName  = "CutBasedVeto"; //unchanged
+      elIsoHistName = "Mini"; // is MiniIso < 0.1 [pt,eta]
     }
     else if(elConf.type==LeptonSelection::ZL_CTR_ELE){
-      elMCVetoIdEffFileName  = "tnpMCEffEl_ID_CR.root";
-      elMCVetoIsoEffFileName = "tnpMCEffEl_Iso_CR.root";
-      elIdHistName  = "CutBasedMedium";
-      elIsoHistName = "MiniIso0p1_vs_RelActivity";
+      //elMCVetoIdEffFileName  = "tnpMCEffEl_ID_CR.root";
+      //elMCVetoIsoEffFileName = "tnpMCEffEl_Iso_CR.root";
+      //elIsoHistName = "MiniIso0p1_vs_RelActivity";
+      elMCVetoIdEffFileName  = "lepCorMCEff_El_Id_CR.root";
+      elMCVetoIsoEffFileName = "lepCorMCEff_El_Iso_CR.root";
+      elIdHistName  = "CutBasedMedium"; //unchanged
+      elIsoHistName = "Mini"; // is MiniIso < 0.1 [pt,eta]
     }
     else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Invalid option for cfgSet::zl_lepton_set.electrons.type! Use 'ZL_SEL_ELE' or 'ZL_CTR_ELE'!");
 
@@ -97,8 +105,10 @@ TnPCorr::TnPCorr(TString corrName,
 
     HistIdEl           = (TH2F*)(fileEl            ->Get(elIdHistName ));
     HistIsoEl          = (TH2F*)(fileEl            ->Get(elIsoHistName));
-    HistMCVetoIdEffEl  = (TH2F*)(fileMCVetoIdEffEl ->Get("tnpEffIdEl"));
-    HistMCVetoIsoEffEl = (TH2F*)(fileMCVetoIsoEffEl->Get("tnpEffIsoEl"));
+    //HistMCVetoIdEffEl  = (TH2F*)(fileMCVetoIdEffEl ->Get("tnpEffIdEl"));
+    //HistMCVetoIsoEffEl = (TH2F*)(fileMCVetoIsoEffEl->Get("tnpEffIsoEl"));
+    HistMCVetoIdEffEl  = (TH2F*)(fileMCVetoIdEffEl ->Get("lepCorMCEff_El_Id"));
+    HistMCVetoIsoEffEl = (TH2F*)(fileMCVetoIsoEffEl->Get("lepCorMCEff_El_Iso"));
     if(!HistIdEl          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ID hist could not be found!");
     if(!HistIsoEl         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ISO hist could not be found!");
     if(!HistMCVetoIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff hist could not be found!");
@@ -116,40 +126,65 @@ TnPCorr::TnPCorr(TString corrName,
 
     // muon files and histograms
     if(muConf.type==LeptonSelection::ZL_SEL_MU){
-      muIdFileName           = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-      muIsoFileName          = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_activity_pt.root";
-      muMCVetoIdEffFileName  = "tnpMCEffMu_ID_SR.root";
-      muMCVetoIsoEffFileName = "tnpMCEffMu_Iso_SR.root";
-      muIdHistName           = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass";
-      muIsoHistName          = "SFmap";
+      //muIsoFileName          = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_activity_pt.root";
+      //muMCVetoIdEffFileName  = "tnpMCEffMu_ID_SR.root";
+      //muMCVetoIsoEffFileName = "tnpMCEffMu_Iso_SR.root";
+      //muIdHistName           = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass";
+      //muIsoHistName          = "SFmap";
+      muIdFileName           = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root"; //unchanged
+      muIsoFileName          = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+      muMCVetoIdEffFileName  = "lepCorMCEff_Mu_Id_SR.root";
+      muMCVetoIsoEffFileName = "lepCorMCEff_Mu_Iso_SR.root";
+      muIdHistName           = "dummy";
+      muIsoHistName          = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass";
     }
     else if(muConf.type==LeptonSelection::ZL_CTR_MU){
-      muIdFileName        = "TnP_MuonID_NUM_MediumID_DENOM_generalTracks_VAR_map_pt_eta.root";
+      //muIdFileName        = "TnP_MuonID_NUM_MediumID_DENOM_generalTracks_VAR_map_pt_eta.root";
+      //muIsoFileName       = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_activity_pt.root";
+      //muMCVetoIdEffFileName  = "tnpMCEffMu_ID_CR.root";
+      //muMCVetoIsoEffFileName = "tnpMCEffMu_Iso_CR.root";
+      //muIdHistName        = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass";
+      //muIsoHistName       = "SFmap";
+      muIdFileName        = "dummy"; // waiting on Medium [HIP] muon ID SFs
       muIsoFileName       = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_activity_pt.root";
-      muMCVetoIdEffFileName  = "tnpMCEffMu_ID_CR.root";
-      muMCVetoIsoEffFileName = "tnpMCEffMu_Iso_CR.root";
-      muIdHistName        = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass";
-      muIsoHistName       = "SFmap";
+      muMCVetoIdEffFileName  = "lepCorMCEff_Mu_Id_CR.root";
+      muMCVetoIsoEffFileName = "lepCorMCEff_Mu_Iso_CR.root";
+      muIdHistName        = "dummy"; // waiting ^^
+      muIsoHistName       = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_Medium2016_pass";
     }
     else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Invalid option for cfgSet::zl_lepton_set.muons.type! Use 'ZL_SEL_MU' or 'ZL_CTR_Mu'!");
 
-    fileIdMu           = TFile::Open(baseDir+muIdFileName          ,"read");
+    TString muTrackerFileName      = "general_tracks_and_early_general_tracks_corr_ratio.root";
+    TString muTrackerPtg10HistName = "mutrksfptg10";
+    TString muTrackerPtl10HistName = "mutrksfptl10";
+
+    //fileIdMu           = TFile::Open(baseDir+muIdFileName          ,"read"); // waiting ^^
     fileIsoMu          = TFile::Open(baseDir+muIsoFileName         ,"read");
     fileMCVetoIdEffMu  = TFile::Open(baseDir+muMCVetoIdEffFileName ,"read");
     fileMCVetoIsoEffMu = TFile::Open(baseDir+muMCVetoIsoEffFileName,"read");
+    fileTrackerMu      = TFile::Open(baseDir+muTrackerFileName     ,"read");
+
     if(!fileIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID file could not be found!");
     if(!fileIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu Iso file could not be found!");
     if(!fileMCVetoIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff file could not be found!");
     if(!fileMCVetoIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff file could not be found!");
+    if(!fileTrackerMu     ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: meow! mu tracker SF file could not be found!");
 
-    HistIdMu           = (TH2F*)(fileIdMu          ->Get(muIdHistName ));
+    //HistIdMu           = (TH2F*)(fileIdMu          ->Get(muIdHistName )); // waiting ^^
     HistIsoMu          = (TH2F*)(fileIsoMu         ->Get(muIsoHistName));
-    HistMCVetoIdEffMu  = (TH2F*)(fileMCVetoIdEffMu ->Get("tnpEffIdMu"));
-    HistMCVetoIsoEffMu = (TH2F*)(fileMCVetoIsoEffMu->Get("tnpEffIsoMu"));
-    if(!HistIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID hist could not be found!");
+    //HistMCVetoIdEffMu  = (TH2F*)(fileMCVetoIdEffMu ->Get("tnpEffIdMu"));
+    //HistMCVetoIsoEffMu = (TH2F*)(fileMCVetoIsoEffMu->Get("tnpEffIsoMu"));
+    HistMCVetoIdEffMu  = (TH2F*)(fileMCVetoIdEffMu ->Get("lepCorMCEff_Mu_Id"));
+    HistMCVetoIsoEffMu = (TH2F*)(fileMCVetoIsoEffMu->Get("lepCorMCEff_Mu_Iso"));
+    HistMuTrackerPtg10 = (TH2F*)(fileTrackerMu->Get(muTrackerPtg10HistName));
+    HistMuTrackerPtl10 = (TH2F*)(fileTrackerMu->Get(muTrackerPtl10HistName));
+
+    //if(!HistIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID hist could not be found!"); // waiting ^^
     if(!HistIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ISO hist could not be found!");
     if(!HistMCVetoIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff hist could not be found!");
     if(!HistMCVetoIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff hist could not be found!");
+
+
   } // loadMuons
 
 }
@@ -162,6 +197,7 @@ TnPCorr::~TnPCorr() {
   if(fileMCVetoIdEffMu ) fileMCVetoIdEffMu ->Close();
   if(fileMCVetoIsoEffEl) fileMCVetoIsoEffEl->Close();
   if(fileMCVetoIsoEffMu) fileMCVetoIsoEffMu->Close();
+  if(fileTrackerMu     ) fileTrackerMu     ->Close();
   delete fileEl            ;
   delete fileIdMu          ;
   delete fileIsoMu         ;
@@ -169,6 +205,7 @@ TnPCorr::~TnPCorr() {
   delete fileMCVetoIdEffMu ;
   delete fileMCVetoIsoEffEl;
   delete fileMCVetoIsoEffMu;
+  delete fileTrackerMu     ;
 }
 
 float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType ) const {
