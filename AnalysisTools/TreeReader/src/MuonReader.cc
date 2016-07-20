@@ -30,6 +30,7 @@ MuonReader::MuonReader() : BaseReader(){
   mvaiso       = new vector<float>;
   isloose      = new vector<bool>;
   ismedium     = new vector<bool>;
+  ismediumhip  = new vector<bool>;
   istight      = new vector<bool>;
   ispf         = new vector<bool>;
   isglobal     = new vector<bool>;
@@ -63,6 +64,7 @@ void MuonReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName ,"pfdbetaiso"   , &pfdbetaiso  , true);
     treeReader->setBranchAddress(branchName ,"isLoose"      , &isloose     , true);
     treeReader->setBranchAddress(branchName ,"isMedium"     , &ismedium    , true);
+    treeReader->setBranchAddress(branchName ,"isMediumHIP"  , &ismediumhip , true);
     treeReader->setBranchAddress(branchName ,"isTight"      , &istight     , true);
     treeReader->setBranchAddress(branchName ,"isPF"         , &ispf        , true);
     treeReader->setBranchAddress(branchName ,"isGlobal"     , &isglobal    , true);
@@ -93,6 +95,7 @@ void MuonReader::refresh(){
       muons.back().setPFDBetaIso(pfdbetaiso->at(iL));
       muons.back().setIsLoose(isloose->at(iL));
       muons.back().setIsMedium(ismedium->at(iL));
+      muons.back().setIsMediumHIP(ismediumhip->at(iL));
       muons.back().setIsTight(istight->at(iL));
       muons.back().setIsPF(ispf->at(iL));
       muons.back().setIsGlobal(isglobal->at(iL));
