@@ -18,7 +18,6 @@ struct ExtraVarsFiller {
   TH1D* hpartonht = nullptr;
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
-  size i_failtriglep;
 
   // Syst. studies
   size i_systweights;
@@ -146,7 +145,6 @@ struct ExtraVarsFiller {
   }
 
   void bookTest(TreeWriterData* data){
-    i_failtriglep    = data->add<bool>("","failtriglep","O",0);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -293,10 +291,6 @@ struct ExtraVarsFiller {
   }
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    bool passTrigEl = ana->triggerflag & kHLT_Ele27_eta2p1_WPLoose_Gsf;
-    bool passTrigMu = (ana->triggerflag & kHLT_IsoMu22) || (ana->triggerflag & kHLT_IsoTkMu22);
-    data->fill<bool>(i_failtriglep, ana->isMC() || (ana->process==defaults::DATA_MET ? ((!passTrigEl) && (!passTrigMu)): false));
-
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
