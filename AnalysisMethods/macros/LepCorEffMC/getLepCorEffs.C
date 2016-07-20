@@ -51,7 +51,8 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h" 
 
   // settings - four subdirs {id,iso}/{sr/cr} assumed
-  const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/LepEff/80X-22062016/merged/";
+  const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/20072016-LepEff/";
+  //const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/LepEff/80X-22062016/merged/";
   //const TString treedir = "/eos/uscms/store/user/apatters/ntuples/LepEff/80X-22062016/merged/";
   //const TString treedir = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160201_madgraph_SR_Iso/"; // Sam's trees to reproduce AN plot. change for {CR,SR}x{Id,Iso}.
   const TString outdir = "./lepCorEffs/";
@@ -59,7 +60,7 @@
 
   //const bool isId  = lowerTString(treedir).Contains("id"); //outdated method, keeping in case useful
   //const bool isSR  = lowerTString(treedir).Contains("sr");
-  //TFile* f = TFile::Open(treedir + ((isSR) ? "/sr/" : "/cr/") + "ttbarplusw_tree.root","READONLY");
+  //TFile* f = TFile::Open(treedir + ((isSR) ? "/sr/" : "/cr/") + "ttbarplusw-mg_tree.root","READONLY");
   //TTree* t = (TTree*)f->Get("Events");
 
   // lumi, weights, selections
@@ -72,12 +73,15 @@
   */
 
   // def general cutstrings
-  const TString trig       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
+  const TString trig       = "passmetfilters"; //&& passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
   const TString passvetoes = " && (nvetotau==0 || (ismc && npromptgentau>0)) && nvetolep==0";
   const TString lepcrsel   = " && nvetolep>0 && mtlepmet<100";
   const TString met        = " && met>250";
   const TString njets75    = " && j2pt>75";
+  const TString j1lpt      = " && j1lpt>250";
   const TString njets      = " && njets>=5";
+  const TString njets2     = " && njets>=2";
+  const TString njl        = " && njl>=1";
   const TString nlbjets    = " && nlbjets>=2";
   const TString nbjets     = " && nbjets>=1";
   const TString dphij12met = " && dphij12met>0.5";
@@ -85,16 +89,20 @@
   const TString dphij4met  = " && dphij4met>0.5";
   const TString dphij34met = " && dphij3met>0.5 && dphij4met>0.5";
   const TString dphij123   = " && dphij12met>1 && dphij3met>0.5 && dphij4met>0.5";
+  const TString dphij1lmet = " && dphij1lmet>2";
+  const TString metovsqrtht= " && metovsqrtht>10";
   const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
   const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
-  const TString lepeffbase   = trig +              met + njets75 + njets + nlbjets + nbjets;
+  const TString nearHMbase   = trig +              met + njets75 + njets + nlbjets + nbjets;
+  const TString nearLMbase   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht;
+  const TString commonbase   = trig +              met + njets2;
   //const TString lepeffbase   = "1==1" + met + njets75 + njets + nlbjets + nbjets; // triggers removed
 
   // lumi, weight, trig, selections being set
   const TString lumistr  = "2.317";
   const TString mcwgt    = lumistr + "*weight";
   const TString weight   = lumistr + "*weight*truePUWeight*btagWeight";
-  const TString baseline = lepeffbase;
+  const TString baseline = nearHMbase;
 
   // set bins of histograms
   std::vector<float> binsPt       { 5, 10, 20, 30, 40, 50, 60, 80, 120};
@@ -276,7 +284,7 @@ void createEff2D( TTree* t, bool isId, bool isSR, TString outPlotFileName,
   TString c_denmu = c_base  + c_denmuextra + " && ngoodgenmu>=1" + c_muidgeneta;
   TString c_nummu = c_denmu + c_nummuextra + ((isId) ? " && ngenmumatched>=1" : " && nvetomu>=1");
   TString c_denel = c_base  + c_denelextra + " && ngoodgenele>=1";
-  TString c_numel = c_denel + c_numelextra + " && nvetolele>=1";
+  TString c_numel = c_denel + c_numelextra + " && nvetoele>=1";
 
   std::cout << "denominator cutstring: " << ((isMu) ? c_denmu : c_denel) + ")" << std::endl;
   std::cout << "numerator   cutstring: " << ((isMu) ? c_nummu : c_numel) + ")" << std::endl;
@@ -328,10 +336,10 @@ void createEff2D( TTree* t, bool isId, bool isSR, TString outPlotFileName,
 
   if( isMu ){
     h_eff->SetXTitle( (isId) ? "Gen Muon p_{T} [GeV]" : "Muon p_{T} [GeV]"          );
-    h_eff->SetYTitle( (isId) ? "Gen Muon |#eta|"      : "Relative Annulus Activity" );
+    h_eff->SetYTitle( (isId) ? "Gen Muon |#eta|"      : "Gen Muon |#eta|" ); // was: Relative Annulus Activity
   }else{
     h_eff->SetXTitle( "Electron p_{T} [GeV]" );
-    h_eff->SetYTitle( (isId) ? "Electron |#eta|" : "Relative Annulus Activity" );
+    h_eff->SetYTitle( (isId) ? "Electron |#eta|" : "Electron |#eta|" ); // was: Relative Annulus Activity
   }
 
   // save plots
@@ -366,8 +374,10 @@ void plotAll2D(TTree* t, bool isId, bool isSR, TString extraFileName="", TString
     createEff2D( t, isId, isSR, "2D_pt_eta_"    +extraFileName, "idisoincALelept"  , "idisoincALeleeta"       , nBinsPtEl, nBinsAbsEtaEl, &binsPtEl[0], &binsAbsEtaEl[0], extraCuts );
     createEff2D( t, isId, isSR, "2D_pt_eta_"    +extraFileName, "genmupt", "genmueta"     , nBinsPtMu, nBinsAbsEtaMu, &binsPtMu[0], &binsAbsEtaMu[0], extraCuts );
   }else{ //Iso
-    createEff2D( t, isId, isSR, "2D_pt_annulus_"+extraFileName, "isoincALelept"  , "isoincALeleannulus/isoincALelept", nBinsPtEl, nBinsAn      , &binsPtEl[0], &binsAn[0]      , extraCuts ); 
-    createEff2D( t, isId, isSR, "2D_pt_annulus_"+extraFileName, "isoincALmupt"   , "isoincALmuannulus/isoincALmupt"  , nBinsPtMu, nBinsAn      , &binsPtMu[0], &binsAn[0]      , extraCuts );
+    createEff2D( t, isId, isSR, "2D_pt_eta_"    +extraFileName, "isoincALelept"  , "isoincALeleeta"                  , nBinsPtEl, nBinsAbsEtaEl, &binsPtEl[0], &binsAbsEtaEl[0], extraCuts );
+    createEff2D( t, isId, isSR, "2D_pt_eta_"    +extraFileName, "isoincALmupt"  , "isoincALmueta"                  , nBinsPtMu, nBinsAbsEtaMu, &binsPtMu[0], &binsAbsEtaMu[0], extraCuts );
+    //createEff2D( t, isId, isSR, "2D_pt_annulus_"+extraFileName, "isoincALelept"  , "isoincALeleannulus/isoincALelept", nBinsPtEl, nBinsAn      , &binsPtEl[0], &binsAn[0]      , extraCuts ); 
+    //createEff2D( t, isId, isSR, "2D_pt_annulus_"+extraFileName, "isoincALmupt"   , "isoincALmuannulus/isoincALmupt"  , nBinsPtMu, nBinsAn      , &binsPtMu[0], &binsAn[0]      , extraCuts );
   }
 
   // not currently used
@@ -394,7 +404,7 @@ void getLepCorEffs() {
     for(unsigned int j = 0; j <= 1; ++j) {
       bool isId  = (bool)j;
 //      isId = 1; isSR = 1; //hack if want to test one region quickly
-      TFile* f = TFile::Open(treedir + "/" + ((isId) ? "id" : "iso") + "/" + ((isSR) ? "sr" : "cr") + "/" + "ttbarplusw_tree.root","READONLY");
+      TFile* f = TFile::Open(treedir + "/" + ((isId) ? "id" : "iso") + "/" + ((isSR) ? "sr" : "cr") + "/" + "ttbarplusw-mg_tree.root","READONLY");
       if (f->IsZombie()) {
         std::cout << "Error opening file" << std::endl;
         exit(-1);
