@@ -50,6 +50,17 @@ HistogramCorrection::HistogramCorrection(TString corrName, TString fileName) : C
   corrHist = (TH1F*)(inputFile->Get(name) );
   if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
 }
+HistogramCorrection::HistogramCorrection(TString corrName, TString fileName, TString fileName2) : Correction(corrName),targetBin(1),targetBin2(1) {
+  std::clog << "Loading files: "<< fileName << " " << fileName2 << std::endl;
+  inputFile = TFile::Open(fileName,"read");
+  inputFile2 = TFile::Open(fileName2,"read");
+  if(!inputFile) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: file could not be found!");
+  if(!inputFile2) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: second file could not be found!");
+  corrHist = (TH1F*)(inputFile->Get(name) );
+  corrHist2 = (TH1F*)(inputFile2->Get(name) );
+  if(!corrHist) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found!");
+  if(!corrHist2) throw std::invalid_argument("HistogramCorrection::HistogramCorrection: Histogram could not be found in second file!");
+}
 HistogramCorrection::~HistogramCorrection() {
   if(inputFile) inputFile->Close();
 }

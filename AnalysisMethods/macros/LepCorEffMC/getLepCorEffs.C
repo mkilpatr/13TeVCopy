@@ -93,7 +93,7 @@
   const TString metovsqrtht= " && metovsqrtht>10";
   const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
   const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
-  const TString nearHMbase   = trig +              met + njets75 + njets + nlbjets + nbjets;
+  const TString nearHMbase   = trig +              met + njets + nlbjets + nbjets;
   const TString nearLMbase   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht;
   const TString commonbase   = trig +              met + njets2;
   //const TString lepeffbase   = "1==1" + met + njets75 + njets + nlbjets + nbjets; // triggers removed
