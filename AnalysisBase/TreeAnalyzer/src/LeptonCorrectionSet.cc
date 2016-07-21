@@ -169,7 +169,7 @@ TnPCorr::TnPCorr(TString corrName,
     fileMCVetoHMIsoEffMu = TFile::Open(baseDir+muMCVetoHMIsoEffFileName,"read");
     fileTrackerMu      = TFile::Open(baseDir+muTrackerFileName     ,"read");
 
-    if(!fileIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID file could not be found!");
+    //if(!fileIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID file could not be found!");
     if(!fileIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu Iso file could not be found!");
     if(!fileMCVetoLMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff file could not be found!");
     if(!fileMCVetoLMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff file could not be found!");
@@ -279,12 +279,16 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
     failIdWt = 1.0; // will get this part from gen muons
   }
-  if(passIdIso) wt = sfid * sfiso;
+  if(passIdIso) {
+    wt = sfid * sfiso;
+  }
   else if(passId) {
     if(effiso>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Iso eff is >=1!");
     wt = sfid * (1.0-effiso*sfiso)/(1.0-effiso);
   }
-  else wt = failIdWt;
+  else {
+    wt = failIdWt;
+  }
   if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
   if(wt >  2.0) wt =  2.0; // also don't want large positive weights
   return wt;
@@ -412,9 +416,6 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
           nPromptGenTaus++;
       }
     }
-
-    //unsigned int targetBinMu = LepCorr::defaultBin;
-    //unsigned int targetBinEl = LepCorr::defaultBin;
 
     if(multiPtBins) {
       for(auto* i : ana->selectedLeptons) {
