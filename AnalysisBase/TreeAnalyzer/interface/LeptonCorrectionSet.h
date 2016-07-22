@@ -20,7 +20,6 @@ namespace ucsbsusy {
   class LepCorr : public HistogramCorrection {
 
     public:
-//      LepCorr(TFile * file)  : HistogramCorrection("LEP",file) {}
       LepCorr(TString fileNameLM, TString fileNameHM)  : HistogramCorrection("LEP",fileNameLM,fileNameHM) {}
 
       static const unsigned int defaultBin       = 1;
@@ -81,10 +80,8 @@ namespace ucsbsusy {
       virtual float getElIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistIsoEl); }
       virtual float getElIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoEl); }
 
-      virtual float getMuIDValue (float x, float y) const { return 1.; } // waiting on MuID SFs
-      virtual float getMuIDError (float x, float y) const { return 0.; } // --
-      //virtual float getMuIDValue (float x, float y) const { return getGenericValue2D(x,y,HistIdMu); }
-      //virtual float getMuIDError (float x, float y) const { return getGenericError2D(x,y,HistIdMu); }
+      virtual float getMuIDValue (float x, float y) const { return getGenericValue2D(x,y,HistIdMu); }
+      virtual float getMuIDError (float x, float y) const { return getGenericError2D(x,y,HistIdMu); }
       virtual float getMuIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistIsoMu); }
       virtual float getMuIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoMu); }
 
@@ -92,6 +89,9 @@ namespace ucsbsusy {
       virtual float getMuTrackerPtg10Error(float x) const { return getGenericError1D(x,HistMuTrackerPtg10); }
       virtual float getMuTrackerPtl10Value(float x) const { return getGenericValue1D(x,HistMuTrackerPtl10); }
       virtual float getMuTrackerPtl10Error(float x) const { return getGenericError1D(x,HistMuTrackerPtl10); }
+
+      virtual float getMuIP2DValue(float x, float y) const { return getGenericValue2D(x,y,HistMuIP2D); }
+      virtual float getMuIP2DError(float x, float y) const { return getGenericError2D(x,y,HistMuIP2D); }
 
       // MC eff getters for LM and HM regions
       virtual float getElMCIdEffValue  (float x, float y, TString region) const { return region == "LM" ? getGenericValue2D(x,y,HistMCVetoLMIdEffEl) : getGenericValue2D(x,y,HistMCVetoHMIdEffEl);}
@@ -123,6 +123,7 @@ namespace ucsbsusy {
       TFile* fileMCVetoHMIsoEffEl;
       TFile* fileMCVetoHMIsoEffMu;
       TFile* fileTrackerMu;
+      TFile* fileIP2DMu;
       TH2F*  HistIdEl;
       TH2F*  HistIdMu;
       TH2F*  HistIsoEl;
@@ -137,6 +138,7 @@ namespace ucsbsusy {
       TH2F*  HistMCVetoLMIsoEffMu;
       TH1F*  HistMuTrackerPtg10;
       TH1F*  HistMuTrackerPtl10;
+      TH2F*  HistMuIP2D;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
@@ -158,7 +160,7 @@ namespace ucsbsusy {
         MULTI_PT_BINS = (1 << 11)
       }; 
 
-      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeightLM(1), vetoLepWeightHM(1), selLepWeightLM(1), selLepWeightHM(1), useHPS(false), multiPtBins(false), tnpEvtWeightLM(1), tnpEvtWeightHM(1) {}
+      LeptonCorrectionSet() : lepCorr(0), tnpCorr(0), vetoLepWeightLM(1), vetoLepWeightHM(1), selLepWeightLM(1), selLepWeightHM(1), useHPS(false), multiPtBins(true), tnpEvtWeightLM(1), tnpEvtWeightHM(1) {}
       virtual ~LeptonCorrectionSet() {}
       virtual void load(TString fileNameLM, TString fileNameHM, //for LepCorrs
                         const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
