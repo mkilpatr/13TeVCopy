@@ -143,8 +143,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2016/CSVv2_ichep.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
-  standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/csvFastSimEffs.root",CMSSW_BASE);
-  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/CSV_13TEV_Combined_20_11_2015.csv",CMSSW_BASE);
+  standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/2016/csvFastSimEffs.root",CMSSW_BASE);
+  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/2016/CSV_13TEV_Combined_14_7_2016.csv",CMSSW_BASE);
   standardCorrections.heavyFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();

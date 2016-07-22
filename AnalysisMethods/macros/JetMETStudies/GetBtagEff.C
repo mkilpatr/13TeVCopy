@@ -80,7 +80,17 @@ for(unsigned int iS =0; SELS[iS][0]; ++iS){
 
 }
 
-void checkEtaBinning(TString name, TTree * tree){
+void checkEtaBinning(TString name, TString fileName){
+
+  TFile * lf = new TFile(fileName,"read");
+  TTree * tree =0;
+  lf->GetObject("Events",tree);
+
+
+
+  double jetETAs[] = {0,1.2,2.1,2.4};
+  int nJetETAS = 3;
+
 
   double jetPTs[] = {20,25,30,35,40,45,50,60,80,100,120,150,180,220,270,350,450,550,650,1000};
   int nJetPTS = 19;
@@ -94,6 +104,12 @@ void checkEtaBinning(TString name, TTree * tree){
   double jetPT4s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,1000};
   int nJetPT4s = 13;
 
+  double jetPT5s[] = {20,25,30,40,45,50,60,80,100,150,180,220,1000};
+  int nJetPT5s = 12;
+
+  double jetPT6s[] = {20,25,30,40,45,50,60,80,100,120,150,180,220,270,350,1000};
+  int nJetPT6s = 15;
+
   double jetPTDoubles[] = {20,25,30,40,50,75,100,150,200,300,1000};
   int nJetPTDoubles = 10;
 
@@ -102,9 +118,6 @@ void checkEtaBinning(TString name, TTree * tree){
 
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
-
-  double jetETAs[] = {0,1.2,2.1,2.4};
-  int nJetETAS = 3;
 
   TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
@@ -164,7 +177,6 @@ void checkEtaBinning(TString name, TTree * tree){
         if(iF == 4){
           sel = TString::Format(" %s && %s",FLVSELS[iF].Data(), CSVSELS[iC].Data()  );
         }        TString histName = TString::Format("%s_%s_%i_%i",name.Data(),FLVNAMES[iF].Data(), iE,iC+1 );
-
         int thisBin = nJetPTS;
         double* thisBinning = jetPTs;
 
@@ -393,7 +405,7 @@ void makeEffs(){
 
 void makeFastSimEffs(){
   const TString treeName = "Events";
-  TFile * lf = new TFile("T2tt_btagEff_baseline.root","read");
+  TFile * lf = new TFile("T2tt_fast.root","read");
   TTree * lt =0;
   lf->GetObject(treeName,lt);
 
@@ -436,7 +448,7 @@ void makeFastSimEffs(){
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
 
-  TString weightSel = "weight*puWeight";
+  TString weightSel = "puWeight*(numjets >= 4)";
 
 
     TTree * tree = lt;
@@ -912,7 +924,10 @@ void Test2(){
 void GetBtagEff()
 {
   StyleTools::SetStyle();
-  makeEffs();
+//  checkEtaBinning("wz","wz_baseline.root");
+  makeFastSimEffs();
+
+  //  makeEffs();
 //  testEfficiencies();
 //  getUnc();
 }
