@@ -203,6 +203,7 @@ namespace cfgSet {
 
 
     TString leptonCorrectionFile;
+    TString leptonCorrectionFile2;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
     //ucsbsusy::CORRTYPE tnpElIdCorrType;
@@ -323,7 +324,7 @@ namespace cfgSet {
       }
 
       if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
-        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() << " and " << a.leptonCorrectionFile2.Data() << " and the TnP files... " <<" -> ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
           os << "LEP ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)

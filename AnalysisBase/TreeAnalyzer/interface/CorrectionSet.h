@@ -43,17 +43,40 @@ class HistogramCorrection : public Correction {
 public:
   HistogramCorrection(TString corrName, TFile * file);
   HistogramCorrection(TString corrName, TString fileName);
+  HistogramCorrection(TString corrName, TString fileName, TString fileName2);
   ~HistogramCorrection();
   void setTargetBin(unsigned int a) {targetBin = a;}
+  void setTargetBin(unsigned int a, unsigned int b) {if(b == 1) targetBin = a; else if(b == 2) targetBin2 = a;  }
   void setAxis(float value) const { targetBin = corrHist->FindFixBin(value); }
   void setAxisNoUnderOver(float value) const { targetBin = std::min(std::max(corrHist->FindFixBin(value),1),corrHist->GetNbinsX());  }
   virtual float get() const { return corrHist->GetBinContent(targetBin);}
+  virtual float get(unsigned int b) const { 
+    if(b == 1){
+      return corrHist->GetBinContent(targetBin);
+    }else if(b == 2){
+      return corrHist2->GetBinContent(targetBin2);
+    }else{
+      throw std::invalid_argument("HistogramCorrection::get(unsigned int) requires you to code a getter for each int!");
+    }
+  }
   virtual float getError() const { return corrHist->GetBinError(targetBin);}
+  virtual float getError(unsigned int b) const { 
+    if(b == 1){
+      return corrHist->GetBinError(targetBin);
+    }else if(b == 2){
+      return corrHist2->GetBinError(targetBin2);
+    }else{
+      throw std::invalid_argument("HistogramCorrection::getError(unsigned int) requires you to code a getter for each int!");
+    }
+  }
   TH1F* getHist()        { return corrHist; }
 protected:
   mutable unsigned int targetBin;
+  mutable unsigned int targetBin2;
   TFile * inputFile;
+  TFile * inputFile2;
   TH1F* corrHist;
+  TH1F* corrHist2;
 
 };
 class Histogram2DCorrection : public Correction {
