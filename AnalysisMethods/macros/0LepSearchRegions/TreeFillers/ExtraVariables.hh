@@ -115,6 +115,12 @@ struct ExtraVarsFiller {
   size i_ngentau;
   size i_ngenlep;
   size i_genlepq ;
+  size i_genelpt;
+  size i_geneleta;
+  size i_genmupt;
+  size i_genmueta;
+  size i_gentaupt;
+  size i_gentaueta;
 
   //w-tag
   size i_sfbclose2lep;
@@ -248,6 +254,12 @@ struct ExtraVarsFiller {
     i_ngenel         = data->add<int>("","ngenel","I",0);
     i_ngentau        = data->add<int>("","ngentau","I",0);
     i_ngenlep        = data->add<int>("","ngenlep","I",0);
+    i_genelpt        = data->addMulti<float>("","genelpt",0);
+    i_geneleta       = data->addMulti<float>("","geneleta",0);
+    i_genmupt        = data->addMulti<float>("","genmupt",0);
+    i_genmueta       = data->addMulti<float>("","genmueta",0);
+    i_gentaupt       = data->addMulti<float>("","gentaupt",0);
+    i_gentaueta      = data->addMulti<float>("","gentaueta",0);
   }
 
   void bookWTag(TreeWriterData* data) {
@@ -707,9 +719,21 @@ struct ExtraVarsFiller {
       if (p->numberOfMothers()==0) continue;
 
       const GenParticleF *genPartMom = p->mother(0);
-      if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) { ++ngenel_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; }
-      if ( (abs(p->pdgId())==13) && (abs(genPartMom->pdgId())==24) ) { ++ngenmu_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; }
-      if ( (abs(p->pdgId())==15) && (abs(genPartMom->pdgId())==24) ) { ++ngentau_; ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; }
+      if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) { 
+        ++ngenel_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+        data->fillMulti<float>(i_genelpt, p->pt());
+        data->fillMulti<float>(i_geneleta, p->eta());
+      }
+      if ( (abs(p->pdgId())==13) && (abs(genPartMom->pdgId())==24) ) { 
+        ++ngenmu_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+        data->fillMulti<float>(i_genmupt, p->pt());
+        data->fillMulti<float>(i_genmueta, p->eta());
+      }
+      if ( (abs(p->pdgId())==15) && (abs(genPartMom->pdgId())==24) ) { 
+        ++ngentau_; ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+        data->fillMulti<float>(i_gentaupt, p->pt());
+        data->fillMulti<float>(i_gentaueta, p->eta());
+      }
 
     }
 
