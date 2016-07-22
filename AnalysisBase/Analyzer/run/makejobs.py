@@ -134,7 +134,7 @@ os.system("mkdir -p %s" % args.jobdir)
 if args.makegrid :
     parseConfig(True)
 
-    if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") :
+    if args.outdir.startswith("/eos/cms/store/user") or args.outdir.startswith("/store/user") or args.outdir.startswith("/store/group") or args.outdir.startswith("/eos/cms/store/group/"):
         os.system("%s mkdir -p %s" % (eos, args.outdir))
     else :
         os.system("mkdir -p %s" % args.outdir)
