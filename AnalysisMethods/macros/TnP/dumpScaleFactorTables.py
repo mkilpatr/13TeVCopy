@@ -30,6 +30,7 @@ def main(options):
     temp = "%s/%s/fit_eff_plots/" % (options.directory, options.subdir)
     if("ToHLT" in temp):
         temp = "%s/%s/cnt_eff_plots/" %(options.directory, options.subdir)
+    print 'going to data directory'
     fData.cd(temp)
 
     keyList = [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
@@ -41,6 +42,7 @@ def main(options):
                 if (p.ClassName() == "TH2F"):
                     hData = p
 
+    temp = "%s/%s/cnt_eff_plots/" %(options.directory, options.subdir)
     fMC.cd(temp)
     keyList = [key.GetName() for key in ROOT.gDirectory.GetListOfKeys()]
     for k in  keyList:
