@@ -266,8 +266,9 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     if(trackSFvalue == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
     float trackSFrelError = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta))/trackSFvalue;
     sfiso     = getMuIsoValue(pt,abseta);
-    sfuncid   = sfid*trackSFvalue*sqrt( pow(0.01,2) + pow(trackSFrelError,2) );
-    sfunciso  = sfiso * 0.01;
+    float sfrelError = 0.03; // conservative july 2016 recommendation
+    sfuncid   = sfid*trackSFvalue*sqrt( pow(sfrelError,2) + pow(trackSFrelError,2) );
+    sfunciso  = sfiso * sfrelError;
     sfid     *= trackSFvalue; // do only after calculating sfuncid!
     if     (muCorrType  == UP  ) sfid  += sfuncid;
     else if(muCorrType  == DOWN) sfid  -= sfuncid;
@@ -304,7 +305,8 @@ float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, TSt
   if     (pt <muConfKin.minPT)  return 1.0;
   else if(abseta>muConfKin.maxETA) return 1.0;
   float sf      = getMuIDValue(pt,abseta);
-  float sfunc   = sf*trackSFvalue*sqrt( pow(0.01,2) + pow(trackSFrelError,2) );
+  float sfrelError = 0.03; // conservative july 2016 recommendation
+  float sfunc   = sf*trackSFvalue*sqrt( pow(sfrelError,2) + pow(trackSFrelError,2) );
   sf           *= trackSFvalue; // do only after calculating sfunc!
   float eff     = getMuMCIdEffValue(pt,abseta,region);
   if     (muCorrType == UP  ) sf += sfunc;
