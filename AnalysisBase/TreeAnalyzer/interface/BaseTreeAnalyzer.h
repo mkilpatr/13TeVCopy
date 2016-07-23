@@ -199,6 +199,7 @@ public:
     LeptonCorrectionSet leptonCorrections;
     JetAndMETCorrectionSet  jetAndMETCorrections;
     BTagCorrectionSet    bTagCorrections;
+    ISRCorrectionSet    isrCorrections;
 
     JetReader  * defaultJets;
 

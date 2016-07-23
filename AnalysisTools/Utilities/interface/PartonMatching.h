@@ -140,6 +140,7 @@ public:
 
   std::vector<TopDecay> topDecays;
   std::vector<BosonDecay> bosonDecays;
+  std::vector<const Parton*> nonTopOrBosonSUSYPartons;
 
   std::vector<float> subtractedJetPTs;
 
@@ -152,7 +153,7 @@ public:
   }
 
   template<typename GenPrtRead,typename JetRead>
-  PartonEvent(const GenPrtRead& genParticleReader, JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
+  PartonEvent(const GenPrtRead& genParticleReader, const JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
     //Get pointers to necessary variables
     const std::vector<ucsbsusy::size16 >* genAssocPrtIndex = jetReader.genAssocPrtIndex_;
     const std::vector<ucsbsusy::size16 >* genAssocJetIndex = jetReader.genAssocJetIndex_;
