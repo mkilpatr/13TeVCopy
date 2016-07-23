@@ -57,13 +57,6 @@ struct ExtraVarsFiller {
   size i_j1chhadn4;
   size i_j1chhadn6;
 
-  // sd tagging extra
-  size i_mbclose2lep;
-  size i_sdtopcandpt;
-  size i_sdtoppasspt;
-  size i_sdtopcandptnolep;
-  size i_sdtoppassptnolep;
-
   // Lepton extra
   size i_absdphilepmet;
   size i_absdphilepw;
@@ -143,6 +136,8 @@ struct ExtraVarsFiller {
   size i_ak8tau21;
   size i_ak8tau31;
   size i_ak8tau32;
+  size i_ak8fromgenhadw;
+  size i_ak8fromgenhadt;
 
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -192,14 +187,6 @@ struct ExtraVarsFiller {
     i_j1chhadn4      = data->add<int>("","j1chhadn4","I",0);
     i_j1chhadn6      = data->add<int>("","j1chhadn6","I",0);
 
-  }
-
-  void bookSd(TreeWriterData* data){
-    i_mbclose2lep         = data->add<bool>("","mbclose2lep","O",0);
-    i_sdtopcandpt         = data->add<float>("","sdtopcandpt","F",0);
-    i_sdtoppasspt         = data->add<float>("","sdtoppasspt","F",0);
-    i_sdtopcandptnolep    = data->add<float>("","sdtopcandptnolep","F",0);
-    i_sdtoppassptnolep    = data->add<float>("","sdtoppassptnolep","F",0);
   }
 
   void bookLepton(TreeWriterData* data){
@@ -283,6 +270,8 @@ struct ExtraVarsFiller {
     i_ak8tau21     = data->addMulti<float>("","ak8tau21",0);
     i_ak8tau31     = data->addMulti<float>("","ak8tau31",0);
     i_ak8tau32     = data->addMulti<float>("","ak8tau32",0);
+    i_ak8fromgenhadw = data->add<bool>("","ak8fromgenhadw","O",0);
+    i_ak8fromgenhadt = data->add<bool>("","ak8fromgenhadt","O",0);
   }
 
 
@@ -390,54 +379,6 @@ struct ExtraVarsFiller {
     data->fill<int>(i_j1chhadn4, j1chhadn4_);
     data->fill<int>(i_j1chhadn6, j1chhadn6_);
 
-  }
-
-  void fillSdInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    // sd top eff/mistag rate
-    //   candidates are fatJets. nolep is for mistag rate -- removes the req't dR(sd,lep)<pi/2 on sd objects
-    //   sd eff    = sdtoppasspt/sdtopcandpt in ttbar-enhanced region with mbclose2lep in cutstring
-    //   sd mistag = sdtoppassptnolep/sdtopcandptnolep in qcd-enhanced region (ht>1TeV,2+jets,met>250,jetht data) without mbclose2lep in cutstring
-    int ihardfj         = -1;
-    int ihardfjnolep    = -1;
-    float         hardfjpt_      = -1;
-    float         hardfjptnolep_ = -1;
-    unsigned int ifj = 0;
-    for (const auto *fj : ana->fatJets){
-      if(ana->selectedLepton) { //lep
-        const auto * lep = ana->selectedLepton;
-        float drlepfj_ = PhysicsUtilities::deltaR(*lep, fj->p4());
-        if(drlepfj_ >= (3.1415/2.) && fj->p4().pt() > hardfjpt_){
-          ihardfj = ifj;
-          hardfjpt_ = fj->p4().pt();
-        }
-      }else{ //no lep
-        if(fj->p4().pt() > hardfjpt_){
-          ihardfjnolep = ifj;
-          hardfjptnolep_ = fj->p4().pt();
-        }
-      }
-      ifj++;
-    }
-    float sdtopcandpt_ = -9.;
-    float sdtoppasspt_ = -9.;
-    float sdtopcandptnolep_ = -9.;
-    float sdtoppassptnolep_ = -9.;
-    if(ihardfj>-1 && ana->selectedLepton){ //lep
-      sdtopcandpt_ = ana->fatJets[ihardfj]->p4().pt();
-      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfj], 400, 110, 210, 0.69, 1e9)){
-        sdtoppasspt_ = sdtopcandpt_;
-      }
-    }
-    if(ihardfjnolep>-1 && !(ana->selectedLepton)){ //no lep
-      sdtopcandptnolep_ = ana->fatJets[ihardfjnolep]->p4().pt();
-      if(cfgSet::isSoftDropTagged(ana->fatJets[ihardfjnolep], 400, 110, 210, 0.69, 1e9)){
-        sdtoppassptnolep_ = sdtopcandptnolep_;
-      }
-    }
-    data->fill<float>(i_sdtopcandpt, sdtopcandpt_);
-    data->fill<float>(i_sdtoppasspt, sdtoppasspt_);
-    data->fill<float>(i_sdtopcandptnolep, sdtopcandptnolep_);
-    data->fill<float>(i_sdtoppassptnolep, sdtoppassptnolep_);
   }
 
   void fillLeptonInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -581,6 +522,8 @@ struct ExtraVarsFiller {
     float ak8wpasspt_       = 0.;
     float ak8toppassmass_   = 0.;
     float ak8toppasspt_     = 0.;
+    bool  ak8fromgenhadw_   = false;
+    bool  ak8fromgenhadt_   = false;
 
     std::vector<MomentumF> csvmjets;
     for(auto* j : ana->jets) {
@@ -588,7 +531,6 @@ struct ExtraVarsFiller {
         MomentumF tmpVecCSVMJets; tmpVecCSVMJets = j->p4();
         csvmjets.push_back(tmpVecCSVMJets); }
     }
-
 
     // check if there is a lepton
     if (ana->nSelLeptons > 0) {
@@ -628,6 +570,8 @@ struct ExtraVarsFiller {
           ak8toppassmass_ = fj->fjSoftDropMass();
           ak8toppasspt_   = fj->pt();
         }
+        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) {ak8fromgenhadt_ = true; }
+        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
         ++count;
       }
 
@@ -662,6 +606,8 @@ struct ExtraVarsFiller {
           ak8toppassmass_ = fj->fjSoftDropMass();
           ak8toppasspt_   = fj->pt();
         }
+        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) {ak8fromgenhadt_ = true; }
+        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
         ++count;
       }
     } // end of lep = 0
@@ -680,6 +626,8 @@ struct ExtraVarsFiller {
     data->fill<float>(i_ak8wpasspt       , ak8wpasspt_      );
     data->fill<float>(i_ak8toppassmass   , ak8toppassmass_  );
     data->fill<float>(i_ak8toppasspt     , ak8toppasspt_    );
+    data->fill<bool >(i_ak8fromgenhadw   , ak8fromgenhadw_  );
+    data->fill<bool >(i_ak8fromgenhadt   , ak8fromgenhadt_  );
 
     /*
     for(auto* fj : ana->fatJets) {
@@ -701,6 +649,39 @@ struct ExtraVarsFiller {
     */
   }
 
+  bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, unsigned int matchtoid){
+        // match fj to gen w or top
+//        float tmatchrad = 0.2;
+//        float wmatchrad = 0.4;
+        for(auto* p : ana->genParts) {
+          if ((abs(p->pdgId()) == ParticleInfo::p_t)
+              && ParticleInfo::isGenTopHadronic(p)
+              && ParticleInfo::isLastInChain(p)) { // get last had gen t in chain
+//            if(PhysicsUtilities::deltaR(*p, *fj) < tmatchrad) { ak8fromgenhadt_ = true; }
+            if((PhysicsUtilities::deltaR(*p, *fj) < dr) && matchtoid == ParticleInfo::p_t) { return true; }
+            for(unsigned int iD = 0; iD < p->numberOfDaughters(); ++iD){
+              if(TMath::Abs(p->daughter(iD)->pdgId()) != ParticleInfo::p_Wplus) { continue; }
+              //if(PhysicsUtilities::deltaR(*(p->daughter(iD)), *fj) < 0.2) { ak8fromgenhadw_ = true; } // skip getFinal()
+              //auto dau = ParticleInfo::getFinal(p->daughter(iD)); // FW getFinal()
+              ////copy of getFinal() b/c FW is templated up the a--
+              CandidateRef<GenParticleF> particle = p->daughterRef(iD);
+              while (const unsigned numDaughters = particle->numberOfDaughters()) {
+                CandidateRef<GenParticleF>           chain;
+                for (unsigned iDau = 0; iDau < numDaughters; ++iDau){
+                  if (particle->daughter(iDau)->pdgId() == particle->pdgId()) {
+                    chain = CandidateRef<GenParticleF>(particle->daughterRef(iDau).operator->(), particle->daughterRef(iDau).key());
+                    break;
+                  }
+                }
+                if (chain.isNull())   break;
+                particle              = chain;
+              }
+              if((PhysicsUtilities::deltaR(*particle, *fj) < dr) && matchtoid == ParticleInfo::p_Wplus) { return true; }
+            }
+          }
+        }
+        return false;
+  }
 
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     if(!ana->isMC()) return;
