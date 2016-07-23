@@ -30,10 +30,12 @@ struct BasicVarsFiller {
   size i_qcdRespTailWeight;
   size i_topptWeight;
   size i_cttWeight;
-  size i_lepvetoweight;
-  size i_lepselweight;
-  size i_leptnpweight;
-  size i_isrWeight;
+  size i_lepvetoweightLM;
+  size i_lepselweightLM;
+  size i_lepvetoweightHM;
+  size i_lepselweightHM;
+  size i_leptnpweightLM;
+  size i_leptnpweightHM;
 
   // Trigger and filters
   size i_passjson  ;
@@ -127,10 +129,12 @@ struct BasicVarsFiller {
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_topptWeight    = data->add<float>("","topptWeight","F",1);
     i_cttWeight      = data->add<float>("","cttWeight","F",0);
-    i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
-    i_lepselweight   = data->add<float>("","lepselweight","F",0);
-    i_leptnpweight   = data->add<float>("","leptnpweight","F",0);
-    i_isrWeight      = data->add<float>("","isrWeight","F",0);
+    i_lepvetoweightLM  = data->add<float>("","lepvetoweightLM","F",0);
+    i_lepselweightLM   = data->add<float>("","lepselweightLM","F",0);
+    i_lepvetoweightHM  = data->add<float>("","lepvetoweightHM","F",0);
+    i_lepselweightHM   = data->add<float>("","lepselweightHM","F",0);
+    i_leptnpweightLM = data->add<float>("","leptnpweightLM","F",0);
+    i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
 
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
@@ -235,10 +239,12 @@ struct BasicVarsFiller {
     data->fill<float>(i_qcdRespTailWeight,  ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_topptWeight,        ana->ttbarCorrections.getTopPTWeight());
     data->fill<float>(i_cttWeight,          ana->eventCorrections.getCTTWeight());
-    data->fill<float>(i_lepvetoweight,      ana->leptonCorrections.getVetoLepWeight());
-    data->fill<float>(i_lepselweight,       ana->leptonCorrections.getSelLepWeight());
-    data->fill<float>(i_leptnpweight,       ana->leptonCorrections.getTnPLepWeight());
-    data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
+    data->fill<float>(i_lepvetoweightLM,    ana->leptonCorrections.getVetoLepWeightLM());
+    data->fill<float>(i_lepselweightLM,     ana->leptonCorrections.getSelLepWeightLM());
+    data->fill<float>(i_lepvetoweightHM,    ana->leptonCorrections.getVetoLepWeightHM());
+    data->fill<float>(i_lepselweightHM,     ana->leptonCorrections.getSelLepWeightHM());
+    data->fill<float>(i_leptnpweightLM,     ana->leptonCorrections.getTnPLepWeightLM());
+    data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));

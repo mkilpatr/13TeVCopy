@@ -104,7 +104,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::CTT;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016b_5p76ifb_50bins_71p3mb.root",CMSSW_BASE);
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016_12p9ifb_50bins_63mb.root",CMSSW_BASE);
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
@@ -119,7 +119,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::WPOLWGT;
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::MULTI_PT_BINS | ucsbsusy::LeptonCorrectionSet::TNP;
-  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorr_morebins.root",CMSSW_BASE);
+  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_LM.root",CMSSW_BASE);
+  standardCorrections.leptonCorrectionFile2    =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_HM.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
   //standardCorrections.tnpElIdCorrType          = ucsbsusy::NOMINAL;
