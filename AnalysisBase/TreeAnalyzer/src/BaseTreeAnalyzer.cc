@@ -67,6 +67,14 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     configSet         (pars ? *pars : cfgSet::ConfigSet())
 
 {
+
+  //Hack to get signal type from filename (sorry) until we integrat into weight code
+  if(fileName.Contains("T2tt") ) evtInfoReader.signalType = defaults::T2tt;
+  else if (fileName.Contains("T2bW") ) evtInfoReader.signalType = defaults::T2bW;
+  else if (fileName.Contains("T2fb") ) evtInfoReader.signalType = defaults::T2fb;
+  else if (fileName.Contains("T2tb") ) evtInfoReader.signalType = defaults::T2tb;
+  //
+
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
 
   clog <<"Loaded configurations: " << endl;
@@ -151,6 +159,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResCorrFile,configSet.corrections.jetResTailFile,randGen);
       corrections.push_back(&jetAndMETCorrections);
     }
+    if(configSet.corrections.isrCorrections != ISRCorrectionSet::NULLOPT){
+      isrCorrections.load(configSet.corrections.isrCorrFile,configSet.corrections.isrSigNormFile,configSet.corrections.isrSigNorms,configSet.corrections.isrCorrections);
+      corrections.push_back(&isrCorrections);
+    }
   }
 
 }
@@ -163,22 +175,22 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
     case cfgSet::AK4JETS : {
-      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN | JetReader::LOADTOPASSOC : JetReader::NULLOPT);
       reader.load(&ak4Reader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK4JETS : branchName);
       break;
     }
     case cfgSet::PUPPIJETS : {
-      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN | JetReader::LOADTOPASSOC: JetReader::NULLOPT);
       reader.load(&puppiJetsReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PUPPIJETS : branchName);
       break;
     }
     case cfgSet::PICKYJETS : {
-      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN | JetReader::LOADTOPASSOC: JetReader::NULLOPT);
       reader.load(&pickyJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PICKYJETS : branchName);
       break;
     }
     case cfgSet::CASUBJETS : {
-      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN : JetReader::NULLOPT);
+      int defaultOptions = JetReader::defaultOptions | (isMC() ? JetReader::LOADGEN | JetReader::LOADTOPASSOC: JetReader::NULLOPT);
       reader.load(&caSubJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CASUBJETS : branchName);
       break;
     }

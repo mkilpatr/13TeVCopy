@@ -148,6 +148,13 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/2016/CSV_13TEV_Combined_14_7_2016.csv",CMSSW_BASE);
   standardCorrections.heavyFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
+
+
+  standardCorrections.isrCorrections     = ucsbsusy::ISRCorrectionSet::ISRCORR;
+  standardCorrections.isrCorrFile        =  TString::Format("%s/src/data/corrections/2016/isrCorr.root",CMSSW_BASE);
+  standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNorms.root",CMSSW_BASE);
+  standardCorrections.isrSigNorms.push_back("T2tt"); standardCorrections.isrSigNorms.push_back("T2bW");
+  standardCorrections.isrType = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();
 }
 

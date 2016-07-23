@@ -51,6 +51,7 @@ EventInfoReader::EventInfoReader()
   systweights = new vector<float>;
   proc = 0;
   process = defaults::NUMPROCESSES;
+  signalType = defaults::NUM_SIGTYPES;
   datrec = 0;
   datareco = defaults::MC;
   metfilterbitpass_old = new vector<bool>;
@@ -126,6 +127,12 @@ void EventInfoReader::refresh()
   process = static_cast<defaults::Process>(proc);
   datareco = static_cast<defaults::DataReco>(datrec);
   evtweight = xsecweight * genevtweight;
+
+  //Hack to get signal type from filename (sorry) until we integrat into weight code
+  if(process != defaults::SIGNAL){
+    signalType = defaults::NUM_SIGTYPES;
+  }
+
 
   //// HACK for old and new version of met filters
   if(metfilterbitpass_old->size()){

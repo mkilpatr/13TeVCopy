@@ -60,7 +60,8 @@ namespace ucsbsusy {
       float         lhecentralweight;
       std::vector<float> * systweights;
       size8             proc;
-      defaults::Process process;
+      defaults::Process    process;
+      defaults::SignalType signalType;
       size8             datrec;
       defaults::DataReco datareco;
 

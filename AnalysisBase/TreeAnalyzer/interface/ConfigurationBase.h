@@ -15,6 +15,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/ISRCorrectionSet.h"
 
 
 #include <iostream>
@@ -235,6 +236,13 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE metResSystRunIType;
     ucsbsusy::CORRTYPE metResSystRunIIType;
 
+
+    int isrCorrections;
+    TString isrCorrFile;
+    TString isrSigNormFile;
+    std::vector<TString> isrSigNorms;
+    ucsbsusy::CORRTYPE isrType;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         wpolCorrections(ucsbsusy::WPolCorrectionSet::NULLOPT),
@@ -265,7 +273,9 @@ namespace cfgSet {
         jetResTailFile(1),
       jetResTailCorrType(ucsbsusy::NONE),
       metResSystRunIType(ucsbsusy::NONE),
-      metResSystRunIIType(ucsbsusy::NONE)
+      metResSystRunIIType(ucsbsusy::NONE),
+      isrCorrections(ucsbsusy::ISRCorrectionSet::NULLOPT),
+      isrType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -361,6 +371,15 @@ namespace cfgSet {
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNII)
           os << "METResolutionSystRunII  ";
         os << std::endl;
+      }
+      if(a.isrCorrections != ucsbsusy::ISRCorrectionSet::NULLOPT){
+        if(a.isrCorrections & ucsbsusy::ISRCorrectionSet::ISRCORR){
+          os << "Applying ISR corrections from " << a.isrCorrFile.Data()<<","<<a.isrSigNormFile.Data() <<" -> (";
+          for(unsigned int iN = 0; iN < a.isrSigNorms.size(); ++iN){
+            os << a.isrSigNorms[iN] <<" ";
+          }
+          os <<")"<<std::endl;
+        }
       }
       return os;
     }
