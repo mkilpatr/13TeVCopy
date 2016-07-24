@@ -37,6 +37,7 @@ struct BasicVarsFiller {
   size i_leptnpweightLM;
   size i_leptnpweightHM;
   size i_isrWeight;
+  size i_isrWeightTight;
 
   // Trigger and filters
   size i_passjson  ;
@@ -137,6 +138,7 @@ struct BasicVarsFiller {
     i_leptnpweightLM = data->add<float>("","leptnpweightLM","F",0);
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
+    i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
 
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
@@ -248,6 +250,7 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightLM,     ana->leptonCorrections.getTnPLepWeightLM());
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
+    data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
 
 
     // Trigger and filters
