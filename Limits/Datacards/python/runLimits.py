@@ -236,7 +236,7 @@ def fillAsymptoticLimits(config, limfilename, excfilename, interpolate):
     maxmlsp = 0.0
     minmlsp = 0.0
     mstop_step = 1
-    mlsp_step = 1
+    mlsp_step = 10 if 'fbd' in limfilename else 1
     for signal in config.signals:
         mstop = int(signal.split('_')[1])
         mlsp = int(signal.split('_')[2])
