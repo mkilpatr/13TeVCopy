@@ -7,6 +7,7 @@ class sms():
         if modelname.find("T2tb") != -1: self.T2tb()
         if modelname.find("T2bW") != -1: self.T2bW()
         if modelname.find("T2fbd") != -1: self.T2fbd()
+        if modelname.find("T2cc") != -1: self.T2cc()
         if modelname.find("T1tttt") != -1: self.T1tttt()
         if modelname.find("T1bbbb") != -1: self.T1bbbb()
         if modelname.find("T1qqqq") != -1: self.T1qqqq()
@@ -18,11 +19,11 @@ class sms():
         # decay chain
         self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
         # scan range to plot
-        self.Xmin = 100.
-        self.Xmax = 900.
+        self.Xmin = 150.
+        self.Xmax = 1200.
         self.Ymin = 0.
-        self.Ymax = 500.
-        self.Zmin = 0.02
+        self.Ymax = 700.
+        self.Zmin = 0.01
         self.Zmax = 100.
         # produce sparticle
         self.sParticle = "m_{#tilde{t}} [GeV]"
@@ -62,8 +63,8 @@ class sms():
         # decay chain
         self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm} #tilde{#chi}_{1}^{0}";
         # scan range to plot
-        self.Xmin = 125.
-        self.Xmax = 900.
+        self.Xmin = 200.
+        self.Xmax = 1000.
         self.Ymin = 0.
         self.Ymax = 500.
         self.Zmin = 0.02
@@ -87,6 +88,27 @@ class sms():
         self.Xmin = 100.
         self.Xmax = 600.
         self.Ymin = 0.
+        self.Ymax = 700.
+        self.Zmin = 0.01
+        self.Zmax = 100.
+        # produce sparticle
+        self.sParticle = "m_{#tilde{t}} [GeV]"
+        # LSP
+        self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+        # turn off diagonal lines
+        self.diagOn = False
+        self.extraText = False
+        self.preliminary = "Preliminary"
+
+    def T2cc(self):
+        # model name
+        self.modelname = "T2cc"
+        # decay chain
+        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow c #tilde{#chi}^{0}_{1}"
+        # scan range to plot
+        self.Xmin = 100.
+        self.Xmax = 600.
+        self.Ymin = 0.
         self.Ymax = 600.
         self.Zmin = 0.02
         self.Zmax = 100.
@@ -95,8 +117,9 @@ class sms():
         # LSP
         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
         # turn off diagonal lines
-        self.diagOn = True
+        self.diagOn = False
         self.extraText = False
+        self.preliminary = "Preliminary"
 
     def T1tttt(self):
         # model name
