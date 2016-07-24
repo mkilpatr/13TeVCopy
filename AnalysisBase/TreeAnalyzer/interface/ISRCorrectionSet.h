@@ -38,27 +38,37 @@ public:
   enum  CorrectionOptions {
                             NULLOPT            = 0
                           , ISRCORR        = (1 <<  0)
+                          , ISRCORRTIGHT   = (1 <<  1)
   };
-  ISRCorrectionSet(): isrCorr(0), isrWeight(1), nISRJets(0), massParams(3) {}
+  ISRCorrectionSet(): isrCorr(0),isrCorrTight(0), isrWeight(1), nISRJets(0), massParams(3),isrWeightTight(1),nISRJetsTight(0) {}
 
   virtual ~ISRCorrectionSet() {};
-  virtual void load(TString corrInput,TString normInput, const std::vector<TString>& normNames, int correctionOptions = NULLOPT);
+  virtual void load(TString corrInput,TString normInput,TString normTightInput, const std::vector<TString>& normNames, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
-  int getNISRJets(const BaseTreeAnalyzer * ana) const;
+  int getNISRJets(const BaseTreeAnalyzer * ana, bool tight = false) const;
 
   //individual accessors
   float getISRWeight() const { return isrWeight; }
   const ISRCorr* getISRCorrector() const { return isrCorr; }
   int getNumberOfISRJets() const {return nISRJets;}
+  float getISRWeightTight() const { return isrWeightTight; }
+  const ISRCorr* getISRCorrectorTight() const { return isrCorrTight; }
+  int getNumberOfISRJetsTight() const {return nISRJetsTight;}
 
 private:
   //Correction list
   ISRCorr * isrCorr;
+  ISRCorr * isrCorrTight;
 
   //output values
   float isrWeight;
   int nISRJets;
   std::vector<int> massParams;
+
+  float isrWeightTight;
+  int nISRJetsTight;
+
+
 };
 
 

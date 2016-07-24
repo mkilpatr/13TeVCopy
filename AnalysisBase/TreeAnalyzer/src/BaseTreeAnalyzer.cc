@@ -160,7 +160,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&jetAndMETCorrections);
     }
     if(configSet.corrections.isrCorrections != ISRCorrectionSet::NULLOPT){
-      isrCorrections.load(configSet.corrections.isrCorrFile,configSet.corrections.isrSigNormFile,configSet.corrections.isrSigNorms,configSet.corrections.isrCorrections);
+      isrCorrections.load(configSet.corrections.isrCorrFile,configSet.corrections.isrSigNormFile,configSet.corrections.isrSigNormTightFile,configSet.corrections.isrSigNorms,configSet.corrections.isrCorrections);
       corrections.push_back(&isrCorrections);
     }
   }

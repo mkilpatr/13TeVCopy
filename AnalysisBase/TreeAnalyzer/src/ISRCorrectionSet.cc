@@ -85,7 +85,7 @@ double ISRCorr::getSignalNormFactor(CORRTYPE type, const defaults::SignalType si
   return norm->getValue();
 }
 
-void ISRCorrectionSet::load(TString corrInput,TString normInput, const std::vector<TString>& normNames, int correctionOptions)
+void ISRCorrectionSet::load(TString corrInput,TString normInput, TString normTightInput, const std::vector<TString>& normNames, int correctionOptions)
 {
   loadSimple("ISRCorrection",correctionOptions);
 
@@ -93,9 +93,13 @@ void ISRCorrectionSet::load(TString corrInput,TString normInput, const std::vect
     isrCorr = new ISRCorr(corrInput,normInput, normNames);
     corrections.push_back(isrCorr);
   }
+  if(options_ & ISRCORRTIGHT){
+    isrCorrTight = new ISRCorr(corrInput,normTightInput, normNames);
+    corrections.push_back(isrCorrTight);
+  }
 }
 
-int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana) const {
+int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana, bool tight) const {
   //hard coded to match derivation
   const double minJetPT = 30;
   const double maxJetETA = 2.4;
@@ -134,6 +138,7 @@ int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana) const {
     double newGenJETPT = partonEvent->subtractedJetPTs[genIDX[iJ]];
     double originalGENJetPT = genJets[genIDX[iJ]]->pt();
     double recoCF = originalGENJetPT == 0 ? 1 : newGenJETPT/originalGENJetPT;
+    if(tight && newGenJETPT/originalGENJetPT <= 0.5) continue;
     if(recoJets[iJ]->pt()*recoCF >= minJetPT) nISRJets++;
   }
   delete partonEvent;
@@ -144,16 +149,26 @@ int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana) const {
 void ISRCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   isrWeight =1;
+  nISRJetsTight = 1;
   nISRJets = 0;
+  nISRJetsTight = 0;
+
   if(!ana->isMC()) return;
+  if(ana->process != defaults::SIGNAL) return;
+  const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+  massParams[0] = ana->evtInfoReader.massparams->size() > 0 ? ana->evtInfoReader.massparams->at(0) : 0;
+  massParams[1] = ana->evtInfoReader.massparams->size() > 1 ? ana->evtInfoReader.massparams->at(1) : 0;
+  massParams[2] = ana->evtInfoReader.massparams->size() > 2 ? ana->evtInfoReader.massparams->at(2) : 0;
+
   if( (options_ & ISRCORR) && ana->process == defaults::SIGNAL){
-    const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     nISRJets = getNISRJets(ana);
-    massParams[0] = ana->evtInfoReader.massparams->size() > 0 ? ana->evtInfoReader.massparams->at(0) : 0;
-    massParams[1] = ana->evtInfoReader.massparams->size() > 1 ? ana->evtInfoReader.massparams->at(1) : 0;
-    massParams[2] = ana->evtInfoReader.massparams->size() > 2 ? ana->evtInfoReader.massparams->at(2) : 0;
     isrWeight = isrCorr->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJets);
     if(isrWeight < 0) isrWeight = 1;
+  }
+  if( (options_ & ISRCORRTIGHT) && ana->process == defaults::SIGNAL){
+    nISRJetsTight = getNISRJets(ana,true);
+    isrWeightTight = isrCorrTight->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJetsTight);
+    if(nISRJetsTight < 0) nISRJetsTight = 1;
   }
 }
 } /* namespace ucsbsusy */
