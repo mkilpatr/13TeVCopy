@@ -28,7 +28,7 @@ void go(TTree * tree,TFile* oF){
   enum sigAxes {MASS1,MASS2,MASS3,TYPE};
   enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
   const std::string CORR_NAMES[]  {"NOMINAL", "UP", "DOWN","",""};
-  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
+  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
 
   for(unsigned int iS = 0; iS <= T2bW; ++iS){
     TString sel = TString::Format("sigType == %u",iS);
@@ -70,7 +70,7 @@ void go(TTree * tree,TFile* oF){
 #endif
 
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_orig_CombinedSample.root", const TString treeName = "Events", const TString outFile = "resTailOut_puWeight_weight.root")
-void GetISRNorm(const TString inFile="isr.root",  const TString outFile = "isrSigNorms.root")
+void GetISRNorm(const TString inFile="isrWithTight.root",  const TString outFile = "isrSigNormsTight.root")
 {
   TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();

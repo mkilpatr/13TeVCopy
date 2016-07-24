@@ -150,9 +150,10 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
 
 
-  standardCorrections.isrCorrections     = ucsbsusy::ISRCorrectionSet::ISRCORR;
+  standardCorrections.isrCorrections     = ucsbsusy::ISRCorrectionSet::ISRCORR | ucsbsusy::ISRCorrectionSet::ISRCORRTIGHT;
   standardCorrections.isrCorrFile        =  TString::Format("%s/src/data/corrections/2016/isrCorr.root",CMSSW_BASE);
   standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNorms.root",CMSSW_BASE);
+  standardCorrections.isrSigNormTightFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNormsTight.root",CMSSW_BASE);
   standardCorrections.isrSigNorms.push_back("T2tt"); standardCorrections.isrSigNorms.push_back("T2bW");
   standardCorrections.isrType = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();

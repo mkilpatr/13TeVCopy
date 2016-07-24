@@ -22,7 +22,12 @@ public:
   i_stdCorr (0),
   i_upCorr  (0),
   i_downCorr(0),
-  i_njets(0)
+  i_njets(0),
+  i_stdCorrTight (0),
+  i_upCorrTight  (0),
+  i_downCorrTight(0),
+  i_njetsTight(0)
+
   {
   };
   virtual ~Copier() {};
@@ -120,6 +125,12 @@ public:
     float corrDown = isrCorrections.getISRCorrector()->getCorrFactor(DOWN,nISRJets);
 
 
+    int nISRJetsTight = isrCorrections.getNumberOfISRJetsTight();
+    float corrTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(NOMINAL,nISRJetsTight);
+    float corrUpTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(UP,nISRJetsTight);
+    float corrDownTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(DOWN,nISRJetsTight);
+
+
     data.fill<unsigned int>(i_process,process);
     data.fill<unsigned int>(  i_sigType,size(evtInfoReader.signalType));
     data.fill<unsigned int>(  i_njets,size(nISRJets));
@@ -129,6 +140,11 @@ public:
     data.fill<float>(  i_stdCorr,corr);
     data.fill<float>(  i_upCorr,corrUp);
     data.fill<float>(  i_downCorr,corrDown);
+
+    data.fill<unsigned int>(  i_njetsTight,size(nISRJetsTight));
+    data.fill<float>(  i_stdCorrTight,corrTight);
+    data.fill<float>(  i_upCorrTight,corrUpTight);
+    data.fill<float>(  i_downCorrTight,corrDownTight);
 
     fillFillingTree();
     return true;
@@ -145,6 +161,11 @@ public:
     i_upCorr        = data.add<float>("","upCorrWeight"            ,"F",0);
     i_downCorr      = data.add<float>("","downCorrWeight"          ,"F",0);
     i_njets         = data.add<unsigned int>("","njets"              ,"i",0);
+
+    i_stdCorrTight       = data.add<float>("","corrWeightTight"              ,"F",0);
+    i_upCorrTight        = data.add<float>("","upCorrWeightTight"            ,"F",0);
+    i_downCorrTight      = data.add<float>("","downCorrWeightTight"          ,"F",0);
+    i_njetsTight         = data.add<unsigned int>("","njetsTight"              ,"i",0);
   }
 
 
@@ -158,6 +179,11 @@ public:
   size i_upCorr   ;
   size i_downCorr ;
   size i_njets;
+
+  size i_stdCorrTight  ;
+  size i_upCorrTight   ;
+  size i_downCorrTight ;
+  size i_njetsTight    ;
 
 };
 
