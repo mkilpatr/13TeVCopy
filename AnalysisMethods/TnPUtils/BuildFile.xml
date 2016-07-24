@@ -1,4 +1,5 @@
 <use   name="roofit"/>
+<use   name="rootgraphics"/>
 <flags LCG_DICT_HEADER="classes.h"/>
 <flags LCG_DICT_XML="classes_def.xml"/>
 

@@ -24,7 +24,7 @@ def main(options):
     inFile = ROOT.TFile(options.input)
     #inFile.cd(options.directory)
     #fDir = inFile.Get(options.directory)
-    fChain = inFile.Get("Probes")
+    fChain = inFile.Get("Events")
 
     histos = dict()
 
@@ -41,7 +41,7 @@ def main(options):
 
     for binPt in xrange(len(pts)-1):
         print "Doing templates for "+str(pts[binPt])+"To"+str(pts[binPt+1])
-        histNameSt = "hMass_"+str(pts[binPt])+"To"+str(pts[binPt+1])
+        histNameSt = "hMass_%4.3fTo%4.3f" % (pts[binPt],pts[binPt+1])
         hp = histNameSt+"_Pass"
         hf = histNameSt+"_Fail"
         histos[hp] = ROOT.TH1D(hp, hp, 120, 60, 120)
@@ -55,7 +55,7 @@ def main(options):
     
     for binEta in xrange(len(etas)-1):
         print "Doing templates for "+str(etas[binEta])+"To"+str(etas[binEta+1])
-        histNameSt = "hMass_"+str(etas[binEta])+"To"+str(etas[binEta+1])
+        histNameSt = "hMass_%4.3fTo%4.3f" % (etas[binEta],etas[binEta+1])
         hp = histNameSt+"_Pass"
         hf = histNameSt+"_Fail"
         histos[hp] = ROOT.TH1D(hp, hp, 120, 60, 120)
@@ -70,7 +70,7 @@ def main(options):
     for binPt in xrange(len(pts)-1):
         for binEta in xrange(len(etas)-1):
             print "Doing templates for "+str(pts[binPt])+"To"+str(pts[binPt+1])+"_"+str(etas[binEta])+"To"+str(etas[binEta+1])
-            histNameSt = "hMass_"+str(pts[binPt])+"To"+str(pts[binPt+1])+"_"+str(etas[binEta])+"To"+str(etas[binEta+1])
+            histNameSt = "hMass_%4.3fTo%4.3f_%4.3fTo%4.3f"% (pts[binPt],pts[binPt+1],etas[binEta],etas[binEta+1])
             hp = histNameSt+"_Pass"
             hf = histNameSt+"_Fail"
             histos[hp] = ROOT.TH1D(hp, hp, 120, 60, 120)
