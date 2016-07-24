@@ -47,7 +47,7 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
 
     const double metcut_   = 200.0 ;
     const int    minnjets_ =   2   ;
-    const double minj2pt_  = 75.0  ;
+    //const double minj2pt_  = 75.0  ;
 
     bool isOneLepTTbar = false;
     bool applyCHFFilter    = false ;
@@ -84,7 +84,7 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
 
     void book() {
       filler.book(&data);
-      extraFiller.bookTest(&data);
+      //extraFiller.bookTest(&data);
       //extraFiller.bookSyst(&data);
       //extraFiller.bookJetMET(&data);
       extraFiller.bookLepton(&data);
@@ -118,14 +118,14 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
 
     bool fillEvent() {
 
-      if (isOneLepTTbar) weight *= 0.5;
+      //if (isOneLepTTbar) weight *= 0.5;
 
       //if(applyCHFFilter && !filler.passCHFFilter(jets)) return false;
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
 
       if(!goodvertex) return false;
       if(nJets     < minnjets_) return false;
-      if(jets.at(1)->pt() < minj2pt_)  return false;
+      //if(jets.at(1)->pt() < minj2pt_)  return false;
       if(met->pt() < metcut_  ) return false;
 
       // alternative: turn off iso in both, then for iso eff, make vars with it on.

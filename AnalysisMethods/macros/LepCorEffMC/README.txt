@@ -3,10 +3,10 @@ SUS Data/MC Lepton Scale Factors
 [1] https://github.com/UCSBSusy/13TeVAnalysis/tree/74X_prod_v2/AnalysisMethods/macros/TnP
 
 To run the lepton efficiencies, assuming we get the TnP efficiencies either from the
-working group [0] or from the official TnP package Valentina adapted to our FW [1] (used by Sam in late 2015), one must:
+working group [0] or from the official TnP package Valentina adapted to our FW [1] (Last rebooted July 2016), one must:
 
 0) Compare the current makeZeroLeptonSRTrees.C (or whatever's the current SR tree maker) to makeZeroLeptonLepCorEffMCTrees.C, and perform any needed updates.
-1) Run this to make four sets of trees. Before each run change the bools indicated 
+1) Run this to make four sets of ttbarplusw trees. Before each run change the bools indicated 
 by 'changeme'. One bool is to toggle SR/CR lep configs (zl_search_set and zl_lepton_set,
 respectively) and the other to toggle Iso/Id trees (relaxed configs applied to lep
 selections). Use ttbar and w+jets samples. See below.

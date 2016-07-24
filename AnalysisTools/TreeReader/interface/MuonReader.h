@@ -48,6 +48,7 @@ namespace ucsbsusy {
       std::vector<float> *	mvaiso;
       std::vector<bool>  *	isloose;
       std::vector<bool>  *	ismedium;
+      std::vector<bool>  *      ismediumhip;
       std::vector<bool>  *	istight;
       std::vector<bool>  *	ispf;
       std::vector<bool>  *	isglobal;

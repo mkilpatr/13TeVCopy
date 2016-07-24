@@ -14,7 +14,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int GenParticleReader::defaultOptions = GenParticleReader::FILLOBJ;
+const int GenParticleReader::defaultOptions =  GenParticleReader::LOADPARTONDECAY  | GenParticleReader::FILLOBJ;
 
 //--------------------------------------------------------------------------------------------------
 GenParticleReader::GenParticleReader() : BaseReader(){

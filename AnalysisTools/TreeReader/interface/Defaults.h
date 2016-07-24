@@ -18,6 +18,8 @@ namespace defaults {
   const std::string BRANCH_PICKYJETS = "picky";
   const std::string BRANCH_CASUBJETS = "subjetsca";
   enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G, SINGLE_T, TTZ, TTW, DIBOSON, SIGNAL, DATA_SINGLEEL, DATA_SINGLEMU, DATA_SINGLEPHO, DATA_DOUBLEEG, DATA_DOUBLEMU, DATA_MUEG, DATA_MET, DATA_JETHT, DATA_HTMHT, NUMPROCESSES };
+  enum SignalType {T2tt, T2bW, T2fb, T2tb, NUM_SIGTYPES};
+  const std::string SIGNAL_NAMES[]  {"T2tt", "T2bW", "T2fb","T2tb",""};
 
   const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
 

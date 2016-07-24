@@ -23,17 +23,18 @@ namespace ucsbsusy {
   {
 
     public :
-	Muon() : isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
+	Muon() : isloose_(false), ismedium_(false), ismediumhip_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
 
       template <class InputCoordSystem>
 	Muon(ROOT::Math::LorentzVector<InputCoordSystem> inMomentum, int inIndex = -1) :
     Lepton<CoordSystem>(inMomentum, inIndex),
-			     isloose_(false), ismedium_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
+			     isloose_(false), ismedium_(false), ismediumhip_(false), istight_(false), ispf_(false), isglobal_(false), istracker_(false), isstandalone_(false) {Lepton<CoordSystem>::setPdgId(13);Lepton<CoordSystem>::setIsMuon(true);}
     
     ~Muon() {}
 
       bool	isloosemuon() 	       const { return isloose_;	            }
       bool	ismediummuon() 	       const { return ismedium_;	    }
+      bool      ismediumhipmuon()      const { return ismediumhip_;         }
       bool	istightmuon() 	       const { return istight_;	            }
       bool	ispfmuon()             const { return ispf_;		    }
       bool	isglobal() 	       const { return isglobal_;	    }
@@ -42,6 +43,7 @@ namespace ucsbsusy {
 
       void	setIsLoose(bool newType)	   { isloose_ = newType;		}
       void	setIsMedium(bool newType)	   { ismedium_ = newType;		}
+      void      setIsMediumHIP(bool newType)       { ismediumhip_ = newType;            }
       void	setIsTight(bool newType)	   { istight_ = newType;		}
       void	setIsPF(bool newType)		   { ispf_ = newType;		}
       void	setIsGlobal(bool newType)	   { isglobal_ = newType;		}
@@ -51,6 +53,7 @@ namespace ucsbsusy {
     protected :
       bool	isloose_;
       bool	ismedium_;
+      bool      ismediumhip_;
       bool	istight_;
       bool	ispf_;
       bool	isglobal_;

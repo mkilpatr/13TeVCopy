@@ -268,7 +268,7 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     partons.emplace_back(&genParticles->at(iP),iP,hadronE->at(iP));
   }
 
-  //fill jet containments!
+//  //fill jet containments!
   int conIndex = -1;
   for(size iJ = 0; iJ < genAssocCon->size(); ++iJ){
     conType con = genAssocCon->at(iJ);
@@ -300,11 +300,26 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     topDecays.emplace_back(&p,bosonDecays,partons);
   }
 
+  //Now for leftover SUSY particles
+  for(const auto& p : *genParticles){
+    if(TMath::Abs(p.pdgId()) < ParticleInfo::p_sdownL) continue;
+    if(!ParticleInfo::isLastInChain(&p)) continue;
+    for(unsigned int iD = 0; iD < p.numberOfDaughters(); ++iD){
+      const int dauPdgId = TMath::Abs(p.daughter(iD)->pdgId());
+      if(!ParticleInfo::isQuarkOrGluon(dauPdgId) || dauPdgId == ParticleInfo::p_t ) continue;
+      if(!ParticleInfo::isDocOutgoing(p.daughter(iD)->status())) continue;
+      for(const auto&  parton: partons){
+       if(parton.genIdx != p.daughterRef(iD).key() ) continue;
+       nonTopOrBosonSUSYPartons.push_back(&parton);
+      }
+    }
+  }
+
   //Now add in the important partons
   for(const auto& d: bosonDecays)
     importantPartons.insert(importantPartons.end(), d.hadronicPartons.begin(), d.hadronicPartons.end());
   for(const auto& d: topDecays) importantPartons.push_back(d.b);
-
+  for(const auto* d: nonTopOrBosonSUSYPartons) importantPartons.push_back(d);
 }
 
 

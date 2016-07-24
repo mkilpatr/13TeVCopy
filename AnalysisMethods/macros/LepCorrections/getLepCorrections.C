@@ -37,19 +37,31 @@ vector<TH1F*> getRatios(vector<TH1F*> num_hists, vector<TH1F*> den_hists, bool c
   return ratios;
 }
 
-void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13TeV/trees/012216",
-                       const TString outputdir = "plots_lepeffs_0125/lepcorrs",
-                       const TString lumistr = "2262",
+void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/trees/21072016-taumceff/sr/",
+                       const TString outputdir = "plots_lepcorrs/",
+                       const TString lumistr = "9200",
                        const bool    plotlog = false,
-                       const TString format = "png")
+                       const TString format = "svg")
 {
 
   gSystem->mkdir(outputdir, true);
 
+  const TString dphij1lmet = " && dphij1lmet>2";
+  const TString j1lpt      = " && j1lpt>250";
+  const TString metovsqrtht= " && metovsqrtht>10";
+  const TString njl        = " && njl>=1";
+  const TString njets2     = " && njets>=2";
+  const TString met        = " && met>250";
+  const TString nbjets     = " && nbjets>=1";
+  const TString nlbjets    = " && nlbjets>=2";
+  const TString njets      = " && njets>=5";
   map<TString,TString> sel;
-  sel["trig"]       = "passjson && passdijetmet && passcscbeamhaloflt && passeebadscflt && passeebadsc4flt && passhbheisoflt && passhbhefltloose";
-  sel["base"]       = sel["trig"] + " && met>250 && j2pt>75 && njets>=5 && nlbjets>=2 && nbjets>=1";
-  sel["inclcr"]     = sel["base"] + " && dphij12met>0.4 && dphij3met>0.4 && dphij4met>0.4";
+  sel["trig"]       = "passjson && passmetmht100 && passmetfilters";
+  //sel["base"]      = sel["trig"] + met +  njets + nlbjets + nbjets; // HM
+  sel["base"] = sel["trig"] + met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // LM
+  //sel["base"] = sel["trig"] + met + njets2 + metovsqrtht; // LM noboost
+  //sel["base"]       = sel["trig"] + " && met>250 && njets>=5 && nlbjets>=2 && nbjets>=1";
+  sel["inclcr"]     = sel["base"] + " && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5";
   sel["inclcrnomu"] = sel["inclcr"] + " && nvetomu==0";
   sel["inclcrnoemu"]= sel["inclcr"] + " && nvetolep==0";
   sel["genele"]     = " && ngoodgenele>0";
@@ -59,7 +71,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   sel["nogenmu"]    = " && ngoodgenmu==0";
   sel["nogentau"]   = " && npromptgentau==0";
   sel["mucr"]       = sel["inclcr"] + " && nvetomu>0";
-  sel["elecr"]      = sel["inclcr"] + " && nvetomu==0 && nvetolele>0";
+  sel["elecr"]      = sel["inclcr"] + " && nvetomu==0 && nvetoele>0";
   sel["taucr"]      = sel["inclcr"] + " && nvetolep==0 && nvetotau>0";
   sel["hpstaucr"]   = sel["inclcr"] + " && nvetolep==0 && nvetohpstaus>0";
 
@@ -78,7 +90,8 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   vector<TH1F*> mc_genlep_incl, mc_genlep_sel, mc_genlep_sel_nobins;
   vector<TH1F*> mc_nogenlep_sel, mc_nogenlep_sel_nobins;
 
-  double ptbins[]     = {0., 20., 1000.};
+  double ptbins[]     = {0., 20., 30., 40., 70., 100., 1000.};
+  double tauptbins[]  = {10,20,40,1000};
   double hpsptbins[]  = {20., 1000.};
   double muetabins[]  = {0., 0.8, 1.6, 2.4};
   double eletabins[]  = {0., 0.8, 1.5, 2.4};
@@ -86,7 +99,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   double actbins[]    = {0., 1., 3., 5., 10., 20.};
   double dummybins[]  = {0., 100.};
 
-  int nbins = 2, nhpsbins = 1;
+  int nbins = 6, ntaubins=3, nhpsbins = 1, nbinstotal=nbins+nbins+ntaubins+nhpsbins+2; // +2 for default (bin 1) and fake (last bin)
 
   data_incl.push_back       (getHist(datatree, sel["inclcr"],      "data_incl_mu", 1, dummybins));
   data_incl.push_back       (getHist(datatree, sel["inclcrnomu"],  "data_incl_ele", 1, dummybins));
@@ -94,7 +107,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   data_incl.push_back       (getHist(datatree, sel["inclcrnoemu"], "data_incl_hpstau", 1, dummybins));
   data_sel.push_back        (getHist(datatree, sel["mucr"],     "data_sel_mu", nbins, ptbins, "1.0", "mupt[0]"));
   data_sel.push_back        (getHist(datatree, sel["elecr"],    "data_sel_ele", nbins, ptbins, "1.0", "elept[0]"));
-  data_sel.push_back        (getHist(datatree, sel["taucr"],    "data_sel_tau", nbins, ptbins, "1.0", "trackpt[0]"));
+  data_sel.push_back        (getHist(datatree, sel["taucr"],    "data_sel_tau", ntaubins, tauptbins, "1.0", "trackpt[0]"));
   data_sel.push_back        (getHist(datatree, sel["hpstaucr"], "data_sel_hpstau", nhpsbins, hpsptbins, "1.0", "taupt[0]"));
   data_sel_nobins.push_back (getHist(datatree, sel["mucr"],     "data_sel_nobins_mu", 1, dummybins));
   data_sel_nobins.push_back (getHist(datatree, sel["elecr"],    "data_sel_nobins_ele", 1, dummybins));
@@ -106,7 +119,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   mc_incl.push_back         (getHist(mctree, sel["inclcrnoemu"], "mc_incl_hpstau", 1, dummybins, wgtexpr));
   mc_sel.push_back          (getHist(mctree, sel["mucr"],     "mc_sel_mu", nbins, ptbins, wgtexpr, "mupt[0]"));
   mc_sel.push_back          (getHist(mctree, sel["elecr"],    "mc_sel_ele", nbins, ptbins, wgtexpr, "elept[0]"));
-  mc_sel.push_back          (getHist(mctree, sel["taucr"],    "mc_sel_tau", nbins, ptbins, wgtexpr, "trackpt[0]"));
+  mc_sel.push_back          (getHist(mctree, sel["taucr"],    "mc_sel_tau", ntaubins, tauptbins, wgtexpr, "trackpt[0]"));
   mc_sel.push_back          (getHist(mctree, sel["hpstaucr"], "mc_sel_hpstau", nhpsbins, hpsptbins, wgtexpr, "taupt[0]"));
   mc_genlep_incl.push_back  (getHist(mctree, sel["inclcr"] + sel["genmu"],       "mc_genlep_incl_mu", 1, dummybins, wgtexpr));
   mc_genlep_incl.push_back  (getHist(mctree, sel["inclcrnomu"] + sel["genele"],  "mc_genlep_incl_ele", 1, dummybins, wgtexpr));
@@ -114,7 +127,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   mc_genlep_incl.push_back  (getHist(mctree, sel["inclcrnoemu"] + sel["gentau"], "mc_genlep_incl_hpstau", 1, dummybins, wgtexpr));
   mc_genlep_sel.push_back   (getHist(mctree, sel["mucr"] + sel["genmu"],      "mc_genlep_sel_mu", nbins, ptbins, wgtexpr, "mupt[0]"));
   mc_genlep_sel.push_back   (getHist(mctree, sel["elecr"] + sel["genele"],    "mc_genlep_sel_ele", nbins, ptbins, wgtexpr, "elept[0]"));
-  mc_genlep_sel.push_back   (getHist(mctree, sel["taucr"] + sel["gentau"],    "mc_genlep_sel_tau", nbins, ptbins, wgtexpr, "trackpt[0]"));
+  mc_genlep_sel.push_back   (getHist(mctree, sel["taucr"] + sel["gentau"],    "mc_genlep_sel_tau", ntaubins, tauptbins, wgtexpr, "trackpt[0]"));
   mc_genlep_sel.push_back   (getHist(mctree, sel["hpstaucr"] + sel["gentau"], "mc_genlep_sel_hpstau", nhpsbins, hpsptbins, wgtexpr, "taupt[0]"));
   mc_genlep_sel_nobins.push_back   (getHist(mctree, sel["mucr"] + sel["genmu"],      "mc_genlep_sel_nobins_mu", 1, dummybins, wgtexpr));
   mc_genlep_sel_nobins.push_back   (getHist(mctree, sel["elecr"] + sel["genele"],    "mc_genlep_sel_nobins_ele", 1, dummybins, wgtexpr));
@@ -122,7 +135,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   mc_genlep_sel_nobins.push_back   (getHist(mctree, sel["hpstaucr"] + sel["gentau"], "mc_genlep_sel_nobins_hpstau", 1, dummybins, wgtexpr));
   mc_nogenlep_sel.push_back        (getHist(mctree, sel["mucr"] + sel["nogenmu"],      "mc_nogenlep_sel_mu", nbins, ptbins, wgtexpr, "mupt[0]"));
   mc_nogenlep_sel.push_back        (getHist(mctree, sel["elecr"] + sel["nogenele"],    "mc_nogenlep_sel_ele", nbins, ptbins, wgtexpr, "elept[0]"));
-  mc_nogenlep_sel.push_back        (getHist(mctree, sel["taucr"] + sel["nogentau"],    "mc_nogenlep_sel_tau", nbins, ptbins, wgtexpr, "trackpt[0]"));
+  mc_nogenlep_sel.push_back        (getHist(mctree, sel["taucr"] + sel["nogentau"],    "mc_nogenlep_sel_tau", ntaubins, tauptbins, wgtexpr, "trackpt[0]"));
   mc_nogenlep_sel.push_back        (getHist(mctree, sel["hpstaucr"] + sel["nogentau"], "mc_nogenlep_sel_hpstau", nhpsbins, hpsptbins, wgtexpr, "taupt[0]"));
   mc_nogenlep_sel_nobins.push_back (getHist(mctree, sel["mucr"] + sel["nogenmu"],      "mc_nogenlep_sel_nobins_mu", 1, dummybins, wgtexpr));
   mc_nogenlep_sel_nobins.push_back (getHist(mctree, sel["elecr"] + sel["nogenele"],    "mc_nogenlep_sel_nobins_ele", 1, dummybins, wgtexpr));
@@ -140,7 +153,7 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
   TFile* outfile = new TFile(outputdir+"/lepcorrs.root","RECREATE");
 
   vector<TH1F*> corr;
-  TH1F* lepCor = new TH1F("LEP", "LEP", 9, 0, 9); lepCor->Sumw2();
+  TH1F* lepCor = new TH1F("LEP", "LEP", nbinstotal, 0, nbinstotal); lepCor->Sumw2();
   lepCor->SetBinContent(1,0); /// default bin
   lepCor->SetBinError(1,0);
   int nlepcorbin = 2;
@@ -152,8 +165,8 @@ void getLepCorrections(const TString inputdir ="/eos/uscms/store/user/vdutta/13T
       cout << "\nEFF_TERM in bin " << ibin << ": " << h->GetBinContent(ibin) << " +/- " << h->GetBinError(ibin) << endl;
       cout << "\nFAKE_TERM in bin " << ibin << ": " << fake_term[i]->GetBinContent(ibin) << " +/- " << fake_term[i]->GetBinError(ibin) << endl;
     }
-    //h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1)); // independent corrections
-    h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1)); // stacked corrections
+    h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1)); // independent corrections
+    //h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1)); // stacked corrections
     h->Add(fake_term[i], -1);
     corr.push_back(h);
     for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {

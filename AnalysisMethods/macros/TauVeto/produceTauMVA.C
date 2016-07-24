@@ -52,7 +52,7 @@ public:
 
 
 
-void produceTauMVA(string sigFileName = "tauMVATrees/realtaus_tt1tau.root", string bkgFileName = "tauMVATrees/T2tt_850_100.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_new.root") {
+void produceTauMVA(string sigFileName = "tauMVATrees/realtaus_tt1tau.root", string bkgFileName = "tauMVATrees/faketaus_T2tt_850_500_mix.root", string treeName = "Candidates", string mvaName = "mva", string outFileName ="tauDisc_new.root") {
   TFile * sigFile = new TFile(sigFileName.c_str(),"read");
   TFile * bkgFile = new TFile(bkgFileName.c_str(),"read");
   TTree * sigTree = 0;

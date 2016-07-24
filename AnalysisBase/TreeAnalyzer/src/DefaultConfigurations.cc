@@ -93,7 +93,7 @@ void cfgSet::loadDefaultPhotonConfigurations() {
   zl_sel_photons.maxEta   = 2.5;
   zl_sel_photons.selected = &ucsbsusy::PhotonF::isloose;
   zl_sel_photons.usePixelSeedVeto = true;
-  zl_sel_photons.useElectronVeto  = false;
+  zl_sel_photons.useElectronVeto  = true;
   zl_sel_photons.setConfig();
 }
 
@@ -119,7 +119,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.wpolCorrections         = ucsbsusy::WPolCorrectionSet::WPOLWGT;
 
   standardCorrections.leptonCorrections        = ucsbsusy::LeptonCorrectionSet::LEP | ucsbsusy::LeptonCorrectionSet::MULTI_PT_BINS | ucsbsusy::LeptonCorrectionSet::TNP;
-  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorr_morebins.root",CMSSW_BASE);
+  standardCorrections.leptonCorrectionFile     =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_LM.root",CMSSW_BASE);
+  standardCorrections.leptonCorrectionFile2    =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_HM.root",CMSSW_BASE);
   standardCorrections.tnpElCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.tnpMuCorrType            = ucsbsusy::NOMINAL;
   //standardCorrections.tnpElIdCorrType          = ucsbsusy::NOMINAL;
@@ -140,13 +141,21 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/2016/csvEffs.root",CMSSW_BASE);
-  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2016/CSVv2_4invfb.csv",CMSSW_BASE);
+  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2016/CSVv2_ichep.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
-  standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/csvFastSimEffs.root",CMSSW_BASE);
-  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/CSV_13TEV_Combined_20_11_2015.csv",CMSSW_BASE);
+  standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/2016/csvFastSimEffs.root",CMSSW_BASE);
+  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/2016/CSV_13TEV_Combined_14_7_2016.csv",CMSSW_BASE);
   standardCorrections.heavyFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
+
+
+  standardCorrections.isrCorrections     = ucsbsusy::ISRCorrectionSet::ISRCORR | ucsbsusy::ISRCorrectionSet::ISRCORRTIGHT;
+  standardCorrections.isrCorrFile        =  TString::Format("%s/src/data/corrections/2016/isrCorr.root",CMSSW_BASE);
+  standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNorms.root",CMSSW_BASE);
+  standardCorrections.isrSigNormTightFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNormsTight.root",CMSSW_BASE);
+  standardCorrections.isrSigNorms.push_back("T2tt"); standardCorrections.isrSigNorms.push_back("T2bW");
+  standardCorrections.isrType = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();
 }
 
