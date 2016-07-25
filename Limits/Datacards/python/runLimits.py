@@ -55,6 +55,10 @@ def rand_generator(size=10, chars=string.ascii_letters):
 def main():
     parser = argparse.ArgumentParser(
         description='Produce or print limits based on existing datacards')
+    parser.add_argument("-m", "--maxlikelihood", dest="maxLikelihoodFit", action='store_true',
+                        help="Run the maximum likelihood fit using the signal point defined by the -s option. [Default: False]")
+    parser.add_argument("-s", "--signal", dest="signalPoint", default='T2tt_850_100',
+                        help="Signal point to use when running the maximum likelihood fit. [Default: T2tt_850_100]")
     parser.add_argument("-p", "--print", dest="printLimits", action='store_true',
                         help="Print last set of limits/significances calculated. [Default: False]")
     parser.add_argument("-f", "--fill", dest="fillAsymptoticLimits", action='store_true',
@@ -88,6 +92,8 @@ def main():
             fillSignificances(limconfig)
         else:
             fillAsymptoticLimits(limconfig, args.limitFile, args.exclusionFile, args.addInterpolation)
+    elif args.maxLikelihoodFit:
+        runMaxLikelihoodFit(limconfig, args.signalPoint)
     else:
         runLimits(limconfig)
 
@@ -103,6 +109,7 @@ class LimitConfig:
     self.limitdir = os.path.join(config_parser.get('config', 'limitdir'), self.subdir + '_' + self.limitmethod)
     self.signals = config_parser.get('signals', 'samples').replace(' ', '').split(',')
     self.scalesigtoacc = config_parser.getboolean('config', 'scalesigtoacc')
+    self.expectedonly = config_parser.getboolean('config', 'expectedonly')
 
 
 def getLimit(rootFile, getMean=False, limit={}):
@@ -236,7 +243,7 @@ def fillAsymptoticLimits(config, limfilename, excfilename, interpolate):
     maxmlsp = 0.0
     minmlsp = 0.0
     mstop_step = 1
-    mlsp_step = 1
+    mlsp_step = 10 if 'fbd' in limfilename else 1
     for signal in config.signals:
         mstop = int(signal.split('_')[1])
         mlsp = int(signal.split('_')[2])
@@ -327,13 +334,59 @@ def fillAsymptoticLimits(config, limfilename, excfilename, interpolate):
     hxsecexp.Write()
     hxsecobs.Write()
     outfile.Close()
-    os.system('root -l -q -b makeScanPlots.C\\(\\"%s\\",\\"%s\\",%d\\)' %
-              (limfilename, excfilename, interpolate))
+    os.system('root -l -q -b makeScanPlots.C\\(\\"%s\\",\\"%s\\",%d,%d\\)' %
+              (limfilename, excfilename, config.expectedonly, interpolate))
 
     # print the results
     print '=' * 5, 'RESULTS', '(' + config.limitmethod + ')', '=' * 5
     print '\n'.join(limits)
     print '\n'
+
+
+def runMaxLikelihoodFit(config, signal):
+    # get all datacards for combining
+    currentDir = os.getcwd()
+    datacardSaveLocation = os.path.join(currentDir, config.datacarddir, signal)
+    datacards = os.listdir(datacardSaveLocation)
+
+    # create and move into a dummy directory (using the timestamp in the name for uniqueness). At the end of
+    # each signal loop, all remaining files will be either deleted or moved to
+    # the actual output directory.
+    dummyRunDir = 'dummy_' + rand_generator()
+    os.makedirs(dummyRunDir)
+    os.chdir(dummyRunDir)
+
+    combinedDatacard = 'combined_' + signal + '.txt'
+    combineDatacardsCommand = 'combineCards.py'
+    for datacard in datacards:
+        combineDatacardsCommand += ' ' + os.path.join(datacardSaveLocation, datacard)
+    combineDatacardsCommand += ' > ' + combinedDatacard
+    output = commands.getoutput(combineDatacardsCommand)
+
+    with open(combinedDatacard, 'r') as f :
+        contents = f.readlines()
+
+    contents.insert(4,'shapes * * FAKE\n')
+
+    with open(combinedDatacard, 'w') as f :
+        f.writelines(contents)
+
+    #lprint(combineDatacardsCommand, output)
+
+    # run the maximum likelihood fit
+    runLimitsCommand = 'combine -M MaxLikelihoodFit --saveNormalizations --saveShapes --saveWithUncertainties ' + combinedDatacard
+    output = commands.getoutput(runLimitsCommand)
+    lprint(runLimitsCommand, output)
+
+    # move any output files to the correct directory
+    os.chdir(currentDir)
+    dummyFiles = os.listdir(dummyRunDir)
+    for f in dummyFiles:
+        if 'roostats' in f or 'higgsCombineTest' in f:
+            os.remove(os.path.join(dummyRunDir, f))
+            continue
+        os.rename(os.path.join(dummyRunDir, f), os.path.join(currentDir, f))
+    os.removedirs(dummyRunDir)
 
 
 def calcLimit(config, signal):
@@ -376,12 +429,15 @@ def calcLimit(config, signal):
         # runLimitsCommand =  'combine -M Asymptotic '+combinedDatacard+' --run
         # expected -t -1 --rMin 0 --rMax 10 -n '+signal
         mstop = int(signal.split('_')[1])
+        mlsp = int(signal.split('_')[2])
         sigtype = signal.split('_')[0]
         runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' -n ' + signal
-        if mstop >= 350:
+        if mstop >= 350 and mlsp < 350 and 'T2tt' in sigtype :
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 10 -n ' + signal
         if ('fbd' in sigtype or '4bd' in sigtype) and (mstop<=200):
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 1 -n ' + signal
+        if config.expectedonly :
+            runLimitsCommand += ' --run expected'
         output = commands.getoutput(runLimitsCommand)
         lprint(runLimitsCommand, output)
 
