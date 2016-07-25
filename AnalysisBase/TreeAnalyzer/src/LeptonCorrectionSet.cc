@@ -78,7 +78,7 @@ TnPCorr::TnPCorr(TString corrName,
     TString elMCVetoHMIdEffHistName, elMCVetoHMIsoEffHistName;
 
     // electron files and histograms
-    fileEl = TFile::Open(baseDir+"scaleFactors5p7invfb.root","read");
+    fileEl = TFile::Open(baseDir+"scaleFactors12p9invfb.root","read");
     if(elConf.type==LeptonSelection::ZL_SEL_ELE){
       elMCVetoLMIdEffFileName  = "lepCorMCEff_LM_El_Id_SR.root";
       elMCVetoLMIsoEffFileName = "lepCorMCEff_LM_El_Iso_SR.root";
@@ -97,6 +97,10 @@ TnPCorr::TnPCorr(TString corrName,
     }
     else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Invalid option for cfgSet::zl_lepton_set.electrons.type! Use 'ZL_SEL_ELE' or 'ZL_CTR_ELE'!");
 
+    TString elTrackerFileName = "egammaEffi.txt_SF2D_Tracking12p9invfb.root";
+    TString elTrackerHistName = "EGamma_SF2D";
+
+    fileTrackerEl      = TFile::Open(baseDir+elTrackerFileName     ,"read");
     fileMCVetoLMIdEffEl  = TFile::Open(baseDir+elMCVetoLMIdEffFileName ,"read");
     fileMCVetoLMIsoEffEl = TFile::Open(baseDir+elMCVetoLMIsoEffFileName,"read");
     fileMCVetoHMIdEffEl  = TFile::Open(baseDir+elMCVetoHMIdEffFileName ,"read");
@@ -106,6 +110,7 @@ TnPCorr::TnPCorr(TString corrName,
     if(!fileMCVetoLMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff file could not be found!");
     if(!fileMCVetoHMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff file could not be found!");
     if(!fileMCVetoHMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff file could not be found!");
+    if(!fileTrackerEl       ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el tracker SF file could not be found!");
 
     HistIdEl           = (TH2F*)(fileEl            ->Get(elIdHistName ));
     HistIsoEl          = (TH2F*)(fileEl            ->Get(elIsoHistName));
@@ -113,12 +118,14 @@ TnPCorr::TnPCorr(TString corrName,
     HistMCVetoLMIsoEffEl = (TH2F*)(fileMCVetoLMIsoEffEl->Get("lepCorMCEff_El_Iso"));
     HistMCVetoHMIdEffEl  = (TH2F*)(fileMCVetoHMIdEffEl ->Get("lepCorMCEff_El_Id"));
     HistMCVetoHMIsoEffEl = (TH2F*)(fileMCVetoHMIsoEffEl->Get("lepCorMCEff_El_Iso"));
+    HistTrackerEl        = (TH2F*)(fileTrackerEl->Get(elTrackerHistName));
     if(!HistIdEl          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ID hist could not be found!");
     if(!HistIsoEl         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ISO hist could not be found!");
     if(!HistMCVetoLMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff hist could not be found!");
     if(!HistMCVetoLMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff hist could not be found!");
     if(!HistMCVetoHMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff hist could not be found!");
     if(!HistMCVetoHMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff hist could not be found!");
+    if(!HistTrackerEl)        throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el tracker SF hist could not be found!");
   } // loadElectrons
 
   if(loadMuons) {
@@ -138,7 +145,7 @@ TnPCorr::TnPCorr(TString corrName,
 
     // muon files and histograms
     if(muConf.type==LeptonSelection::ZL_SEL_MU){
-      muIdFileName           = "dummy.root"; // only med muon ID currently supported with SFs per twiki
+      muIdFileName           = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
       muIsoFileName          = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
       muIP2DFileName         = "TnP_MuonID_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
       muIP2DHistName         = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass";
@@ -146,8 +153,7 @@ TnPCorr::TnPCorr(TString corrName,
       muMCVetoLMIsoEffFileName = "lepCorMCEff_LM_Mu_Iso_SR.root";
       muMCVetoHMIdEffFileName  = "lepCorMCEff_HM_Mu_Id_SR.root";
       muMCVetoHMIsoEffFileName = "lepCorMCEff_HM_Mu_Iso_SR.root";
-      //muIdHistName           = "pt_abseta_PLOT_pair_probeMultiplicity_bin0";
-      muIdHistName           = "dummy";
+      muIdHistName           = "pt_abseta_PLOT_pair_probeMultiplicity_bin0";
       muIsoHistName          = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass";
     }
     else if(muConf.type==LeptonSelection::ZL_CTR_MU){
@@ -192,9 +198,9 @@ TnPCorr::TnPCorr(TString corrName,
     HistMCVetoLMIsoEffMu = (TH2F*)(fileMCVetoLMIsoEffMu->Get("lepCorMCEff_Mu_Iso"));
     HistMCVetoHMIdEffMu  = (TH2F*)(fileMCVetoHMIdEffMu ->Get("lepCorMCEff_Mu_Id"));
     HistMCVetoHMIsoEffMu = (TH2F*)(fileMCVetoHMIsoEffMu->Get("lepCorMCEff_Mu_Iso"));
-    HistMuTrackerPtg10 = (TH1F*)(fileTrackerMu->Get(muTrackerPtg10HistName));
-    HistMuTrackerPtl10 = (TH1F*)(fileTrackerMu->Get(muTrackerPtl10HistName));
-    HistMuIP2D         = (TH2F*)(fileIP2DMu->Get(muIP2DHistName));
+    HistTrackerPtg10Mu = (TH1F*)(fileTrackerMu->Get(muTrackerPtg10HistName));
+    HistTrackerPtl10Mu = (TH1F*)(fileTrackerMu->Get(muTrackerPtl10HistName));
+    HistIP2DMu         = (TH2F*)(fileIP2DMu->Get(muIP2DHistName));
 
     if(!HistIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID hist could not be found!");
     if(!HistIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ISO hist could not be found!");
@@ -202,9 +208,9 @@ TnPCorr::TnPCorr(TString corrName,
     if(!HistMCVetoLMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff hist could not be found!");
     if(!HistMCVetoHMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff hist could not be found!");
     if(!HistMCVetoHMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff hist could not be found!");
-    if(!HistMuTrackerPtg10)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist g10 could not be found!");
-    if(!HistMuTrackerPtl10)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist l10 could not be found!");
-    if(!HistMuIP2D)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID SF hist could not be found!");
+    if(!HistTrackerPtg10Mu)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist g10 could not be found!");
+    if(!HistTrackerPtl10Mu)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist l10 could not be found!");
+    if(!HistIP2DMu)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu IP SF hist could not be found!");
   } // loadMuons
 
 }
@@ -223,6 +229,7 @@ TnPCorr::~TnPCorr() {
   if(fileMCVetoHMIsoEffMu) fileMCVetoHMIsoEffMu->Close();
   if(fileTrackerMu     ) fileTrackerMu     ->Close();
   if(fileIP2DMu        ) fileIP2DMu        ->Close();
+  if(fileTrackerEl     ) fileTrackerEl     ->Close();
 
   delete fileEl            ;
   delete fileIdMu          ;
@@ -237,6 +244,7 @@ TnPCorr::~TnPCorr() {
   delete fileMCVetoHMIsoEffMu;
   delete fileTrackerMu     ;
   delete fileIP2DMu        ;
+  delete fileTrackerEl     ;
 }
 
 float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, TString region ) const {
@@ -248,19 +256,41 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   if     (id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
   else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
   float sfid     = 1.0;
+  float sfip2d   = 1.0;
+  float sftrack  = 1.0;
   float sfiso    = 1.0;
   float sfuncid  = 0.0;
+  float sfuncip2d= 0.0;
+  float sfunctrack=0.0;
   float sfunciso = 0.0;
   float effid    = 1.0;
   float effiso   = 1.0;
   bool passId    = false;
   bool passIdIso = false;
   float failIdWt = 1.0;
+  // July 2016 recommended systs: 1% extra on track for HIP blah (+ 3% if pT<20), 1% on ID and 1% on ISO for normal systs.
+  // ELE: sfid = (ID SF)*(Tracking SF)
+  // MU:  sfid = (ID SF)*(Tracking SF)*(IP2D SF)
   if(id==11){
-    sfid     = getElIDValue(pt,abseta);
-    sfiso    = getElIsoValue(pt,abseta);
-    sfuncid  = getElIDError(pt,abseta);
-    sfunciso = getElIsoError(pt,abseta);
+    sfid             = getElIDValue(pt,abseta);
+    sfiso            = getElIsoValue(pt,abseta);
+    sftrack          = getElTrackerValue(eta,pt); // NB arguments from egamma pog
+    sfuncid          = getElIDError(pt,abseta);
+    sfunciso         = getElIsoError(pt,abseta);
+    sfunctrack       = getElTrackerError(eta,pt);
+
+    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron track SF is zero!");
+    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron id SF is zero!");
+    if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron iso SF is zero!");
+
+    float sfidrelerror    = sfuncid/sfid + 0.01;
+    float sfisorelerror   = sfunciso/sfiso + 0.01;
+    float sftrackrelerror = sfunctrack/sftrack + ((pt > 20) ? 0.01 : 0.03);
+
+    sfuncid  = sfid*sftrack*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) );
+    sfunciso = sfiso*sfisorelerror;
+    sfid    *= sftrack; // must come after sfuncid calculation
+
     if     (elCorrType  == UP  ) sfid  += sfuncid;
     else if(elCorrType  == DOWN) sfid  -= sfuncid;
     if     (elCorrType == UP  ) sfiso += sfunciso;
@@ -273,29 +303,40 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     failIdWt = (1.0-effid*sfid)/(1.0-effid);
   }
   else if(id==13) {
-    sfid      = getMuIDValue(pt,abseta);
-    float trackSFvalue    = (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
-    if(trackSFvalue == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
-    float trackSFrelError = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta))/trackSFvalue;
-    float ipSFvalue = getMuIP2DValue(pt,abseta);
-    float ipSFerror = getMuIP2DError(pt,abseta);
-    if(ipSFvalue == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon IP SF is zero!");    
-    float ipSFrelError = ipSFerror/ipSFvalue;
-    sfiso     = getMuIsoValue(pt,abseta);
-    float sfrelError = 0.03; // conservative july 2016 recommendation
-    sfuncid   = sfid*trackSFvalue*ipSFvalue*sqrt( pow(sfrelError,2) + pow(trackSFrelError,2) + pow(ipSFrelError,2));
-    sfunciso  = sfiso * sfrelError;
-    sfid     *= trackSFvalue*ipSFvalue; // do only after calculating sfuncid!
+    sfid       = getMuIDValue(pt,abseta);
+    sfiso      = getMuIsoValue(pt,abseta);
+    sftrack    = (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
+    sfip2d     = getMuIP2DValue(pt,abseta);
+    sfuncid    = getMuIDError(pt,abseta);
+    sfunciso   = getMuIsoError(pt,abseta);
+    sfunctrack = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta));
+    sfuncip2d  = getMuIP2DError(pt,abseta);
+
+    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
+    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon id SF is zero!");
+    if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon iso SF is zero!");
+    if(sfip2d == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon ip2d SF is zero!");
+
+    float sfidrelerror    = sfuncid/sfid + 0.01;
+    float sfisorelerror   = sfunciso/sfiso + 0.01;
+    float sftrackrelerror = sfunctrack/sftrack + 0.01;
+    float sfip2drelerror  = sfuncip2d/sfip2d;
+
+    sfuncid   = sfid*sftrack*sfip2d*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) + pow(sfip2drelerror,2));
+    sfunciso  = sfiso*sfisorelerror;
+    sfid     *= sftrack*sfip2d; // must come after sfuncid calculation
+
     if     (muCorrType  == UP  ) sfid  += sfuncid;
     else if(muCorrType  == DOWN) sfid  -= sfuncid;
     if     (muCorrType == UP  ) sfiso += sfunciso;
     else if(muCorrType == DOWN) sfiso -= sfunciso;
-    //effid    = getMuMCIdEffValue(pt,abseta); // get this from gen muons since we don't store generalTracks
+    //effid    = getMuMCIdEffValue(pt,abseta,region); // get this from gen muons since we don't store generalTracks
     effiso   = getMuMCIsoEffValue(pt,abseta,region);
     if(cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) passId    = true;
     if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
     failIdWt = 1.0; // handle with gen muons
   }
+
   if(passIdIso) {
     wt = sfid * sfiso;
   }
@@ -311,34 +352,65 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   return wt;
 }
 
-// ASSUMES MUON -- tracker and ip corrections
+// muon id via gen muons. copy and paste from getLepWeight, some minor changes.
 float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, TString region ) const {
+  float wt = 1.0;
+  //int   id  = lep->pdgid();
   float pt  = lep->pt();
-  float abseta = lep->absEta();
   float eta = lep->eta();
-  if     (pt <muConfKin.minPT)  return 1.0;
-  else if(abseta>muConfKin.maxETA) return 1.0;
-  float trackSFvalue    =  (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
-  if(trackSFvalue == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getGenLepWeight: muon track SF is zero!");
-  float trackSFrelError = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta))/trackSFvalue;
-  float ipSFvalue = getMuIP2DValue(pt,abseta);
-  float ipSFerror = getMuIP2DError(pt,abseta);
-  if(ipSFvalue == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getGenLepWeight: muon IP SF is zero!");
-  float ipSFrelError = ipSFerror/ipSFvalue;
-  float sf      = getMuIDValue(pt,abseta);
-  float sfrelError = 0.03; // conservative july 2016 recommendation
-  float sfunc   = sf*trackSFvalue*ipSFvalue*sqrt( pow(sfrelError,2) + pow(trackSFrelError,2) + pow(ipSFrelError,2));
-  sf           *= trackSFvalue*ipSFvalue; // do only after calculating sfunc!
-  float eff     = getMuMCIdEffValue(pt,abseta,region);
-  if     (muCorrType == UP  ) sf += sfunc;
-  else if(muCorrType == DOWN) sf -= sfunc;
-  if(eff>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muon ID eff is >=1!");
-  float wt = (1.0-eff*sf)/(1.0-eff);
-  if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
-  if(wt >  2.0) wt =  2.0; // also don't want large positive weights
-  return wt;
-}
+  float abseta = lep->absEta();
+  //if     (id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
+  //else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
+  if     (pt <muConfKin.minPT)  return wt;
+  else if(abseta>muConfKin.maxETA) return wt;
+  float sfid     = 1.0;
+  float sfip2d   = 1.0;
+  float sftrack  = 1.0;
+  //float sfiso    = 1.0;
+  float sfuncid  = 0.0;
+  float sfuncip2d= 0.0;
+  float sfunctrack=0.0;
+  //float sfunciso = 0.0;
+  float effid     = 1.0;
 
+    sfid       = getMuIDValue(pt,abseta);
+    //sfiso      = getMuIsoValue(pt,abseta);
+    sftrack    = (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
+    sfip2d     = getMuIP2DValue(pt,abseta);
+    sfuncid    = getMuIDError(pt,abseta);
+    //sfunciso   = getMuIsoError(pt,abseta);
+    sfunctrack = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta));
+    sfuncip2d  = getMuIP2DError(pt,abseta);
+
+    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
+    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon id SF is zero!");
+    //if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon iso SF is zero!");
+    if(sfip2d == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon ip2d SF is zero!");
+
+    float sfidrelerror    = sfuncid/sfid + 0.01;
+    //float sfisorelerror   = sfunciso/sfiso + 0.01;
+    float sftrackrelerror = sfunctrack/sftrack + 0.01;
+    float sfip2drelerror  = sfuncip2d/sfip2d;
+
+    sfuncid   = sfid*sftrack*sfip2d*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) + pow(sfip2drelerror,2));
+    //sfunciso  = sfiso*sfisorelerror;
+    sfid     *= sftrack*sfip2d; // must come after sfuncid calculation
+
+    if     (muCorrType  == UP  ) sfid  += sfuncid;
+    else if(muCorrType  == DOWN) sfid  -= sfuncid;
+    //if     (muCorrType == UP  ) sfiso += sfunciso;
+    //else if(muCorrType == DOWN) sfiso -= sfunciso;
+    effid    = getMuMCIdEffValue(pt,abseta,region); // get this from gen muons since we don't store generalTracks
+    //effiso   = getMuMCIsoEffValue(pt,abseta,region);
+    //if(cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) passId    = true;
+    //if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
+    //failIdWt = 1.0; // handle with gen muons
+    if(effid>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muon ID eff is >=1!");
+    wt = (1.0-effid*sfid)/(1.0-effid);
+    if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
+    if(wt >  2.0) wt =  2.0; // also don't want large positive weights
+    return wt;
+}
 
 float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
                             CORRTYPE elCorrType, CORRTYPE muCorrType, TString region ) const {
