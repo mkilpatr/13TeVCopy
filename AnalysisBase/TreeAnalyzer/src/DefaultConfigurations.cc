@@ -131,8 +131,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL;
 
   standardCorrections.jetResCorrType           = ucsbsusy::NONE;
-  standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/ak4JetResTrends_Summer15_25nsV6_MC_PtResolution_AK4PFchs.root",CMSSW_BASE);
-  standardCorrections.jetResCorrFile           = TString::Format("%s/src/data/corrections/ak4JetResCorr_Summer15_25nsV6_MC_PtResolution_AK4PFchs.root",CMSSW_BASE);
+  standardCorrections.jetResFile               = TString::Format("%s/src/data/corrections/2016/ak4JetResTrends_Spring16_25nsV6_MC_PtResolution_AK4PFchs.root",CMSSW_BASE);
+  standardCorrections.jetResCorrFile           = TString::Format("%s/src/data/corrections/2016/ak4JetResCorr_Spring16_25nsV6_MC_SF_AK4PFchs.root",CMSSW_BASE);
 
   standardCorrections.metResSystRunIType       = ucsbsusy::NONE;
 
