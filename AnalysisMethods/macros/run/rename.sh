@@ -11,7 +11,7 @@ cd $workdir
 cd sr/
 hadd $targetdir/ttbarplusw_tree.root ttbar-mg_tree.root wjets-ht_tree.root tW_tree.root ttW_tree.root
 hadd rare_tree.root ttZ_tree.root ww_tree.root wz_tree.root zz_tree.root
-hadd $targetdir/nonqcd_qcdcr_tree.root $targetdir/ttbarplusw_tree.root znunu_tree.root rare_tree.root
+#hadd $targetdir/nonqcd_qcdcr_tree.root $targetdir/ttbarplusw_tree.root znunu_tree.root rare_tree.root
 cd ..
 
 # onelepcr: for MET+Lep method

@@ -431,6 +431,8 @@ class Datacard:
                                     unc.cr_nevts[binname]['mcsub'] = max(cr.get(cr.crsubname, crbinname)[0], 0.00000001) if cr.crsubname else 0.0
                                     if hasattr(cr, 'crnormsel'):
                                         unc.cr_nevts[binname]['mcsub'] *= cr.get('crnorm', crbinname)[0]
+                                    if hasattr(cr, 'crsubRawMC'):
+                                        unc.cr_nevts[binname]['mcsub'] += max(cr.get(cr.crsubRawMC, crbinname)[0], 0.00000001)
                                     # Get the subtraction correction
                                     if unc.cr_nevts[binname]['mcsub'] > 0 :
                                         if unc.cr_nevts[binname]['data'] < 10 :
@@ -599,6 +601,8 @@ class FitRegion:
             self.crsubname = crconfig['mcFiles'][1]
             if self.crsubname:
                 self.crsubsel = crconfig['crsubsel']
+            if 'crsubRawMC' in crconfig:
+                self.crsubRawMC = crconfig['crsubRawMC']
             # norm correction for the subtraction
             if 'crnormsel' in crconfig:
                 self.crnormsel = crconfig['crnormsel']
@@ -755,7 +759,7 @@ class FitRegion:
                 self.calcSampleYields(sample, crwgtvar, self.crsel, self.bins)
             elif sample == self.crmcname + '_subsel':
                 self.calcSampleYields(self.crmcname, crwgtvar, self.crsubsel, self.bins, extra='_subsel')
-            elif sample == self.crsubname:
+            elif sample == self.crsubname or (hasattr(self, 'crsubRawMC') and sample == self.crsubRawMC):
                 # cr subtraction sample
                 self.calcSampleYields(sample, crwgtvar, self.crsel, self.bins)
             elif sample == 'crnorm':

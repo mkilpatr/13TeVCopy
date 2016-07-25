@@ -89,7 +89,7 @@ class smsPlotABS(object):
        	CMS_lumi.writeExtraText = 1
 	CMS_lumi.extraText = "Preliminary"
 	#CMS_lumi.lumi_13TeV="2.3 fb^{-1}"
-	CMS_lumi.lumi_13TeV="9.2 fb^{-1}"
+	CMS_lumi.lumi_13TeV="12.9 fb^{-1}"
 
 	CMS_lumi.lumi_sqrtS = "13 TeV"  
 	iPos=0
