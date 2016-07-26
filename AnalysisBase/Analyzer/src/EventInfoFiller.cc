@@ -193,6 +193,9 @@ void EventInfoFiller::fill()
         }
       }
       TString massstring(modelString_);
+      // masstring examples:
+      // T2tt_dM-10to80_genHT-160_genMET-80_400_350
+      // T2tt_525_325
       while(massstring.Index("_") != TString::kNPOS) {
         massstring.Remove(0,massstring.Index("_")+1);
         TString mstr;
@@ -200,6 +203,7 @@ void EventInfoFiller::fill()
           mstr = TString(massstring(0,massstring.First('_')));
         else
           mstr = TString(massstring(0,massstring.Length()));
+        if(!mstr.IsDigit()) continue;
         if(options_ & SAVEMASSES)
           data.fillMulti<size16>(imasspar_, convertTo<size16>(mstr.Atoi(),"EventInfoFiller::massparams"));
       }
