@@ -184,7 +184,7 @@ def main() :
       print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
       print makeTable(inDir,search,sr_metbins_hm,k)
   else :
-    for k in ('ttbarplusw', 'znunu', 'qcd') :
+    for k in ('ttbarplusw', 'znunu', 'qcd', 'rare') :
       print '\n\n\n', '='*5, 'Making', k, 'unc table...', '\n\n'
       print makeTable(inDir,search,sr_metbins_lm,k)
   print '\n\n\n'

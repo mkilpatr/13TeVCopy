@@ -283,11 +283,16 @@ elif args.postprocess :
             if 'qcd' in samples[isam]:
                 extrafilelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s-genjets5(-ext[0-9]*|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
         files.append(filelist + extrafilelist)
-        nposevents = get_num_events(filelist, prefix)
-        nnegevents = get_num_events(filelist, prefix, -1)
+        if re.search('-[0-9]{4}[a-zA-Z]-', samples[isam]):
+            print samples[isam] + ' is data! No need to get total number of events.'
+            nposevents = 1
+            nnegevents = 0
+        else:
+            nposevents = get_num_events(filelist, prefix)
+            nnegevents = get_num_events(filelist, prefix, -1)
+            print "Sample " + samples[isam] + " has " + str(nposevents) + " positive and " + str(nnegevents) + " negative weight events"
         totnposevents.append(nposevents)
         totnnegevents.append(nnegevents)
-        print "Sample " + samples[isam] + " has " + str(nposevents) + " positive and " + str(nnegevents) + " negative weight events"
         if 'qcd' in samples[isam]:
             ngenjets5events = get_num_events(filelist, prefix, selection=' && nstdgenjets>=5')
             nextragenjets5events = get_num_events(extrafilelist, prefix, selection=' && nstdgenjets>=5')
