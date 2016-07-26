@@ -71,7 +71,7 @@ DatasetName = options.inputDataset if options.inputDataset else options.inputFil
 print DatasetName
 
 # MC theory systematic weights only saved for specific samples
-if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'tZq' in DatasetName or 'SMS' in DatasetName or 'T2bW' in DatasetName or 'TTJets' in DatasetName or 'WJets' in DatasetName :
+if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'ST_' in DatasetName or 'tZq' in DatasetName or 'SMS' in DatasetName or 'T2bW' in DatasetName or 'TTJets' in DatasetName or 'WJets' in DatasetName or 'WW' in DatasetName or 'WZ' in DatasetName or 'ZZ' in DatasetName:
     print 'Adding theory weights'
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
     if 'SMS' in DatasetName or 'T2bW' in DatasetName :
