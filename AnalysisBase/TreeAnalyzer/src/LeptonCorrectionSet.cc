@@ -78,7 +78,7 @@ TnPCorr::TnPCorr(TString corrName,
     TString elMCVetoHMIdEffHistName, elMCVetoHMIsoEffHistName;
 
     // electron files and histograms
-    fileEl = TFile::Open(baseDir+"scaleFactors12p9invfb.root","read");
+    fileEl = TFile::Open(baseDir+"scaleFactors12p9invfb-retrieved26072016.root","read");
     if(elConf.type==LeptonSelection::ZL_SEL_ELE){
       elMCVetoLMIdEffFileName  = "lepCorMCEff_LM_El_Id_SR.root";
       elMCVetoLMIsoEffFileName = "lepCorMCEff_LM_El_Iso_SR.root";
