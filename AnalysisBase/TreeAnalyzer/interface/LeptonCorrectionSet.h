@@ -85,13 +85,16 @@ namespace ucsbsusy {
       virtual float getMuIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistIsoMu); }
       virtual float getMuIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoMu); }
 
-      virtual float getMuTrackerPtg10Value(float x) const { return getGenericValue1D(x,HistMuTrackerPtg10); }
-      virtual float getMuTrackerPtg10Error(float x) const { return getGenericError1D(x,HistMuTrackerPtg10); }
-      virtual float getMuTrackerPtl10Value(float x) const { return getGenericValue1D(x,HistMuTrackerPtl10); }
-      virtual float getMuTrackerPtl10Error(float x) const { return getGenericError1D(x,HistMuTrackerPtl10); }
+      virtual float getMuTrackerPtg10Value(float x) const { return getGenericValue1D(x,HistTrackerPtg10Mu); }
+      virtual float getMuTrackerPtg10Error(float x) const { return getGenericError1D(x,HistTrackerPtg10Mu); }
+      virtual float getMuTrackerPtl10Value(float x) const { return getGenericValue1D(x,HistTrackerPtl10Mu); }
+      virtual float getMuTrackerPtl10Error(float x) const { return getGenericError1D(x,HistTrackerPtl10Mu); }
 
-      virtual float getMuIP2DValue(float x, float y) const { return getGenericValue2D(x,y,HistMuIP2D); }
-      virtual float getMuIP2DError(float x, float y) const { return getGenericError2D(x,y,HistMuIP2D); }
+      virtual float getElTrackerValue(float x, float y) const { return getGenericValue2D(x,y,HistTrackerEl); }
+      virtual float getElTrackerError(float x, float y) const { return getGenericError2D(x,y,HistTrackerEl); }
+
+      virtual float getMuIP2DValue(float x, float y) const { return getGenericValue2D(x,y,HistIP2DMu); }
+      virtual float getMuIP2DError(float x, float y) const { return getGenericError2D(x,y,HistIP2DMu); }
 
       // MC eff getters for LM and HM regions
       virtual float getElMCIdEffValue  (float x, float y, TString region) const { return region == "LM" ? getGenericValue2D(x,y,HistMCVetoLMIdEffEl) : getGenericValue2D(x,y,HistMCVetoHMIdEffEl);}
@@ -123,6 +126,7 @@ namespace ucsbsusy {
       TFile* fileMCVetoHMIsoEffEl;
       TFile* fileMCVetoHMIsoEffMu;
       TFile* fileTrackerMu;
+      TFile* fileTrackerEl;
       TFile* fileIP2DMu;
       TH2F*  HistIdEl;
       TH2F*  HistIdMu;
@@ -136,9 +140,10 @@ namespace ucsbsusy {
       TH2F*  HistMCVetoLMIdEffMu;
       TH2F*  HistMCVetoLMIsoEffEl;
       TH2F*  HistMCVetoLMIsoEffMu;
-      TH1F*  HistMuTrackerPtg10;
-      TH1F*  HistMuTrackerPtl10;
-      TH2F*  HistMuIP2D;
+      TH1F*  HistTrackerPtg10Mu;
+      TH1F*  HistTrackerPtl10Mu;
+      TH2F*  HistTrackerEl;
+      TH2F*  HistIP2DMu;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
