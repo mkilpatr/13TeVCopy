@@ -61,6 +61,7 @@ bool JetResolutionCorr::getCorrectedPT(const CORRTYPE corrType, const float rho,
     case DOWN: corr = jetResolutionCorr->GetBinContent(corrBin)-jetResolutionCorr->GetBinError(corrBin); break;
     default: corr = 0;
   }
+  if(corr < 1) corr = 1;
 
   double rndNum = 10;
   while(TMath::Abs(rndNum) > 3 ){ //only allow three sigma fluctuations
