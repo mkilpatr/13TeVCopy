@@ -101,6 +101,7 @@ datasets = []
 totnposevents = []
 totnnegevents = []
 xsecfiles = []
+filterfiles = []
 wgtscalefactors = []
 
 def parseConfig(removeExtension=False, removeGenJets5=False):
@@ -125,7 +126,11 @@ def parseConfig(removeExtension=False, removeGenJets5=False):
             if len(content) > 4 :
                 xsecfiles.append(content[4])
             else :
-                xsecfiles.append("NONE")
+                xsecfiles.append('')
+            if len(content) > 5 :
+                filterfiles.append(content[5])
+            else:
+                filterfiles.append('')
 
 eos = "/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
@@ -333,12 +338,12 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root", "_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\",{wgtsf}\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\",\\"{filterfile}\\",{wgtsf}\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {wgtsf} {outname} {outdir} $workdir\n""".format(
-                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], outname=outfilename, outdir=args.outdir
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {filterfile} {wgtsf} {outname} {outdir} $workdir\n""".format(
+                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
@@ -349,7 +354,7 @@ universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {wgtsf} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {filterfile} {wgtsf} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -363,7 +368,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir, name=samples[isam], j=ifile))
