@@ -174,7 +174,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(options_ & SDTOP) {
     if(ana->process == defaults::SIGNAL && type == defaults::T2tt){
       const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-      sdTopWeight = sdTopCorr->process(cfg.corrections.sdTopEffSFType,ana->nSelSdTops == 0 ? -1 : ana->selectedSdTops.front()->pt());
+      sdTopWeight = sdTopCorr->process(cfg.corrections.sdTopCorrType,ana->nSelSdTops == 0 ? -1 : ana->selectedSdTops.front()->pt());
     }else{
       sdTopWeight = 1.0;
     }
@@ -183,7 +183,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(options_ & SDW) {
     if(ana->process == defaults::SIGNAL && (type == defaults::T2tt || type == defaults::T2bW)){
       const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-      sdWWeight = sdWCorr->process(cfg.corrections.sdWEffSFType,ana->nSelSdWs == 0 ? -1 : ana->selectedSdWs.front()->pt());
+      sdWWeight = sdWCorr->process(cfg.corrections.sdWCorrType,ana->nSelSdWs == 0 ? -1 : ana->selectedSdWs.front()->pt());
     }else{
       sdWWeight = 1.0;
     }

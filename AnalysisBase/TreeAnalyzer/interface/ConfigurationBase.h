@@ -257,8 +257,8 @@ namespace cfgSet {
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         cttEffSFType(ucsbsusy::NONE),
         cttMistagSFType(ucsbsusy::NONE),
-        sdTopEffSFType(ucsbsusy::NONE),
-        sdWEffSFType(ucsbsusy::NONE),
+        sdTopCorrType(ucsbsusy::NONE),
+        sdWCorrType(ucsbsusy::NONE),
         trigPhotonCorrType(ucsbsusy::NONE),
         trigElectronCorrType(ucsbsusy::NONE),
         trigMuonCorrType(ucsbsusy::NONE),
@@ -308,9 +308,9 @@ namespace cfgSet {
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::CTT)
           os << " CTT Eff("<< a.cttEffSFType <<") Mistag("<<a.cttMistagSFType<<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDTOP)
-          os << " SDTOP Eff("<< a.sdTopEffSFType <<")";
+          os << " SDTOP Eff("<< a.sdTopCorrType <<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDW)
-          os << " SDW Eff("<< a.sdWEffSFType <<")";
+          os << " SDW Eff("<< a.sdWCorrType <<")";
         os << std::endl;
 
       }
