@@ -33,6 +33,8 @@ struct BasicVarsFiller {
   size i_leptnpweightHM;
   size i_isrWeight;
   size i_isrWeightTight;
+  size i_sdtopFastSimWeight;
+  size i_sdwFastSimWeight;
 
   // Trigger and filters
   size i_passjson  ;
@@ -129,6 +131,8 @@ struct BasicVarsFiller {
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
+    i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
+    i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
 
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
@@ -236,7 +240,8 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
     data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
-
+    data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
+    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
@@ -329,14 +334,8 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
     data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
-    std::vector<const FatJetF*> recow_;
-    std::vector<const FatJetF*> recotop_;
-    for (const auto *fj : ana->fatJets){
-      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) recotop_.push_back(fj);
-      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) recow_.push_back(fj);
-    }
-    data->fill<int  >(i_nsdtoploose,  recotop_.size());
-    data->fill<int  >(i_nsdwloose,    recow_.size());
+    data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
+    data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;
@@ -429,12 +428,12 @@ struct BasicVarsFiller {
 
       double drrecoleprecow_ = 999.;
       double drrecoleprecotop_ = 999.;
-      for (const auto *fj : recow_) {
+      for (const auto *fj : ana->selectedSdWs) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
         if (tmdr_<drrecoleprecow_) { drrecoleprecow_ = tmdr_; }
       }
 
-      for (const auto *fj : recotop_) {
+      for (const auto *fj : ana->selectedSdTops) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
         if (tmdr_<drrecoleprecotop_) { drrecoleprecotop_ = tmdr_; }
       }

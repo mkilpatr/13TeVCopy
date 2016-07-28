@@ -45,10 +45,10 @@ namespace ucsbsusy {
               const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
               const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel);
       virtual ~TnPCorr();
-      float getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, TString region ) const;
-      float getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, TString region ) const;
+      float getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, TString region, bool isFastSim ) const;
+      float getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, TString region, bool isFastSim ) const;
       float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
-                         CORRTYPE elCorrType, CORRTYPE muCorrType, TString region) const;
+                         CORRTYPE elCorrType, CORRTYPE muCorrType, TString region, bool isFastSim) const;
       //float getLepWeight(LeptonF* lep, CORRTYPE elIdCorrType, CORRTYPE elIsoCorrType, CORRTYPE muIdCorrType, CORRTYPE muIsoCorrType ) const;
       //float getGenLepWeight(const GenParticleF* lep, CORRTYPE muIdCorrType ) const;
       //float getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
@@ -75,26 +75,33 @@ namespace ucsbsusy {
       }
 
       // SF getters
+      // el id/iso
       virtual float getElIDValue (float x, float y) const { return getGenericValue2D(x,y,HistIdEl); }
-      virtual float getElIDError (float x, float y) const { return getGenericError2D(x,y,HistIdEl); }
+      //virtual float getElIDError (float x, float y) const { return getGenericError2D(x,y,HistIdEl); } //statistical uncs in id/iso can be neglected per susy lepton sf twiki
       virtual float getElIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistIsoEl); }
-      virtual float getElIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoEl); }
-
+      //virtual float getElIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoEl); }
+      // mu id/iso
       virtual float getMuIDValue (float x, float y) const { return getGenericValue2D(x,y,HistIdMu); }
-      virtual float getMuIDError (float x, float y) const { return getGenericError2D(x,y,HistIdMu); }
+      //virtual float getMuIDError (float x, float y) const { return getGenericError2D(x,y,HistIdMu); }
       virtual float getMuIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistIsoMu); }
-      virtual float getMuIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoMu); }
-
+      //virtual float getMuIsoError(float x, float y) const { return getGenericError2D(x,y,HistIsoMu); }
+      // mu tracking
       virtual float getMuTrackerPtg10Value(float x) const { return getGenericValue1D(x,HistTrackerPtg10Mu); }
-      virtual float getMuTrackerPtg10Error(float x) const { return getGenericError1D(x,HistTrackerPtg10Mu); }
+      virtual float getMuTrackerPtg10Error(float x) const { return getGenericError1D(x,HistTrackerPtg10Mu); } // tracking errors matter!
       virtual float getMuTrackerPtl10Value(float x) const { return getGenericValue1D(x,HistTrackerPtl10Mu); }
       virtual float getMuTrackerPtl10Error(float x) const { return getGenericError1D(x,HistTrackerPtl10Mu); }
-
+      //el tracking
       virtual float getElTrackerValue(float x, float y) const { return getGenericValue2D(x,y,HistTrackerEl); }
       virtual float getElTrackerError(float x, float y) const { return getGenericError2D(x,y,HistTrackerEl); }
-
+      // my dxy dz
       virtual float getMuIP2DValue(float x, float y) const { return getGenericValue2D(x,y,HistIP2DMu); }
-      virtual float getMuIP2DError(float x, float y) const { return getGenericError2D(x,y,HistIP2DMu); }
+      //virtual float getMuIP2DError(float x, float y) const { return getGenericError2D(x,y,HistIP2DMu); }
+      // mu/el fullfast
+      virtual float getMuFullFastIDValue(float x, float y) const { return getGenericValue2D(x,y,HistFullFastIdMu); }
+      virtual float getMuFullFastIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistFullFastIsoMu); }
+      virtual float getElFullFastIDValue(float x, float y) const { return getGenericValue2D(x,y,HistFullFastIdEl); }
+      virtual float getElFullFastIsoValue(float x, float y) const { return getGenericValue2D(x,y,HistFullFastIsoEl); }
+      virtual float getMuFullFastIP2DValue(float x, float y) const { return getGenericValue2D(x,y,HistFullFastIP2DMu); }
 
       // MC eff getters for LM and HM regions
       virtual float getElMCIdEffValue  (float x, float y, TString region) const { return region == "LM" ? getGenericValue2D(x,y,HistMCVetoLMIdEffEl) : getGenericValue2D(x,y,HistMCVetoHMIdEffEl);}
@@ -128,6 +135,11 @@ namespace ucsbsusy {
       TFile* fileTrackerMu;
       TFile* fileTrackerEl;
       TFile* fileIP2DMu;
+      TFile* fileFullFastIP2DMu;
+      TFile* fileFullFastIdMu;
+      TFile* fileFullFastIsoMu;
+      TFile* fileFullFastIdEl;
+      TFile* fileFullFastIsoEl;
       TH2F*  HistIdEl;
       TH2F*  HistIdMu;
       TH2F*  HistIsoEl;
@@ -144,6 +156,11 @@ namespace ucsbsusy {
       TH1F*  HistTrackerPtl10Mu;
       TH2F*  HistTrackerEl;
       TH2F*  HistIP2DMu;
+      TH2F*  HistFullFastIP2DMu;
+      TH2F*  HistFullFastIdEl;
+      TH2F*  HistFullFastIsoEl;
+      TH2F*  HistFullFastIdMu;
+      TH2F*  HistFullFastIsoMu;
   };
 
   class LeptonCorrectionSet : public CorrectionSet {
