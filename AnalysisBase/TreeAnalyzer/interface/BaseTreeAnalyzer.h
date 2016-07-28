@@ -157,6 +157,8 @@ public:
     int   nVetoHPSTaus;
     LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
     int   nSelCTTTops;
+    int   nSelSdTops;
+    int   nSelSdWs;
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -180,6 +182,8 @@ public:
     std::vector<GenParticleF*>   genParts          ;
     std::vector<CMSTopF*>        cttTops           ;
     std::vector<CMSTopF*>        selectedCTTTops   ;
+    std::vector<FatJetF*>        selectedSdTops    ;
+    std::vector<FatJetF*>        selectedSdWs      ;
     std::vector<FatJetF*>        fatJets;
     //    std::vector<FatJetF*>        fatJetsPuppi;
     std::vector<TriggerObjectF*> triggerObjects    ;

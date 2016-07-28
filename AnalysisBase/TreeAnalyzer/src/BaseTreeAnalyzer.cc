@@ -57,6 +57,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nVetoHPSTaus      (0),
     selectedLepton    (0),
     nSelCTTTops       (0),
+    nSelSdTops        (0),
+    nSelSdWs          (0),
     met               (0),
     metNoHF           (0),
     puppimet          (0),
@@ -137,7 +139,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
 
@@ -348,9 +350,19 @@ void BaseTreeAnalyzer::processVariables()
   }
 
   if(fatJetReader.isLoaded()){
+    nSelSdTops = 0;
+    nSelSdWs = 0;
     fatJets.clear();
+    selectedSdTops.clear();
+    selectedSdWs.clear();
     fatJets.reserve(fatJetReader.fatJets.size());
     for(auto& p : fatJetReader.fatJets) fatJets.push_back(&p);
+    for(auto& fj : fatJets){
+      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) selectedSdTops.push_back(fj);
+      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) selectedSdWs.push_back(fj);
+    }
+    nSelSdTops = selectedSdTops.size();
+    nSelSdWs = selectedSdWs.size();
   }
   /*
   if(fatJetPuppiReader.isLoaded()){
