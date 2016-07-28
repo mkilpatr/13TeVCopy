@@ -195,8 +195,8 @@ namespace cfgSet {
     TString puCorrectionFile;
     ucsbsusy::CORRTYPE cttEffSFType;
     ucsbsusy::CORRTYPE cttMistagSFType;
-    ucsbsusy::CORRTYPE sdTopEffSFType;
-    ucsbsusy::CORRTYPE sdWEffSFType;
+    ucsbsusy::CORRTYPE sdTopCorrType;
+    ucsbsusy::CORRTYPE sdWCorrType;
 
 
     TString triggerCorrectionFile;

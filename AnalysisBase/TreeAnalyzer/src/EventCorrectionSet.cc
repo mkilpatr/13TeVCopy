@@ -45,9 +45,9 @@ SdTopCorr::~SdTopCorr(){
   sdTopinputFile->Close();
   delete sdTopinputFile;
 }
-float SdTopCorr::process(CORRTYPE effCorrType, double maxGoodTopPT){
+float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
   if(maxGoodTopPT <= 0.) return 1;
-  if(effCorrType == NONE) return 1;
+  if(corrType == NONE) return 1;
   auto getNoUnderOver = [](float value, const TH1 * hist) -> int {return std::min(std::max(hist->FindFixBin(value),1),hist->GetNbinsX());  };
   TH1F * hdf = sdTopDataFullSF;
   TH1F * hff = sdTopFullFastSF;
@@ -59,7 +59,7 @@ float SdTopCorr::process(CORRTYPE effCorrType, double maxGoodTopPT){
   float sf_ff_relerror = sf_ff/hff->GetBinError(binFullFast);
   float sf    = sf_df*sf_ff;
   float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
-  switch(effCorrType){
+  switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
     case NOMINAL: return  sf;
@@ -78,9 +78,9 @@ SdWCorr::~SdWCorr(){
   sdWinputFile->Close();
   delete sdWinputFile;
 }
-float SdWCorr::process(CORRTYPE effCorrType, double maxGoodWPT){
+float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
   if(maxGoodWPT <= 0.) return 1;
-  if(effCorrType == NONE) return 1;
+  if(corrType == NONE) return 1;
   auto getNoUnderOver = [](float value, const TH1 * hist) -> int {return std::min(std::max(hist->FindFixBin(value),1),hist->GetNbinsX());  };
   TH1F * hdf = sdWDataFullSF;
   TH1F * hff = sdWFullFastSF;
@@ -92,7 +92,7 @@ float SdWCorr::process(CORRTYPE effCorrType, double maxGoodWPT){
   float sf_ff_relerror = sf_ff/hff->GetBinError(binFullFast);
   float sf    = sf_df*sf_ff;
   float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
-  switch(effCorrType){
+  switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
     case NOMINAL: return  sf;

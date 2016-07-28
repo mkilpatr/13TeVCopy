@@ -43,7 +43,7 @@ class SdTopCorr : public Correction {
   public:
   SdTopCorr(TString fileName);
   ~SdTopCorr();
-  float process(CORRTYPE effCorrType, double maxGoodTopPT);
+  float process(CORRTYPE corrType, double maxGoodTopPT);
 
   TFile * sdTopinputFile;
   TH1F * sdTopDataFullSF;
@@ -53,7 +53,7 @@ class SdWCorr : public Correction {
   public:
   SdWCorr(TString fileName);
   ~SdWCorr();
-  float process(CORRTYPE effCorrType, double maxGoodWPT);
+  float process(CORRTYPE corrType, double maxGoodWPT);
 
   TFile * sdWinputFile;
   TH1F * sdWDataFullSF;
