@@ -55,8 +55,8 @@ float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
   int binFullFast = getNoUnderOver(maxGoodTopPT,hff);
   float sf_df = hdf->GetBinContent(binDataFull);
   float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = sf_df/hdf->GetBinError(binDataFull);
-  float sf_ff_relerror = sf_ff/hff->GetBinError(binFullFast);
+  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
+  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
   float sf    = sf_df*sf_ff;
   float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
   switch(corrType){
@@ -88,8 +88,8 @@ float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
   int binFullFast = getNoUnderOver(maxGoodWPT,hff);
   float sf_df = hdf->GetBinContent(binDataFull);
   float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = sf_df/hdf->GetBinError(binDataFull);
-  float sf_ff_relerror = sf_ff/hff->GetBinError(binFullFast);
+  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
+  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
   float sf    = sf_df*sf_ff;
   float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
   switch(corrType){
