@@ -494,11 +494,10 @@ class Datacard:
                                                     if fcr.label == binname.split('_')[1] :
                                                         cr = fcr
                                                         break
-                                                bkgsampname = '_'.join([samp, cr.label])
-                                                if not bkgsampname == cr.crmcname and not samp in self.signals :
+                                                if not samp in cr.crmcname and not samp in self.signals :
                                                     continue
                                                 if samp not in self.signals:
-                                                    sample = bkgsampname
+                                                    sample = cr.crmcname
                                             else :
                                                 cr = self.signalregion
                                             (mcevts, mcunc) = cr.get(sample, binname)
