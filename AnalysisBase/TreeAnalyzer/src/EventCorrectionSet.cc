@@ -54,12 +54,27 @@ float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
   TH1F * hff = sdTopFullFastSF;
   int binDataFull = getNoUnderOver(maxGoodTopPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodTopPT,hff);
-  float sf_df = hdf->GetBinContent(binDataFull);
-  float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
-  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
-  float sf    = sf_df*sf_ff;
-  float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
+
+  // strategy: for data/full correction, correct per-bin and assign unc = 1/2 the difference of the SF from 1, eg data/full SF 0.6 -> unc of 0.2.
+  //           for full/fastsim correction, correct per-bin in the (400,450) and (800,inf) bins for tops, and the (200-250) bin for ws, assigning
+  //             unc of 1/2 the difference from 1. for the other bins, no correction, but unc as the scatter: 3% for both tops and ws.
+
+  float sf_df     = hdf->GetBinContent(binDataFull);
+  float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
+
+  float sf_ff     = 1.;
+  float sf_ff_unc = 0.;
+  if( (maxGoodTopPT > 400 && maxGoodTopPT < 450) || maxGoodTopPT > 800){ 
+    sf_ff     = hff->GetBinContent(binFullFast);
+    sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
+  }else{
+    sf_ff = 1.;
+    sf_ff_unc = 0.03;
+  }
+
+  float sf    = sf_ff*sf_df;
+  float sfunc = sf*sqrt( pow(sf_df_unc/sf_df,2) + pow(sf_ff_unc/sf_ff,2) );
+
   switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
@@ -88,12 +103,27 @@ float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
   TH1F * hff = sdWFullFastSF;
   int binDataFull = getNoUnderOver(maxGoodWPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodWPT,hff);
-  float sf_df = hdf->GetBinContent(binDataFull);
-  float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
-  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
-  float sf    = sf_df*sf_ff;
-  float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
+
+  // strategy: for data/full correction, correct per-bin and assign unc = 1/2 the difference of the SF from 1, eg data/full SF 0.6 -> unc of 0.2.
+  //           for full/fastsim correction, correct per-bin in the (400,450) and (800,inf) bins for tops, and the (200-250) bin for ws, assigning
+  //             unc of 1/2 the difference from 1. for the other bins, no correction, but unc as the scatter: 3% for both tops and ws.
+
+  float sf_df     = hdf->GetBinContent(binDataFull);
+  float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
+
+  float sf_ff     = 1.;
+  float sf_ff_unc = 0.;
+  if( (maxGoodWPT > 200 && maxGoodWPT < 250) ){
+    sf_ff     = hff->GetBinContent(binFullFast);
+    sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
+  }else{
+    sf_ff = 1.;
+    sf_ff_unc = 0.03;
+  }
+
+  float sf    = sf_ff*sf_df;
+  float sfunc = sf*sqrt( pow(sf_df_unc/sf_df,2) + pow(sf_ff_unc/sf_ff,2) );
+
   switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
