@@ -108,7 +108,8 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
-  standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE);
+  //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE);
+  standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Uncorrected_and_FullFast.root",CMSSW_BASE);
   standardCorrections.sdTopCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.sdWCorrType              = ucsbsusy::NOMINAL;
 
