@@ -649,38 +649,19 @@ struct ExtraVarsFiller {
     */
   }
 
-  bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, unsigned int matchtoid){
-        // match fj to gen w or top
-//        float tmatchrad = 0.2;
-//        float wmatchrad = 0.4;
-        for(auto* p : ana->genParts) {
-          if ((abs(p->pdgId()) == ParticleInfo::p_t)
-              && ParticleInfo::isGenTopHadronic(p)
-              && ParticleInfo::isLastInChain(p)) { // get last had gen t in chain
-//            if(PhysicsUtilities::deltaR(*p, *fj) < tmatchrad) { ak8fromgenhadt_ = true; }
-            if((PhysicsUtilities::deltaR(*p, *fj) < dr) && matchtoid == ParticleInfo::p_t) { return true; }
-            for(unsigned int iD = 0; iD < p->numberOfDaughters(); ++iD){
-              if(TMath::Abs(p->daughter(iD)->pdgId()) != ParticleInfo::p_Wplus) { continue; }
-              //if(PhysicsUtilities::deltaR(*(p->daughter(iD)), *fj) < 0.2) { ak8fromgenhadw_ = true; } // skip getFinal()
-              //auto dau = ParticleInfo::getFinal(p->daughter(iD)); // FW getFinal()
-              ////copy of getFinal() b/c FW is templated up the a--
-              CandidateRef<GenParticleF> particle = p->daughterRef(iD);
-              while (const unsigned numDaughters = particle->numberOfDaughters()) {
-                CandidateRef<GenParticleF>           chain;
-                for (unsigned iDau = 0; iDau < numDaughters; ++iDau){
-                  if (particle->daughter(iDau)->pdgId() == particle->pdgId()) {
-                    chain = CandidateRef<GenParticleF>(particle->daughterRef(iDau).operator->(), particle->daughterRef(iDau).key());
-                    break;
-                  }
-                }
-                if (chain.isNull())   break;
-                particle              = chain;
-              }
-              if((PhysicsUtilities::deltaR(*particle, *fj) < dr) && matchtoid == ParticleInfo::p_Wplus) { return true; }
-            }
-          }
+  bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, ParticleInfo::ParticleID matchtoid){
+    // match fj to gen w or top
+    for(auto* p : ana->genParts) {
+      if (abs(p->pdgId()) == matchtoid && ParticleInfo::isLastInChain(p)){
+        if( (ParticleInfo::isGenTopHadronic(p) && matchtoid==ParticleInfo::p_t) || 
+            (ParticleInfo::isGenWHadronic(p)   && matchtoid==ParticleInfo::p_Wplus)){
+          std::cout << "found a candidate gen part with " << p->pdgId() << " " << p->p4() << std::endl;
+          std::cout << "and dr " << PhysicsUtilities::deltaR(*p, *fj) << std::endl;
+          if(PhysicsUtilities::deltaR(*p, *fj) < dr) { return true; }
         }
-        return false;
+      }
+    }
+    return false;
   }
 
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
