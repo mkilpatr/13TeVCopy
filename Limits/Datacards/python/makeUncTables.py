@@ -148,8 +148,7 @@ sources = {
            ('scale_j'           , 'Jet energy scale'          ),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    ),
            ('qcd_jetresptailunc', 'Jet response tail'         ),
-           ('qcd_met_integration_systematic_HM' , '\\met integration'),
-           ('qcd_met_integration_systematic_LM' , '\\met integration'),
+           ('qcd_met_extrapolation' , '\\met integration'),
            ('qcd_num_tfstatunc' , 'Transfer factor, SR'       ),
            ('qcd_den_tfstatunc' , 'Transfer factor, CR'       ),
            ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
@@ -238,8 +237,8 @@ def makeBlock(inDir, search, cat, bkg, cr='') :
     #if source[0]=='lostlep_nt1metintunc' and nt!=1 : continue
     #if source[0]=='fake_t'               and nt!=1 : continue
     #if source[0]=='eff_t'                and nt!=1 : continue
-    if source[0] in ['toppt', 'res_met', 'trig_e', 'trig_mu', 'ttbarplusw_pdfunc', 'ttbarplusw_scaleunc', 'ttbarplusw_wpolunc', 'qcd_met_integration_systematic_LM'] and search == 'hm' : continue
-    elif source[0] in ['ttbarplusw_ttptsyst', 'qcd_met_integration_systematic_HM'] and search == 'lm' : continue
+    if source[0] in ['toppt', 'res_met', 'trig_e', 'trig_mu', 'ttbarplusw_pdfunc', 'ttbarplusw_scaleunc', 'ttbarplusw_wpolunc'] and search == 'hm' : continue
+    elif source[0] in ['ttbarplusw_ttptsyst'] and search == 'lm' : continue
     s += source[1]
     #if cr=='onelepcr' and nt==1 : # combine met bins for nT=1 for the onelepcr
     #  s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr,sig) + '}  \\\\ \n'
@@ -378,6 +377,9 @@ def blockHeader(search, cat, columns) :
     s += ' & $>$ ' + str(metbins[-1]) + '\\\\ \n'
   else :
     metbins = sr_metbins_lm[cat]
+    for ibin in range(len(metbins)-1) :
+      s += ' & ' + '$-$'.join([str(metbins[ibin]),str(metbins[ibin+1])])
+    s += ' & $>$ ' + str(metbins[-1])
     for ibin in range(len(metbins)-1) :
       s += ' & ' + '$-$'.join([str(metbins[ibin]),str(metbins[ibin+1])])
     s += ' & $>$ ' + str(metbins[-1]) + '\\\\ \n'
