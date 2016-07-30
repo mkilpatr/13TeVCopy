@@ -39,7 +39,7 @@ SdTopCorr::SdTopCorr(TString fileName) : Correction("SdTop"), sdTopinputFile(0),
   if(!sdTopinputFile) throw std::invalid_argument("SdTopCorr::SdTopCorr: file could not be found!");
   //sdTopDataFullSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_data_tagging__over__ak8toppasspt_over_ak8candpt_mc_unsmeared_tagging") );
   sdTopDataFullSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_data___over__ak8toppasspt_over_ak8candpt_mc_unsmeared_") );
-  sdTopFullFastSF = (TH1F*)(sdTopinputFile->Get("Tops") );
+  sdTopFullFastSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_t2tt-850-100-full_t2tt-850-100__over__ak8toppasspt_over_ak8candpt_t2tt-850-100-fast_t2tt-850-100") );
   if(!(sdTopDataFullSF || sdTopFullFastSF)) throw std::invalid_argument("SdTopCorr::SdTopCorr: eff SF histograms could not be found!");
 }
 SdTopCorr::~SdTopCorr(){
@@ -55,9 +55,13 @@ float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
   int binDataFull = getNoUnderOver(maxGoodTopPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodTopPT,hff);
 
-  // strategy: for data/full correction, correct per-bin and assign unc = 1/2 the difference of the SF from 1, eg data/full SF 0.6 -> unc of 0.2.
-  //           for full/fastsim correction, correct per-bin in the (400,450) and (800,inf) bins for tops, and the (200-250) bin for ws, assigning
-  //             unc of 1/2 the difference from 1. for the other bins, no correction, but unc as the scatter: 3% for both tops and ws.
+  // strategy: for data/full correction:
+  //             for W tag, assign 3% uncertainty below 700 GeV, 10% above 700 GeV. no correction (consistent w/1).
+  //             for top tag, correct per-bin and assign 1/2 of the corr as unc
+  //           for full/fastsim correction:
+  //             for top tag, correct per-bin the (400,450) and (800,inf) bins
+  //             for w tag, correct per-bin the (200-250) bin
+  //             for both, unc of 1/2 the difference from 1 if bin was corrected, 3% to all other bins which weren't corrected
 
   float sf_df     = hdf->GetBinContent(binDataFull);
   float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
@@ -88,7 +92,7 @@ SdWCorr::SdWCorr(TString fileName) : Correction("SdW"), sdWinputFile(0), sdWData
   if(!sdWinputFile) throw std::invalid_argument("SdWCorr::SdWCorr: file could not be found!");
   //sdWDataFullSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_data_tagging__over__ak8wpasspt_over_ak8candpt_mc_unsmeared_tagging") );
   sdWDataFullSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_data___over__ak8wpasspt_over_ak8candpt_mc_unsmeared_") );
-  sdWFullFastSF = (TH1F*)(sdWinputFile->Get("Ws") );
+  sdWFullFastSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_t2tt-850-100-full_t2tt-850-100__over__ak8wpasspt_over_ak8candpt_t2tt-850-100-fast_t2tt-850-100") );
   if(!(sdWDataFullSF || sdWFullFastSF)) throw std::invalid_argument("SdWCorr::SdWCorr: eff SF histograms could not be found!");
 }
 SdWCorr::~SdWCorr(){
@@ -104,12 +108,18 @@ float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
   int binDataFull = getNoUnderOver(maxGoodWPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodWPT,hff);
 
-  // strategy: for data/full correction, correct per-bin and assign unc = 1/2 the difference of the SF from 1, eg data/full SF 0.6 -> unc of 0.2.
-  //           for full/fastsim correction, correct per-bin in the (400,450) and (800,inf) bins for tops, and the (200-250) bin for ws, assigning
-  //             unc of 1/2 the difference from 1. for the other bins, no correction, but unc as the scatter: 3% for both tops and ws.
+  // strategy: for data/full correction:
+  //             for W tag, assign 3% uncertainty below 700 GeV, 10% above 700 GeV. no correction (consistent w/1).
+  //             for top tag, correct per-bin and assign 1/2 of the corr as unc
+  //           for full/fastsim correction:
+  //             for top tag, correct per-bin the (400,450) and (800,inf) bins
+  //             for w tag, correct per-bin the (200-250) bin
+  //             for both, unc of 1/2 the difference from 1 if bin was corrected, 3% to all other bins which weren't corrected
 
   float sf_df     = hdf->GetBinContent(binDataFull);
   float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
+  sf_df     = 1.; // overrride
+  sf_df_unc = (maxGoodWPT < 700) ? 0.03 : 0.10;
 
   float sf_ff     = 1.;
   float sf_ff_unc = 0.;
