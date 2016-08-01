@@ -151,7 +151,7 @@ sources = {
            ('qcd_met_extrapolation' , '\\met integration'),
            ('qcd_num_tfstatunc' , 'Transfer factor, SR'       ),
            ('qcd_den_tfstatunc' , 'Transfer factor, CR'       ),
-           ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
+           ('qcd_stat_bin_qcdcr', 'Data statistics (CR)'      ),
   ],
   #'signal' : [('corr_l'         , 'Lepton veto'               ),
   #            ('eff_b_fsim'     , 'Fast-sim \\bq-tagging'     ),
