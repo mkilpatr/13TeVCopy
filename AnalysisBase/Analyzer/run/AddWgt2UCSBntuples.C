@@ -7,21 +7,35 @@
  *
  */
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <map>
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "AnalysisTools/Utilities/interface/json.hpp"
 #include "TRegexp.h"
 
 using namespace std;
 using namespace ucsbsusy;
+using json = nlohmann::json;
+
 
 class Copier : public TreeCopierAllBranches {
 public:
-  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), xsecFile(0), xsecLookup(0) {
-    if(isMC() && inputFile != "" && inputFile != "NONE") {
+  Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile, string filterEffFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), xsecFile(0), xsecLookup(0) {
+    if(isMC() && inputFile != "") {
       xsecFile = new TFile(TString::Format("%s/src/data/xsecs/%s",getenv("CMSSW_BASE"),inputFile.c_str()));
       assert(xsecFile);
       xsecLookup = (TH1D*)xsecFile->Get("xsecs");
       assert(xsecLookup);
+    }
+    if(isMC() && !filterEffFile.empty()){
+      string filterpath = string(getenv("CMSSW_BASE")) + "/src/data/xsecs/" + filterEffFile;
+      cout << "Applying gen filter efficiency from file: " << filterpath << endl;
+      json j;
+      ifstream infile;
+      infile.open(filterpath);
+      infile >> j;
+      infile.close();
+      filter_effs_map = j.get<std::map<string, float>>();
     }
   }
 
@@ -48,6 +62,22 @@ public:
     if(xsecLookup) {
       xsec = xsecLookup->Interpolate(evtInfoReader.massPar1);
       xsecweight = !isMC() ? 1. : (lumi * xsec * 1000 / ( nPos > 0 ? (nPos + nNeg) : float(getEntries())  ));
+    }
+    if(isMC() && !filter_effs_map.empty()){
+      string mass_str;
+      for (const auto &m : *evtInfoReader.massparams) {
+        if(mass_str.empty()) mass_str = to_string(m);
+        else mass_str = mass_str + "_" + to_string(m);
+      }
+      auto iter = filter_effs_map.find(mass_str);
+      if (iter == filter_effs_map.end()){
+        cerr << "[WARNING] Cannot find filter efficiency for mass point " << mass_str << ". Set to 0!" << endl;
+        xsec = 0;
+        xsecweight = 0;
+      }else{
+        xsec *= iter->second;
+        xsecweight *= iter->second;
+      }
     }
   }
 
@@ -84,6 +114,7 @@ public:
 
   TFile* xsecFile;
   TH1D*  xsecLookup;
+  std::map<string, float> filter_effs_map;
 
   double qcdGenJets5Scale;
 };
@@ -100,7 +131,7 @@ public:
  */
 //AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,0,"TestAnalyzer/Events","wgt")
 
-void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "", double wgtsf = 1) {
+void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "", string filterEffFile = "", double wgtsf = 1) {
 
   //get the output name
   TString outName(fileName);
@@ -127,7 +158,7 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
     if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
   }
 
-  Copier a(fileName,treeName,outName.Data(),isMC,nPosEvents,nNegEvents,xsecFile);
+  Copier a(fileName,treeName,outName.Data(),isMC,nPosEvents,nNegEvents,xsecFile,filterEffFile);
 
   //set weight and process
   a.xsecweight  = !isMC ? 1. : (lumi * crossSection *1000 / ( nPosEvents > 0 ? (nPosEvents + nNegEvents) : float(a.getEntries())  ));
