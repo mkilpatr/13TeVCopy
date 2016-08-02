@@ -37,7 +37,7 @@ class sms():
         # model name
         self.modelname = "T2tb"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1} #rightarrow b W^{#pm} #tilde{#chi}^{0}_{1} or #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1} #rightarrow b W^{#pm} #tilde{#chi}^{0}_{1} or #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 200.
         self.Xmax = 900.
@@ -61,13 +61,13 @@ class sms():
         # model name
         self.modelname = "T2bW"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm} #tilde{#chi}_{1}^{0}";
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm} #tilde{#chi}_{1}^{0}";
         # scan range to plot
         self.Xmin = 200.
         self.Xmax = 1000.
         self.Ymin = 0.
         self.Ymax = 500.
-        self.Zmin = 0.02
+        self.Zmin = 0.001
         self.Zmax = 100.
         # produce sparticle
         self.sParticle = "m_{#tilde{t}} [GeV]"
@@ -76,21 +76,21 @@ class sms():
         # turn off diagonal lines
         self.diagOn = False
         self.extraText = True
-        self.extratext1 = "x = 0.5"
+        self.extratext1 = "m_{#tilde{#chi}_{1}^{#pm}} = (m_{#tilde{t}} + m_{#tilde{#chi}_{1}^{0}})/2"
         self.extratext2 = ""
 
     def T2fbd(self):
         # model name
         self.modelname = "T2fbd"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow b f f' #tilde{#chi}^{0}_{1}"
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow W^{+(*)} b #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 250.
         self.Xmax = 600.
         self.Ymin = 100.
         self.Ymax = 700.
-        self.Zmin = 0.001
-        self.Zmax = 100.
+        self.Zmin = 0.1
+        self.Zmax = 20.
         # produce sparticle
         self.sParticle = "m_{#tilde{t}} [GeV]"
         # LSP
