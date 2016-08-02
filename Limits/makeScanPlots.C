@@ -96,8 +96,8 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
 
   TH2D* hxsecexp = (TH2D*)inputFile->Get("hxsecexp");
   TH2D* hxsecobs = expectedOnly ? hxsecexp : (TH2D*)inputFile->Get("hxsecobs");
-  for(int ibinx = 1; ibinx < hxsecexp->GetNbinsX()+1; ++ibinx) {
-    for(int ibiny = 1; ibiny < hxsecexp->GetNbinsY()+1; ++ibiny) {
+  for(int ibinx = 1; ibinx <= hxsecexp->GetNbinsX()+1; ++ibinx) {
+    for(int ibiny = 1; ibiny <= hxsecexp->GetNbinsY()+1; ++ibiny) {
       if(hxsecexp->GetBinContent(ibinx, ibiny) != 0.0) {
         mstopsxsec.push_back(hxsecexp->GetXaxis()->GetBinCenter(ibinx));
         mlspsxsec.push_back(hxsecexp->GetYaxis()->GetBinLowEdge(ibiny));
@@ -107,8 +107,8 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
     }
   }
 
-  for(int ibinx = 1; ibinx < hexp->GetNbinsX()+1; ++ibinx) {
-    for(int ibiny = 1; ibiny < hexp->GetNbinsY()+1; ++ibiny) {
+  for(int ibinx = 1; ibinx <= hexp->GetNbinsX()+1; ++ibinx) {
+    for(int ibiny = 1; ibiny <= hexp->GetNbinsY()+1; ++ibiny) {
       if(hexp->GetBinContent(ibinx, ibiny) != 0.0) {
         mstops.push_back(hexp->GetXaxis()->GetBinCenter(ibinx));
         mlsps.push_back(hexp->GetYaxis()->GetBinLowEdge(ibiny));

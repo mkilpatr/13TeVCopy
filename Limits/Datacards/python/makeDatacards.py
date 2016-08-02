@@ -43,6 +43,7 @@ class DatacardConfig:
         self.xsecfile = config_parser.get('config', 'xsecfile')
         self.treename = config_parser.get('config', 'treename')
         self.weight = config_parser.get('config', 'weightname')
+        self.signalweight = config_parser.get('config', 'signalweight')
         self.lumi = config_parser.get('config', 'lumiscale')
         self.filesuffix = config_parser.get('config', 'filesuffix')
         self.template = config_parser.get('config', 'template')
@@ -284,6 +285,7 @@ class Datacard:
                 for iline in range(len(dclines)) :
                     line = dclines[iline]
                     if '$SIG' in line or 'SIGUNC' in line :
+                        hasUncVal = False
                         uncname = line.split()[0]
                         # any of the following if cases are problematic!
                         if not self.uncertainties.has_key(uncname) :
@@ -293,8 +295,10 @@ class Datacard:
                         elif not self.uncertainties[uncname].vals[bin].has_key(signal) :
                             print 'Uncertainty', uncname, 'not filled for', signal, 'in bin', bin
                         else :
-                            newline = line.replace('$SIG', 'signal').replace('SIGUNC', '%4.2f' % self.uncertainties[uncname].vals[bin][signal])
-                            dclines[iline] = newline
+                            hasUncVal = True
+                        sigUncVal = self.uncertainties[uncname].vals[bin][signal] if hasUncVal else 1.0
+                        newline = line.replace('$SIG', 'signal').replace('SIGUNC', '%4.2f' % sigUncVal)
+                        dclines[iline] = newline
                 datacard = '\n'.join(dclines)
 
                 # save the current datacard
@@ -494,11 +498,10 @@ class Datacard:
                                                     if fcr.label == binname.split('_')[1] :
                                                         cr = fcr
                                                         break
-                                                bkgsampname = '_'.join([samp, cr.label])
-                                                if not bkgsampname == cr.crmcname and not samp in self.signals :
+                                                if not samp in cr.crmcname and not samp in self.signals :
                                                     continue
                                                 if samp not in self.signals:
-                                                    sample = bkgsampname
+                                                    sample = cr.crmcname
                                             else :
                                                 cr = self.signalregion
                                             (mcevts, mcunc) = cr.get(sample, binname)
@@ -575,6 +578,7 @@ class FitRegion:
         self.config = config
         self.signals = config.signals
         self.weight = config.weight
+        self.signalweight = config.signalweight
         self.basesel = config.basesel
         self.bins = config.bins
         self.treesubdir = ''
@@ -594,6 +598,7 @@ class FitRegion:
             self.crmcname = crconfig['mcFiles'][0]
             self.bins = crconfig['bins']
             self.crwgt = crconfig['crwgt']
+            self.crsignalwgt = crconfig['crsigwgt'] if 'crsigwgt' in crconfig else '1.0'
             self.crsel = crconfig['crsel']
             self.srwgt = crconfig['srwgt'] if 'srwgt' in crconfig else config.weight
             self.srsel = crconfig['srsel'] if 'srsel' in crconfig else config.basesel
@@ -741,7 +746,8 @@ class FitRegion:
                 if self.config.has_data and not self.config.blind_sr:
                     self.calcSampleYields(sample, '1.0', self.basesel, self.bins)
             elif sample in self.signals:
-                sig_wgtvar = wgtvar + '/' + str(xsec) if self.config.scalesigtoacc else wgtvar
+                sigwgt = self.config.lumi + '*' + self.signalweight
+                sig_wgtvar = sigwgt + '/' + str(xsec) if self.config.scalesigtoacc else sigwgt
                 self.calcSampleYields(sample, sig_wgtvar, self.basesel, self.bins)
             else:
                 # backgrounds
@@ -767,7 +773,8 @@ class FitRegion:
             elif sample == self.srmcname:
                 self.calcSampleYields(sample, srwgtvar, self.srsel, self.config.bins, region='')
             elif sample in self.signals:
-                sig_crwgtvar = crwgtvar + '/' + str(xsec) if self.config.scalesigtoacc else crwgtvar
+                crsigwgt = self.config.lumi + '*' + self.crsignalwgt
+                sig_crwgtvar = crsigwgt + '/' + str(xsec) if self.config.scalesigtoacc else crsigwgt
                 self.calcSampleYields(sample, sig_crwgtvar, self.crsel, self.bins)
 
     def get(self, sample, binlabel):

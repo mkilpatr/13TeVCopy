@@ -80,15 +80,15 @@ cat_labels = {
 }
 
 ps_hm = {'ttbarplusw':3, 'znunu':4, 'rare':5, 'qcd':6, 'onelepcr':3, 'signal':2}
-ps_lm = {'ttbarplusw':3, 'znunu':4, 'qcd':6, 'onelepcr':3, 'signal':2}
+ps_lm = {'ttbarplusw':3, 'znunu':4, 'rare':5, 'qcd':6, 'onelepcr':3, 'signal':2}
 sources = {
   'ttbarplusw' : [('corr_e'               , 'Electron veto'              ),
                   ('corr_mu'              , 'Muon veto'                  ),
                   ('corr_tau'             , 'Tau veto'                   ),
                   #('trig_e'               , 'Electron trigger efficiency'),
                   #('trig_mu'              , 'Muon trigger efficiency'    ),
-                  #('eff_b_heavy'          , '\\bq-tagging: heavy flavor' ),
-                  #('eff_b_light'          , '\\bq-tagging: light flavor' ),
+                  ('eff_b_heavy'          , '\\bq-tagging: heavy flavor' ),
+                  ('eff_b_light'          , '\\bq-tagging: light flavor' ),
                   #('eff_t'                , 'Top efficiency'             ),
                   #('fake_t'               ,  'Top mis-tagging'           ),
                   #('lostlep_nt1metintunc' , '\\met integration'          ),
@@ -105,18 +105,23 @@ sources = {
                   ('mcstat_ttbarplusw_bin', 'Simulation statistics (SR)'),
                   ('lostlep_bin_onelepcr' , 'Data statistics (CR)'       ),
   ],
-  'onelepcr' : [#('corr_l'                        , 'Lepton veto'           ),
+  'onelepcr' : [('corr_e'                        , 'Electron veto'        ),
+                ('corr_mu'                       , 'Muon veto'        ),
+#                 ('corr_tau'                      , 'Tau veto'        ),
                 ('mcstat_ttbarplusw_bin_onelepcr', 'Simulation statistics'),
                 ('lostlep_bin_onelepcr'          , 'Data statistics'       ),
   ],
-  'znunu' : [#('corr_l'                        , 'Lepton veto'                ),
-             #('eff_b_heavy'                   , '\\bq-tagging: heavy flavor' ),
-             #('eff_b_light'                   , '\\bq-tagging: light flavor' ),
+  'znunu' : [
+#              ('corr_e'                        , 'Electron veto'        ),
+#              ('corr_mu'                       , 'Muon veto'        ),
+#              ('corr_tau'                      , 'Tau veto'        ),
+#              ('eff_b_heavy'                   , '\\bq-tagging: heavy flavor' ),
+#              ('eff_b_light'                   , '\\bq-tagging: light flavor' ),
              #('fake_t'                        , 'Top mis-tagging'            ),
-             #('pu'                            , 'Pileup reweighting'         ),
+#              ('pu'                            , 'Pileup reweighting'         ),
              ('scale_j'                       , 'Jet energy scale'           ),
              ('znunu_rzunc'                   , '$R_{\\cPZ}$'                ),
-             ('znunu_photonid'                , 'Photon ID/trigger'          ),
+             ('znunu_zgamma_diff'             , '$\\cPZ/\\gamma$ difference' ),
              ('zfromgamma_mcstat_bin'         , 'Simulation statistics (SR)'),
              ('zfromgamma_mcstat_bin_photoncr', 'Simulation statistics (CR)'),
              ('zfromgamma_stat_bin_photoncr'  , 'Data statistics (CR)'       ),
@@ -124,14 +129,14 @@ sources = {
   'rare' : [('corr_e'        , 'Electron veto'             ),
            ('corr_mu'       , 'Muon veto'                 ),
            ('corr_tau'      , 'Tau veto'                  ),
-           #('eff_b_heavy'   , '\\bq-tagging: heavy flavor'),
-           #('eff_b_light'   , '\\bq-tagging: light flavor'),
+           ('eff_b_heavy'   , '\\bq-tagging: heavy flavor'),
+           ('eff_b_light'   , '\\bq-tagging: light flavor'),
            #('eff_t'         , 'Top efficiency'            ),
            ('lumi'          , 'Luminosity'                ),
-           #('pu'            , 'Pileup reweighting'        ),
+           ('pu'            , 'Pileup reweighting'        ),
            ('scale_j'       , 'Jet energy scale'          ),
            ('rareNorm'       , 'Cross section'             ),
-           #('rare_pdfunc'    , 'pdf/$\\alpha_S$ variation' ),
+           ('rare_pdfscale'    , 'PDF/Scale variation' ),
            #('rare_scaleunc'  , '$\\mu_R/\\mu_F$ variation' ),
            ('mcstat_rare_bin', 'Simulation statistics'    ),
   ],
@@ -143,11 +148,10 @@ sources = {
            ('scale_j'           , 'Jet energy scale'          ),
            ('qcd_bkgsubunc_'    , 'Background subtraction'    ),
            ('qcd_jetresptailunc', 'Jet response tail'         ),
-           ('qcd_met_integration_systematic_HM' , '\\met integration'),
-           ('qcd_met_integration_systematic_LM' , '\\met integration'),
+           ('qcd_met_extrapolation' , '\\met integration'),
            ('qcd_num_tfstatunc' , 'Transfer factor, SR'       ),
            ('qcd_den_tfstatunc' , 'Transfer factor, CR'       ),
-           ('qcd_stat_bin_qcdcr', 'Data statistics (SR)'      ),
+           ('qcd_stat_bin_qcdcr', 'Data statistics (CR)'      ),
   ],
   #'signal' : [('corr_l'         , 'Lepton veto'               ),
   #            ('eff_b_fsim'     , 'Fast-sim \\bq-tagging'     ),
@@ -234,7 +238,7 @@ def makeBlock(inDir, search, cat, bkg, cr='') :
     #if source[0]=='fake_t'               and nt!=1 : continue
     #if source[0]=='eff_t'                and nt!=1 : continue
     if source[0] in ['toppt', 'res_met', 'trig_e', 'trig_mu', 'ttbarplusw_pdfunc', 'ttbarplusw_scaleunc', 'ttbarplusw_wpolunc'] and search == 'hm' : continue
-    elif source[0] == 'ttbarplusw_ttptsyst' and search == 'lm' : continue
+    elif source[0] in ['ttbarplusw_ttptsyst'] and search == 'lm' : continue
     s += source[1]
     #if cr=='onelepcr' and nt==1 : # combine met bins for nT=1 for the onelepcr
     #  s += ' & \\multicolumn{5}{c|}{' + getUnc(inDir,source[0],bkg,binsMet[0],nj,1,nt,mtb,cr,sig) + '}  \\\\ \n'
@@ -273,13 +277,13 @@ def getFileName(inDir, search, metbin, cat, cr='', sig='') :
     fname = 'T2tt_850_100_'+fname
     fname = os.path.join(inDir,'T2tt_850_100',fname)
   else :
-    fname = 'T2fbd_400_350_'+fname
-    fname = os.path.join(inDir,'T2fbd_400_350',fname)
+    fname = 'T2fbd_375_325_'+fname
+    fname = os.path.join(inDir,'T2fbd_375_325',fname)
   return fname
 
 # get and properly format the number for the given bkg, bin
 def getUnc(inDir, search, unc, process, metbin, cat, cr='', sig='') :
-  if unc == 'lumi' : return '2.7\\%'
+  if unc == 'lumi' : return '6.2\\%'
   u = getRawUnc(inDir,search,unc,process,metbin,cat,cr,sig)
   if u == '-' or u == ' ' : return u
   return str(int(round(u*100,0)))+'\\%'
@@ -288,6 +292,7 @@ def getUnc(inDir, search, unc, process, metbin, cat, cr='', sig='') :
 def getRawUnc(inDir, search, unc, process, metbin, cat, cr='', sig='') :
   if unc == 'lumi' : return 0.027
   fname = getFileName(inDir,search,metbin,cat,cr,sig)
+#   print 'opening file %s'%fname
   if not os.path.exists(fname) : return ' '
   f = open(fname)
   ul = ''
@@ -372,6 +377,9 @@ def blockHeader(search, cat, columns) :
     s += ' & $>$ ' + str(metbins[-1]) + '\\\\ \n'
   else :
     metbins = sr_metbins_lm[cat]
+    for ibin in range(len(metbins)-1) :
+      s += ' & ' + '$-$'.join([str(metbins[ibin]),str(metbins[ibin+1])])
+    s += ' & $>$ ' + str(metbins[-1])
     for ibin in range(len(metbins)-1) :
       s += ' & ' + '$-$'.join([str(metbins[ibin]),str(metbins[ibin+1])])
     s += ' & $>$ ' + str(metbins[-1]) + '\\\\ \n'
