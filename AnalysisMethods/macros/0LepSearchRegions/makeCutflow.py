@@ -1,21 +1,22 @@
 #! /usr/bin/python
 import os
 import sys
+import math
 from ROOT import gROOT,TFile,TTree,TH1D
 gROOT.SetBatch(True)
 
 #from collections import OrderedDict
 
-lumi       = 2.3
-weight     = 'weight'
+lumi       = 12.9
+weight     = 'weight*truePUWeight*qcdRespTailWeight*leptnpweightHM*lepvetoweightHM*btagWeight*btagFastSimWeight*isrWeightTight*(1.0*(mtcsv12met<=175)+sdtopFastSimWeight*sdwFastSimWeight*(mtcsv12met>175))'
 projvar    = 'met'
 treename   = 'Events'
 filesuffix = '_tree.root'
 #treeDir    = '/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160217_noPreSel'
-treeDir    = '/uscms_data/d3/hqu/trees/050316'
+treeDir    = 'hqu_20160728_13ifb/'
 
 #signals = ['T2tt_500_200','T2tt_500_250','T2tt_600_200','T2tt_850_1','ttbarplusw','znunu','ttZ']
-signals = ['T2tt_250_150','T2tt_600_200','T2tt_700_100','T2tb_700_100','T2tb_600_200']
+signals = ['T2tt_850_100','T2tt_500_325','T2tt_425_325']
 
 baselines = [
               ('inclusive'             , ''                         ),
@@ -23,19 +24,22 @@ baselines = [
               #('$\geq1$ gen e/$\\mu$'  , 'ngoodgenmu+nvetolele>=1'  ),
             ]
 
+#nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0)) && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) 
+#&& met>250 && njets>=5 && nbjets>=1 && nlbjets>=2 && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5
+
 cuts = [
-         ('Trigger preselection ($\\met > 250$, $\pt (J_{1,2})>75$)'  , 'met>250 && j1pt>75 && j2pt>75'  ),
+         ('Trigger preselection ($\\met > 250$, $N_{jets}>=2$)'  , 'met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) '  ),
          #('$\\met > 200$'          , 'met>200'                                    ),
          #('$\\met > 250$'          , 'met>250'                                    ),
          #('$\pt (J_{1,2})>75$'     , 'j1pt>75 && j2pt>75'                         ),
          ('lepton veto'            , 'nvetolep==0'                                ),
-         #('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
-         ('$\\tau$ veto'           , 'nvetotau==0'                                ),
+         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
+         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
          ('$N_{J} \\geq 5$'        , 'njets>=5'                                   ),
          ('$\\nb^{l} \\geq 2$, $\\nb \\geq 1$'     , 'nlbjets>=2 && nbjets>=1'    ),
          #('$\\nb^{l} \\geq 2$, '     , 'nlbjets>=2'                                 ),
          #('$\\nb \\geq 1$'         , 'nbjets>=1'                                  ),
-         ('$\\dphij_{1234} > 0.5$' , 'dphij12met>0.5 && dphij3met>0.5 && dphij4met>0.5'),
+         ('$\\dphij_{1234} > 0.5$' , 'dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5'),
          #('$\\dphij_{12} > 0.5$'   , 'dphij12met>0.5'                             ),
          #('$\\dphij_{3} > 0.5$'    , 'dphij3met>0.5'                              ),
          #('$\\dphij_{4} > 0.5$'    , 'dphij4met>0.5'                              ),
@@ -49,20 +53,24 @@ binnings = {
     ('\\met~250-300'     , 'met>=250 && met<300'),
     ('\\met~300-400'     , 'met>=300 && met<400'),
     ('\\met~400-500'     , 'met>=400 && met<500'),
-    ('\\met~500-600'     , 'met>=500 && met<600'),
-    ('\\met $\\geq$ 600' , 'met>=600'           ),
+    ('\\met $\\geq$ 500' , 'met>=500'           ),
   ],
   '\\mtb, \\nj, \\nt, \\nb~bins' : [
     ('low  $\\mtb$, low  $\\nj$, $\\nb=1$' , 'mtcsv12met<175  && njets<=6               && nbjets==1' ),
-    ('low  $\\mtb$, high $\\nj$, $\\nb=1$' , 'mtcsv12met<175  && njets>=7               && nbjets==1' ),
-    ('high $\\mtb$, low  $\\nj$, $\\nb=1$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0 && nbjets==1' ),
-    ('high $\\mtb$, high $\\nj$, $\\nb=1$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0 && nbjets==1' ),
-    ('high $\\mtb$, high $\\nt$, $\\nb=1$' , 'mtcsv12met>=175             && ncttstd>=1 && nbjets==1' ),
     ('low  $\\mtb$, low  $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met<175  && njets<=6               && nbjets>=1' ),
+    ('low  $\\mtb$, high $\\nj$, $\\nb=1$' , 'mtcsv12met<175  && njets>=7               && nbjets==1' ),
     ('low  $\\mtb$, high $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met<175  && njets>=7               && nbjets>=1' ),
-    ('high $\\mtb$, low  $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets<=6 && ncttstd==0 && nbjets>=1' ),
-    ('high $\\mtb$, high $\\nj$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets>=7 && ncttstd==0 && nbjets>=1' ),
-    ('high $\\mtb$, high $\\nt$, $\\nb \\geq 2$' , 'mtcsv12met>=175             && ncttstd>=1 && nbjets>=1' ),
+
+    ('high $\\mtb$, $N_{t}=0$, $N_{W}=0$, $\\nb=1$, low $\\nj$' , 'mtcsv12met>=175 && njets<=6 && nsdtoploose==0 && nsdwloose==0 && nbjets==1' ),
+    ('high $\\mtb$, $N_{t}=0$, $N_{W}=0$, $\\nb \\geq 2$, low $\\nj$' , 'mtcsv12met>=175 && njets<=6 && nsdtoploose==0 && nsdwloose==0 && nbjets>=2' ),
+    ('high $\\mtb$, $N_{t}=0$, $N_{W}=0$, $\\nb=1$, high $\\nj$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose==0 && nsdwloose==0 && nbjets==1' ),
+    ('high $\\mtb$, $N_{t}=0$, $N_{W}=0$, $\\nb \\geq 2$, high $\\nj$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose==0 && nsdwloose==0 && nbjets>=2' ),
+    ('high $\\mtb$, $N_{t} \\geq 1$, $N_{W}=0$, $\\nb=1$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose>=1 && nsdwloose==0 && nbjets==1' ),
+    ('high $\\mtb$, $N_{t} \\geq 1$, $N_{W}=0$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose>=1 && nsdwloose==0 && nbjets>=2' ),
+    ('high $\\mtb$, $N_{t}=0$, $N_{W} \\geq 1$, $\\nb=1$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose==0 && nsdwloose>=1 && nbjets==1' ),
+    ('high $\\mtb$, $N_{t}=0$, $N_{W} \\geq 1$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose==0 && nsdwloose>=1 && nbjets>=2' ),
+    ('high $\\mtb$, $N_{t} \\geq 1$, $N_{W} \\geq 1$, $\\nb=1$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose>=1 && nsdwloose>=1 && nbjets==1' ),
+    ('high $\\mtb$, $N_{t} \\geq 1$, $N_{W} \\geq 1$, $\\nb \\geq 2$' , 'mtcsv12met>=175 && njets>=7 && nsdtoploose>=1 && nsdwloose>=1 && nbjets>=2' ),
   ],
   #'binning 1: \\mtb, \\nj, \\nt' : [
   #  ('low  $\\mtb$, low  $\\nj$' , 'mtcsv12met<175  && njets<=6'               ),
@@ -84,6 +92,9 @@ yields  = {}
 xsecs   = {'ttbarplusw' : 1,
            'znunu' : 1,
            'ttZ' : 1,
+           'T2tt_850_100': 18.96,
+           'T2tt_500_325': 518.5,
+           'T2tt_425_325': 1312,
            'T2tt_600_200': 174.59900000000002, 
            'T2tt_500_200': 518.48000000000002, 
            'T2tt_500_250': 518.48000000000002, 
@@ -91,7 +102,7 @@ xsecs   = {'ttbarplusw' : 1,
           } #{}
 
 def fillXsecs():
-  xsecfile = TFile('../data/xsecs/stop.root')
+  xsecfile = TFile('$CMSSW_BASE/src/data/xsecs/stop.root')
   xsechist = TH1D()
   xsechist = xsecfile.Get('xsecs')
   for sig in signals:
@@ -99,13 +110,17 @@ def fillXsecs():
       mstop = int(sig.split('_')[1])
       xsecs[sig] = xsechist.Interpolate(mstop)*1000 # pb->fb (lumi is in 1/fb)
 
-def getNumEvents(sample,cutstr):
+def getNumEvents(sample,cutstr,uncertainty):
   cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')'
+  if uncertainty :
+    cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')' #square the weights to get w*sqrt(N) = sqrt(w^2*N)
   file = TFile(os.path.join(treeDir,sample+filesuffix))
   tree = file.Get(treename)
   htmp = TH1D('htmp','htmp',1,0,10000)
   tree.Project('htmp',projvar,cutstr)
   rate = htmp.Integral(0,2)
+  if uncertainty :
+    rate = math.sqrt(rate)
   return round(rate,2)
 
 def rndYield(n):
@@ -134,14 +149,16 @@ def fullSigLine(baseline):
   s = 'lumi*cross-section'
   for sig in signals:
     n = lumi*xsecs[sig]
-    s += ' & '+str(rndYield(n))+' &'
+    unc = math.sqrt(n)
+    s += ' & '+str(rndYield(n))+' $\pm$ ' + str(rndYield(unc)) + ' &'
     yields[sig] = n
   s += endrow + hline
   if(len(baseline[1])>0):
     s += baseline[0]
     for sig in signals:
-      n = getNumEvents(sig,baseline[1])
-      s += ' & '+str(rndYield(n))+' & '
+      n = getNumEvents(sig,baseline[1],False)
+      unc = getNumEvents(sig,baseline[1],True)
+      s += ' & '+str(rndYield(n))+' $\pm$ ' + str(rndYield(unc)) + ' & '
       s += str(int(round(100*n/yields[sig],0)))+'\\%' if sig in yields.keys() else ''
       yields[sig] = n
     s += endrow + hline
@@ -153,8 +170,9 @@ def getCutLine(baseline,n):
   cutstr += ' && '.join(zip(*cuts[:n+1])[1])
   s = cutlable
   for sig in signals:
-    n  = getNumEvents(sig, cutstr)
-    s += ' & ' + str(rndYield(n)) + ' & '
+    n  = getNumEvents(sig, cutstr,False)
+    unc = getNumEvents(sig, cutstr, True)
+    s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
       if prev==0 : s += '-'
@@ -169,8 +187,9 @@ def getBinLine(baseline,bin):
   cutstr += ' && '.join(zip(*cuts)[1]+(bin[1],))
   s = binlabel
   for sig in signals:
-    n  = getNumEvents(sig, cutstr)
-    s += ' & ' + str(rndYield(n)) + ' & '
+    n  = getNumEvents(sig, cutstr,False)
+    unc = getNumEvents(sig,cutstr,True)
+    s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
       if prev==0 : s += '-'
