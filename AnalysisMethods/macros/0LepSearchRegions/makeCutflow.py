@@ -8,15 +8,25 @@ gROOT.SetBatch(True)
 #from collections import OrderedDict
 
 lumi       = 12.9
-weight     = 'weight*truePUWeight*qcdRespTailWeight*leptnpweightHM*lepvetoweightHM*btagWeight*btagFastSimWeight*isrWeightTight*(1.0*(mtcsv12met<=175)+sdtopFastSimWeight*sdwFastSimWeight*(mtcsv12met>175))'
+
+# HM
+#weightwithtau     = 'weight*truePUWeight*qcdRespTailWeight*leptnpweightHM*lepvetoweightHM*btagWeight*btagFastSimWeight*isrWeightTight'
+#weightnotau   = 'weight*truePUWeight*qcdRespTailWeight*leptnpweightHM*btagWeight*btagFastSimWeight*isrWeightTight'
+
+# LM
+weightwithtau = 'weight*truePUWeight*btagWeight*btagFastSimWeight*isrWeightTight*qcdRespTailWeight*leptnpweightLM*lepvetoweightLM'
+weightnotau = 'weight*truePUWeight*btagWeight*btagFastSimWeight*isrWeightTight*qcdRespTailWeight*leptnpweightLM'
+
 projvar    = 'met'
 treename   = 'Events'
 filesuffix = '_tree.root'
 #treeDir    = '/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160217_noPreSel'
 treeDir    = 'hqu_20160728_13ifb/'
 
-#signals = ['T2tt_500_200','T2tt_500_250','T2tt_600_200','T2tt_850_1','ttbarplusw','znunu','ttZ']
-signals = ['T2tt_850_100','T2tt_500_325','T2tt_425_325']
+# HM
+#signals = ['ttbarplusw', 'znunu', 'rare', 'qcd', 'T2tt_850_100','T2tt_500_325'] #,'T2tt_425_325']
+# LM
+signals = ['ttbarplusw', 'znunu', 'rare', 'qcd', 'T2fbd_375_295', 'T2fbd_375_325', 'T2fbd_375_355']
 
 baselines = [
               ('inclusive'             , ''                         ),
@@ -24,29 +34,27 @@ baselines = [
               #('$\geq1$ gen e/$\\mu$'  , 'ngoodgenmu+nvetolele>=1'  ),
             ]
 
-#nvetolep==0 && (nvetotau==0 || (ismc && npromptgentau>0)) && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) 
-#&& met>250 && njets>=5 && nbjets>=1 && nlbjets>=2 && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5
-
+# LM
 cuts = [
-         ('Trigger preselection ($\\met > 250$, $N_{jets}>=2$)'  , 'met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) '  ),
-         #('$\\met > 200$'          , 'met>200'                                    ),
-         #('$\\met > 250$'          , 'met>250'                                    ),
-         #('$\pt (J_{1,2})>75$'     , 'j1pt>75 && j2pt>75'                         ),
-         ('lepton veto'            , 'nvetolep==0'                                ),
-         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
-         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
-         ('$N_{J} \\geq 5$'        , 'njets>=5'                                   ),
-         ('$\\nb^{l} \\geq 2$, $\\nb \\geq 1$'     , 'nlbjets>=2 && nbjets>=1'    ),
-         #('$\\nb^{l} \\geq 2$, '     , 'nlbjets>=2'                                 ),
-         #('$\\nb \\geq 1$'         , 'nbjets>=1'                                  ),
-         ('$\\dphij_{1234} > 0.5$' , 'dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5'),
-         #('$\\dphij_{12} > 0.5$'   , 'dphij12met>0.5'                             ),
-         #('$\\dphij_{3} > 0.5$'    , 'dphij3met>0.5'                              ),
-         #('$\\dphij_{4} > 0.5$'    , 'dphij4met>0.5'                              ),
-         #
-         #('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))' ),
-         #('$\\tau$ veto'           , 'nvetotau==0'                                ),
+         ('Trigger preselection ($\\met > 250$, $N_{jets}>=2$)'  ,  'met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) ', weightnotau ),
+        ('lepton veto'            , 'nvetolep==0', weightnotau ),
+         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))', weightwithtau),
+         ('$\\nisr$, $\\ptisr>250$, $|\Delta\phi(j_{\text{ISR}},\met)|>2$','njl>=1 && j1lpt>250 && dphij1lmet>2', weightwithtau),
+         ('$\\metovsqrtht>10$', 'metovsqrtht>10', weightwithtau),
+         ('$\\nb==0$, or $\\nb \geq 1$ and $\\mtb<100$', '(nbjets==0 || (nbjets>=1 && mtcsv12met<100))', weightwithtau),
+         ('$\\dphijone > 0.5$, $\\dphijtwothree > 0.15$', 'dphij1met>0.5 && dphij2met>0.15 && dphij3met>0.15', weightwithtau),
        ]
+
+# HM
+#cuts = [
+#         ('Trigger preselection ($\\met > 250$, $N_{jets}>=2$)'  ,  'met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && passjson && (passmetmht100 || ismc) ', weightnotau ),
+#         ('lepton veto'            , 'nvetolep==0', weightnotau ),
+#         ('$\\tau$ veto'           , '(nvetotau==0 || (ismc && npromptgentau>0))', weightwithtau),
+#         ('$N_{J} \\geq 5$'        , 'njets>=5', weightwithtau ),
+#         ('$\\nb^{l} \\geq 2$, $\\nb \\geq 1$'     , 'nlbjets>=2 && nbjets>=1', weightwithtau    ),
+#         ('$\\dphijonetwothreefour > 0.5$' , 'dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5', weightwithtau),
+#       ]
+
 
 binnings = {
   '\\met~bins' : [
@@ -91,7 +99,8 @@ endrow = ' \\\\\n'
 yields  = {}
 xsecs   = {'ttbarplusw' : 1,
            'znunu' : 1,
-           'ttZ' : 1,
+           'rare' : 1,
+           'qcd' : 1,
            'T2tt_850_100': 18.96,
            'T2tt_500_325': 518.5,
            'T2tt_425_325': 1312,
@@ -110,7 +119,10 @@ def fillXsecs():
       mstop = int(sig.split('_')[1])
       xsecs[sig] = xsechist.Interpolate(mstop)*1000 # pb->fb (lumi is in 1/fb)
 
-def getNumEvents(sample,cutstr,uncertainty):
+def getNumEvents(sample,cutstr,uncertainty, weight):
+#  useweight = "(1==1)"
+#  if isaftertau :
+#    useweight = weight
   cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')'
   if uncertainty :
     cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')' #square the weights to get w*sqrt(N) = sqrt(w^2*N)
@@ -156,8 +168,8 @@ def fullSigLine(baseline):
   if(len(baseline[1])>0):
     s += baseline[0]
     for sig in signals:
-      n = getNumEvents(sig,baseline[1],False)
-      unc = getNumEvents(sig,baseline[1],True)
+      n = getNumEvents(sig,baseline[1],False, weight)
+      unc = getNumEvents(sig,baseline[1],True, weight)
       s += ' & '+str(rndYield(n))+' $\pm$ ' + str(rndYield(unc)) + ' & '
       s += str(int(round(100*n/yields[sig],0)))+'\\%' if sig in yields.keys() else ''
       yields[sig] = n
@@ -168,10 +180,11 @@ def getCutLine(baseline,n):
   cutlable = cuts[n][0]
   cutstr  = baseline+' && ' if len(baseline)>0 else ''
   cutstr += ' && '.join(zip(*cuts[:n+1])[1])
+  wgt = cuts[n][2]
   s = cutlable
   for sig in signals:
-    n  = getNumEvents(sig, cutstr,False)
-    unc = getNumEvents(sig, cutstr, True)
+    n  = getNumEvents(sig, cutstr, False, wgt)
+    unc = getNumEvents(sig, cutstr, True, wgt)
     s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
@@ -185,10 +198,11 @@ def getBinLine(baseline,bin):
   binlabel = bin[0]
   cutstr  = baseline+' && ' if len(baseline)>0 else ''
   cutstr += ' && '.join(zip(*cuts)[1]+(bin[1],))
+  wgt = cuts[2]
   s = binlabel
   for sig in signals:
-    n  = getNumEvents(sig, cutstr,False)
-    unc = getNumEvents(sig,cutstr,True)
+    n  = getNumEvents(sig, cutstr,False, wgt)
+    unc = getNumEvents(sig,cutstr,True, wgt)
     s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
@@ -199,18 +213,18 @@ def getBinLine(baseline,bin):
 
 def makeTable(baseline):
   print startTable(),
-  print fullSigLine(baseline),
+#  print fullSigLine(baseline),
   if(len(cuts)>0):
     print newSection('cutflow' + (' ('+baseline[0]+')' if len(baseline[1])>0 else '')),
     for n in range(len(cuts)):
       print getCutLine(baseline[1],n),
-  if(len(binnings)>0):
-    for lab in sorted(binnings.keys()):
-      binning = binnings[lab]
-      if(len(binning)>0):
-        print newSection(lab),
-        for bin in binning:
-          print getBinLine(baseline[1],bin),
+#  if(len(binnings)>0):
+#    for lab in sorted(binnings.keys()):
+#      binning = binnings[lab]
+#      if(len(binning)>0):
+#        print newSection(lab),
+#        for bin in binning:
+#          print getBinLine(baseline[1],bin),
   print finishTable()
 
 def main():
