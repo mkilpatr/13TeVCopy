@@ -1,6 +1,7 @@
 #! /usr/bin/python
 import os
 import sys
+import math
 from ROOT import gROOT,TFile,TTree,TH1D
 gROOT.SetBatch(True)
 
@@ -109,13 +110,17 @@ def fillXsecs():
       mstop = int(sig.split('_')[1])
       xsecs[sig] = xsechist.Interpolate(mstop)*1000 # pb->fb (lumi is in 1/fb)
 
-def getNumEvents(sample,cutstr):
+def getNumEvents(sample,cutstr,uncertainty):
   cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')'
+  if uncertainty :
+    cutstr = '('+str(lumi)+'*'+weight+')*('+cutstr+')' #square the weights to get w*sqrt(N) = sqrt(w^2*N)
   file = TFile(os.path.join(treeDir,sample+filesuffix))
   tree = file.Get(treename)
   htmp = TH1D('htmp','htmp',1,0,10000)
   tree.Project('htmp',projvar,cutstr)
   rate = htmp.Integral(0,2)
+  if uncertainty :
+    rate = math.sqrt(rate)
   return round(rate,2)
 
 def rndYield(n):
@@ -144,14 +149,16 @@ def fullSigLine(baseline):
   s = 'lumi*cross-section'
   for sig in signals:
     n = lumi*xsecs[sig]
-    s += ' & '+str(rndYield(n))+' &'
+    unc = math.sqrt(n)
+    s += ' & '+str(rndYield(n))+' $\pm$ ' + str(rndYield(unc)) + ' &'
     yields[sig] = n
   s += endrow + hline
   if(len(baseline[1])>0):
     s += baseline[0]
     for sig in signals:
-      n = getNumEvents(sig,baseline[1])
-      s += ' & '+str(rndYield(n))+' & '
+      n = getNumEvents(sig,baseline[1],False)
+      unc = getNumEvents(sig,baseline[1],True)
+      s += ' & '+str(rndYield(n))+' $\pm$ ' + str(rndYield(unc)) + ' & '
       s += str(int(round(100*n/yields[sig],0)))+'\\%' if sig in yields.keys() else ''
       yields[sig] = n
     s += endrow + hline
@@ -163,8 +170,9 @@ def getCutLine(baseline,n):
   cutstr += ' && '.join(zip(*cuts[:n+1])[1])
   s = cutlable
   for sig in signals:
-    n  = getNumEvents(sig, cutstr)
-    s += ' & ' + str(rndYield(n)) + ' & '
+    n  = getNumEvents(sig, cutstr,False)
+    unc = getNumEvents(sig, cutstr, True)
+    s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
       if prev==0 : s += '-'
@@ -179,8 +187,9 @@ def getBinLine(baseline,bin):
   cutstr += ' && '.join(zip(*cuts)[1]+(bin[1],))
   s = binlabel
   for sig in signals:
-    n  = getNumEvents(sig, cutstr)
-    s += ' & ' + str(rndYield(n)) + ' & '
+    n  = getNumEvents(sig, cutstr,False)
+    unc = getNumEvents(sig,cutstr,True)
+    s += ' & ' + str(rndYield(n)) + ' $\pm$ ' + str(rndYield(unc)) + ' & '
     if sig in yields.keys():
       prev = yields[sig]
       if prev==0 : s += '-'
