@@ -138,6 +138,45 @@ struct ExtraVarsFiller {
   size i_ak8tau32;
   size i_ak8fromgenhadw;
   size i_ak8fromgenhadt;
+  size i_nak8jets;
+
+  // TopFrameTagger
+  size i_fatjetmass;
+  size i_fatjetenergy;
+  size i_fatjetp;
+  size i_fatjetpt;
+  size i_fatjetpl;
+  size i_fatjettau1;
+  size i_fatjettau2;
+  size i_fatjettau3;
+  size i_subjetwmass;
+  size i_subjetwenergy;
+  size i_subjetwp;
+  size i_subjetwpt;
+  size i_subjetwpl;
+  size i_subjetweta;
+  size i_subjetwphi;
+  size i_subjettopframewmass;
+  size i_subjettopframewenergy;
+  size i_subjettopframewp;
+  size i_subjettopframewpt;
+  size i_subjettopframewpl;
+  size i_subjettopframeweta;
+  size i_subjettopframewphi;
+  size i_subjetbmass;
+  size i_subjetbenergy;
+  size i_subjetbp;
+  size i_subjetbpt;
+  size i_subjetbpl;
+  size i_subjetbeta;
+  size i_subjetbphi;
+  size i_subjettopframebmass;
+  size i_subjettopframebenergy;
+  size i_subjettopframebp;
+  size i_subjettopframebpt;
+  size i_subjettopframebpl;
+  size i_subjettopframebeta;
+  size i_subjettopframebphi;
 
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -272,6 +311,46 @@ struct ExtraVarsFiller {
     i_ak8tau32     = data->addMulti<float>("","ak8tau32",0);
     i_ak8fromgenhadw = data->add<bool>("","ak8fromgenhadw","O",0);
     i_ak8fromgenhadt = data->add<bool>("","ak8fromgenhadt","O",0);
+  }
+
+
+  void bookTopFrameTagger(TreeWriterData* data) {
+    i_fatjetmass            = data->add<float>("","fatjetmass","F",0);
+    i_fatjetenergy          = data->add<float>("","fatjetenergy","F",0);
+    i_fatjetp               = data->add<float>("","fatjetp","F",0);
+    i_fatjetpt              = data->add<float>("","fatjetpt","F",0);
+    i_fatjetpl              = data->add<float>("","fatjetpl","F",0);
+    i_fatjettau1            = data->add<float>("","fatjettau1","F",0);
+    i_fatjettau2            = data->add<float>("","fatjettau2","F",0);
+    i_fatjettau3            = data->add<float>("","fatjettau3","F",0);
+    i_subjetwmass           = data->add<float>("","subjetwmass","F",0);
+    i_subjetwenergy         = data->add<float>("","subjetwenergy","F",0);
+    i_subjetwp              = data->add<float>("","subjetwp","F",0);
+    i_subjetwpt             = data->add<float>("","subjetwpt","F",0);
+    i_subjetwpl             = data->add<float>("","subjetwpl","F",0);
+    i_subjetweta            = data->add<float>("","subjetweta","F",0);
+    i_subjetwphi            = data->add<float>("","subjetwphi","F",0);
+    i_subjettopframewmass   = data->add<float>("","subjettopframewmass","F",0);
+    i_subjettopframewenergy = data->add<float>("","subjettopframewenergy","F",0);
+    i_subjettopframewp      = data->add<float>("","subjettopframewp","F",0);
+    i_subjettopframewpt     = data->add<float>("","subjettopframewpt","F",0);
+    i_subjettopframewpl     = data->add<float>("","subjettopframewpl","F",0);
+    i_subjettopframeweta    = data->add<float>("","subjettopframeweta","F",0);
+    i_subjettopframewphi    = data->add<float>("","subjettopframewphi","F",0);
+    i_subjetbmass           = data->add<float>("","subjetbmass","F",0);
+    i_subjetbenergy         = data->add<float>("","subjetbenergy","F",0);
+    i_subjetbp              = data->add<float>("","subjetbp","F",0);
+    i_subjetbpt             = data->add<float>("","subjetbpt","F",0);
+    i_subjetbpl             = data->add<float>("","subjetbpl","F",0);
+    i_subjetbeta            = data->add<float>("","subjetbeta","F",0);
+    i_subjetbphi            = data->add<float>("","subjetbphi","F",0);
+    i_subjettopframebmass   = data->add<float>("","subjettopframebmass","F",0);
+    i_subjettopframebenergy = data->add<float>("","subjettopframebenergy","F",0);
+    i_subjettopframebp      = data->add<float>("","subjettopframebp","F",0);
+    i_subjettopframebpt     = data->add<float>("","subjettopframebpt","F",0);
+    i_subjettopframebpl     = data->add<float>("","subjettopframebpl","F",0);
+    i_subjettopframebeta    = data->add<float>("","subjettopframebeta","F",0);
+    i_subjettopframebphi    = data->add<float>("","subjettopframebphi","F",0);
   }
 
 
@@ -606,7 +685,7 @@ struct ExtraVarsFiller {
           ak8toppassmass_ = fj->fjSoftDropMass();
           ak8toppasspt_   = fj->pt();
         }
-        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) {ak8fromgenhadt_ = true; }
+        if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t))     {ak8fromgenhadt_ = true; }
         if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
         ++count;
       }
@@ -649,8 +728,109 @@ struct ExtraVarsFiller {
     */
   }
 
+
+  void fillTopFrameTaggerInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana) {
+
+    for(auto* fj : ana->fatJets) {
+      //      TLorentzVector ak8p4_; ak8p4_.SetPtEtaPhiM(fj->pt(),fj->eta(),fj->phi(),fj->fjSoftDropMass());
+
+      bool foundhadtop = false;
+      bool ishadronictop_ = false;
+      if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) { ishadronictop_ = true; }
+
+      //      if (ishadronictop_ && fj->fjNSDSubjets()>1) {
+      if (fj->fjNSDSubjets()>1) {
+	
+	TLorentzVector genhadwp4_;
+	for(auto* p : ana->genParts) { 
+	  if ( (abs(p->pdgId()) == 24) && (whadronicdecay(p)) ) { genhadwp4_.SetPtEtaPhiM(p->pt(),p->eta(),p->phi(),p->mass()); }
+	}
+	
+	// get the fatjet and subjet p4
+	TLorentzVector sj1p4_; sj1p4_.SetPtEtaPhiM(fj->fjSJ1Pt(),fj->fjSJ1Eta(),fj->fjSJ1Phi(),fj->fjSJ1Mass());
+	TLorentzVector sj2p4_; sj2p4_.SetPtEtaPhiM(fj->fjSJ2Pt(),fj->fjSJ2Eta(),fj->fjSJ2Phi(),fj->fjSJ2Mass());
+	TLorentzVector ak8p4_ = sj1p4_ + sj2p4_; 
+	
+	// match the subjet to the W boson
+	float drsj1genhadw = ROOT::Math::VectorUtil::DeltaR(genhadwp4_,sj1p4_);
+	float drsj2genhadw = ROOT::Math::VectorUtil::DeltaR(genhadwp4_,sj2p4_);
+
+	TLorentzVector sjw_;
+	TLorentzVector sjb_; 
+	//if (drsj1genhadw<drsj2genhadw) { sjw_ = sj1p4_; sjb_ = sj2p4_; } 
+	//else                           { sjw_ = sj2p4_; sjb_ = sj1p4_; }
+	if (sj1p4_.M()>sj2p4_.M()) { sjw_ = sj1p4_; sjb_ = sj2p4_; } 
+	else                       { sjw_ = sj2p4_; sjb_ = sj1p4_; }
+
+	// get the top boost       
+	TVector3 boosttop; boosttop = ak8p4_.BoostVector();
+
+	// calculate subjet vectors in top rest frame
+	TLorentzVector sjtopframew_ = sjw_;
+	sjtopframew_.Boost(-boosttop);
+
+	TLorentzVector sjtopframeb_ = sjb_;
+	sjtopframeb_.Boost(-boosttop);
+
+	// store variables
+	data->fill<float>(i_fatjetmass  , ak8p4_.M());
+	data->fill<float>(i_fatjetenergy, ak8p4_.Energy());
+	data->fill<float>(i_fatjetp     , ak8p4_.P());
+	data->fill<float>(i_fatjetpt    , ak8p4_.Pt());
+	data->fill<float>(i_fatjetpl    , ak8p4_.Pz());
+	data->fill<float>(i_fatjettau1  , fj->fjTau1());
+	data->fill<float>(i_fatjettau2  , fj->fjTau2());
+	data->fill<float>(i_fatjettau3  , fj->fjTau3());
+	data->fill<float>(i_subjetwmass  , sjw_.M());
+	data->fill<float>(i_subjetwenergy, sjw_.Energy());
+	data->fill<float>(i_subjetwp     , sjw_.P());
+	data->fill<float>(i_subjetwpt    , sjw_.Pt());
+	data->fill<float>(i_subjetwpl    , sjw_.Pz());
+	data->fill<float>(i_subjetweta   , sjw_.Eta());
+	data->fill<float>(i_subjetwphi   , sjw_.Phi());
+	data->fill<float>(i_subjettopframewmass  , sjtopframew_.M());
+	data->fill<float>(i_subjettopframewenergy, sjtopframew_.Energy());
+	data->fill<float>(i_subjettopframewp     , sjtopframew_.P());
+	data->fill<float>(i_subjettopframewpt    , sjtopframew_.Pt());
+	data->fill<float>(i_subjettopframewpl    , sjtopframew_.Pz());
+	data->fill<float>(i_subjettopframeweta   , sjtopframew_.Eta());
+	data->fill<float>(i_subjettopframewphi   , sjtopframew_.Phi());
+	data->fill<float>(i_subjetbmass  , sjb_.M());
+	data->fill<float>(i_subjetbenergy, sjb_.Energy());
+	data->fill<float>(i_subjetbp     , sjb_.P());
+	data->fill<float>(i_subjetbpt    , sjb_.Pt());
+	data->fill<float>(i_subjetbpl    , sjb_.Pz());
+	data->fill<float>(i_subjetbeta   , sjb_.Eta());
+	data->fill<float>(i_subjetbphi   , sjb_.Phi());
+	data->fill<float>(i_subjettopframebmass  , sjtopframeb_.M());
+	data->fill<float>(i_subjettopframebenergy, sjtopframeb_.Energy());
+	data->fill<float>(i_subjettopframebp     , sjtopframeb_.P());
+	data->fill<float>(i_subjettopframebpt    , sjtopframeb_.Pt());
+	data->fill<float>(i_subjettopframebpl    , sjtopframeb_.Pz());
+	data->fill<float>(i_subjettopframebeta   , sjtopframeb_.Eta());
+	data->fill<float>(i_subjettopframebphi   , sjtopframeb_.Phi());
+
+	foundhadtop = true;
+      } // end of if hadronically decaying top
+      if (foundhadtop) { continue; }
+
+    }
+  } // end of topframetagging
+  
+  bool whadronicdecay(const GenParticleF* genw) {
+    bool whadronicdecay_ = true;
+    for (unsigned int i0=0; i0<genw->numberOfDaughters(); ++i0) {
+      int wdaupdgid = abs(genw->daughter(i0)->pdgId());
+      if ( (wdaupdgid==11) || (wdaupdgid==12) || (wdaupdgid==13) ||
+	   (wdaupdgid==14) || (wdaupdgid==15) || (wdaupdgid==16) )  {
+	whadronicdecay_ = false; }
+    }
+      return whadronicdecay_;
+  }
+  
+
   bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, unsigned int matchtoid){
-        // match fj to gen w or top
+    // match fj to gen w or top
 //        float tmatchrad = 0.2;
 //        float wmatchrad = 0.4;
         for(auto* p : ana->genParts) {
