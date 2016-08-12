@@ -51,6 +51,15 @@ namespace ucsbsusy {
     std::vector<float>* fjwmass_;
     std::vector<float>* fjminmass_;
     std::vector<int>*   fjnsubjets_;
+    std::vector<int  >* fjnsdsubjets_;
+    std::vector<float>* fjsdsj1mass_;
+    std::vector<float>* fjsdsj1pt_;
+    std::vector<float>* fjsdsj1eta_;
+    std::vector<float>* fjsdsj1phi_;
+    std::vector<float>* fjsdsj2mass_;
+    std::vector<float>* fjsdsj2pt_;
+    std::vector<float>* fjsdsj2eta_;
+    std::vector<float>* fjsdsj2phi_;
 
     //the actual jet collection
     FatJetFCollection fatJets;

@@ -29,7 +29,15 @@ FatJetReader::FatJetReader() : BaseReader(){
   fjpt_            = new vector<float>;
   fjeta_           = new vector<float>;
   fjphi_           = new vector<float>;
-
+  fjnsdsubjets_    = new vector<int  >;
+  fjsdsj1mass_     = new vector<float>;
+  fjsdsj1pt_       = new vector<float>;
+  fjsdsj1eta_      = new vector<float>;
+  fjsdsj1phi_      = new vector<float>;
+  fjsdsj2mass_     = new vector<float>;
+  fjsdsj2pt_       = new vector<float>;
+  fjsdsj2eta_      = new vector<float>;
+  fjsdsj2phi_      = new vector<float>;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -52,6 +60,15 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "fatjet_pt"           , &fjpt_           ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_eta"          , &fjeta_          ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_phi"          , &fjphi_          ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_nsoftdropsubjets" , &fjnsdsubjets_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_mass"   , &fjsdsj1mass_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_pt"     , &fjsdsj1pt_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_eta"    , &fjsdsj1eta_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_phi"    , &fjsdsj1phi_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_mass"   , &fjsdsj2mass_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_pt"     , &fjsdsj2pt_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_eta"    , &fjsdsj2eta_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_phi"    , &fjsdsj2phi_ ,true);
     }
 
 
@@ -77,6 +94,15 @@ void FatJetReader::refresh(){
     fatJets.back().setFJTau1(fjtau1_->at(iJ));
     fatJets.back().setFJTau2(fjtau2_->at(iJ));
     fatJets.back().setFJTau3(fjtau3_->at(iJ));
+    fatJets.back().setFJNSDSubjets(fjnsdsubjets_->at(iJ));
+    fatJets.back().setFJSJ1Mass(fjsdsj1mass_->at(iJ));
+    fatJets.back().setFJSJ1Pt(fjsdsj1pt_->at(iJ));
+    fatJets.back().setFJSJ1Eta(fjsdsj1eta_->at(iJ));
+    fatJets.back().setFJSJ1Phi(fjsdsj1phi_->at(iJ));
+    fatJets.back().setFJSJ2Mass(fjsdsj2mass_->at(iJ));
+    fatJets.back().setFJSJ2Pt(fjsdsj2pt_->at(iJ));
+    fatJets.back().setFJSJ2Eta(fjsdsj2eta_->at(iJ));
+    fatJets.back().setFJSJ2Phi(fjsdsj2phi_->at(iJ));
 
   } 
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
