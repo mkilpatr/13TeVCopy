@@ -19,5 +19,6 @@ config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = _unitsPerJob_
 config.Data.outLFNDirBase = '_outLFNDirBase_'
 config.Data.publication = False
+#config.Data.allowNonValidInputDataset = True
 
 config.Site.storageSite = '_storageSite_'

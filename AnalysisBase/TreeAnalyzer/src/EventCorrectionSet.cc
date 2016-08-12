@@ -39,7 +39,7 @@ SdTopCorr::SdTopCorr(TString fileName) : Correction("SdTop"), sdTopinputFile(0),
   if(!sdTopinputFile) throw std::invalid_argument("SdTopCorr::SdTopCorr: file could not be found!");
   //sdTopDataFullSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_data_tagging__over__ak8toppasspt_over_ak8candpt_mc_unsmeared_tagging") );
   sdTopDataFullSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_data___over__ak8toppasspt_over_ak8candpt_mc_unsmeared_") );
-  sdTopFullFastSF = (TH1F*)(sdTopinputFile->Get("Tops") );
+  sdTopFullFastSF = (TH1F*)(sdTopinputFile->Get("ak8toppasspt_over_ak8candpt_t2tt-850-100-full_t2tt-850-100__over__ak8toppasspt_over_ak8candpt_t2tt-850-100-fast_t2tt-850-100") );
   if(!(sdTopDataFullSF || sdTopFullFastSF)) throw std::invalid_argument("SdTopCorr::SdTopCorr: eff SF histograms could not be found!");
 }
 SdTopCorr::~SdTopCorr(){
@@ -54,12 +54,31 @@ float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
   TH1F * hff = sdTopFullFastSF;
   int binDataFull = getNoUnderOver(maxGoodTopPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodTopPT,hff);
-  float sf_df = hdf->GetBinContent(binDataFull);
-  float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
-  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
-  float sf    = sf_df*sf_ff;
-  float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
+
+  // strategy: for data/full correction:
+  //             for W tag, assign 3% uncertainty below 700 GeV, 10% above 700 GeV. no correction (consistent w/1).
+  //             for top tag, correct per-bin and assign 1/2 of the corr as unc
+  //           for full/fastsim correction:
+  //             for top tag, correct per-bin the (400,450) and (800,inf) bins
+  //             for w tag, correct per-bin the (200-250) bin
+  //             for both, unc of 1/2 the difference from 1 if bin was corrected, 3% to all other bins which weren't corrected
+
+  float sf_df     = hdf->GetBinContent(binDataFull);
+  float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
+
+  float sf_ff     = 1.;
+  float sf_ff_unc = 0.;
+  if( (maxGoodTopPT > 400 && maxGoodTopPT < 450) || maxGoodTopPT > 800){ 
+    sf_ff     = hff->GetBinContent(binFullFast);
+    sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
+  }else{
+    sf_ff = 1.;
+    sf_ff_unc = 0.03;
+  }
+
+  float sf    = sf_ff*sf_df;
+  float sfunc = sf*sqrt( pow(sf_df_unc/sf_df,2) + pow(sf_ff_unc/sf_ff,2) );
+
   switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
@@ -73,7 +92,7 @@ SdWCorr::SdWCorr(TString fileName) : Correction("SdW"), sdWinputFile(0), sdWData
   if(!sdWinputFile) throw std::invalid_argument("SdWCorr::SdWCorr: file could not be found!");
   //sdWDataFullSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_data_tagging__over__ak8wpasspt_over_ak8candpt_mc_unsmeared_tagging") );
   sdWDataFullSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_data___over__ak8wpasspt_over_ak8candpt_mc_unsmeared_") );
-  sdWFullFastSF = (TH1F*)(sdWinputFile->Get("Ws") );
+  sdWFullFastSF = (TH1F*)(sdWinputFile->Get("ak8wpasspt_over_ak8candpt_t2tt-850-100-full_t2tt-850-100__over__ak8wpasspt_over_ak8candpt_t2tt-850-100-fast_t2tt-850-100") );
   if(!(sdWDataFullSF || sdWFullFastSF)) throw std::invalid_argument("SdWCorr::SdWCorr: eff SF histograms could not be found!");
 }
 SdWCorr::~SdWCorr(){
@@ -88,12 +107,33 @@ float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
   TH1F * hff = sdWFullFastSF;
   int binDataFull = getNoUnderOver(maxGoodWPT,hdf);
   int binFullFast = getNoUnderOver(maxGoodWPT,hff);
-  float sf_df = hdf->GetBinContent(binDataFull);
-  float sf_ff = hff->GetBinContent(binFullFast);
-  float sf_df_relerror = hdf->GetBinError(binDataFull)/sf_df;
-  float sf_ff_relerror = hff->GetBinError(binFullFast)/sf_ff;
-  float sf    = sf_df*sf_ff;
-  float sfunc = sf_df*sf_ff*sqrt( pow(sf_df_relerror,2) + pow(sf_ff_relerror,2) );
+
+  // strategy: for data/full correction:
+  //             for W tag, assign 3% uncertainty below 700 GeV, 10% above 700 GeV. no correction (consistent w/1).
+  //             for top tag, correct per-bin and assign 1/2 of the corr as unc
+  //           for full/fastsim correction:
+  //             for top tag, correct per-bin the (400,450) and (800,inf) bins
+  //             for w tag, correct per-bin the (200-250) bin
+  //             for both, unc of 1/2 the difference from 1 if bin was corrected, 3% to all other bins which weren't corrected
+
+  float sf_df     = hdf->GetBinContent(binDataFull);
+  float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
+  sf_df     = 1.; // overrride
+  sf_df_unc = (maxGoodWPT < 700) ? 0.03 : 0.10;
+
+  float sf_ff     = 1.;
+  float sf_ff_unc = 0.;
+  if( (maxGoodWPT > 200 && maxGoodWPT < 250) ){
+    sf_ff     = hff->GetBinContent(binFullFast);
+    sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
+  }else{
+    sf_ff = 1.;
+    sf_ff_unc = 0.03;
+  }
+
+  float sf    = sf_ff*sf_df;
+  float sfunc = sf*sqrt( pow(sf_df_unc/sf_df,2) + pow(sf_ff_unc/sf_ff,2) );
+
   switch(corrType){
     case UP:      return  sf + sfunc;
     case DOWN:    return  sf - sfunc;
