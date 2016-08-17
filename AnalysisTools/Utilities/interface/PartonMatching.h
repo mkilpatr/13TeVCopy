@@ -43,8 +43,8 @@ extern float minJetRelE         ;
 class Parton {
 public:
   const Particle * parton;
-  const unsigned int genIdx;
-  const float      hadE;
+  unsigned int genIdx;
+  float      hadE;
 
   PartonDiagnosis diag;
   std::vector<std::pair<float,int> > containment; //[containment] [jet]
