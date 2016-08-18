@@ -282,6 +282,9 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     partons[partonIdxs[genAssocPrtIndex->at(conIndex)]].addContainment(genAssocJetIndex->at(iJ), fromContainmentType(con) );
   }
 
+  //sort partons by pt
+  sort(partons.begin(),partons.end(),[](const Parton& i,const Parton& j){ return (i.parton->pt() > j.parton->pt());});
+
   //First let's fill bosons
     for(unsigned int iP = 0; iP < genParticles->size(); ++iP){
       const auto& p = genParticles->at(iP);
@@ -293,12 +296,18 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     bosonDecays.emplace_back(&p,iP,partons);
   }
 
+    //sort bosons by pt
+    sort(bosonDecays.begin(),bosonDecays.end(),[](const BosonDecay& i,const BosonDecay& j){ return (i.boson->pt() > j.boson->pt());});
+
   //now for the tops!
   for(const auto& p : *genParticles){
     if(TMath::Abs(p.pdgId()) != ParticleInfo::p_t) continue;
     if(!ParticleInfo::isLastInChain(&p)) continue;
     topDecays.emplace_back(&p,bosonDecays,partons);
   }
+
+  //sort tops by pt
+  sort(topDecays.begin(),topDecays.end(),[](const TopDecay& i,const TopDecay& j){ return (i.top->pt() > j.top->pt());});
 
   //Now for leftover SUSY particles
   for(const auto& p : *genParticles){
@@ -314,6 +323,9 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
       }
     }
   }
+
+  //sort others by pt
+  sort(nonTopOrBosonSUSYPartons.begin(),nonTopOrBosonSUSYPartons.end(),[](const Parton* i, const Parton* j) -> bool{ return (i->parton->pt() > j->parton->pt());});
 
   //Now add in the important partons
   for(const auto& d: bosonDecays)
