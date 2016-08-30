@@ -22,10 +22,9 @@ namespace ucsbsusy {
   public :
     enum  Options {
                       NULLOPT     = 0
-                    , LOADRECO    = (1 << 0)
-                    , LOADEXTRECO = (1 << 1)   ///< Load extra info
+                    , LOADRECO = (1 << 0)
+                    , LOADPUPPI    = (1 << 1)
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
-                    , LOADPHYS14  = (1 << 3)
     };
     static const int defaultOptions;
     
@@ -41,25 +40,51 @@ namespace ucsbsusy {
     std::vector<float>* fjrawmass_;
     std::vector<float>* fjprunedmass_;
     std::vector<float>* fjsoftdropmass_;
-    //    std::vector<float>* fjcmstoptagmass_;
     std::vector<float>* fjtau1_;
     std::vector<float>* fjtau2_;
     std::vector<float>* fjtau3_;
     std::vector<float>* fjpt_;
     std::vector<float>* fjeta_;
     std::vector<float>* fjphi_;
-    std::vector<float>* fjwmass_;
-    std::vector<float>* fjminmass_;
-    std::vector<int>*   fjnsubjets_;
+    std::vector<float>* fjcsv_;
     std::vector<int  >* fjnsdsubjets_;
     std::vector<float>* fjsdsj1mass_;
     std::vector<float>* fjsdsj1pt_;
     std::vector<float>* fjsdsj1eta_;
     std::vector<float>* fjsdsj1phi_;
     std::vector<float>* fjsdsj2mass_;
+    std::vector<float>* fjsdsj1csv_;
     std::vector<float>* fjsdsj2pt_;
     std::vector<float>* fjsdsj2eta_;
     std::vector<float>* fjsdsj2phi_;
+    std::vector<float>* fjsdsj2csv_;
+
+
+    //Puppi variables
+    std::vector<float>* fj_puppi_pt_          ;
+    std::vector<float>* fj_puppi_eta_         ;
+    std::vector<float>* fj_puppi_phi_         ;
+    std::vector<float>* fj_puppi_mass_        ;
+    std::vector<float>* fj_puppi_tau1_        ;
+    std::vector<float>* fj_puppi_tau2_        ;
+    std::vector<float>* fj_puppi_tau3_        ;
+    std::vector<float>* fj_puppi_softdropmass_;
+    std::vector<int  >* fj_puppi_nsdsubjets_  ;
+    std::vector<float>* fj_puppi_sdsj1mass_   ;
+    std::vector<float>* fj_puppi_sdsj1pt_     ;
+    std::vector<float>* fj_puppi_sdsj1eta_    ;
+    std::vector<float>* fj_puppi_sdsj1phi_    ;
+    std::vector<float>* fj_puppi_sdsj2mass_   ;
+    std::vector<float>* fj_puppi_sdsj1csv_    ;
+    std::vector<float>* fj_puppi_sdsj2pt_     ;
+    std::vector<float>* fj_puppi_sdsj2eta_    ;
+    std::vector<float>* fj_puppi_sdsj2phi_    ;
+    std::vector<float>* fj_puppi_sdsj2csv_    ;
+
+
+
+
+
 
     //the actual jet collection
     FatJetFCollection fatJets;
