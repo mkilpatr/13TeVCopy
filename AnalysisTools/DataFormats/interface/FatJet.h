@@ -14,113 +14,154 @@
 #include <vector>
 #include <iostream>
 
-#include "AnalysisTools/DataFormats/interface/Momentum.h"
+#include "AnalysisTools/DataFormats/interface/Jet.h"
 
 namespace ucsbsusy {
 
-//_____________________________________________________________________________
-// Basic jet type....used for both reco and gen jets
-//_____________________________________________________________________________
+template <class CoordSystem>
+class SubJet : public Jet<CoordSystem>
+  {
+  public:
+  SubJet() : csv_(-10) {}
+
+  template <class InputCoordSystem>
+  SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum,
+          const int inIndex = -1, const float inCSV = -10)
+      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
+  ~SubJet() {}
+
+  float csv()         const { return csv_;    }
+  void  setCsv(const float inCsv)               {csv_         = inCsv;    }
+
+  float csv_;
+  };
+
 
 template <class CoordSystem>
-class FatJet : public Momentum<CoordSystem>
+class FatJet : public Jet<CoordSystem>
   {
   public :
-  FatJet() : index_(-1), 
-      fjRawMass_(-9.), fjPrunedMass_(-9.), fjSoftDropMass_(-9.), fjCmsTopTagMass_(-9.),
-      fjTau1_(-9.), fjTau2_(-9.), fjTau3_(-9.), fjNSDSubjets_(0), 
-      sj1mass_(-9.), sj1pt_(-9.), sj1eta_(-9.), sj1phi_(-9.), 
-      sj2mass_(-9.), sj2pt_(-9.), sj2eta_(-9.), sj2phi_(-9.) {}
+  FatJet() :
+    csv_         (-9.),
+    prunedMass_  (-9.),
+    softDropMass_(-9.),
+    tau1_        (-9.),
+    tau2_        (-9.),
+    tau3_        (-9.),
+    subjets      (0),
+    puppi_softDropMass_(-9.),
+    puppi_tau1_        (-9.),
+    puppi_tau2_        (-9.),
+    puppi_tau3_        (-9.),
+    puppi_subjets      (0)
+{}
+
+  template <class InputCoordSystem>
+    FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
+        const float inCSV = -9,
+        const float inPrunedMass = -9, const float inSoftDropMass = -9, const float inTau1 = -9,
+        const float inTau2= -9, const float inTau3= -9 ) : Jet<CoordSystem>(inMomentum, inIndex),
+        csv_         (inCSV),
+        prunedMass_  (inPrunedMass),
+        softDropMass_(inSoftDropMass),
+        tau1_        (inTau1),
+        tau2_        (inTau2),
+        tau3_        (inTau3),
+        subjets      (0),
+        puppi_softDropMass_(-9.),
+        puppi_tau1_        (-9.),
+        puppi_tau2_        (-9.),
+        puppi_tau3_        (-9.),
+        puppi_subjets      (0)
+        {}
+
+
+  float csv()                  const { return csv_         ;    }
+  float prunedMass()           const { return prunedMass_  ;    }
+  float softDropMass()         const { return softDropMass_;    }
+  float tau1()                 const { return tau1_        ;    }
+  float tau2()                 const { return tau2_        ;    }
+  float tau3()                 const { return tau3_        ;    }
+  size  nSubjets()             const { return subjets.size();   }
+
+  const SubJet<CoordSystem>& subJet(const size idx) const {
+    if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
+    return subjets[idx];
+  }
+  SubJet<CoordSystem>&       subJet(const size idx) {
+    if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
+    return subjets[idx];
+  }
+
+  //Puppi accessors
+  const Momentum<CoordSystem>&                  puppi_mom() const {return puppiMomentum;}
+  Momentum<CoordSystem>&                        puppi_mom()       {return puppiMomentum;}
+  const ROOT::Math::LorentzVector<CoordSystem>& puppi_p4()  const {return puppiMomentum.p4();}
+  ROOT::Math::LorentzVector<CoordSystem>&       puppi_p4()        {return puppiMomentum.p4();}
+  float puppi_softDropMass()         const { return puppi_softDropMass_;    }
+  float puppi_tau1()                 const { return puppi_tau1_        ;    }
+  float puppi_tau2()                 const { return puppi_tau2_        ;    }
+  float puppi_tau3()                 const { return puppi_tau3_        ;    }
+  size  puppi_nSubjets()             const { return puppi_subjets.size();   }
+
+  const SubJet<CoordSystem>&   puppi_subJet(const size idx) const {
+    if(idx >= puppi_nSubjets() )throw std::invalid_argument("Not a valid puppi subjet index!");
+    return puppi_subjets[idx];
+  }
+  SubJet<CoordSystem>&         puppi_subJet(const size idx) {
+    if(idx >= puppi_nSubjets() )throw std::invalid_argument("Not a valid puppi subjet index!");
+    return puppi_subjets[idx];
+  }
+
+
+  //setters
+
+
+
+  template <class InputCoordSystem>
+  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
+    subjets.emplace_back(inMomentum,-1,inCSV);
+  }
+
+  template <class InputCoordSystem>
+    void addPuppiInfo(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum,
+        const float inSoftDropMass = -9, const float inTau1 = -9,
+        const float inTau2= -9, const float inTau3= -9 ) {
+    puppiMomentum = inMomentum;
+    puppi_softDropMass_ = inSoftDropMass;
+    puppi_tau1_        =inTau1;
+    puppi_tau2_        =inTau2;
+    puppi_tau3_        =inTau3;
+    }
+
+
+  template <class InputCoordSystem>
+  void addPuppiSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
+    puppi_subjets.emplace_back(inMomentum,-1,inCSV);
+  }
+
     
-
-
-    template <class InputCoordSystem>
-      FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, 
-	     const int   inIndex            = -1,
-      	     const float inFJRawMass       = -9.,
-	     const float inFJPrunedMass    = -9.,
-	     const float inFJSoftDropMass  = -9.,
-	     const float inFJCmsTopTagMass = -9.,
-	     const float inFJTau1          = -9.,
-	     const float inFJTau2          = -9.,
-	     const float inFJTau3          = -9.,
-	     const int   inFJNSDSubjets    =  0,
-	     const float inSJ1Mass         = -9.,
-	     const float inSJ1Pt           = -9.,
-	     const float inSJ1Eta          = -9.,
-	     const float inSJ1Phi          = -9.,
-	     const float inSJ2Mass         = -9.,
-	     const float inSJ2Pt           = -9.,
-	     const float inSJ2Eta          = -9.,
-	     const float inSJ2Phi          = -9.
-	     )
-      : Momentum<CoordSystem>(inMomentum), index_(inIndex), fjRawMass_(inFJRawMass),  fjPrunedMass_(inFJPrunedMass), 
-      fjSoftDropMass_(inFJSoftDropMass), fjCmsTopTagMass_(inFJCmsTopTagMass), fjTau1_(inFJTau1), fjTau2_(inFJTau2), fjTau3_(inFJTau3),
-      fjNSDSubjets_(inFJNSDSubjets), sj1mass_(inSJ1Mass), sj1pt_(inSJ1Pt), sj1eta_(inSJ1Eta), sj1phi_(inSJ1Phi), 
-      sj2mass_(inSJ2Mass), sj2pt_(inSJ2Pt), sj2eta_(inSJ2Eta), sj2phi_(inSJ2Phi) {}
 
     ~FatJet(){}
     
-    int	index()		     const { return index_;           }
-    float fjRawMass()       const { return fjRawMass_;      }
-    float fjPrunedMass()    const { return fjPrunedMass_;   }
-    float fjSoftDropMass()  const { return fjSoftDropMass_; }
-    float fjCmsTopTagMass() const { return fjCmsTopTagMass_; }
-    float fjTau1()          const { return fjTau1_;         }
-    float fjTau2()          const { return fjTau2_;         }
-    float fjTau3()          const { return fjTau3_;         }
-    int   fjNSDSubjets()    const { return fjNSDSubjets_; }
-    float fjSJ1Mass()       const { return sj1mass_;         }
-    float fjSJ1Pt()         const { return sj1pt_;          }
-    float fjSJ1Eta()        const { return sj1eta_;         }
-    float fjSJ1Phi()        const { return sj1phi_;         }
-    float fjSJ2Mass()       const { return sj2mass_;        }
-    float fjSJ2Pt()         const { return sj2pt_;          }
-    float fjSJ2Eta()        const { return sj2eta_;         }
-    float fjSJ2Phi()        const { return sj2phi_;         }
-
-    void  setIndex(const int& newIndex)                     { index_            = newIndex;           }
-    void  setFJRawMass(const float inFJRawMass)             { fjRawMass_       = inFJRawMass;       }
-    void  setFJPrunedMass(const float inFJPrunedMass)       { fjPrunedMass_    = inFJPrunedMass;    }
-    void  setFJSoftDropMass(const float inFJSoftDropMass)   { fjSoftDropMass_  = inFJSoftDropMass;  }
-    void  setFJCmsTopTagMass(const float inFJCmsTopTagMass) { fjCmsTopTagMass_ = inFJCmsTopTagMass; }
-    void  setFJTau1(const float inFJTau1)                   { fjTau1_          = inFJTau1;         }
-    void  setFJTau2(const float inFJTau2)                   { fjTau2_          = inFJTau2;         }
-    void  setFJTau3(const float inFJTau3)                   { fjTau3_          = inFJTau3;         }
-    void  setFJNSDSubjets(const int inFJNSDSubjets)         { fjNSDSubjets_    = inFJNSDSubjets;   }
-    void  setFJSJ1Mass(const float inSJ1Mass)               { sj1mass_         = inSJ1Mass;        }
-    void  setFJSJ1Pt(const float inSJ1Pt)                   { sj1pt_           = inSJ1Pt;         }
-    void  setFJSJ1Eta(const float inSJ1Eta)                 { sj1eta_          = inSJ1Eta;        }
-    void  setFJSJ1Phi(const float inSJ1Phi)                 { sj1phi_          = inSJ1Phi;        }
-    void  setFJSJ2Mass(const float inSJ2Mass)               { sj2mass_         = inSJ2Mass;        }
-    void  setFJSJ2Pt(const float inSJ2Pt)                   { sj2pt_           = inSJ2Pt;         }
-    void  setFJSJ2Eta(const float inSJ2Eta)                 { sj2eta_          = inSJ2Eta;        }
-    void  setFJSJ2Phi(const float inSJ2Phi)                 { sj2phi_          = inSJ2Phi;        }
-    
-
-    //----Convenience function for throwing an exception when a member does not exist
-    void checkStorage (const void * ptr, std::string message) const {
-      if(ptr == 0) throw std::invalid_argument(message+std::string("The object was never loaded!"));
-    }
-    
   protected :
-    int	  index_;  //Index in FatJet vector
-    float fjRawMass_;
-    float fjPrunedMass_;
-    float fjSoftDropMass_;
-    float fjCmsTopTagMass_;
-    float fjTau1_;
-    float fjTau2_;
-    float fjTau3_;
-    int   fjNSDSubjets_;
-    float sj1mass_;
-    float sj1pt_;
-    float sj1eta_;
-    float sj1phi_;
-    float sj2mass_;
-    float sj2pt_;
-    float sj2eta_;
-    float sj2phi_;
+    float csv_         ;
+    float prunedMass_  ;
+    float softDropMass_;
+    float tau1_        ;
+    float tau2_        ;
+    float tau3_        ;
+
+    std::vector<SubJet<CoordSystem> > subjets;
+
+    Momentum<CoordSystem> puppiMomentum;
+    float puppi_softDropMass_;
+    float puppi_tau1_        ;
+    float puppi_tau2_        ;
+    float puppi_tau3_        ;
+    std::vector<SubJet<CoordSystem> > puppi_subjets;
+
+
     
   };
   
