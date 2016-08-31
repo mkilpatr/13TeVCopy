@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // MuonFiller
-// 
+//
 // Class to fill muon information in a TTree.
-// 
-// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_FATJETFILLER_H
@@ -29,6 +29,8 @@ namespace ucsbsusy {
 
   private :
     edm::EDGetTokenT<pat::JetCollection> fatJetToken_;
+    edm::EDGetTokenT<pat::JetCollection> sdSubjetToken_;
+    edm::EDGetTokenT<pat::JetCollection> puppiSubjetToken_;
     std::string puRemoval_;
 
     // Members to hold indices of tree data
@@ -57,11 +59,17 @@ namespace ucsbsusy {
     size ifj_sdsubjet1_phi_;
     size ifj_sdsubjet1_mass_;
     size ifj_sdsubjet1_csv_;
+    size ifj_sdsubjet1_cmva_;
+    size ifj_sdsubjet1_cvsl_;
+    size ifj_sdsubjet1_cvsb_;
     size ifj_sdsubjet2_pt_;
     size ifj_sdsubjet2_eta_;
     size ifj_sdsubjet2_phi_;
     size ifj_sdsubjet2_mass_;
     size ifj_sdsubjet2_csv_;
+    size ifj_sdsubjet2_cmva_;
+    size ifj_sdsubjet2_cvsl_;
+    size ifj_sdsubjet2_cvsb_;
 
     size ifj_puppi_pt_;
     size ifj_puppi_eta_;
@@ -79,17 +87,24 @@ namespace ucsbsusy {
     size ifj_puppi_sdsubjet1_phi_;
     size ifj_puppi_sdsubjet1_mass_;
     size ifj_puppi_sdsubjet1_csv_;
+    size ifj_puppi_sdsubjet1_cmva_;
+    size ifj_puppi_sdsubjet1_cvsl_;
+    size ifj_puppi_sdsubjet1_cvsb_;
     size ifj_puppi_sdsubjet2_pt_;
     size ifj_puppi_sdsubjet2_eta_;
     size ifj_puppi_sdsubjet2_phi_;
     size ifj_puppi_sdsubjet2_mass_;
     size ifj_puppi_sdsubjet2_csv_;
+    size ifj_puppi_sdsubjet2_cmva_;
+    size ifj_puppi_sdsubjet2_cvsl_;
+    size ifj_puppi_sdsubjet2_cvsb_;
     size ifj_puppi_sdmass_;
 
   public :
     // Data members
     edm::Handle<pat::JetCollection> fatJets_;
-   
+    edm::Handle<pat::JetCollection> sdCollectionSubjets_;
+    edm::Handle<pat::JetCollection> puppiCollectionSubjets_;
   };
 
 }
