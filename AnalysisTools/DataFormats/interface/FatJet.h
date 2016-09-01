@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // Jet
-// 
+//
 // Class to hold basic jet information. To be enhanced as needed.
-// 
-// Jet.h created on Tue Aug 19 16:26:39 CEST 2014 
-// 
+//
+// Jet.h created on Tue Aug 19 16:26:39 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_DATAFORMATS_FATJET_H
@@ -22,18 +22,31 @@ template <class CoordSystem>
 class SubJet : public Jet<CoordSystem>
   {
   public:
-  SubJet() : csv_(-10) {}
+  SubJet(){}
 
   template <class InputCoordSystem>
   SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum,
-          const int inIndex = -1, const float inCSV = -10)
-      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
+          const int inIndex = -1, const float inCSV = -10, float inCMVA = -10, float inCvsL = -10, float inCvsB = -10)
+      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), cmva_(inCMVA), cvsl_(inCvsL), cvsb_(inCvsB) {}
   ~SubJet() {}
 
-  float csv()         const { return csv_;    }
-  void  setCsv(const float inCsv)               {csv_         = inCsv;    }
+  float csv()  const { return csv_;  }
+  void  setCsv(float inCsv) { csv_  = inCsv; }
 
-  float csv_;
+  float cmva() const { return cmva_; }
+  void  setCmva(float cmva) { cmva_ = cmva; }
+
+  float cvsb() const { return cvsb_; }
+  void  setCvsb(float cvsb) { cvsb_ = cvsb; }
+
+  float cvsl() const { return cvsl_; }
+  void  setCvsl(float cvsl) { cvsl_ = cvsl; }
+
+  protected:
+  float csv_  = -10;
+  float cmva_ = -10;
+  float cvsl_ = -10;
+  float cvsb_ = -10;
   };
 
 
@@ -119,8 +132,8 @@ class FatJet : public Jet<CoordSystem>
 
 
   template <class InputCoordSystem>
-  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
-    subjets.emplace_back(inMomentum,-1,inCSV);
+  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, float inCSV = -9., float inCMVA = -9, float inCvsL = -9, float inCvsB = -9){
+    subjets.emplace_back(inMomentum,-1,inCSV,inCMVA,inCvsL,inCvsB);
   }
 
   template <class InputCoordSystem>
@@ -136,14 +149,14 @@ class FatJet : public Jet<CoordSystem>
 
 
   template <class InputCoordSystem>
-  void addPuppiSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
-    puppi_subjets.emplace_back(inMomentum,-1,inCSV);
+  void addPuppiSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9., float inCMVA = -9, float inCvsL = -9, float inCvsB = -9){
+    puppi_subjets.emplace_back(inMomentum,-1,inCSV,inCMVA,inCvsL,inCvsB);
   }
 
-    
+
 
     ~FatJet(){}
-    
+
   protected :
     float csv_         ;
     float prunedMass_  ;
@@ -162,9 +175,10 @@ class FatJet : public Jet<CoordSystem>
     std::vector<SubJet<CoordSystem> > puppi_subjets;
 
 
-    
+
   };
-  
+
+  typedef SubJet<CylLorentzCoordF> SubJetF;
   typedef FatJet<CylLorentzCoordF> FatJetF;
   typedef std::vector<FatJetF>     FatJetFCollection;
 }
