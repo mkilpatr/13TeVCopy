@@ -268,6 +268,24 @@ nominal_configuration = cms.PSet(
                                       puRemoval = cms.untracked.string("Puppi")
                                       ),
 
+                                  AK8JTBFatJets = cms.untracked.PSet(
+                                      isFilled     = cms.untracked.bool(True),
+                                      fatJets      = cms.InputTag('selectedPatJetsAK8PFCHS'),
+                                      fatJetsSD    = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropPacked'),
+                                      fatJetsSDSub = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropSubjets'),
+                                      puRemoval    = cms.untracked.string("CHS"),
+                                      details      = cms.untracked.string("ak8")
+                                      ),
+
+                                  CA8JTBFatJets = cms.untracked.PSet(
+                                      isFilled     = cms.untracked.bool(True),
+                                      fatJets      = cms.InputTag('selectedPatJetsCA8PFCHS'),
+                                      fatJetsSD    = cms.InputTag('selectedPatJetsCA8PFCHSSoftDropPacked'),
+                                      fatJetsSDSub = cms.InputTag('selectedPatJetsCA8PFCHSSoftDropSubjets'),
+                                      puRemoval    = cms.untracked.string("CHS"),
+                                      details      = cms.untracked.string("ca8")
+                                      ),
+
                                   Triggers = cms.untracked.PSet(
                                       isFilled  = cms.untracked.bool(True),
                                       isFastSim = cms.untracked.bool(False),
