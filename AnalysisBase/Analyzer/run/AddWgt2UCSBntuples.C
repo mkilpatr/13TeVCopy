@@ -21,13 +21,13 @@ using json = nlohmann::json;
 class Copier : public TreeCopierAllBranches {
 public:
   Copier(string fileName, string treeName, string outFileName, bool isMCTree, double nPosEvents, double nNegEvents, string inputFile, string filterEffFile) : TreeCopierAllBranches(fileName,treeName,outFileName,1,isMCTree,0), nPos(nPosEvents), nNeg(nNegEvents), genwgtsign(1.0), xsecFile(0), xsecLookup(0) {
-    if(isMC() && inputFile != "") {
+    if(isMC() && inputFile != "None") {
       xsecFile = new TFile(TString::Format("%s/src/data/xsecs/%s",getenv("CMSSW_BASE"),inputFile.c_str()));
       assert(xsecFile);
       xsecLookup = (TH1D*)xsecFile->Get("xsecs");
       assert(xsecLookup);
     }
-    if(isMC() && !filterEffFile.empty()){
+    if(isMC() && filterEffFile != "None"){
       string filterpath = string(getenv("CMSSW_BASE")) + "/src/data/xsecs/" + filterEffFile;
       cout << "Applying gen filter efficiency from file: " << filterpath << endl;
       json j;
@@ -131,7 +131,7 @@ public:
  */
 //AddWgt2UCSBntuples("root://eoscms//eos/cms//eos/cms/store/user/gouskos/13TeV/Phys14/20150503/merged/wjets_ht600toInf_ntuple.root","wjets_ht600toInf",100,1.,4581841,0,"TestAnalyzer/Events","wgt")
 
-void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "", string filterEffFile = "", double wgtsf = 1) {
+void AddWgt2UCSBntuples(string fileName, string processName, double crossSection, double lumi = 1, double nPosEvents = -1, double nNegEvents = 0, string treeName = "TestAnalyzer/Events", string outPostfix ="skimmed", string xsecFile = "None", string filterEffFile = "None", double wgtsf = 1) {
 
   //get the output name
   TString outName(fileName);
