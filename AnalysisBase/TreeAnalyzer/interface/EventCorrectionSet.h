@@ -39,6 +39,27 @@ class CTTCorr : public Correction {
   TH1F* mistagSF;
 };
 
+class SdTopCorr : public Correction {
+  public:
+  SdTopCorr(TString fileName);
+  ~SdTopCorr();
+  float process(CORRTYPE corrType, double maxGoodTopPT);
+
+  TFile * sdTopinputFile;
+  TH1F * sdTopDataFullSF;
+  TH1F * sdTopFullFastSF;
+};
+class SdWCorr : public Correction {
+  public:
+  SdWCorr(TString fileName);
+  ~SdWCorr();
+  float process(CORRTYPE corrType, double maxGoodWPT);
+
+  TFile * sdWinputFile;
+  TH1F * sdWDataFullSF;
+  TH1F * sdWFullFastSF;
+};
+
 class EventCorrectionSet : public CorrectionSet {
 public:
   enum  CorrectionOptions {
@@ -47,12 +68,13 @@ public:
                           , TRUEPU           = (1 <<  1)   ///< Correct PU
                           , NORM             = (1 <<  2)   ///< Incl. normalization corrections
                           , CTT              = (1 <<  3)   ///< CTT top tagging
-
+                          , SDTOP            = (1 <<  4)   ///< SD top tagging
+                          , SDW              = (1 <<  5)   ///< SD w tagging
   };
- EventCorrectionSet(): puCorr(0), truePUCorr(0), cttCorr(0), puWeight(1), truePUWeight(1), normWeight(1),cttWeight(1) {}
+ EventCorrectionSet(): puCorr(0), truePUCorr(0), cttCorr(0), sdTopCorr(0), sdWCorr(0), puWeight(1), truePUWeight(1), normWeight(1),cttWeight(1),sdTopWeight(1),sdWWeight(1){}
 
   virtual ~EventCorrectionSet() {};
-  virtual void load(TString fileName, TString cttCorrName, int correctionOptions = NULLOPT);
+  virtual void load(TString fileName, TString cttCorrName, TString sdCorrName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
@@ -60,18 +82,24 @@ public:
   float getTruePUWeight() const {return truePUWeight;}
   float getNormWeight() const {return normWeight;}
   float getCTTWeight() const {return cttWeight;}
+  float getSdTopWeight() const {return sdTopWeight;}
+  float getSdWWeight() const {return sdWWeight;}
 
 private:
   //Correction list
   PUCorr * puCorr;
   TruePUCorr * truePUCorr;
   CTTCorr * cttCorr;
+  SdTopCorr * sdTopCorr;
+  SdWCorr * sdWCorr;
 
   //output values
   float puWeight;
   float truePUWeight;
   float normWeight;
   float cttWeight;
+  float sdTopWeight;
+  float sdWWeight;
 
 };
 

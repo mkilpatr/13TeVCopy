@@ -86,9 +86,10 @@ class smsPlotABS(object):
         graphWhite.Draw("FSAME")
         graphWhite.Draw("LSAME")
         self.c.graphWhite = graphWhite
-       	CMS_lumi.writeExtraText = 0
+       	CMS_lumi.writeExtraText = 1
 	CMS_lumi.extraText = "Preliminary"
-	CMS_lumi.lumi_13TeV="2.3 fb^{-1}"
+	#CMS_lumi.lumi_13TeV="2.3 fb^{-1}"
+	CMS_lumi.lumi_13TeV="12.9 fb^{-1}"
 
 	CMS_lumi.lumi_sqrtS = "13 TeV"  
 	iPos=0
@@ -99,7 +100,7 @@ class smsPlotABS(object):
         textCMS.SetTextAlign(13)
         textCMS.SetTextFont(52)
         textCMS.SetTextSize(0.038)
-        textCMS.Draw()
+        #textCMS.Draw()
         self.c.textCMS = textCMS
         # MODEL LABEL
         if self.model.extraText :
@@ -269,10 +270,14 @@ class smsPlotABS(object):
     def DrawDiagonal(self):
         #diagonal = rt.TGraph(3, self.model.diagX, self.model.diagY)
         diagonal = rt.TGraph(4)
-        diagonal.SetPoint(0,150.0+self.model.Ymin,self.model.Ymin)
-        diagonal.SetPoint(1,150.0+self.model.Ymax,self.model.Ymax)
-        diagonal.SetPoint(2,200.0+self.model.Ymax,self.model.Ymax)
-        diagonal.SetPoint(3,200.0+self.model.Ymin,self.model.Ymin)
+        #diagonal.SetPoint(0,150.0+self.model.Ymin,self.model.Ymin)
+        #diagonal.SetPoint(1,150.0+self.model.Ymax,self.model.Ymax)
+        #diagonal.SetPoint(2,200.0+self.model.Ymax,self.model.Ymax)
+        #diagonal.SetPoint(3,200.0+self.model.Ymin,self.model.Ymin)
+        diagonal.SetPoint(0,150.0,0.0)
+        diagonal.SetPoint(1,262.5,112.5)
+        diagonal.SetPoint(2,287.5,87.5)
+        diagonal.SetPoint(3,200.0,0.0)
         diagonal.SetName("diagonal")
         diagonal.SetFillColor(rt.kWhite)
         diagonal.SetLineColor(rt.kGray)
@@ -289,14 +294,14 @@ class smsPlotABS(object):
         diagLine.SetMarkerStyle(20)
         diagLine.SetPoint(0,172.5+self.model.Ymin,self.model.Ymin)
         diagLine.SetPoint(1,172.5+self.model.Ymax,self.model.Ymax)
-        diagLine.Draw("LSAME")
+        #diagLine.Draw("LSAME")
         self.c.diagLine = diagLine
         tdiagonal = rt.TLatex(450, 450-172.5,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}")
         tdiagonal.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
         tdiagonal.SetTextColor(rt.kGray+2)
         tdiagonal.SetTextAlign(11)
         tdiagonal.SetTextSize(0.025)
-        tdiagonal.Draw("SAME")
+        #tdiagonal.Draw("SAME")
         self.c.tdiagonal = tdiagonal
         
     def DrawLines(self):
@@ -332,16 +337,16 @@ class smsPlotABS(object):
             exp.SetLineWidth(2)                        
         # DRAW LINES
         for exp in self.EXP['nominal'] :
-            exp.Draw("CSAME")
+            exp.Draw("LSAME")
         for exp in self.EXP['plus'] :
-            exp.Draw("CSAME")
+            exp.Draw("LSAME")
         for exp in self.EXP['minus'] :
-            exp.Draw("CSAME")
+            exp.Draw("LSAME")
         for obs in self.OBS['nominal'] :
-            obs.Draw("CSAME")
+            obs.Draw("LSAME")
         for obs in self.OBS['plus'] :
-            obs.Draw("CSAME")
+            obs.Draw("LSAME")
         for obs in self.OBS['minus'] :
-            obs.Draw("CSAME")
+            obs.Draw("LSAME")
 
         

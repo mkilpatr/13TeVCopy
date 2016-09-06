@@ -43,8 +43,8 @@ extern float minJetRelE         ;
 class Parton {
 public:
   const Particle * parton;
-  const unsigned int genIdx;
-  const float      hadE;
+  unsigned int genIdx;
+  float      hadE;
 
   PartonDiagnosis diag;
   std::vector<std::pair<float,int> > containment; //[containment] [jet]
@@ -140,6 +140,7 @@ public:
 
   std::vector<TopDecay> topDecays;
   std::vector<BosonDecay> bosonDecays;
+  std::vector<const Parton*> nonTopOrBosonSUSYPartons;
 
   std::vector<float> subtractedJetPTs;
 
@@ -152,7 +153,7 @@ public:
   }
 
   template<typename GenPrtRead,typename JetRead>
-  PartonEvent(const GenPrtRead& genParticleReader, JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
+  PartonEvent(const GenPrtRead& genParticleReader, const JetRead& jetReader, const std::vector<Jet*>& inJets): jets(inJets){
     //Get pointers to necessary variables
     const std::vector<ucsbsusy::size16 >* genAssocPrtIndex = jetReader.genAssocPrtIndex_;
     const std::vector<ucsbsusy::size16 >* genAssocJetIndex = jetReader.genAssocJetIndex_;

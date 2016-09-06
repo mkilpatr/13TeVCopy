@@ -20,14 +20,15 @@ public:
   i_pt          (0),
   i_absEta         (0),
   i_csv (0),
-  i_flavor      (0)
+  i_flavor      (0),
+  i_njets      (0)
   {
   };
   virtual ~Copier() {};
 
   virtual void loadVariables(){
     load(cfgSet::EVTINFO);
-    load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
+    load(cfgSet::AK4JETS);
     load(cfgSet::GENPARTICLES);
   }
 
@@ -60,11 +61,12 @@ public:
 
     bool passBaseline = true;
     if(met->pt() < 175) passBaseline = false;
-    if(nJets < 4) passBaseline = false;
+    if(nJets < 2) passBaseline = false;
     if(!passBaseline) return false;
 
     data.fill<unsigned int>(i_process,process);
     data.fill<bool>(i_passBaseline,passBaseline);
+    data.fill<unsigned int>(  i_njets,nJets);
     data.fill<float>(i_weight,weight);
     data.fill<float>(i_puWeight,eventCorrections.getTruePUWeight());
 
@@ -115,7 +117,9 @@ public:
   }
 
   void book() {
+    cout << "a";
     i_process       = data.add<unsigned int>("","process"                      ,"i",0);
+    i_njets         = data.add<unsigned int>("","numjets"                        ,"i",0);
     i_passBaseline  = data.add<bool>("","passBaseline"                      ,"O",0);
     i_weight        = data.add<float>("","weight"                      ,"F",0);
     i_puWeight      = data.add<float>("","puWeight"                      ,"F",0);
@@ -135,6 +139,7 @@ public:
   size i_absEta      ;
   size i_csv         ;
   size i_flavor      ;
+  size i_njets       ;
 
   bool   applyCHFFilter = false ;
 };
@@ -142,10 +147,10 @@ public:
 
 #endif
 
-void BtagEffTreeMaker(TString sname = "T2tt_750_100",
+void BtagEffTreeMaker(TString sname = "ttbar",
                              const int fileindex = -1,
                              const bool isMC = true,
-                             const TString fname = "/store/user/apatters/13TeV/271115/merged/T2tt_750_100_ntuple_postproc.root",
+                             const TString fname = "/store/user/apatters/13TeV/02072016/merged/ttbar-t1l-madgraph_1_ntuple_postproc.root",
                              const TString outputdir = "trees",
                              const TString fileprefix = "root://cmseos:1094/",
                              const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
@@ -168,7 +173,7 @@ void BtagEffTreeMaker(TString sname = "T2tt_750_100",
 
    // disable JetID for signal samples
     if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) cfg.jets.applyJetID = false;
-
+    cout << outfilename.Data() << endl;
     TString treeName = "Events";
     Copier a(fullname,treeName,outfilename.Data(),fileindex +2,isMC, &cfg);
 

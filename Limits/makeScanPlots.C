@@ -55,30 +55,30 @@ void SetupColors(){
   gStyle->SetPalette(bands, colors);
 }
 
-void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TString outputFileName = "limit_scan_T2tt.root", bool additionalInterpolation = false)
+void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TString outputFileName = "limit_scan_T2tt.root", bool expectedOnly = false, bool additionalInterpolation = false)
 {
 
   SetupColors();
 
   TFile* inputFile = new TFile(inputFileName);
 
-  TH2D* hobs = (TH2D*)inputFile->Get("hobs");
-  TH2D* hobsdown = (TH2D*)inputFile->Get("hobsdown");
-  TH2D* hobsup = (TH2D*)inputFile->Get("hobsup");
+  TH2D* hobs = expectedOnly ? 0 : (TH2D*)inputFile->Get("hobs");
+  TH2D* hobsdown = expectedOnly ? 0 : (TH2D*)inputFile->Get("hobsdown");
+  TH2D* hobsup = expectedOnly ? 0 : (TH2D*)inputFile->Get("hobsup");
   TH2D* hexp = (TH2D*)inputFile->Get("hexp");
   TH2D* hexpdown = (TH2D*)inputFile->Get("hexpdown");
   TH2D* hexpup = (TH2D*)inputFile->Get("hexpup");
 
   if(additionalInterpolation) {
-    hobs = rebin(hobs, "NE");
-    hobsdown = rebin(hobsdown, "NE");
-    hobsup = rebin(hobsup, "NE");
+    if(hobs) hobs = rebin(hobs, "NE");
+    if(hobsdown) hobsdown = rebin(hobsdown, "NE");
+    if(hobsup) hobsup = rebin(hobsup, "NE");
     hexp = rebin(hexp, "NE");
     hexpdown = rebin(hexpdown, "NE");
     hexpup = rebin(hexpup, "NE");
-    hobs = rebin(hobs, "NE");
-    hobsdown = rebin(hobsdown, "NE");
-    hobsup = rebin(hobsup, "NE");
+    if(hobs) hobs = rebin(hobs, "NE");
+    if(hobsdown) hobsdown = rebin(hobsdown, "NE");
+    if(hobsup) hobsup = rebin(hobsup, "NE");
     hexp = rebin(hexp, "NE");
     hexpdown = rebin(hexpdown, "NE");
     hexpup = rebin(hexpup, "NE");
@@ -95,9 +95,9 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
   vector<double> obs, obsdown, obsup, obsxsec;
 
   TH2D* hxsecexp = (TH2D*)inputFile->Get("hxsecexp");
-  TH2D* hxsecobs = (TH2D*)inputFile->Get("hxsecobs");
-  for(int ibinx = 1; ibinx < hxsecexp->GetNbinsX()+1; ++ibinx) {
-    for(int ibiny = 1; ibiny < hxsecexp->GetNbinsY()+1; ++ibiny) {
+  TH2D* hxsecobs = expectedOnly ? hxsecexp : (TH2D*)inputFile->Get("hxsecobs");
+  for(int ibinx = 1; ibinx <= hxsecexp->GetNbinsX()+1; ++ibinx) {
+    for(int ibiny = 1; ibiny <= hxsecexp->GetNbinsY()+1; ++ibiny) {
       if(hxsecexp->GetBinContent(ibinx, ibiny) != 0.0) {
         mstopsxsec.push_back(hxsecexp->GetXaxis()->GetBinCenter(ibinx));
         mlspsxsec.push_back(hxsecexp->GetYaxis()->GetBinLowEdge(ibiny));
@@ -107,14 +107,14 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
     }
   }
 
-  for(int ibinx = 1; ibinx < hexp->GetNbinsX()+1; ++ibinx) {
-    for(int ibiny = 1; ibiny < hexp->GetNbinsY()+1; ++ibiny) {
+  for(int ibinx = 1; ibinx <= hexp->GetNbinsX()+1; ++ibinx) {
+    for(int ibiny = 1; ibiny <= hexp->GetNbinsY()+1; ++ibiny) {
       if(hexp->GetBinContent(ibinx, ibiny) != 0.0) {
         mstops.push_back(hexp->GetXaxis()->GetBinCenter(ibinx));
         mlsps.push_back(hexp->GetYaxis()->GetBinLowEdge(ibiny));
-        obs.push_back(hobs->GetBinContent(ibinx, ibiny));
-        obsdown.push_back(hobsdown->GetBinContent(ibinx, ibiny));
-        obsup.push_back(hobsup->GetBinContent(ibinx, ibiny));
+        obs.push_back(hobs ? hobs->GetBinContent(ibinx, ibiny) : hexp->GetBinContent(ibinx, ibiny));
+        obsdown.push_back(hobsdown ? hobsdown->GetBinContent(ibinx, ibiny) : hexpdown->GetBinContent(ibinx, ibiny));
+        obsup.push_back(hobsup ? hobsup->GetBinContent(ibinx, ibiny) : hexpup->GetBinContent(ibinx, ibiny));
         exp.push_back(hexp->GetBinContent(ibinx, ibiny));
         expdown.push_back(hexpdown->GetBinContent(ibinx, ibiny));
         expup.push_back(hexpup->GetBinContent(ibinx, ibiny));

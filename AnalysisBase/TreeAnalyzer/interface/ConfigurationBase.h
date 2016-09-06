@@ -15,6 +15,7 @@
 #include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/ISRCorrectionSet.h"
 
 
 #include <iostream>
@@ -190,9 +191,12 @@ namespace cfgSet {
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
     TString cttCorrectionFile;
+    TString sdCorrectionFile;
     TString puCorrectionFile;
     ucsbsusy::CORRTYPE cttEffSFType;
     ucsbsusy::CORRTYPE cttMistagSFType;
+    ucsbsusy::CORRTYPE sdTopCorrType;
+    ucsbsusy::CORRTYPE sdWCorrType;
 
 
     TString triggerCorrectionFile;
@@ -203,6 +207,7 @@ namespace cfgSet {
 
 
     TString leptonCorrectionFile;
+    TString leptonCorrectionFile2;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
     //ucsbsusy::CORRTYPE tnpElIdCorrType;
@@ -234,6 +239,14 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE metResSystRunIType;
     ucsbsusy::CORRTYPE metResSystRunIIType;
 
+
+    int isrCorrections;
+    TString isrCorrFile;
+    TString isrSigNormFile;
+    TString isrSigNormTightFile;
+    std::vector<TString> isrSigNorms;
+    ucsbsusy::CORRTYPE isrType;
+
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         wpolCorrections(ucsbsusy::WPolCorrectionSet::NULLOPT),
@@ -244,6 +257,8 @@ namespace cfgSet {
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         cttEffSFType(ucsbsusy::NONE),
         cttMistagSFType(ucsbsusy::NONE),
+        sdTopCorrType(ucsbsusy::NONE),
+        sdWCorrType(ucsbsusy::NONE),
         trigPhotonCorrType(ucsbsusy::NONE),
         trigElectronCorrType(ucsbsusy::NONE),
         trigMuonCorrType(ucsbsusy::NONE),
@@ -264,7 +279,9 @@ namespace cfgSet {
         jetResTailFile(1),
       jetResTailCorrType(ucsbsusy::NONE),
       metResSystRunIType(ucsbsusy::NONE),
-      metResSystRunIIType(ucsbsusy::NONE)
+      metResSystRunIIType(ucsbsusy::NONE),
+      isrCorrections(ucsbsusy::ISRCorrectionSet::NULLOPT),
+      isrType(ucsbsusy::NONE)
     {};
     friend std::ostream& operator<<(std::ostream& os, const CorrectionConfig& a){
       if(a.ttbarCorrections != ucsbsusy::TtbarCorrectionSet::NULLOPT){
@@ -290,6 +307,10 @@ namespace cfgSet {
           os << "NORM ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::CTT)
           os << " CTT Eff("<< a.cttEffSFType <<") Mistag("<<a.cttMistagSFType<<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDTOP)
+          os << " SDTOP Eff("<< a.sdTopCorrType <<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDW)
+          os << " SDW Eff("<< a.sdWCorrType <<")";
         os << std::endl;
 
       }
@@ -323,7 +344,7 @@ namespace cfgSet {
       }
 
       if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
-        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() <<" -> ";
+        os << "Applying lepton corrections from " << a.leptonCorrectionFile.Data() << " and " << a.leptonCorrectionFile2.Data() << " and the TnP files... " <<" -> ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
           os << "LEP ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)
@@ -360,6 +381,22 @@ namespace cfgSet {
         if(a.jetAndMETCorrections & ucsbsusy::JetAndMETCorrectionSet::METRESSYSTRUNII)
           os << "METResolutionSystRunII  ";
         os << std::endl;
+      }
+      if(a.isrCorrections != ucsbsusy::ISRCorrectionSet::NULLOPT){
+        if(a.isrCorrections & ucsbsusy::ISRCorrectionSet::ISRCORR){
+          os << "Applying ISR corrections from " << a.isrCorrFile.Data()<<","<<a.isrSigNormFile.Data() <<" -> (";
+          for(unsigned int iN = 0; iN < a.isrSigNorms.size(); ++iN){
+            os << a.isrSigNorms[iN] <<" ";
+          }
+          os <<")"<<std::endl;
+        }
+        if(a.isrCorrections & ucsbsusy::ISRCorrectionSet::ISRCORRTIGHT){
+          os << "Applying ISR corrections from " << a.isrCorrFile.Data()<<","<<a.isrSigNormTightFile.Data() <<" -> (";
+          for(unsigned int iN = 0; iN < a.isrSigNorms.size(); ++iN){
+            os << a.isrSigNorms[iN] <<" ";
+          }
+          os <<")"<<std::endl;
+        }
       }
       return os;
     }

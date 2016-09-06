@@ -1,0 +1,13 @@
+<lcgdict>
+
+  <class name="RooCBExGaussShape" ClassVersion="2">
+    <version ClassVersion="2" checksum="606229016"/>
+    <version ClassVersion="1" checksum="1178796923"/>
+  </class>
+
+  <class name="ZGeneratorLineShape" ClassVersion="2">
+   <version ClassVersion="2" checksum="2777463750"/>
+    <version ClassVersion="1" checksum="1178796923"/>
+  </class>
+
+</lcgdict>

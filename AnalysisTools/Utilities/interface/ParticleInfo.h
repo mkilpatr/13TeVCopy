@@ -84,6 +84,9 @@ bool isLastInChain(const Particle* particle, bool (*selectID)(int) = 0);
 template<typename ParticleRef>
 ParticleRef getFinal(ParticleRef particle, int maxNumDaughters = -1);
 
+//// is a hadronically decaying w. caller may && with isLastInChain to count w.
+template<typename Particle>
+bool isGenWHadronic(const Particle* particle);
 //// is a hadronically decaying top. caller may && with isLastInChain to count tops.
 template<typename Particle>
 bool isGenTopHadronic(const Particle* particle);

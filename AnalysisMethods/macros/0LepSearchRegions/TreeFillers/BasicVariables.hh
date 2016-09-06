@@ -21,18 +21,20 @@ struct BasicVarsFiller {
   size i_ismc      ;
   size i_weight    ;
   size i_truePUWeight;
-  size i_trigEleWeight;
-  size i_trigMuWeight;
-  size i_trigMetOrElWeight;
-  size i_trigMetOrMuWeight;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
   size i_topptWeight;
-  size i_cttWeight;
-  size i_lepvetoweight;
-  size i_lepselweight;
-  size i_leptnpweight;
+  size i_lepvetoweightLM;
+  size i_lepselweightLM;
+  size i_lepvetoweightHM;
+  size i_lepselweightHM;
+  size i_leptnpweightLM;
+  size i_leptnpweightHM;
+  size i_isrWeight;
+  size i_isrWeightTight;
+  size i_sdtopFastSimWeight;
+  size i_sdwFastSimWeight;
 
   // Trigger and filters
   size i_passjson  ;
@@ -117,18 +119,20 @@ struct BasicVarsFiller {
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
-    i_trigEleWeight  = data->add<float>("","trigEleWeight","F",1);
-    i_trigMuWeight   = data->add<float>("","trigMuWeight","F",1);
-    i_trigMetOrElWeight = data->add<float>("","trigMetOrElWeight","F",1);
-    i_trigMetOrMuWeight = data->add<float>("","trigMetOrMuWeight","F",1);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
     i_topptWeight    = data->add<float>("","topptWeight","F",1);
-    i_cttWeight      = data->add<float>("","cttWeight","F",0);
-    i_lepvetoweight  = data->add<float>("","lepvetoweight","F",0);
-    i_lepselweight   = data->add<float>("","lepselweight","F",0);
-    i_leptnpweight   = data->add<float>("","leptnpweight","F",0);
+    i_lepvetoweightLM  = data->add<float>("","lepvetoweightLM","F",0);
+    i_lepselweightLM   = data->add<float>("","lepselweightLM","F",0);
+    i_lepvetoweightHM  = data->add<float>("","lepvetoweightHM","F",0);
+    i_lepselweightHM   = data->add<float>("","lepselweightHM","F",0);
+    i_leptnpweightLM = data->add<float>("","leptnpweightLM","F",0);
+    i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
+    i_isrWeight      = data->add<float>("","isrWeight","F",0);
+    i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
+    i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
+    i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
 
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
@@ -224,18 +228,20 @@ struct BasicVarsFiller {
     data->fill<bool >(i_ismc,   ana->isMC());
     data->fill<float>(i_weight, ana->weight);
     data->fill<float>(i_truePUWeight,       ana->eventCorrections.getTruePUWeight());
-    data->fill<float>(i_trigEleWeight,      ana->triggerCorrections.getTrigEleWeight());
-    data->fill<float>(i_trigMuWeight,       ana->triggerCorrections.getTrigMuWeight());
-    data->fill<float>(i_trigMetOrElWeight,  ana->triggerCorrections.getTrigMetOrElWeight());
-    data->fill<float>(i_trigMetOrMuWeight,  ana->triggerCorrections.getTrigMetOrMuWeight());
     data->fill<float>(i_btagWeight,         ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight,  ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight,  ana->jetAndMETCorrections.getQCDRespTailWeight());
     data->fill<float>(i_topptWeight,        ana->ttbarCorrections.getTopPTWeight());
-    data->fill<float>(i_cttWeight,          ana->eventCorrections.getCTTWeight());
-    data->fill<float>(i_lepvetoweight,      ana->leptonCorrections.getVetoLepWeight());
-    data->fill<float>(i_lepselweight,       ana->leptonCorrections.getSelLepWeight());
-    data->fill<float>(i_leptnpweight,       ana->leptonCorrections.getTnPLepWeight());
+    data->fill<float>(i_lepvetoweightLM,    ana->leptonCorrections.getVetoLepWeightLM());
+    data->fill<float>(i_lepselweightLM,     ana->leptonCorrections.getSelLepWeightLM());
+    data->fill<float>(i_lepvetoweightHM,    ana->leptonCorrections.getVetoLepWeightHM());
+    data->fill<float>(i_lepselweightHM,     ana->leptonCorrections.getSelLepWeightHM());
+    data->fill<float>(i_leptnpweightLM,     ana->leptonCorrections.getTnPLepWeightLM());
+    data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
+    data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
+    data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
+    data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
+    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
@@ -328,14 +334,8 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
     data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
-    std::vector<const FatJetF*> recow_;
-    std::vector<const FatJetF*> recotop_;
-    for (const auto *fj : ana->fatJets){
-      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) recotop_.push_back(fj);
-      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) recow_.push_back(fj);
-    }
-    data->fill<int  >(i_nsdtoploose,  recotop_.size());
-    data->fill<int  >(i_nsdwloose,    recow_.size());
+    data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
+    data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;
@@ -428,12 +428,12 @@ struct BasicVarsFiller {
 
       double drrecoleprecow_ = 999.;
       double drrecoleprecotop_ = 999.;
-      for (const auto *fj : recow_) {
+      for (const auto *fj : ana->selectedSdWs) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
         if (tmdr_<drrecoleprecow_) { drrecoleprecow_ = tmdr_; }
       }
 
-      for (const auto *fj : recotop_) {
+      for (const auto *fj : ana->selectedSdTops) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
         if (tmdr_<drrecoleprecotop_) { drrecoleprecotop_ = tmdr_; }
       }

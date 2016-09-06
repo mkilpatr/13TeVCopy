@@ -101,6 +101,7 @@ datasets = []
 totnposevents = []
 totnnegevents = []
 xsecfiles = []
+filterfiles = []
 wgtscalefactors = []
 
 def parseConfig(removeExtension=False, removeGenJets5=False):
@@ -125,7 +126,11 @@ def parseConfig(removeExtension=False, removeGenJets5=False):
             if len(content) > 4 :
                 xsecfiles.append(content[4])
             else :
-                xsecfiles.append("NONE")
+                xsecfiles.append('None')
+            if len(content) > 5 :
+                filterfiles.append(content[5])
+            else:
+                filterfiles.append('None')
 
 eos = "/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
@@ -283,11 +288,16 @@ elif args.postprocess :
             if 'qcd' in samples[isam]:
                 extrafilelist = [os.path.join(args.inputdir, f) for f in os.listdir(args.inputdir) if re.match(r'%s-genjets5(-ext[0-9]*|)(_[0-9]+|)_ntuple.root' % samples[isam], f)]
         files.append(filelist + extrafilelist)
-        nposevents = get_num_events(filelist, prefix)
-        nnegevents = get_num_events(filelist, prefix, -1)
+        if re.search('-[0-9]{4}[a-zA-Z]-', samples[isam]):
+            print samples[isam] + ' is data! No need to get total number of events.'
+            nposevents = 1
+            nnegevents = 0
+        else:
+            nposevents = get_num_events(filelist, prefix)
+            nnegevents = get_num_events(filelist, prefix, -1)
+            print "Sample " + samples[isam] + " has " + str(nposevents) + " positive and " + str(nnegevents) + " negative weight events"
         totnposevents.append(nposevents)
         totnnegevents.append(nnegevents)
-        print "Sample " + samples[isam] + " has " + str(nposevents) + " positive and " + str(nnegevents) + " negative weight events"
         if 'qcd' in samples[isam]:
             ngenjets5events = get_num_events(filelist, prefix, selection=' && nstdgenjets>=5')
             nextragenjets5events = get_num_events(extrafilelist, prefix, selection=' && nstdgenjets>=5')
@@ -328,12 +338,12 @@ echo "$runscript $runmacro $workdir $outputdir"
             filename = files[isam][ifile].split('/')[-1]
             outfilename = filename.replace(".root", "_{}.root".format(args.postsuffix))
             if args.submittype == "interactive" :
-                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\",{wgtsf}\)\n""".format(
-                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam]
+                script.write("""root -l -q -b $runmacro+\(\\"$prefix{fname}\\",\\"{process}\\",{xsec},{lumi},{nposevts},{nnegevts},\\"$treename\\",\\"$suffix\\",\\"{xsecfile}\\",\\"{filterfile}\\",{wgtsf}\)\n""".format(
+                fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam]
                 ))
             elif args.submittype == "lsf" :
-                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {wgtsf} {outname} {outdir} $workdir\n""".format(
-                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], outname=outfilename, outdir=args.outdir
+                script.write("""bsub -q {queue} $runscript $runmacro $prefix{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} $treename $suffix {xsecfile} {filterfile} {wgtsf} {outname} {outdir} $workdir\n""".format(
+                queue=args.queue, fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnegevents[isam], xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam], outname=outfilename, outdir=args.outdir
                 ))
             elif args.submittype == "condor" :
                 os.system("mkdir -p %s/logs" % args.jobdir)
@@ -344,7 +354,7 @@ universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = runaddweight{stype}.sh
-Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {wgtsf} {outname} {outdir} {workdir}
+Arguments               = {macro} {prefixs}{fname} {process} {xsec} {lumi} {nposevts} {nnegevts} {tname} {suffix} {xsecfile} {filterfile} {wgtsf} {outname} {outdir} {workdir}
 Output                  = logs/{sname}_{num}_addweight.out
 Error                   = logs/{sname}_{num}_addweight.err
 Log                     = logs/{sname}_{num}_addweight.log
@@ -358,7 +368,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], wgtsf=wgtscalefactors[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
+                stype=args.submittype, macro="AddWgt2UCSBntuples.C", prefixs=prefix, workdir="${CMSSW_BASE}", fname=files[isam][ifile], process=processes[isam], xsec=xsecs[isam], lumi=args.lumi, nposevts=totnposevents[isam], nnegevts=totnnegevents[isam], tname=args.treename, suffix=args.postsuffix, xsecfile=xsecfiles[isam], filterfile=filterfiles[isam], wgtsf=wgtscalefactors[isam], sname=samples[isam], num=ifile, jobdir=args.jobdir, outname=outfilename, outdir=args.outdir
                 ))
                 jobscript.close()
                 script.write("./{jobdir}/submit_{name}_{j}_addwgt.sh\n".format(jobdir=args.jobdir, name=samples[isam], j=ifile))
@@ -612,7 +622,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
         if not datasets[isam]: continue
         if not args.resubmit :
             if args.arrangement == "das" :
-                cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
+                cmd = ("das_client --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
                 subprocess.call(cmd, shell=True)
             elif args.arrangement == "local" and args.splittype == "file" :
                 cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
@@ -622,7 +632,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
         elif args.resubmit and not os.path.isfile("%s/filelist_%s.txt" % (args.jobdir, samples[isam])) :
             print "Error: Trying to resubmit jobs without filelist!"
         if args.arrangement == "das" :
-            cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
+            cmd = ("das_client --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             numevents = int(ps.communicate()[0])
             if args.maxevents > -1  and args.maxevents < numevents :

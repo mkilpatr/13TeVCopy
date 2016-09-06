@@ -268,7 +268,7 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     partons.emplace_back(&genParticles->at(iP),iP,hadronE->at(iP));
   }
 
-  //fill jet containments!
+//  //fill jet containments!
   int conIndex = -1;
   for(size iJ = 0; iJ < genAssocCon->size(); ++iJ){
     conType con = genAssocCon->at(iJ);
@@ -282,6 +282,9 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     partons[partonIdxs[genAssocPrtIndex->at(conIndex)]].addContainment(genAssocJetIndex->at(iJ), fromContainmentType(con) );
   }
 
+  //sort partons by pt
+  sort(partons.begin(),partons.end(),[](const Parton& i,const Parton& j){ return (i.parton->pt() > j.parton->pt());});
+
   //First let's fill bosons
     for(unsigned int iP = 0; iP < genParticles->size(); ++iP){
       const auto& p = genParticles->at(iP);
@@ -293,6 +296,9 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     bosonDecays.emplace_back(&p,iP,partons);
   }
 
+    //sort bosons by pt
+    sort(bosonDecays.begin(),bosonDecays.end(),[](const BosonDecay& i,const BosonDecay& j){ return (i.boson->pt() > j.boson->pt());});
+
   //now for the tops!
   for(const auto& p : *genParticles){
     if(TMath::Abs(p.pdgId()) != ParticleInfo::p_t) continue;
@@ -300,11 +306,32 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
     topDecays.emplace_back(&p,bosonDecays,partons);
   }
 
+  //sort tops by pt
+  sort(topDecays.begin(),topDecays.end(),[](const TopDecay& i,const TopDecay& j){ return (i.top->pt() > j.top->pt());});
+
+  //Now for leftover SUSY particles
+  for(const auto& p : *genParticles){
+    if(TMath::Abs(p.pdgId()) < ParticleInfo::p_sdownL) continue;
+    if(!ParticleInfo::isLastInChain(&p)) continue;
+    for(unsigned int iD = 0; iD < p.numberOfDaughters(); ++iD){
+      const int dauPdgId = TMath::Abs(p.daughter(iD)->pdgId());
+      if(!ParticleInfo::isQuarkOrGluon(dauPdgId) || dauPdgId == ParticleInfo::p_t ) continue;
+      if(!ParticleInfo::isDocOutgoing(p.daughter(iD)->status())) continue;
+      for(const auto&  parton: partons){
+       if(parton.genIdx != p.daughterRef(iD).key() ) continue;
+       nonTopOrBosonSUSYPartons.push_back(&parton);
+      }
+    }
+  }
+
+  //sort others by pt
+  sort(nonTopOrBosonSUSYPartons.begin(),nonTopOrBosonSUSYPartons.end(),[](const Parton* i, const Parton* j) -> bool{ return (i->parton->pt() > j->parton->pt());});
+
   //Now add in the important partons
   for(const auto& d: bosonDecays)
     importantPartons.insert(importantPartons.end(), d.hadronicPartons.begin(), d.hadronicPartons.end());
   for(const auto& d: topDecays) importantPartons.push_back(d.b);
-
+  for(const auto* d: nonTopOrBosonSUSYPartons) importantPartons.push_back(d);
 }
 
 

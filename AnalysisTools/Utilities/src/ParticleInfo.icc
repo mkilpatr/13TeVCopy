@@ -22,6 +22,27 @@ bool ParticleInfo::isLastInChain(const Particle* particle, bool (*selectID)(int)
   }
   return true;
 }
+
+//_____________________________________________________________________________
+template<typename Particle>
+bool ParticleInfo::isGenWHadronic(const Particle* particle) {
+  int wPdgid = TMath::Abs(particle->pdgId());
+  if(wPdgid != ParticleInfo::p_Wplus) return false;
+
+  for(unsigned int iD = 0; iD < particle->numberOfDaughters(); ++iD){
+    const Particle* dau = particle->daughter(iD);
+    int dauPdgid = TMath::Abs(dau->pdgId());
+    if(dauPdgid == ParticleInfo::p_Wplus) {
+      return ParticleInfo::isGenWHadronic(dau); // recurse to last w in chain
+    }
+  }
+
+  for(unsigned int iD = 0; iD < particle->numberOfDaughters(); ++iD){
+    if( ParticleInfo::isLeptonOrNeutrino(particle->daughter(iD)->pdgId()) ) return false; // is any daughter leptonic
+  }
+  return true;
+}
+
 //_____________________________________________________________________________
 template<typename Particle>
 bool ParticleInfo::isGenTopHadronic(const Particle* particle) {

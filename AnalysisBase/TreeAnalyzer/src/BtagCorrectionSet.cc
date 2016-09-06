@@ -190,9 +190,9 @@ double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetF
   const BTagCalibrationReader * reader = corrReaders[0] [wp] [sytType];
 
   //If CSV == tight do nothing for light jets
-  if(wp == defaults::CSV_TIGHT && sfFlavor == BTagEntry::FLAV_UDSG) return 1;
+  if(wp == defaults::CSVT && sfFlavor == BTagEntry::FLAV_UDSG) return 1;
   //IF CSV == tight give b-jet correction for c-jets
-  if(wp == defaults::CSV_TIGHT && sfFlavor == BTagEntry::FLAV_C) sfFlavor = BTagEntry::FLAV_B;
+  if(wp == defaults::CSVT && sfFlavor == BTagEntry::FLAV_C) sfFlavor = BTagEntry::FLAV_B;
 
   //Current SFs are only valid between 20-800 GeV
   double newPT = -1;
