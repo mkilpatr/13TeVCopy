@@ -9,7 +9,6 @@
 #include "AnalysisBase/Analyzer/interface/EventInfoFiller.h"
 #include "AnalysisBase/Analyzer/interface/PFCandidateFiller.h"
 #include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
-#include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTagInterface.h"
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -73,7 +72,6 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   evtInfofiller_     (evtInfoFiller),
   genParticleFiller_ (genParticleFiller),
   pfCandidateFiller_ (pfCandidateFiller),
-  qglInterface_      (new QuarkGluonTagInterface),
   qgTaggingVar_      (new QuarkGluonTaggingVariables),
   fillReGenJets_     (cfg.getUntrackedParameter<bool>        ("fillReGenJets")),
   jptCompleteMin_    (cfg.getUntrackedParameter<double>      ("completeMinJetPt")),
@@ -131,8 +129,8 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
     ijetphoMult_       = data.addMulti<int>   (branchName_,"jet_phoMult"       , 0);
   }
   ijetcsv_         = data.addMulti<float>(branchName_,"jet_csv"         , 0);
-  ijetcvsl_        = data.addMulti<float>(branchName_,"jet_cvsl"        , 0);	
-  ijetcvsb_        = data.addMulti<float>(branchName_,"jet_cvsb"        , 0);		
+  ijetcvsl_        = data.addMulti<float>(branchName_,"jet_cvsl"        , 0);
+  ijetcvsb_        = data.addMulti<float>(branchName_,"jet_cvsb"        , 0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
 
   if(options_ & LOADGEN) {
@@ -355,8 +353,8 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetptraw_   ,0);
       data.fillMulti<float>(ijetpuId_    ,0);
       data.fillMulti<float>(ijetcsv_     ,0);
-      data.fillMulti<float>(ijetcvsl_    ,0);	
-      data.fillMulti<float>(ijetcvsb_    ,0);		
+      data.fillMulti<float>(ijetcvsl_    ,0);
+      data.fillMulti<float>(ijetcvsb_    ,0);
       data.fillMulti<bool> (ijetlooseId_ ,false);
       data.fillMulti<bool> (ijettightId_ ,false);
       if(options_ & FILLJETCHHADN){
@@ -404,8 +402,8 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
-    data.fillMulti<float>(ijetcvsl_ ,getcvslDisc(j));	
-    data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));		
+    data.fillMulti<float>(ijetcvsl_ ,getcvslDisc(j));
+    data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
     data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
 
@@ -419,7 +417,7 @@ void JetFiller<Jet>::fill()
         if(ipfjet<0) continue;
         const pat::Jet &pfjet = (*jets_)[ipfjet];
         if(pfjet.pt() != j.pt()) continue;
-        if(p->pt() > 2.) jetchHadN2_++;        
+        if(p->pt() > 2.) jetchHadN2_++;
         if(p->pt() > 4.) jetchHadN4_++;
         if(p->pt() > 6.) jetchHadN6_++;
       }

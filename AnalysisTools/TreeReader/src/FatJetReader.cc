@@ -29,6 +29,8 @@ FatJetReader::FatJetReader() : BaseReader(){
   fjeta_           = new vector<float>;
   fjphi_           = new vector<float>;
   fjcsv_           = new vector<float>;
+  fjcvsl_          = new vector<float>;
+  fjcvsb_          = new vector<float>;
   fjnsdsubjets_    = new vector<int  >;
   fjsdsj1mass_     = new vector<float>;
   fjsdsj1pt_       = new vector<float>;
@@ -94,6 +96,8 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "fatjet_eta"              , &fjeta_          ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_phi"              , &fjphi_          ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_csv"              , &fjcsv_          ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_cvsl"             , &fjcvsl_         ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_cvsb"             , &fjcvsb_         ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_nsoftdropsubjets" , &fjnsdsubjets_ ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_mass"   , &fjsdsj1mass_ ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_pt"     , &fjsdsj1pt_ ,true);
@@ -158,7 +162,8 @@ void FatJetReader::refresh(){
 
   for(unsigned int iJ = 0; iJ < fjpt_->size(); ++iJ){
     fatJets.emplace_back(CylLorentzVectorF(fjpt_->at(iJ),fjeta_->at(iJ),fjphi_->at(iJ),fjrawmass_->at(iJ)),
-        iJ, fjcsv_->at(iJ),fjprunedmass_->at(iJ),fjsoftdropmass_->at(iJ),fjtau1_->at(iJ),fjtau2_->at(iJ),fjtau3_->at(iJ));
+        iJ, fjcsv_->at(iJ), fjcvsl_->at(iJ), fjcvsb_->at(iJ),
+        fjprunedmass_->at(iJ),fjsoftdropmass_->at(iJ),fjtau1_->at(iJ),fjtau2_->at(iJ),fjtau3_->at(iJ));
 
     if(fjnsdsubjets_->at(iJ) > 0 ){
       if (fjsdsj1cmva_->empty()) //FIXME

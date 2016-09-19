@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // Jet
-// 
+//
 // Class to hold basic jet information. To be enhanced as needed.
-// 
-// Jet.h created on Tue Aug 19 16:26:39 CEST 2014 
-// 
+//
+// Jet.h created on Tue Aug 19 16:26:39 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_DATAFORMATS_JET_H
@@ -107,15 +107,97 @@ public :
     void  setChHadN2(const int inNChHad)           {chHadN2_      = inNChHad; }
     void  setChHadN4(const int inNChHad)           {chHadN4_      = inNChHad; }
     void  setChHadN6(const int inNChHad)           {chHadN6_      = inNChHad; }
+
+  float axis1() const {
+    return axis1_;
+  }
+
+  void setAxis1(float axis1) {
+    axis1_ = axis1;
+  }
+
+  float axis2() const {
+    return axis2_;
+  }
+
+  void setAxis2(float axis2) {
+    axis2_ = axis2;
+  }
+
+  float betaStar() const {
+    return betaStar_;
+  }
+
+  void setBetaStar(float betaStar) {
+    betaStar_ = betaStar;
+  }
+
+  float cvsb() const {
+    return cvsb_;
+  }
+
+  void setCvsb(float cvsb) {
+    cvsb_ = cvsb;
+  }
+
+  float cvsl() const {
+    return cvsl_;
+  }
+
+  void setCvsl(float cvsl) {
+    cvsl_ = cvsl;
+  }
+
+  int jetMult() const {
+    return jetMult_;
+  }
+
+  void setJetMult(int jetMult) {
+    jetMult_ = jetMult;
+  }
+
+  float ptD() const {
+    return ptD_;
+  }
+
+  void setPtD(float ptD) {
+    ptD_ = ptD;
+  }
+
+  float jetcharge() const {
+    return jetcharge_;
+  }
+
+  void setJetcharge(float jetcharge) {
+    jetcharge_ = jetcharge;
+  }
+
+  float qgl() const {
+    return qgl_;
+  }
+
+  void setQgl(float qgl) {
+    qgl_ = qgl;
+  }
+
 protected :
     float csv_;                     //pointer to csv information
+    float cvsl_;                    //charm vs light discriminator
+    float cvsb_;                    //charm vs b discriminator
     float pt_raw_;                  //magnitude of uncorrected transverse momentum
     float uncertainty_;             //JEC error magnitude
     bool  looseid_;                 //passes loose jet id or not
-    float  chHadFrac_;              //charged hadron fraction
+    float chHadFrac_;               //charged hadron fraction
     int   chHadN2_;                 //charged hadron multiplicity pt 2+
     int   chHadN4_;                 //charged hadron multiplicity pt 4+
     int   chHadN6_;                 //charged hadron multiplicity pt 6+
+    float betaStar_;
+    float qgl_;
+    float ptD_;
+    float axis1_;
+    float axis2_;
+    int   jetMult_;
+    float jetcharge_;
     GenJet<CoordSystem>  *genJet_;  //Matched genJet
 
 };

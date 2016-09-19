@@ -194,6 +194,13 @@ void JetReader::addRecoJetToObjectList(const int iJ){
   recoJets.back().setChHadN2((jetchHadN2_->size()) ? (jetchHadN2_->at(iJ)) : -1);
   recoJets.back().setChHadN4((jetchHadN4_->size()) ? (jetchHadN4_->at(iJ)) : -1);
   recoJets.back().setChHadN6((jetchHadN6_->size()) ? (jetchHadN6_->at(iJ)) : -1);
+  recoJets.back().setBetaStar(jetbetaStar_->size() ? jetbetaStar_->at(iJ) : -1);
+  recoJets.back().setPtD(jetptD_->size() ? jetptD_->at(iJ) : -1);
+  recoJets.back().setAxis1(jetaxis1_->size() ? jetaxis1_->at(iJ) : -1);
+  recoJets.back().setAxis2(jetaxis2_->size() ? jetaxis2_->at(iJ) : -1);
+  recoJets.back().setJetMult(jetMult_->size() ? jetMult_->at(iJ) : -1);
+  recoJets.back().setJetcharge(jetcharge_->size() ? jetcharge_->at(iJ) : -1);
+  recoJets.back().setQgl(jetqgl_->size() ? jetqgl_->at(iJ) : -1);
 
 }
 //--------------------------------------------------------------------------------------------------

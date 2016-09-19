@@ -321,9 +321,13 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     }
 
   case AK8FATJETS : {
+    int defaultOptions = FatJetFiller::defaultOptions;
+    if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= PatJetFiller::LOADJETSHAPE;
+
     ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
-				  0,
-				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
+          options < 0 ? defaultOptions : options,
+				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName,
+				  eventInfo
 				  );
     initializedFillers.push_back(ak8fatjets);
     break;

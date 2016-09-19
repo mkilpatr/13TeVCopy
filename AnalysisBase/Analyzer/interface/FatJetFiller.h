@@ -18,11 +18,21 @@
 
 namespace ucsbsusy {
 
+class QuarkGluonTaggingVariables;
+class EventInfoFiller;
+
+
   class FatJetFiller : public BaseFiller {
 
   public :
-    FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
+    FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller *evtInfoFiller=nullptr);
     ~FatJetFiller() {}
+
+    enum  Options           {
+                              NULLOPT         = 0
+                            , LOADJETSHAPE    = (1 <<  0)   ///< load jet shap variables
+    };
+    static const int defaultOptions = NULLOPT | LOADJETSHAPE;
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
@@ -62,6 +72,11 @@ namespace ucsbsusy {
     size ifj_sdsubjet1_cmva_;
     size ifj_sdsubjet1_cvsl_;
     size ifj_sdsubjet1_cvsb_;
+    size ifj_sdsubjet1_betaStar_;
+    size ifj_sdsubjet1_ptD_;
+    size ifj_sdsubjet1_axis1_;
+    size ifj_sdsubjet1_axis2_;
+    size ifj_sdsubjet1_jetMult_;
     size ifj_sdsubjet2_pt_;
     size ifj_sdsubjet2_eta_;
     size ifj_sdsubjet2_phi_;
@@ -70,6 +85,11 @@ namespace ucsbsusy {
     size ifj_sdsubjet2_cmva_;
     size ifj_sdsubjet2_cvsl_;
     size ifj_sdsubjet2_cvsb_;
+    size ifj_sdsubjet2_betaStar_;
+    size ifj_sdsubjet2_ptD_;
+    size ifj_sdsubjet2_axis1_;
+    size ifj_sdsubjet2_axis2_;
+    size ifj_sdsubjet2_jetMult_;
 
     size ifj_puppi_pt_;
     size ifj_puppi_eta_;
@@ -105,6 +125,11 @@ namespace ucsbsusy {
     edm::Handle<pat::JetCollection> fatJets_;
     edm::Handle<pat::JetCollection> sdCollectionSubjets_;
     edm::Handle<pat::JetCollection> puppiCollectionSubjets_;
+
+  protected:
+    QuarkGluonTaggingVariables* qgTaggingVar_;
+    const EventInfoFiller   * evtInfofiller_;
+
   };
 
 }

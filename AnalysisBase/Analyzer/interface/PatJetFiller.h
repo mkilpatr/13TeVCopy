@@ -20,7 +20,8 @@ namespace ucsbsusy {
       float getbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");}
       float getcvslDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedCvsLJetTags");}
       float getcvsbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedCvsBJetTags");}
-      float getQGDisc(const pat::Jet& jet) const{ return qglInterface_->getDiscriminator(jet,*evtInfofiller_->rho_);}
+      float getQGDisc(const pat::Jet& jet) const{ return -10;}
+//      float getQGDisc(const pat::Jet& jet) const{ return qglInterface_->getDiscriminator(jet,*evtInfofiller_->rho_);}
       float getBetaStar(const pat::Jet& jet) const{ return qgTaggingVar_->getBetaStar(&jet,*evtInfofiller_->vertices_,evtInfofiller_->primaryVertexIndex_);}
   };
 

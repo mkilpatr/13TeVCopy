@@ -47,6 +47,8 @@ namespace ucsbsusy {
     std::vector<float>* fjeta_;
     std::vector<float>* fjphi_;
     std::vector<float>* fjcsv_;
+    std::vector<float>* fjcvsl_;
+    std::vector<float>* fjcvsb_;
     std::vector<int  >* fjnsdsubjets_;
     std::vector<float>* fjsdsj1mass_;
     std::vector<float>* fjsdsj1pt_;
