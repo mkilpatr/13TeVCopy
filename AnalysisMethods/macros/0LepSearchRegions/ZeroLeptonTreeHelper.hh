@@ -64,7 +64,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     virtual ~ZeroLeptonAnalyzer() {}
 
     double metcut_   = 200.0 ;
-    int    minnjets_ =   2   ;
+    int    minnjets_ =   5   ;
 
     unsigned int minnisrj_ =   0   ;
     double       isrptcut_ =   0.0 ;
@@ -84,9 +84,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      m2Filler.book(&data);
 //      hettFiller.book(&data);
 //      cttFiller.book(&data);
-      resFiller.book(&data);
+      //resFiller.book(&data);
       //resFiller.bookExtra(&data);
-      resFiller.bookGen(&data);
+      //resFiller.bookGen(&data);
     }
 
     bool fillEvent() {
@@ -126,9 +126,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.fillGenInfo(&data, this);
       //hettFiller.fillHettInfo(&data,this,jets,hettTops);
       //cttFiller.fillTopTagInfo(&data,this,jets);
-      resFiller.fillResolvedInfo(&data,this,jets,resTops,resCands);
+      //resFiller.fillResolvedInfo(&data,this,jets,resTops,resCands);
       //resFiller.fillResolvedExtraInfo(&data,this,resTops);
-      resFiller.fillResolvedGenInfo(&data,this,resTops,resCands);
+      //resFiller.fillResolvedGenInfo(&data,this,resTops,resCands);
 
       return true;
     }
