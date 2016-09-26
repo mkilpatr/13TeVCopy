@@ -1,20 +1,21 @@
 /*
   Resolved top/W tagger
+  (Ws are suspended -- see resWs and nsubjets commented out)
 
-    ResolvedFiller
+    ResTreeFiller
     fillResolvedInfo
     resolved top = resTops[i]
-    resolved w = resWs[i]
 
-    collections filled are resTops and resWs
+    resTops is the collection of custom objects
       use res.j123 for object MomentumF
-          res.m3jet for total mass
+          res.m3jet for object total mass (=j123.mass())
           res.j1 and j2 for W components
-          res.bjet and res.bjetcsv (is res.j3) for highest csv subjet of tops
+          res.j3 for b component
+          res.bjet and res.bjetcsv (= res.j3) for b component
 
-    reshardnsubjets = resolved, hardest resolved object in event, nsubjets 
-    resmatchedX = resolved, matched to gen, X
-
+    variable names
+      resbestrecoX = resolved tops, best reco top, property X
+      resmatchedbestrecoX = resolved tops, best reco top matched to the event's hardest gen top, property X
 */
 
 #ifndef RESOLVEDTAGGER_HH
@@ -30,6 +31,7 @@
 #include <vector>
 #include "Math/LorentzVector.h"
 #include "Math/VectorUtil.h"
+#include "AnalysisTools/Utilities/interface/PartonMatching.h"
 //#include "AnalysisTools/KinematicVariables/interface/mt2w.h"
 //#include "AnalysisTools/KinematicVariables/interface/Mt2Helper.h"
 
@@ -37,514 +39,675 @@ using namespace ucsbsusy;
 
 struct resolved {
   resolved() : 
-              rjet1(0), rjet2(0), rjet3(0),
+              rj1(0), rj2(0), rj3(0),
               bjetcsv(-1.),
               m1(-1.),  m2(-1.),  m3(-1.),
-              m12(-1.), m13(-1.), m23(-1.), m3jet(-1.),
-              isW(false)
+              m12(-1.), m13(-1.), m23(-1.), m3jet(-1.)
               {}
-  enum NSubjets { MONOJET = 1, DIJET, TRIJET };
-  MomentumF jet1, jet2, jet3;      // subjet momenta. might not be pt-ordered. see individual algo.
-  MomentumF jet123;                // object momentum, the sum of subjets' p4
-  MomentumF bjet;                  // subjet with highest csv
-  float     bjetcsv;               //
-  bool      hasmbjet;               // does csv > defaults::medium
-  RecoJetF *rjet1, *rjet2, *rjet3; // ptrs to reco subjets' full info
-  float     m1, m2, m3, m12, m13, m23, m3jet; // subjet masses, pairwise subjet masses, total object mass
-  NSubjets  nSubjets;              // see enum. 1 to 3. indicates which subjet properties will be filled.
-  bool      isW;                   // example of usage: dijet could mean top=(b,W) or W=(w1,w2)
+  ~resolved(){}
+  MomentumF j1, j2, j3;       // subjet momenta. might not be pt-ordered. see individual algo.
+  MomentumF j123;             // object momentum, the sum of subjets' p4
+  float     pt,eta;           // of j123 - convenience
+  float     bjetcsv;          // csv of bjet (j3)
+  bool      hasmbjet;         // does csv > defaults::medium
+  RecoJetF *rj1, *rj2, *rj3;  // ptrs to reco subjets' full info
+  float     m1, m2, m3;           // subjet masses
+  float     m12, m13, m23, m3jet; // subjet pairwise and total mass
+  float     drW;              // dr between W products = dr(j1,j2)
+  float     drbW;             // dr between b and W = dr(j12,j3)
+  float     dr123;            // max dr between all top products = max(dr12, dr13, dr23)
 };
-std::vector<resolved > resTops;
-std::vector<resolved > resWs;
+std::vector<resolved> resTops;
+std::vector<resolved> resCands; // loose selections, no cleaning 
+//std::vector<resolved > resWs;
+
+// mass windows and resolutions
+  float mW = 80.4;
+  float mWloosemin = mW - 40., mWloosemax = mW + 40.;
+  float mWmin = mW - 20., mWmax = mW + 20.;
+  float mTop = 173.4;
+  float mToploosemin = mTop - 80., mToploosemax = mTop + 80.;
+  float mTopmin = mTop - 50., mTopmax = mTop + 50;
+  float mWres = 10., mTopres = 20.;
+
 
 struct ResTreeFiller {
 
   ResTreeFiller() {}
 
-  // matched
-  size i_resnmatchedrecotops;
-  size i_reshardmatchedisw;
-  size i_reshardmatchednsubjets;
-  size i_reshardmatchedgentoppt;
-  size i_reshardmatchedgentopeta;
-  size i_reshardmatchedrecopt;
-  size i_reshardmatchedrecoeta;
-  size i_reshardmatchedrecom3jet;
-  size i_reshardmatchedrecom12;
-  size i_reshardmatchedrecom13;
-  size i_reshardmatchedrecom23;
-  size i_reshardmatchedrecom1;
-  size i_reshardmatchedrecom2;
-  size i_reshardmatchedrecom3;
-  size i_reshardmatchedrecoj1pt;
-  size i_reshardmatchedrecoj1eta;
-  size i_reshardmatchedrecoj2pt;
-  size i_reshardmatchedrecoj2eta;
-  size i_reshardmatchedrecoj3pt;
-  size i_reshardmatchedrecoj3eta;
-
-  // unmatched
+  // Basic - some properties of best reco top
   size i_resnrecotops;
-  size i_reshardisw;
-  size i_reshardnsubjets;
+  size i_resbestrecopt;
+  size i_resbestrecoeta;
+  size i_resbestrecom3jet;
+  size i_resbestrecom12;
+  size i_resbestrecoWpt;
+  size i_resbestrecodrW;
+  size i_resbestrecodrbW;
+  size i_resbestrecodr123;
+
+  // Extra vars - more properties of best reco top
   size i_reshardgentoppt;
   size i_reshardgentopeta;
-  size i_reshardrecopt;
-  size i_reshardrecoeta;
-  size i_reshardrecom3jet;
-  size i_reshardrecom12;
-  size i_reshardrecom13;
-  size i_reshardrecom23;
-  size i_reshardrecom1;
-  size i_reshardrecom2;
-  size i_reshardrecom3;
-  size i_reshardrecoj1pt;
-  size i_reshardrecoj1eta;
-  size i_reshardrecoj2pt;
-  size i_reshardrecoj2eta;
-  size i_reshardrecoj3pt;
-  size i_reshardrecoj3eta;
+  size i_resbestrecom13;
+  size i_resbestrecom23;
+  size i_resbestrecom1;
+  size i_resbestrecom2;
+  size i_resbestrecom3;
+  size i_resbestrecoj1pt;
+  size i_resbestrecoj1eta;
+  size i_resbestrecoj2pt;
+  size i_resbestrecoj2eta;
+  size i_resbestrecoj3pt;
+  size i_resbestrecoj3eta;
+
+  // Extra vars - properties of best reco top matched (dR) to the hardest gen hadronic top
+  size i_resmatchedhardgentoppt;
+  size i_resmatchedhardgentopeta;
+  size i_resmatchednrecotops;
+  size i_resmatchedbestrecopt;
+  size i_resmatchedbestrecoeta;
+  size i_resmatchedbestrecom3jet;
+  size i_resmatchedbestrecom12;
+  size i_resmatchedbestrecom13;
+  size i_resmatchedbestrecom23;
+  size i_resmatchedbestrecom1;
+  size i_resmatchedbestrecom2;
+  size i_resmatchedbestrecom3;
+  size i_resmatchedbestrecoj1pt;
+  size i_resmatchedbestrecoj1eta;
+  size i_resmatchedbestrecoj2pt;
+  size i_resmatchedbestrecoj2eta;
+  size i_resmatchedbestrecoj3pt;
+  size i_resmatchedbestrecoj3eta;
+
+  // Gen - properties of gen partons and matching
+  size i_ngenhadronictops;
+  size i_gentopavgpt;
+  size i_gendrbdau1; // gen top info
+  size i_gendrbdau2;
+  size i_gendrdau1dau2;
+  size i_gendrbW;
+  size i_gendr123;
+  size i_gendrtops;
+  size i_genmindrtopproducts;
+  size i_gentoppt;
+  size i_genbpt;
+  size i_gendau1pt;
+  size i_gendau2pt;
+
+  size i_recoismatched;
+  size i_recobpt; // matched reco top info
+  size i_recodau1pt;
+  size i_recodau2pt;
+  size i_recodrbdau1;
+  size i_recodrbdau2;
+  size i_recodrdau1dau2;
+  size i_recodrbW;
+  size i_recodr123;
+
+  size i_recotoppt; // extra matched reco top info
+  size i_recotopeta;
+  size i_recoWpt;
+  size i_recoWeta;
+  size i_recobeta;
+  size i_recodau1eta;
+  size i_recodau2eta;
+  size i_recom1;
+  size i_recom2;
+  size i_recom3;
+  size i_recom12;
+  size i_recom3jet;
+
+  size i_twocsvcontainb; // reco pass conditions
+  size i_ncorrectcandjets;
+  size i_correcttoppassed;
+  size i_candfilled;
+  size i_passwwindow;
+  size i_passtopwindow;
+  size i_passdr123;
 
   void book(TreeWriterData* data) {
-    //matched
-    i_resnmatchedrecotops        = data->add<int  >("","resnmatchedrecotops","I",0);
-    i_reshardmatchedisw          = data->add<bool >("","reshardmatchedisw","O",0);
-    i_reshardmatchednsubjets     = data->add<int  >("","reshardmatchednsubjets","I",0);
-    i_reshardmatchedgentoppt     = data->add<float>("","reshardmatchedgentoppt","F",0);
-    i_reshardmatchedgentopeta    = data->add<float>("","reshardmatchedgentopeta","F",0);
-    i_reshardmatchedrecopt       = data->add<float>("","reshardmatchedrecopt","F",0);
-    i_reshardmatchedrecoeta      = data->add<float>("","reshardmatchedrecoeta","F",0);
-    i_reshardmatchedrecom3jet    = data->add<float>("","reshardmatchedrecom3jet","F",0);
-    i_reshardmatchedrecom12      = data->add<float>("","reshardmatchedrecom12","F",0);
-    i_reshardmatchedrecom13      = data->add<float>("","reshardmatchedrecom13","F",0);
-    i_reshardmatchedrecom23      = data->add<float>("","reshardmatchedrecom23","F",0);
-    i_reshardmatchedrecom1       = data->add<float>("","reshardmatchedrecom1","F",0);
-    i_reshardmatchedrecom2       = data->add<float>("","reshardmatchedrecom2","F",0);
-    i_reshardmatchedrecom3       = data->add<float>("","reshardmatchedrecom3","F",0);
-    i_reshardmatchedrecoj1pt     = data->add<float>("","reshardmatchedrecoj1pt","F",0);
-    i_reshardmatchedrecoj1eta    = data->add<float>("","reshardmatchedrecoj1eta","F",0);
-    i_reshardmatchedrecoj2pt     = data->add<float>("","reshardmatchedrecoj2pt","F",0);
-    i_reshardmatchedrecoj2eta    = data->add<float>("","reshardmatchedrecoj2eta","F",0);
-    i_reshardmatchedrecoj3pt     = data->add<float>("","reshardmatchedrecoj3pt","F",0);
-    i_reshardmatchedrecoj3eta    = data->add<float>("","reshardmatchedrecoj3eta","F",0);
-    //unmatched
     i_resnrecotops               = data->add<int  >("","resnrecotops","I",0);
-    i_reshardisw                 = data->add<bool >("","reshardisw","O",0);
-    i_reshardnsubjets            = data->add<int  >("","reshardnsubjets","I",0);
-    i_reshardgentoppt            = data->add<float>("","reshardgentoppt","F",0);
-    i_reshardgentopeta           = data->add<float>("","reshardgentopeta","F",0);
-    i_reshardrecopt              = data->add<float>("","reshardrecopt","F",0);
-    i_reshardrecoeta             = data->add<float>("","reshardrecoeta","F",0);
-    i_reshardrecom3jet           = data->add<float>("","reshardrecom3jet","F",0);
-    i_reshardrecom12             = data->add<float>("","reshardrecom12","F",0);
-    i_reshardrecom13             = data->add<float>("","reshardrecom13","F",0);
-    i_reshardrecom23             = data->add<float>("","reshardrecom23","F",0);
-    i_reshardrecom1              = data->add<float>("","reshardrecom1","F",0);
-    i_reshardrecom2              = data->add<float>("","reshardrecom2","F",0);
-    i_reshardrecom3              = data->add<float>("","reshardrecom3","F",0);
-    i_reshardrecoj1pt            = data->add<float>("","reshardrecoj1pt","F",0);
-    i_reshardrecoj1eta           = data->add<float>("","reshardrecoj1eta","F",0);
-    i_reshardrecoj2pt            = data->add<float>("","reshardrecoj2pt","F",0);
-    i_reshardrecoj2eta           = data->add<float>("","reshardrecoj2eta","F",0);
-    i_reshardrecoj3pt            = data->add<float>("","reshardrecoj3pt","F",0);
-    i_reshardrecoj3eta           = data->add<float>("","reshardrecoj3eta","F",0);
+    i_resbestrecopt              = data->add<float>("","resbestrecopt","F",-9.);
+    i_resbestrecoeta             = data->add<float>("","resbestrecoeta","F",-9.);
+    i_resbestrecom3jet           = data->add<float>("","resbestrecom3jet","F",-9.);
+    i_resbestrecom12             = data->add<float>("","resbestrecom12","F",-9.);
+    i_resbestrecoWpt             = data->add<float>("","resbestrecoWpt","F",-9.);
+    i_resbestrecodrW             = data->add<float>("","resbestrecodrW","F",-9.);
+    i_resbestrecodrbW            = data->add<float>("","resbestrecodrbW","F",-9.);
+    i_resbestrecodr123           = data->add<float>("","resbestrecodr123","F",-9.);
   }
 
-  // simple method for tops:
-  // step 1) highest csv jet is the b
-  // step 2) locate two nearby jets (same hemi) with mass ~ W and total mass ~ top
-  // step 3) locate nearby jet with mass ~ W
-  void fillResolvedInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets, vector<resolved> resTops, vector<resolved> resWs) {
-    std::cout << std::endl << std::endl <<  "***********************filling resolved info" << std::endl;
+  void bookExtra(TreeWriterData* data) {
+    i_resmatchedhardgentoppt     = data->add<float>("","resmatchedhardgentoppt","F",-9);
+    i_resmatchedhardgentopeta     = data->add<float>("","resmatchedhardgentopeta","F",-9);
+    i_resmatchednrecotops        = data->add<int  >("","resmatchednrecotops","I",0);
+    i_resmatchedbestrecopt       = data->add<float>("","resmatchedbestrecopt","F",-9.);
+    i_resmatchedbestrecoeta      = data->add<float>("","resmatchedbestrecoeta","F",-9.);
+    i_resmatchedbestrecom3jet    = data->add<float>("","resmatchedbestrecom3jet","F",-9.);
+    i_resmatchedbestrecom12      = data->add<float>("","resmatchedbestrecom12","F",-9.);
+    i_resmatchedbestrecom13      = data->add<float>("","resmatchedbestrecom13","F",-9.);
+    i_resmatchedbestrecom23      = data->add<float>("","resmatchedbestrecom23","F",-9.);
+    i_resmatchedbestrecom1       = data->add<float>("","resmatchedbestrecom1","F",-9.);
+    i_resmatchedbestrecom2       = data->add<float>("","resmatchedbestrecom2","F",-9.);
+    i_resmatchedbestrecom3       = data->add<float>("","resmatchedbestrecom3","F",-9.);
+    i_resmatchedbestrecoj1pt     = data->add<float>("","resmatchedbestrecoj1pt","F",-9.);
+    i_resmatchedbestrecoj1eta    = data->add<float>("","resmatchedbestrecoj1eta","F",-9.);
+    i_resmatchedbestrecoj2pt     = data->add<float>("","resmatchedbestrecoj2pt","F",-9.);
+    i_resmatchedbestrecoj2eta    = data->add<float>("","resmatchedbestrecoj2eta","F",-9.);
+    i_resmatchedbestrecoj3pt     = data->add<float>("","resmatchedbestrecoj3pt","F",-9.);
+    i_resmatchedbestrecoj3eta    = data->add<float>("","resmatchedbestrecoj3eta","F",-9.);
+
+    i_reshardgentoppt            = data->add<float>("","reshardgentoppt","F",-9.);
+    i_reshardgentopeta           = data->add<float>("","reshardgentopeta","F",-9.);
+    i_resbestrecom13             = data->add<float>("","resbestrecom13","F",-9.);
+    i_resbestrecom23             = data->add<float>("","resbestrecom23","F",-9.);
+    i_resbestrecom1              = data->add<float>("","resbestrecom1","F",-9.);
+    i_resbestrecom2              = data->add<float>("","resbestrecom2","F",-9.);
+    i_resbestrecom3              = data->add<float>("","resbestrecom3","F",-9.);
+    i_resbestrecoj1pt            = data->add<float>("","resbestrecoj1pt","F",-9.);
+    i_resbestrecoj1eta           = data->add<float>("","resbestrecoj1eta","F",-9.);
+    i_resbestrecoj2pt            = data->add<float>("","resbestrecoj2pt","F",-9.);
+    i_resbestrecoj2eta           = data->add<float>("","resbestrecoj2eta","F",-9.);
+    i_resbestrecoj3pt            = data->add<float>("","resbestrecoj3pt","F",-9.);
+    i_resbestrecoj3eta           = data->add<float>("","resbestrecoj3eta","F",-9.);
+  }
+
+  void bookGen(TreeWriterData* data){
+    i_ngenhadronictops              = data->add<int>("","ngenhadronictops","I",0);
+    i_gentopavgpt                   = data->add<float>("","gentopavgpt","F",-9.);
+    i_gendrbdau1                    = data->add<float>("","gendrbdau1","F",-9.);
+    i_gendrbdau2                    = data->add<float>("","gendrbdau2","F",-9.);
+    i_gendrdau1dau2                 = data->add<float>("","gendrdau1dau2","F",-9.);
+    i_gendrbW                       = data->add<float>("","gendrbW","F",-9.);
+    i_gendr123                      = data->add<float>("","gendr123","F",-9.);
+    i_gendrtops                     = data->add<float>("","gendrtops","F",-9.);
+    i_genmindrtopproducts           = data->add<float>("","genmindrtopproducts","F",-9.);
+    i_gentoppt                      = data->add<float>("","gentoppt","F",-9.);
+    i_genbpt                        = data->add<float>("","genbpt","F",-9.);
+    i_gendau1pt                     = data->add<float>("","gendau1pt","F",-9.);
+    i_gendau2pt                     = data->add<float>("","gendau2pt","F",-9.);
+
+    i_recoismatched                 = data->add<bool >("","recoismatched","O",false);
+    i_recobpt                       = data->add<float>("","recobpt","F",-9.);
+    i_recodau1pt                    = data->add<float>("","recodau1pt","F",-9.);
+    i_recodau2pt                    = data->add<float>("","recodau2pt","F",-9.);
+    i_recodrbdau1                   = data->add<float>("","recodrbdau1","F",-9.);
+    i_recodrbdau2                   = data->add<float>("","recodrbdau2","F",-9.);
+    i_recodrdau1dau2                = data->add<float>("","recodrdau1dau2","F",-9.);
+    i_recodrbW                      = data->add<float>("","recodrbW","F",-9.);
+    i_recodr123                     = data->add<float>("","recodr123","F",-9.);
+
+    i_recoWpt                       = data->add<float>("","recoWpt","F",-9.);
+    i_recoWeta                      = data->add<float>("","recoWeta","F",-9.);
+    i_recobeta                      = data->add<float>("","recobeta","F",-9.);
+    i_recodau1eta                   = data->add<float>("","recodau1eta","F",-9.);
+    i_recodau2eta                   = data->add<float>("","recodau2eta","F",-9.);
+    i_recom1                        = data->add<float>("","recom1","F",-9.);
+    i_recom2                        = data->add<float>("","recom2","F",-9.);
+    i_recom3                        = data->add<float>("","recom3","F",-9.);
+    i_recom12                       = data->add<float>("","recom12","F",-9.);
+    i_recom3jet                     = data->add<float>("","recom3jet","F",-9.);
+
+    i_twocsvcontainb                = data->add<bool>("","twocsvcontainb","O",false);
+    i_ncorrectcandjets              = data->add<int>("","ncorrectcandjets","I",-1);
+    i_correcttoppassed              = data->add<bool>("","correcttoppassed","O",false);
+    i_candfilled                    = data->add<bool>("","candfilled","O",false);
+    i_passwwindow                   = data->add<bool>("","passwwindow","O",false);
+    i_passtopwindow                 = data->add<bool>("","passtopwindow","O",false);
+    i_passdr123                     = data->add<bool>("","passdr123","O",false);
+
+  }
+
+  void findCandW(const vector<RecoJetF*> jets, RecoJetF* b, vector<resolved> & resCands){
     bool dbg = false;
+    if(dbg) std::cout << "*** finding W around the bjet " << b->p4() << std::endl;
 
-    float mW   =  80.4;
-    float mTop = 173.4;
-    float mWmin = 50., mWmax = 110.; // tunable windows
-    float mTopMin = 110., mTopMax = 220.;
+    // find jets j1 and j2 to make a W=j1+j2
+    MomentumF j1, j2, j3, j12, j123;
+    j3 = b->p4(); // we were given the b
+    int nJets = jets.size();
+    for(int i = 0 ; i < nJets-1 ; ++i){
+      for(int j = i+1 ; j < nJets ; ++j){
+        if( (b->pt() == jets[i]->pt()) || (b->pt() == jets[j]->pt()) ) continue; // j1, j2 shouldn't be the bjet
+        if(dbg) std::cout << "checking W candidate: " << jets[i]->pt() << " " << jets[j]->pt() << std::endl;
 
+        // require loose W and Top mass windows
+        float m12 = (jets[i]->p4() + jets[j]->p4()).mass();
+        float m3jet = (jets[i]->p4() + jets[j]->p4() + b->p4()).mass();
+        if( (m12 > mWloosemax) || (m12 < mWloosemin) ) continue;
+        if( (m3jet > mToploosemax) || (m3jet < mToploosemin) ) continue;
+        if(dbg) std::cout << "   passed loose w and top mass windows" << std::endl;
+
+        // fill candidate
+        resolved cand;
+        cand.rj1   = jets[i];
+        cand.rj2   = jets[j];
+        cand.rj3   = b;
+        cand.j1    = cand.rj1->p4();
+        cand.j2    = cand.rj2->p4();
+        cand.j3    = cand.rj3->p4();
+        cand.j123  = cand.j1.p4() + cand.j2.p4() + cand.j3.p4();
+        cand.pt    = cand.j123.pt();
+        cand.eta   = cand.j123.eta();
+        cand.m3jet = cand.j123.mass();
+        cand.bjetcsv  = cand.rj3->csv();
+        cand.hasmbjet = (cand.bjetcsv > defaults::CSV_MEDIUM);
+        cand.m1    = (cand.j1.p4()).mass();
+        cand.m2    = (cand.j2.p4()).mass();
+        cand.m3    = (cand.j3.p4()).mass();
+        cand.m12   = (cand.j1.p4()+cand.j2.p4()).mass();
+        cand.m23   = (cand.j2.p4()+cand.j3.p4()).mass();
+        cand.m13   = (cand.j1.p4()+cand.j3.p4()).mass();
+        cand.drW   = PhysicsUtilities::deltaR(cand.j1,cand.j2);
+        cand.drbW  = PhysicsUtilities::deltaR(cand.j1.p4()+cand.j2.p4(),cand.j3);
+        cand.dr123 = max( max(PhysicsUtilities::deltaR(cand.j1,cand.j2), PhysicsUtilities::deltaR(cand.j1,cand.j3)), PhysicsUtilities::deltaR(cand.j2,cand.j3));
+        resCands.push_back(cand);
+
+      }//for j
+    }//for i
+
+  }
+
+  bool isPassingResolvedTop(const resolved cand){
+    // strict W and Top mass windows
+    if( (cand.m12 < mWmin) || (cand.m12 > mWmax) ) return false;
+    if( (cand.m3jet < mTopmin) || (cand.m3jet > mTopmax) ) return false;
+
+    // mass drop conditions - hett
+          /*
+          // condition (iii) has subconditions A1 A2 B C
+          bool condA1 = (0.2 < atan(m13/m12)) &
+                        (1.3 > atan(m13/m12));
+
+          bool condA2 = (rMin < m23/m3jet) &
+                        (rMax > m23/m3jet);
+          bool condA = condA1 & condA2;
+
+          // condition B
+          bool condB = (pow(rMin,2)*(1+pow(m13/m12,2)) < 1-pow(m23/m3jet,2)) &
+                       (pow(rMax,2)*(1+pow(m13/m12,2)) > 1-pow(m23/m3jet,2)) &
+                       (m23/m3jet > 0.35);
+
+          // condition C is condition B with jet 2 <-> 3
+          bool condC = (pow(rMin,2)*(1+pow(m12/m13,2)) < 1-pow(m23/m3jet,2)) &
+                       (pow(rMax,2)*(1+pow(m12/m13,2)) > 1-pow(m23/m3jet,2)) &
+                       (m23/m3jet > 0.35);
+
+          // enforce either A or B or C
+          if (!(condA || condB || condC)) return false;
+          */
+
+    // require drW < some pt dependence
+    //if( cand.drW > 1.5*( 2.*80./j12.pt() ) ) return false; // dr ~ 2m/pt, plus 50%
+
+    // require drbW < some pt dependence
+    //if( cand.drbW > 1.5*( 2.*173./j123.pt() ) ) return false;
+
+    // require dr123 < some pt dependence
+    //if( cand.dr123 > 1.5*( 2.*173./j123.pt() ) ) return false; // pt-dependent dr123
+
+    // require dr123 = max(dr12,dr13,dr23) < pi/2 (hemisphere)
+    //if( cand.dr123 > TMath::PiOver2() ) return false;
+
+    return true;
+  }
+
+  void fillResolvedInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets, vector<resolved> & resTops, vector<resolved> & resCands) {
+    bool dbg = false;
+    if(dbg) std::cout << std::endl << std::endl <<  "****filling resolved info" << std::endl;
+
+    resTops.clear(); resCands.clear();
     int nJets = jets.size();
     if(dbg) std::cout << "njets " << nJets << std::endl;
 
-    // step 1 - bjet is max csv jet
-    int   indMaxCsv = -1;
-    float maxCsv = -1.;
-    for(int i = 0 ; i < nJets ; ++i){
-      float thisCsv = jets[i]->csv();
-      if(thisCsv > maxCsv) {maxCsv = thisCsv; indMaxCsv = i;}
+    //sort jets by descending csv
+    vector<RecoJetF*> jetsCSVranked(jets);
+    sort( jetsCSVranked.begin(), jetsCSVranked.end(), []( const RecoJetF* lhs, const RecoJetF* rhs ){ return lhs->csv() > rhs->csv(); } );
+
+    RecoJetF *csv1lj=0, *csv2lj=0; // two highest csv loose jets
+    for(const auto j : jetsCSVranked){
+      if(j->csv()>defaults::CSV_LOOSE){
+        if(!csv1lj){ csv1lj = j; }
+        else if(!csv2lj){ csv2lj = j; }
+      }
     }
-    assert(indMaxCsv > -1);
-    MomentumF bjet = jets[indMaxCsv]->p4();
-    float bjetcsv  = jets[indMaxCsv]->csv();
-    if(dbg) std::cout << "bjet index, csv, p4 " << indMaxCsv << " " << bjetcsv << " " << bjet << std::endl;
 
-    // look for two jets to accomplish top = (b,j1,j2) or W = (j1,j2)
-    // the b is from earlier. in both cases W is j1 and j2.
-    MomentumF jet1, jet2, jet3, jet12, jet123;
-    jet3 = bjet; // use variables with third index only for top stuff
-    for(int i = 0 ; i < nJets-1 ; ++i){
-      for(int j = i+1 ; j < nJets ; ++j){
-        if( (i == indMaxCsv) || (j == indMaxCsv) ) continue; // skip b jet
-        jet1 = jets[i]->p4(); jet2 = jets[j]->p4();
-        jet12 = jet1.p4() + jet2.p4(); // this is the w
-        jet123 = jet1.p4() + jet2.p4() + jet3.p4();
-        float m12  = (jet1.p4() + jet2.p4()).mass();
-        float m13  = (jet1.p4() + jet3.p4()).mass();
-        float m23  = (jet2.p4() + jet3.p4()).mass();
-        float m3jet = jet123.mass();
-        if(dbg) std::cout << "indx i,j " << i << " " << j << std::endl;
-        if(dbg) std::cout << "jet1, jet2, jet3 " << jet1 << " " << jet2 << " " << jet3 << std::endl;
-        if(dbg) std::cout << "m12, m13, m23, m3jet " << m12 << " " << m13 << " " << m23 << " " << m3jet << std::endl;
+    // require 2 loose jets for the algorithm
+    if(csv2lj == 0) return;
 
-        // want jets to be in same hemisphere as total jet axis
-        /*
-        if((PhysicsUtilities::deltaR(jet123,jet1) > 1.5) || // use jet12 if W
-           (PhysicsUtilities::deltaR(jet123,jet2) > 1.5) ||
-           (PhysicsUtilities::deltaR(jet123,jet3) > 1.5)) continue;
+    // assemble some candidate bjets
+    vector<RecoJetF*> candb;
+    candb.push_back(csv1lj);
+    candb.push_back(csv2lj);
+
+    // assemble some candidate tops
+    for(auto b : candb){ findCandW( jets, b, resCands ); }
+
+    // apply passing selection criteria
+    for(auto cand : resCands){ if( isPassingResolvedTop(cand) ) resTops.push_back(cand); }
+
+    // sort selected tops by ascending sth
+    sort( resTops.begin(), resTops.end(), [&]( const resolved& lhs, const resolved& rhs )
+      {
+        /* // chi2 ordering
+        auto chi2 = [&] (const resolved& top) {
+          return pow( (top.m3jet - mTop)/mTopres, 2 ) + pow( (top.m12 - mW)/mWres, 2 );
+        };
+        return chi2(lhs) < chi2(rhs); 
         */
+        // simple top mass ordering
+        auto comp = [&](const resolved& top) {
+          return abs(top.m3jet - mTop);
+        };
+        return comp(lhs) < comp(rhs);
+      }
+    );
 
-        // w mass window
-        if( (m12 > mWmax) || (m12 < mWmin) ) continue;
-        if(dbg) std::cout << "m12 passed w window " << std::endl;
-
-        // softdrop W conditions
-        // todo
-
-        // top mass window - here we use the b
-        bool isW = true;
-        if( (m3jet < mTopMax) && (m3jet > mTopMin) ) isW = false; // if passes top conditions, call it a top
-        if(dbg) std::cout << "m3jet result, isW: " << isW << std::endl;
-
-        // softdrop top conditions
-        // todo
-
-        // fill and submit this resolved candidate
-        resolved cand;
-        cand.nSubjets = isW ? resolved::DIJET : resolved::TRIJET;
-        cand.isW = isW;
-        cand.jet1  = jet1; cand.jet2 = jet2;
-        cand.rjet1 = jets[i]; cand.rjet2 = jets[j];
-        cand.m1    = (jet1.p4()).mass();  cand.m2    = (jet2.p4()).mass();
-        cand.m12   = m12;
-        if(!isW) { // top, much ado about bjets
-          cand.jet3 = bjet;
-          cand.jet123 = jet123;
-          cand.bjet = bjet; cand.bjetcsv = bjetcsv; cand.hasmbjet = (cand.bjetcsv>defaults::CSV_MEDIUM);
-          cand.rjet3 = jets[indMaxCsv];
-          cand.m3    = (jet3.p4()).mass();
-          cand.m23   = m23;
-          cand.m13   = m13;
-          cand.m3jet = m3jet;
-          resTops.push_back(cand);
-        }else{ // W
-          cand.jet123 = jet12;
-          cand.m3jet = jet12.mass();
-          resWs.push_back(cand);
-        }
-
-      }//for jet
-    }//for jet
-
-    if(dbg) std::cout << "******* top object dump *********" << std::endl;
-    if(dbg){
-    for(int i = 0 ; i < resTops.size() ; ++i){
-      resolved rj = resTops[i];
-      std::cout << rj.jet1 << " " << rj.jet2 << " " << rj.jet3 << std::endl;
-      std::cout << rj.jet123 << std::endl;
-      std::cout << rj.bjet << " " << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
-      std::cout << rj.rjet1 << " " << rj.rjet2 << " " << rj.rjet3 << std::endl;
-      std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
-      std::cout << rj.nSubjets << " " << rj.isW << std::endl;
-    }
-    }
-    if(dbg) std::cout << "******* w object dump *********" << std::endl;
-    if(dbg){
-    for(int i = 0 ; i < resWs.size() ; ++i){
-      resolved rj = resWs[i];
-      std::cout << rj.jet1 << " " << rj.jet2 << " " << rj.jet3 << std::endl;
-      std::cout << rj.jet123 << std::endl;
-      std::cout << rj.bjet << " " << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
-      std::cout << rj.rjet1 << " " << rj.rjet2 << " " << rj.rjet3 << std::endl;
-      std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
-      std::cout << rj.nSubjets << " " << rj.isW << std::endl;
-    }
-    }
-
-    /*
-      clean resolved objects wrt each other
-      keep one with mass nearest shell
-      for now, ignore overlaps between tops and Ws - treat as independent collections
-    */
-    // clean resTops
-    for(int i = 0 ; i < nJets ; ++i) { // find ak4 jets shared by multiple tops
+    // clean reco tops wrt each other, keeping best
+    for(int i = 0 ; i < nJets ; ++i) {
       int prev = -1, toErase = -1;
       for(int j = 0 ; j < resTops.size() ; ++j) {
-        bool isPresent = (jets[i]->p4() == resTops[j].jet1.p4()) |
-			 (jets[i]->p4() == resTops[j].jet2.p4()) |
-                         (jets[i]->p4() == resTops[j].jet3.p4());
-        if(isPresent && prev > -1 ) { // this jet is in two Resolved
-          toErase = (abs(resTops[prev].m3jet - mTop) >
-                     abs(resTops[j   ].m3jet - mTop)) ? prev : j; // erase one with largest gap from mTop
-          // keep this - might be useful later
-          //if( (prev == 0) && (resTops[prev].isFRTQ) ) {
-          //  toErase = j; // FRTQ position trumps other trijets
-          //}
-        }
-        if(isPresent) prev = j;
+        bool isPresent = (jets[i]->pt() == resTops[j].j1.pt()) | // is jet a subjet of this top
+			 (jets[i]->pt() == resTops[j].j2.pt()) |
+                         (jets[i]->pt() == resTops[j].j3.pt());
+        if(isPresent && prev > -1 ) { toErase = max(prev,j); break; }
+        else if(isPresent) { prev = j; }
       }
-      if(toErase > -1) {
+      if(toErase > -1) { // erase
         resTops.erase(resTops.begin() + toErase);
-        i = 0; // iterate procedure for common case of > 2 trijets sharing a jet
+        i = -1; // reset i to zero
       }
     }
+    data->fill<int  >(i_resnrecotops, resTops.size());
 
-    // clean resWs
-    for(int i = 0 ; i < nJets ; ++i) { // find ak4 jets shared by multiple Ws
-      int prev = -1, toErase = -1;
-      for(int j = 0 ; j < resWs.size() ; ++j) {
-        bool isPresent = (jets[i]->p4() == resWs[j].jet1.p4()) |
-			 (jets[i]->p4() == resWs[j].jet2.p4());
-        if(isPresent && prev > -1 ) { // this jet is in two resolved
-          toErase = (abs(resWs[prev].m3jet - mW) >
-                     abs(resWs[j   ].m3jet - mW)) ? prev : j; // erase one most offshell
-          // keep this - might be useful later
-          //if( (prev == 0) && (resWs[prev].isFRTQ) ) {
-          //  toErase = j; // FRTQ position trumps other trijets
-          //}
-        }
-        if(isPresent) prev = j;
-      }
-      if(toErase > -1) {
-        resWs.erase(resWs.begin() + toErase);
-        i = 0; // iterate
-      }
-    }
-
-    if(dbg) std::cout << "******* top object dump *********" << std::endl;
+    if(dbg) std::cout << " ** candidate tops: " << std::endl;
     if(dbg){
-    for(int i = 0 ; i < resTops.size() ; ++i){
-      resolved rj = resTops[i];
-      std::cout << rj.jet1 << " " << rj.jet2 << " " << rj.jet3 << std::endl;
-      std::cout << rj.jet123 << std::endl;
-      std::cout << rj.bjet << " " << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
-      std::cout << rj.rjet1 << " " << rj.rjet2 << " " << rj.rjet3 << std::endl;
-      std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
-      std::cout << rj.nSubjets << " " << rj.isW << std::endl;
+      for(int i = 0 ; i < resCands.size() ; ++i){
+        resolved rj = resCands[i];
+        std::cout << rj.j1 << " " << rj.j2 << " " << rj.j3 << std::endl;
+        std::cout << rj.j123 << std::endl;
+        std::cout << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
+        std::cout << rj.rj1 << " " << rj.rj2 << " " << rj.rj3 << std::endl;
+        std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
+      }
     }
-    }
-    if(dbg) std::cout << "******* w object dump *********" << std::endl;
+
+    if(dbg) std::cout << " ** selected tops: " << std::endl;
     if(dbg){
-    for(int i = 0 ; i < resWs.size() ; ++i){
-      resolved rj = resWs[i];
-      std::cout << rj.jet1 << " " << rj.jet2 << " " << rj.jet3 << std::endl;
-      std::cout << rj.jet123 << std::endl;
-      std::cout << rj.bjet << " " << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
-      std::cout << rj.rjet1 << " " << rj.rjet2 << " " << rj.rjet3 << std::endl;
-      std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
-      std::cout << rj.nSubjets << " " << rj.isW << std::endl;
-    }
-    }
-
-    if(dbg) std::cout << "***** event had tops and ws: " << resTops.size() << " " << resWs.size() << std::endl;
-
-    // default reco and gen vars
-    int   resnrecotops_       = resTops.size();
-    int   resnrecows_         = resWs.size();
-    // properties of hardest res object in event
-    bool  reshardisw_         = false;
-    int   reshardnsubjets_    = -1;
-    float reshardgentoppt_    = -9.;
-    float reshardgentopeta_   = -9.;
-    float reshardrecopt_      = -9.;
-    float reshardrecoeta_     = -9.;
-    float reshardrecom3jet_   = -9.;
-    float reshardrecom12_     = -9.;
-    float reshardrecom13_     = -9.;
-    float reshardrecom23_     = -9.;
-    float reshardrecom1_      = -9.;
-    float reshardrecom2_      = -9.;
-    float reshardrecom3_      = -9.;
-    float reshardrecoj1pt_    = -9.;
-    float reshardrecoj1eta_   = -9.;
-    float reshardrecoj2pt_    = -9.;
-    float reshardrecoj2eta_   = -9.;
-    float reshardrecoj3pt_    = -9.;
-    float reshardrecoj3eta_   = -9.;
-
-    // properties of hardest matched res object
-    int   resnmatchedrecotops_     = -1; // number of reco tops matched to hardest gen top
-    bool  reshardmatchedisw_       = false;
-    int   reshardmatchednsubjets_  = -1;
-    float reshardmatchedgentoppt_  = -9.;
-    float reshardmatchedgentopeta_ = -9.;
-    float reshardmatchedrecopt_    = -9.;
-    float reshardmatchedrecoeta_   = -9.;
-    float reshardmatchedrecom3jet_ = -9.;
-    float reshardmatchedrecom12_   = -9.;
-    float reshardmatchedrecom13_   = -9.;
-    float reshardmatchedrecom23_   = -9.;
-    float reshardmatchedrecom1_    = -9.;
-    float reshardmatchedrecom2_    = -9.;
-    float reshardmatchedrecom3_    = -9.;
-    float reshardmatchedrecoj1pt_  = -9.;
-    float reshardmatchedrecoj1eta_ = -9.;
-    float reshardmatchedrecoj2pt_  = -9.;
-    float reshardmatchedrecoj2eta_ = -9.;
-    float reshardmatchedrecoj3pt_  = -9.;
-    float reshardmatchedrecoj3eta_ = -9.;
-
-    // find hardest top
-    int ihardtop_ = -1;
-    float hardrespt_ = -99.; // the running hardest
-    for(int i = 0 ; i < resTops.size() ; ++i) {
-      resolved res = resTops[i];
-      float respt_ = res.jet123.p4().pt();
-      if(respt_ < hardrespt_) continue; // we've found harder
-      hardrespt_ = respt_; // update hardest
-      ihardtop_ = i;
-    }
-    if(dbg) std::cout << "hardest reco top index: " << ihardtop_ << std::endl;
-
-    // fill properties of hardest top
-    if(ihardtop_ > -1) {
-      resolved hardtop_ = resTops[ihardtop_];
-      reshardrecopt_    = hardtop_.jet123.p4().pt();
-      reshardrecoeta_   = hardtop_.jet123.p4().eta();
-      reshardrecom3jet_ = hardtop_.m3jet;
-      reshardrecom12_   = hardtop_.m12;
-      reshardrecom13_   = hardtop_.m13;
-      reshardrecom23_   = hardtop_.m23;
-      reshardrecom1_    = hardtop_.m1;
-      reshardrecom2_    = hardtop_.m2;
-      reshardrecom3_    = hardtop_.m3;
-      reshardrecoj1pt_  = hardtop_.jet1.p4().pt();
-      reshardrecoj1eta_ = hardtop_.jet1.p4().eta();
-      reshardrecoj2pt_  = hardtop_.jet2.p4().pt();
-      reshardrecoj2eta_ = hardtop_.jet2.p4().eta();
-      reshardrecoj3pt_  = hardtop_.jet3.p4().pt();
-      reshardrecoj3eta_ = hardtop_.jet3.p4().eta();
-      reshardnsubjets_  = hardtop_.nSubjets;
+      for(int i = 0 ; i < resTops.size() ; ++i){
+        resolved rj = resTops[i];
+        std::cout << rj.j1 << " " << rj.j2 << " " << rj.j3 << std::endl;
+        std::cout << rj.j123 << std::endl;
+        std::cout << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
+        std::cout << rj.rj1 << " " << rj.rj2 << " " << rj.rj3 << std::endl;
+        std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
+      }
     }
 
-    // for mc, gen matching vars
-    if(ana->isMC()) {
-      // find hardest gen top
-      GenParticleF* hardGenTop_ = 0;
-      float hardgentoppt_ = -99.;
-      for(auto* p : ana->genParts) {
-        if ((abs(p->pdgId()) == ParticleInfo::p_t) 
-            && ParticleInfo::isGenTopHadronic(p) 
-            && ParticleInfo::isLastInChain(p)) {
-          float gentoppt_ = p->p4().pt();
-          if (gentoppt_ < hardgentoppt_) continue;
-          hardgentoppt_ = gentoppt_;
-          hardGenTop_ = p;
+    if(dbg) std::cout << "***** event had tops : " << resTops.size() << std::endl;
+
+    if(resTops.size() == 0) return;
+    data->fill<float>(i_resbestrecopt      ,resTops[0].pt);
+    data->fill<float>(i_resbestrecoeta     ,resTops[0].eta);
+    data->fill<float>(i_resbestrecom3jet   ,resTops[0].m3jet);
+    data->fill<float>(i_resbestrecom12     ,resTops[0].m12);
+    data->fill<float>(i_resbestrecoWpt     ,resTops[0].j1.pt()+resTops[0].j2.pt());
+    data->fill<float>(i_resbestrecodrW     ,resTops[0].drW);
+    data->fill<float>(i_resbestrecodrbW    ,resTops[0].drbW);
+    data->fill<float>(i_resbestrecodr123   ,resTops[0].dr123);
+
+  }//fillResolvedInfo
+
+
+  // --------------------------------------------------------------------------------------------------
+  // deprecated by fillResolvedGenInfo
+  void fillResolvedExtraInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<resolved> & resTops){
+
+    bool dbg = false;
+    if(dbg) std::cout << "n restops " << resTops.size() << std::endl;
+
+    if(resTops.size()==0) return;
+
+    // Extra vars - more properties of best reco top
+    data->fill<float>(i_resbestrecom13     ,resTops[0].m13);
+    data->fill<float>(i_resbestrecom23     ,resTops[0].m23);
+    data->fill<float>(i_resbestrecom1      ,resTops[0].m1);
+    data->fill<float>(i_resbestrecom2      ,resTops[0].m2);
+    data->fill<float>(i_resbestrecom3      ,resTops[0].m3);
+    data->fill<float>(i_resbestrecoj1pt    ,resTops[0].j1.pt());
+    data->fill<float>(i_resbestrecoj1eta   ,resTops[0].j1.eta());
+    data->fill<float>(i_resbestrecoj2pt    ,resTops[0].j2.pt());
+    data->fill<float>(i_resbestrecoj2eta   ,resTops[0].j2.eta());
+    data->fill<float>(i_resbestrecoj3pt    ,resTops[0].j3.pt());
+    data->fill<float>(i_resbestrecoj3eta   ,resTops[0].j3.eta());
+
+    // Extra vars - properties of best reco top matched (dr) to hardest gen hadronic top
+    if(!ana->isMC()) return;
+
+    if(dbg) std::cout << "finding hadr gen top" << std::endl;
+
+    // hardest gen hadronic top
+    GenParticleF* hardgen = 0;
+    float hardgenpt = -9.;
+    for(auto* p : ana->genParts){
+      if (!(abs(p->pdgId()) == ParticleInfo::p_t && ParticleInfo::isGenTopHadronic(p) && ParticleInfo::isLastInChain(p))) continue;
+      float genpt = p->p4().pt();
+      if(genpt < hardgenpt) continue;
+      hardgenpt = genpt;
+      hardgen = p;
+    }
+    if(!hardgen) return;
+    data->fill<float>(i_reshardgentoppt    ,hardgen->pt());
+    data->fill<float>(i_reshardgentopeta   ,hardgen->eta());
+
+    if(dbg) std::cout << "hardest gen hadr top " << hardgen->p4() << std::endl;
+
+    // best reco top matched to hardest gen hadr top
+    // not using findNearestDR b/c no Top.p4(), and might expand to chi2(subjet[i], genjet[i]) matching
+    int resmatchednrecotops = 0;
+    float hardrecopt = -9.;
+    resolved * hardreco = 0;
+    for(unsigned int i = 0 ; i < resTops.size() ; i++){
+      resolved * reco = &resTops[i];
+      if (PhysicsUtilities::deltaR(reco->j123, *hardgen) > 0.2) continue; // 2/3 of correct matches were dr < 0.1 in hand analysis
+      resmatchednrecotops++;
+      float recopt = reco->j123.pt();
+      if(recopt < hardrecopt) continue;
+      hardrecopt = recopt;
+      hardreco = reco;
+    }
+    data->fill<int  >(i_resmatchednrecotops,resmatchednrecotops);
+    if(dbg) std::cout << "n reco top matched: " << resmatchednrecotops << std::endl;
+
+    if(!hardreco) return;
+    if(dbg) std::cout << "best reco top matched: " << hardreco << " dR: " << PhysicsUtilities::deltaR(hardreco->j123, *hardgen) << " " << hardreco->j123.p4() << std::endl;
+
+    data->fill<float>(i_resmatchedhardgentoppt    ,hardgen->pt());
+    data->fill<float>(i_resmatchedhardgentopeta   ,hardgen->eta());
+    data->fill<float>(i_resmatchedbestrecopt      ,hardreco->pt);
+    data->fill<float>(i_resmatchedbestrecoeta     ,hardreco->eta);
+    data->fill<float>(i_resmatchedbestrecom3jet   ,hardreco->m3jet);
+    data->fill<float>(i_resmatchedbestrecom12     ,hardreco->m12);
+    data->fill<float>(i_resmatchedbestrecom13     ,hardreco->m13);
+    data->fill<float>(i_resmatchedbestrecom23     ,hardreco->m23);
+    data->fill<float>(i_resmatchedbestrecom1      ,hardreco->m1);
+    data->fill<float>(i_resmatchedbestrecom2      ,hardreco->m2);
+    data->fill<float>(i_resmatchedbestrecom3      ,hardreco->m3);
+    data->fill<float>(i_resmatchedbestrecoj1pt    ,hardreco->j1.pt());
+    data->fill<float>(i_resmatchedbestrecoj1eta   ,hardreco->j1.eta());
+    data->fill<float>(i_resmatchedbestrecoj2pt    ,hardreco->j2.pt());
+    data->fill<float>(i_resmatchedbestrecoj2eta   ,hardreco->j2.eta());
+    data->fill<float>(i_resmatchedbestrecoj3pt    ,hardreco->j3.pt());
+    data->fill<float>(i_resmatchedbestrecoj3eta   ,hardreco->j3.eta());
+  }//fillResolvedExtraInfo
+
+
+  // ----------------------------------------------------------------------------------------------------------------------
+  void fillResolvedGenInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,vector<resolved> & resTops, vector<resolved> & resCands){
+    bool dbg = false;
+    if(dbg) std::cout << std::endl << "** filling gen info " << std::endl;
+
+    std::vector<GenJetF*> filteredGenJes;
+    for(auto * j : ana->jets){ if(j->genJet()) filteredGenJes.push_back(j->genJet());}
+    PartonMatching::PartonEvent * partonEvent = new PartonMatching::PartonEvent(ana->genParticleReader,*(ana->defaultJets),filteredGenJes);
+    const PartonMatching::TopDecay * top1 = partonEvent->topDecays.size() > 0 ? &partonEvent->topDecays[0] : 0 ;
+    const PartonMatching::TopDecay * top2 = partonEvent->topDecays.size() > 1 ? &partonEvent->topDecays[1] : 0 ;
+
+    int ngen = (top1) ? ((top2) ? 2 : 1) : 0;
+    data->fill<int>(i_ngenhadronictops, ngen);
+
+    // require two hadronic tops
+    if( (!top1) || (!top2) ) return;
+    if(top1->isLeptonic || top2->isLeptonic) return;
+    data->fill<float>(i_gentopavgpt, 0.5*(top1->top->pt() + top2->top->pt()) );
+
+    // choose our top
+    TRandom3 * rand = ana->getRndGen();
+    bool rndtop = (rand->Uniform(0,1) > 0.5);
+    const PartonMatching::TopDecay * top = rndtop ? top1 : top2;
+    if(dbg) std::cout << "two hadronic tops. ours is " << top->top->p4() << std::endl;
+
+    auto getTopDR = [](const PartonMatching::TopDecay * top)->float {
+      return  std::max(PhysicsUtilities::deltaR(*top->b->parton,*top->W_dau1->parton),
+                std::max(PhysicsUtilities::deltaR(*top->b->parton,*top->W_dau2->parton),
+                         PhysicsUtilities::deltaR(*top->W_dau2->parton,*top->W_dau1->parton)
+                        )
+                      );
+    };
+
+    auto getMinDRbetweenTops = [](const PartonMatching::TopDecay * top1, const PartonMatching::TopDecay * top2)->float {
+      vector<const GenParticleF*> parts1, parts2;
+      parts1.push_back(top1->b->parton); parts1.push_back(top1->W_dau1->parton); parts1.push_back(top1->W_dau2->parton);
+      parts2.push_back(top2->b->parton); parts2.push_back(top2->W_dau1->parton); parts2.push_back(top2->W_dau2->parton);
+
+      float mindr = 99;
+      for(unsigned int i = 0 ; i < parts1.size() ; i++){
+        for(unsigned int j = 0 ; j < parts2.size() ; j++){
+          mindr = std::min( double(mindr), PhysicsUtilities::deltaR(*parts1[i], *parts2[j]) );
         }
       }
-      if(dbg) std::cout << "hardest gen top: " << hardgentoppt_ << hardGenTop_->p4() << std::endl;
+      return mindr;
+    };
 
-      // find hardest gen W
-      GenParticleF* hardGenW_ = 0;
-      float hardgenwpt_ = -99.;
-      for(auto* p : ana->genParts) {
-        if ((abs(p->pdgId()) == ParticleInfo::p_Wplus) 
-            && ParticleInfo::isGenWHadronic(p) 
-            && ParticleInfo::isLastInChain(p)) {
-          float genwpt_ = p->p4().pt();
-          if (genwpt_ < hardgenwpt_) continue;
-          hardgenwpt_ = genwpt_;
-          hardGenW_ = p;
-        }
+    data->fill<float>(i_gendrbdau1,    PhysicsUtilities::deltaR(*top->b->parton,*top->W_dau1->parton) );
+    data->fill<float>(i_gendrbdau2,    PhysicsUtilities::deltaR(*top->b->parton,*top->W_dau2->parton) );
+    data->fill<float>(i_gendrdau1dau2, PhysicsUtilities::deltaR(*top->W_dau1->parton,*top->W_dau2->parton) );
+    data->fill<float>(i_gendrbW,       PhysicsUtilities::deltaR(*top->b->parton, *top->W) );
+    data->fill<float>(i_gendr123,      getTopDR(top));
+    data->fill<float>(i_gendrtops,     PhysicsUtilities::deltaR(*top1->top, *top2->top) );
+    data->fill<float>(i_genmindrtopproducts, getMinDRbetweenTops(top1, top2) );
+    if(dbg) std::cout << "genmindrtopproducts: " << getMinDRbetweenTops(top1,top2) << std::endl;
+    data->fill<float>(i_gentoppt,  top->top->pt() );
+    data->fill<float>(i_genbpt,    top->b->parton->pt() );
+    data->fill<float>(i_gendau1pt, top->W_dau1->parton->pt() );
+    data->fill<float>(i_gendau2pt, top->W_dau2->parton->pt() );
+
+    //match to ak4
+    auto getMatchedJet = [](const GenParticleF* part, const vector<RecoJetF*>& jets, float matchdr, float& mindr, float& secondmindr)->int {
+      vector<float> drs; drs.reserve(jets.size());
+      for(auto jet : jets){ drs.push_back(PhysicsUtilities::deltaR(*part, *jet)); }
+
+      vector<float> sorted(drs);
+      std::sort(sorted.begin(), sorted.end(), std::less<float>());
+      vector<float>::iterator it = find(drs.begin(),drs.end(),sorted[0]);
+      auto pos = std::distance(drs.begin(), it);
+
+      mindr = sorted[0]; secondmindr = sorted[1];
+      return (sorted[0] < matchdr && sorted[1] > matchdr) ? pos : -1;
+    };
+
+    // match partons to ak4
+    float mindr = 0., secondmindr = 0.;
+    int matchb    = getMatchedJet(top->b->parton,      ana->jets, 0.1, mindr, secondmindr);
+    int matchdau1 = getMatchedJet(top->W_dau1->parton, ana->jets, 0.1, mindr, secondmindr);
+    int matchdau2 = getMatchedJet(top->W_dau2->parton, ana->jets, 0.1, mindr, secondmindr);
+    if(dbg) std::cout << "match to ak4? b, w1, w2: " << matchb << " " << matchdau1 << " " << matchdau2 << std::endl;
+    if( (matchb < 0) || (matchdau1 < 0) || (matchdau2 < 0) ) return;
+    data->fill<bool>(i_recoismatched,true);
+    RecoJetF * recob    = ana->jets[matchb];
+    RecoJetF * recodau1 = ana->jets[matchdau1];
+    RecoJetF * recodau2 = ana->jets[matchdau2];
+    data->fill<float>(i_recobpt, recob->pt() );
+    data->fill<float>(i_recodau1pt, recodau1->pt() );
+    data->fill<float>(i_recodau2pt, recodau2->pt() );
+
+    if(dbg) std::cout << "b and reco match: " << top->b->parton->p4() << " " << recob->p4() << std::endl;
+    if(dbg) std::cout << "dau1 and reco match: " << top->W_dau1->parton->p4() << " " << recodau1->p4() << std::endl;
+    if(dbg) std::cout << "dau2 and reco match: " << top->W_dau2->parton->p4() << " " << recodau2->p4() << std::endl;
+
+    auto getRecoTopDR = [](const RecoJetF * b, const RecoJetF * dau1, const RecoJetF * dau2)->float {
+      return  std::max(PhysicsUtilities::deltaR(*b,*dau1),
+                std::max(PhysicsUtilities::deltaR(*b,*dau2),
+                         PhysicsUtilities::deltaR(*dau1, *dau2)
+                        )
+                      );
+    };
+    data->fill<float>(i_recodrbdau1,    PhysicsUtilities::deltaR(*recob, *recodau1) );
+    data->fill<float>(i_recodrbdau2,    PhysicsUtilities::deltaR(*recob, *recodau2) );
+    data->fill<float>(i_recodrdau1dau2, PhysicsUtilities::deltaR(*recodau1, *recodau2) );
+    data->fill<float>(i_recodrbW, PhysicsUtilities::deltaR( *recob, (recodau1->p4() + recodau2->p4()) ));
+    data->fill<float>(i_recodr123, getRecoTopDR( recob, recodau1, recodau2 ) );
+
+    // fill extra well-matched properties
+    data->fill<float>(i_recoWpt,  (recodau1->p4() + recodau2->p4()).pt() );
+    data->fill<float>(i_recoWeta, (recodau1->p4() + recodau2->p4()).eta() );
+    data->fill<float>(i_recobeta, recob->eta() );
+    data->fill<float>(i_recodau1eta, recodau1->eta() );
+    data->fill<float>(i_recodau2eta, recodau2->eta() );
+    data->fill<float>(i_recom1, recodau1->mass() );
+    data->fill<float>(i_recom2, recodau2->mass() );
+    data->fill<float>(i_recom3, recob->mass() );
+    data->fill<float>(i_recom12, (recodau1->p4() + recodau2->p4()).mass() );
+    data->fill<float>(i_recom3jet, (recodau1->p4() + recodau2->p4() + recob->p4()).mass() );
+
+    //sort jets by descending csv
+    vector<RecoJetF*> jetsCSVranked(ana->jets); 
+    sort( jetsCSVranked.begin(), jetsCSVranked.end(), []( const RecoJetF* lhs, const RecoJetF* rhs ){ return lhs->csv() > rhs->csv(); } );
+    RecoJetF *csv1lj=0, *csv2lj=0; // two highest csv loose jets
+    for(const auto j : jetsCSVranked){
+      if(j->csv()>defaults::CSV_LOOSE){
+        if(!csv1lj){ csv1lj = j; }
+        else if(!csv2lj){ csv2lj = j; }
       }
-      if(dbg) std::cout << "hardest gen W: " << hardgenwpt_ << hardGenW_->p4() << std::endl;
+    }
+    data->fill<bool>(i_twocsvcontainb, ((csv1lj == recob) || (csv2lj == recob)) );
+    if(dbg) if(csv1lj && csv2lj) std::cout << "two highest csv: " << csv1lj->csv() << " " << csv2lj->csv() << std::endl;
 
-      // find hardest reco top which gen-matches our hardest gen top
-      if(hardGenTop_) {
-        reshardgentoppt_ = hardGenTop_->p4().pt();
-        reshardgentopeta_ = hardGenTop_->p4().eta();
-        int iHardestReco_ = -1;
-        float hardmatchedrecotoppt_ = -99.; // the running hardest reco top pt
-        resnmatchedrecotops_ = 0; // must restart count at zero here (default above is -1 meaning N/A)
-        for(int i = 0 ; i < resTops.size() ; ++i) {
-          resolved recotop = resTops[i];
-          if (PhysicsUtilities::deltaR(recotop.jet123, *hardGenTop_) < 0.4) { // only want matched reco tops
-            ++resnmatchedrecotops_;
-            float matchedrecotoppt_ = recotop.jet123.p4().pt();
-            if(matchedrecotoppt_ < hardmatchedrecotoppt_) continue; // we've already found harder matched reco tops
-            hardmatchedrecotoppt_     = matchedrecotoppt_; // update hardest matched reco top pt
-            reshardmatchedgentoppt_  = hardGenTop_->p4().pt();  // must fill pt/eta here, or later do = (resnmatchedrecotops_>0) ? hardGenTop_->p4().pt() : -99.;
-            reshardmatchedgentopeta_ = hardGenTop_->p4().eta(); //
-            iHardestReco_ = i;
-          }
-        }
+    // did any cands capture our matched jets ( cands = v loose conditions)
+    int ncorrectcandjets = 0;
+    resolved * cand = 0;
+    for(auto res : resCands) {
+      if(dbg) std::cout << "cand: recob and rj3 " << recob << " " << res.rj3 << std::endl;
+      if(dbg) std::cout << "   recodau1, recodau2, rj1, rj2 " << recodau1 << " " << recodau2 << " " << res.rj1 << " " << res.rj2 << std::endl;
+      if(recob != res.rj3) continue; // didn't capture b as the bjet
+      ncorrectcandjets = std::max(ncorrectcandjets,1);
+      if( (recodau1 != res.rj1) && (recodau1 != res.rj2) ) continue; // didn't capture dau1
+      ncorrectcandjets = std::max(ncorrectcandjets,2);
+      if( (recodau2 != res.rj1) && (recodau2 != res.rj2) ) continue; // didn't capture dau2
+      ncorrectcandjets = std::max(ncorrectcandjets,3);
+      cand = &res;
+    }
+    data->fill<int>(i_ncorrectcandjets, ncorrectcandjets);
+    if(dbg) std::cout << "ncorrectcandjets: " << ncorrectcandjets << std::endl;
 
-        if(iHardestReco_ > -1) {
-          resolved* hardRecoTop_     = &resTops[iHardestReco_];
-          reshardmatchedrecopt_    = hardRecoTop_->jet123.p4().pt();
-          std::cout << "n matched to hardest gen top: " << resnmatchedrecotops_ << reshardmatchedrecopt_ << std::endl;
-          reshardmatchedrecoeta_   = hardRecoTop_->jet123.p4().eta();
-          reshardmatchedrecom3jet_ = hardRecoTop_->m3jet;
-          reshardmatchedrecom12_   = hardRecoTop_->m12;
-          reshardmatchedrecom13_   = hardRecoTop_->m13;
-          reshardmatchedrecom23_   = hardRecoTop_->m23;
-          reshardmatchedrecom1_    = hardRecoTop_->m1;
-          reshardmatchedrecom2_    = hardRecoTop_->m2;
-          reshardmatchedrecom3_    = hardRecoTop_->m3;
-          reshardmatchedrecoj1pt_  = hardRecoTop_->jet1.p4().pt();
-          reshardmatchedrecoj1eta_ = hardRecoTop_->jet1.p4().eta();
-          reshardmatchedrecoj2pt_  = hardRecoTop_->jet2.p4().pt();
-          reshardmatchedrecoj2eta_ = hardRecoTop_->jet2.p4().eta();
-          reshardmatchedrecoj3pt_  = hardRecoTop_->jet3.p4().pt();
-          reshardmatchedrecoj3eta_ = hardRecoTop_->jet3.p4().eta();
-          reshardmatchedisw_       = hardRecoTop_->isW;
-        }//if hardRecoTop
-      }//if hardGenTop
-    }//isMC
+    // check if that cand passed selection
+    if(cand) data->fill<bool>(i_correcttoppassed, isPassingResolvedTop(*cand));
+    if(cand) data->fill<bool>(i_candfilled, true);
+    if(dbg) if(cand) std::cout << "it was a cand. passed? " << isPassingResolvedTop(*cand) << std::endl;
 
-    // fill branches
-    data->fill<int  >(i_resnrecotops       ,resnrecotops_     );
-    data->fill<bool >(i_reshardisw         ,reshardisw_       );
-    data->fill<int  >(i_reshardnsubjets    ,reshardnsubjets_  );
-    data->fill<float>(i_reshardgentoppt    ,reshardgentoppt_  );
-    data->fill<float>(i_reshardgentopeta   ,reshardgentopeta_ );
-    data->fill<float>(i_reshardrecopt      ,reshardrecopt_    );
-    data->fill<float>(i_reshardrecoeta     ,reshardrecoeta_   );
-    data->fill<float>(i_reshardrecom3jet   ,reshardrecom3jet_ );
-    data->fill<float>(i_reshardrecom12     ,reshardrecom12_   );
-    data->fill<float>(i_reshardrecom13     ,reshardrecom13_   );
-    data->fill<float>(i_reshardrecom23     ,reshardrecom23_   );
-    data->fill<float>(i_reshardrecom1      ,reshardrecom1_    );
-    data->fill<float>(i_reshardrecom2      ,reshardrecom2_    );
-    data->fill<float>(i_reshardrecom3      ,reshardrecom3_    );
-    data->fill<float>(i_reshardrecoj1pt    ,reshardrecoj1pt_  );
-    data->fill<float>(i_reshardrecoj1eta   ,reshardrecoj1eta_ );
-    data->fill<float>(i_reshardrecoj2pt    ,reshardrecoj2pt_  );
-    data->fill<float>(i_reshardrecoj2eta   ,reshardrecoj2eta_ );
-    data->fill<float>(i_reshardrecoj3pt    ,reshardrecoj3pt_  );
-    data->fill<float>(i_reshardrecoj3eta   ,reshardrecoj3eta_ );
-    data->fill<int  >(i_resnmatchedrecotops       ,resnmatchedrecotops_     );
-    data->fill<bool >(i_reshardmatchedisw         ,reshardmatchedisw_       );
-    data->fill<int  >(i_reshardmatchednsubjets    ,reshardmatchednsubjets_  );
-    data->fill<float>(i_reshardmatchedgentoppt    ,reshardmatchedgentoppt_  );
-    data->fill<float>(i_reshardmatchedgentopeta   ,reshardmatchedgentopeta_ );
-    data->fill<float>(i_reshardmatchedrecopt      ,reshardmatchedrecopt_    );
-    data->fill<float>(i_reshardmatchedrecoeta     ,reshardmatchedrecoeta_   );
-    data->fill<float>(i_reshardmatchedrecom3jet   ,reshardmatchedrecom3jet_ );
-    data->fill<float>(i_reshardmatchedrecom12     ,reshardmatchedrecom12_   );
-    data->fill<float>(i_reshardmatchedrecom13     ,reshardmatchedrecom13_   );
-    data->fill<float>(i_reshardmatchedrecom23     ,reshardmatchedrecom23_   );
-    data->fill<float>(i_reshardmatchedrecom1      ,reshardmatchedrecom1_    );
-    data->fill<float>(i_reshardmatchedrecom2      ,reshardmatchedrecom2_    );
-    data->fill<float>(i_reshardmatchedrecom3      ,reshardmatchedrecom3_    );
-    data->fill<float>(i_reshardmatchedrecoj1pt    ,reshardmatchedrecoj1pt_  );
-    data->fill<float>(i_reshardmatchedrecoj1eta   ,reshardmatchedrecoj1eta_ );
-    data->fill<float>(i_reshardmatchedrecoj2pt    ,reshardmatchedrecoj2pt_  );
-    data->fill<float>(i_reshardmatchedrecoj2eta   ,reshardmatchedrecoj2eta_ );
-    data->fill<float>(i_reshardmatchedrecoj3pt    ,reshardmatchedrecoj3pt_  );
-    data->fill<float>(i_reshardmatchedrecoj3eta   ,reshardmatchedrecoj3eta_ );
+    // extra bools for matched jets passing mass windows and dr
+    float recom12 = (recodau1->p4() + recodau2->p4()).mass();
+    data->fill<bool>(i_passwwindow, (recom12 > mWmin) && (recom12 < mWmax) );
+    float recom3jet = (recodau1->p4() + recodau2->p4() + recob->p4()).mass();
+    data->fill<bool>(i_passtopwindow, (recom3jet > mTopmin) && (recom3jet < mTopmax) );
+    float dr123 = getRecoTopDR( recob, recodau1, recodau2 );
+    data->fill<bool>(i_passdr123, dr123 > TMath::PiOver2());
+    if(dbg) std::cout << "extra bools for our reco guy... recom12, recom3jet, dr123 " << recom12 << " " << recom3jet << " " << dr123 << std::endl;
 
-    return;
-  }//fillResInfo
+  }//fillResolvedGenInfo
+
 
 };//ResTreeFiller
 
