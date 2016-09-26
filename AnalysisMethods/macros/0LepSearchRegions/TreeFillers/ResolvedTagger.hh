@@ -146,9 +146,9 @@ struct ResTreeFiller {
   size i_recodrbW;
   size i_recodr123;
 
-  size i_recotoppt; // extra matched reco top info
+  size i_recotoppt;
   size i_recotopeta;
-  size i_recoWpt;
+  size i_recoWpt; // extra matched reco top info
   size i_recoWeta;
   size i_recobeta;
   size i_recodau1eta;
@@ -162,7 +162,6 @@ struct ResTreeFiller {
   size i_twocsvcontainb; // reco pass conditions
   size i_ncorrectcandjets;
   size i_correcttoppassed;
-  size i_candfilled;
   size i_passwwindow;
   size i_passtopwindow;
   size i_passdr123;
@@ -239,6 +238,8 @@ struct ResTreeFiller {
     i_recodrbW                      = data->add<float>("","recodrbW","F",-9.);
     i_recodr123                     = data->add<float>("","recodr123","F",-9.);
 
+    i_recotoppt                     = data->add<float>("","recotoppt","F",-9.);
+    i_recotopeta                    = data->add<float>("","recotopeta","F",-9.);
     i_recoWpt                       = data->add<float>("","recoWpt","F",-9.);
     i_recoWeta                      = data->add<float>("","recoWeta","F",-9.);
     i_recobeta                      = data->add<float>("","recobeta","F",-9.);
@@ -253,7 +254,6 @@ struct ResTreeFiller {
     i_twocsvcontainb                = data->add<bool>("","twocsvcontainb","O",false);
     i_ncorrectcandjets              = data->add<int>("","ncorrectcandjets","I",-1);
     i_correcttoppassed              = data->add<bool>("","correcttoppassed","O",false);
-    i_candfilled                    = data->add<bool>("","candfilled","O",false);
     i_passwwindow                   = data->add<bool>("","passwwindow","O",false);
     i_passtopwindow                 = data->add<bool>("","passtopwindow","O",false);
     i_passdr123                     = data->add<bool>("","passdr123","O",false);
@@ -651,6 +651,8 @@ struct ResTreeFiller {
     data->fill<float>(i_recodr123, getRecoTopDR( recob, recodau1, recodau2 ) );
 
     // fill extra well-matched properties
+    data->fill<float>(i_recotoppt, (recodau1->p4() + recodau2->p4() + recob->p4()).pt() );
+    data->fill<float>(i_recotopeta, (recodau1->p4() + recodau2->p4() + recob->p4()).eta() );
     data->fill<float>(i_recoWpt,  (recodau1->p4() + recodau2->p4()).pt() );
     data->fill<float>(i_recoWeta, (recodau1->p4() + recodau2->p4()).eta() );
     data->fill<float>(i_recobeta, recob->eta() );
@@ -694,7 +696,6 @@ struct ResTreeFiller {
 
     // check if that cand passed selection
     if(cand) data->fill<bool>(i_correcttoppassed, isPassingResolvedTop(*cand));
-    if(cand) data->fill<bool>(i_candfilled, true);
     if(dbg) if(cand) std::cout << "it was a cand. passed? " << isPassingResolvedTop(*cand) << std::endl;
 
     // extra bools for matched jets passing mass windows and dr
@@ -703,7 +704,7 @@ struct ResTreeFiller {
     float recom3jet = (recodau1->p4() + recodau2->p4() + recob->p4()).mass();
     data->fill<bool>(i_passtopwindow, (recom3jet > mTopmin) && (recom3jet < mTopmax) );
     float dr123 = getRecoTopDR( recob, recodau1, recodau2 );
-    data->fill<bool>(i_passdr123, dr123 > TMath::PiOver2());
+    data->fill<bool>(i_passdr123, dr123 < TMath::PiOver2());
     if(dbg) std::cout << "extra bools for our reco guy... recom12, recom3jet, dr123 " << recom12 << " " << recom3jet << " " << dr123 << std::endl;
 
   }//fillResolvedGenInfo
