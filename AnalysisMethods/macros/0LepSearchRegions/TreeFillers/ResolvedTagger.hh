@@ -340,16 +340,19 @@ struct ResTreeFiller {
           */
 
     // require drW < some pt dependence
-    //if( cand.drW > 1.5*( 2.*80./j12.pt() ) ) return false; // dr ~ 2m/pt, plus 50%
+    //float drWbest = 160./(cand.j1.p4() + cand.j2.p4()).pt();
+    //if( abs(cand.drW - drWbest)/drWbest > 0.3) return false;
 
     // require drbW < some pt dependence
     //if( cand.drbW > 1.5*( 2.*173./j123.pt() ) ) return false;
+    //float drbWbest = 270./cand.j123.pt();
+    //if( abs(cand.drbW - drbWbest)/drbWbest > 0.3) return false;
 
     // require dr123 < some pt dependence
     //if( cand.dr123 > 1.5*( 2.*173./j123.pt() ) ) return false; // pt-dependent dr123
 
     // require dr123 = max(dr12,dr13,dr23) < pi/2 (hemisphere)
-    //if( cand.dr123 > TMath::PiOver2() ) return false;
+    if( cand.dr123 > TMath::PiOver2() ) return false;
 
     return true;
   }
@@ -546,7 +549,7 @@ struct ResTreeFiller {
 
   // ----------------------------------------------------------------------------------------------------------------------
   void fillResolvedGenInfo(TreeWriterData* data, BaseTreeAnalyzer* ana,vector<resolved> & resTops, vector<resolved> & resCands){
-    bool dbg = false;
+    bool dbg = true;
     if(dbg) std::cout << std::endl << "** filling gen info " << std::endl;
 
     std::vector<GenJetF*> filteredGenJes;
@@ -696,7 +699,8 @@ struct ResTreeFiller {
 
     // check if that cand passed selection
     if(cand) data->fill<bool>(i_correcttoppassed, isPassingResolvedTop(*cand));
-    if(dbg) if(cand) std::cout << "it was a cand. passed? " << isPassingResolvedTop(*cand) << std::endl;
+    if(dbg) if(cand) std::cout << "m12, m3jet: " << cand->m12 << " " << cand->m3jet << std::endl;
+    if(dbg) if(cand) std::cout << "it was a cand-> passed? " << isPassingResolvedTop(*cand) << std::endl;
 
     // extra bools for matched jets passing mass windows and dr
     float recom12 = (recodau1->p4() + recodau2->p4()).mass();
