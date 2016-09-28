@@ -160,6 +160,9 @@ struct ResTreeFiller {
   size i_recodrdau1dau2;
   size i_recodrbW;
   size i_recodr123;
+  size i_recobcsv;
+  size i_recoj1csv;
+  size i_recoj2csv;
 
   size i_recotoppt;
   size i_recotopeta;
@@ -242,7 +245,7 @@ struct ResTreeFiller {
   }
 
   void bookFiltered(TreeWriterData* data){
-    i_ngenhadronictops              = data->add<int>("","ngenhadronictops","I",0);
+    i_ngenhadronictops              = data->add<int>("","ngenhadronictops","I",-1);
     i_genmindrtopproducts           = data->add<float>("","genmindrtopproducts","F",-9.);
     i_genmindrtops                  = data->add<float>("","genmindrtops","F",-9);
     i_gendrbdau1                    = data->addMulti<float>("","gendrbdau1",-9.);
@@ -269,6 +272,9 @@ struct ResTreeFiller {
     i_recodrdau1dau2                = data->addMulti<float>("","recodrdau1dau2",-9.);
     i_recodrbW                      = data->addMulti<float>("","recodrbW",-9.);
     i_recodr123                     = data->addMulti<float>("","recodr123",-9.);
+    i_recobcsv                      = data->addMulti<float>("","recobcsv",-9.);
+    i_recoj1csv                     = data->addMulti<float>("","recoj1csv",-9.);
+    i_recoj2csv                     = data->addMulti<float>("","recoj2csv",-9.);
 
     i_recotoppt                     = data->addMulti<float>("","recotoppt",-9.);
     i_recotopeta                    = data->addMulti<float>("","recotopeta",-9.);
@@ -581,16 +587,23 @@ struct ResTreeFiller {
     vector<RecoJetF*> jetsCSVranked(ana->jets); 
     sort( jetsCSVranked.begin(), jetsCSVranked.end(), []( const RecoJetF* lhs, const RecoJetF* rhs ){ return lhs->csv() > rhs->csv(); } );
 
-    // dr between passing tops and gen tops
+    // dr between passing tops and gen hadr tops
     for(auto recotop : resTops){
       float mindr = 9.;
-      for(auto top : tops){ mindr = std::min( double(mindr), PhysicsUtilities::deltaR(top->top->p4(), recotop.j123.p4()) ); }
+      for(auto top : tops){
+        if(!top->isLeptonic){
+          mindr = std::min( double(mindr), PhysicsUtilities::deltaR(top->top->p4(), recotop.j123.p4()) );
+        }
+      }
       data->fillMulti<float>(i_mindrcandtopquarks, mindr);
     }
 
-    // require a gen top decay
-    data->fill<int>(i_ngenhadronictops, tops.size());
-    if(tops.empty()) return;
+    int ngenhadronictops = 0;
+    for(auto top : tops) { if( !top->isLeptonic) ngenhadronictops++; }
+    data->fill<int>(i_ngenhadronictops, ngenhadronictops);
+
+    // require > 0 hadronic tops
+    if(ngenhadronictops < 1) return;
 
     // min dr between all quarks
     auto getMinDRbetweenTopProducts = [](const vector<const PartonMatching::TopDecay*> tops)->float {
@@ -713,6 +726,9 @@ struct ResTreeFiller {
       data->fillMulti<float>(i_recodrdau1dau2, PhysicsUtilities::deltaR(*recodau1, *recodau2) );
       data->fillMulti<float>(i_recodrbW, PhysicsUtilities::deltaR( *recob, (recodau1->p4() + recodau2->p4()) ));
       data->fillMulti<float>(i_recodr123, getRecoTopDR123( recob, recodau1, recodau2 ) );
+      data->fillMulti<float>(i_recobcsv, recob->csv());
+      data->fillMulti<float>(i_recoj1csv, recodau1->csv());
+      data->fillMulti<float>(i_recoj2csv, recodau2->csv());
       data->fillMulti<float>(i_recotoppt, (recodau1->p4() + recodau2->p4() + recob->p4()).pt() );
       data->fillMulti<float>(i_recotopeta, (recodau1->p4() + recodau2->p4() + recob->p4()).eta() );
       data->fillMulti<float>(i_recoWpt,  (recodau1->p4() + recodau2->p4()).pt() );
