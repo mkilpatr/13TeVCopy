@@ -6,7 +6,7 @@
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ExtraVariables.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/HettTopTagger.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/CttTopTagger.hh"
-#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ResolvedTagger.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ResolvedTagger.hh"
 
 using namespace ucsbsusy;
 
@@ -64,7 +64,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     virtual ~ZeroLeptonAnalyzer() {}
 
     double metcut_   = 200.0 ;
-    int    minnjets_ =   5   ;
+    int    minnjets_ =   2   ;
 
     unsigned int minnisrj_ =   0   ;
     double       isrptcut_ =   0.0 ;
@@ -86,7 +86,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      cttFiller.book(&data);
       //resFiller.book(&data);
       //resFiller.bookExtra(&data);
-      resFiller.bookFiltered(&data);
+      //resFiller.bookFiltered(&data);
     }
 
     bool fillEvent() {
