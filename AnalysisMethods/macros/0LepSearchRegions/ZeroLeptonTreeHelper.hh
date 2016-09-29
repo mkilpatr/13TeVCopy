@@ -86,7 +86,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      cttFiller.book(&data);
       //resFiller.book(&data);
       //resFiller.bookExtra(&data);
-      //resFiller.bookGen(&data);
+      resFiller.bookFiltered(&data);
     }
 
     bool fillEvent() {
@@ -126,9 +126,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.fillGenInfo(&data, this);
       //hettFiller.fillHettInfo(&data,this,jets,hettTops);
       //cttFiller.fillTopTagInfo(&data,this,jets);
-      //resFiller.fillResolvedInfo(&data,this,jets,resTops,resCands);
-      //resFiller.fillResolvedExtraInfo(&data,this,resTops);
-      //resFiller.fillResolvedGenInfo(&data,this,resTops,resCands);
+      //resFiller.fillResolvedBasicInfo(&data,this,jets,resTops,resCands);
+      //resFiller.fillResolvedExtraInfo(&data,this,jets,resTops,resCands);
+      //resFiller.fillResolvedFilteredInfo(&data,this,resTops,resCands);
 
       return true;
     }
@@ -138,7 +138,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     ExtraVarsFiller extraFiller;
 //    HettTreeFiller hettFiller;
 //    CttTreeFiller cttFiller;
-    ResTreeFiller resFiller;
+//    ResTreeFiller resFiller;
 };
 
 #endif
