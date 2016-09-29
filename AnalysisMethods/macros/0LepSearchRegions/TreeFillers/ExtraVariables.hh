@@ -95,7 +95,6 @@ struct ExtraVarsFiller {
   size i_ditoppt  ;
   size i_ngenjets ;
   size i_ngenbjets;
-  size i_ngenhadronictops;
   size i_gentop1pt;
   size i_gentop2pt;
   size i_genb1pt;
@@ -139,6 +138,7 @@ struct ExtraVarsFiller {
   size i_ak8tau32;
   size i_ak8fromgenhadw;
   size i_ak8fromgenhadt;
+  size i_nak8jets;
 
   // TopFrameTagger
   size i_fatjetmass;
@@ -267,7 +267,6 @@ struct ExtraVarsFiller {
     i_ditoppt        = data->add<float>("","ditoppt","F",-1.);
     i_ngenjets       = data->add<int>("","ngenjets","I",0);
     i_ngenbjets      = data->add<int>("","ngenbjets","I",0);
-    i_nhadronicgentops = data->add<int>("","nhadronicgentops","I",0)
     i_gentop1pt      = data->add<float>("","gentoppt1","F",0);
     i_gentop2pt      = data->add<float>("","gentoppt2","F",0);
     i_genb1pt        = data->add<float>("","genb1pt","F",0);
@@ -834,6 +833,8 @@ struct ExtraVarsFiller {
       if (abs(p->pdgId()) == matchtoid && ParticleInfo::isLastInChain(p)){
         if( (ParticleInfo::isGenTopHadronic(p) && matchtoid==ParticleInfo::p_t) || 
             (ParticleInfo::isGenWHadronic(p)   && matchtoid==ParticleInfo::p_Wplus)){
+          std::cout << "found a candidate gen part with " << p->pdgId() << " " << p->p4() << std::endl;
+          std::cout << "and dr " << PhysicsUtilities::deltaR(*p, *fj) << std::endl;
           if(PhysicsUtilities::deltaR(*p, *fj) < dr) { return true; }
         }
       }
@@ -915,14 +916,6 @@ struct ExtraVarsFiller {
     data->fill<int  >(i_ngenjets, ngenjets);
     data->fill<int  >(i_ngenbjets, ngenbjets);
 
-    int nhadronicgentops_ = 0;
-    for(auto* p : ana->genParts) {
-      if ((abs(p->pdgId()) == ParticleInfo::p_t)
-          && ParticleInfo::isGenTopHadronic(p)
-          && ParticleInfo::isLastInChain(p)) {
-        nhadronicgentops_++;
-    }
-    data->fill<int  >(i_nhadronicgentops, nhadronicgentops_);
   }
 
 };
