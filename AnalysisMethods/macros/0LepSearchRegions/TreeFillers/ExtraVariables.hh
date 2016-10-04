@@ -18,7 +18,23 @@ struct ExtraVarsFiller {
   TH1D* hpartonht = nullptr;
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
-
+  /*size i_dphimhtj1  ;
+  size i_dphistarmhtj1;
+  size i_omegamhtj1 ;
+  size i_chimhtj1   ;
+  size i_dphimhtj2  ;
+  size i_dphistarmhtj2;
+  size i_omegamhtj2 ;
+  size i_chimhtj2   ;
+  size i_dphimhtj3  ;
+  size i_dphistarmhtj3;
+  size i_omegamhtj3 ;
+  size i_chimhtj3   ;
+  size i_dphimhtj4  ;
+  size i_dphistarmhtj4;
+  size i_omegamhtj4 ;
+  size i_chimhtj4   ;
+*/
   // Syst. studies
   size i_systweights;
   size i_wpolWeightUp;
@@ -194,6 +210,25 @@ struct ExtraVarsFiller {
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
   }
 
+/*  void bookJetMHTTest(TreeWriterData* data){
+    i_dphimhtj1       = data->add<float>("","dphimhtj1","F",0);
+    i_dphistarmhtj1   = data->add<float>("","dphistarmhtj1","F",0);
+    i_omegamhtj1      = data->add<float>("","omegamhtj1","F",0);
+    i_chimhtj1        = data->add<float>("","chimhtj1","F",0);
+    i_dphimhtj2       = data->add<float>("","dphimhtj2","F",0);
+    i_dphistarmhtj2   = data->add<float>("","dphistarmhtj2","F",0);
+    i_omegamhtj2      = data->add<float>("","omegamhtj2","F",0);
+    i_chimhtj2        = data->add<float>("","chimhtj2","F",0);
+    i_dphimhtj3       = data->add<float>("","dphimhtj3","F",0);
+    i_dphistarmhtj3   = data->add<float>("","dphistarmhtj3","F",0);
+    i_omegamhtj3      = data->add<float>("","omegamhtj3","F",0);
+    i_chimhtj3        = data->add<float>("","chimhtj3","F",0);
+    i_dphimhtj4       = data->add<float>("","dphimhtj4","F",0);
+    i_dphistarmhtj4   = data->add<float>("","dphistarmhtj4","F",0);
+    i_omegamhtj4      = data->add<float>("","omegamhtj4","F",0);
+    i_chimhtj4        = data->add<float>("","chimhtj4","F",0);
+  }
+*/
   void bookJetMET(TreeWriterData* data){
     i_njets30        = data->add<int>("","njets30","I",0);
     i_nbjets30       = data->add<int>("","nbjets30","I",0);
@@ -382,6 +417,37 @@ struct ExtraVarsFiller {
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
   }
 
+/*  void fillJetMHTInfoTest(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
+    const auto &jets = ana->jets;
+    const MomentumF *met = useModifiedMET ? metn : ana->met;
+
+    if(jets.size() > 0) {
+      data->fill<float>(i_dphimhtj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
+      data->fill<float>(i_dphistarmhtj1, JetKinematics::absDPhiStarMHTJ(*met, *jets[0], 30.0, 2.4));
+        data->fill<float>(i_omegamhtj1, JetKinematics::OmegaMHTJ(*met, *jets[0], 30.0, 2.4));
+        data->fill<float>(i_chimhtj1, JetKinematics::ChiMHTJ(*met, *jets[0], 30.0, 2.4));
+    }
+    if(jets.size() > 1) {
+      data->fill<float>(i_dphimhtj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
+      data->fill<float>(i_dphistarmhtj2, JetKinematics::absDPhiStarMHTJ(*met, *jets[1], 30.0, 2.4));
+        data->fill<float>(i_omegamhtj2, JetKinematics::OmegaMHTJ(*met, *jets[1], 30.0, 2.4));
+        data->fill<float>(i_chimhtj2, JetKinematics::ChiMHTJ(*met, *jets[1], 30.0, 2.4));
+    }
+    if(jets.size() > 2) {
+      data->fill<float>(i_dphimhtj3, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
+      data->fill<float>(i_dphistarmhtj3, JetKinematics::absDPhiStarMHTJ(*met, *jets[2], 30.0, 2.4));
+        data->fill<float>(i_omegamhtj3, JetKinematics::OmegaMHTJ(*met, *jets[2], 30.0, 2.4));
+        data->fill<float>(i_chimhtj3, JetKinematics::ChiMHTJ(*met, *jets[2], 30.0, 2.4));
+    }
+    if(jets.size() > 3) {
+      data->fill<float>(i_dphimhtj4, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
+      data->fill<float>(i_dphistarmhtj4, JetKinematics::absDPhiStarMHTJ(*met, *jets[3], 30.0, 2.4));
+        data->fill<float>(i_omegamhtj4, JetKinematics::OmegaMHTJ(*met, *jets[3], 30.0, 2.4));
+        data->fill<float>(i_chimhtj4, JetKinematics::ChiMHTJ(*met, *jets[3], 30.0, 2.4));
+    }
+
+  }
+*/
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
 
     const auto &jets = ana->jets;

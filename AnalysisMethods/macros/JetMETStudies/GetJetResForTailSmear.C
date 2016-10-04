@@ -12,11 +12,7 @@
 
 using namespace std;
 
-//TString weight = "puWeight*weight";
-TString weight = "puWeight";
-//TString weight = "weight";
-//TString weight = "puWeight*smearWeight";
-//TString weight = "1.0";
+TString weight = "";
 
 void getRes(TTree * tree,TFile* oF){
   float jetPTs[] = {0,50,75,100,125,150,200,250,300,400,500,700,1000,1500,4000};
@@ -145,9 +141,23 @@ void getFlvDepRes(TTree * tree,TFile* oF){
 
 #endif
 
-//void GetJetResForTailSmear(const TString inFile="jetResSkim_orig_CombinedSample.root", const TString treeName = "Events", const TString outFile = "resTailOut_puWeight_weight.root")
-void GetJetResForTailSmear(const TString inFile="jetResSkim_orig_CombinedSample.root", const TString treeName = "Events", const TString outFile = "resTailOut_puWeight.root")
+//possible weight strings to use: puWeight, puWeight*weight, puWeight*smearWeight, weight, 1.0
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_puWeight_WoH.root", const TString weightString = "puWeight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_puWeight_WoH.root", const TString weightString = "puWeight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_prev.root", const TString treeName = "Events", const TString outFile = "resTailOut_prev_puWeight_WoH.root", const TString weightString = "puWeight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_orig.root", const TString treeName = "Events", const TString outFile = "resTailOut_orig_puWeight_WoH.root", const TString weightString = "puWeight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_plus.root", const TString treeName = "Events", const TString outFile = "resTailOut_plus_puWeight_WoH.root", const TString weightString = "puWeight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered_CHEF.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_prev.root", const TString treeName = "Events", const TString outFile = "resTailOut_prev_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_orig.root", const TString treeName = "Events", const TString outFile = "resTailOut_orig_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_plus.root", const TString treeName = "Events", const TString outFile = "resTailOut_plus_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered_CHEF_new.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_newCHEF_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+//void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered_CHEF_newer.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_newerCHEF_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
 {
+  weight = weightString;
+  cout << weight << endl;
   TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();
   TFile * mf = new TFile(inFile,"read");

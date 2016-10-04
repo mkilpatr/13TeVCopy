@@ -32,7 +32,8 @@ public:
   virtual BaseEventAnalyzer * setupEventAnalyzer() override {
     auto * smearer = new  QCDRespSmearingCopierEventAnalyzer();
 cout << TString(cfgSet::CMSSW_BASE) + "/" + smearTemplateName << endl;
-    smearer->smearOptions.respFileName   = TString(cfgSet::CMSSW_BASE) + "/src/data/corrections/2016/" + smearTemplateName;
+    //smearer->smearOptions.respFileName   = TString(cfgSet::CMSSW_BASE) + "/src/data/corrections/2016/" + smearTemplateName;
+    smearer->smearOptions.respFileName   = TString(cfgSet::CMSSW_BASE) + "/src/AnalysisMethods/macros/JetMETStudies/" + smearTemplateName;
     smearer->smearOptions.respInputName  = "JetResByFlav";
 //    smearer->smearOptions.winType        = JetRespSmear::FLAT;
 //    smearer->smearOptions.doFlatSampling = false;
