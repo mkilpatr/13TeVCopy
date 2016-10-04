@@ -57,6 +57,7 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       i_maxMuPT                = data.add<float>("","maxMuPT","F",0);
       i_removeMuFrac           = data.add<float>("","removeMuFrac","F",0);
 
+
     }
 
     bool fillEvent() {

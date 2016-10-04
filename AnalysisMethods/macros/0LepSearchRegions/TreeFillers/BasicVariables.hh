@@ -93,32 +93,6 @@ struct BasicVarsFiller {
   size i_dphij1lmet;
   size i_nivf;
 
-  //Matt added new variables
-  size i_dphimhtj1  ;
-  size i_dphistarmhtj1;
-  size i_dphistarmhtj1_tilde;
-  size i_omegamhtj1 ;
-  size i_omegamhtj1_tilde;
-  size i_chimhtj1   ;
-  size i_dphimhtj2  ;
-  size i_dphistarmhtj2;
-  size i_dphistarmhtj2_tilde;
-  size i_omegamhtj2 ;
-  size i_omegamhtj2_tilde;
-  size i_chimhtj2   ;
-  size i_dphimhtj3  ;
-  size i_dphistarmhtj3;
-  size i_dphistarmhtj3_tilde;
-  size i_omegamhtj3 ;
-  size i_omegamhtj3_tilde;
-  size i_chimhtj3   ;
-  size i_dphimhtj4  ;
-  size i_dphistarmhtj4;
-  size i_dphistarmhtj4_tilde;
-  size i_omegamhtj4 ;
-  size i_omegamhtj4_tilde;
-  size i_chimhtj4   ;
-
   // Lepton variables
   size i_leptonpt  ;
   size i_leptoneta ;
@@ -216,32 +190,6 @@ struct BasicVarsFiller {
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
-
-    //Matt added filling
-    i_dphimhtj1       = data->add<float>("","dphimhtj1","F",0);
-    i_dphistarmhtj1   = data->add<float>("","dphistarmhtj1","F",0);
-    i_dphistarmhtj1_tilde   = data->add<float>("","dphistarmhtj1_tilde","F",0);
-    i_omegamhtj1      = data->add<float>("","omegamhtj1","F",0);
-    i_omegamhtj1_tilde = data->add<float>("","omegamhtj1_tilde","F",0);
-    i_chimhtj1        = data->add<float>("","chimhtj1","F",0);
-    i_dphimhtj2       = data->add<float>("","dphimhtj2","F",0);
-    i_dphistarmhtj2   = data->add<float>("","dphistarmhtj2","F",0);
-    i_dphistarmhtj2_tilde   = data->add<float>("","dphistarmhtj2_tilde","F",0);
-    i_omegamhtj2      = data->add<float>("","omegamhtj2","F",0);
-    i_omegamhtj2_tilde      = data->add<float>("","omegamhtj2_tilde","F",0);
-    i_chimhtj2        = data->add<float>("","chimhtj2","F",0);
-    i_dphimhtj3       = data->add<float>("","dphimhtj3","F",0);
-    i_dphistarmhtj3   = data->add<float>("","dphistarmhtj3","F",0);
-    i_dphistarmhtj3_tilde   = data->add<float>("","dphistarmhtj3_tilde","F",0);
-    i_omegamhtj3      = data->add<float>("","omegamhtj3","F",0);
-    i_omegamhtj3_tilde      = data->add<float>("","omegamhtj3_tilde","F",0);
-    i_chimhtj3        = data->add<float>("","chimhtj3","F",0);
-    i_dphimhtj4       = data->add<float>("","dphimhtj4","F",0);
-    i_dphistarmhtj4   = data->add<float>("","dphistarmhtj4","F",0);
-    i_dphistarmhtj4_tilde   = data->add<float>("","dphistarmhtj4_tilde","F",0);
-    i_omegamhtj4      = data->add<float>("","omegamhtj4","F",0);
-    i_omegamhtj4_tilde      = data->add<float>("","omegamhtj4_tilde","F",0);
-    i_chimhtj4        = data->add<float>("","chimhtj4","F",0);
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -416,39 +364,6 @@ struct BasicVarsFiller {
     }
     if(jets.size() > 3){
       data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
-    }
-
-    if(jets.size() > 0) {
-      data->fill<float>(i_dphimhtj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
-      data->fill<float>(i_dphistarmhtj1, JetKinematics::absDPhiStarMHTJ(*met, *jets[0], 30.0, 2.4));
-      data->fill<float>(i_dphistarmhtj1_tilde, JetKinematics::absDPhiStarMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj1, JetKinematics::OmegaMHTJ(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj1_tilde, JetKinematics::OmegaMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_chimhtj1, JetKinematics::ChiMHTJ(*met, *jets[0], 30.0, 2.4));
-    }
-    if(jets.size() > 1) {
-      data->fill<float>(i_dphimhtj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
-      data->fill<float>(i_dphistarmhtj2, JetKinematics::absDPhiStarMHTJ(*met, *jets[1], 30.0, 2.4));
-      data->fill<float>(i_dphistarmhtj2_tilde, JetKinematics::absDPhiStarMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj2, JetKinematics::OmegaMHTJ(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj2_tilde, JetKinematics::OmegaMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-      data->fill<float>(i_chimhtj2, JetKinematics::ChiMHTJ(*met, *jets[1], 30.0, 2.4));
-    }
-    if(jets.size() > 2) {
-      data->fill<float>(i_dphimhtj3, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
-      data->fill<float>(i_dphistarmhtj3, JetKinematics::absDPhiStarMHTJ(*met, *jets[2], 30.0, 2.4));
-        data->fill<float>(i_dphistarmhtj3_tilde, JetKinematics::absDPhiStarMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj3, JetKinematics::OmegaMHTJ(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj3_tilde, JetKinematics::OmegaMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-	data->fill<float>(i_chimhtj3, JetKinematics::ChiMHTJ(*met, *jets[2], 30.0, 2.4));
-    }
-    if(jets.size() > 3) {
-      data->fill<float>(i_dphimhtj4, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
-      data->fill<float>(i_dphistarmhtj4, JetKinematics::absDPhiStarMHTJ(*met, *jets[3], 30.0, 2.4));
-        data->fill<float>(i_dphistarmhtj4_tilde, JetKinematics::absDPhiStarMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj4, JetKinematics::OmegaMHTJ(*met, *jets[0], 30.0, 2.4));
-        data->fill<float>(i_omegamhtj4_tilde, JetKinematics::OmegaMHTJ_tilde(*met, *jets[0], 30.0, 2.4));
-	data->fill<float>(i_chimhtj4, JetKinematics::ChiMHTJ(*met, *jets[3], 30.0, 2.4));
     }
 
     vector<RecoJetF*> jetsCSVranked(jets);
