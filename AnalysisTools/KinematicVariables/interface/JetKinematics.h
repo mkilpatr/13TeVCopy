@@ -36,6 +36,24 @@ namespace JetKinematics {
   template<typename MET,typename Jet>
   double absDPhiMETJ3(const MET& met, const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
 
+  template<typename MET,typename Jet>
+  double absDPhiMHTJ(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double absDPhiStarMHTJ(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double absDPhiStarMHTJ_tilde(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double OmegaMHTJ(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double OmegaMHTJ_tilde(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
+  double ChiMHTJ(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
   template<typename Momentum1, typename Momentum2>
   double transverseMass(const Momentum1& visible, const Momentum2& invisible);
 
