@@ -44,12 +44,15 @@ struct resolved {
               rj1(0), rj2(0), rj3(0),
               bjetcsv(-1.),
               m1(-1.),  m2(-1.),  m3(-1.),
-              m12(-1.), m13(-1.), m23(-1.), m3jet(-1.)
+              m12(-1.), m13(-1.), m23(-1.), m3jet(-1.),
+              drW(-1.), drbW(-1.), dr123(-1.), chi2(-1.)
               {}
   ~resolved(){}
   MomentumF j1, j2, j3;       // subjet momenta. might not be pt-ordered. see individual algo.
   MomentumF j123;             // object momentum, the sum of subjets' p4
   float     pt,eta;           // of j123 - convenience
+  float     wpt,weta;              // of j12 (the W)
+  float     bpt;
   float     bjetcsv;          // csv of bjet (j3)
   bool      hasmbjet;         // does csv > defaults::medium
   RecoJetF *rj1, *rj2, *rj3;  // ptrs to reco subjets' full info
@@ -58,19 +61,12 @@ struct resolved {
   float     drW;              // dr between W products = dr(j1,j2)
   float     drbW;             // dr between b and W = dr(j12,j3)
   float     dr123;            // max dr between all top products = max(dr12, dr13, dr23)
+  float     chi2;
 };
-std::vector<resolved> resTops; //passing - tighter mass windows, dr
 std::vector<resolved> resCands; //candidate - loose mass windows
-
-// mass windows and resolutions
-float mW = 80.4;
-float mTop = 173.4;
-float mWloosemin = mW-40., mWloosemax = mW+40.; // Huilin and I agree on these loose windows
-float mToploosemin = mTop-80., mToploosemax = mTop+80.;
-//float mWloosemin = 60., mWloosemax = 110.; // candidate windows, 90% eff for filtered tops
-//float mToploosemin = 140., mToploosemax = 210.;
-float mWpassmin = 65., mWpassmax = 95.; // passing windows - unimportant
-float mToppassmin = 150., mToppassmax = 200.;
+std::vector<resolved> resCleaned; //candidates after cleaning
+std::vector<resolved> resTops; //passing - tighter mass windows, dr
+std::vector<resolved> resTrueTops; //true tops - gen matched
 
 struct ResTreeFiller {
 
@@ -78,6 +74,7 @@ struct ResTreeFiller {
 
   // basic
   size i_resnpasstops;
+  size i_resncleanedtops;
   size i_resncandtops;
   size i_respasspt;
   size i_respasseta;
@@ -92,6 +89,8 @@ struct ResTreeFiller {
   size i_respassj1csv;
   size i_respassj2csv;
 
+  size i_ncandoverlappingsubjets;
+  size i_iscandcleaned;
   size i_rescandpt;
   size i_rescandeta;
   size i_rescandm3jet;
@@ -166,17 +165,27 @@ struct ResTreeFiller {
 
   size i_recotoppt;
   size i_recotopeta;
+  size i_recotopphi;
   size i_recoWpt;
   size i_recoWeta;
+  size i_recoWphi;
   size i_recobeta;
+  size i_recobphi;
   size i_recodau1eta;
+  size i_recodau1phi;
   size i_recodau2eta;
+  size i_recodau2phi;
   size i_recom1;
   size i_recom2;
   size i_recom3;
   size i_recom12;
   size i_recom3jet;
 
+  size i_recochi2;
+  size i_istruetopincleanedtops;
+  size i_ntruetopsincleanedtops;
+
+  size i_iscandtrue;
   size i_mindrcandtopquarks;
   size i_allmatchedtoreco;
   size i_bmatchedtoreco;
@@ -190,6 +199,7 @@ struct ResTreeFiller {
   void book(TreeWriterData* data) {
     i_resnpasstops           = data->add<int  >("","resnpasstops","I",0);
     i_resncandtops           = data->add<int  >("","resncandtops","I",0);
+    i_resncleanedtops        = data->add<int  >("","resncleanedtops","I",0);
     i_respasspt              = data->addMulti<float>("","respasspt",-9.);
     i_respasseta             = data->addMulti<float>("","respasseta",-9.);
     i_respassm3jet           = data->addMulti<float>("","respassm3jet",-9.);
@@ -203,6 +213,8 @@ struct ResTreeFiller {
     i_respassj1csv           = data->addMulti<float>("","respassj1csv",-9.);
     i_respassj2csv           = data->addMulti<float>("","respassj2csv",-9.);
 
+    i_ncandoverlappingsubjets = data->addMulti<int>("","ncandoverlappingsubjets",-9);
+    i_iscandcleaned          = data->addMulti<bool>("","iscandcleaned",false);
     i_rescandpt              = data->addMulti<float>("","rescandpt",-9.);
     i_rescandeta             = data->addMulti<float>("","rescandeta",-9.);
     i_rescandm3jet           = data->addMulti<float>("","rescandm3jet",-9.);
@@ -278,17 +290,27 @@ struct ResTreeFiller {
 
     i_recotoppt                     = data->addMulti<float>("","recotoppt",-9.);
     i_recotopeta                    = data->addMulti<float>("","recotopeta",-9.);
+    i_recotopphi                    = data->addMulti<float>("","recotopphi",-9.);
     i_recoWpt                       = data->addMulti<float>("","recoWpt",-9.);
     i_recoWeta                      = data->addMulti<float>("","recoWeta",-9.);
+    i_recoWphi                      = data->addMulti<float>("","recoWphi",-9.);
     i_recobeta                      = data->addMulti<float>("","recobeta",-9.);
+    i_recobphi                      = data->addMulti<float>("","recobphi",-9.);
     i_recodau1eta                   = data->addMulti<float>("","recodau1eta",-9.);
+    i_recodau1phi                   = data->addMulti<float>("","recodau1phi",-9.);
     i_recodau2eta                   = data->addMulti<float>("","recodau2eta",-9.);
+    i_recodau2phi                   = data->addMulti<float>("","recodau2phi",-9.);
     i_recom1                        = data->addMulti<float>("","recom1",-9.);
     i_recom2                        = data->addMulti<float>("","recom2",-9.);
     i_recom3                        = data->addMulti<float>("","recom3",-9.);
     i_recom12                       = data->addMulti<float>("","recom12",-9.);
     i_recom3jet                     = data->addMulti<float>("","recom3jet",-9.);
 
+    i_recochi2                      = data->addMulti<float>("","recochi2",-9.);
+    i_istruetopincleanedtops        = data->addMulti<bool>("","istruetopincleanedtops",false);
+    i_ntruetopsincleanedtops        = data->add<int>("","ntruetopsincleanedtops","I",0);
+
+    i_iscandtrue                    = data->addMulti<bool>("","iscandtrue",false);
     i_bmatchedtoreco                = data->addMulti<bool>("","bmatchedtoreco",false);
     i_csvrankofrecob                = data->addMulti<int>("","csvrankofrecob",-1);
     i_mindrcandtopquarks            = data->addMulti<float>("","mindrcandtopquarks",-9.);
@@ -300,6 +322,61 @@ struct ResTreeFiller {
     i_recoispassing                 = data->addMulti<bool>("","recoispassing",false);
 
   }
+
+  float chi2(const resolved & cand){
+    bool dbg = false;
+    // centers and widths for 60-70% signal pass, got from truth-matched tops
+    float mtop = 171., w_mtop = 17.;
+    float mw   =  83., w_mw   = 11.;
+    float drbw = 260., w_drbw = 75.;
+    float drw  = 160., w_drw  = 50.;
+    float csvb =   1., w_csvb =  0.2;
+
+    if(dbg) std::cout << "computing a chi2. components mtop, mw, drbw, drw, csvb: " << std::endl;
+    if(dbg) std::cout << "values: " << cand.m3jet << " " << cand.m12 << " " << cand.drbW*cand.pt << " " << cand.drW*cand.wpt << " " << cand.bjetcsv << std::endl;
+    if(dbg) std::cout << "    " << pow( (mtop - cand.m3jet        )/w_mtop , 2) << " " << 
+                                   pow( (mw   - cand.m12          )/w_mw   , 2) << " " <<
+                                   pow( (drbw - cand.drbW*cand.pt )/w_drbw , 2) << " " << 
+                                   pow( (drw  - cand.drW*cand.wpt )/w_drw  , 2) << " " <<
+                                   pow( (csvb - cand.bjetcsv      )/w_csvb , 2) << std::endl;
+    float chi2sum = pow( (mtop - cand.m3jet        )/w_mtop , 2) 
+                  + pow( (mw   - cand.m12          )/w_mw   , 2) 
+                  + pow( (drbw - cand.drbW*cand.pt )/w_drbw , 2) 
+                  + pow( (drw  - cand.drW*cand.wpt )/w_drw  , 2)
+                  //+ pow( (csvb - cand.bjetcsv      )/w_csvb , 2) // removed -- threw off chi2 distribution (not ~ gaussian at all)
+                  ;
+    if(dbg) std::cout << "    computed chi2: " << chi2sum << std::endl;
+    return chi2sum;
+  }
+
+  /*
+  // pt-dependent chi2. pt <= 0 gives default behavior.
+  // [100,250,350,450]
+  float chi2(float m3jet, float m12, float pt) {
+    bool dbg = false;
+
+    vector<float> vmW     = {79., 81., 84.};
+    vector<float> vresW   = {11., 10., 10.};
+    vector<float> vmTop   = {161., 167., 172.};
+    vector<float> vresTop = {18., 16., 18.};
+
+    int ptbin = 0;
+    if( pt < 100            )      { ptbin = 0; } // < lowest bin
+    else if( pt > 100 && pt < 250) { ptbin = 0; }
+    else if( pt > 250 && pt < 350) { ptbin = 1; }
+    else if( pt > 350 && pt < 450) { ptbin = 2; }
+    else if( pt > 450            ) { ptbin = 2; } // > highest bin
+    else                           { ptbin = 0; } // never
+
+    float mWtmp     = vmW[ptbin];
+    float resWtmp   = vresW[ptbin];
+    float mToptmp   = vmTop[ptbin];
+    float resToptmp = vresTop[ptbin];
+    if(dbg) std::cout << "pt, ptbin, mW, resW, mT, resT: " << pt << " " << ptbin << " " << mWtmp << " " << resWtmp << " " << mToptmp << " " << resToptmp << std::endl;
+    return std::pow( (m3jet - mToptmp)/resToptmp, 2 ) + std::pow( (m12 - mWtmp)/resWtmp, 2 );
+
+  };
+  */
 
   void findCandW(const vector<RecoJetF*> jets, RecoJetF* b, vector<resolved> & resCands){
     bool dbg = false;
@@ -314,13 +391,6 @@ struct ResTreeFiller {
         if( (b->pt() == jets[i]->pt()) || (b->pt() == jets[j]->pt()) ) continue; // j1, j2 shouldn't be the bjet
         if(dbg) std::cout << "checking W candidate: " << jets[i]->pt() << " " << jets[j]->pt() << std::endl;
 
-        // require loose W and Top mass windows
-        float m12 = (jets[i]->p4() + jets[j]->p4()).mass();
-        float m3jet = (jets[i]->p4() + jets[j]->p4() + b->p4()).mass();
-        if( (m12 > mWloosemax) || (m12 < mWloosemin) ) continue;
-        if( (m3jet > mToploosemax) || (m3jet < mToploosemin) ) continue;
-        if(dbg) std::cout << "   passed loose w and top mass windows" << std::endl;
-
         // fill candidate
         resolved cand;
         cand.rj1   = jets[i];
@@ -332,6 +402,9 @@ struct ResTreeFiller {
         cand.j123  = cand.j1.p4() + cand.j2.p4() + cand.j3.p4();
         cand.pt    = cand.j123.pt();
         cand.eta   = cand.j123.eta();
+        cand.wpt   = (cand.j1.p4() + cand.j2.p4()).pt();
+        cand.weta  = (cand.j1.p4() + cand.j2.p4()).eta();
+        cand.bpt   = cand.j3.pt();
         cand.m3jet = cand.j123.mass();
         cand.bjetcsv  = cand.rj3->csv();
         cand.hasmbjet = (cand.bjetcsv > defaults::CSV_MEDIUM);
@@ -346,6 +419,20 @@ struct ResTreeFiller {
         cand.dr123 = std::max(PhysicsUtilities::deltaR(cand.j3,cand.j1),
                        std::max(PhysicsUtilities::deltaR(cand.j3,cand.j2),
                                 PhysicsUtilities::deltaR(cand.j1, cand.j2)));
+        cand.chi2 = chi2(cand);
+        if(dbg) std::cout << "   checking constraints ... m3jet, m12, drb2, dr2, bjetcsv, chi2" << std::endl;
+        if(dbg) std::cout << "   checking constraints ... " << cand.m3jet << " " << cand.m12 << " " << cand.drbW*cand.pt << " " << cand.drW*cand.wpt << " " << cand.bjetcsv << " " << cand.chi2 << std::endl;
+
+        // require loose constrains -- shave
+        if( cand.m3jet   < 145.  ) continue; // 130 
+        if( cand.m12     <  65.  ) continue; // 55
+        if( cand.drbW*cand.pt    < 175.  ) continue;  // 100
+        if( cand.drW*cand.wpt     < 125.  ) continue; // 100
+        if( cand.bjetcsv <   0.7 ) continue; // can loosen to 0.6 (NO MORE - znunu peaks 0.5-0.6 b/c of shite)
+        if( cand.chi2    >  20.  ) continue;
+
+        if(dbg) std::cout << "found loose cand of chi2 " << cand.chi2 << std::endl;
+
         resCands.push_back(cand);
 
       }//for j
@@ -353,34 +440,35 @@ struct ResTreeFiller {
 
   }
 
+  /* // shelved in favor of event-wide selection using (chi2,b csv, b pt)
   bool isPassingResolvedTop(const resolved cand){
     // strict W and Top mass windows
     bool passWwindow   = cand.m12   > mWpassmin   && cand.m12   < mWpassmax;
     bool passTopwindow = cand.m3jet > mToppassmin && cand.m3jet < mToppassmax;
 
     // mass drop conditions - from hett
-    /*
+    
     // condition (iii) has subconditions A1 A2 B C
-    bool condA1 = (0.2 < atan(m13/m12)) &
-            (1.3 > atan(m13/m12));
+    //bool condA1 = (0.2 < atan(m13/m12)) &
+    //        (1.3 > atan(m13/m12));
 
-    bool condA2 = (rMin < m23/m3jet) &
-            (rMax > m23/m3jet);
-    bool condA = condA1 & condA2;
+    //bool condA2 = (rMin < m23/m3jet) &
+    //        (rMax > m23/m3jet);
+    //bool condA = condA1 & condA2;
 
     // condition B
-    bool condB = (pow(rMin,2)*(1+pow(m13/m12,2)) < 1-pow(m23/m3jet,2)) &
-           (pow(rMax,2)*(1+pow(m13/m12,2)) > 1-pow(m23/m3jet,2)) &
-           (m23/m3jet > 0.35);
+    //bool condB = (pow(rMin,2)*(1+pow(m13/m12,2)) < 1-pow(m23/m3jet,2)) &
+    //       (pow(rMax,2)*(1+pow(m13/m12,2)) > 1-pow(m23/m3jet,2)) &
+    //       (m23/m3jet > 0.35);
 
     // condition C is condition B with jet 2 <-> 3
-    bool condC = (pow(rMin,2)*(1+pow(m12/m13,2)) < 1-pow(m23/m3jet,2)) &
-           (pow(rMax,2)*(1+pow(m12/m13,2)) > 1-pow(m23/m3jet,2)) &
-           (m23/m3jet > 0.35);
+    //bool condC = (pow(rMin,2)*(1+pow(m12/m13,2)) < 1-pow(m23/m3jet,2)) &
+    //       (pow(rMax,2)*(1+pow(m12/m13,2)) > 1-pow(m23/m3jet,2)) &
+    //       (m23/m3jet > 0.35);
 
     // enforce either A or B or C
-    if (!(condA || condB || condC)) return false;
-    */
+    //if (!(condA || condB || condC)) return false;
+    
 
     // require drW < some pt dependence
     //float drWbest = 160./(cand.j1.p4() + cand.j2.p4()).pt();
@@ -399,12 +487,16 @@ struct ResTreeFiller {
 
     return (passWwindow && passTopwindow && passdr123);
   }
+  */
 
   void fillResolvedBasicInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<RecoJetF*> jets, vector<resolved> & resTops, vector<resolved> & resCands) {
     bool dbg = false;
     if(dbg) std::cout << std::endl << std::endl <<  "****filling resolved info" << std::endl;
 
-    resTops.clear(); resCands.clear();
+    resTops.clear();
+    resCands.clear();
+    resCleaned.clear();
+    resTrueTops.clear();
     int nJets = jets.size();
     if(dbg) std::cout << "njets " << nJets << std::endl;
 
@@ -427,10 +519,7 @@ struct ResTreeFiller {
     vector<RecoJetF*> candb;
     candb.push_back(csv1lj);
     candb.push_back(csv2lj);
-
-    auto chi2 = [&] (const resolved& top) {
-      return pow( (top.m3jet - mTop)/20., 2 ) + pow( (top.m12 - mW)/10., 2 ); // resolution got from filtered tops
-    };
+    if(dbg) std::cout << "two candidate bjets: " << csv1lj->p4() << " " << csv2lj->p4() << std::endl;
 
     // assemble some candidate tops
     for(auto b : candb){ findCandW( jets, b, resCands ); }
@@ -448,42 +537,115 @@ struct ResTreeFiller {
       data->fillMulti<float>(i_rescandbcsv    ,top.rj3->csv());
       data->fillMulti<float>(i_rescandj1csv   ,top.rj1->csv());
       data->fillMulti<float>(i_rescandj2csv   ,top.rj2->csv());
-      data->fillMulti<float>(i_rescandchi2    ,chi2(top));
+      data->fillMulti<float>(i_rescandchi2    ,top.chi2);
     }
+
+    // sort cands by ascending sth
+    sort( resCands.begin(), resCands.end(), [&]( const resolved& lhs, const resolved& rhs ) { return chi2(lhs) < chi2(rhs); } );
 
     // apply passing selection criteria
-    for(auto cand : resCands){ if( isPassingResolvedTop(cand) ) resTops.push_back(cand); }
+    //for(auto cand : resCands){ if( isPassingResolvedTop(cand) ) resTops.push_back(cand); }
 
-    // sort selected tops by ascending sth
-    sort( resTops.begin(), resTops.end(), [&]( const resolved& lhs, const resolved& rhs )
-      {
-        return chi2(lhs) < chi2(rhs);
-        /* // simple top mass ordering
-        auto comp = [&](const resolved& top) {
-          return abs(top.m3jet - mTop);
-        };
-        return comp(lhs) < comp(rhs);
-        */
+    // LOOSE
+    //   1 (0.9, 100, 5), 2 (0.9, 50, 5), 3 (0.9, 50, 10), 4 (0.75, 50, 10), 5 (0.7, x, 15)
+    // MEDIUM
+    //   1 (0.9, 100, 5), 2 (0.9, 50, 5), 3 (0.9, 50, 8), 4 (0.8, 50, 8), 5 (0.8, x, 8)
+    // TIGHT
+    //   1 (0.95, 100, 5), 2 (0.95, 75, 5), 3 (0.90, 50, 5), 4 (0.85, 50, 5), 5 (0.80, 50, 5)
+    for(auto cand : resCands){
+      if(cand.bjetcsv > 0.95 && cand.bpt > 100. && cand.chi2 < 5. && resTops.empty()) {
+        if(dbg) std::cout << "step 1" << std::endl; resTops.push_back(cand);
       }
-    );
-
-    // clean reco tops wrt each other, keeping best
-    for(int i = 0 ; i < nJets ; ++i) {
-      int prev = -1, toErase = -1;
-      for(int j = 0 ; j < resTops.size() ; ++j) {
-        bool isPresent = (jets[i]->pt() == resTops[j].j1.pt()) | // is jet a subjet of this top
-			 (jets[i]->pt() == resTops[j].j2.pt()) |
-                         (jets[i]->pt() == resTops[j].j3.pt());
-        if(isPresent && prev > -1 ) { toErase = max(prev,j); break; }
-        else if(isPresent) { prev = j; }
+      if(cand.bjetcsv > 0.95 && cand.bpt > 75. && cand.chi2 < 5. && resTops.empty()) {
+        if(dbg) std::cout << "step 2" << std::endl; resTops.push_back(cand);
       }
-      if(toErase > -1) { // erase
-        resTops.erase(resTops.begin() + toErase);
-        i = -1; // reset i to zero
+      if(cand.bjetcsv > 0.90 && cand.bpt > 50. && cand.chi2 < 5. && resTops.empty()) {
+        if(dbg) std::cout << "step 3" << std::endl; resTops.push_back(cand);
+      }
+      if(cand.bjetcsv > 0.85 && cand.bpt > 50. && cand.chi2 < 5. && resTops.empty()) {
+        if(dbg) std::cout << "step 4" << std::endl; resTops.push_back(cand);
+      }
+      if(cand.bjetcsv > 0.80 && cand.bpt > 50. && cand.chi2 < 5. && resTops.empty()) {
+        if(dbg) std::cout << "step 5" << std::endl; resTops.push_back(cand);
       }
     }
+    if(dbg) std::cout << "the results: " << resTops.size() << std::endl;
+
+    // sort selected tops by ascending sth
+    sort( resTops.begin(), resTops.end(), [&]( const resolved& lhs, const resolved& rhs ) { return chi2(lhs) < chi2(rhs); } );
+
+    auto checkContains = []( RecoJetF* jet, resolved top2 )->bool { return (top2.rj1 == jet) || (top2.rj2 == jet) || (top2.rj3 == jet); };
+
+    auto cleanStuff = [&]( std::vector<resolved> & stuff ){ // assume ordered best - worst
+      if(dbg) std::cout << "Cleaning stuff ... " << stuff.size() << std::endl;
+      if(stuff.size() < 2) return;
+
+      // ptmap just needs to return unique # for each pt bin
+      auto ptmap = [](float pt)->int{ // C++??
+        if( pt < 100            ) { return 1; }
+        else if( pt > 100 && pt < 250) { return 2; }
+        else if( pt > 250 && pt < 350) { return 3; }
+        else if( pt > 350 && pt < 450) { return 4; }
+        else if( pt > 450            ) { return 5; }
+        else return -1;
+      };
+
+      for(unsigned int i = 0 ; i < stuff.size()-1 ; i++){
+        resolved first = stuff[i];
+        // kill any successive which have overlaps
+        for(unsigned int j = i+1 ; j < stuff.size() ; j++){
+          resolved probe = stuff[j];
+          if( checkContains(first.rj1, probe) || checkContains(first.rj2, probe) || checkContains(first.rj3, probe) ){
+            if( ptmap(first.pt) != ptmap(probe.pt) ) continue; // only clean in same pt bin
+            stuff.erase(stuff.begin() + j); // will cause bug if next position shifts here!
+            j = i; // next j++ brings j to i+1 again
+          }
+        }
+      }
+    };
+
+    // count overlapping subjets with other cands
+    int ncandoverlappingsubjets = 0;
+    for(unsigned int i = 0 ; i < resCands.size() ; i++){
+      ncandoverlappingsubjets = 0;
+      resolved cand = resCands[i];
+      for(unsigned int j = i+1 ; j < resCands.size() ; j++){
+        resolved probe = resCands[j];
+        if( checkContains(cand.rj1, probe) ){
+          ncandoverlappingsubjets = max(ncandoverlappingsubjets,1);
+          if( checkContains(cand.rj2, probe) ){
+            ncandoverlappingsubjets = max(ncandoverlappingsubjets,2);
+            if( checkContains(cand.rj3, probe) ){
+              ncandoverlappingsubjets = max(ncandoverlappingsubjets,3);
+            }
+          }
+        }   
+      }
+      data->fillMulti<int>(i_ncandoverlappingsubjets, ncandoverlappingsubjets);
+      if(dbg) std::cout << "cand " << i << " has overlapping subjets: " << ncandoverlappingsubjets << std::endl;
+    }
+
+    // copy resCands into resCleaned and clean it
+    for(auto cand : resCands) { resCleaned.push_back(cand); }
+    cleanStuff(resCleaned);
+    data->fill<int  >(i_resncleanedtops, resCleaned.size());
+
+    // check if cand made it thru cleaning
+    for(auto cand : resCands) {
+      for(auto cleantop : resCleaned){
+        if(cleantop.pt == cand.pt) {
+          if(dbg) std::cout << "cand " << cand.pt << " is cleaned" << std::endl;
+          data->fillMulti<bool>(i_iscandcleaned,true);
+          break;
+        }
+      }
+    }
+
+    // clean resTops
+    cleanStuff(resTops);
     data->fill<int  >(i_resnpasstops, resTops.size());
-    if(dbg) std::cout << "***** event had cand, pass tops : " << resCands.size() << " " << resTops.size() << std::endl;
+
+    if(dbg) std::cout << "***** event had cand, cleaned, pass tops : " << resCands.size() << " " << resCleaned.size() << " " << resTops.size() << std::endl;
 
     if(dbg) std::cout << std::endl << " ** candidate tops: " << std::endl;
     if(dbg){
@@ -497,6 +659,21 @@ struct ResTreeFiller {
         std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
       }
     }
+
+
+    if(dbg) std::cout << std::endl << " ** cleaned tops: " << std::endl;
+    if(dbg){
+      for(int i = 0 ; i < resCleaned.size() ; ++i){
+        resolved rj = resCleaned[i];
+        std::cout << "chi2: " << chi2(rj) << std::endl;
+        std::cout << rj.j1 << " " << rj.j2 << " " << rj.j3 << std::endl;
+        std::cout << rj.j123 << std::endl;
+        std::cout << rj.bjetcsv << " " << rj.hasmbjet << std::endl;
+        std::cout << rj.rj1 << " " << rj.rj2 << " " << rj.rj3 << std::endl;
+        std::cout << rj.m1 << " " << rj.m2 << " " << rj.m3 << " " << rj.m12 << " " << rj.m23 << " " << rj.m13 << " " << rj.m3jet << std::endl;
+      }
+    }
+
 
     if(dbg) std::cout << std::endl << " ** selected tops: " << std::endl;
     if(dbg){
@@ -530,36 +707,36 @@ struct ResTreeFiller {
 
 
   // --------------------------------------------------------------------------------------------------
-  void fillResolvedExtraInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<resolved> & resTops){
+  void fillResolvedExtraInfo(TreeWriterData* data, BaseTreeAnalyzer* ana, vector<resolved> & resTops, vector<resolved> & resCands){
 
     bool dbg = false;
     if(dbg) std::cout << std::endl << "Filling extra ncands, ntops: " << resCands.size() << " " << resTops.size() << std::endl;
     for(auto top : resCands) {
-      data->fill<float>(i_rescandm13     ,top.m13);
-      data->fill<float>(i_rescandm23     ,top.m23);
-      data->fill<float>(i_rescandm1      ,top.m1);
-      data->fill<float>(i_rescandm2      ,top.m2);
-      data->fill<float>(i_rescandm3      ,top.m3);
-      data->fill<float>(i_rescandj1pt    ,top.j1.pt());
-      data->fill<float>(i_rescandj1eta   ,top.j1.eta());
-      data->fill<float>(i_rescandj2pt    ,top.j2.pt());
-      data->fill<float>(i_rescandj2eta   ,top.j2.eta());
-      data->fill<float>(i_rescandj3pt    ,top.j3.pt());
-      data->fill<float>(i_rescandj3eta   ,top.j3.eta());
+      data->fillMulti<float>(i_rescandm13     ,top.m13);
+      data->fillMulti<float>(i_rescandm23     ,top.m23);
+      data->fillMulti<float>(i_rescandm1      ,top.m1);
+      data->fillMulti<float>(i_rescandm2      ,top.m2);
+      data->fillMulti<float>(i_rescandm3      ,top.m3);
+      data->fillMulti<float>(i_rescandj1pt    ,top.j1.pt());
+      data->fillMulti<float>(i_rescandj1eta   ,top.j1.eta());
+      data->fillMulti<float>(i_rescandj2pt    ,top.j2.pt());
+      data->fillMulti<float>(i_rescandj2eta   ,top.j2.eta());
+      data->fillMulti<float>(i_rescandj3pt    ,top.j3.pt());
+      data->fillMulti<float>(i_rescandj3eta   ,top.j3.eta());
     }
 
     for(auto top : resTops) {
-      data->fill<float>(i_respassm13     ,top.m13);
-      data->fill<float>(i_respassm23     ,top.m23);
-      data->fill<float>(i_respassm1      ,top.m1);
-      data->fill<float>(i_respassm2      ,top.m2);
-      data->fill<float>(i_respassm3      ,top.m3);
-      data->fill<float>(i_respassj1pt    ,top.j1.pt());
-      data->fill<float>(i_respassj1eta   ,top.j1.eta());
-      data->fill<float>(i_respassj2pt    ,top.j2.pt());
-      data->fill<float>(i_respassj2eta   ,top.j2.eta());
-      data->fill<float>(i_respassj3pt    ,top.j3.pt());
-      data->fill<float>(i_respassj3eta   ,top.j3.eta());
+      data->fillMulti<float>(i_respassm13     ,top.m13);
+      data->fillMulti<float>(i_respassm23     ,top.m23);
+      data->fillMulti<float>(i_respassm1      ,top.m1);
+      data->fillMulti<float>(i_respassm2      ,top.m2);
+      data->fillMulti<float>(i_respassm3      ,top.m3);
+      data->fillMulti<float>(i_respassj1pt    ,top.j1.pt());
+      data->fillMulti<float>(i_respassj1eta   ,top.j1.eta());
+      data->fillMulti<float>(i_respassj2pt    ,top.j2.pt());
+      data->fillMulti<float>(i_respassj2eta   ,top.j2.eta());
+      data->fillMulti<float>(i_respassj3pt    ,top.j3.pt());
+      data->fillMulti<float>(i_respassj3eta   ,top.j3.eta());
     }
   }//fillResolvedExtraInfo
 
@@ -648,6 +825,7 @@ struct ResTreeFiller {
     data->fill<float>(i_genmindrtops, getMinDRbetweenTops(tops));
     data->fill<float>(i_genmindrtopproducts, getMinDRbetweenTopProducts(tops) );
 
+    int ntruetopsincleanedtops = 0;
     for(auto top : tops){
       // before hadronic req't: do two highest csv loose jets contain b
       // match b parton to ak4
@@ -731,30 +909,47 @@ struct ResTreeFiller {
       data->fillMulti<float>(i_recoj2csv, recodau2->csv());
       data->fillMulti<float>(i_recotoppt, (recodau1->p4() + recodau2->p4() + recob->p4()).pt() );
       data->fillMulti<float>(i_recotopeta, (recodau1->p4() + recodau2->p4() + recob->p4()).eta() );
+      data->fillMulti<float>(i_recotopphi, (recodau1->p4() + recodau2->p4() + recob->p4()).phi() );
       data->fillMulti<float>(i_recoWpt,  (recodau1->p4() + recodau2->p4()).pt() );
       data->fillMulti<float>(i_recoWeta, (recodau1->p4() + recodau2->p4()).eta() );
+      data->fillMulti<float>(i_recoWphi, (recodau1->p4() + recodau2->p4()).phi() );
       data->fillMulti<float>(i_recobeta, recob->eta() );
+      data->fillMulti<float>(i_recobphi, recob->phi() );
       data->fillMulti<float>(i_recodau1eta, recodau1->eta() );
+      data->fillMulti<float>(i_recodau1phi, recodau1->phi() );
       data->fillMulti<float>(i_recodau2eta, recodau2->eta() );
+      data->fillMulti<float>(i_recodau2phi, recodau2->phi() );
       data->fillMulti<float>(i_recom1, recodau1->mass() );
       data->fillMulti<float>(i_recom2, recodau2->mass() );
       data->fillMulti<float>(i_recom3, recob->mass() );
-      data->fillMulti<float>(i_recom12, (recodau1->p4() + recodau2->p4()).mass() );
-      data->fillMulti<float>(i_recom3jet, (recodau1->p4() + recodau2->p4() + recob->p4()).mass() );
+      double recom12 = (recodau1->p4() + recodau2->p4()).mass();
+      double recom3jet =  (recodau1->p4() + recodau2->p4() + recob->p4()).mass();
+      data->fillMulti<float>(i_recom12, recom12);
+      data->fillMulti<float>(i_recom3jet, recom3jet);
+
+      // fill reco chi2
+      resolved restmp;
+      restmp.m3jet   = recom3jet;
+      restmp.m12     = recom12;
+      restmp.drbW    = PhysicsUtilities::deltaR( *recob, (recodau1->p4() + recodau2->p4()) );
+      restmp.drW     = PhysicsUtilities::deltaR(*recodau1, *recodau2);
+      restmp.pt      = (recodau1->p4() + recodau2->p4() + recob->p4()).pt();
+      restmp.wpt     = (recodau1->p4() + recodau2->p4()).pt();
+      restmp.bjetcsv = recob->csv();
+      data->fillMulti<float>(i_recochi2, chi2(restmp));
 
       // check some selections on reco
-      float recom12 = (recodau1->p4() + recodau2->p4()).mass();
-      data->fillMulti<bool>(i_recopasswwindow, (recom12 > mWpassmin) && (recom12 < mWpassmax) );
-      float recom3jet = (recodau1->p4() + recodau2->p4() + recob->p4()).mass();
-      data->fillMulti<bool>(i_recopasstopwindow, (recom3jet > mToppassmin) && (recom3jet < mToppassmax) );
-      float dr123 = getRecoTopDR123( recob, recodau1, recodau2 );
-      data->fillMulti<bool>(i_recopassdr123, dr123 < TMath::PiOver2());
-      if(dbg) std::cout << "extra bools for our reco guy... recom12, recom3jet, dr123 " << recom12 << " " << recom3jet << " " << dr123 << std::endl;
+      //data->fillMulti<bool>(i_recopasswwindow, (recom12 > mWpassmin) && (recom12 < mWpassmax) );
+      //data->fillMulti<bool>(i_recopasstopwindow, (recom3jet > mToppassmin) && (recom3jet < mToppassmax) );
+      float recodr123 = getRecoTopDR123( recob, recodau1, recodau2 );
+      data->fillMulti<bool>(i_recopassdr123, recodr123 < TMath::PiOver2());
+      if(dbg) std::cout << "extra bools for our reco guy... recom12, recom3jet, dr123 " << recom12 << " " << recom3jet << " " << recodr123 << std::endl;
 
       // check if reco jets made it into a candidate top, or how many subjets did
       int maxnrecojetsinacand = 0;
-      resolved * cand = 0;
-      for(auto res : resCands) {
+      int icand = -1;
+      for(unsigned int i = 0 ; i < resCands.size() ; i++){
+        resolved res = resCands[i];
         if(dbg) std::cout << "cand: recob and rj3 " << recob << " " << res.rj3 << std::endl;
         if(dbg) std::cout << "   recodau1, recodau2, rj1, rj2 " << recodau1 << " " << recodau2 << " " << res.rj1 << " " << res.rj2 << std::endl;
         if(recob != res.rj3) continue; // failed to capture b
@@ -763,16 +958,53 @@ struct ResTreeFiller {
         maxnrecojetsinacand = std::max(maxnrecojetsinacand,2);
         if( (recodau2 != res.rj1) && (recodau2 != res.rj2) ) continue; // didn't capture dau2
         maxnrecojetsinacand = std::max(maxnrecojetsinacand,3);
-        cand = &res;
+        icand = i;
+        if(dbg) std::cout << "*** found match " << std::endl;
+        if(dbg) std::cout << "*** this cand matches: cand/res " << i << " "  << &res << " " << std::endl;
+        break;
       }
+      if(dbg) std::cout << "icand: " << icand << std::endl;
+      resolved * cand = (icand > -1) ? &resCands[icand] : 0; // cand which is this reco
+      if(dbg) if(cand) std::cout << "*** the matching cand again: " << cand << " " << cand->pt << std::endl;
       data->fillMulti<int>(i_maxnrecojetsinacand, maxnrecojetsinacand);
       if(dbg) std::cout << "maxnrecojetsinacand: " << maxnrecojetsinacand << std::endl;
 
+      // check if reco is a cleaned top (consider putting maxnrecojetsinacand==3 beforehand, to see eff of cleaning. this is eff of being cand + being cleaned)
+      if(dbg) std::cout << "clean tops size: " << resCleaned.size() << std::endl;
+      bool foundcleanedmatch = false;
+      for(auto cleanedtop : resCleaned) {
+        if( recob != cleanedtop.rj3) continue; // b don't match
+        if( (recodau1 != cleanedtop.rj1) && (recodau1 != cleanedtop.rj2) ) continue; // didn't capture dau1
+        if( (recodau2 != cleanedtop.rj1) && (recodau2 != cleanedtop.rj2) ) continue; // didn't capture dau2
+        if(dbg) std::cout << "true top is in clean tops" << std::endl;
+        foundcleanedmatch = true;
+        ntruetopsincleanedtops++;
+      }
+      data->fillMulti<bool>(i_istruetopincleanedtops, foundcleanedmatch);
+
+
       // if it became a candidate, check if it's passing
-      if(cand) data->fillMulti<bool>(i_recoispassing, isPassingResolvedTop(*cand));
+      //if(cand) data->fillMulti<bool>(i_recoispassing, isPassingResolvedTop(*cand));
       if(dbg) if(cand) std::cout << "m12, m3jet: " << cand->m12 << " " << cand->m3jet << std::endl;
-      if(dbg) if(cand) std::cout << "it was a cand-> passed? " << isPassingResolvedTop(*cand) << std::endl;
+      //if(dbg) if(cand) std::cout << "it was a cand-> passed? " << isPassingResolvedTop(*cand) << std::endl;
+      if(dbg) if(cand) std::cout << "pushing back true top " << cand->pt << std::endl;
+      if(cand) resTrueTops.push_back(*cand);
+
     }//forTops
+    data->fill<int>(i_ntruetopsincleanedtops,ntruetopsincleanedtops);
+
+    // check if candidates are true tops (allows plotting cand chi2 & true top chi2 together)
+    if(dbg) std::cout << "Checking cands for true tops" << std::endl;
+    for(auto cand : resCands){
+      bool istrue = false;
+      for(auto truetop : resTrueTops){
+        if(dbg) std::cout << "pt of cand and true: " << cand.pt << " " << truetop.pt << std::endl;
+        if(cand.pt == truetop.pt) { istrue=true; if(dbg) std::cout << "was true!" << std::endl; break; }
+      }
+      if(dbg) std::cout << "is cand " << cand.pt << " true? " << istrue << std::endl;
+      data->fillMulti<bool>(i_iscandtrue,istrue);
+    }
+
   }//fillResolvedFilteredInfo
 
 };//ResTreeFiller
