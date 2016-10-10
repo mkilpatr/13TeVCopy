@@ -4,9 +4,9 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/BasicVariables.hh"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ExtraVariables.hh"
-//#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/M2.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/HettTopTagger.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/CttTopTagger.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ResolvedTagger.hh"
 
 using namespace ucsbsusy;
 
@@ -84,6 +84,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      m2Filler.book(&data);
 //      hettFiller.book(&data);
 //      cttFiller.book(&data);
+      //resFiller.book(&data);
+      //resFiller.bookExtra(&data);
+      //resFiller.bookFiltered(&data);
     }
 
     bool fillEvent() {
@@ -121,9 +124,11 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.fillSystInfo(&data, this);
 //      extraFiller.fillLeptonInfo(&data, this);
 //      extraFiller.fillGenInfo(&data, this);
-      //m2Filler.fillM2Info(&data,this,M2TreeFiller::TTBAR_1L);
       //hettFiller.fillHettInfo(&data,this,jets,hettTops);
       //cttFiller.fillTopTagInfo(&data,this,jets);
+      //resFiller.fillResolvedBasicInfo(&data,this,jets,resTops,resCands);
+      //resFiller.fillResolvedExtraInfo(&data,this,jets,resTops,resCands);
+      //resFiller.fillResolvedFilteredInfo(&data,this,resTops,resCands);
 
       return true;
     }
@@ -131,10 +136,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
   protected:
     BasicVarsFiller filler;
     ExtraVarsFiller extraFiller;
-//    M2TreeFiller m2Filler;
 //    HettTreeFiller hettFiller;
 //    CttTreeFiller cttFiller;
-
+//    ResTreeFiller resFiller;
 };
 
 #endif
