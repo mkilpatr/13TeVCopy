@@ -371,8 +371,7 @@ else :
     jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addCMSTopTagger=True)
 
 
-## old implementation - keep as a template
-# process.load('CommonTools.PileupAlgos.Puppi_cff')
+from ObjectProducers.JetProducers.ht_cfg import *
 process.httseq = cms.Sequence()
 HTTJets(process,process.httseq,"CA15HTT",1.5)
 
