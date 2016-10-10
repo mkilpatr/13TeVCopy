@@ -371,7 +371,7 @@ else :
     jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addCMSTopTagger=True)
 
 
-from ObjectProducers.JetProducers.ht_cfg import *
+from ObjectProducers.JetProducers.htt_cfg import *
 process.httseq = cms.Sequence()
 HTTJets(process,process.httseq,"CA15HTT",1.5)
 

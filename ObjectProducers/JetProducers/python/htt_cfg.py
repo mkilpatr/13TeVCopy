@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-
+from RecoJets.JetProducers.PFJetParameters_cfi import *
+from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
 
 #Name  
 def HTTJets(process, seq, name, radius) :
