@@ -126,11 +126,11 @@ def parseConfig(removeExtension=False, removeGenJets5=False):
             if len(content) > 4 :
                 xsecfiles.append(content[4])
             else :
-                xsecfiles.append('')
+                xsecfiles.append('None')
             if len(content) > 5 :
                 filterfiles.append(content[5])
             else:
-                filterfiles.append('')
+                filterfiles.append('None')
 
 eos = "/afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select"
 
@@ -622,7 +622,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
         if not datasets[isam]: continue
         if not args.resubmit :
             if args.arrangement == "das" :
-                cmd = ("./das_client.py --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
+                cmd = ("das_client --query \"file dataset=%s instance=%s\" --limit=0 | grep store | sed 's;/store;%s/store;' > %s/filelist_%s.txt" % (datasets[isam], args.dbsinstance, args.redir, args.jobdir, samples[isam]))
                 subprocess.call(cmd, shell=True)
             elif args.arrangement == "local" and args.splittype == "file" :
                 cmd = ("find %s | grep .root | sort -V > %s/filelist_%s.txt" % (datasets[isam], args.jobdir, samples[isam]))
@@ -632,7 +632,7 @@ echo "$cfgfile $runscript $workdir $outputdir"
         elif args.resubmit and not os.path.isfile("%s/filelist_%s.txt" % (args.jobdir, samples[isam])) :
             print "Error: Trying to resubmit jobs without filelist!"
         if args.arrangement == "das" :
-            cmd = ("./das_client.py --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
+            cmd = ("das_client --query \"dataset=%s instance=%s | grep dataset.nevents\" | sed -n 4p | tr -d '\n'" % (datasets[isam], args.dbsinstance))
             ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
             numevents = int(ps.communicate()[0])
             if args.maxevents > -1  and args.maxevents < numevents :

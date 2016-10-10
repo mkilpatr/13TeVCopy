@@ -371,8 +371,10 @@ else :
     jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addCMSTopTagger=True)
 
 
-## old implementation - keep as a template
-# process.load('CommonTools.PileupAlgos.Puppi_cff')
+from ObjectProducers.JetProducers.ht_cfg import *
+process.httseq = cms.Sequence()
+HTTJets(process,process.httseq,"CA15HTT",1.5)
+
 
 # process.puppi.useExistingWeights = True
 # process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
@@ -469,6 +471,7 @@ if updateJECs:
                                process.patJetsAK8ReapplyJEC *
                                process.met131TeVFilter *
                                process.ak4PatAssocSeq *
+                               process.httseq  *
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
                                process.egmPhotonIDSequence*
@@ -479,6 +482,7 @@ if updateJECs:
 else :
     process.seq = cms.Sequence(process.met131TeVFilter *
                                process.ak4PatAssocSeq *
+                               process.httseq  *
                                process.ca8JetsSeq *
                                process.egmGsfElectronIDSequence *
                                process.egmPhotonIDSequence *

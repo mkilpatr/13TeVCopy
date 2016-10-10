@@ -624,29 +624,28 @@ struct ExtraVarsFiller {
 
       unsigned int count = 0;
       for(auto* fj : ana->fatJets) {
-        MomentumF ak8tmp = fj->p4();
-        if (PhysicsUtilities::deltaR(*lep,ak8tmp)<(3.14/2.)) { continue; }
+        if (PhysicsUtilities::deltaR(*lep,*fj)<(3.14/2.)) { continue; }
         if (count >0) { continue; }
-        ak8candmass_ = fj->fjSoftDropMass();
+        ak8candmass_ = fj->softDropMass();
         ak8candpt_   = fj->pt();
         // apply only the tau21 selection
         if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 1e9,  0.60)) {
-          ak8candmasstau21_ = fj->fjSoftDropMass();
+          ak8candmasstau21_ = fj->softDropMass();
           ak8candpttau21_   = fj->pt();
         }
         // apply only the tau32 selection
         if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 0.69,  1e9)) {
-          ak8candmasstau32_ = fj->fjSoftDropMass();
+          ak8candmasstau32_ = fj->softDropMass();
           ak8candpttau32_   = fj->pt();
         }
         // apply the w-tag selection
         if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) {
-          ak8wpassmass_ = fj->fjSoftDropMass();
+          ak8wpassmass_ = fj->softDropMass();
           ak8wpasspt_   = fj->pt();
         }
   // apply the top-tag selection
         if (cfgSet::isSoftDropTagged(fj, 150, 110,  210, 0.69,  1e9)) {
-          ak8toppassmass_ = fj->fjSoftDropMass();
+          ak8toppassmass_ = fj->softDropMass();
           ak8toppasspt_   = fj->pt();
         }
         if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) {ak8fromgenhadt_ = true; }
@@ -660,29 +659,27 @@ struct ExtraVarsFiller {
 
       unsigned int count = 0;
       for(auto* fj : ana->fatJets) {
-        MomentumF ak8tmp = fj->p4();
-
         if (count >0) { continue; }
-        ak8candmass_ = fj->fjSoftDropMass();
+        ak8candmass_ = fj->softDropMass();
         ak8candpt_   = fj->pt();
         // apply only the tau21 selection
         if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 1e9,  0.60)) {
-          ak8candmasstau21_ = fj->fjSoftDropMass();
+          ak8candmasstau21_ = fj->softDropMass();
           ak8candpttau21_   = fj->pt();
         }
         // apply only the tau32 selection
         if (cfgSet::isSoftDropTagged(fj, 150, 0.,  1e9, 0.69,  1e9)) {
-          ak8candmasstau32_ = fj->fjSoftDropMass();
+          ak8candmasstau32_ = fj->softDropMass();
           ak8candpttau32_   = fj->pt();
         }
         // apply the w-tag selection
         if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) {
-          ak8wpassmass_ = fj->fjSoftDropMass();
+          ak8wpassmass_ = fj->softDropMass();
           ak8wpasspt_   = fj->pt();
         }
         // apply the top-tag selection
         if (cfgSet::isSoftDropTagged(fj, 150, 110,  210, 0.69,  1e9)) {
-          ak8toppassmass_ = fj->fjSoftDropMass();
+          ak8toppassmass_ = fj->softDropMass();
           ak8toppasspt_   = fj->pt();
         }
         if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t))     {ak8fromgenhadt_ = true; }
@@ -740,7 +737,7 @@ struct ExtraVarsFiller {
       if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) { ishadronictop_ = true; }
 
       //      if (ishadronictop_ && fj->fjNSDSubjets()>1) {
-      if (fj->fjNSDSubjets()>1) {
+      if (fj->nSubjets()>1) {
 	
 	TLorentzVector genhadwp4_;
 	for(auto* p : ana->genParts) { 
@@ -748,8 +745,8 @@ struct ExtraVarsFiller {
 	}
 	
 	// get the fatjet and subjet p4
-	TLorentzVector sj1p4_; sj1p4_.SetPtEtaPhiM(fj->fjSJ1Pt(),fj->fjSJ1Eta(),fj->fjSJ1Phi(),fj->fjSJ1Mass());
-	TLorentzVector sj2p4_; sj2p4_.SetPtEtaPhiM(fj->fjSJ2Pt(),fj->fjSJ2Eta(),fj->fjSJ2Phi(),fj->fjSJ2Mass());
+	TLorentzVector sj1p4_; if(fj->nSubjets() > 0 ) sj1p4_.SetPtEtaPhiM(fj->subJet(0).pt(),fj->subJet(0).eta(),fj->subJet(0).phi(),fj->subJet(0).mass());
+	TLorentzVector sj2p4_; if(fj->nSubjets() > 1 ) sj2p4_.SetPtEtaPhiM(fj->subJet(1).pt(),fj->subJet(1).eta(),fj->subJet(1).phi(),fj->subJet(1).mass());
 	TLorentzVector ak8p4_ = sj1p4_ + sj2p4_; 
 	
 	// match the subjet to the W boson
@@ -779,9 +776,9 @@ struct ExtraVarsFiller {
 	data->fill<float>(i_fatjetp     , ak8p4_.P());
 	data->fill<float>(i_fatjetpt    , ak8p4_.Pt());
 	data->fill<float>(i_fatjetpl    , ak8p4_.Pz());
-	data->fill<float>(i_fatjettau1  , fj->fjTau1());
-	data->fill<float>(i_fatjettau2  , fj->fjTau2());
-	data->fill<float>(i_fatjettau3  , fj->fjTau3());
+	data->fill<float>(i_fatjettau1  , fj->tau1());
+	data->fill<float>(i_fatjettau2  , fj->tau2());
+	data->fill<float>(i_fatjettau3  , fj->tau3());
 	data->fill<float>(i_subjetwmass  , sjw_.M());
 	data->fill<float>(i_subjetwenergy, sjw_.Energy());
 	data->fill<float>(i_subjetwp     , sjw_.P());
