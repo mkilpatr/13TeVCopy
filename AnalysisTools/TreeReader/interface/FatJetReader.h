@@ -22,9 +22,10 @@ namespace ucsbsusy {
   public :
     enum  Options {
                       NULLOPT     = 0
-                    , LOADRECO = (1 << 0)
-                    , LOADPUPPI    = (1 << 1)
+                    , LOADRECO    = (1 << 0)
+                    , LOADPUPPI   = (1 << 1)
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
+                    , LOADSHAPE   = (1 << 3)
     };
     static const int defaultOptions;
 
@@ -59,6 +60,11 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj1cmva_;
     std::vector<float>* fjsdsj1cvsl_;
     std::vector<float>* fjsdsj1cvsb_;
+    std::vector<float>* fjsdsj1betaStar_;
+    std::vector<float>* fjsdsj1ptD_;
+    std::vector<float>* fjsdsj1axis1_;
+    std::vector<float>* fjsdsj1axis2_;
+    std::vector<int  >* fjsdsj1mult_;
     std::vector<float>* fjsdsj2pt_;
     std::vector<float>* fjsdsj2eta_;
     std::vector<float>* fjsdsj2phi_;
@@ -66,6 +72,11 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj2cmva_;
     std::vector<float>* fjsdsj2cvsl_;
     std::vector<float>* fjsdsj2cvsb_;
+    std::vector<float>* fjsdsj2betaStar_;
+    std::vector<float>* fjsdsj2ptD_;
+    std::vector<float>* fjsdsj2axis1_;
+    std::vector<float>* fjsdsj2axis2_;
+    std::vector<int  >* fjsdsj2mult_;
 
 
     //Puppi variables

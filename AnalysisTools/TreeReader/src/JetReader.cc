@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ;
+const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ | JetReader::LOADJETSHAPE;
 
 //--------------------------------------------------------------------------------------------------
 JetReader::JetReader() : BaseReader(){
@@ -28,6 +28,8 @@ JetReader::JetReader() : BaseReader(){
   jetlooseId_       = new vector<bool >;
   jettightId_       = new vector<bool >;
   jetcsv_           = new vector<float>;
+  jetcvsl_          = new vector<float>;
+  jetcvsb_          = new vector<float>;
   jetarea_          = new vector<float>;
   jetgenindex_      = new vector<int16  >;
   jetuncertainty_   = new vector<float>;
@@ -95,6 +97,8 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_  );
     treeReader->setBranchAddress(branchName_, "jet_tightId" , &jettightId_  );
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
+    treeReader->setBranchAddress(branchName_, "jet_cvsl"    , &jetcvsl_  ,true);
+    treeReader->setBranchAddress(branchName_, "jet_cvsb"    , &jetcvsb_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
     treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_);
     treeReader->setBranchAddress(branchName_, "jet_chHadEnFrac", &jetchHadEnFrac_  );
@@ -187,9 +191,11 @@ void JetReader::refresh(){
 void JetReader::addRecoJetToObjectList(const int iJ){
 
   GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
-   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
+  recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
+  recoJets.back().setCvsl(jetcvsl_->at(iJ));
+  recoJets.back().setCvsb(jetcvsb_->at(iJ));
   recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);
   recoJets.back().setChHadN2((jetchHadN2_->size()) ? (jetchHadN2_->at(iJ)) : -1);
   recoJets.back().setChHadN4((jetchHadN4_->size()) ? (jetchHadN4_->at(iJ)) : -1);

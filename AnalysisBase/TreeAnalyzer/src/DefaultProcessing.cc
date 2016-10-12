@@ -64,10 +64,18 @@ bool cfgSet::isSelTaggedTop(const ucsbsusy::CMSTopF& top){
   return (top.topCmsTopTagMass() > 140.0 && top.topCmsTopTagMass() < 250.0 && top.topMinMass() > 50.0 && top.topNsubJets() >= 3 && top.p4().pt()>=400. && fabs(top.p4().eta())<=2.4);
 }
 
-bool cfgSet::isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max) {
+bool cfgSet::isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max, float min_highest_csv) {
   float tau21 = fj->tau1() > 0 ? fj->tau2()/fj->tau1() : 1e9;
   float tau32 = fj->tau2() > 0 ? fj->tau3()/fj->tau2() : 1e9;
-  return (fj->softDropMass() > minMass && (fj->softDropMass() < maxMass) && fabs(fj->eta())<=2.4 && (fj->pt()>minPT) && tau32<tau32max && tau21<tau21max);
+  bool pass = (fj->softDropMass() > minMass && (fj->softDropMass() < maxMass) && fabs(fj->eta())<=2.4 && (fj->pt()>minPT) && tau32<tau32max && tau21<tau21max);
+  if (min_highest_csv>0){
+    float highest_csv = -1;
+    for (const auto &sj : fj->subjets){
+      if(sj.csv()>highest_csv) highest_csv = sj.csv();
+    }
+    if (highest_csv<min_highest_csv) pass = false;
+  }
+  return pass;
 }
 
 void cfgSet::selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons, std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons){

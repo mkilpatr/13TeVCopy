@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ;
+const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE;
 
 //--------------------------------------------------------------------------------------------------
 FatJetReader::FatJetReader() : BaseReader(){
@@ -41,6 +41,11 @@ FatJetReader::FatJetReader() : BaseReader(){
   fjsdsj1cmva_     = new vector<float>;
   fjsdsj1cvsl_     = new vector<float>;
   fjsdsj1cvsb_     = new vector<float>;
+  fjsdsj1betaStar_ = new vector<float>;
+  fjsdsj1ptD_      = new vector<float>;
+  fjsdsj1axis1_    = new vector<float>;
+  fjsdsj1axis2_    = new vector<float>;
+  fjsdsj1mult_     = new vector<int  >;
   fjsdsj2pt_       = new vector<float>;
   fjsdsj2eta_      = new vector<float>;
   fjsdsj2phi_      = new vector<float>;
@@ -48,6 +53,11 @@ FatJetReader::FatJetReader() : BaseReader(){
   fjsdsj2cmva_     = new vector<float>;
   fjsdsj2cvsl_     = new vector<float>;
   fjsdsj2cvsb_     = new vector<float>;
+  fjsdsj2betaStar_ = new vector<float>;
+  fjsdsj2ptD_      = new vector<float>;
+  fjsdsj2axis1_    = new vector<float>;
+  fjsdsj2axis2_    = new vector<float>;
+  fjsdsj2mult_     = new vector<int  >;
   fj_puppi_pt_            = new vector<float>;
   fj_puppi_eta_           = new vector<float>;
   fj_puppi_phi_           = new vector<float>;
@@ -144,7 +154,19 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "fatjet_puppi_sdsubjet2_cvsl"   , &fj_puppi_sdsj2cvsl_,false);
       treeReader->setBranchAddress(branchName_, "fatjet_puppi_sdsubjet2_cvsb"   , &fj_puppi_sdsj2cvsb_,false);
     }
+    if(options_ & LOADSHAPE){
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_betaStar",&fjsdsj1betaStar_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_ptD"    , &fjsdsj1ptD_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_axis1"  , &fjsdsj1axis1_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_axis2"  , &fjsdsj1axis2_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet1_jetMult", &fjsdsj1mult_, false);
 
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_betaStar",&fjsdsj2betaStar_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_ptD"    , &fjsdsj2ptD_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_axis1"  , &fjsdsj2axis1_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_axis2"  , &fjsdsj2axis2_, false);
+      treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_jetMult", &fjsdsj2mult_, false);
+    }
 
     if(options_ & FILLOBJ)
       clog << " +Objects ";
@@ -172,7 +194,17 @@ void FatJetReader::refresh(){
       else
         fatJets.back().addSubjet(CylLorentzVectorF(fjsdsj1pt_->at(iJ),fjsdsj1eta_->at(iJ),fjsdsj1phi_->at(iJ),fjsdsj1mass_->at(iJ)),
             fjsdsj1csv_->at(iJ), fjsdsj1cmva_->at(iJ), fjsdsj1cvsl_->at(iJ), fjsdsj1cvsb_->at(iJ));
+
+      if(!fjsdsj1ptD_->empty()){
+        auto &sj = fatJets.back().subJet(0);
+        sj.setBetaStar(fjsdsj1betaStar_->at(iJ));
+        sj.setPtD     (fjsdsj1ptD_->at(iJ));
+        sj.setAxis1   (fjsdsj1axis1_->at(iJ));
+        sj.setAxis2   (fjsdsj1axis2_->at(iJ));
+        sj.setMultiplicity(fjsdsj1mult_->at(iJ));
+      }
     }
+
     if(fjnsdsubjets_->at(iJ) > 1 ){
       if (fjsdsj1cmva_->empty()) //FIXME
         fatJets.back().addSubjet(CylLorentzVectorF(fjsdsj2pt_->at(iJ),fjsdsj2eta_->at(iJ),fjsdsj2phi_->at(iJ),fjsdsj2mass_->at(iJ)),
@@ -180,6 +212,15 @@ void FatJetReader::refresh(){
       else
         fatJets.back().addSubjet(CylLorentzVectorF(fjsdsj2pt_->at(iJ),fjsdsj2eta_->at(iJ),fjsdsj2phi_->at(iJ),fjsdsj2mass_->at(iJ)),
             fjsdsj2csv_->at(iJ), fjsdsj2cmva_->at(iJ), fjsdsj2cvsl_->at(iJ), fjsdsj2cvsb_->at(iJ));
+
+      if(!fjsdsj2ptD_->empty()){
+        auto &sj = fatJets.back().subJet(1);
+        sj.setBetaStar(fjsdsj2betaStar_->at(iJ));
+        sj.setPtD     (fjsdsj2ptD_->at(iJ));
+        sj.setAxis1   (fjsdsj2axis1_->at(iJ));
+        sj.setAxis2   (fjsdsj2axis2_->at(iJ));
+        sj.setMultiplicity(fjsdsj2mult_->at(iJ));
+      }
     }
 
     if(options_ & LOADPUPPI){

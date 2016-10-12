@@ -181,23 +181,23 @@ public :
   }
 
 protected :
-    float csv_;                     //pointer to csv information
-    float cvsl_;                    //charm vs light discriminator
-    float cvsb_;                    //charm vs b discriminator
-    float pt_raw_;                  //magnitude of uncorrected transverse momentum
-    float uncertainty_;             //JEC error magnitude
-    bool  looseid_;                 //passes loose jet id or not
-    float chHadFrac_;               //charged hadron fraction
-    int   chHadN2_;                 //charged hadron multiplicity pt 2+
-    int   chHadN4_;                 //charged hadron multiplicity pt 4+
-    int   chHadN6_;                 //charged hadron multiplicity pt 6+
-    float betaStar_;
-    float qgl_;
-    float ptD_;
-    float axis1_;
-    float axis2_;
-    int   jetMult_;
-    float jetcharge_;
+    float csv_ = -10;                     //pointer to csv information
+    float cvsl_ = -10;                    //charm vs light discriminator
+    float cvsb_ = -10;                    //charm vs b discriminator
+    float pt_raw_ = -10;                  //magnitude of uncorrected transverse momentum
+    float uncertainty_ = -10;             //JEC error magnitude
+    bool  looseid_ = false;                 //passes loose jet id or not
+    float chHadFrac_ = -10;               //charged hadron fraction
+    int   chHadN2_ = -10;                 //charged hadron multiplicity pt 2+
+    int   chHadN4_ = -10;                 //charged hadron multiplicity pt 4+
+    int   chHadN6_ = -10;                 //charged hadron multiplicity pt 6+
+    float betaStar_ = -10;
+    float qgl_ = -10;
+    float ptD_ = -10;
+    float axis1_ = -10;
+    float axis2_ = -10;
+    int   jetMult_ = -10;
+    float jetcharge_ = -10;
     GenJet<CoordSystem>  *genJet_;  //Matched genJet
 
 };

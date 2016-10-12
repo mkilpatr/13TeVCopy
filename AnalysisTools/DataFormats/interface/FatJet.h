@@ -42,11 +42,51 @@ class SubJet : public Jet<CoordSystem>
   float cvsl() const { return cvsl_; }
   void  setCvsl(float cvsl) { cvsl_ = cvsl; }
 
+  float axis1() const {
+    return axis1_;
+  }
+  void setAxis1(float axis1) {
+    axis1_ = axis1;
+  }
+
+  float axis2() const {
+    return axis2_;
+  }
+  void setAxis2(float axis2) {
+    axis2_ = axis2;
+  }
+
+  float betaStar() const {
+    return betaStar_;
+  }
+  void setBetaStar(float betaStar) {
+    betaStar_ = betaStar;
+  }
+
+  int multiplicity() const {
+    return multiplicity_;
+  }
+  void setMultiplicity(int multiplicity) {
+    multiplicity_ = multiplicity;
+  }
+
+  float ptD() const {
+    return ptD_;
+  }
+  void setPtD(float ptD) {
+    ptD_ = ptD;
+  }
+
   protected:
   float csv_  = -10;
   float cmva_ = -10;
   float cvsl_ = -10;
   float cvsb_ = -10;
+  float betaStar_ = -10;
+  float ptD_ = -10;
+  float axis1_ = -10;
+  float axis2_ = -10;
+  int multiplicity_ = -1;
   };
 
 
@@ -63,13 +103,11 @@ class FatJet : public Jet<CoordSystem>
     tau1_        (-9.),
     tau2_        (-9.),
     tau3_        (-9.),
-    subjets      (0),
     puppi_softDropMass_(-9.),
     puppi_tau1_        (-9.),
     puppi_tau2_        (-9.),
-    puppi_tau3_        (-9.),
-    puppi_subjets      (0)
-{}
+    puppi_tau3_        (-9.)
+  {}
 
   template <class InputCoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
@@ -84,12 +122,10 @@ class FatJet : public Jet<CoordSystem>
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
-        subjets      (0),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
-        puppi_tau3_        (-9.),
-        puppi_subjets      (0)
+        puppi_tau3_        (-9.)
         {}
 
 
@@ -163,6 +199,10 @@ class FatJet : public Jet<CoordSystem>
 
     ~FatJet(){}
 
+  public:
+    std::vector<SubJet<CoordSystem> > subjets;
+    std::vector<SubJet<CoordSystem> > puppi_subjets;
+
   protected :
     float csv_         ;
     float cvsl_        ;
@@ -173,14 +213,11 @@ class FatJet : public Jet<CoordSystem>
     float tau2_        ;
     float tau3_        ;
 
-    std::vector<SubJet<CoordSystem> > subjets;
-
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;
     float puppi_tau1_        ;
     float puppi_tau2_        ;
     float puppi_tau3_        ;
-    std::vector<SubJet<CoordSystem> > puppi_subjets;
 
 
 

@@ -31,6 +31,7 @@
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 #include "AnalysisTools/TreeReader/interface/SVReader.h"
 
+#include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 
 namespace ucsbsusy {
 class BaseEventAnalyzer {
@@ -113,7 +114,8 @@ public:
     bool             isLoaded_;
     bool             isProcessed_;
     TreeReader       reader;        // default reader
-    TRandom3*          randGen;
+    TRandom3*           randGen;
+    ResolvedTopMVA*     resTopMVA           ;
   public:
     EventInfoReader     evtInfoReader       ;
     JetReader           ak4Reader           ;
@@ -132,6 +134,7 @@ public:
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
     SVReader            svReader            ;
+
 
   public:
     //--------------------------------------------------------------------------------------------------
@@ -191,6 +194,7 @@ public:
     std::vector<TauF*>           HPSTaus           ;
     std::vector<SVF*>            SVs;
 
+    std::vector<TopCand>         resolvedTops      ;
 
 
     //--------------------------------------------------------------------------------------------------

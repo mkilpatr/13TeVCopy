@@ -45,6 +45,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     weight            (1),
     process           (defaults::NUMPROCESSES),
     datareco          (defaults::MC),
+    triggerflag       (0),
     nPV               (0),
     nPU               (0),
     rho               (0),
@@ -166,6 +167,9 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&isrCorrections);
     }
   }
+
+  // load object MVAs
+  if (cfgSet::useResolvedTopMVA) resTopMVA = new ResolvedTopMVA(cfgSet::resolvedTopMVAFile, "BDT");
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -449,6 +453,12 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+  //fill MVA resolved tops
+  if (cfgSet::useResolvedTopMVA){
+    resolvedTops = resTopMVA->getTopCandidates(jets, ResolvedTopMVA::WP_TIGHT);
+    std::sort(resolvedTops.begin(), resolvedTops.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+  }
 
   //load corrections corrections
   for(auto * iC : corrections){
