@@ -285,7 +285,10 @@ nominal_configuration = cms.PSet(
                                       puRemoval    = cms.untracked.string("CHS"),
                                       details      = cms.untracked.string("ca8")
                                       ),
-
+                                 CA15HTT = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      jetPrefix  = cms.InputTag('CA15HTT'),
+                                      ),
                                   Triggers = cms.untracked.PSet(
                                       isFilled  = cms.untracked.bool(True),
                                       isFastSim = cms.untracked.bool(False),

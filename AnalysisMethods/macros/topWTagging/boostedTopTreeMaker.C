@@ -5,13 +5,16 @@
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisTools/Utilities/interface/PartonMatching.h"
+#include "AnalysisTools/TreeReader/interface/HTTReader.h"
 
 #include <algorithm>
 
 using namespace std;
 using namespace ucsbsusy;
 
-//#define TESTMODE
+float newWeight;
+
+//#define HTTMODE
 
 class Copier : public TreeCopierManualBranches {
 public:
@@ -54,6 +57,36 @@ public:
   i_fj_sj2_pt        (0),
   i_fj_sj2_mass      (0),
   i_fj_sj2_csv       (0),
+#ifdef HTTMODE
+  i_fj_ropt         (0),
+  i_fj_frec         (0),
+  i_fj_roptcalc     (0),
+  i_fj_ptforopt     (0),
+  i_fj_ropt_tau1    (0),
+  i_fj_ropt_tau2    (0),
+  i_fj_ropt_tau3    (0),
+  i_fj_ropt_pt      (0),
+  i_fj_ropt_mass    (0),
+  i_fj_subjet_pt    (0),
+  i_fj_subjet_mass  (0),
+  i_fj_subjet_w_mass(0),
+  i_fj_subjet_w_pt (0),
+  i_fj_subjet_w_bycsv_mass(0),
+  i_fj_subjet_w_bycsv_pt (0),
+  i_fj_subjet_b_bycsv_mass (0),
+  i_fj_subjet_b_bycsv_pt   (0),
+  i_fj_subjet_b_bycsv_csv   (0),
+  i_fj_subjet_min_pt       (0),
+  i_fj_w1_pt        (0),
+  i_fj_w1_mass      (0),
+  i_fj_w1_csv       (0),
+  i_fj_w2_pt        (0),
+  i_fj_w2_mass      (0),
+  i_fj_w2_csv       (0),
+  i_fj_b_pt         (0),
+  i_fj_b_mass       (0),
+  i_fj_b_csv        (0),
+#endif
   i_fj_puppi_pt      (0),
   i_fj_puppi_eta     (0),
   i_fj_puppi_mass    (0),
@@ -69,6 +102,7 @@ public:
   i_fj_puppi_sj2_mass(0),
   i_fj_puppi_sj2_csv (0)
 
+
   {
   };
   virtual ~Copier() {};
@@ -81,7 +115,12 @@ public:
     load(cfgSet::ELECTRONS);
     load(cfgSet::MUONS);
     load(cfgSet::PFCANDS);
+#ifdef HTTMODE
+    load(&httReader, HTTReader::LOADRECO |  HTTReader::FILLOBJ, "CA15HTT");
+#else
     load(cfgSet::AK8FATJETS, FatJetReader::LOADRECO | FatJetReader::LOADPUPPI | FatJetReader::FILLOBJ);
+#endif
+
 
   }
 
@@ -96,7 +135,9 @@ public:
       if(j->csv() > defaults::CSV_LOOSE)  nlbjets++;
     }
     if(nlbjets < 2 || nBJets < 1) return false;
+
     if(nSelLeptons || nVetoedTracks) return false;
+    cout << nSelLeptons << " " << nVetoedTracks <<endl;
 
     return true;
   }
@@ -149,7 +190,7 @@ public:
     data.fill<float>(  i_mass1 ,evtInfoReader.massparams->size() > 0 ? evtInfoReader.massparams->at(0) : 0 );
     data.fill<float>(  i_mass2 ,evtInfoReader.massparams->size() > 1 ? evtInfoReader.massparams->at(1) : 0);
     data.fill<float>(  i_mass3 ,evtInfoReader.massparams->size() > 2 ? evtInfoReader.massparams->at(2) : 0);
-    data.fill<float>(  i_weight ,weight);
+    data.fill<float>(  i_weight ,newWeight);
     data.fill<unsigned int>(  i_njets,size(nJets));
     data.fill<float>(i_met           ,met->pt());
   }
@@ -206,8 +247,71 @@ public:
     data.fill<float>(i_fj_puppi_sj2_mass,fj && fj->puppi_nSubjets() > 1 ? fj->puppi_subJet(1).mass(): 0);
     data.fill<float>(i_fj_puppi_sj2_csv ,fj && fj->puppi_nSubjets() > 1 ? fj->puppi_subJet(1).csv() : 0);
   }
+#ifdef HTTMODE
+  void fillHTTFatJetInfo(const HTTFatJetF * fj){
+    data.fill<float>(i_fj_ropt       ,!fj ? 0 : fj->ropt());
+    data.fill<float>(i_fj_frec       ,!fj ? 0 : fj->frec());
+    data.fill<float>(i_fj_roptcalc   ,!fj ? 0 : fj->roptcalc());
+    data.fill<float>(i_fj_ptforopt   ,!fj ? 0 : fj->ptforopt());
+    data.fill<float>(i_fj_ropt_tau1  ,!fj ? 0 : fj->ropt_tau1());
+    data.fill<float>(i_fj_ropt_tau2  ,!fj ? 0 : fj->ropt_tau2());
+    data.fill<float>(i_fj_ropt_tau3  ,!fj ? 0 : fj->ropt_tau3());
+    data.fill<float>(i_fj_ropt_pt    ,!fj ? 0 : fj->ropt_mom().pt());
+    data.fill<float>(i_fj_ropt_mass  ,!fj ? 0 : fj->ropt_mom().mass());
+
+    ROOT::Math::LorentzVector<CylLorentzCoordF> sjMom;
+    ROOT::Math::LorentzVector<CylLorentzCoordF> sjWMom;
+    ROOT::Math::LorentzVector<CylLorentzCoordF> sjWMom2;
+    int iBCSV = -1;
+    float minPT = 0;
+    if(fj)
+    for(unsigned int iS = 0; iS < fj->nSubjets(); ++iS){
+      sjMom += fj->subJet(iS).p4();
+      if(minPT <= 0 || fj->subJet(iS).pt() < minPT) minPT = fj->subJet(iS).pt();
+    }
+    if(fj && fj->nSubjets() > 2){
+      sjWMom = fj->subJet(0).p4() + fj->subJet(1).p4();
+      if(fj->subJet(0).csv() > fj->subJet(1).csv() && fj->subJet(0).csv() > fj->subJet(2).csv()){
+        sjWMom2 = fj->subJet(1).p4() + fj->subJet(2).p4();
+        iBCSV = 0;
+      } else if(fj->subJet(1).csv() > fj->subJet(0).csv() && fj->subJet(1).csv() > fj->subJet(2).csv()){
+        sjWMom2 = fj->subJet(0).p4() + fj->subJet(2).p4();
+        iBCSV = 1;
+      } else {
+        sjWMom2 = fj->subJet(0).p4() + fj->subJet(1).p4();
+        iBCSV = 2;
+      }
+    }
+
+    data.fill<float>(i_fj_subjet_pt  ,!fj ? 0 : sjMom.pt());
+    data.fill<float>(i_fj_subjet_mass,!fj ? 0 : sjMom.mass());
+    data.fill<float>(i_fj_subjet_w_pt  ,!fj ? 0 : sjWMom.pt());
+    data.fill<float>(i_fj_subjet_w_mass,!fj ? 0 : sjWMom.mass());
+    data.fill<float>(i_fj_subjet_w_bycsv_pt  ,!fj ? 0 : sjWMom2.pt());
+    data.fill<float>(i_fj_subjet_w_bycsv_mass,!fj ? 0 : sjWMom2.mass());
+    data.fill<float>(i_fj_subjet_b_bycsv_mass, !fj || iBCSV < 0 ? 0 :fj->subJet(iBCSV).mass());
+    data.fill<float>(i_fj_subjet_b_bycsv_pt  , !fj || iBCSV < 0 ? 0 :fj->subJet(iBCSV).pt());
+    data.fill<float>(i_fj_subjet_b_bycsv_csv  ,!fj || iBCSV < 0 ? 0 :fj->subJet(iBCSV).csv());
+    data.fill<float>(i_fj_subjet_min_pt      , minPT);
+    data.fill<float>(i_fj_w1_pt      ,fj && fj->nSubjets() > 0 ? fj->subJet(0).pt()  : 0);
+    data.fill<float>(i_fj_w1_mass    ,fj && fj->nSubjets() > 0 ? fj->subJet(0).mass(): 0);
+    data.fill<float>(i_fj_w1_csv     ,fj && fj->nSubjets() > 0 ? fj->subJet(0).csv() : 0);
+    data.fill<float>(i_fj_w2_pt      ,fj && fj->nSubjets() > 2 ? fj->subJet(1).pt()  : 0);
+    data.fill<float>(i_fj_w2_mass    ,fj && fj->nSubjets() > 2 ? fj->subJet(1).mass(): 0);
+    data.fill<float>(i_fj_w2_csv     ,fj && fj->nSubjets() > 2 ? fj->subJet(1).csv() : 0);
+    data.fill<float>(i_fj_b_pt       ,fj && fj->nSubjets() > 0 ? fj->subJet(2).pt()  : 0);
+    data.fill<float>(i_fj_b_mass     ,fj && fj->nSubjets() > 0 ? fj->subJet(2).mass(): 0);
+    data.fill<float>(i_fj_b_csv      ,fj && fj->nSubjets() > 0 ? fj->subJet(2).csv() : 0);
+  }
+#endif
 
   virtual bool fillEvent() override {
+
+#ifdef HTTMODE
+    const auto& fatJets  = httReader.fatJets;
+#else
+    const auto& fatJets  = fatJetReader.fatJets;
+#endif
 
     if(!passEventSel()) return false;
 
@@ -219,6 +323,7 @@ public:
 
     //Only look at fully hadronic signal
     if(process == defaults::SIGNAL) {
+      if(top1 == 0) return false;
       if(top2 == 0) return false;
       if(top1->isLeptonic || top2->isLeptonic) return false;
     }
@@ -232,8 +337,12 @@ public:
     float minDR2 = -99;
     int matchedFJ1 = -1;
     int matchedFJ2 = -1;
-    if(top1) matchedFJ1 = getMatchedJet(top1,fatJetReader.fatJets, minDR1);
-    if(top2) matchedFJ2 = getMatchedJet(top1,fatJetReader.fatJets, minDR2);
+    if(top1) matchedFJ1 = getMatchedJet(top1,fatJets, minDR1);
+    if(top2) matchedFJ2 = getMatchedJet(top2,fatJets, minDR2);
+    if(matchedFJ2 == matchedFJ1){
+      if(minDR2 < minDR1)  matchedFJ1 = -1;
+      else matchedFJ2 = -1;
+    }
 
     //Fill tops with no matching jets...should be rare
     auto fillTopNoFJ = [this](const PartonMatching::TopDecay * top) {
@@ -241,6 +350,9 @@ public:
       data.fill<float>(i_top_fj_maxDR          , 99);
       data.fill<float>(i_fj_mindr_p2           , 99);
       fillFatJetInfo(0);
+#ifdef HTTMODE
+      fillHTTFatJetInfo(0);
+#endif
       fillFillingTree();
     };
 
@@ -249,13 +361,13 @@ public:
     if(top1 && matchedFJ1 < 0) fillTopNoFJ(top1); //If there was no match
     if(top2 && matchedFJ2 < 0) fillTopNoFJ(top2); //If there was no match
 
-    for(unsigned int iFJ = 0; iFJ < fatJetReader.fatJets.size(); ++iFJ){
-      const auto& fj = fatJetReader.fatJets[iFJ];
+    for(unsigned int iFJ = 0; iFJ < fatJets.size(); ++iFJ){
+      const auto& fj = fatJets[iFJ];
 
-      if(matchedFJ1 == iFJ){
+      if(matchedFJ1 == int(iFJ)){
         fillGenInfo(top1);
         data.fill<float>(i_top_fj_maxDR         ,minDR1);
-      } else if(matchedFJ2 == iFJ){
+      } else if(matchedFJ2 == int(iFJ)){
         fillGenInfo(top2);
         data.fill<float>(i_top_fj_maxDR         ,minDR2);
       } else{
@@ -267,6 +379,9 @@ public:
       data.fill<float>(i_fj_mindr_p2            , minDR  < 0 ? float(99.0) : minDR);
 
       fillFatJetInfo(&fj);
+#ifdef HTTMODE
+      fillHTTFatJetInfo(&fj);
+#endif
       fillFillingTree();
     }
     return true;
@@ -311,6 +426,39 @@ public:
     i_fj_sj2_pt           = data.add<float>("","fj_sj2_pt"         ,"F",0);
     i_fj_sj2_mass         = data.add<float>("","fj_sj2_mass"       ,"F",0);
     i_fj_sj2_csv          = data.add<float>("","fj_sj2_csv"        ,"F",0);
+
+#ifdef HTTMODE
+     i_fj_ropt         = data.add<float>("","fj_ropt"               ,"F",0);;
+     i_fj_frec         = data.add<float>("","fj_frec"               ,"F",0);;
+     i_fj_roptcalc     = data.add<float>("","fj_roptcalc"           ,"F",0);;
+     i_fj_ptforopt     = data.add<float>("","fj_ptforopt"           ,"F",0);;
+     i_fj_ropt_tau1    = data.add<float>("","fj_ropt_tau1"          ,"F",0);;
+     i_fj_ropt_tau2    = data.add<float>("","fj_ropt_tau2"          ,"F",0);;
+     i_fj_ropt_tau3    = data.add<float>("","fj_ropt_tau3"          ,"F",0);;
+     i_fj_ropt_pt      = data.add<float>("","fj_ropt_pt"            ,"F",0);;
+     i_fj_ropt_mass    = data.add<float>("","fj_ropt_mass"          ,"F",0);;
+     i_fj_subjet_pt    = data.add<float>("","fj_subjet_pt"          ,"F",0);;
+     i_fj_subjet_mass  = data.add<float>("","fj_subjet_mass"        ,"F",0);;
+     i_fj_subjet_w_mass= data.add<float>("","fj_subjet_w_mass"          ,"F",0);;
+     i_fj_subjet_w_pt  = data.add<float>("","fj_subjet_w_pt"        ,"F",0);;
+     i_fj_subjet_w_bycsv_mass = data.add<float>("","fj_subjet_w_bycsv_mass"          ,"F",0);;
+     i_fj_subjet_w_bycsv_pt   = data.add<float>("","fj_subjet_w_bycsv_pt"        ,"F",0);;
+     i_fj_subjet_b_bycsv_mass = data.add<float>("","fj_subjet_b_bycsv_mass"          ,"F",0);;
+     i_fj_subjet_b_bycsv_pt   = data.add<float>("","fj_subjet_b_bycsv_pt"        ,"F",0);;
+     i_fj_subjet_b_bycsv_csv  = data.add<float>("","fj_subjet_b_bycsv_csv"        ,"F",0);;
+     i_fj_subjet_min_pt       = data.add<float>("","fj_subjet_min_pt"        ,"F",0);;
+     i_fj_w1_pt        = data.add<float>("","fj_w1_pt"              ,"F",0);;
+     i_fj_w1_mass      = data.add<float>("","fj_w1_mass"            ,"F",0);;
+     i_fj_w1_csv       = data.add<float>("","fj_w1_csv"             ,"F",0);;
+     i_fj_w2_pt        = data.add<float>("","fj_w2_pt"              ,"F",0);;
+     i_fj_w2_mass      = data.add<float>("","fj_w2_mass"            ,"F",0);;
+     i_fj_w2_csv       = data.add<float>("","fj_w2_csv"             ,"F",0);;
+     i_fj_b_pt         = data.add<float>("","fj_b_pt"               ,"F",0);;
+     i_fj_b_mass       = data.add<float>("","fj_b_mass"             ,"F",0);;
+     i_fj_b_csv        = data.add<float>("","fj_b_csv"              ,"F",0);;
+#endif
+
+
     i_fj_puppi_drsj       = data.add<float>("","fj_puppi_drsj"     ,"F",0);
     i_fj_puppi_pt         = data.add<float>("","fj_puppi_pt"       ,"F",0);
     i_fj_puppi_eta        = data.add<float>("","fj_puppi_eta"      ,"F",0);
@@ -325,6 +473,8 @@ public:
     i_fj_puppi_sj2_pt     = data.add<float>("","fj_puppi_sj2_pt"   ,"F",0);
     i_fj_puppi_sj2_mass   = data.add<float>("","fj_puppi_sj2_mass" ,"F",0);
     i_fj_puppi_sj2_csv    = data.add<float>("","fj_puppi_sj2_csv"  ,"F",0);
+
+
 
 
   }
@@ -372,6 +522,39 @@ public:
   size i_fj_sj2_pt        ;
   size i_fj_sj2_mass      ;
   size i_fj_sj2_csv       ;
+
+  #ifdef HTTMODE
+  size i_fj_ropt         ;
+  size i_fj_frec         ;
+  size i_fj_roptcalc     ;
+  size i_fj_ptforopt     ;
+  size i_fj_ropt_tau1    ;
+  size i_fj_ropt_tau2    ;
+  size i_fj_ropt_tau3    ;
+  size i_fj_ropt_pt      ;
+  size i_fj_ropt_mass    ;
+  size i_fj_subjet_pt    ;
+  size i_fj_subjet_mass  ;
+  size i_fj_subjet_w_mass;
+  size i_fj_subjet_w_pt;
+  size i_fj_subjet_w_bycsv_mass;
+  size i_fj_subjet_w_bycsv_pt;
+  size i_fj_subjet_b_bycsv_mass ;
+  size i_fj_subjet_b_bycsv_pt   ;
+  size i_fj_subjet_b_bycsv_csv ;
+  size i_fj_subjet_min_pt       ;
+  size i_fj_w1_pt        ;
+  size i_fj_w1_mass      ;
+  size i_fj_w1_csv       ;
+  size i_fj_w2_pt        ;
+  size i_fj_w2_mass      ;
+  size i_fj_w2_csv       ;
+  size i_fj_b_pt         ;
+  size i_fj_b_mass       ;
+  size i_fj_b_csv        ;
+  #endif
+
+
   size i_fj_puppi_pt      ;
   size i_fj_puppi_eta     ;
   size i_fj_puppi_mass    ;
@@ -387,20 +570,24 @@ public:
   size i_fj_puppi_sj2_mass;
   size i_fj_puppi_sj2_csv ;
 
+  HTTReader httReader;
+
 };
 
 
 #endif
 
-void boostedTopTreeMaker(TString sname = "T2tt",
-                             const int fileindex = -1,
-                             const bool isMC = true,
-                             const TString fname = "/store/user/lpcstop/noreplica/13TeV/120716/signals/merged/T2tt_1000_1_ntuple_postproc.root",
-                             const TString outputdir = "trees",
-                             const TString fileprefix = "root://cmseos:1094/",
-                             const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
+  void boostedTopTreeMaker(TString sname = "T2tt_HTT1p5",
+                               const int fileindex = -1,
+                               const bool isMC = true,
+                               const TString fname = "/store/user/nmccoll/HTTTest/ntuples/merged/T2tt_850_100_ntuple_postproc.root",
+                               const float weight = 1.0,
+                               const TString outputdir = "trees",
+                               const TString fileprefix = "root://cmseos:1094/",
+                               const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
   {
 
+    newWeight = weight;
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
 

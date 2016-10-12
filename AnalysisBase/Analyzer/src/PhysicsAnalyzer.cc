@@ -328,6 +328,14 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     initializedFillers.push_back(ak8fatjets);
     break;
   }
+  case HTTJETS : {
+    HTTjets = new HTTFiller(cfg, consumesCollector(),
+          0,
+          branchName == "" ? defaults::BRANCH_HTTJETS : branchName
+          );
+    initializedFillers.push_back(HTTjets);
+    break;
+  }
 
   case AK8PUPPIFATJETS : {
     ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
