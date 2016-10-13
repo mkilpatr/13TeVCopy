@@ -54,7 +54,7 @@ HTTFiller::HTTFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
   i_nsubjets    = data.addMulti<int>  (branchName_,"fatjet_nsubjets" ,0);
   i_w1_pt       = data.addMulti<float>(branchName_,"fatjet_w1_pt"    ,0);
   i_w1_eta      = data.addMulti<float>(branchName_,"fatjet_w1_eta"   ,0);
-  i_w1_phi      = data.addMulti<float>(branchName_,"fatjet_ws1_phi"  ,0);
+  i_w1_phi      = data.addMulti<float>(branchName_,"fatjet_w1_phi"   ,0);
   i_w1_mass     = data.addMulti<float>(branchName_,"fatjet_w1_mass"  ,0);
   i_w1_csv      = data.addMulti<float>(branchName_,"fatjet_w1_csv"   ,0);
   i_w1_ptD      = data.addMulti<float>(branchName_,"fatjet_w1_ptD"   ,0);
