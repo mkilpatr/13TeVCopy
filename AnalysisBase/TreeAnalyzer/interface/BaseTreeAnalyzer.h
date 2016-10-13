@@ -30,6 +30,7 @@
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 #include "AnalysisTools/TreeReader/interface/SVReader.h"
+#include "AnalysisTools/TreeReader/interface/HTTReader.h"
 
 #include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 
@@ -134,6 +135,7 @@ public:
     CORRALReader        corralReader        ;
     TriggerObjectReader trigObjReader       ;
     SVReader            svReader            ;
+    HTTReader           httReader           ;
 
 
   public:
@@ -193,6 +195,7 @@ public:
     std::vector<TriggerInfo*>    triggerInfo       ;
     std::vector<TauF*>           HPSTaus           ;
     std::vector<SVF*>            SVs;
+    std::vector<HTTFatJetF*>     httTops           ;
 
     std::vector<TopCand>         resolvedTops      ;
 

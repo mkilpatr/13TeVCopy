@@ -269,6 +269,11 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::HTT : {
+      int defaultOptions = HTTReader::defaultOptions;
+      reader.load(&httReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_HTTJETS : branchName );
+      break;
+    }
 
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
@@ -297,6 +302,7 @@ void BaseTreeAnalyzer::loadVariables()
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
+//  load(cfgSet::HTT);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -391,6 +397,11 @@ void BaseTreeAnalyzer::processVariables()
     SVs.clear();
     SVs.reserve(svReader.SVs.size());
     for(auto& p : svReader.SVs) SVs.push_back(&p);
+  }
+
+  if(httReader.isLoaded()){
+    httTops.clear();
+    for(auto& fj : httReader.fatJets) httTops.push_back(&fj);
   }
 
   allLeptons.clear();

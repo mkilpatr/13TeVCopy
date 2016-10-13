@@ -96,8 +96,6 @@ class FatJet : public Jet<CoordSystem>
   public :
   FatJet() :
     csv_         (-9.),
-    cvsl_        (-9.),
-    cvsb_        (-9.),
     prunedMass_  (-9.),
     softDropMass_(-9.),
     tau1_        (-9.),
@@ -111,12 +109,10 @@ class FatJet : public Jet<CoordSystem>
 
   template <class InputCoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
-        const float inCSV = -9, float inCvsL = -9, float inCvsB = -9,
+        const float inCSV = -9,
         const float inPrunedMass = -9, const float inSoftDropMass = -9, const float inTau1 = -9,
         const float inTau2= -9, const float inTau3= -9 ) : Jet<CoordSystem>(inMomentum, inIndex),
         csv_         (inCSV),
-        cvsl_        (inCvsL),
-        cvsb_        (inCvsB),
         prunedMass_  (inPrunedMass),
         softDropMass_(inSoftDropMass),
         tau1_        (inTau1),
@@ -130,8 +126,6 @@ class FatJet : public Jet<CoordSystem>
 
 
   float csv()                  const { return csv_         ;    }
-  float cvsl()                 const { return cvsl_        ;    }
-  float cvsb()                 const { return cvsb_        ;    }
   float prunedMass()           const { return prunedMass_  ;    }
   float softDropMass()         const { return softDropMass_;    }
   float tau1()                 const { return tau1_        ;    }
@@ -205,8 +199,6 @@ class FatJet : public Jet<CoordSystem>
 
   protected :
     float csv_         ;
-    float cvsl_        ;
-    float cvsb_        ;
     float prunedMass_  ;
     float softDropMass_;
     float tau1_        ;
