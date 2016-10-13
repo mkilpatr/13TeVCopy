@@ -184,8 +184,7 @@ void FatJetReader::refresh(){
 
   for(unsigned int iJ = 0; iJ < fjpt_->size(); ++iJ){
     fatJets.emplace_back(CylLorentzVectorF(fjpt_->at(iJ),fjeta_->at(iJ),fjphi_->at(iJ),fjrawmass_->at(iJ)),
-        iJ, fjcsv_->at(iJ), fjcvsl_->at(iJ), fjcvsb_->at(iJ),
-        fjprunedmass_->at(iJ),fjsoftdropmass_->at(iJ),fjtau1_->at(iJ),fjtau2_->at(iJ),fjtau3_->at(iJ));
+        iJ, fjcsv_->at(iJ), fjprunedmass_->at(iJ),fjsoftdropmass_->at(iJ),fjtau1_->at(iJ),fjtau2_->at(iJ),fjtau3_->at(iJ));
 
     if(fjnsdsubjets_->at(iJ) > 0 ){
       if (fjsdsj1cmva_->empty()) //FIXME
