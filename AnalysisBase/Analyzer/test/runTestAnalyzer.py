@@ -380,6 +380,7 @@ HTTJets(process,process.httseq,"CA15HTT",1.5)
 # add subjet b/c-tagging
 runSubjetCTagging = True
 if runSubjetCTagging:
+    process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
     bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
 
     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'CHS',   JETCorrPayload = 'AK8PFchs',   JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
@@ -387,16 +388,6 @@ if runSubjetCTagging:
 
     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
     process.TestAnalyzer.AK8FatJets.puppiSubjets = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropPacked')
-
-
-# process.puppi.useExistingWeights = True
-# process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
-# process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
-
-# if ISDATA and applyResiduals:
-#    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=False, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
-# else :
-#    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
 
 #==============================================================================================================================#
 # Also update jets with different JECs if needed

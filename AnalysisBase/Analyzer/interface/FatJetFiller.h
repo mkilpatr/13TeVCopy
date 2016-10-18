@@ -19,18 +19,18 @@
 namespace ucsbsusy {
 
 class QuarkGluonTaggingVariables;
-class EventInfoFiller;
 
 
   class FatJetFiller : public BaseFiller {
 
   public :
-    FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName, const EventInfoFiller *evtInfoFiller=nullptr);
+    FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~FatJetFiller() {}
 
     enum  Options           {
                               NULLOPT         = 0
-                            , LOADJETSHAPE    = (1 <<  0)   ///< load jet shap variables
+                            , LOADJETSHAPE    = (1 <<  0)   ///< load jet shape variables
+                            , LOADSUBJETCTAG  = (1 <<  1)   ///< load subjet c-tagging
     };
     static const int defaultOptions = NULLOPT | LOADJETSHAPE;
 
@@ -72,7 +72,6 @@ class EventInfoFiller;
     size ifj_sdsubjet1_cmva_;
     size ifj_sdsubjet1_cvsl_;
     size ifj_sdsubjet1_cvsb_;
-    size ifj_sdsubjet1_betaStar_;
     size ifj_sdsubjet1_ptD_;
     size ifj_sdsubjet1_axis1_;
     size ifj_sdsubjet1_axis2_;
@@ -85,7 +84,6 @@ class EventInfoFiller;
     size ifj_sdsubjet2_cmva_;
     size ifj_sdsubjet2_cvsl_;
     size ifj_sdsubjet2_cvsb_;
-    size ifj_sdsubjet2_betaStar_;
     size ifj_sdsubjet2_ptD_;
     size ifj_sdsubjet2_axis1_;
     size ifj_sdsubjet2_axis2_;
@@ -128,7 +126,6 @@ class EventInfoFiller;
 
   protected:
     QuarkGluonTaggingVariables* qgTaggingVar_;
-    const EventInfoFiller   * evtInfofiller_;
 
   };
 

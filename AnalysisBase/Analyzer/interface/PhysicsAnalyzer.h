@@ -1,13 +1,13 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // PhysicsAnalyzer
-// 
+//
 // Implementation of BaseAnalyzer with a few additions:
 // It provides an interface to event objects, providing functions to load the event content
 // It stores the event content classes for easy processing
 // It includes a few more advanced header files that are useful in analyzers
 // It stores what kind of event it is in addition to the event weight
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef PHYSICSANALYZER_H

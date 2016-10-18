@@ -258,11 +258,12 @@ nominal_configuration = cms.PSet(
                                       
                                   AK8FatJets = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
-                                      fillJetShapeInfo  = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
-                                      sdSubjets  = cms.InputTag('slimmedJetsAK8PFCHSSoftDropPacked'),
-                                      puppiSubjets = cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked'),
-                                      puRemoval = cms.untracked.string("CHS")
+                                      puRemoval = cms.untracked.string("CHS"),
+                                      fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillSubjetCTag  = cms.untracked.bool(False),
+                                      sdSubjets  = cms.InputTag(''),
+                                      puppiSubjets = cms.InputTag(''),
                                       ),
 
                                   AK8PuppiFatJets = cms.untracked.PSet(
@@ -288,10 +289,12 @@ nominal_configuration = cms.PSet(
                                       puRemoval    = cms.untracked.string("CHS"),
                                       details      = cms.untracked.string("ca8")
                                       ),
-                                 CA15HTT = cms.untracked.PSet(
+                                 
+                                  CA15HTT = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       jetPrefix  = cms.InputTag('CA15HTT'),
                                       ),
+                                 
                                   Triggers = cms.untracked.PSet(
                                       isFilled  = cms.untracked.bool(True),
                                       isFastSim = cms.untracked.bool(False),

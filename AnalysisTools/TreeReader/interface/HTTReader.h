@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetReader
-// 
+//
 // Class for reading electron object information from TTree.
-// 
+//
 // JetReader.h created on Wed Oct 22 01:39:44 CEST 2014
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_TREEREADER_HTTREADER_H
@@ -21,17 +21,17 @@ namespace ucsbsusy {
   public :
     enum  Options {
                       NULLOPT     = 0
-                    , LOADRECO = (1 << 0)
+                    , LOADRECO    = (1 << 0)
                     , FILLOBJ     = (1 << 1)   ///< Fill objects (as opposed to just pointers
     };
     static const int defaultOptions;
-    
+
     HTTReader();
     ~HTTReader() {}
-    
+
     void load(TreeReader *treeReader, int options, std::string branchName);
     void refresh();
-    
+
   public:
 
 
@@ -61,23 +61,28 @@ namespace ucsbsusy {
     std::vector<float>* w1_phi    ;
     std::vector<float>* w1_mass   ;
     std::vector<float>* w1_csv    ;
+    std::vector<float>* w1_ptD    ;
+    std::vector<float>* w1_axis1  ;
+    std::vector<float>* w1_axis2  ;
+    std::vector<int  >* w1_mult   ;
     std::vector<float>* w2_pt     ;
     std::vector<float>* w2_eta    ;
     std::vector<float>* w2_phi    ;
     std::vector<float>* w2_mass   ;
     std::vector<float>* w2_csv    ;
+    std::vector<float>* w2_ptD    ;
+    std::vector<float>* w2_axis1  ;
+    std::vector<float>* w2_axis2  ;
+    std::vector<int  >* w2_mult   ;
     std::vector<float>* b_pt      ;
     std::vector<float>* b_eta     ;
     std::vector<float>* b_phi     ;
     std::vector<float>* b_mass    ;
     std::vector<float>* b_csv     ;
-
-
-
-
-
-
-
+    std::vector<float>* b_ptD     ;
+    std::vector<float>* b_axis1   ;
+    std::vector<float>* b_axis2   ;
+    std::vector<int  >* b_mult    ;
 
 
     //the actual jet collection

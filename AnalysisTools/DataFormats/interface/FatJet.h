@@ -25,9 +25,8 @@ class SubJet : public Jet<CoordSystem>
   SubJet(){}
 
   template <class InputCoordSystem>
-  SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum,
-          const int inIndex = -1, const float inCSV = -10, float inCMVA = -10, float inCvsL = -10, float inCvsB = -10)
-      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV), cmva_(inCMVA), cvsl_(inCvsL), cvsb_(inCvsB) {}
+  SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum, const int inIndex = -1, const float inCSV = -10)
+      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
   ~SubJet() {}
 
   float csv()  const { return csv_;  }
@@ -56,13 +55,6 @@ class SubJet : public Jet<CoordSystem>
     axis2_ = axis2;
   }
 
-  float betaStar() const {
-    return betaStar_;
-  }
-  void setBetaStar(float betaStar) {
-    betaStar_ = betaStar;
-  }
-
   int multiplicity() const {
     return multiplicity_;
   }
@@ -77,12 +69,19 @@ class SubJet : public Jet<CoordSystem>
     ptD_ = ptD;
   }
 
+  void addQuarkGluonVars(float ptD, float axis1, float axis2, int multiplicity){
+    ptD_ = ptD; axis1_ = axis1; axis2_ = axis2; multiplicity_ = multiplicity;
+  }
+
+  void addCTagging(float cmva, float cvsl, float cvsb){
+    cmva_ = cmva; cvsl_ = cvsl; cvsb_ = cvsb;
+  }
+
   protected:
   float csv_  = -10;
   float cmva_ = -10;
   float cvsl_ = -10;
   float cvsb_ = -10;
-  float betaStar_ = -10;
   float ptD_ = -10;
   float axis1_ = -10;
   float axis2_ = -10;
@@ -164,12 +163,9 @@ class FatJet : public Jet<CoordSystem>
 
 
   //setters
-
-
-
   template <class InputCoordSystem>
-  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, float inCSV = -9., float inCMVA = -9, float inCvsL = -9, float inCvsB = -9){
-    subjets.emplace_back(inMomentum,-1,inCSV,inCMVA,inCvsL,inCvsB);
+  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, float inCSV = -9.){
+    subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
   template <class InputCoordSystem>
@@ -185,8 +181,8 @@ class FatJet : public Jet<CoordSystem>
 
 
   template <class InputCoordSystem>
-  void addPuppiSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9., float inCMVA = -9, float inCvsL = -9, float inCvsB = -9){
-    puppi_subjets.emplace_back(inMomentum,-1,inCSV,inCMVA,inCvsL,inCvsB);
+  void addPuppiSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
+    puppi_subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
 

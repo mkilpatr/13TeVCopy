@@ -26,6 +26,7 @@ namespace ucsbsusy {
                     , LOADPUPPI   = (1 << 1)
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
                     , LOADSHAPE   = (1 << 3)
+                    , LOADCTAG    = (1 << 4)
     };
     static const int defaultOptions;
 
@@ -48,8 +49,6 @@ namespace ucsbsusy {
     std::vector<float>* fjeta_;
     std::vector<float>* fjphi_;
     std::vector<float>* fjcsv_;
-    std::vector<float>* fjcvsl_;
-    std::vector<float>* fjcvsb_;
     std::vector<int  >* fjnsdsubjets_;
     std::vector<float>* fjsdsj1mass_;
     std::vector<float>* fjsdsj1pt_;
@@ -60,7 +59,6 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj1cmva_;
     std::vector<float>* fjsdsj1cvsl_;
     std::vector<float>* fjsdsj1cvsb_;
-    std::vector<float>* fjsdsj1betaStar_;
     std::vector<float>* fjsdsj1ptD_;
     std::vector<float>* fjsdsj1axis1_;
     std::vector<float>* fjsdsj1axis2_;
@@ -72,7 +70,6 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj2cmva_;
     std::vector<float>* fjsdsj2cvsl_;
     std::vector<float>* fjsdsj2cvsb_;
-    std::vector<float>* fjsdsj2betaStar_;
     std::vector<float>* fjsdsj2ptD_;
     std::vector<float>* fjsdsj2axis1_;
     std::vector<float>* fjsdsj2axis2_;
