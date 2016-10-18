@@ -194,7 +194,7 @@ void FatJetFiller::fill()
         // sdCollectionSubjets_ stores the soft-drop AK8 jets, with the actual subjets stored as daughters
         // PhysicsTools/PatAlgos/python/slimming/applySubstructure_cff.py
         // PhysicsTools/PatUtils/plugins/JetSubstructurePacker.cc
-        if (reco::deltaR(sj, fatjet) < 0.8) {
+        if (sj.pt() > 170 && reco::deltaR(sj, fatjet) < 0.8) {
           for ( size_t ida = 0; ida < sj.numberOfDaughters(); ++ida ) {
             auto candPtr =  sj.daughterPtr(ida);
             subjets.push_back( edm::Ptr<pat::Jet>(candPtr) );
