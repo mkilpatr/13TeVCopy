@@ -72,6 +72,7 @@ public:
     data.fill<bool> (i_flag_signal, isSignal);
 
     data.fill<float>(i_var_b_pt,    topcand->b->pt());
+    data.fill<float>(i_var_b_mass,  topcand->b->mass());
     data.fill<float>(i_var_b_csv,   topcand->b->csv());
     data.fill<float>(i_var_b_cvsb,  topcand->b->cvsb());
     data.fill<float>(i_var_b_qgl,   topcand->b->qgl());
@@ -112,6 +113,15 @@ public:
     data.fill<float>(i_var_wcand_ptDR,    topcand->wcand.pt()*var_wcand_deltaR);
     data.fill<float>(i_var_wcand_mass,    topcand->wcand.mass());
 
+    auto calcChi2 = [](const TopCand &c){
+      double m_top, m_w, sigma_top, sigma_w;
+      if (c.topcand.pt()<250)       { m_top=161; sigma_top=18; m_w=79; sigma_w=11; }
+      else if (c.topcand.pt()<350)  { m_top=167; sigma_top=16; m_w=81; sigma_w=10; }
+      else                          { m_top=172; sigma_top=16; m_w=84; sigma_w=10; }
+      return std::pow((c.topcand.mass()-m_top)/sigma_top, 2)+std::pow((c.wcand.mass()-m_w)/sigma_w, 2);
+    };
+    data.fill<float>(i_var_chi2,      calcChi2(*topcand));
+
     double var_sd_0 = topcand->j3->pt()/(topcand->j2->pt()+topcand->j3->pt());
     data.fill<float>(i_var_sd_0,      var_sd_0);
     data.fill<float>(i_var_sd_0p5,    var_sd_0/std::pow(var_wcand_deltaR, 0.5));
@@ -139,14 +149,6 @@ public:
 
     data.fill<float>(i_var_top_radius, top_radius);
     data.fill<int>  (i_var_n_extra_jets, n_extra_jets);
-
-//    auto isCutTop = [](const TopCand& t){
-//      return t.passMassW(20)
-//          && t.passMassTop(50)
-//          && PhysicsUtilities::deltaR(*t.j2, *t.j3)<160/t.wcand.pt()
-//          && PhysicsUtilities::deltaR(*t.b, t.wcand)<270/t.topcand.pt();
-//    };
-//    data.fill<bool>(i_test_is_cut_based_top, isCutTop(*topcand));
 
   }
 
@@ -197,8 +199,10 @@ public:
 
     if(!goodvertex) return;
     if(nJets < 5)   return;
-    if(met->pt() < 200) return;
+    if(met->pt() < 100) return;
     if(nBJets< 1)   return;
+    auto nLBJets = std::count_if(jets.begin(), jets.end(), [](const RecoJetF *j){ return j->csv() > defaults::CSV_LOOSE; });
+    if(nLBJets<2) return;
 
     // jets sorted by CSV
     vector<RecoJetF*> csvJets(jets);
@@ -211,9 +215,11 @@ public:
     // form all possible candidates
     vector<TopCand> cands;
     for (unsigned iB=0; iB<2; ++iB){
-      for (unsigned i2=iB+1; i2<csvJets.size()-1; ++i2){
-        for (unsigned i3=i2+1; i3<csvJets.size(); ++i3){
-          TopCand tmpCand(csvJets.at(iB), csvJets.at(i2), csvJets.at(i3));
+      vector<RecoJetF*> tmpJets(csvJets);
+      tmpJets.erase(tmpJets.begin()+iB);
+      for (unsigned i2=0; i2<tmpJets.size()-1; ++i2){
+        for (unsigned i3=i2+1; i3<tmpJets.size(); ++i3){
+          TopCand tmpCand(csvJets.at(iB), tmpJets.at(i2), tmpJets.at(i3));
           if (tmpCand.passMassW() && tmpCand.passMassTop()){
             cands.push_back(tmpCand);
           }
@@ -275,6 +281,13 @@ public:
       addTopCandInfo(&cands.at(randIndx), false);
       fillFillingTree();
 
+      for (unsigned i=0; i<2 && cands.size()>1; ++i){
+        cands.erase(cands.begin()+randIndx);
+        randIndx = randGen->Uniform(0, cands.size());
+        addTopCandInfo(&cands.at(randIndx), false);
+        fillFillingTree();
+      }
+
     }
 
   }
@@ -308,6 +321,7 @@ public:
     i_gen_top_resolved = data.add<bool> ("","gen_top_resolved","O",0);
 
     i_var_b_pt       = data.add<float>("","var_b_pt","F",-1);
+    i_var_b_mass     = data.add<float>("","var_b_mass","F",-1);
     i_var_b_csv      = data.add<float>("","var_b_csv","F",-1);
     i_var_b_cvsb     = data.add<float>("","var_b_cvsb","F",-1);
     i_var_b_qgl      = data.add<float>("","var_b_qgl","F",-1);
@@ -345,6 +359,8 @@ public:
     i_var_wcand_ptDR     = data.add<float>("","var_wcand_ptDR","F",-1);
     i_var_wcand_pt       = data.add<float>("","var_wcand_pt","F",-1);
     i_var_wcand_deltaR   = data.add<float>("","var_wcand_deltaR","F",-1);
+
+    i_var_chi2           = data.add<float>("","var_chi2","F",-1);
 
     i_var_sd_0           = data.add<float>("","var_sd_0","F",-1);
     i_var_sd_0p5         = data.add<float>("","var_sd_0p5","F",-1);
@@ -389,6 +405,7 @@ public:
   size i_flag_signal;
 
   size i_var_b_pt;
+  size i_var_b_mass;
   size i_var_b_csv;
   size i_var_b_cvsb;
   size i_var_b_qgl;
@@ -426,6 +443,8 @@ public:
   size i_var_wcand_ptDR;
   size i_var_wcand_pt;
   size i_var_wcand_deltaR;
+
+  size i_var_chi2;
 
   size i_var_sd_0;
   size i_var_sd_0p5;
