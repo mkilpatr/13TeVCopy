@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetReader
-// 
+//
 // Class for reading electron object information from TTree.
-// 
+//
 // JetReader.h created on Wed Oct 22 01:39:44 CEST 2014
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_TREEREADER_FATJETREADER_H
@@ -22,18 +22,20 @@ namespace ucsbsusy {
   public :
     enum  Options {
                       NULLOPT     = 0
-                    , LOADRECO = (1 << 0)
-                    , LOADPUPPI    = (1 << 1)
+                    , LOADRECO    = (1 << 0)
+                    , LOADPUPPI   = (1 << 1)
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
+                    , LOADSHAPE   = (1 << 3)
+                    , LOADCTAG    = (1 << 4)
     };
     static const int defaultOptions;
-    
+
     FatJetReader();
     ~FatJetReader() {}
-    
+
     void load(TreeReader *treeReader, int options, std::string branchName);
     void refresh();
-    
+
     void pushToTree(); //push changes made to the momentum back to the tree
   public:
     // Members to hold info to be filled in the tree (for now; this implementation is to be updated)
@@ -54,10 +56,24 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj1phi_;
     std::vector<float>* fjsdsj2mass_;
     std::vector<float>* fjsdsj1csv_;
+    std::vector<float>* fjsdsj1cmva_;
+    std::vector<float>* fjsdsj1cvsl_;
+    std::vector<float>* fjsdsj1cvsb_;
+    std::vector<float>* fjsdsj1ptD_;
+    std::vector<float>* fjsdsj1axis1_;
+    std::vector<float>* fjsdsj1axis2_;
+    std::vector<int  >* fjsdsj1mult_;
     std::vector<float>* fjsdsj2pt_;
     std::vector<float>* fjsdsj2eta_;
     std::vector<float>* fjsdsj2phi_;
     std::vector<float>* fjsdsj2csv_;
+    std::vector<float>* fjsdsj2cmva_;
+    std::vector<float>* fjsdsj2cvsl_;
+    std::vector<float>* fjsdsj2cvsb_;
+    std::vector<float>* fjsdsj2ptD_;
+    std::vector<float>* fjsdsj2axis1_;
+    std::vector<float>* fjsdsj2axis2_;
+    std::vector<int  >* fjsdsj2mult_;
 
 
     //Puppi variables
@@ -76,10 +92,16 @@ namespace ucsbsusy {
     std::vector<float>* fj_puppi_sdsj1phi_    ;
     std::vector<float>* fj_puppi_sdsj2mass_   ;
     std::vector<float>* fj_puppi_sdsj1csv_    ;
+    std::vector<float>* fj_puppi_sdsj1cmva_   ;
+    std::vector<float>* fj_puppi_sdsj1cvsl_   ;
+    std::vector<float>* fj_puppi_sdsj1cvsb_   ;
     std::vector<float>* fj_puppi_sdsj2pt_     ;
     std::vector<float>* fj_puppi_sdsj2eta_    ;
     std::vector<float>* fj_puppi_sdsj2phi_    ;
     std::vector<float>* fj_puppi_sdsj2csv_    ;
+    std::vector<float>* fj_puppi_sdsj2cmva_   ;
+    std::vector<float>* fj_puppi_sdsj2cvsl_   ;
+    std::vector<float>* fj_puppi_sdsj2cvsb_   ;
 
 
 

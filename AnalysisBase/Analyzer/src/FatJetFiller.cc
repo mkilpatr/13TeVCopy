@@ -1,15 +1,18 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // FatJetFiller
-// 
+//
 // Muon filler.
-// 
-// FatJetFiller.cc created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// FatJetFiller.cc created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/FatJetFiller.h"
 #include "AnalysisBase/Analyzer/interface/JetFiller.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
+#include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
 using namespace ucsbsusy;
 
@@ -17,16 +20,15 @@ using namespace ucsbsusy;
 FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName) :
   BaseFiller(options, branchName),
   fatJetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("fatJets"))),
-  puRemoval_(cfg.getUntrackedParameter<string>("puRemoval"))
+  sdSubjetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("sdSubjets"))),
+  puppiSubjetToken_(cc.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("puppiSubjets"))),
+  puRemoval_(cfg.getUntrackedParameter<string>("puRemoval")),
+  qgTaggingVar_(new QuarkGluonTaggingVariables)
 {
 
   ifj_rawmass_       = data.addMulti<float>(branchName_,"fatjet_rawmass",0);
   ifj_prunedmass_    = data.addMulti<float>(branchName_,"fatjet_prunedmass",0);
   ifj_softdropmass_  = data.addMulti<float>(branchName_,"fatjet_softdropmass",0);
-  //  ifj_cmstoptagmass_ = data.addMulti<float>(branchName_,"fatjet_cmstoptagmass",0);
-  //  ifj_cmstoptagminmass_   = data.addMulti<float>(branchName_,"fatjet_cmstoptagminmass",0);
-  //  ifj_cmstoptagnsubjets_  = data.addMulti<float>(branchName_,"fatjet_cmstoptagnsubjets",0);
-  //ifj_massdropfilteredmass_ = data.addMulti<float>(branchName_,"fatjet_massdropfilteredmass",0);
   ifj_tau1_          = data.addMulti<float>(branchName_,"fatjet_tau1",-1.);
   ifj_tau2_          = data.addMulti<float>(branchName_,"fatjet_tau2",-1.);
   ifj_tau3_          = data.addMulti<float>(branchName_,"fatjet_tau3",-1.);
@@ -73,7 +75,36 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_puppi_sdsubjet2_phi_    = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_phi",0);
   ifj_puppi_sdsubjet2_mass_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_mass",0);
   ifj_puppi_sdsubjet2_csv_    = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_csv",0);
-  ifj_puppi_sdmass_           = data.addMulti<float>(branchName_,"fatjet_puppi_sdmass",0);
+  ifj_puppi_sdmass_           = data.addMulti<float> (branchName_,"fatjet_puppi_sdmass",0);
+
+  if(options_ & LOADSUBJETCTAG){
+    ifj_sdsubjet1_cmva_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_cmva",0);
+    ifj_sdsubjet1_cvsl_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_cvsl",0);
+    ifj_sdsubjet1_cvsb_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_cvsb",0);
+    ifj_sdsubjet2_cmva_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_cmva",0);
+    ifj_sdsubjet2_cvsl_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_cvsl",0);
+    ifj_sdsubjet2_cvsb_   = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_cvsb",0);
+
+    ifj_puppi_sdsubjet1_cmva_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet1_cmva",0);
+    ifj_puppi_sdsubjet1_cvsl_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet1_cvsl",0);
+    ifj_puppi_sdsubjet1_cvsb_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet1_cvsb",0);
+    ifj_puppi_sdsubjet2_cmva_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_cmva",0);
+    ifj_puppi_sdsubjet2_cvsl_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_cvsl",0);
+    ifj_puppi_sdsubjet2_cvsb_   = data.addMulti<float> (branchName_,"fatjet_puppi_sdsubjet2_cvsb",0);
+  }
+
+  if(options_ & LOADJETSHAPE){
+    ifj_sdsubjet1_ptD_        = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_ptD",0);
+    ifj_sdsubjet1_axis1_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_axis1",0);
+    ifj_sdsubjet1_axis2_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_axis2",0);
+    ifj_sdsubjet1_jetMult_    = data.addMulti<int>   (branchName_,"fatjet_sdsubjet1_jetMult",0);
+
+    ifj_sdsubjet2_ptD_        = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_ptD",0);
+    ifj_sdsubjet2_axis1_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_axis1",0);
+    ifj_sdsubjet2_axis2_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_axis2",0);
+    ifj_sdsubjet2_jetMult_    = data.addMulti<int>   (branchName_,"fatjet_sdsubjet2_jetMult",0);
+  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -81,6 +112,10 @@ void FatJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(fatJetToken_,fatJets_);
+  if(options_ & LOADSUBJETCTAG){
+    iEvent.getByToken(sdSubjetToken_,sdCollectionSubjets_);
+    iEvent.getByToken(puppiSubjetToken_,puppiCollectionSubjets_);
+  }
   isLoaded_ = true;
 }
 
@@ -91,29 +126,11 @@ void FatJetFiller::fill()
   for (const pat::Jet &fatjet : *fatJets_) {
 
     if (fatjet.pt()<=50.) { continue; }
-    /*
-    float cmstoptagmass = -1;
-    float cmstoptagminmass = -1;
-    int   cmstoptagnsubjets = 0;
-    const reco::CATopJetTagInfo * catopTag = dynamic_cast<reco::CATopJetTagInfo const *>(fatjet.tagInfo("caTop"));
-    if (catopTag) {
-      cmstoptagmass     = catopTag->properties().topMass;
-      cmstoptagminmass  = catopTag->properties().minMass;
-      cmstoptagnsubjets = catopTag->properties().nSubJets;
-    }
-    else          { cmstoptagmass = fatjet.mass(); }
-    */
-//    data.fillMulti<float>(ifj_trimmedmass_   , fatjet.userFloat("ak8PFJets"+puRemoval_+"TrimmedMass"));//FIXME_76X
-//    data.fillMulti<float>(ifj_filteredmass_  , fatjet.userFloat("ak8PFJets"+puRemoval_+"FilteredMass"));
-//    data.fillMulti<float>(ifj_cmstoptagmass_ , cmstoptagmass);
-//    data.fillMulti<float>(ifj_cmstoptagminmass_ , cmstoptagminmass);
-//    data.fillMulti<int  >(ifj_cmstoptagnsubjets_, cmstoptagnsubjets);
-    //    data.fillMulti<float>(ifj_massdropfilteredmass_, fatjet.userFloat("ak8PFJets"+puRemoval_+"MassDropFilteredLinks"));
 
     data.fillMulti<float>(ifj_rawmass_         , fatjet.mass());
     data.fillMulti<float>(ifj_prunedmass_      , fatjet.userFloat("ak8PFJets"+puRemoval_+"PrunedMass"));
     data.fillMulti<float>(ifj_softdropmass_    , fatjet.userFloat("ak8PFJets"+puRemoval_+"SoftDropMass"));
-    if (puRemoval_=="Puppi") { 
+    if (puRemoval_=="Puppi") {
       data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau1"));
       data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau2"));
       data.fillMulti<float>(ifj_tau3_          , fatjet.userFloat("NjettinessAK8"+puRemoval_+":tau3"));
@@ -122,7 +139,7 @@ void FatJetFiller::fill()
       data.fillMulti<float>(ifj_tau1_          , fatjet.userFloat("NjettinessAK8:tau1"));
       data.fillMulti<float>(ifj_tau2_          , fatjet.userFloat("NjettinessAK8:tau2"));
       data.fillMulti<float>(ifj_tau3_          , fatjet.userFloat("NjettinessAK8:tau3"));
-    } 
+    }
     data.fillMulti<float>(ifj_pt_              , fatjet.pt());
     data.fillMulti<float>(ifj_eta_             , fatjet.eta());
     data.fillMulti<float>(ifj_phi_             , fatjet.phi());
@@ -142,117 +159,110 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_puppi_tau2_ , fatjet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau2"));
     data.fillMulti<float>(ifj_puppi_tau3_ , fatjet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau3"));
 
-
     // get the soft drop subjets
-    // soft-drop gives up to two subjets - fill the subjet variables in a dummy way now.
-    auto const & sdsubjet_      = fatjet.subjets("SoftDrop");
-    data.fillMulti<int>  (ifj_nsoftdropsubjets_ , sdsubjet_.size());
+    // soft-drop gives up to two subjets
+    auto sdsubjets = fatjet.subjets("SoftDrop");
 
-    std::vector<TLorentzVector> sdsubjetsp4;
-    std::vector<float>          sdsubjetsCSV;
-    for (auto const & it : sdsubjet_) {
-      TLorentzVector tmpLV; tmpLV.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());
-      sdsubjetsp4.push_back(tmpLV);
-      sdsubjetsCSV.push_back(it->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+    if (options_ & LOADSUBJETCTAG){
+      // use subjets from jettoolbox instead
+      pat::JetPtrCollection subjets_;
+      for (const pat::Jet &sj : *sdCollectionSubjets_) {
+        // sdCollectionSubjets_ stores the soft-drop AK8 jets, with the actual subjets stored as daughters
+        // PhysicsTools/PatAlgos/python/slimming/applySubstructure_cff.py
+        // PhysicsTools/PatUtils/plugins/JetSubstructurePacker.cc
+        if (reco::deltaR(sj, fatjet) < 0.8) {
+          for ( size_t ida = 0; ida < sj.numberOfDaughters(); ++ida ) {
+            auto candPtr =  sj.daughterPtr(ida);
+            subjets_.push_back( edm::Ptr<pat::Jet>(candPtr) );
+          }
+          break;
+        }
+      }
+
+      // For consistency: use subjets from jettoolbox to fill everything!
+      sdsubjets = subjets_;
+
+      data.fillMulti<float>(ifj_sdsubjet1_cmva_,sdsubjets.size()>0 ? sdsubjets[0]->bDiscriminator("pfCombinedMVAV2BJetTags") : -9);
+      data.fillMulti<float>(ifj_sdsubjet1_cvsl_,sdsubjets.size()>0 ? sdsubjets[0]->bDiscriminator("pfCombinedCvsLJetTags")   : -9);
+      data.fillMulti<float>(ifj_sdsubjet1_cvsb_,sdsubjets.size()>0 ? sdsubjets[0]->bDiscriminator("pfCombinedCvsBJetTags")   : -9);
+      data.fillMulti<float>(ifj_sdsubjet2_cmva_,sdsubjets.size()>1 ? sdsubjets[1]->bDiscriminator("pfCombinedMVAV2BJetTags") : -9);
+      data.fillMulti<float>(ifj_sdsubjet2_cvsl_,sdsubjets.size()>1 ? sdsubjets[1]->bDiscriminator("pfCombinedCvsLJetTags")   : -9);
+      data.fillMulti<float>(ifj_sdsubjet2_cvsb_,sdsubjets.size()>1 ? sdsubjets[1]->bDiscriminator("pfCombinedCvsBJetTags")   : -9);
     }
 
-    if (sdsubjetsp4.size()==0) {
-      data.fillMulti<float>(ifj_sdsubjet1_pt_  ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet1_eta_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet1_phi_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet1_mass_,-9.);
-      data.fillMulti<float>(ifj_sdsubjet1_csv_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_pt_  ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_eta_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_phi_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_mass_,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_csv_ ,-9.);
+    data.fillMulti<int>  (ifj_nsoftdropsubjets_ , sdsubjets.size());
+    data.fillMulti<float>(ifj_sdsubjet1_pt_  ,sdsubjets.size()>0 ? sdsubjets[0]->pt()  : -9);
+    data.fillMulti<float>(ifj_sdsubjet1_eta_ ,sdsubjets.size()>0 ? sdsubjets[0]->eta() : -9);
+    data.fillMulti<float>(ifj_sdsubjet1_phi_ ,sdsubjets.size()>0 ? sdsubjets[0]->phi() : -9);
+    data.fillMulti<float>(ifj_sdsubjet1_mass_,sdsubjets.size()>0 ? sdsubjets[0]->mass(): -9);
+    data.fillMulti<float>(ifj_sdsubjet1_csv_ ,sdsubjets.size()>0 ? sdsubjets[0]->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -9);
+    data.fillMulti<float>(ifj_sdsubjet2_pt_  ,sdsubjets.size()>1 ? sdsubjets[1]->pt()  : -9);
+    data.fillMulti<float>(ifj_sdsubjet2_eta_ ,sdsubjets.size()>1 ? sdsubjets[1]->eta() : -9);
+    data.fillMulti<float>(ifj_sdsubjet2_phi_ ,sdsubjets.size()>1 ? sdsubjets[1]->phi() : -9);
+    data.fillMulti<float>(ifj_sdsubjet2_mass_,sdsubjets.size()>1 ? sdsubjets[1]->mass(): -9);
+    data.fillMulti<float>(ifj_sdsubjet2_csv_ ,sdsubjets.size()>1 ? sdsubjets[1]->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -9);
+
+    if (options_ & LOADJETSHAPE){
+      if (sdsubjets.size()>0) qgTaggingVar_->compute(&(*sdsubjets[0]),true);
+      data.fillMulti<float>(ifj_sdsubjet1_ptD_    ,sdsubjets.size()>0 ? qgTaggingVar_->getPtD()       : -9);
+      data.fillMulti<float>(ifj_sdsubjet1_axis1_  ,sdsubjets.size()>0 ? qgTaggingVar_->getAxis1()     : -9);
+      data.fillMulti<float>(ifj_sdsubjet1_axis2_  ,sdsubjets.size()>0 ? qgTaggingVar_->getAxis2()     : -9);
+      data.fillMulti<int>  (ifj_sdsubjet1_jetMult_,sdsubjets.size()>0 ? qgTaggingVar_->getTotalMult() : -9);
+
+      if (sdsubjets.size()>1) qgTaggingVar_->compute(&(*sdsubjets[1]),true);
+      data.fillMulti<float>(ifj_sdsubjet2_ptD_    ,sdsubjets.size()>1 ? qgTaggingVar_->getPtD()       : -9);
+      data.fillMulti<float>(ifj_sdsubjet2_axis1_  ,sdsubjets.size()>1 ? qgTaggingVar_->getAxis1()     : -9);
+      data.fillMulti<float>(ifj_sdsubjet2_axis2_  ,sdsubjets.size()>1 ? qgTaggingVar_->getAxis2()     : -9);
+      data.fillMulti<int>  (ifj_sdsubjet2_jetMult_,sdsubjets.size()>1 ? qgTaggingVar_->getTotalMult() : -9);
     }
 
-    if (sdsubjetsp4.size()==1) {
-      data.fillMulti<float>(ifj_sdsubjet1_pt_  ,sdsubjetsp4[0].Pt());
-      data.fillMulti<float>(ifj_sdsubjet1_eta_ ,sdsubjetsp4[0].Eta());
-      data.fillMulti<float>(ifj_sdsubjet1_phi_ ,sdsubjetsp4[0].Phi());
-      data.fillMulti<float>(ifj_sdsubjet1_mass_,sdsubjetsp4[0].M());
-      data.fillMulti<float>(ifj_sdsubjet1_csv_ ,sdsubjetsCSV[0]);
-      data.fillMulti<float>(ifj_sdsubjet2_pt_  ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_eta_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_phi_ ,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_mass_,-9.);
-      data.fillMulti<float>(ifj_sdsubjet2_csv_ ,-9.);
-    }
 
-    if (sdsubjetsp4.size()>=2) {
-      data.fillMulti<float>(ifj_sdsubjet1_pt_  ,sdsubjetsp4[0].Pt());
-      data.fillMulti<float>(ifj_sdsubjet1_eta_ ,sdsubjetsp4[0].Eta());
-      data.fillMulti<float>(ifj_sdsubjet1_phi_ ,sdsubjetsp4[0].Phi());
-      data.fillMulti<float>(ifj_sdsubjet1_mass_,sdsubjetsp4[0].M());
-      data.fillMulti<float>(ifj_sdsubjet1_csv_ ,sdsubjetsCSV[0]);
-      data.fillMulti<float>(ifj_sdsubjet2_pt_  ,sdsubjetsp4[1].Pt());
-      data.fillMulti<float>(ifj_sdsubjet2_eta_ ,sdsubjetsp4[1].Eta());
-      data.fillMulti<float>(ifj_sdsubjet2_phi_ ,sdsubjetsp4[1].Phi());
-      data.fillMulti<float>(ifj_sdsubjet2_mass_,sdsubjetsp4[1].M());
-      data.fillMulti<float>(ifj_sdsubjet2_csv_ ,sdsubjetsCSV[1]);
-    }
 
-    
     // for puppi
-    auto const & sdpuppisubjet_ = fatjet.subjets("SoftDropPuppi");
-    data.fillMulti<int>  (ifj_puppi_nsoftdropsubjets_ , sdpuppisubjet_.size());
+    auto sdpuppisubjets = fatjet.subjets("SoftDropPuppi");
 
-    std::vector<TLorentzVector> sdpuppisubjetsp4;
-    std::vector<float>          sdpuppisubjetsCSV; 
-    for (auto const & it : sdpuppisubjet_) {
-      TLorentzVector tmpLV; tmpLV.SetPtEtaPhiM(it->pt(),it->eta(),it->phi(),it->mass());
-      sdpuppisubjetsp4.push_back(tmpLV);              
-      sdpuppisubjetsCSV.push_back(it->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+    if(options_ & LOADSUBJETCTAG){
+      pat::JetPtrCollection puppisubjets_;
+      for (const pat::Jet &sj : *puppiCollectionSubjets_) {
+        // puppiCollectionSubjets_ stores the puppi soft-drop AK8 jets, with the actual subjets stored as daughters
+        if (reco::deltaR(sj, fatjet) < 0.8) {
+          for ( size_t ida = 0; ida < sj.numberOfDaughters(); ++ida ) {
+            auto candPtr =  sj.daughterPtr(ida);
+            puppisubjets_.push_back( edm::Ptr<pat::Jet>(candPtr) );
+          }
+          break;
+        }
+      }
+
+      sdpuppisubjets = puppisubjets_;
+
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_cmva_,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->bDiscriminator("pfCombinedMVAV2BJetTags") : -9);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_cvsl_,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->bDiscriminator("pfCombinedCvsLJetTags")   : -9);
+      data.fillMulti<float>(ifj_puppi_sdsubjet1_cvsb_,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->bDiscriminator("pfCombinedCvsBJetTags")   : -9);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_cmva_,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->bDiscriminator("pfCombinedMVAV2BJetTags") : -9);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_cvsl_,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->bDiscriminator("pfCombinedCvsLJetTags")   : -9);
+      data.fillMulti<float>(ifj_puppi_sdsubjet2_cvsb_,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->bDiscriminator("pfCombinedCvsBJetTags")   : -9);
     }
 
-    if (sdpuppisubjetsp4.size()==0) {
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,-9.);
-    }
 
-    if (sdpuppisubjetsp4.size()==1) {
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,sdpuppisubjetsp4[0].Pt());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,sdpuppisubjetsp4[0].Eta());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,sdpuppisubjetsp4[0].Phi());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,sdpuppisubjetsp4[0].M());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,sdpuppisubjetsCSV[0]);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,-9.);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,-9.);
-    }
-
-    if (sdpuppisubjetsp4.size()>=2) {
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,sdpuppisubjetsp4[0].Pt());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,sdpuppisubjetsp4[0].Eta());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,sdpuppisubjetsp4[0].Phi());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,sdpuppisubjetsp4[0].M());
-      data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,sdpuppisubjetsCSV[0]);
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,sdpuppisubjetsp4[1].Pt());
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,sdpuppisubjetsp4[1].Eta());
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,sdpuppisubjetsp4[1].Phi());
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,sdpuppisubjetsp4[1].M());
-      data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,sdpuppisubjetsCSV[1]);
-    }    
+    data.fillMulti<int>  (ifj_puppi_nsoftdropsubjets_ , sdpuppisubjets.size());
+    data.fillMulti<float>(ifj_puppi_sdsubjet1_pt_  ,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->pt()   : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet1_eta_ ,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->eta()  : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet1_phi_ ,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->phi()  : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet1_mass_,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->mass() : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet1_csv_ ,sdpuppisubjets.size()>0 ? sdpuppisubjets[0]->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet2_pt_  ,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->pt()   : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet2_eta_ ,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->eta()  : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet2_phi_ ,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->phi()  : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet2_mass_,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->mass() : -9);
+    data.fillMulti<float>(ifj_puppi_sdsubjet2_csv_ ,sdpuppisubjets.size()>1 ? sdpuppisubjets[1]->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -9);
 
     // calculate the puppi softdrop mass
-    if (sdpuppisubjetsp4.size()==0) { data.fillMulti<float>(ifj_puppi_sdmass_, 0.);                      }
-    if (sdpuppisubjetsp4.size()==1) { data.fillMulti<float>(ifj_puppi_sdmass_, sdpuppisubjetsp4[0].M()); }
-    if (sdpuppisubjetsp4.size()>=2) { 
-      float sdpuppimass_ = (sdpuppisubjetsp4[0]+sdpuppisubjetsp4[1]).M(); 
-      data.fillMulti<float>(ifj_puppi_sdmass_, sdpuppimass_); 
+    if (sdpuppisubjets.size()==0) { data.fillMulti<float>(ifj_puppi_sdmass_, 0.);                      }
+    if (sdpuppisubjets.size()==1) { data.fillMulti<float>(ifj_puppi_sdmass_, sdpuppisubjets[0]->mass()); }
+    if (sdpuppisubjets.size()>=2) {
+      float sdpuppimass_ = (sdpuppisubjets[0]->p4()+sdpuppisubjets[1]->p4()).mass();
+      data.fillMulti<float>(ifj_puppi_sdmass_, sdpuppimass_);
     }
 
     isFilled_ = true;
