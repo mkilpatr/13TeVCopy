@@ -112,8 +112,10 @@ void FatJetFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(fatJetToken_,fatJets_);
-  iEvent.getByToken(sdSubjetToken_,sdCollectionSubjets_);
-  iEvent.getByToken(puppiSubjetToken_,puppiCollectionSubjets_);
+  if(options_ & LOADSUBJETCTAG){
+    iEvent.getByToken(sdSubjetToken_,sdCollectionSubjets_);
+    iEvent.getByToken(puppiSubjetToken_,puppiCollectionSubjets_);
+  }
   isLoaded_ = true;
 }
 

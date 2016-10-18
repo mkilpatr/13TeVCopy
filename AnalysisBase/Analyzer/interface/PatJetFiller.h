@@ -18,6 +18,7 @@ namespace ucsbsusy {
       float getJecUncorrection(const pat::Jet& jet) const { return jet.pt()*jet.jecFactor("Uncorrected");}
       float getPUJetId(const pat::Jet& jet) const {return jet.userFloat("pileupJetId:fullDiscriminant");}
       float getbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");}
+      float getcmvaDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedMVAV2BJetTags");}
       float getcvslDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedCvsLJetTags");}
       float getcvsbDisc(const pat::Jet& jet) const {return jet.bDiscriminator("pfCombinedCvsBJetTags");}
       float getQGDisc(const pat::Jet& jet) const{ return -10;}

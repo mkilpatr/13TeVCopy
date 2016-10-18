@@ -72,6 +72,7 @@ public:
       virtual float getJecUncorrection(const Jet& jet) const = 0;
       virtual float getPUJetId(const Jet& jet) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
+      virtual float getcmvaDisc(const Jet& jet) const = 0;
       virtual float getcvslDisc(const Jet& jet) const = 0;
       virtual float getcvsbDisc(const Jet& jet) const = 0;
       virtual float getQGDisc(const Jet& jet) const = 0;
@@ -122,6 +123,7 @@ public:
       size ijetneuHadMult_  ;
       size ijetphoMult_     ;
       size ijetcsv_      ;
+      size ijetcmva_     ;
       size ijetcvsl_     ;
       size ijetcvsb_     ;
       size ijetarea_     ;

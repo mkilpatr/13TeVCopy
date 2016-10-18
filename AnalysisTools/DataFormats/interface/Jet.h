@@ -180,8 +180,17 @@ public :
     qgl_ = qgl;
   }
 
+  float cmva() const {
+    return cmva_;
+  }
+
+  void setCmva(float cmva = -10) {
+    cmva_ = cmva;
+  }
+
 protected :
     float csv_ = -10;                     //pointer to csv information
+    float cmva_ = -10;                    //cmva
     float cvsl_ = -10;                    //charm vs light discriminator
     float cvsb_ = -10;                    //charm vs b discriminator
     float pt_raw_ = -10;                  //magnitude of uncorrected transverse momentum

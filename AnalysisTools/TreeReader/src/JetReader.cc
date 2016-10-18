@@ -28,6 +28,7 @@ JetReader::JetReader() : BaseReader(){
   jetlooseId_       = new vector<bool >;
   jettightId_       = new vector<bool >;
   jetcsv_           = new vector<float>;
+  jetcmva_          = new vector<float>;
   jetcvsl_          = new vector<float>;
   jetcvsb_          = new vector<float>;
   jetarea_          = new vector<float>;
@@ -97,6 +98,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_  );
     treeReader->setBranchAddress(branchName_, "jet_tightId" , &jettightId_  );
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
+    treeReader->setBranchAddress(branchName_, "jet_cmva"    , &jetcmva_  ,false);// FIXME
     treeReader->setBranchAddress(branchName_, "jet_cvsl"    , &jetcvsl_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_cvsb"    , &jetcvsb_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
@@ -194,6 +196,7 @@ void JetReader::addRecoJetToObjectList(const int iJ){
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
+  if(!jetcmva_->empty()) recoJets.back().setCmva(jetcmva_->at(iJ));// FIXME
   recoJets.back().setCvsl(jetcvsl_->at(iJ));
   recoJets.back().setCvsb(jetcvsb_->at(iJ));
   recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);

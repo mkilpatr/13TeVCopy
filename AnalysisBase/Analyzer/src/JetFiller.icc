@@ -129,6 +129,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
     ijetphoMult_       = data.addMulti<int>   (branchName_,"jet_phoMult"       , 0);
   }
   ijetcsv_         = data.addMulti<float>(branchName_,"jet_csv"         , 0);
+  ijetcmva_        = data.addMulti<float>(branchName_,"jet_cmva"        , 0);
   ijetcvsl_        = data.addMulti<float>(branchName_,"jet_cvsl"        , 0);
   ijetcvsb_        = data.addMulti<float>(branchName_,"jet_cvsb"        , 0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
@@ -353,6 +354,7 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetptraw_   ,0);
       data.fillMulti<float>(ijetpuId_    ,0);
       data.fillMulti<float>(ijetcsv_     ,0);
+      data.fillMulti<float>(ijetcmva_    ,0);
       data.fillMulti<float>(ijetcvsl_    ,0);
       data.fillMulti<float>(ijetcvsb_    ,0);
       data.fillMulti<bool> (ijetlooseId_ ,false);
@@ -402,6 +404,7 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetptraw_,getJecUncorrection(j));
     data.fillMulti<float>(ijetpuId_ ,getPUJetId(j));
     data.fillMulti<float>(ijetcsv_  ,getbDisc(j));
+    data.fillMulti<float>(ijetcmva_ ,getcmvaDisc(j));
     data.fillMulti<float>(ijetcvsl_ ,getcvslDisc(j));
     data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));

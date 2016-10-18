@@ -50,6 +50,7 @@ public:
   std::vector<bool>*  jetlooseId_;
   std::vector<bool>*  jettightId_;
   std::vector<float>* jetcsv_;
+  std::vector<float>* jetcmva_;
   std::vector<float>* jetcvsl_;
   std::vector<float>* jetcvsb_;
   std::vector<float>* jetarea_;
