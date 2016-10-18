@@ -225,7 +225,7 @@ void FatJetFiller::fill()
       pat::JetPtrCollection puppisubjets_;
       for (const pat::Jet &sj : *puppiCollectionSubjets_) {
         // puppiCollectionSubjets_ stores the puppi soft-drop AK8 jets, with the actual subjets stored as daughters
-        if (sj.pt()>170 && reco::deltaR(sj, fatjet) < 0.8) {
+        if (reco::deltaR(sj, fatjet) < 0.8) {
           for ( size_t ida = 0; ida < sj.numberOfDaughters(); ++ida ) {
             auto candPtr =  sj.daughterPtr(ida);
             puppisubjets_.push_back( edm::Ptr<pat::Jet>(candPtr) );
