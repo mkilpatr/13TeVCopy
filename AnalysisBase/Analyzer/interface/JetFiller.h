@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetFiller
-// 
+//
 // Class to fill some basic jet information for testing. To be developed as needed.
-// 
-// JetFiller.h created on Thu Aug 14 11:10:55 CEST 2014 
-// 
+//
+// JetFiller.h created on Thu Aug 14 11:10:55 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_JETFILLER_H
@@ -28,7 +28,6 @@ namespace ucsbsusy {
 class EventInfoFiller;
 class GenParticleFiller;
 class PFCandidateFiller;
-class QuarkGluonTagInterface;
 class QuarkGluonTaggingVariables;
 
 namespace JetFunctions {
@@ -73,6 +72,7 @@ public:
       virtual float getJecUncorrection(const Jet& jet) const = 0;
       virtual float getPUJetId(const Jet& jet) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
+      virtual float getcmvaDisc(const Jet& jet) const = 0;
       virtual float getcvslDisc(const Jet& jet) const = 0;
       virtual float getcvsbDisc(const Jet& jet) const = 0;
       virtual float getQGDisc(const Jet& jet) const = 0;
@@ -123,6 +123,7 @@ public:
       size ijetneuHadMult_  ;
       size ijetphoMult_     ;
       size ijetcsv_      ;
+      size ijetcmva_     ;
       size ijetcvsl_     ;
       size ijetcvsb_     ;
       size ijetarea_     ;
@@ -164,7 +165,6 @@ public:
       size iGenAssocCont_;
 
     protected:
-      QuarkGluonTagInterface    * qglInterface_;
       QuarkGluonTaggingVariables* qgTaggingVar_;
 
       mutable std::vector<reco::CandidatePtr>  reGenRecoRef_ ;

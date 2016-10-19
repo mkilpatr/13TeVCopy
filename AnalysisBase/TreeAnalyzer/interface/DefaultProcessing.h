@@ -16,7 +16,7 @@ namespace cfgSet{
   bool isSelTau(const ucsbsusy::TauF& tau, const std::vector<ucsbsusy::LeptonF*>& selectedLeptons, const TauConfig& conf);
   bool isSelPhoton(const ucsbsusy::PhotonF& pho, const PhotonConfig& conf       );
   bool isSelTaggedTop(const ucsbsusy::CMSTopF& top); //Config Pending
-  bool isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max);
+  bool isSoftDropTagged(const ucsbsusy::FatJetF* fj, float minPT, float minMass, float maxMass, float tau32max, float tau21max, float min_highest_csv=-1);
 
   void selectLeptons(std::vector<ucsbsusy::LeptonF*>& selectedLeptons  ,std::vector<ucsbsusy::LeptonF*> allLeptons, const LeptonSelection::Electron& electronConf,const LeptonSelection::Muon& muonConf, std::vector<ucsbsusy::LeptonF*>* nonSelectedLeptons = 0);
   void selectTracks(std::vector<ucsbsusy::PFCandidateF*>& selectedTracks, ucsbsusy::PFCandidateFCollection& allTracks, const ucsbsusy::MomentumF* met, const TrackConfig& conf);

@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // MuonFiller
-// 
+//
 // Class to fill muon information in a TTree.
-// 
-// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_HTTFILLER_H
@@ -17,6 +17,8 @@
 #include "TLorentzVector.h"
 
 namespace ucsbsusy {
+
+class QuarkGluonTaggingVariables;
 
   class HTTFiller : public BaseFiller {
 
@@ -37,16 +39,19 @@ namespace ucsbsusy {
     }
 
     vector<int> getSDInd();
+    vector<int> getSubjetsInd(const reco::BasicJet &fatjet);
+
 
   private :
-    edm::EDGetTokenT<reco::BasicJetCollection>              fatJetToken;
+    edm::EDGetTokenT<reco::BasicJetCollection>           fatJetToken;
     edm::EDGetTokenT<reco::HTTTopJetTagInfoCollection>   fatJetInfosToken;
     edm::EDGetTokenT<reco::JetTagCollection>             bTagsToken;
+    edm::EDGetTokenT<reco::PFJetCollection>              httSubjetToken;
 
     edm::EDGetTokenT<reco::PFJetCollection>              sdJetToken;
-    edm::EDGetTokenT<edm::ValueMap<float>>                 tau1Token ;
-    edm::EDGetTokenT<edm::ValueMap<float>>                 tau2Token ;
-    edm::EDGetTokenT<edm::ValueMap<float>>                 tau3Token ;
+    edm::EDGetTokenT<edm::ValueMap<float>>               tau1Token ;
+    edm::EDGetTokenT<edm::ValueMap<float>>               tau2Token ;
+    edm::EDGetTokenT<edm::ValueMap<float>>               tau3Token ;
 
     // Members to hold indices of tree data
     size i_pt       ;
@@ -75,27 +80,42 @@ namespace ucsbsusy {
     size i_w1_phi   ;
     size i_w1_mass  ;
     size i_w1_csv   ;
+    size i_w1_ptD   ;
+    size i_w1_axis1 ;
+    size i_w1_axis2 ;
+    size i_w1_mult  ;
     size i_w2_pt    ;
     size i_w2_eta   ;
     size i_w2_phi   ;
     size i_w2_mass  ;
     size i_w2_csv   ;
+    size i_w2_ptD   ;
+    size i_w2_axis1 ;
+    size i_w2_axis2 ;
+    size i_w2_mult  ;
     size i_b_pt     ;
     size i_b_eta    ;
     size i_b_phi    ;
     size i_b_mass   ;
     size i_b_csv    ;
+    size i_b_ptD    ;
+    size i_b_axis1  ;
+    size i_b_axis2  ;
+    size i_b_mult   ;
+
+    QuarkGluonTaggingVariables* qgTaggingVar_;
 
   public :
     // Data members
-    edm::Handle<reco::BasicJetCollection>              fatJets;
-    edm::Handle<reco::HTTTopJetTagInfoCollection>   fatJetInfos;
-    edm::Handle<reco::JetTagCollection>             btags;
-    edm::Handle<reco::PFJetCollection>              sdFatJets;
+    edm::Handle<reco::BasicJetCollection>             fatJets;
+    edm::Handle<reco::HTTTopJetTagInfoCollection>     fatJetInfos;
+    edm::Handle<reco::JetTagCollection>               btags;
+    edm::Handle<reco::PFJetCollection>                sdFatJets;
+    edm::Handle<reco::PFJetCollection>                httSubjets;
     edm::Handle<edm::ValueMap<float>>                 tau1s;
     edm::Handle<edm::ValueMap<float>>                 tau2s;
     edm::Handle<edm::ValueMap<float>>                 tau3s;
-   
+
   };
 
 }

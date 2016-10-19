@@ -22,6 +22,7 @@ namespace ucsbsusy {
       float getJecUncorrection(const reco::PFJet& jet) const { return 1;}
       float getPUJetId(const reco::PFJet& jet) const {return -10;}
       float getbDisc(const reco::PFJet& jet) const;
+      float getcmvaDisc(const reco::PFJet& jet) const;
       float getcvslDisc(const reco::PFJet& jet) const;
       float getcvsbDisc(const reco::PFJet& jet) const;
       float getQGDisc(const reco::PFJet& jet) const{ return -10;}

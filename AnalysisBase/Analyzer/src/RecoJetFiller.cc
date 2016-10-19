@@ -25,6 +25,17 @@ float RecoJetFiller::getbDisc(const reco::PFJet& jet) const
 }
 
 //--------------------------------------------------------------------------------------------------
+float RecoJetFiller::getcmvaDisc(const reco::PFJet& jet) const
+{
+
+  if(!btags_.isValid())
+    return -10;
+
+  return reco::JetFloatAssociation::getValue(*btags_, jet);
+
+}
+
+//--------------------------------------------------------------------------------------------------
 float RecoJetFiller::getcvslDisc(const reco::PFJet& jet) const
 {
 

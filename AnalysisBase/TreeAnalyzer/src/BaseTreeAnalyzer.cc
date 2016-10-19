@@ -45,6 +45,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     weight            (1),
     process           (defaults::NUMPROCESSES),
     datareco          (defaults::MC),
+    triggerflag       (0),
     nPV               (0),
     nPU               (0),
     rho               (0),
@@ -167,6 +168,9 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
   }
 
+  // load object MVAs
+  if (cfgSet::useResolvedTopMVA) resTopMVA = new ResolvedTopMVA(cfgSet::resolvedTopMVAFile, "BDT");
+
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName)
@@ -265,6 +269,11 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
+    case cfgSet::HTT : {
+      int defaultOptions = HTTReader::defaultOptions;
+      reader.load(&httReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_HTTJETS : branchName );
+      break;
+    }
 
   default : {
     cout << endl << "No settings for type: " << type << " found!" << endl;
@@ -293,6 +302,7 @@ void BaseTreeAnalyzer::loadVariables()
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
+//  load(cfgSet::HTT);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -389,6 +399,11 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : svReader.SVs) SVs.push_back(&p);
   }
 
+  if(httReader.isLoaded()){
+    httTops.clear();
+    for(auto& fj : httReader.fatJets) httTops.push_back(&fj);
+  }
+
   allLeptons.clear();
   selectedLeptons.clear();
   primaryLeptons.clear();
@@ -449,6 +464,12 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+  //fill MVA resolved tops
+  if (cfgSet::useResolvedTopMVA){
+    resolvedTops = resTopMVA->getTopCandidates(jets, ResolvedTopMVA::WP_TIGHT);
+    std::sort(resolvedTops.begin(), resolvedTops.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+  }
 
   //load corrections corrections
   for(auto * iC : corrections){

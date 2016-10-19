@@ -25,11 +25,12 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
-#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
+# options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
-options.inputFiles = '/store/data/Run2016B/SinglePhoton/MINIAOD/PromptReco-v2/000/273/158/00000/3C2DAC51-3C1A-E611-A74D-02163E013926.root'
+#options.inputFiles = '/store/data/Run2016B/SinglePhoton/MINIAOD/PromptReco-v2/000/273/158/00000/3C2DAC51-3C1A-E611-A74D-02163E013926.root'
+options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTToSemiLeptonic_TuneCUETP8M1T4_alphaS01108_13TeV-powheg-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/00000/0ADCDA89-4F6E-E611-A828-08606E15E9C2.root'
 
 options.maxEvents = -1
 
@@ -365,25 +366,28 @@ if ISMINIAODV1 :
 # Get puppi corrected ak8 jets using jettoolbox
 from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 
-if ISDATA :
-    jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=False, addCMSTopTagger=True)
-else :
-    jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addCMSTopTagger=True)
+JETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
+if ISDATA: JETCorrLevels.append('L2L3Residual')
 
+# add CTT
+jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addCMSTopTagger=True)
 
+# add HTTv2
 from ObjectProducers.JetProducers.htt_cfg import *
 process.httseq = cms.Sequence()
 HTTJets(process,process.httseq,"CA15HTT",1.5)
 
+# add subjet b/c-tagging
+runSubjetCTagging = True
+if runSubjetCTagging:
+    process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
+    bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
 
-# process.puppi.useExistingWeights = True
-# process.puppi.candName = cms.InputTag( 'packedPFCandidates' )
-# process.puppi.vertexName = cms.InputTag( 'offlineSlimmedPrimaryVertices' )
+    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'CHS',   JETCorrPayload = 'AK8PFchs',   JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
+    process.TestAnalyzer.AK8FatJets.sdSubjets = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropPacked')
 
-# if ISDATA and applyResiduals:
-#    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual'], miniAOD=True, runOnMC=False, addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
-# else :
-#    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute'], miniAOD=True, runOnMC=(ISDATA != True), addPruning=True, addSoftDrop=True, addNsub=True, newPFCollection=True, nameNewPFCollection='puppi')
+    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
+    process.TestAnalyzer.AK8FatJets.puppiSubjets = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropPacked')
 
 #==============================================================================================================================#
 # Also update jets with different JECs if needed
