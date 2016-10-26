@@ -23,9 +23,9 @@ namespace defaults {
 
   const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
 
-  enum DataReco {MC, PROMPT_50NS, JUL17_2015_50NS, PROMPT_25NS_2015C, PROMPT_25NS_2015D, OCT05_2015_2015D, OCT05_2015_2015C, PROMPT_25NS_2016B, PROMPT_25NS_2016C, PROMPT_25NS_2016D, PROMPT_25NS_2016E, PROMPT_25NS_2016F, PROMPT_25NS_2016G, PROMPT_25NS_2016H};
+  enum DataReco {MC, PROMPT_50NS, JUL17_2015_50NS, PROMPT_25NS_2015C, PROMPT_25NS_2015D, OCT05_2015_2015D, OCT05_2015_2015C, PROMPT_25NS_2016B, PROMPT_25NS_2016C, PROMPT_25NS_2016D, PROMPT_25NS_2016E, PROMPT_25NS_2016F, PROMPT_25NS_2016G, PROMPT_25NS_2016H, SEP23_2016_2016B, SEP23_2016_2016C, SEP23_2016_2016D, SEP23_2016_2016E, SEP23_2016_2016F, SEP23_2016_2016G};
 
-  const std::string DATA_RECO_NAMES[] = {"","2015b-pr","2015b-17jul15","2015c-pr","2015d-pr","2015d-05oct15","2015c-05oct15","2016b-pr","2016c-pr","2016d-pr","2016e-pr","2016f-pr","2016g-pr","2016h-pr","invalid"};
+  const std::string DATA_RECO_NAMES[] = {"","2015b-pr","2015b-17jul15","2015c-pr","2015d-pr","2015d-05oct15","2015c-05oct15","2016b-pr","2016c-pr","2016d-pr","2016e-pr","2016f-pr","2016g-pr","2016h-pr","2016b-23sep16","2016c-23sep16","2016d-23sep16","2016e-23sep16","2016f-23sep16","2016g-23sep16","invalid"};
 
   const std::string BRANCH_PUPPIJETS  = "ak4puppi";
   const std::string BRANCH_CA8JETS    = "ca8";
