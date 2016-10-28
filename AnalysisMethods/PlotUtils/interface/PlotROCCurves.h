@@ -20,9 +20,10 @@ class PlotROCCurves {
         TString      siglabel;
         TString      bkglabel;
         unsigned int color;
+	unsigned int style;
         bool         reversecut;
 
-        ROCPlot(TH1F* insighist, TH1F* inbkghist, TString invarname, TString inlabel, TString insiglabel, TString inbkglabel, unsigned int incolor, bool inreversecut) :
+        ROCPlot(TH1F* insighist, TH1F* inbkghist, TString invarname, TString inlabel, TString insiglabel, TString inbkglabel, unsigned int incolor, unsigned int instyel, bool inreversecut) :
           sighist    (insighist),
           bkghist    (inbkghist),
           varname    (invarname),
@@ -30,6 +31,7 @@ class PlotROCCurves {
           siglabel   (insiglabel),
           bkglabel   (inbkglabel),
           color      (incolor),
+          style      (instyel),
           reversecut (inreversecut)
         {}
 
@@ -44,11 +46,11 @@ class PlotROCCurves {
     void    addSignalTree(const TString fname, const TString tname, const TString label);
     void    addBackgroundTree(const TString fname, const TString tname, const TString label);
 
-    void    addROCVariable(const TString varname, const TString label, const TString sigsel, const TString bkgsel, const unsigned int color, const int nbins, const float xmin, const float xmax, const bool cutlessthan = false);
+    void    addROCVariable(const TString varname, const TString label, const TString sigsel, const TString bkgsel, const unsigned int color, const unsigned int style, const int nbins, const float xmin, const float xmax, const bool cutlessthan = false);
 
-    void    addROCVariable(const TString varname, const TString label, TH1F* sighist, const TString siglabel, TH1F* bkghist, const TString bkglabel, const unsigned int color, const bool cutlessthan = false);
+    void    addROCVariable(const TString varname, const TString label, TH1F* sighist, const TString siglabel, TH1F* bkghist, const TString bkglabel, const unsigned int color, const unsigned int styel, const bool cutlessthan = false);
 
-    void    addROCVariable(const TString varname, const TString label, const TString filename, const TString sighistname, const TString siglabel, const TString bkghistname, const TString bkglabel, const unsigned int color, const bool cutlessthan = false);
+    void    addROCVariable(const TString varname, const TString label, const TString filename, const TString sighistname, const TString siglabel, const TString bkghistname, const TString bkglabel, const unsigned int color, const unsigned int style, const bool cutlessthan = false);
 
     void    addCompPlot(const TString compplotname, vector<TString> compvarnames, const double xmin = 0.0, const double xmax = 1.0, const double ymin = 0.0, const double ymax = 0.0, const bool plotbkgrej = false, const bool plotsigvsbkg = true);
 

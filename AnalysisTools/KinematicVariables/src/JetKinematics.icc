@@ -53,7 +53,7 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
 
 //_____________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::absDPhiMHTJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
   return fabs(PhysicsUtilities::deltaPhi(jet, met));
@@ -61,71 +61,71 @@ double JetKinematics::absDPhiMHTJ(const MET& met, const Jet& jet, const double m
 
 //____________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::absDPhiStarMHTJ(const MET& met, const Jet& jet, const double minPT, const double maxEta){
+double JetKinematics::absDPhiStarMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta){
 	if (!passCuts(jet,minPT,maxEta)) return noDist;
 	double_t met_double = static_cast<double_t> (met.pt());
   	double fScaling = fabs(jet.pt())/fabs(met_double);
-	double cosDphiStar = (fScaling + TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)))/TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)));
+	double cosDphiStar = (fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
 	return TMath::ACos(cosDphiStar);
 }
 
 //_____________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::absDPhiStarMHTJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+double JetKinematics::absDPhiStarMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
   double_t met_double = static_cast<double_t> (met.pt());
   double fScaling = fabs(jet.pt())/fabs(met_double);
   double gScaling = 0;
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)) >= 0)
-    gScaling = TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta));
+  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    gScaling = TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta));
   else
     gScaling = -fScaling;
   double TanDPhiStar = 0; 
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)) >= 0)
-    TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta))/(fScaling + gScaling);
+  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta))/(fScaling + gScaling);
   else
-    TanDPhiStar = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)))/(fScaling + gScaling);
+    TanDPhiStar = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/(fScaling + gScaling);
   return TMath::ATan(TanDPhiStar);
   //return fabs(PhysicsUtilities::deltaPhi(jet, met + jet));
 }
 
 //___________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::OmegaMHTJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+double JetKinematics::OmegaMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
   double_t met_double = static_cast<double> (met.pt());
   double fScaling = fabs(jet.pt())/fabs(met_double);
-  double tanOmega = TMath::Sin(JetKinematics::absDPhiMHTJ(met, jet, minPT, maxEta))/fScaling;
+  double tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/fScaling;
   return TMath::ATan(tanOmega);
 }
 
 //____________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::OmegaMHTJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+double JetKinematics::OmegaMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
   double_t met_double = static_cast<double> (met.pt());
   double fScaling = fabs(jet.pt())/fabs(met_double);
   double tanOmega = 0;
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)) >= 0)
-    tanOmega = TMath::Sin(JetKinematics::absDPhiMHTJ(met, jet, minPT, maxEta))/fScaling;
+  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/fScaling;
   else
-    tanOmega = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta)))/fScaling;
+    tanOmega = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/fScaling;
   return TMath::ATan(tanOmega);
 } 
 
 //____________________________________________________________________________
 template<typename MET,typename Jet>
-double JetKinematics::ChiMHTJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+double JetKinematics::ChiMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
   double Chi = 0;
-  if(JetKinematics::absDPhiMHTJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
-    Chi = JetKinematics::OmegaMHTJ(met,jet,minPT,maxEta);
-  else if(JetKinematics::absDPhiStarMHTJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
-    Chi = JetKinematics::absDPhiStarMHTJ(met,jet,minPT,maxEta);
+  if(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
+    Chi = JetKinematics::OmegaMETJ(met,jet,minPT,maxEta);
+  else if(JetKinematics::absDPhiStarMETJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
+    Chi = JetKinematics::absDPhiStarMETJ(met,jet,minPT,maxEta);
   else
     Chi = TMath::PiOver2();
   return Chi;
