@@ -234,18 +234,18 @@ struct BasicVarsFiller {
     i_omegametj2      = data->add<float>("","omegametj2","F",0);
     i_omegametj2_tilde      = data->add<float>("","omegametj2_tilde","F",0);
     i_chimetj2        = data->add<float>("","chimetj2","F",0);
-    i_dphimetj3       = data->add<float>("","dphimetj3","F",0);
-    i_dphistarmetj3   = data->add<float>("","dphistarmetj3","F",0);
-    i_dphistarmetj3_tilde   = data->add<float>("","dphistarmetj3_tilde","F",0);
-    i_omegametj3      = data->add<float>("","omegametj3","F",0);
-    i_omegametj3_tilde      = data->add<float>("","omegametj3_tilde","F",0);
-    i_chimetj3        = data->add<float>("","chimetj3","F",0);
-    i_dphimetj4       = data->add<float>("","dphimetj4","F",0);
-    i_dphistarmetj4   = data->add<float>("","dphistarmetj4","F",0);
-    i_dphistarmetj4_tilde   = data->add<float>("","dphistarmetj4_tilde","F",0);
-    i_omegametj4      = data->add<float>("","omegametj4","F",0);
-    i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",0);
-    i_chimetj4        = data->add<float>("","chimetj4","F",0);
+    i_dphimetj3       = data->add<float>("","dphimetj3","F",3);
+    i_dphistarmetj3   = data->add<float>("","dphistarmetj3","F",3);
+    i_dphistarmetj3_tilde   = data->add<float>("","dphistarmetj3_tilde","F",3);
+    i_omegametj3      = data->add<float>("","omegametj3","F",3);
+    i_omegametj3_tilde      = data->add<float>("","omegametj3_tilde","F",3);
+    i_chimetj3        = data->add<float>("","chimetj3","F",3);
+    i_dphimetj4       = data->add<float>("","dphimetj4","F",3);
+    i_dphistarmetj4   = data->add<float>("","dphistarmetj4","F",3);
+    i_dphistarmetj4_tilde   = data->add<float>("","dphistarmetj4_tilde","F",3);
+    i_omegametj4      = data->add<float>("","omegametj4","F",3);
+    i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",3);
+    i_chimetj4        = data->add<float>("","chimetj4","F",3);
 
 =======
 >>>>>>> 32168af5a1c1f8c72c26b958332689b5353c7cbc
