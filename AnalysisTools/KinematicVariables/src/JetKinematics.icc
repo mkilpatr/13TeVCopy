@@ -53,6 +53,7 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
 
 //_____________________________________________________________________________
 template<typename MET,typename Jet>
+<<<<<<< HEAD
 double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
@@ -133,6 +134,8 @@ double JetKinematics::ChiMETJ(const MET& met, const Jet& jet, const double minPT
 
 //_____________________________________________________________________________
 template<typename MET,typename Jet>
+=======
+>>>>>>> 32168af5a1c1f8c72c26b958332689b5353c7cbc
 double JetKinematics::absDPhiMETJ12(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)
 {
   const size                    numJets = jets.size();

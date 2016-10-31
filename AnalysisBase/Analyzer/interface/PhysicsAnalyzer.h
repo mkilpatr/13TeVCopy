@@ -1,13 +1,13 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // PhysicsAnalyzer
-// 
+//
 // Implementation of BaseAnalyzer with a few additions:
 // It provides an interface to event objects, providing functions to load the event content
 // It stores the event content classes for easy processing
 // It includes a few more advanced header files that are useful in analyzers
 // It stores what kind of event it is in addition to the event weight
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef PHYSICSANALYZER_H
@@ -35,6 +35,7 @@
 #include "AnalysisBase/Analyzer/interface/TriggerFiller.h"
 #include "AnalysisBase/Analyzer/interface/METFiltersFiller.h"
 #include "AnalysisBase/Analyzer/interface/SecondaryVertexFiller.h"
+#include "AnalysisBase/Analyzer/interface/HTTFiller.h"
 
 namespace ucsbsusy {
 
@@ -61,7 +62,7 @@ namespace ucsbsusy {
       // Functions for running the default variable types
       //--------------------------------------------------------------------------------------------------
     public:
-      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, TRIGGERS, METFILTERS, SV};
+      enum VarType {EVTINFO, AK4JETS, PUPPIJETS, PICKYJETS, CASUBJETS, CA8JETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, TRIGGERS, METFILTERS, SV, HTTJETS};
       virtual void initialize(const edm::ParameterSet& cfg, const std::string pSetName, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(const edm::ParameterSet& cfg, const VarType type, const int options = -1, const std::string branchName = "" );
       virtual void initialize(BaseFiller * filler);
@@ -103,6 +104,7 @@ namespace ucsbsusy {
       GenParticleFiller * genparticles;
       CMSTopFiller      * cmstops;
       FatJetFiller      * ak8fatjets;
+      HTTFiller         * HTTjets;
       FatJetFiller      * ak8puppifatjets;
       TriggerFiller     * triggers;
       METFiltersFiller  * metfilters;

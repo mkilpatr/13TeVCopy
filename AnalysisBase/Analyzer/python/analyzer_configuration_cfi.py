@@ -76,9 +76,9 @@ nominal_configuration = cms.PSet(
                                       minJetPt          = cms.untracked.double(10.0),
                                       completeMinJetPt  = cms.untracked.double(20.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
-                                      fillJetShapeInfo  = cms.untracked.bool(False),
+                                      fillJetShapeInfo  = cms.untracked.bool(True),
                                       fillTopJetAssoc   = cms.untracked.bool(True),
-                                      fillqgl           = cms.untracked.bool(False),
+                                      fillqgl           = cms.untracked.bool(True),
                                       superJets         = cms.untracked.InputTag(''),
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
@@ -259,7 +259,11 @@ nominal_configuration = cms.PSet(
                                   AK8FatJets = cms.untracked.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       fatJets  = cms.InputTag('slimmedJetsAK8'),
-                                      puRemoval = cms.untracked.string("CHS")
+                                      puRemoval = cms.untracked.string("CHS"),
+                                      fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillSubjetCTag  = cms.untracked.bool(False),
+                                      sdSubjets  = cms.InputTag(''),
+                                      puppiSubjets = cms.InputTag(''),
                                       ),
 
                                   AK8PuppiFatJets = cms.untracked.PSet(
@@ -285,7 +289,12 @@ nominal_configuration = cms.PSet(
                                       puRemoval    = cms.untracked.string("CHS"),
                                       details      = cms.untracked.string("ca8")
                                       ),
-
+                                 
+                                  CA15HTT = cms.untracked.PSet(
+                                      isFilled = cms.untracked.bool(True),
+                                      jetPrefix  = cms.InputTag('CA15HTT'),
+                                      ),
+                                 
                                   Triggers = cms.untracked.PSet(
                                       isFilled  = cms.untracked.bool(True),
                                       isFastSim = cms.untracked.bool(False),

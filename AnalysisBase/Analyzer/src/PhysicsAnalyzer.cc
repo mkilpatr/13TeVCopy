@@ -35,6 +35,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , genparticles        (0)
 , cmstops             (0)
 , ak8fatjets          (0)
+, HTTjets             (0)
 , ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
@@ -321,11 +322,24 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
     }
 
   case AK8FATJETS : {
+    int defaultOptions = FatJetFiller::defaultOptions;
+    if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= FatJetFiller::LOADJETSHAPE;
+    if(cfg.getUntrackedParameter<bool>("fillSubjetCTag"))             defaultOptions |= FatJetFiller::LOADSUBJETCTAG;
+
     ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
-				  0,
+          options < 0 ? defaultOptions : options,
 				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
 				  );
     initializedFillers.push_back(ak8fatjets);
+    break;
+  }
+
+  case HTTJETS : {
+    HTTjets = new HTTFiller(cfg, consumesCollector(),
+          0,
+          branchName == "" ? defaults::BRANCH_HTTJETS : branchName
+          );
+    initializedFillers.push_back(HTTjets);
     break;
   }
 

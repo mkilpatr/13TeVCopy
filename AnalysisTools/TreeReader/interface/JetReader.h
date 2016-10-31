@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // JetReader
-// 
+//
 // Class for reading electron object information from TTree.
-// 
+//
 // JetReader.h created on Wed Oct 22 01:39:44 CEST 2014
-// 
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_TREEREADER_JETREADER_H
@@ -50,6 +50,9 @@ public:
   std::vector<bool>*  jetlooseId_;
   std::vector<bool>*  jettightId_;
   std::vector<float>* jetcsv_;
+  std::vector<float>* jetcmva_;
+  std::vector<float>* jetcvsl_;
+  std::vector<float>* jetcvsb_;
   std::vector<float>* jetarea_;
   std::vector<int16>* jetgenindex_;
   std::vector<float> *jetuncertainty_;

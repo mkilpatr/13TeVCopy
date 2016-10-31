@@ -45,7 +45,6 @@ namespace ucsbsusy {
       std::vector<bool>  *    ismedium;
       std::vector<bool>  *    istight;
       std::vector<bool>  *    hasPixelSeed;
-      std::vector<bool>  *    passElectronVeto_old; // FIXME
       std::vector<bool>  *    passElectronVeto;
 
       PhotonFCollection photons;

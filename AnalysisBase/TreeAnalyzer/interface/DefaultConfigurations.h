@@ -23,7 +23,7 @@ namespace cfgSet {
 
   extern TauConfig zl_veto_taus;
   extern TauConfig sl_veto_taus;
-  
+
   void loadDefaultTauConfigurations();
 
   extern PhotonConfig zl_sel_photons;
@@ -44,6 +44,9 @@ namespace cfgSet {
   void loadDefaultConfigurations();
 
   void setJSONFile(const TString jsonfile);
+
+  extern bool useResolvedTopMVA;
+  extern TString resolvedTopMVAFile;
 
 }
 
