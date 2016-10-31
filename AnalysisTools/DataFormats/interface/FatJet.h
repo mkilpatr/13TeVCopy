@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // Jet
-// 
+//
 // Class to hold basic jet information. To be enhanced as needed.
-// 
-// Jet.h created on Tue Aug 19 16:26:39 CEST 2014 
-// 
+//
+// Jet.h created on Tue Aug 19 16:26:39 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_DATAFORMATS_FATJET_H
@@ -22,18 +22,70 @@ template <class CoordSystem>
 class SubJet : public Jet<CoordSystem>
   {
   public:
-  SubJet() : csv_(-10) {}
+  SubJet(){}
 
   template <class InputCoordSystem>
-  SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum,
-          const int inIndex = -1, const float inCSV = -10)
+  SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum, const int inIndex = -1, const float inCSV = -10)
       : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
   ~SubJet() {}
 
-  float csv()         const { return csv_;    }
-  void  setCsv(const float inCsv)               {csv_         = inCsv;    }
+  float csv()  const { return csv_;  }
+  void  setCsv(float inCsv) { csv_  = inCsv; }
 
-  float csv_;
+  float cmva() const { return cmva_; }
+  void  setCmva(float cmva) { cmva_ = cmva; }
+
+  float cvsb() const { return cvsb_; }
+  void  setCvsb(float cvsb) { cvsb_ = cvsb; }
+
+  float cvsl() const { return cvsl_; }
+  void  setCvsl(float cvsl) { cvsl_ = cvsl; }
+
+  float axis1() const {
+    return axis1_;
+  }
+  void setAxis1(float axis1) {
+    axis1_ = axis1;
+  }
+
+  float axis2() const {
+    return axis2_;
+  }
+  void setAxis2(float axis2) {
+    axis2_ = axis2;
+  }
+
+  int multiplicity() const {
+    return multiplicity_;
+  }
+  void setMultiplicity(int multiplicity) {
+    multiplicity_ = multiplicity;
+  }
+
+  float ptD() const {
+    return ptD_;
+  }
+  void setPtD(float ptD) {
+    ptD_ = ptD;
+  }
+
+  void addQuarkGluonVars(float ptD, float axis1, float axis2, int multiplicity){
+    ptD_ = ptD; axis1_ = axis1; axis2_ = axis2; multiplicity_ = multiplicity;
+  }
+
+  void addCTagging(float cmva, float cvsl, float cvsb){
+    cmva_ = cmva; cvsl_ = cvsl; cvsb_ = cvsb;
+  }
+
+  protected:
+  float csv_  = -10;
+  float cmva_ = -10;
+  float cvsl_ = -10;
+  float cvsb_ = -10;
+  float ptD_ = -10;
+  float axis1_ = -10;
+  float axis2_ = -10;
+  int multiplicity_ = -1;
   };
 
 
@@ -48,13 +100,11 @@ class FatJet : public Jet<CoordSystem>
     tau1_        (-9.),
     tau2_        (-9.),
     tau3_        (-9.),
-    subjets      (0),
     puppi_softDropMass_(-9.),
     puppi_tau1_        (-9.),
     puppi_tau2_        (-9.),
-    puppi_tau3_        (-9.),
-    puppi_subjets      (0)
-{}
+    puppi_tau3_        (-9.)
+  {}
 
   template <class InputCoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
@@ -67,12 +117,10 @@ class FatJet : public Jet<CoordSystem>
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
-        subjets      (0),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
-        puppi_tau3_        (-9.),
-        puppi_subjets      (0)
+        puppi_tau3_        (-9.)
         {}
 
 
@@ -115,11 +163,8 @@ class FatJet : public Jet<CoordSystem>
 
 
   //setters
-
-
-
   template <class InputCoordSystem>
-  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const float inCSV = -9.){
+  void addSubjet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, float inCSV = -9.){
     subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
@@ -140,10 +185,14 @@ class FatJet : public Jet<CoordSystem>
     puppi_subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
-    
+
 
     ~FatJet(){}
-    
+
+  public:
+    std::vector<SubJet<CoordSystem> > subjets;
+    std::vector<SubJet<CoordSystem> > puppi_subjets;
+
   protected :
     float csv_         ;
     float prunedMass_  ;
@@ -152,19 +201,17 @@ class FatJet : public Jet<CoordSystem>
     float tau2_        ;
     float tau3_        ;
 
-    std::vector<SubJet<CoordSystem> > subjets;
-
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;
     float puppi_tau1_        ;
     float puppi_tau2_        ;
     float puppi_tau3_        ;
-    std::vector<SubJet<CoordSystem> > puppi_subjets;
 
 
-    
+
   };
-  
+
+  typedef SubJet<CylLorentzCoordF> SubJetF;
   typedef FatJet<CylLorentzCoordF> FatJetF;
   typedef std::vector<FatJetF>     FatJetFCollection;
 }

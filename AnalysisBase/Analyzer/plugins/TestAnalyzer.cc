@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // TestAnalyzer
-// 
+//
 // Test class to try out event analysis modules. The information you want to analyze and store in the output TTree is configurable and implemented by means of the different Filler analyzer classes. Filtering functionality to be added. To be tested with MiniAOD for now. Sophisticated data management methods to be added later :-)
-// 
-// TestAnalyzer.cc created on Fri Aug 15 14:57:13 CEST 2014 
-// 
+//
+// TestAnalyzer.cc created on Fri Aug 15 14:57:13 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/PhysicsAnalyzer.h"
@@ -37,6 +37,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "Triggers", TRIGGERS);
       initialize(cfg, "METFilters", METFILTERS);
       initialize(cfg, "SecondaryVertices", SV);
+      initialize(cfg, "CA15HTT",HTTJETS);
       book();
     }
 
