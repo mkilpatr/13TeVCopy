@@ -27,7 +27,7 @@ class SV : public Momentum<CoordSystem>
   {
   public :
   SV() :
-    index_(-1), svNTracks_(-9.), svChi2_(-9.), svNdf_(-9.), svdxy_(-9.), svdxyerr_(-9.), svd3D_(-9.), svd3Derr_(-9.), svCosSVPV_(-9.) {}
+    index_(-1), svNTracks_(-9.), svChi2_(-9.), svNdf_(-9.), svdxy_(-9.), svdxyerr_(-9.), svd3D_(-9.), svd3Derr_(-9.), svCosSVPV_(-9.), svMVA_(-9.) {}
 
 
     template <class InputCoordSystem>
@@ -41,10 +41,11 @@ class SV : public Momentum<CoordSystem>
 	 const float indxyerr  = -9.,
 	 const float ind3D     = -9.,
 	 const float ind3Derr  = -9.,
-	 const float inCosSVPV = -9.
+	 const float inCosSVPV = -9.,
+	 const float inMVA     = -9.
 	     )
       : Momentum<CoordSystem>(inMomentum), index_(inIndex), svNTracks_(inNTracks), svChi2_(inChi2), svNdf_(inNdf),
-      svdxy_(indxy), svdxyerr_(indxyerr), svd3D_(ind3D), svd3Derr_(ind3Derr), svCosSVPV_(inCosSVPV) {}
+      svdxy_(indxy), svdxyerr_(indxyerr), svd3D_(ind3D), svd3Derr_(ind3Derr), svCosSVPV_(inCosSVPV), svMVA_(inMVA) {}
 
     ~SV(){}
 
@@ -57,7 +58,7 @@ class SV : public Momentum<CoordSystem>
     float svd3D()     const { return svd3D_;     }
     float svd3Derr()  const { return svd3Derr_;  }
     float svCosSVPV() const { return svCosSVPV_; }
-
+    float svMVA()     const { return svMVA_;     }
 
     void setIndex(const int& newIndex)        { index_     = newIndex;    }
     void setSVNTracks(const int& inNTracks)   { svNTracks_ = inNTracks;   }
@@ -68,6 +69,7 @@ class SV : public Momentum<CoordSystem>
     void setSVd3D(const float& ind3D)         { svd3D_     = ind3D;       }
     void setSVd3Derr(const float& ind3Derr)   { svd3Derr_  = ind3Derr;    }
     void setSVCosSVPV(const float& inCosSVPV) { svCosSVPV_ = inCosSVPV;   }
+    void setSVMVA(const float& inMVA)         { svMVA_     = inMVA;       }
 
 
     //----Convenience function for throwing an exception when a member does not exist
@@ -85,6 +87,7 @@ class SV : public Momentum<CoordSystem>
     float svd3D_;
     float svd3Derr_;
     float svCosSVPV_;
+    float svMVA_;
 
   };
 

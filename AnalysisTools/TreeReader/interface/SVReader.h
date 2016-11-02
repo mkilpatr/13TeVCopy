@@ -14,6 +14,7 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/SV.h"
+#include "AnalysisTools/ObjectSelection/interface/IVFMVA.h"
 #include <TRandom3.h>
 
 namespace ucsbsusy {
@@ -53,6 +54,14 @@ namespace ucsbsusy {
 
     //the actual sv collection
     SVFCollection SVs;
+
+  private:
+    //low pT (<15) and high pT (>15)
+    //barrel (|eta| <1.2) and endcap (|eta|> 1.2)
+    IVFMVA* ivfMVA_lpt_b;
+    IVFMVA* ivfMVA_hpt_b;
+    IVFMVA* ivfMVA_lpt_e;
+    IVFMVA* ivfMVA_hpt_e;
 
 };
 
