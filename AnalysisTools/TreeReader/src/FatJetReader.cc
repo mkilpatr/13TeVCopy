@@ -90,6 +90,9 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
+    TString cmsswpath = getenv("CMSSW_BASE");
+    softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weight-t2tt850-SM-29102016-hqu.xml", "BDTG");
+
     if(options_ & LOADRECO) {
       clog << " +Reco ";
       treeReader->setBranchAddress(branchName_, "fatjet_rawmass"          , &fjrawmass_      ,true);
@@ -243,9 +246,15 @@ void FatJetReader::refresh(){
           fatJets.back().subJet(1).addCTagging(fj_puppi_sdsj2cmva_->at(iJ), fj_puppi_sdsj2cvsl_->at(iJ), fj_puppi_sdsj2cvsb_->at(iJ));
         }
       }
-
     }
+    fatJets.back().setMVA(-9.);
   }
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
+  // add softdrop mva value
+  for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
+    fatJets[iJ].setMVA(softdropMVA->getSoftdropMVAScore(&(fatJets[iJ])));
+  }
+
 }
+

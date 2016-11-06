@@ -95,6 +95,7 @@ class FatJet : public Jet<CoordSystem>
   public :
   FatJet() :
     csv_         (-9.),
+    mva_         (-9.),
     prunedMass_  (-9.),
     softDropMass_(-9.),
     tau1_        (-9.),
@@ -109,9 +110,11 @@ class FatJet : public Jet<CoordSystem>
   template <class InputCoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
         const float inCSV = -9,
+        const float inMVA = -9,
         const float inPrunedMass = -9, const float inSoftDropMass = -9, const float inTau1 = -9,
         const float inTau2= -9, const float inTau3= -9 ) : Jet<CoordSystem>(inMomentum, inIndex),
         csv_         (inCSV),
+        mva_         (inMVA),
         prunedMass_  (inPrunedMass),
         softDropMass_(inSoftDropMass),
         tau1_        (inTau1),
@@ -125,6 +128,7 @@ class FatJet : public Jet<CoordSystem>
 
 
   float csv()                  const { return csv_         ;    }
+  float mva()                  const { return mva_         ;    }
   float prunedMass()           const { return prunedMass_  ;    }
   float softDropMass()         const { return softDropMass_;    }
   float tau1()                 const { return tau1_        ;    }
@@ -185,7 +189,7 @@ class FatJet : public Jet<CoordSystem>
     puppi_subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
-
+  void setMVA(const float& inMVA) {mva_ = inMVA;}
 
     ~FatJet(){}
 
@@ -195,6 +199,7 @@ class FatJet : public Jet<CoordSystem>
 
   protected :
     float csv_         ;
+    float mva_         ;
     float prunedMass_  ;
     float softDropMass_;
     float tau1_        ;
