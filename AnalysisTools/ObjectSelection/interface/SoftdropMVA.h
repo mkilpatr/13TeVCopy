@@ -22,15 +22,17 @@ public:
   virtual ~SoftdropMVA();
 
   float getSoftdropMVAScore(const FatJetF* fatjet);
-  bool isPreselected(const FatJetF* fatjet);
   std::vector<const FatJetF*> getSoftdropMVATops(const std::vector<const FatJetF*> &fatjets, double WP);
 
   static constexpr double WP_TIGHT = 0.08;
   static constexpr double WP_LOOSE = 0.43;
 
+  // accessed here and in extra tree fillers
+  static bool isPreselected(const FatJetF* fatjet);
+  static std::map<TString, float> calcSoftdropMVAVars(const FatJetF * fatjet, bool fullMonty);
+
 private:
   void initSoftdropMVA();
-  std::map<TString, float> calcSoftdropMVAVars(const FatJetF * fatjet, bool fullMonty);
 
   TMVAReader mvaReader;
   std::vector<TString> varsF;

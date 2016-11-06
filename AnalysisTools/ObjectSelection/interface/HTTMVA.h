@@ -21,16 +21,18 @@ public:
   virtual ~HTTMVA();
   
   float getHTTMVAScore(const HTTFatJetF* fatjet);
-  bool isPreselected(const HTTFatJetF* fatjet);
   std::vector<const HTTFatJetF*> getHTTMVATops(const std::vector<const HTTFatJetF*> &fatjets, double WP);
 
   static constexpr double WP_TIGHT = 0.75;
   static constexpr double WP_LOOSE = 0.50;
 
+  // accessed here and in extra tree fillers
+  static bool isPreselected(const HTTFatJetF* fatjet);
+  static std::map<TString, float> calcHTTMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
+  static std::map<TString, float> calcHTTNickMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
+
 private:
   void initHTTMVA();
-  std::map<TString, float> calcHTTMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
-  std::map<TString, float> calcHTTNickMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
 
   TMVAReader mvaReader;
   std::vector<TString> varsF;
