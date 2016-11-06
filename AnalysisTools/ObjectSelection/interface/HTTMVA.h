@@ -17,7 +17,7 @@ namespace ucsbsusy {
 
 class HTTMVA {
 public:
-  HTTMVA(TString weightfile, TString mvaname);
+  HTTMVA(TString weightfile, TString trainversion, TString mvaname);
   virtual ~HTTMVA();
   
   float getHTTMVAScore(const HTTFatJetF* fatjet);
@@ -30,11 +30,13 @@ public:
 private:
   void initHTTMVA();
   std::map<TString, float> calcHTTMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
+  std::map<TString, float> calcHTTNickMVAVars(const HTTFatJetF * fatjet, bool fullMonty);
 
   TMVAReader mvaReader;
   std::vector<TString> varsF;
   std::vector<TString> varsI;
 
+  bool nickVersion = false;
 };
 
 } /* namespace ucsbsusy */
