@@ -118,6 +118,7 @@ class FatJet : public Jet<CoordSystem>
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
+        mva_         (-9.),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
