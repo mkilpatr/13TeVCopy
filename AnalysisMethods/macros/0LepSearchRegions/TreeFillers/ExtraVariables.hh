@@ -490,12 +490,14 @@ struct ExtraVarsFiller {
 
       bool matchtrigmu = false, matchtrige = false;
       for(auto* to : ana->triggerObjects) {
-        if((to->filterflags() & kSingleIsoMu22) && (to->pathflags() & kHLT_IsoMu22)) {
+        bool passMu = (to->filterflags() & kSingleIsoMu24) && (to->pathflags() & kHLT_IsoMu24);
+        bool passTkMu = (to->filterflags() & kSingleIsoTkMu24) && (to->pathflags() & kHLT_IsoTkMu24);
+        if(passMu || passTkMu) {
           if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
             matchtrigmu = true;
           }
         }
-        if((to->filterflags() & kSingleEle22) && (to->pathflags() & kHLT_Ele22_eta2p1_WPLoose_Gsf)) {
+        if((to->filterflags() & kSingleEle27WPTight) && (to->pathflags() & kHLT_Ele27_WPTight_Gsf)) {
           if(PhysicsUtilities::deltaR(*lep, *to) < 0.05) {
             matchtrige = true;
           }
@@ -738,29 +740,29 @@ struct ExtraVarsFiller {
 
       //      if (ishadronictop_ && fj->fjNSDSubjets()>1) {
       if (fj->nSubjets()>1) {
-	
+
 	TLorentzVector genhadwp4_;
-	for(auto* p : ana->genParts) { 
+	for(auto* p : ana->genParts) {
 	  if ( (abs(p->pdgId()) == 24) && (whadronicdecay(p)) ) { genhadwp4_.SetPtEtaPhiM(p->pt(),p->eta(),p->phi(),p->mass()); }
 	}
-	
+
 	// get the fatjet and subjet p4
 	TLorentzVector sj1p4_; if(fj->nSubjets() > 0 ) sj1p4_.SetPtEtaPhiM(fj->subJet(0).pt(),fj->subJet(0).eta(),fj->subJet(0).phi(),fj->subJet(0).mass());
 	TLorentzVector sj2p4_; if(fj->nSubjets() > 1 ) sj2p4_.SetPtEtaPhiM(fj->subJet(1).pt(),fj->subJet(1).eta(),fj->subJet(1).phi(),fj->subJet(1).mass());
-	TLorentzVector ak8p4_ = sj1p4_ + sj2p4_; 
-	
+	TLorentzVector ak8p4_ = sj1p4_ + sj2p4_;
+
 	// match the subjet to the W boson
 	float drsj1genhadw = ROOT::Math::VectorUtil::DeltaR(genhadwp4_,sj1p4_);
 	float drsj2genhadw = ROOT::Math::VectorUtil::DeltaR(genhadwp4_,sj2p4_);
 
 	TLorentzVector sjw_;
-	TLorentzVector sjb_; 
-	//if (drsj1genhadw<drsj2genhadw) { sjw_ = sj1p4_; sjb_ = sj2p4_; } 
+	TLorentzVector sjb_;
+	//if (drsj1genhadw<drsj2genhadw) { sjw_ = sj1p4_; sjb_ = sj2p4_; }
 	//else                           { sjw_ = sj2p4_; sjb_ = sj1p4_; }
-	if (sj1p4_.M()>sj2p4_.M()) { sjw_ = sj1p4_; sjb_ = sj2p4_; } 
+	if (sj1p4_.M()>sj2p4_.M()) { sjw_ = sj1p4_; sjb_ = sj2p4_; }
 	else                       { sjw_ = sj2p4_; sjb_ = sj1p4_; }
 
-	// get the top boost       
+	// get the top boost
 	TVector3 boosttop; boosttop = ak8p4_.BoostVector();
 
 	// calculate subjet vectors in top rest frame
@@ -814,7 +816,7 @@ struct ExtraVarsFiller {
 
     }
   } // end of topframetagging
-  
+
   bool whadronicdecay(const GenParticleF* genw) {
     bool whadronicdecay_ = true;
     for (unsigned int i0=0; i0<genw->numberOfDaughters(); ++i0) {
@@ -825,13 +827,13 @@ struct ExtraVarsFiller {
     }
       return whadronicdecay_;
   }
-  
+
 
   bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, ParticleInfo::ParticleID matchtoid){
     // match fj to gen w or top
     for(auto* p : ana->genParts) {
       if (abs(p->pdgId()) == matchtoid && ParticleInfo::isLastInChain(p)){
-        if( (ParticleInfo::isGenTopHadronic(p) && matchtoid==ParticleInfo::p_t) || 
+        if( (ParticleInfo::isGenTopHadronic(p) && matchtoid==ParticleInfo::p_t) ||
             (ParticleInfo::isGenWHadronic(p)   && matchtoid==ParticleInfo::p_Wplus)){
           std::cout << "found a candidate gen part with " << p->pdgId() << " " << p->p4() << std::endl;
           std::cout << "and dr " << PhysicsUtilities::deltaR(*p, *fj) << std::endl;
@@ -859,18 +861,18 @@ struct ExtraVarsFiller {
       if (p->numberOfMothers()==0) continue;
 
       const GenParticleF *genPartMom = p->mother(0);
-      if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) { 
-        ++ngenel_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+      if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) {
+        ++ngenel_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1;
         data->fillMulti<float>(i_genelpt, p->pt());
         data->fillMulti<float>(i_geneleta, p->eta());
       }
-      if ( (abs(p->pdgId())==13) && (abs(genPartMom->pdgId())==24) ) { 
-        ++ngenmu_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+      if ( (abs(p->pdgId())==13) && (abs(genPartMom->pdgId())==24) ) {
+        ++ngenmu_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1;
         data->fillMulti<float>(i_genmupt, p->pt());
         data->fillMulti<float>(i_genmueta, p->eta());
       }
-      if ( (abs(p->pdgId())==15) && (abs(genPartMom->pdgId())==24) ) { 
-        ++ngentau_; ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1; 
+      if ( (abs(p->pdgId())==15) && (abs(genPartMom->pdgId())==24) ) {
+        ++ngentau_; ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1;
         data->fillMulti<float>(i_gentaupt, p->pt());
         data->fillMulti<float>(i_gentaueta, p->eta());
       }

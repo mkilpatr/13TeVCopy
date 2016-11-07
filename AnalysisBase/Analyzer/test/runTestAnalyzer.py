@@ -29,7 +29,7 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
-#options.inputFiles = '/store/data/Run2016B/SinglePhoton/MINIAOD/PromptReco-v2/000/273/158/00000/3C2DAC51-3C1A-E611-A74D-02163E013926.root'
+#options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
 options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTToSemiLeptonic_TuneCUETP8M1T4_alphaS01108_13TeV-powheg-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/00000/0ADCDA89-4F6E-E611-A828-08606E15E9C2.root'
 
 options.maxEvents = -1
@@ -133,6 +133,10 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
     process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
+    if '23Sep2016' in DatasetName:
+        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v3')
+        runMetCorrAndUnc = False
+        updateJECs = False
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
@@ -382,10 +386,10 @@ runSubjetCTagging = True
 if runSubjetCTagging:
     process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
     bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
-
+ 
     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'CHS',   JETCorrPayload = 'AK8PFchs',   JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
     process.TestAnalyzer.AK8FatJets.sdSubjets = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropPacked')
-
+ 
     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
     process.TestAnalyzer.AK8FatJets.puppiSubjets = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropPacked')
 

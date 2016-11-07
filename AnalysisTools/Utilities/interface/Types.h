@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // Types
-// 
+//
 // Class with definitions of various types.
-// 
-// Types.h created on Tue Oct 21 21:34:00 CEST 2014 
-// 
+//
+// Types.h created on Tue Oct 21 21:34:00 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISTOOLS_UTILITIES_TYPES_H
@@ -132,36 +132,26 @@ namespace ucsbsusy {
   };
 
   enum TriggerBits {
-    kHLT_IsoMu24_eta2p1 = 1UL<<0,
-    kHLT_IsoTkMu20 = 1UL<<1,
-    kHLT_IsoTkMu24_eta2p1 = 1UL<<2,
-    kHLT_Ele25_WPTight_Gsf = 1UL<<3,
-    kHLT_Ele27_eta2p1_WPLoose_Gsf = 1UL<<4,
-    kHLT_ECALHT800 = 1UL<<5,
-    kHLT_PFHT300_PFMET100 = 1UL<<6,
-    kHLT_PFHT300_PFMET110 = 1UL<<7,
-    kHLT_DiCentralPFJet55_PFMET110_NoiseCleaned = 1UL<<8,
-    kHLT_DiCentralPFJet70_PFMET120_NoiseCleaned = 1UL<<9,
-    kHLT_PFHT350_PFMET100_NoiseCleaned = 1UL<<10,
-    kHLT_CaloJet500_NoJetID = 1UL<<11,
-    kHLT_PFMET170_NoiseCleaned = 1UL<<12,
-    kHLT_PFMETNoMu90_PFMHTNoMu90_IDTight = 1UL<<13,
-    kHLT_PFMETNoMu100_PFMHTNoMu100_IDTight = 1UL<<14,
-    kHLT_PFHT300 = 1UL<<15,
-    kHLT_PFHT350 = 1UL<<16,
+
+    kHLT_PFHT300_PFMET110 = 1UL<<11,
+    kHLT_PFMET170_HBHECleaned = 1UL<<12,
+    kHLT_PFMET110_PFMHT110_IDTight = 1UL<<13,
+    kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight = 1UL<<14,
+    kHLT_PFMET120_PFMHT120_IDTight = 1UL<<15,
+    kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight = 1UL<<16,
     kHLT_PFHT400 = 1UL<<17,
-    kHLT_PFHT475 = 1UL<<18,
-    kHLT_PFHT600 = 1UL<<19,
-    kHLT_PFHT650 = 1UL<<20,
-    kHLT_PFHT800 = 1UL<<21,
-    kHLT_PFHT900 = 1UL<<22,
-    kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW = 1UL<<23,
+    kHLT_PFHT600 = 1UL<<18,
+    kHLT_PFHT900 = 1UL<<19,
+    kHLT_Mu50_IsoVVVL_PFHT400 = 1UL << 20,
+    kHLT_Ele50_IsoVVVL_PFHT400 = 1UL << 21,
+    kHLT_ECALHT800 = 1UL<<22,
+    kHLT_CaloJet500_NoJetID = 1UL<<23,
     kHLT_Photon165_R9Id90_HE10_IsoM = 1UL<<24,
     kHLT_Photon165_HE10 = 1UL<<25,
     kHLT_Photon175 = 1UL<<26,
-    kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight = 1UL<<27,
-    kHLT_Ele25_eta2p1_WPLoose_Gsf = 1UL<<28,
-    kHLT_Ele25_eta2p1_WPTight_Gsf = 1UL<<29,
+    kHLT_Ele25_eta2p1_WPTight_Gsf = 1UL<<27,
+    kHLT_Ele27_eta2p1_WPTight_Gsf = 1UL<<28,
+    kHLT_Ele27_WPTight_Gsf = 1UL<<29,
     kHLT_Ele15_IsoVVVL_PFHT350_PFMET50 = 1UL<<30,
     kHLT_Ele15_IsoVVVL_PFHT400_PFMET50 = 1UL<<31,
     kHLT_Ele15_IsoVVVL_PFHT350 = 1UL<<32,
@@ -172,30 +162,28 @@ namespace ucsbsusy {
     kHLT_Mu15_IsoVVVL_PFHT350 = 1UL<<37,
     kHLT_Mu15_IsoVVVL_PFHT400 = 1UL<<38,
     kHLT_Mu15_IsoVVVL_PFHT600 = 1UL<<39,
-    kHLT_Ele105_CaloIdVT_GsfTrkIdT = 1UL<<40,
-    kHLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ = 1UL<<41,
+    kHLT_Ele115_CaloIdVT_GsfTrkIdT = 1UL<<40,
+    kHLT_DoubleEle33_CaloIdL_GsfTrkIdVL_MW = 1UL<<41,
     kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ = 1UL<<42,
     kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ = 1UL<<43,
     kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ = 1UL<<44,
-    kHLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL = 1UL<<45,
-    kHLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<46,
-    kHLT_IsoMu22 = 1UL<<47,
-    kHLT_IsoTkMu22 = 1UL<<48,
-    kHLT_Ele22_eta2p1_WPLoose_Gsf = 1UL<<49,
-    kHLT_Mu30_TkMu11 = 1UL<<50,
-    kHLT_Ele22_eta2p1_WPTight_Gsf = 1UL<<51,
-    kHLT_Ele27_eta2p1_WPTight_Gsf = 1UL<<52,
-    kHLT_Mu50 = 1UL<<53,
-    kHLT_PFHT350_PFMET100_JetIdCleaned = 1UL<<54,
-    kHLT_PFMET170_JetIdCleaned = 1UL<<55,
-    kHLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL = 1UL<<56,
-    kHLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL = 1UL<<57,
-    kHLT_Ele23_WPLoose_Gsf = 1UL<<58,
-    kHLT_Ele27_WPLoose_Gsf = 1UL<<59,
-    kHLT_IsoMu20 = 1UL<<60,
-    kHLT_PFMET90_PFMHT90_IDTight = 1UL<<61,
-    kHLT_PFMET100_PFMHT100_IDTight = 1UL<<62,
-    kHLT_PFMET110_PFMHT110_IDTight = 1UL<<63
+    kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL = 1UL<<45,
+    kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL = 1UL<<46,
+    kHLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ = 1UL<<47,
+    kHLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL = 1UL<<48,
+    kHLT_Mu30_TkMu11 = 1UL<<49,
+    kHLT_IsoMu24 = 1UL<<50,
+    kHLT_IsoTkMu24 = 1UL<<51,
+    kHLT_Mu50 = 1UL<<52,
+    kHLT_IsoMu24_eta2p1 = 1UL<<53,
+    kHLT_IsoMu22_eta2p1 = 1UL<<54,
+    kHLT_IsoTkMu24_eta2p1 = 1UL<<55,
+    kHLT_IsoTkMu22_eta2p1 = 1UL<<56,
+    kHLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ = 1UL<<57,
+    kHLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL = 1UL<<58,
+    kHLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ = 1UL<<59,
+    kHLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL = 1UL<<60
+
   };
 
   enum TriggerFilters {
