@@ -73,7 +73,7 @@ void HTTReader::load(TreeReader *treeReader, int options, string branchName)
     clog << "Loading (" << branchName << ") tops with: ";
 
     TString cmsswpath = getenv("CMSSW_BASE");
-    httMVA = new HTTMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-nick-07112016.xml", "nick", "BDTG"); // say "alex" or "nick" to distinguish
+    httMVA = new HTTMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-mtb175-t2tt850-sm-alex-07112016.xml", "alex", "BDTG"); // say "alex" or "nick" to distinguish
 
     if(options_ & LOADRECO) {
       clog << " +Reco ";
