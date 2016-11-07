@@ -11,33 +11,6 @@
 using namespace std;
 using namespace ucsbsusy;
 
-class TopCand{
-public:
-  TopCand() {}
-  TopCand(const TopCand &cand) : TopCand(cand.b, cand.j2, cand.j3) {}
-  TopCand(const RecoJetF *inB, const RecoJetF *inJ2, const RecoJetF *inJ3) : b(inB) {
-    if (inJ2->pt()>inJ3->pt()){
-      j2 = inJ2; j3 = inJ3;
-    }else {
-      j2 = inJ3; j3 = inJ2;
-    }
-    wcand = j2->p4() + j3->p4();
-    topcand = b->p4() + wcand.p4();
-  }
-
-  bool passMassW(double range=40)   const { return std::abs(wcand.mass()-80)    <= range; }
-  bool passMassTop(double range=80) const { return std::abs(topcand.mass()-175) <= range; }
-
-public:
-  const RecoJetF *b  = nullptr;
-  const RecoJetF *j2 = nullptr;
-  const RecoJetF *j3 = nullptr;
-  MomentumF wcand, topcand;
-
-};
-
-
-
 class Copier : public TreeCopierManualBranches {
 public:
   Copier(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
