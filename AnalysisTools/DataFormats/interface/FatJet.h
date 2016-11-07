@@ -111,18 +111,17 @@ class FatJet : public Jet<CoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
         const float inCSV = -9,
         const float inPrunedMass = -9, const float inSoftDropMass = -9, const float inTau1 = -9,
-        const float inTau2= -9, const float inTau3= -9, const float inMVA = -9 ) : Jet<CoordSystem>(inMomentum, inIndex),
+        const float inTau2= -9, const float inTau3= -9) : Jet<CoordSystem>(inMomentum, inIndex),
         csv_         (inCSV),
         prunedMass_  (inPrunedMass),
         softDropMass_(inSoftDropMass),
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
-        mva_         (inMVA),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
-        puppi_tau3_        (-9.)
+        puppi_tau3_        (-9.) // take care adding to this argument list -- ordering of (float,float,..) matters!
         {}
 
 
