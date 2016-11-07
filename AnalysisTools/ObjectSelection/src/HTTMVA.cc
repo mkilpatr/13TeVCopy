@@ -11,8 +11,8 @@
 using namespace ucsbsusy;
 
 HTTMVA::HTTMVA(TString weightfile, TString trainversion, TString mvaname) :mvaReader(weightfile, mvaname) {
-  initHTTMVA();
   nickVersion = trainversion.Contains("nick", TString::kIgnoreCase);
+  initHTTMVA();
 }
 
 HTTMVA::~HTTMVA() {
@@ -39,8 +39,8 @@ float HTTMVA::getHTTMVAScore(const HTTFatJetF* fatjet){
   for (const auto &v: varsI){
     mvaReader.setValue(v, varMap.at(v));
   }
-  return 0.501;
-  //FIXME after training // return mvaReader.eval();
+  //return 0.501; // dummy before training
+  return mvaReader.eval();
 }
 
 // give me ana->httTops and HTTMVA::WP_LOOSE or WP_TIGHT

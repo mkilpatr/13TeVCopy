@@ -59,6 +59,7 @@ struct HTTMVAFiller {
   std::vector<const HTTFatJetF*> preselectedFatjets; // those HTTTops passing the preselection defined in preparePreselectedFatJets
   //std::vector<pair<const PartonMatching::TopDecay*, const HTTFatJetF*> > matchPairs; // exactly one pair for every preselectedFatjet. first entry is the gen top if match found.
   std::vector<const PartonMatching::TopDecay*> gentops; // hadronic gen tops
+  PartonMatching::PartonEvent * partonEvent;
 
   //// basic variables
   size i_nLooseHTTMVA;
@@ -615,7 +616,7 @@ struct HTTMVAFiller {
     gentops.clear();
     std::vector<GenJetF*> filteredGenJets;
     for(auto * j : ana->jets){ if(j->genJet()) filteredGenJets.push_back(j->genJet()); }
-    PartonMatching::PartonEvent * partonEvent = new PartonMatching::PartonEvent(ana->genParticleReader,*ana->defaultJets,filteredGenJets);
+    partonEvent = new PartonMatching::PartonEvent(ana->genParticleReader,*ana->defaultJets,filteredGenJets);
     for(unsigned int i = 0 ; i < partonEvent->topDecays.size() ; i++){
       PartonMatching::TopDecay* top = &partonEvent->topDecays[i];
       if(top->isLeptonic) continue;
@@ -645,6 +646,7 @@ struct HTTMVAFiller {
       data->fillMulti<float>(i_basic_htt_roptmass, fatjet->ropt_mom().mass());
       data->fillMulti<float>(i_basic_htt_mva, fatjet->mva());
     }
+    delete partonEvent;
   }//fillBasicInfo
 
   void fillTrainInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
@@ -671,7 +673,7 @@ struct HTTMVAFiller {
       fillFatJetTrainInfo(data,fatjet, (top ? true : false));
       fillNickTrainInfo(data,fatjet, (top ? true : false));
     }
-
+    delete partonEvent;
   }//fillTrainInfo
 
 };//HTTMVAFiller
