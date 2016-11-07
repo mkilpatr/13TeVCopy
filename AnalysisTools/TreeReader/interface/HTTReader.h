@@ -14,6 +14,8 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/HTTFatJet.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/HTTMVA.h"
 
 namespace ucsbsusy {
 
@@ -87,6 +89,9 @@ namespace ucsbsusy {
 
     //the actual jet collection
     HTTFatJetFCollection fatJets;
+
+  private:
+    HTTMVA * httMVA;
 
 };
 

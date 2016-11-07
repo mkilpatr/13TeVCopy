@@ -100,6 +100,7 @@ class FatJet : public Jet<CoordSystem>
     tau1_        (-9.),
     tau2_        (-9.),
     tau3_        (-9.),
+    mva_               (-9.),
     puppi_softDropMass_(-9.),
     puppi_tau1_        (-9.),
     puppi_tau2_        (-9.),
@@ -110,17 +111,18 @@ class FatJet : public Jet<CoordSystem>
     FatJet(const ROOT::Math::LorentzVector<InputCoordSystem>& inMomentum, const int inIndex = -1,
         const float inCSV = -9,
         const float inPrunedMass = -9, const float inSoftDropMass = -9, const float inTau1 = -9,
-        const float inTau2= -9, const float inTau3= -9 ) : Jet<CoordSystem>(inMomentum, inIndex),
+        const float inTau2= -9, const float inTau3= -9) : Jet<CoordSystem>(inMomentum, inIndex),
         csv_         (inCSV),
         prunedMass_  (inPrunedMass),
         softDropMass_(inSoftDropMass),
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
+        mva_         (-9.),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
-        puppi_tau3_        (-9.)
+        puppi_tau3_        (-9.) // take care adding to this argument list -- ordering of (float,float,..) matters!
         {}
 
 
@@ -131,6 +133,7 @@ class FatJet : public Jet<CoordSystem>
   float tau2()                 const { return tau2_        ;    }
   float tau3()                 const { return tau3_        ;    }
   size  nSubjets()             const { return subjets.size();   }
+  float mva()                  const { return mva_         ;    }
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
     if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
@@ -185,7 +188,7 @@ class FatJet : public Jet<CoordSystem>
     puppi_subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
-
+  void setMVA(const float inMVA) {mva_ = inMVA;}
 
     ~FatJet(){}
 
@@ -200,6 +203,7 @@ class FatJet : public Jet<CoordSystem>
     float tau1_        ;
     float tau2_        ;
     float tau3_        ;
+    float mva_         ;
 
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;

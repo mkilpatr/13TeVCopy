@@ -14,6 +14,8 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/FatJet.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/HTTMVA.h"
 #include <TRandom3.h>
 
 namespace ucsbsusy {
@@ -75,7 +77,6 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj2axis2_;
     std::vector<int  >* fjsdsj2mult_;
 
-
     //Puppi variables
     std::vector<float>* fj_puppi_pt_          ;
     std::vector<float>* fj_puppi_eta_         ;
@@ -110,6 +111,9 @@ namespace ucsbsusy {
 
     //the actual jet collection
     FatJetFCollection fatJets;
+
+    private:
+      SoftdropMVA * softdropMVA;
 
 };
 

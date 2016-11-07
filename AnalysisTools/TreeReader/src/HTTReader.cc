@@ -72,6 +72,9 @@ void HTTReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
+    TString cmsswpath = getenv("CMSSW_BASE");
+    httMVA = new HTTMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-nick-07112016.xml", "nick", "BDTG"); // say "alex" or "nick" to distinguish
+
     if(options_ & LOADRECO) {
       clog << " +Reco ";
 
@@ -160,8 +163,13 @@ void HTTReader::refresh(){
 
     fatJets.back().addROptInfo(CylLorentzVectorF(ropt_pt->at(iJ),ropt_eta->at(iJ),ropt_phi->at(iJ),ropt_mass->at(iJ)),
         ropt->at(iJ),frec->at(iJ),roptcalc->at(iJ),ptforropt->at(iJ),ropt_tau1->at(iJ),ropt_tau2->at(iJ),ropt_tau3->at(iJ));
-
+    fatJets.back().setMVA(-9.);
   }
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
+
+  // set htt mva value
+  for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
+    fatJets[iJ].setMVA(httMVA->getHTTMVAScore(&(fatJets[iJ])));
+  }
 
 }
