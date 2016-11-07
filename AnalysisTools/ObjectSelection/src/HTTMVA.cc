@@ -21,7 +21,7 @@ HTTMVA::~HTTMVA() {
 bool HTTMVA::isPreselected(const HTTFatJetF* fatjet){
   bool isPreselected =
           fatjet->pt()>200
-          && abs(fatjet->eta())<2.4
+          && fabs(fatjet->eta())<2.4
           && fatjet->softDropMass()>50
           && fatjet->nSubjets()>=3
           && fatjet->bSubjet().pt()>20 && fatjet->w1Subjet().pt()>20 && fatjet->w2Subjet().pt()>20;
@@ -29,7 +29,6 @@ bool HTTMVA::isPreselected(const HTTFatJetF* fatjet){
 }
 
 float HTTMVA::getHTTMVAScore(const HTTFatJetF* fatjet){
-
   if(!isPreselected(fatjet)) return -9.;
 
   auto varMap = (!nickVersion ? calcHTTMVAVars(fatjet,false) : calcHTTNickMVAVars(fatjet,false));
@@ -40,17 +39,20 @@ float HTTMVA::getHTTMVAScore(const HTTFatJetF* fatjet){
   for (const auto &v: varsI){
     mvaReader.setValue(v, varMap.at(v));
   }
-  return mvaReader.eval();
+  return 0.501;
+  //FIXME after training // return mvaReader.eval();
 }
 
 // give me ana->httTops and HTTMVA::WP_LOOSE or WP_TIGHT
 std::vector<const HTTFatJetF*> HTTMVA::getHTTMVATops(const std::vector<const HTTFatJetF*> &fatjets, double WP) {
+  bool dbg = false;
   std::vector<const HTTFatJetF*> HTTMVATops;
   for(const HTTFatJetF * fj : fatjets){
     if(getHTTMVAScore(fj) > WP){
       HTTMVATops.push_back(fj);
     }
   }
+  if(dbg) std::cout << "[ObjectSelection/src/HTTMVA]  getHTTMVATops found # past WP " << HTTMVATops.size() << " " << WP << std::endl;  
   return HTTMVATops;
 }
 
@@ -111,9 +113,9 @@ std::map<TString, float> HTTMVA::calcHTTMVAVars(const HTTFatJetF* fatjet, bool f
   if(!fullMonty) { // only calculate vars necessary for evaluation. MUST INCLUDE ALL OF VARSF / VARSI ABOVE
     vars["htt_sdmass"] =         fatjet->softDropMass();
     vars["htt_ropt_mass"] =      fatjet->ropt_mom().mass();
-    vars["htt_tau21"] =          fatjet->tau1() > 0 ? fatjet->tau2()/fatjet->tau1() : 1e9;
-    vars["htt_tau32"] =          fatjet->tau2() > 0 ? fatjet->tau3()/fatjet->tau2() : 1e9;
-    vars["htt_tau31"] =          fatjet->tau1() > 0 ? fatjet->tau3()/fatjet->tau1() : 1e9;
+    vars["htt_ropt_tau21"] =     fatjet->ropt_tau1() > 0 ? fatjet->ropt_tau2()/fatjet->ropt_tau1() : 1e9;
+    vars["htt_ropt_tau32"] =     fatjet->ropt_tau2() > 0 ? fatjet->ropt_tau3()/fatjet->ropt_tau2() : 1e9;
+    vars["htt_ropt_tau31"] =     fatjet->ropt_tau1() > 0 ? fatjet->ropt_tau3()/fatjet->ropt_tau1() : 1e9;
     vars["htt_ropt"] =           fatjet->ropt();
     vars["htt_ropt_deltaRopt"] = fatjet->ropt()-fatjet->roptcalc();
     vars["htt_ropt_ptDR"] =      fatjet->ropt()*fatjet->ropt_mom().pt();
@@ -130,12 +132,11 @@ std::map<TString, float> HTTMVA::calcHTTMVAVars(const HTTFatJetF* fatjet, bool f
       const auto &w2_ = subjetsByCSV.at(2);
       const auto wcand = w1_.p4() + w2_.p4();
       //const auto tcand = b_.p4() + wcand;
-
       double var_w_deltaR = PhysicsUtilities::deltaR(w1_, w2_);
       vars["htt_bycsv_b_pt"] =            b_.pt();
-      vars["htt_bydef_b_squaredaxis"] =   b_.axis1()*b_.axis1()+b_.axis2()*b_.axis2();
-      vars["htt_bydef_w1_squaredaxis"] =  w1_.axis1()*w1_.axis1()+w1_.axis2()*w1_.axis2();
-      vars["htt_bydef_w2_squaredaxis"] =  w2_.axis1()*w2_.axis1()+w2_.axis2()*w2_.axis2();
+      vars["htt_bycsv_b_squaredaxis"] =   b_.axis1()*b_.axis1()+b_.axis2()*b_.axis2();
+      vars["htt_bycsv_w1_squaredaxis"] =  w1_.axis1()*w1_.axis1()+w1_.axis2()*w1_.axis2();
+      vars["htt_bycsv_w2_squaredaxis"] =  w2_.axis1()*w2_.axis1()+w2_.axis2()*w2_.axis2();
       vars["htt_bycsv_w_mass"] =          wcand.mass();
       vars["htt_bycsv_w_ptDR"] =          var_w_deltaR*wcand.pt();
 
@@ -240,6 +241,7 @@ std::map<TString, float> HTTMVA::calcHTTMVAVars(const HTTFatJetF* fatjet, bool f
       vars["htt_bycsv_b_ptD"] =           b_.ptD();
       vars["htt_bycsv_b_axis1"] =         b_.axis1();
       vars["htt_bycsv_b_axis2"] =         b_.axis2();
+      vars["htt_bycsv_b_squaredaxis"] =   b_.axis1()*b_.axis1()+b_.axis2()*b_.axis2();
       vars["htt_bycsv_b_mult"] =          b_.multiplicity();
 
       vars["htt_bycsv_w1_pt"] =           w1_.pt();
@@ -247,6 +249,7 @@ std::map<TString, float> HTTMVA::calcHTTMVAVars(const HTTFatJetF* fatjet, bool f
       vars["htt_bycsv_w1_ptD"] =          w1_.ptD();
       vars["htt_bycsv_w1_axis1"] =        w1_.axis1();
       vars["htt_bycsv_w1_axis2"] =        w1_.axis2();
+      vars["htt_bycsv_w1_squaredaxis"] =  w1_.axis1()*w1_.axis1()+w1_.axis2()*w1_.axis2();
       vars["htt_bycsv_w1_mult"] =         w1_.multiplicity();
 
       vars["htt_bycsv_w2_pt"] =           w2_.pt();
@@ -254,6 +257,7 @@ std::map<TString, float> HTTMVA::calcHTTMVAVars(const HTTFatJetF* fatjet, bool f
       vars["htt_bycsv_w2_ptD"] =          w2_.ptD();
       vars["htt_bycsv_w2_axis1"] =        w2_.axis1();
       vars["htt_bycsv_w2_axis2"] =        w2_.axis2();
+      vars["htt_bycsv_w2_squaredaxis"] =  w2_.axis1()*w2_.axis1()+w2_.axis2()*w2_.axis2();
       vars["htt_bycsv_w2_mult"] =         w2_.multiplicity();
 
       double var_w_deltaR = PhysicsUtilities::deltaR(w1_, w2_);
@@ -327,7 +331,7 @@ std::map<TString, float> HTTMVA::calcHTTNickMVAVars(const HTTFatJetF* fatjet, bo
     vars["htt_nick_subjet_min_pt"]       = minPT;
     vars["htt_nick_frec"]                = fatjet->frec();
     vars["htt_nick_roptcalc"]            = fatjet->roptcalc();
-    vars["htt_nick_ptforopt"]            = fatjet->ptforopt();
+    vars["htt_nick_ptforropt"]            = fatjet->ptforopt();
     vars["htt_nick_ropt_pt"]             = fatjet->ropt_mom().pt();
     vars["htt_nick_ropt_mass"]           = fatjet->ropt_mom().mass();
     vars["htt_nick_w1_pt"]               = fatjet->nSubjets() > 0 ? fatjet->subJet(0).pt()  : 0;
