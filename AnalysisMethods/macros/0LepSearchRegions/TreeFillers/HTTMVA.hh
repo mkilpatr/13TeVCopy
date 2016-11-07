@@ -57,7 +57,7 @@ struct HTTMVAFiller {
   HTTMVAFiller() {}
 
   std::vector<const HTTFatJetF*> preselectedFatjets; // those HTTTops passing the preselection defined in preparePreselectedFatJets
-  std::vector<pair<const PartonMatching::TopDecay*, const HTTFatJetF*> > matchPairs; // exactly one pair for every preselectedFatjet. first entry is the gen top if match found.
+  //std::vector<pair<const PartonMatching::TopDecay*, const HTTFatJetF*> > matchPairs; // exactly one pair for every preselectedFatjet. first entry is the gen top if match found.
   std::vector<const PartonMatching::TopDecay*> gentops; // hadronic gen tops
 
   //// basic variables
@@ -626,6 +626,8 @@ struct HTTMVAFiller {
 
   void fillBasicInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
     bool dbg = false;
+    //matchPairs.clear();
+    gentops.clear(); preselectedFatjets.clear();
 
     if(dbg) std::cout << "[HTTMVA] Filling basic info" << std::endl;
     bool topProcess =  ana->process==defaults::TTBAR || ana->process==defaults::SIGNAL;
@@ -647,6 +649,8 @@ struct HTTMVAFiller {
 
   void fillTrainInfo(TreeWriterData* data, BaseTreeAnalyzer* ana) {
     bool dbg = false;
+    //matchPairs.clear();
+    gentops.clear(); preselectedFatjets.clear();
 
     if(dbg) std::cout << "[HTTMVA] Filling training info" << std::endl;
     bool topProcess =  ana->process==defaults::TTBAR || ana->process==defaults::SIGNAL;
@@ -662,7 +666,7 @@ struct HTTMVAFiller {
       if(dbg) std::cout << "[HTTMVA]   Matching presel fj with pt, ropt: " << fatjet->pt() << " " << fatjet->ropt() << std::endl;
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, TMath::Min(fatjet->ropt()+0.1,1.5), fatjet->ropt()) : 0); // if not top process don't try to match
       if(dbg) std::cout << "[HTTMVA]     return of getTopCand gen pt, process: " << (top ? top->top->pt() : 0) << " " << topProcess << " " << std::endl;
-      matchPairs.emplace_back(top,fatjet);
+      //matchPairs.emplace_back(top,fatjet);
       fillGenInfo(data,top, gentops, fatjet);
       fillFatJetTrainInfo(data,fatjet, (top ? true : false));
       fillNickTrainInfo(data,fatjet, (top ? true : false));

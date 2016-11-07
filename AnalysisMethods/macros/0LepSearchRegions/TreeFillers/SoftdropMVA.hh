@@ -62,7 +62,7 @@ struct SoftdropMVAFiller {
   SoftdropMVAFiller() {}
 
   std::vector<const FatJetF*> preselectedFatjets; // those fatjets passing the preselection defined in preparePreselectedFatJets
-  std::vector<pair<const PartonMatching::TopDecay*, const FatJetF*> > matchPairs; // exactly one pair for every preselectedFatjet. first entry is the gen top if match found.
+  //std::vector<pair<const PartonMatching::TopDecay*, const FatJetF*> > matchPairs; // exactly one pair for every preselectedFatjet. first entry is the gen top if match found.
   std::vector<const PartonMatching::TopDecay*> gentops; // hadronic gen tops
 
   //// basic variables
@@ -450,7 +450,7 @@ struct SoftdropMVAFiller {
       if(dbg) std::cout << "[Sd MVA]   Matching presel fj with pt     : " << fatjet->pt() << " " << std::endl;
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, 0.8, 0.8) : 0); // if not top process don't try to match
       if(dbg) std::cout << "[Sd MVA]     return of getTopCand gen pt, process: " << (top ? top->top->pt() : 0) << " " << topProcess << " " << std::endl;
-      matchPairs.emplace_back(top,fatjet);
+      //matchPairs.emplace_back(top,fatjet);
       fillGenInfo(data, top, gentops, fatjet);
       fillFatJetTrainInfo(data, fatjet, (top ? true : false));
     }

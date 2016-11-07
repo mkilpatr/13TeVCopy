@@ -387,11 +387,11 @@ varsF = {
    //TCut baseline = baseline+"mtcsv12met>=175"; // training in high mtb
    TCut mycutb, mycuts;
    if(varset == "hqu"){
-     mycuts = "";
-     mycutb = "";
+     mycuts = "ak8_matches_gen && ak8_pt>400"; // should see sdmass > 50, minsubjetpt>20, nsubjets==2 as well
+     mycutb = "!ak8_matches_gen && ak8_pt>400"; // ditto
    }else{ // alex or nick
-     mycuts = "";
-     mycutb = "";
+     mycuts = "htt_matches_gen && htt_pt>200"; // ditto
+     mycutb = "!htt_matches_gen && htt_pt>200"; // ditto
    }
 
    // Tell the dataloader how to use the training and testing events
