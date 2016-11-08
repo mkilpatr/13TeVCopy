@@ -24,9 +24,11 @@ The extension samples will be combined with the original samples (*This is handl
 
 The QCD genjets5 samples will be patched together in this step (by scaling down the weights of N(genjets>=5) events). For it to work properly, make sure you have, e.g., the lines `qcd-ht300to500`, `qcd-ht300to500-ext`, `qcd-ht300to500-genjets5`, all in your .conf file, and they appear in this order.
 
+[*NOTE*] For gen-filtered samples, gen-filter efficiency has to be calculated before adding weights.
+
 [**Step 4**] Split files (only for signal scans):
 
-`./makejobs.py --makegrid -i [T2fbd.conf] --inputdir [/eos/uscms/store/user/${USER}/13TeV/ntuples/merged] -o [/eos/uscms/store/user/${USER}/13TeV/ntuples/merged] --mlspsteps [mlsp step]`
+`./makejobs.py --makegrid -i [T2fbd.conf] --inputdir [/eos/uscms/store/user/${USER}/13TeV/ntuples/merged] -o [/eos/uscms/store/user/${USER}/13TeV/ntuples/merged]`
 
 
 ==============
@@ -55,3 +57,18 @@ For Step 2, you need to add the `--fromcrab` option, because the output files ar
 
 Step 3 and 4 is the same as in the above section and uses Condor.
 
+==============
+
+**Calculate gen-filter efficiency**
+
+The gen-filter info can only be accessed in `endLuminosityBlock()`, so it cannot be filled during normal ntuplization process. A dedicated simple analyzer `GenFilterAnalyzer` was created for this purpose.
+
+[**Step 1**] Run this analyzer over the MiniAOD files, via condor (recommended, since the processing time is very short):
+
+`./makejobs.py -c runGenFilterEfficiency.py -i signal.conf -n 10 -o /eos/uscms/store/user/${USER}/genEff/outputs`
+
+[**Step 2**] Merge the output (can simply use hadd)
+
+[**Step 3**] Run the script to calcuate gen-filter efficiencies, and upload the output json file to `data/xsec` directory.
+
+`python calcGenEfficiency.py [merged_output.root] -o [Sample]_Filter_Efficiency.json`
