@@ -72,8 +72,9 @@ private:
   std::vector<TopCand> removeOverlap(std::vector<TopCand> &cands, double threshold);
 
 public:
-  static constexpr double WP_TIGHT = 0.97;
-  static constexpr double WP_MEDIUM = 0.83;
+  static constexpr double WP_LOOSE  = 0.83;
+  static constexpr double WP_MEDIUM = 0.98;
+  static constexpr double WP_TIGHT  = 0.99;
 
 private:
   TMVAReader mvaReader;

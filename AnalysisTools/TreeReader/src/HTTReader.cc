@@ -6,7 +6,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int HTTReader::defaultOptions = HTTReader::LOADRECO | HTTReader::FILLOBJ;
+const int HTTReader::defaultOptions = HTTReader::LOADRECO | HTTReader::FILLOBJ | HTTReader::LOADMVA;
 
 //--------------------------------------------------------------------------------------------------
 HTTReader::HTTReader() : BaseReader(){
@@ -72,8 +72,10 @@ void HTTReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    TString cmsswpath = getenv("CMSSW_BASE");
-    httMVA = new HTTMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-alex-08112016.xml", "alex", "BDTG"); // say "alex" or "nick" to distinguish
+    if(options_ & LOADMVA){
+      TString cmsswpath = getenv("CMSSW_BASE");
+      httMVA = new HTTMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-alex-08112016.xml", "alex", "BDTG"); // say "alex" or "nick" to distinguish
+    }
 
     if(options_ & LOADRECO) {
       clog << " +Reco ";
@@ -168,8 +170,10 @@ void HTTReader::refresh(){
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
   // set htt mva value
-  for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
-    fatJets[iJ].setMVA(httMVA->getHTTMVAScore(&(fatJets[iJ])));
+  if(options_ & LOADMVA){
+    for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
+      fatJets[iJ].setMVA(httMVA->getHTTMVAScore(&(fatJets[iJ])));
+    }
   }
 
 }

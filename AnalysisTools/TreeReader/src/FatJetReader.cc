@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE;
+const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE | FatJetReader::LOADMVA;
 
 //--------------------------------------------------------------------------------------------------
 FatJetReader::FatJetReader() : BaseReader(){
@@ -90,8 +90,10 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    TString cmsswpath = getenv("CMSSW_BASE");
-    softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml", "BDTG");
+    if(options_ & LOADMVA){
+      TString cmsswpath = getenv("CMSSW_BASE");
+      softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml", "BDTG");
+    }
 
     if(options_ & LOADRECO) {
       clog << " +Reco ";
@@ -252,8 +254,10 @@ void FatJetReader::refresh(){
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
   // add softdrop mva value
-  for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
-    fatJets[iJ].setMVA(softdropMVA->getSoftdropMVAScore(&(fatJets[iJ])));
+  if(options_ & LOADMVA){
+    for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
+      fatJets[iJ].setMVA(softdropMVA->getSoftdropMVAScore(&(fatJets[iJ])));
+    }
   }
 
 }

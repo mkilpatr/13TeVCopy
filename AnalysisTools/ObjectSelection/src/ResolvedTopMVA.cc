@@ -30,11 +30,11 @@ std::vector<TopCand> ResolvedTopMVA::getTopCandidates(const std::vector<RecoJetF
   for (unsigned iB=0; iB<2; ++iB){
     if(csvJets.at(iB)->csv() < defaults::CSV_LOOSE) break; // b must pass CSVL
 
-    std::vector<RecoJetF*> tmpJets(csvJets);
-    tmpJets.erase(tmpJets.begin()+iB);
-    for (unsigned i2=0; i2<tmpJets.size()-1; ++i2){
-      for (unsigned i3=i2+1; i3<tmpJets.size(); ++i3){
-        TopCand tmpCand(csvJets.at(iB), tmpJets.at(i2), tmpJets.at(i3));
+    for (unsigned i2=0; i2<csvJets.size()-1; ++i2){
+      if (i2==iB) continue;
+      for (unsigned i3=i2+1; i3<csvJets.size(); ++i3){
+        if (i3==iB) continue;
+        TopCand tmpCand(csvJets.at(iB), csvJets.at(i2), csvJets.at(i3));
         if (tmpCand.passMassW() && tmpCand.passMassTop()){
           auto varMap = calcTopCandVars(&tmpCand);
           for (const auto &v: varsF){

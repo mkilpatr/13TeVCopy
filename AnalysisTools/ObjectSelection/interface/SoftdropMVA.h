@@ -28,7 +28,6 @@ public:
   static constexpr double WP_MEDIUM = 0.35;
   static constexpr double WP_TIGHT  = 0.61;
 
-
   // accessed here and in extra tree fillers
   static bool isPreselected(const FatJetF* fatjet);
   static std::map<TString, float> calcSoftdropMVAVars(const FatJetF * fatjet, bool fullMonty);

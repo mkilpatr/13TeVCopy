@@ -29,6 +29,7 @@ namespace ucsbsusy {
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
                     , LOADSHAPE   = (1 << 3)
                     , LOADCTAG    = (1 << 4)
+                    , LOADMVA     = (1 << 5)
     };
     static const int defaultOptions;
 
@@ -113,7 +114,7 @@ namespace ucsbsusy {
     FatJetFCollection fatJets;
 
     private:
-      SoftdropMVA * softdropMVA;
+      SoftdropMVA * softdropMVA = nullptr;
 
 };
 

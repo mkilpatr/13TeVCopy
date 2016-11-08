@@ -24,9 +24,8 @@ namespace ucsbsusy {
     enum  Options {
                       NULLOPT     = 0
                     , LOADRECO    = (1 << 0)
-                    , LOADEXTRECO = (1 << 1)   ///< Load extra info
-                    , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
-                    , LOADPHYS14  = (1 << 3)
+                    , FILLOBJ     = (1 << 1)   ///< Fill objects (as opposed to just pointers
+                    , LOADMVA     = (1 << 2)
     };
     static const int defaultOptions;
 
@@ -58,10 +57,10 @@ namespace ucsbsusy {
   private:
     //low pT (<15) and high pT (>15)
     //barrel (|eta| <1.2) and endcap (|eta|> 1.2)
-    IVFMVA* ivfMVA_lpt_b;
-    IVFMVA* ivfMVA_hpt_b;
-    IVFMVA* ivfMVA_lpt_e;
-    IVFMVA* ivfMVA_hpt_e;
+    IVFMVA* ivfMVA_lpt_b = 0;
+    IVFMVA* ivfMVA_hpt_b = 0;
+    IVFMVA* ivfMVA_lpt_e = 0;
+    IVFMVA* ivfMVA_hpt_e = 0;
 
 };
 

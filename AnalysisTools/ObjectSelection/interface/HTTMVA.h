@@ -19,7 +19,7 @@ class HTTMVA {
 public:
   HTTMVA(TString weightfile, TString trainversion, TString mvaname);
   virtual ~HTTMVA();
-  
+
   float getHTTMVAScore(const HTTFatJetF* fatjet);
   std::vector<const HTTFatJetF*> getHTTMVATops(const std::vector<const HTTFatJetF*> &fatjets, double WP);
 

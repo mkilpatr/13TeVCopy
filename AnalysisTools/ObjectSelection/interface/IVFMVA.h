@@ -21,11 +21,11 @@ public:
   IVFMVA(TString weightfile, TString mvaname);
   virtual ~IVFMVA();
 
-  float getIVFCandScore(const SVF sv);
+  float getIVFCandScore(const SVF& sv);
 
 private:
   void initIVFMVA();
-  std::map<TString, float> calcIVFCandVars(const SVF ivfcand);
+  std::map<TString, float> calcIVFCandVars(const SVF& ivfcand);
 
   //public:
   //  static constexpr double WP_TIGHT = 0.80;

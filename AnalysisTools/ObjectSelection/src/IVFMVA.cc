@@ -17,7 +17,7 @@ IVFMVA::IVFMVA(TString weightfile, TString mvaname) :mvaReader(weightfile, mvana
 IVFMVA::~IVFMVA() {
 }
 
-float IVFMVA::getIVFCandScore(const SVF sv) {
+float IVFMVA::getIVFCandScore(const SVF& sv) {
 
   auto varMap = calcIVFCandVars(sv);
   for (const auto &v: varsI){
@@ -28,7 +28,7 @@ float IVFMVA::getIVFCandScore(const SVF sv) {
   }
 
   float bdtscore = mvaReader.eval();
-  
+
   return bdtscore;
 }
 
@@ -52,7 +52,7 @@ void IVFMVA::initIVFMVA() {
 }
 
 
-std::map<TString, float> IVFMVA::calcIVFCandVars(const SVF ivfcand) {
+std::map<TString, float> IVFMVA::calcIVFCandVars(const SVF& ivfcand) {
   std::map<TString, float> vars;
 
   vars["SV_ntracks"]                     = ivfcand.svNTracks();
@@ -61,6 +61,6 @@ std::map<TString, float> IVFMVA::calcIVFCandVars(const SVF ivfcand) {
   vars["SV_sip3d"]                       = (ivfcand.svd3D())/(ivfcand.svd3Derr());
   vars["min(SV_chi2/max(1,SV_ndof),10)"] = (ivfcand.svChi2())/(ivfcand.svNdf());
   vars["max(SV_cosTheta,0.98)"]          = ivfcand.svCosSVPV();
-  
+
   return vars;
 }

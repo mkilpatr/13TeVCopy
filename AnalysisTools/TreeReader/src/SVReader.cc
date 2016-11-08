@@ -15,6 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
+//const int SVReader::defaultOptions = SVReader::LOADRECO | SVReader::FILLOBJ | SVReader::LOADMVA;
 const int SVReader::defaultOptions = SVReader::LOADRECO | SVReader::FILLOBJ;
 
 //--------------------------------------------------------------------------------------------------
@@ -31,7 +32,6 @@ SVReader::SVReader() : BaseReader(){
   svd3d_     = new vector<float>;
   svd3derr_  = new vector<float>;
   svcossvpv_ = new vector<float>;
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -42,14 +42,6 @@ void SVReader::load(TreeReader *treeReader, int options, string branchName)
     const_cast<string&>(branchName_) = branchName;
 
     clog << "Loading (" << branchName << ") SVs with: ";
-
-    TString cmsswpath = getenv("CMSSW_BASE");
-    //std::cout << getenv("CMSSW_BASE") << "\n";
-
-    ivfMVA_lpt_b = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_low_b_BDTG.weights.xml", "BDTG");
-    ivfMVA_lpt_e = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_low_e_BDTG.weights.xml", "BDTG");
-    ivfMVA_hpt_b = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_high_b_BDTG.weights.xml", "BDTG");
-    ivfMVA_hpt_e = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_high_e_BDTG.weights.xml", "BDTG");
 
     if(options_) {
       treeReader->setBranchAddress(branchName_, "sv_pt"          , &svpt_,true);
@@ -70,6 +62,16 @@ void SVReader::load(TreeReader *treeReader, int options, string branchName)
     if(options_ & FILLOBJ)
       clog << "+Objects";
     clog << endl;
+
+    if(options_ & LOADMVA){
+      TString cmsswpath = getenv("CMSSW_BASE");
+      //std::cout << getenv("CMSSW_BASE") << "\n";
+
+      ivfMVA_lpt_b = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_low_b_BDTG.weights.xml", "BDTG");
+      ivfMVA_lpt_e = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_low_e_BDTG.weights.xml", "BDTG");
+      ivfMVA_hpt_b = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_high_b_BDTG.weights.xml", "BDTG");
+      ivfMVA_hpt_e = new IVFMVA(cmsswpath+"/src/data/ivf/pteta_high_e_BDTG.weights.xml", "BDTG");
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -96,13 +98,15 @@ void SVReader::refresh(){
   std::sort(SVs.begin(),SVs.end(),PhysicsUtilities::greaterPT<SVF>());
 
   // add ivfmva value in the SV collection
-  for (unsigned int i0=0; i0<SVs.size(); ++i0) {
+  if (options_ & LOADMVA){
+    for (unsigned int i0=0; i0<SVs.size(); ++i0) {
 
-    if (SVs[i0].pt()<15.  && fabs(SVs[i0].eta())<1.2 ) { SVs[i0].setSVMVA(ivfMVA_lpt_b->getIVFCandScore(SVs[i0])); }
-    if (SVs[i0].pt()<15.  && fabs(SVs[i0].eta())>=1.2) { SVs[i0].setSVMVA(ivfMVA_lpt_e->getIVFCandScore(SVs[i0])); }
-    if (SVs[i0].pt()>=15. && fabs(SVs[i0].eta())<1.2 ) { SVs[i0].setSVMVA(ivfMVA_hpt_b->getIVFCandScore(SVs[i0])); }
-    if (SVs[i0].pt()>=15. && fabs(SVs[i0].eta())>=1.2) { SVs[i0].setSVMVA(ivfMVA_hpt_e->getIVFCandScore(SVs[i0])); }
+      if (SVs[i0].pt()<15.  && fabs(SVs[i0].eta())<1.2 ) { SVs[i0].setSVMVA(ivfMVA_lpt_b->getIVFCandScore(SVs[i0])); }
+      if (SVs[i0].pt()<15.  && fabs(SVs[i0].eta())>=1.2) { SVs[i0].setSVMVA(ivfMVA_lpt_e->getIVFCandScore(SVs[i0])); }
+      if (SVs[i0].pt()>=15. && fabs(SVs[i0].eta())<1.2 ) { SVs[i0].setSVMVA(ivfMVA_hpt_b->getIVFCandScore(SVs[i0])); }
+      if (SVs[i0].pt()>=15. && fabs(SVs[i0].eta())>=1.2) { SVs[i0].setSVMVA(ivfMVA_hpt_e->getIVFCandScore(SVs[i0])); }
 
+    }
   }
 
 }

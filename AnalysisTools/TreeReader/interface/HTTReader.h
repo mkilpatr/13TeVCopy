@@ -25,6 +25,7 @@ namespace ucsbsusy {
                       NULLOPT     = 0
                     , LOADRECO    = (1 << 0)
                     , FILLOBJ     = (1 << 1)   ///< Fill objects (as opposed to just pointers
+                    , LOADMVA     = (1 << 2)
     };
     static const int defaultOptions;
 
@@ -91,7 +92,7 @@ namespace ucsbsusy {
     HTTFatJetFCollection fatJets;
 
   private:
-    HTTMVA * httMVA;
+    HTTMVA * httMVA = nullptr;
 
 };
 
