@@ -79,7 +79,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       extraFiller.bookTest(&data);
 //      extraFiller.bookSyst(&data);
 //      extraFiller.bookJetMET(&data);
-      extraFiller.bookQCDAngles(&data);
+//      extraFiller.bookQCDAngles(&data);
 //      extraFiller.bookLepton(&data);
 //      extraFiller.bookGen(&data);
 //      m2Filler.book(&data);
@@ -114,13 +114,13 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
 //        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
-	extraFiller.fillQCDAngles(&data, this);
+//	extraFiller.fillQCDAngles(&data, this);
       } else {
         if(met->pt() < metcut_  ) return false;
 
         filler.fillEventInfo(&data, this);
 //        extraFiller.fillJetMETInfo(&data, this);
-	extraFiller.fillQCDAngles(&data, this);
+//	extraFiller.fillQCDAngles(&data, this);
       }
 
       extraFiller.fillTestVars(&data, this);

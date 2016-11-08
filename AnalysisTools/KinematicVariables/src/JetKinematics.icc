@@ -51,14 +51,20 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
   return PhysicsUtilities::absDeltaPhi(met,jet);
 }
 
+//___________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::LawOfCos(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+	float fScaling = jet.pt()/met.pt();
+	return TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
+}
+
 //____________________________________________________________________________
 template<typename MET,typename Jet>
 double JetKinematics::absDPhiStarMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta){
 	if (!passCuts(jet,minPT,maxEta)) return noDist;
-	double_t met_double = static_cast<double_t> (met.pt());
-  	double fScaling = fabs(jet.pt())/fabs(met_double);
-	double cosDphiStar = (fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
-	return TMath::ACos(cosDphiStar);
+	auto metn = met.p4() + jet.p4();
+	return PhysicsUtilities::absDeltaPhi(metn,jet);
 }
 
 //_____________________________________________________________________________
@@ -77,9 +83,8 @@ double JetKinematics::absDPhiStarMETJ_tilde(const MET& met, const Jet& jet, cons
   if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
     TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta))/(fScaling + gScaling);
   else
-    TanDPhiStar = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/(fScaling + gScaling);
+    TanDPhiStar = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/(fScaling + gScaling);
   return TMath::ATan(TanDPhiStar);
-  //return fabs(PhysicsUtilities::deltaPhi(jet, met + jet));
 }
 
 //___________________________________________________________________________
@@ -104,7 +109,7 @@ double JetKinematics::OmegaMETJ_tilde(const MET& met, const Jet& jet, const doub
   if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
     tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/fScaling;
   else
-    tanOmega = TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)))/fScaling;
+    tanOmega = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/fScaling;
   return TMath::ATan(tanOmega);
 } 
 

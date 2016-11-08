@@ -37,6 +37,9 @@ namespace JetKinematics {
   double absDPhiMETJ3(const MET& met, const std::vector<Jet*>& jets, const double minPT = 0, const double maxEta = 9999);
 
   template<typename MET,typename Jet>
+  double LawOfCos(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
+
+  template<typename MET,typename Jet>
   double absDPhiStarMETJ(const MET& met, const Jet& jet, const double minPT = 0, const double maxEta = 9999);
 
   template<typename MET,typename Jet>
