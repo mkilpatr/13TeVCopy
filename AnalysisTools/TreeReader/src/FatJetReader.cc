@@ -91,7 +91,7 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
     clog << "Loading (" << branchName << ") tops with: ";
 
     TString cmsswpath = getenv("CMSSW_BASE");
-    softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-hqu-07112016.xml", "BDTG");
+    softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml", "BDTG");
 
     if(options_ & LOADRECO) {
       clog << " +Reco ";
