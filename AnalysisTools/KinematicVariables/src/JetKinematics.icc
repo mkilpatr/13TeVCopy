@@ -51,14 +51,6 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
   return PhysicsUtilities::absDeltaPhi(met,jet);
 }
 
-//_____________________________________________________________________________
-template<typename MET,typename Jet>
-double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
-{
-  if (!passCuts(jet,minPT,maxEta)) return noDist;
-  return fabs(PhysicsUtilities::deltaPhi(jet, met));
-}
-
 //____________________________________________________________________________
 template<typename MET,typename Jet>
 double JetKinematics::absDPhiStarMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta){
