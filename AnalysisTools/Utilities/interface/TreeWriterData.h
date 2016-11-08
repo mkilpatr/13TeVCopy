@@ -3,7 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <assert.h>
+#include <typeinfo>
+#include <typeindex>
+#include <stdexcept>
 
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
 
@@ -53,6 +57,7 @@ class TreeWriter;
   };
 
   class TreeWriterData{
+    using TypeMap = std::unordered_map<std::type_index, std::string>;
   public:
     TreeWriterData() : isBooked(false) {};
     ~TreeWriterData() { for(auto d : data) delete d; };
@@ -61,23 +66,80 @@ class TreeWriter;
     unsigned int add(const std::string prefix,const std::string name,const std::string type,const Type defaultValue){
       assert(!isBooked);
       data.push_back(new TreeVar<Type>(prefix,name,type,defaultValue));
+      var_pos[name] = data.size() -1;
       return data.size() -1;
     }
     template<typename Type>
     unsigned int addMulti(const std::string prefix,const std::string name,const Type defaultValue){
       assert(!isBooked);
       data.push_back(new TreeMultiVar<Type>(prefix,name,defaultValue));
+      var_pos[name] = data.size() -1;
       return data.size() -1;
     }
 
-    template<typename Type, typename FillType>
-    void fill(unsigned int index, const FillType var){assert(index < data.size()); ((TreeVar<Type>*)(data[index]))->fill(var);}
+    // simplified add
     template<typename Type>
-    void fill(unsigned int index){ assert(index < data.size()); ((TreeVar<Type>*)(data[index]))->fill();}
-    template<typename Type, typename FillType>
-    void fillMulti(unsigned int index, const FillType var){assert(index < data.size()); ((TreeMultiVar<Type>*)(data[index]))->fill(var);}
+    void add(const std::string name, const Type defaultValue){
+      try {
+        add<Type>("", name, type_names.at(std::type_index(typeid(Type))), defaultValue);
+      } catch (const std::out_of_range& e){
+        throw std::invalid_argument(std::string(typeid(Type).name()) + " is not a valid type for TTree!");
+      }
+    }
     template<typename Type>
-    void fillMulti(unsigned int index){assert(index < data.size()); ((TreeMultiVar<Type>*)(data[index]))->fill();}
+    void addMulti(const std::string name, const Type defaultValue){
+      addMulti("", name, defaultValue);
+    }
+
+
+    template<typename Type, typename FillType>
+    void fill(unsigned int index, const FillType var){
+      auto *tv=dynamic_cast<TreeVar<Type>*>(data.at(index));
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Inconsistent type for variable: "+data.at(index)->bookName());
+      tv->fill(var);
+    }
+    template<typename Type>
+    void fill(unsigned int index){
+      auto *tv=dynamic_cast<TreeVar<Type>*>(data.at(index));
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Inconsistent type for variable: "+data.at(index)->bookName());
+      tv->fill();
+    }
+    template<typename Type, typename FillType>
+    void fillMulti(unsigned int index, const FillType var){
+      auto *tv=dynamic_cast<TreeMultiVar<Type>*>(data.at(index));
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Inconsistent type for variable: "+data.at(index)->bookName());
+      tv->fill(var);
+    }
+    template<typename Type>
+    void fillMulti(unsigned int index){
+      auto *tv=dynamic_cast<TreeMultiVar<Type>*>(data.at(index));
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Inconsistent type for variable: "+data.at(index)->bookName());
+      tv->fill();
+    }
+
+    // string-based fill
+    template<typename Type, typename FillType>
+    void fill(const std::string name, const FillType var){
+      try {
+        fill<Type, FillType>(var_pos.at(name), var);
+      } catch (const std::out_of_range& e){
+        throw std::invalid_argument("[TreeWriterData::fill] Unknown variable: " + name);
+      }
+    }
+    template<typename Type, typename FillType>
+    void fillMulti(const std::string name, const FillType var){
+      try {
+        fillMulti<Type, FillType>(var_pos.at(name), var);
+      } catch (const std::out_of_range& e){
+        throw std::invalid_argument("[TreeWriterData::fillMulti] Unknown variable: " + name);
+      }
+    }
+
+    template<typename Type>
+    void set(const std::string name, const Type var){ fill<Type, Type>(name, var); }
+    template<typename Type>
+    void setMulti(const std::string name, const Type var){ fillMulti<Type, Type>(name, var); }
+
 
     void book(TreeWriter * tw){
       for(auto d : data) d->book(tw);
@@ -87,6 +149,8 @@ class TreeWriter;
   protected:
     bool isBooked;
     std::vector<AbstractTreeVar*> data;
+    std::unordered_map<std::string, unsigned int> var_pos;
+    static TypeMap type_names;
   };
 }
 
