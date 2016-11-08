@@ -422,8 +422,8 @@ struct SoftdropMVAFiller {
     preparePreselectedFatjets(ana);
     prepareGenTops(ana);
 
-    data->fill<int  >(i_nLooseSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > 0.08; }));
-    data->fill<int  >(i_nTightSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > 0.61; }));
+    data->fill<int  >(i_nLooseSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropMVA::WP_LOOSE; }));
+    data->fill<int  >(i_nTightSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropMVA::WP_TIGHT; }));
     for(const auto &fatjet : preselectedFatjets) {
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, 0.8, 0.8) : 0); // if not top process don't try to match
       data->fillMulti<bool >(i_basic_ak8_matches_gen, (top ? true : false));
