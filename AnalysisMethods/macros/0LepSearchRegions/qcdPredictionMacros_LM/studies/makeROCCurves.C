@@ -42,8 +42,8 @@ void makeROCCurves(const TString sigtree_600   = QCDSupport::inputDir + "/T2tt_6
   //TString selmet2000to2500  = "(met > 2000)";
   //TString selmet2500toInf   = "met > 2500";
   //vector<TString> compmvas_training   = {"dphimhtj12", "dphistarmhtj12", "omegamhtj12", "chimhtj12", "dphimhtj12_qcd", "dphistarmhtj12_qcd", "omegamhtj12_qcd", "chimhtj12_qcd"};
-  vector<TString> compmvas_training   = {"dphimhtj12", "dphistarmhtj12", "dphimhtj123", "dphistarmhtj123", "dphimhtj12_500_Inf", "dphimhtj123_500_Inf", "dphistarmhtj123_0_500","dphistarmhtj12_0_500", "dphistarmhtj12_500_1000", "dphistarmhtj123_500_1000"};
-  vector<TString> compmvas_training_2   = {"dphimhtj12_qcd", "dphistarmhtj12_qcd", "dphimhtj123_qcd", "dphistarmhtj123_qcd",  "dphimhtj12_qcd_500_Inf", "dphimhtj123_qcd_500_Inf", "dphistarmhtj12_qcd_0_500","dphistarmhtj123_qcd_0_500", "dphistarmhtj12_qcd_500_1000", "dphistarmhtj123_qcd_500_1000"};
+  vector<TString> compmvas_training   = {"dphimhtj12", "dphistarmhtj12", "dphimhtj123", "dphistarmhtj123", "dphimhtj12_500_Inf", "dphimhtj123_500_Inf", "dphistarmhtj123_0_500","dphistarmhtj12_0_500", "dphistarmhtj12_500_1000", "dphistarmhtj123_500_1000", "dphimhtj1234", "dphistarmhtj1234_0_500", "dphistarmhtj1234_500_Inf", "dphimhtj1234_500_Inf"};
+  vector<TString> compmvas_training_2   = {"dphimhtj12_qcd", "dphistarmhtj12_qcd", "dphimhtj123_qcd", "dphistarmhtj123_qcd",  "dphimhtj12_qcd_500_Inf", "dphimhtj123_qcd_500_Inf", "dphistarmhtj12_qcd_0_500","dphistarmhtj123_qcd_0_500", "dphistarmhtj12_qcd_500_1000", "dphistarmhtj123_qcd_500_1000", "dphimhtj1234_qcd", "dphistarmhtj1234_qcd_0_500", "dphistarmhtj1234_qcd_500_1000", "dphimhtj1234_qcd_500_Inf"};
   vector<std::string> plotNames = {"t2tt_400_313", "t2tt_600_300", "t2tt_800_100", "t2fbd_400_350"};
 
   PlotROCCurves* plots = new PlotROCCurves();
@@ -58,27 +58,35 @@ void makeROCCurves(const TString sigtree_600   = QCDSupport::inputDir + "/T2tt_6
 
   plots->addROCVariable("dphimhtj12",                  "dphimhtj12_tot_0_500",              selqcd + "&&" + selmet0to500,     	  selqcd + "&&" + selmet0to500,     kRed,      1,        200, 0., 3.2);
   plots->addROCVariable("dphimhtj123",                 "dphimhtj123_tot_0_500",             selqcd + "&&" + selmet0to500,     	  selqcd + "&&" + selmet0to500,     kBlue,     1,        200, 0., 3.2);
+  plots->addROCVariable("dphimhtj1234",                "dphimhtj1234_tot_0_500",            selqcd + "&&" + selmet0to500,     	  selqcd + "&&" + selmet0to500,     kCyan,     1,        200, 0., 3.2);
   plots->addROCVariable("dphimhtj12_500_Inf",          "dphimhtj12_tot_500_Inf",            selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    1,        200, 0., 3.2);
   plots->addROCVariable("dphimhtj123_500_Inf",         "dphimhtj123_tot_500_Inf",           selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  1,        200, 0., 3.2);
+  plots->addROCVariable("dphimhtj1234_500_Inf",        "dphimhtj1234_tot_500_Inf",          selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kViolet,  1,        200, 0., 3.2);
   plots->addROCVariable("dphistarmhtj12_0_500",        "dphistarmhtj12_tot_0_500",          selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kRed,      2,        200, 0., 3.2);
   plots->addROCVariable("dphistarmhtj123_0_500",       "dphistarmhtj123_tot_0_500",         selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kBlue,     2,        200, 0., 3.2);
+  plots->addROCVariable("dphistarmhtj1234_0_500",      "dphistarmhtj1234_tot_0_500",        selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kCyan,     2,        200, 0., 3.2);
   plots->addROCVariable("dphistarmhtj12_500_1000",     "dphistarmhtj12_tot_500_Inf",        selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    2,        200, 0., 3.2);
   plots->addROCVariable("dphistarmhtj123_500_1000",    "dphistarmhtj123_tot_500_Inf",       selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  2,        200, 0., 3.2);
- 
+  plots->addROCVariable("dphistarmhtj1234_500_Inf",    "dphistarmhtj1234_tot_500_Inf",      selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kViolet,  2,        200, 0., 3.2);
+
   //plots_qcd->addSignalTree    (sigtree_400, treename, siglabel_400);
   //plots_qcd->addSignalTree    (sigtree_600, treename, siglabel_600);
   //plots_qcd->addSignalTree    (sigtree_800, treename, siglabel_800);
   plots_qcd->addSignalTree    (sigtree_fbd, treename, siglabel_fbd); 
   plots_qcd->addBackgroundTree(bkgtree_qcd, treename, bkglabel_qcd);
 
-  plots_qcd->addROCVariable("dphimhtj12_qcd",              "dphimhtj12_qcd_tot_0_500",              selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kRed,      1,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphimhtj123_qcd",             "dphimhtj123_qcd_tot_0_500",             selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kBlue,     1,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphimhtj12_qcd_500_Inf",      "dphimhtj12_qcd_tot_500_Inf",            selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    1,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphimhtj123_qcd_500_Inf",     "dphimhtj123_qcd_tot_500_Inf",           selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  1,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphistarmhtj12_qcd_0_500",    "dphistarmhtj12_qcd_tot_0_500",          selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kRed,      2,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphistarmhtj123_qcd_0_500",   "dphistarmhtj123_qcd_tot_0_500",         selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kBlue,     2,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphistarmhtj12_qcd_500_1000", "dphistarmhtj12_qcd_tot_500_Inf",        selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    2,        200, 0., 3.2);
-  plots_qcd->addROCVariable("dphistarmhtj123_qcd_500_1000","dphistarmhtj123_qcd_tot_500_Inf",       selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj12_qcd",               "dphimhtj12_qcd_0_500",              selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kRed,      1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj123_qcd",              "dphimhtj123_qcd_0_500",             selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kBlue,     1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj1234_qcd",             "dphimhtj1234_qcd_0_500",            selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kCyan,    1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj12_qcd_500_Inf",       "dphimhtj12_qcd_500_Inf",            selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj123_qcd_500_Inf",      "dphimhtj123_qcd_500_Inf",           selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphimhtj1234_qcd_500_Inf",     "dphimhtj1234_qcd_500_Inf",          selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kViolet,   1,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj12_qcd_0_500",     "dphistarmhtj12_qcd_0_500",          selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kRed,      2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj123_qcd_0_500",    "dphistarmhtj123_qcd_0_500",         selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kBlue,     2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj1234_qcd_0_500",   "dphistarmhtj1234_qcd_0_500",        selqcd + "&&" + selmet0to500,         selqcd + "&&" + selmet0to500,     kCyan,    2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj12_qcd_500_1000",  "dphistarmhtj12_qcd_500_Inf",        selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kGreen,    2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj123_qcd_500_1000", "dphistarmhtj123_qcd_500_Inf",       selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kMagenta,  2,        200, 0., 3.2);
+  plots_qcd->addROCVariable("dphistarmhtj1234_qcd_500_1000", "dphistarmhtj1234_qcd_500_Inf",      selqcd + "&&" + selmet500to1000,      selqcd + "&&" + selmet500to1000,  kViolet,   2,        200, 0., 3.2);
 
   plots->    addCompPlot(outputname+"_qcdVariables_1_t2fbd_400_350_tot",      compmvas_training);
   plots_qcd->addCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd",      compmvas_training_2);
@@ -106,31 +114,44 @@ void makeROCCurves(const TString sigtree_600   = QCDSupport::inputDir + "/T2tt_6
 
   float sigeff_dphi12_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj12_qcd"),     0.5, 0)[0];
   float bkgeff_dphi12_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj12_qcd"),     0.5, 0)[0];
-  float sigeff_dphi123_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj123_qcd"),     0.5, 0)[0];
-  float bkgeff_dphi123_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj123_qcd"),     0.5, 0)[0];
+  float sigeff_dphi123_qcd =    EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj123_qcd"),     0.5, 0)[0];
+  float bkgeff_dphi123_qcd =    EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj123_qcd"),     0.5, 0)[0];
+  float sigeff_dphi1234_qcd =   EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj1234_qcd"),     0.5, 0)[0];
+  float bkgeff_dphi1234_qcd =   EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj1234_qcd"),     0.5, 0)[0];
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_dphi12_qcd, bkgeff_dphi12_qcd, sigeff_dphi12_qcd, 1, 2, "#Delta#phij12 < 0.5");
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_dphi12_qcd, 0.0, bkgeff_dphi12_qcd, sigeff_dphi12_qcd, 1, 2);
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_dphi123_qcd, bkgeff_dphi123_qcd, sigeff_dphi123_qcd, 1, 6, "#Delta#phij123 < 0.5");
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_dphi123_qcd, 0.0, bkgeff_dphi123_qcd, sigeff_dphi123_qcd, 1, 6);
+  plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_dphi1234_qcd, bkgeff_dphi1234_qcd, sigeff_dphi1234_qcd, 1, 6, "#Delta#phij1234 < 0.5");
+  plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_dphi1234_qcd, 0.0, bkgeff_dphi1234_qcd, sigeff_dphi1234_qcd, 1, 6);
   float sigeff_500_dphi12_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj12_qcd_500_Inf"),     0.5, 0)[0];
   float bkgeff_500_dphi12_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj12_qcd_500_Inf"),     0.5, 0)[0];
-  float sigeff_500_dphi123_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj123_qcd_500_Inf"),     0.5, 0)[0];
-  float bkgeff_500_dphi123_qcd =     EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj123_qcd_500_Inf"),     0.5, 0)[0];
+  float sigeff_500_dphi123_qcd =    EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj123_qcd_500_Inf"),     0.5, 0)[0];
+  float bkgeff_500_dphi123_qcd =    EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj123_qcd_500_Inf"),     0.5, 0)[0];
+  float sigeff_500_dphi1234_qcd =   EffPlotTools::getEfficiencyForCutValue(plots_qcd->getSigHist("dphimhtj1234_qcd_500_Inf"),     0.5, 0)[0];
+  float bkgeff_500_dphi1234_qcd =   EffPlotTools::getEfficiencyForCutValue(plots_qcd->getBkgHist("dphimhtj1234_qcd_500_Inf"),     0.5, 0)[0];
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_500_dphi12_qcd, bkgeff_500_dphi12_qcd, sigeff_500_dphi12_qcd, 1, 4, "#Delta#phij12 < 0.5");
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_500_dphi12_qcd, 0.0, bkgeff_500_dphi12_qcd, sigeff_500_dphi12_qcd, 1, 4);
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_500_dphi123_qcd, bkgeff_500_dphi123_qcd, sigeff_500_dphi123_qcd, 1, 8, "#Delta#phij123 < 0.5");
   plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_500_dphi123_qcd, 0.0, bkgeff_500_dphi123_qcd, sigeff_500_dphi123_qcd, 1, 8);
+  plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(0.0, sigeff_500_dphi1234_qcd, bkgeff_500_dphi1234_qcd, sigeff_500_dphi1234_qcd, 1, 8, "#Delta#phij1234 < 0.5");
+  plots_qcd->getCompPlot(outputname+"_qcdVariables_2_t2fbd_400_350_qcd")->addLine(bkgeff_500_dphi1234_qcd, 0.0, bkgeff_500_dphi1234_qcd, sigeff_500_dphi1234_qcd, 1, 8);
   plots_qcd->plotAll();
 
-  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_0_500",        0.45);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_0_500",       0.36);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_500_1000",     0.45);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_500_1000",    0.36);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_0_500",        sigeff_dphi12_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_0_500",       sigeff_dphi123_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj1234_qcd_0_500",      sigeff_dphi1234_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_500_1000",     sigeff_500_dphi12_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_500_1000",    sigeff_500_dphi123_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj1234_qcd_500_1000",   sigeff_500_dphi1234_qcd);
   
-  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_0_500",        0.67);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_0_500",       0.54);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_500_1000",     0.67);
-  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_500_1000",    0.54);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_0_500",        0.5 + sigeff_dphi12_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_0_500",       0.5 + sigeff_dphi123_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj1234_qcd_0_500",      0.5 + sigeff_dphi1234_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj12_qcd_500_1000",     0.5 + sigeff_500_dphi12_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj123_qcd_500_1000",    0.5 + sigeff_500_dphi123_qcd);
+  plots_qcd->getInfoForSignalEff("dphistarmhtj1234_qcd_500_1000",    0.5 + sigeff_500_dphi1234_qcd);
+  
  
   //plots->getInfoForCut("dphimhtj12", 0.5);
   //plots->getInfoForCut("dphimhtj123", 0.5);

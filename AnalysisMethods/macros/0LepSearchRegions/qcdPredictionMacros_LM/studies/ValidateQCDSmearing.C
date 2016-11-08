@@ -154,18 +154,6 @@ void ValidateQCDSmearing(){
   //printStack(stackTrees, dphiSmht12_shape,       "stack", dphiSmhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphiSmht123_shape,      "stack", dphiSmhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphiSmht1234_shape,     "stack", dphiSmhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht12_T_shape,     "stack", dphiSmhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht123_T_shape,    "stack", dphiSmhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht1234_T_shape,   "stack", dphiSmhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht12_shape,       "stack", omegamhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht123_shape,      "stack", omegamhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht1234_shape,     "stack", omegamhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht12_T_shape,     "stack", omegamhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht123_T_shape,    "stack", omegamhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht1234_T_shape,   "stack", omegamhtj_T_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht12_shape,         "stack", chimhtj_binning,         QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht123_shape,        "stack", chimhtj_binning,         QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht1234_shape,       "stack", chimhtj_binning,         QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphi12Z_shape,          "Z_stack", dphi_binning,          QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphi123Z_shape,         "Z_stack", dphi_binning,          QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphimht12Z_shape,       "Z_stack", dphimhtj_binning,      QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
@@ -174,19 +162,6 @@ void ValidateQCDSmearing(){
   //printStack(stackTrees, dphiSmht12Z_shape,      "Z_stack", dphiSmhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphiSmht123Z_shape,     "Z_stack", dphiSmhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
   //printStack(stackTrees, dphiSmht1234Z_shape,    "Z_stack", dphiSmhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht12Z_T_shape,    "Z_stack", dphiSmhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht123Z_T_shape,   "Z_stack", dphiSmhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, dphiSmht1234Z_T_shape,  "Z_stack", dphiSmhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht12Z_shape,      "Z_stack", omegamhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht123Z_shape,     "Z_stack", omegamhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht1234Z_shape,    "Z_stack", omegamhtj_binning,     QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht12Z_T_shape,    "Z_stack", omegamhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht123Z_T_shape,   "Z_stack", omegamhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, omegamht1234Z_T_shape,  "Z_stack", omegamhtj_T_binning,   QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht12Z_shape,        "Z_stack", chimhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht123Z_shape,       "Z_stack", chimhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, chimht1234Z_shape,      "Z_stack", chimhtj_binning,       QCDSupport::METPresel + " && " + QCDSupport::BaselineExtraCuts, "Events",true,true);
-  //printStack(stackTrees, ptb_shape,   "stack", nb_binning, met2_binning, QCDSupport::CR_def, "Events", true);
 }
 
 float getMinimum(TH1F* p_Hist){

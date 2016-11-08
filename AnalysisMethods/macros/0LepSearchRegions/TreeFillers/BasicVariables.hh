@@ -93,7 +93,6 @@ struct BasicVarsFiller {
   size i_dphij1lmet;
   size i_nivf;
 
-<<<<<<< HEAD
   //Matt added new variables
   size i_dphimetj1  ;
   size i_dphistarmetj1;
@@ -120,8 +119,6 @@ struct BasicVarsFiller {
   size i_omegametj4_tilde;
   size i_chimetj4   ;
 
-=======
->>>>>>> 32168af5a1c1f8c72c26b958332689b5353c7cbc
   // Lepton variables
   size i_leptonpt  ;
   size i_leptoneta ;
@@ -219,8 +216,7 @@ struct BasicVarsFiller {
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
-
-<<<<<<< HEAD
+    
     //Matt added filling
     i_dphimetj1       = data->add<float>("","dphimetj1","F",0);
     i_dphistarmetj1   = data->add<float>("","dphistarmetj1","F",0);
@@ -247,8 +243,6 @@ struct BasicVarsFiller {
     i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",3);
     i_chimetj4        = data->add<float>("","chimetj4","F",3);
 
-=======
->>>>>>> 32168af5a1c1f8c72c26b958332689b5353c7cbc
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
@@ -424,7 +418,6 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
     }
 
-<<<<<<< HEAD
     if(jets.size() > 0) {
       data->fill<float>(i_dphimetj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
       data->fill<float>(i_dphistarmetj1, JetKinematics::absDPhiStarMHTJ(*met, *jets[0], 30.0, 2.4));
@@ -458,8 +451,6 @@ struct BasicVarsFiller {
       data->fill<float>(i_chimetj4, JetKinematics::ChiMHTJ(*met, *jets[3], 30.0, 2.4));
     }
 
-=======
->>>>>>> 32168af5a1c1f8c72c26b958332689b5353c7cbc
     vector<RecoJetF*> jetsCSVranked(jets);
     cfgSet::sortByCSV(jetsCSVranked);
     double mtcsv1met = -99, mtcsv2met = -99, mtcsv12met = -99;

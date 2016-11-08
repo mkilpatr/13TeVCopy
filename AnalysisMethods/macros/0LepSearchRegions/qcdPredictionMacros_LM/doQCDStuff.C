@@ -379,16 +379,16 @@ void MakeSRPlots(QCDSupport::SRegInfo& srinfo, vector<TString>& names, vector<TT
   }
 }
 
-void MakeDPhiPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TTree*>& trees, vector<int>& colors) {
-  cout << "MakeDPhiPlots..." << endl;
-  const TString outputDir = "MakeDPhiPlots";
+void MakeDPhiStarPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TTree*>& trees, vector<int>& colors) {
+  cout << "MakeDPhiStarPlots..." << endl;
+  const TString outputDir = "MakeDPhiStarPlots";
   gSystem->mkdir(outputDir, true);
 
-  HistogramGetter* dPhi_HG = new HistogramGetter("dphi", "min(dphij1met, min(dphij2met, dphij3met))", "min(#Delta#phi(j_{1,2,3},#slash{#it{E}}_{T}))", 32, 0, 3.2);
+  HistogramGetter* dPhi_HG = new HistogramGetter("dphistar", "min(dphistarmhtj1, min(dphistarmhtj2, dphistarmhtj3))", "min(#Delta#phi*(j_{1,2,3},#slash{#it{E}}_{T}))", 32, 0, 3.2);
   for(unsigned int iCR = 0; iCR < crinfo.nCR; ++iCR){
     TString title = TString::Format("%s", crinfo.crSelNames[iCR].Data());
-    TString name  = TString::Format("dphi_%s", crinfo.crRegBinNames[iCR].Data());
-    TString sel   = TString::Format("%s && %s && (nvetolep==0) && (nvetotau==0)", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data());
+    TString name  = TString::Format("dphistar_%s", crinfo.crRegBinNames[iCR].Data());
+    TString sel   = TString::Format("%s && %s && %s && (nvetolep==0) && (nvetotau==0)", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data(), crinfo.crSel[iCR].Data());
 cout << title << endl;
 cout << name  << endl;
 cout << sel   << endl;
@@ -399,7 +399,137 @@ cout << sel   << endl;
     for(unsigned int iT = 0; iT < trees.size(); ++iT){
       if(names[iT] == "Data"){
         TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, "1.0", TString::Format("data_%s", name.Data()));
-        for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
+        for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) if(hist->GetBinLowEdge(iBin) + hist->GetBinWidth(iBin) > CR_cutoff) hist->SetBinContent(iBin, -999);
+	//for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
+        plot_allMet->addHist(hist, names[iT], "E0", colors[iT], 0, colors[iT]);
+      } else if(names[iT] == "Non-QCD bkg"){
+	hist_nonQCD_bkg = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("nonqcd_%s", name.Data()));
+	totMCYield += hist_nonQCD_bkg->Integral(0, hist_nonQCD_bkg->GetNbinsX() + 1);
+	plot_allMet->addToStack(hist_nonQCD_bkg, names[iT], colors[iT], 1001, 1, 1, 3);
+      } else if(names[iT].Contains("Smeared")){
+        TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdQCDWeight, TString::Format("qcd_%s", name.Data()));
+        totMCYield += hist->Integral(0, hist->GetNbinsX() + 1);
+        plot_allMet->addToStack(hist, names[iT], colors[iT], 1001, 1, 1, 3);
+      } else if(names[iT] == "With orig. QCD MC"){
+        TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdQCDWeight, TString::Format("qcd_orig_%s", name.Data()));
+        hist->Add(hist_nonQCD_bkg);
+        if(yMin > hist->GetMinimum()) yMin = hist->GetMinimum();
+        if(yMax < hist->GetMaximum()) yMax = hist->GetMaximum();
+        plot_allMet->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
+      } else if(names[iT].Contains("T2fbd")){
+        TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("signal_%s_%u", name.Data(), iT));
+        hist->Scale(totMCYield / hist->Integral(0, hist->GetNbinsX() + 1));
+        plot_allMet->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
+      }
+    }
+    TCanvas* c = new TCanvas;
+    //plot_allMet->setDrawCMSLumi();
+    plot_allMet->setUsePoisson();
+//    if(yMin <= 0) yMin = 0.1;
+//    plot_allMet->setYRange(0.1 * yMin, 1000 * yMax);
+//    plot_allMet->setLogy();
+    plot_allMet->setYRange(0, 1.4 * yMax);
+    plot_allMet->setTitle(" ");
+    plot_allMet->setLegend(.6,.58,.90,.88);
+    c->cd();
+    plot_allMet->draw(c,false,QCDSupport::format);
+    c->cd();
+    c->Modified();
+    TLatex *tl = new TLatex();
+    tl->SetTextSize(0.03);
+    tl->DrawLatexNDC(0.2, 0.7, crinfo.crSelLabels[iCR]);
+    QCDSupport::setTitleOffset(c);
+    c->Update();
+    c->SaveAs(outputDir + "/" + plot_allMet->getName() + TString(".") + QCDSupport::format);
+    for(int iMet = 0; iMet < crinfo.nMETBins[iCR]; ++iMet){
+      if(iMet != crinfo.nMETBins[iCR] - 1){
+        title = TString::Format("%.f #leq #slash{#it{E}}_{T} < %.f, %s", crinfo.metBins[iCR][iMet], crinfo.metBins[iCR][iMet + 1], crinfo.crSelNames[iCR].Data());
+        name  = TString::Format("dphistar_%s_met_%.f_to_%.f", crinfo.crRegBinNames[iCR].Data(), crinfo.metBins[iCR][iMet], crinfo.metBins[iCR][iMet + 1]);
+        sel   = TString::Format("met >= %.f && met < %.f && %s && %s && %s && (nvetolep==0) && (nvetotau==0)", crinfo.metBins[iCR][iMet], crinfo.metBins[iCR][iMet + 1], QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data(), crinfo.crSel[iCR].Data());
+      } else {
+        title = TString::Format("%.f #leq #slash{#it{E}}_{T}, %s", crinfo.metBins[iCR][iMet], crinfo.crSelNames[iCR].Data());
+        name  = TString::Format("dphistar_%s_met_ge_%.f", crinfo.crRegBinNames[iCR].Data(), crinfo.metBins[iCR][iMet]);
+        sel   = TString::Format("met >= %.f && %s && %s && %s && (nvetolep==0) && (nvetotau==0)", crinfo.metBins[iCR][iMet], QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data(), crinfo.crSel[iCR].Data());
+      }
+cout << title << endl;
+cout << name  << endl;
+cout << sel   << endl;
+      Plot* plot = new Plot(name, title, dPhi_HG->plotInfo->xTitle, "Events");
+      yMin = 99999.;
+      yMax = 0.;
+      totMCYield = 0;
+      TH1F* hist_nonQCD_bkg = 0;
+      for(unsigned int iT = 0; iT < trees.size(); ++iT){
+        if(names[iT] == "Data"){
+          TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, "1.0", TString::Format("data_%s", name.Data()));
+          for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) if(hist->GetBinLowEdge(iBin) + hist->GetBinWidth(iBin) > CR_cutoff) hist->SetBinContent(iBin, -999);
+          //for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
+          plot->addHist(hist, names[iT], "E0", colors[iT], 0, colors[iT]);
+        } else if(names[iT] == "Non-QCD bkg"){
+          hist_nonQCD_bkg = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("nonqcd_%s", name.Data()));
+          totMCYield += hist_nonQCD_bkg->Integral(0, hist_nonQCD_bkg->GetNbinsX() + 1);
+          plot->addToStack(hist_nonQCD_bkg, names[iT], colors[iT], 1001, 1, 1, 3);
+        } else if(names[iT].Contains("Smeared")){
+          TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdQCDWeight, TString::Format("qcd_%s", name.Data()));
+          totMCYield += hist->Integral(0, hist->GetNbinsX() + 1);
+          plot->addToStack(hist, names[iT], colors[iT], 1001, 1, 1, 3);
+        } else if(names[iT] == "With orig. QCD MC"){
+          TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdQCDWeight, TString::Format("qcd_orig_%s", name.Data()));
+          hist->Add(hist_nonQCD_bkg);
+          if(yMin > hist->GetMinimum()) yMin = hist->GetMinimum();
+          if(yMax < hist->GetMaximum()) yMax = hist->GetMaximum();
+          plot->addHistForRatio(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
+        } else if(names[iT].Contains("T2fbd")){
+          TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("signal_%s_%u", name.Data(), iT));
+          hist->Scale(totMCYield / hist->Integral(0, hist->GetNbinsX() + 1));
+          plot->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
+        }
+      }
+      TCanvas* c = new TCanvas;
+      //plot->setDrawCMSLumi();
+      plot->setUsePoisson();
+//      if(yMin <= 0) yMin = 0.1;
+//      plot->setYRange(0.1 * yMin, 1000 * yMax);
+//      plot->setLogy();
+      plot->setYRange(0, 1.4 * yMax);
+      plot->setTitle(" ");
+      plot->setLegend(.6,.58,.90,.88);
+      c->cd();
+      plot->draw(c,false,QCDSupport::format);
+      c->cd();
+      c->Modified();
+      TLatex *tl = new TLatex();
+      tl->SetTextSize(0.03);
+      tl->DrawLatexNDC(0.2, 0.7, crinfo.crSelLabels[iCR]);
+      QCDSupport::setTitleOffset(c);
+      c->Update();
+      c->SaveAs(outputDir + "/" + plot->getName() + TString(".") + QCDSupport::format);
+    }
+  }
+}
+
+void MakeDPhiPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TTree*>& trees, vector<int>& colors) {
+  cout << "MakeDPhiPlots..." << endl;
+  const TString outputDir = "MakeDPhiPlots";
+  gSystem->mkdir(outputDir, true);
+
+  HistogramGetter* dPhi_HG = new HistogramGetter("dphi", "min(dphij1met, min(dphij2met, dphij3met))", "min(#Delta#phi(j_{1,2,3},#slash{#it{E}}_{T}))", 32, 0, 3.2);
+  for(unsigned int iCR = 0; iCR < crinfo.nCR; ++iCR){
+    TString title = TString::Format("%s", crinfo.crSelNames[iCR].Data());
+    TString name  = TString::Format("dphi_%s", crinfo.crRegBinNames[iCR].Data());
+    TString sel   = TString::Format("%s && %s && %s && (nvetolep==0) && (nvetotau==0)", QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data(), crinfo.crSel[iCR].Data());
+cout << title << endl;
+cout << name  << endl;
+cout << sel   << endl;
+    Plot* plot_allMet = new Plot(name, title, dPhi_HG->plotInfo->xTitle, "Events");
+    float yMin = 99999., yMax = 0.;
+    float totMCYield = 0;
+    TH1F* hist_nonQCD_bkg = 0;
+    for(unsigned int iT = 0; iT < trees.size(); ++iT){
+      if(names[iT] == "Data"){
+        TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, "1.0", TString::Format("data_%s", name.Data()));
+        for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) if(hist->GetBinLowEdge(iBin) + hist->GetBinWidth(iBin) > CR_cutoff) hist->SetBinContent(iBin, -999);
+        //for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
         plot_allMet->addHist(hist, names[iT], "E0", colors[iT], 0, colors[iT]);
       } else if(names[iT] == "Non-QCD bkg"){
 	cout << "if2" << endl;
@@ -417,14 +547,14 @@ cout << sel   << endl;
         if(yMin > hist->GetMinimum()) yMin = hist->GetMinimum();
         if(yMax < hist->GetMaximum()) yMax = hist->GetMaximum();
         plot_allMet->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
-      } else if(names[iT].Contains("T2tt")){
+      } else if(names[iT].Contains("T2fbd")){
         TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("signal_%s_%u", name.Data(), iT));
         hist->Scale(totMCYield / hist->Integral(0, hist->GetNbinsX() + 1));
         plot_allMet->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
       }
     }
     TCanvas* c = new TCanvas;
-    plot_allMet->setDrawCMSLumi();
+    //plot_allMet->setDrawCMSLumi();
     plot_allMet->setUsePoisson();
 //    if(yMin <= 0) yMin = 0.1;
 //    plot_allMet->setYRange(0.1 * yMin, 1000 * yMax);
@@ -463,7 +593,8 @@ cout << sel   << endl;
       for(unsigned int iT = 0; iT < trees.size(); ++iT){
         if(names[iT] == "Data"){
           TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, "1.0", TString::Format("data_%s", name.Data()));
-          for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
+          for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) if(hist->GetBinLowEdge(iBin) + hist->GetBinWidth(iBin) > CR_cutoff) hist->SetBinContent(iBin, -999);
+          //for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) hist->SetBinContent(iBin, -999);
           plot->addHist(hist, names[iT], "E0", colors[iT], 0, colors[iT]);
         } else if(names[iT] == "Non-QCD bkg"){
           hist_nonQCD_bkg = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("nonqcd_%s", name.Data()));
@@ -479,14 +610,14 @@ cout << sel   << endl;
           if(yMin > hist->GetMinimum()) yMin = hist->GetMinimum();
           if(yMax < hist->GetMaximum()) yMax = hist->GetMaximum();
           plot->addHistForRatio(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
-        } else if(names[iT].Contains("T2tt")){
+        } else if(names[iT].Contains("T2fbd")){
           TH1F* hist = dPhi_HG->getHistogram(trees[iT], sel, QCDSupport::stdMCWeight, TString::Format("signal_%s_%u", name.Data(), iT));
           hist->Scale(totMCYield / hist->Integral(0, hist->GetNbinsX() + 1));
           plot->addHist(hist, names[iT], "hist", colors[iT], 0, colors[iT]);
         }
       }
       TCanvas* c = new TCanvas;
-      plot->setDrawCMSLumi();
+      //plot->setDrawCMSLumi();
       plot->setUsePoisson();
 //      if(yMin <= 0) yMin = 0.1;
 //      plot->setYRange(0.1 * yMin, 1000 * yMax);
@@ -558,12 +689,12 @@ void doQCDStuff(){
   gStyle->SetPadTopMargin(0.08);
 
   QCDSupport::CRegInfo crinfo;
-  crinfo.fillOtherBkgSFs(QCDSupport::inputDir + "/MET.root",
-                         QCDSupport::inputDir + "/ttBarW_BKG.root",
-                         QCDSupport::inputDir + "/remaining_nonQCD_tree.root",
-                         QCDSupport::inputDir + "/QCD_smeared_tree_skimmed.root",
-//                         QCDSupport::inputDir + "/qcd_smeared_CHEF_tree_skimmed_baseline.root",
-                         QCDSupport::inputDir + "/../plots_16_09_28_NoSmear/qcd_orig_tree.root");
+  //crinfo.fillOtherBkgSFs(QCDSupport::inputDir + "/MET.root",
+  //                       QCDSupport::inputDir + "/ttBarW_BKG.root",
+  //                       QCDSupport::inputDir + "/remaining_nonQCD_tree.root",
+  //                       QCDSupport::inputDir + "/QCD_smeared_tree_skimmed.root",
+////                         QCDSupport::inputDir + "/qcd_smeared_CHEF_tree_skimmed_baseline.root",
+  //                       QCDSupport::inputDir + "/../plots_16_09_28_NoSmear/qcd_orig_tree.root");
   //crinfo.fillCorrectedOtherBkgYields();
   //crinfo.fillDataCorr();
 
@@ -579,17 +710,16 @@ void doQCDStuff(){
   vector<TTree*> trees;
   vector<int> colors;
   trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/MET.root"));                                     names.push_back("Data");              colors.push_back(1);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/TTbar_WJets.root"));                             names.push_back("Non-QCD bkg");       colors.push_back(color_ttbar);
+  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/TT_WJets.root"));                             names.push_back("Non-QCD bkg");       colors.push_back(color_ttbar);
   trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/QCD_smeared_tree_skimmed.root"));                names.push_back("Smeared QCD MC");    colors.push_back(color_qcd);
 //  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/qcd_smeared_CHEF_tree_skimmed_baseline.root"));  names.push_back("Smeared QCD MC");    colors.push_back(color_qcd);
   trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/../plots_16_09_28_NoSmear/qcd_orig_tree.root")); names.push_back("With orig. QCD MC"); colors.push_back(color_tW);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2tt_400_313_tree.root"));                       names.push_back("T2tt");    colors.push_back(kGreen + 2);
-  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2tt_600_300_tree.root"));                       names.push_back("T2tt(600, 300)");    colors.push_back(kRed);
-  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2tt_800_100_tree.root"));                       names.push_back("T2tt(800, 100)");    colors.push_back(kBlue);
+  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2fbd_400_350_tree.root"));                      names.push_back("T2fbd(400, 350)");   colors.push_back(kMagenta);
 
   //GetQCDTable(crinfo, srinfo);
   //MakeCRPlots(crinfo, names, trees, colors);
   //MakeSRPlots(srinfo, names, trees, colors);
   MakeDPhiPlots(         crinfo, names, trees, colors);
+  MakeDPhiStarPlots(     crinfo, names, trees, colors);
   //MakeTFPlots(crinfo, srinfo);
 }
