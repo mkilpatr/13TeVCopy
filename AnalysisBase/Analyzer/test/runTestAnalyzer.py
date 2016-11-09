@@ -123,20 +123,17 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    #runMetCorrAndUnc = True
-    #updateJECs = True
+    runMetCorrAndUnc = False
+    updateJECs = False
     JECUNCFILE = 'data/JEC/Spring16_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_NoL1T_v2.txt")
-    # jsonFile = os.path.expandvars("tmp.json")
+    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_ICHEP16JEC_v0')
-    if '23Sep2016' in DatasetName:
-        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v3')
-        runMetCorrAndUnc = False
-        updateJECs = False
+    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v4')
+    if 'PromptReco' in DatasetName:
+        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_v14')
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
