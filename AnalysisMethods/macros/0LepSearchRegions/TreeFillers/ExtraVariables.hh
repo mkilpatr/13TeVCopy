@@ -428,8 +428,8 @@ struct ExtraVarsFiller {
     vector<FatJetF*> sdWMedium, sdWTight;
     for (auto *fj : ana->fatJets) {
       if (fj->pt()<200 || fj->softDropMass()>120) continue;
-      if (fj->mva() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
-      if (fj->mva() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
+      if (fj->mvaWTag() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
+      if (fj->mvaWTag() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
     }
 
     auto getCleanedAK4 = [](const vector<RecoJetF*>& inAK4jets, const vector<FatJetF*> &topJets, const vector<FatJetF*> wJets){
