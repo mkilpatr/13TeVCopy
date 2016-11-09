@@ -22,7 +22,9 @@ HTTFiller::HTTFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
 
   auto jetTag = cfg.getParameter<edm::InputTag>("jetPrefix");
   fatJetToken = cc.consumes<reco::BasicJetCollection>(edm::InputTag(jetTag.label() +"HTT"));
+#ifdef ENABLE_HTT
   fatJetInfosToken = cc.consumes<reco::HTTTopJetTagInfoCollection>(edm::InputTag(jetTag.label()+"HTT"));
+#endif
   bTagsToken = cc.consumes<reco::JetTagCollection>(edm::InputTag(jetTag.label() + "HTTpfCombinedInclusiveSecondaryVertexV2BJetTags"));
   httSubjetToken = cc.consumes<reco::PFJetCollection>(edm::InputTag(jetTag.label() +"HTT", "SubJets"));
   sdJetToken  = cc.consumes<reco::PFJetCollection>(edm::InputTag(jetTag.label() + "SoftdropZ2B1"));
@@ -87,7 +89,9 @@ void HTTFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(fatJetToken,fatJets);
+#ifdef ENABLE_HTT
   iEvent.getByToken(fatJetInfosToken,fatJetInfos);
+#endif
   iEvent.getByToken(bTagsToken,btags);
   iEvent.getByToken(httSubjetToken, httSubjets);
 
@@ -140,6 +144,7 @@ vector<int> HTTFiller::getSubjetsInd(const reco::BasicJet &fatjet){
 //--------------------------------------------------------------------------------------------------
 void HTTFiller::fill()
 {
+#ifdef ENABLE_HTT
 
   auto sdMatchInds = getSDInd();
 
@@ -215,6 +220,6 @@ void HTTFiller::fill()
 
 
     isFilled_ = true;
-
+#endif
   }
 

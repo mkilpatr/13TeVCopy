@@ -302,7 +302,7 @@ void BaseTreeAnalyzer::loadVariables()
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
-  load(cfgSet::HTT);
+//  load(cfgSet::HTT);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------

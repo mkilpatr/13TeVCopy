@@ -11,10 +11,15 @@
 #ifndef ANALYSISBASE_ANALYZER_HTTFILLER_H
 #define ANALYSISBASE_ANALYZER_HTTFILLER_H
 
+//#define ENABLE_HTT
+
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/JetReco/interface/HTTTopJetTagInfo.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
 #include "TLorentzVector.h"
+
+#ifdef ENABLE_HTT
+#include "DataFormats/JetReco/interface/HTTTopJetTagInfo.h"
+#endif
 
 namespace ucsbsusy {
 
@@ -44,7 +49,9 @@ class QuarkGluonTaggingVariables;
 
   private :
     edm::EDGetTokenT<reco::BasicJetCollection>           fatJetToken;
+#ifdef ENABLE_HTT
     edm::EDGetTokenT<reco::HTTTopJetTagInfoCollection>   fatJetInfosToken;
+#endif
     edm::EDGetTokenT<reco::JetTagCollection>             bTagsToken;
     edm::EDGetTokenT<reco::PFJetCollection>              httSubjetToken;
 
@@ -108,7 +115,9 @@ class QuarkGluonTaggingVariables;
   public :
     // Data members
     edm::Handle<reco::BasicJetCollection>             fatJets;
+#ifdef ENABLE_HTT
     edm::Handle<reco::HTTTopJetTagInfoCollection>     fatJetInfos;
+#endif
     edm::Handle<reco::JetTagCollection>               btags;
     edm::Handle<reco::PFJetCollection>                sdFatJets;
     edm::Handle<reco::PFJetCollection>                httSubjets;

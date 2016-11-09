@@ -291,7 +291,7 @@ nominal_configuration = cms.PSet(
                                       ),
                                  
                                   CA15HTT = cms.untracked.PSet(
-                                      isFilled = cms.untracked.bool(True),
+                                      isFilled = cms.untracked.bool(False),
                                       jetPrefix  = cms.InputTag('CA15HTT'),
                                       ),
                                  

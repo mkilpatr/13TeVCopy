@@ -374,12 +374,14 @@ if ISDATA: JETCorrLevels.append('L2L3Residual')
 jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addCMSTopTagger=True)
 
 # add HTTv2
-from ObjectProducers.JetProducers.htt_cfg import *
-process.httseq = cms.Sequence()
-HTTJets(process,process.httseq,"CA15HTT",1.5)
+runHTT = False
+if runHTT:
+    from ObjectProducers.JetProducers.htt_cfg import *
+    process.httseq = cms.Sequence()
+    HTTJets(process,process.httseq,"CA15HTT",1.5)
 
 # add subjet b/c-tagging
-runSubjetCTagging = True
+runSubjetCTagging = False
 if runSubjetCTagging:
     process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
     bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
