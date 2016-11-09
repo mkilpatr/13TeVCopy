@@ -53,10 +53,16 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
 
 //___________________________________________________________________________
 template<typename MET,typename Jet>
+double JetKinematics::fScaling(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+	return jet.pt()/met.pt();
+}
+
+//___________________________________________________________________________
+template<typename MET,typename Jet>
 double JetKinematics::LawOfCos(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
-	float fScaling = jet.pt()/met.pt();
-	return TMath::Sqrt(1 + fScaling*fScaling + 2*fScaling*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
+	return TMath::Sqrt(1 + JetKinematics::fScaling(met,jet,minPT,maxEta)*JetKinematics::fScaling(met,jet,minPT,maxEta) + 2*JetKinematics::fScaling(met,jet,minPT,maxEta)*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
 }
 
 //____________________________________________________________________________
@@ -72,18 +78,16 @@ template<typename MET,typename Jet>
 double JetKinematics::absDPhiStarMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
-  double_t met_double = static_cast<double_t> (met.pt());
-  double fScaling = fabs(jet.pt())/fabs(met_double);
   double gScaling = 0;
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+  if(JetKinematics::fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
     gScaling = TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta));
   else
-    gScaling = -fScaling;
+    gScaling = -JetKinematics::fScaling(met,jet,minPT,maxEta);
   double TanDPhiStar = 0; 
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
-    TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta))/(fScaling + gScaling);
+  if(JetKinematics::fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta))/(JetKinematics::fScaling(met,jet,minPT,maxEta) + gScaling);
   else
-    TanDPhiStar = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/(fScaling + gScaling);
+    TanDPhiStar = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/(JetKinematics::fScaling(met,jet,minPT,maxEta) + gScaling);
   return TMath::ATan(TanDPhiStar);
 }
 
@@ -92,9 +96,7 @@ template<typename MET,typename Jet>
 double JetKinematics::OmegaMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
-  double_t met_double = static_cast<double> (met.pt());
-  double fScaling = fabs(jet.pt())/fabs(met_double);
-  double tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/fScaling;
+  double tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/JetKinematics::fScaling(met,jet,minPT,maxEta);
   return TMath::ATan(tanOmega);
 }
 
@@ -103,13 +105,11 @@ template<typename MET,typename Jet>
 double JetKinematics::OmegaMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
 {
   if (!passCuts(jet,minPT,maxEta)) return noDist;
-  double_t met_double = static_cast<double> (met.pt());
-  double fScaling = fabs(jet.pt())/fabs(met_double);
   double tanOmega = 0;
-  if(fScaling + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
-    tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/fScaling;
+  if(fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/JetKinematics::fScaling(met,jet,minPT,maxEta);
   else
-    tanOmega = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/fScaling;
+    tanOmega = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/JetKinematics::fScaling(met,jet,minPT,maxEta);
   return TMath::ATan(tanOmega);
 } 
 
