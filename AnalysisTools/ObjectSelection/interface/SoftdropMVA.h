@@ -24,8 +24,10 @@ public:
   float getSoftdropMVAScore(const FatJetF* fatjet);
   std::vector<const FatJetF*> getSoftdropMVATops(const std::vector<const FatJetF*> &fatjets, double WP);
 
-  static constexpr double WP_TIGHT = 0.08;
-  static constexpr double WP_LOOSE = 0.43;
+  static constexpr double WP_LOOSE  = 0.08;
+  static constexpr double WP_MEDIUM = 0.35;
+  static constexpr double WP_TIGHT  = 0.61;
+
 
   // accessed here and in extra tree fillers
   static bool isPreselected(const FatJetF* fatjet);
