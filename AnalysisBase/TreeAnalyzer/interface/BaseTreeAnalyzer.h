@@ -116,7 +116,6 @@ public:
     bool             isProcessed_;
     TreeReader       reader;        // default reader
     TRandom3*           randGen;
-    ResolvedTopMVA*     resTopMVA           ;
   public:
     EventInfoReader     evtInfoReader       ;
     JetReader           ak4Reader           ;
@@ -136,6 +135,8 @@ public:
     TriggerObjectReader trigObjReader       ;
     SVReader            svReader            ;
     HTTReader           httReader           ;
+
+    ResolvedTopMVA*     resTopMVA = nullptr ;
 
 
   public:
@@ -197,7 +198,7 @@ public:
     std::vector<SVF*>            SVs;
     std::vector<HTTFatJetF*>     httTops           ;
 
-    std::vector<TopCand>         resolvedTops      ;
+//    std::vector<TopCand>         resolvedTops      ;
 
 
     //--------------------------------------------------------------------------------------------------

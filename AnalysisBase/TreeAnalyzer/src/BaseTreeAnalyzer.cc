@@ -302,7 +302,7 @@ void BaseTreeAnalyzer::loadVariables()
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
-//  load(cfgSet::HTT);
+  load(cfgSet::HTT);
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
@@ -466,10 +466,10 @@ void BaseTreeAnalyzer::processVariables()
   nBJets   = bJets.size();
 
   //fill MVA resolved tops
-  if (cfgSet::useResolvedTopMVA){
-    resolvedTops = resTopMVA->getTopCandidates(jets, ResolvedTopMVA::WP_TIGHT);
-    std::sort(resolvedTops.begin(), resolvedTops.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
-  }
+//  if (cfgSet::useResolvedTopMVA){
+//    resolvedTops = resTopMVA->getTopCandidates(jets, ResolvedTopMVA::WP_TIGHT);
+//    std::sort(resolvedTops.begin(), resolvedTops.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+//  }
 
   //load corrections corrections
   for(auto * iC : corrections){

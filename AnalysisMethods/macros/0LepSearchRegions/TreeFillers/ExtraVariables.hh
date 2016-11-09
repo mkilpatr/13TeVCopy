@@ -187,6 +187,33 @@ struct ExtraVarsFiller {
   void bookTest(TreeWriterData* data){
   }
 
+  void bookCleanedWTopVars(TreeWriterData* data){
+    data->add<int>("A1_ntop", 0);
+    data->add<int>("A1_nw", 0);
+
+    data->add<int>("A2_ntop", 0);
+    data->add<int>("A2_nw", 0);
+
+    data->add<int>("C1_ntop", 0);
+    data->add<int>("C1_nw", 0);
+
+    data->add<int>("C2_ntop", 0);
+    data->add<int>("C2_nw", 0);
+
+    data->add<int>("D1_ntop", 0);
+    data->add<int>("D1_nw", 0);
+
+    data->add<int>("D2_ntop", 0);
+    data->add<int>("D2_nw", 0);
+
+    data->add<int>("nsdmvatopT", 0);
+    data->add<int>("nsdmvatopL", 0);
+
+    data->add<int>("nrestopT_sdTightClean", 0);
+    data->add<int>("nrestopT_sdLooseClean", 0);
+
+  }
+
   void bookSyst(TreeWriterData* data){
     i_systweights       = data->addMulti<float>("","systweights",0);
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
@@ -371,6 +398,118 @@ struct ExtraVarsFiller {
   }
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+  }
+
+  void fillCleanedWTopVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    vector<FatJetF*> sdTopLoose, sdTopTight;
+    for (auto *fj : ana->fatJets) {
+      if (fj->pt()<400 || fj->softDropMass()<110) continue;
+      if (fj->mva() > SoftdropMVA::WP_TIGHT) sdTopTight.push_back(fj);
+      if (fj->mva() > SoftdropMVA::WP_LOOSE) sdTopLoose.push_back(fj);
+    }
+    data->fill<int>("nsdmvatopT", sdTopTight.size());
+    data->fill<int>("nsdmvatopL", sdTopLoose.size());
+
+    vector<HTTFatJetF *> httTopLoose, httTopTight;
+    for (auto *fj : ana->httTops) {
+      if (fj->mva() > HTTMVA::WP_TIGHT) httTopTight.push_back(fj);
+      if (fj->mva() > HTTMVA::WP_LOOSE) httTopLoose.push_back(fj);
+    }
+
+    vector<FatJetF*> sdWCut = ana->selectedSdWs;
+
+    auto getCleanedAK4 = [](const vector<RecoJetF*>& inAK4jets, const vector<FatJetF*> &topJets, const vector<FatJetF*> wJets){
+      vector<RecoJetF*> ak4s;
+      for (auto *j : inAK4jets){
+        bool isOverlap = false;
+        for (auto *fj : topJets) {
+          if(PhysicsUtilities::deltaR(*j, *fj) < 0.8) {
+            isOverlap = true; break;
+          }
+        }
+        if (!isOverlap){
+          for (auto *fj : wJets) {
+            if(PhysicsUtilities::deltaR(*j, *fj) < 0.8) {
+              isOverlap = true; break;
+            }
+          }
+        }
+        if(!isOverlap) ak4s.push_back(j);
+      }
+      return ak4s;
+    };
+
+    {// A1
+      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWCut);
+      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
+      data->fill<int>("A1_ntop", sdTopTight.size() + resTop.size());
+      data->fill<int>("A1_nw", sdWCut.size());
+      data->fill<int>("nrestopT_sdTightClean", resTop.size());
+    }// end A1
+
+    {// A2
+      auto ak4jets = getCleanedAK4(ana->jets, sdTopLoose, sdWCut);
+      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
+      data->fill<int>("A2_ntop", sdTopLoose.size() + resTop.size());
+      data->fill<int>("A2_nw", sdWCut.size());
+      data->fill<int>("nrestopT_sdLooseClean", resTop.size());
+    }// end A2
+
+
+    auto getCleanedSDJets = [](const vector<HTTFatJetF*> &httJets, const vector<FatJetF*> &sdJets){
+      vector<FatJetF*> cleanedSDJets;
+      for (auto fj : sdJets){
+        bool isOverlap = false;
+        for (auto htt : httJets){
+          auto deltaR = PhysicsUtilities::deltaR(*htt, *fj);
+          if (deltaR<0.8 || deltaR<htt->ropt()){
+            isOverlap = true; break;
+          }
+        }
+        if(!isOverlap) cleanedSDJets.push_back(fj);
+      }
+      return cleanedSDJets;
+    };
+
+
+    {// C1
+      auto sdWcleaned = getCleanedSDJets(httTopTight, sdWCut);
+      data->fill<int>("C1_ntop", httTopTight.size());
+      data->fill<int>("C1_nw", sdWcleaned.size());
+    }// C1
+
+    {// C2
+      auto sdWcleaned = getCleanedSDJets(httTopLoose, sdWCut);
+      data->fill<int>("C2_ntop", httTopLoose.size());
+      data->fill<int>("C2_nw", sdWcleaned.size());
+    }// C2
+
+    auto getCleanedHTTJets = [](const vector<HTTFatJetF*> &httJets, const vector<FatJetF*> &sdJets){
+      vector<HTTFatJetF*> cleanedHTTJets;
+      for (auto htt : httJets){
+        bool isOverlap = false;
+        for (auto fj : sdJets){
+          auto deltaR = PhysicsUtilities::deltaR(*htt, *fj);
+          if (deltaR<0.8 || deltaR<htt->ropt()){
+            isOverlap = true; break;
+          }
+        }
+        if(!isOverlap) cleanedHTTJets.push_back(htt);
+      }
+      return cleanedHTTJets;
+    };
+
+    {// D1
+      auto HTTcleaned = getCleanedHTTJets(httTopTight, sdWCut);
+      data->fill<int>("D1_ntop", HTTcleaned.size());
+      data->fill<int>("D1_nw", sdWCut.size());
+    }// D1
+
+    {// D2
+      auto HTTcleaned = getCleanedHTTJets(httTopLoose, sdWCut);
+      data->fill<int>("D2_ntop", HTTcleaned.size());
+      data->fill<int>("D2_nw", sdWCut.size());
+    }// D2
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){

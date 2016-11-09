@@ -231,6 +231,6 @@ void cfgSet::setJSONFile(const TString jsonfile) {
   sl_search_set.jsonProcessing = new JSONProcessing(jsonfile);
 }
 
-bool cfgSet::useResolvedTopMVA = false;
+bool cfgSet::useResolvedTopMVA = true;
 TString cfgSet::resolvedTopMVAFile = TString::Format("%s/src/data/resTop/resTop_xGBoost_v0.weights.xml",CMSSW_BASE);
 
