@@ -21,4 +21,9 @@ config.Data.outLFNDirBase = '_outLFNDirBase_'
 config.Data.publication = False
 #config.Data.allowNonValidInputDataset = True
 
+# uncomment this part to use CRAB to submit to FNAL_LPC
+# config.Data.ignoreLocality = True
+# config.Site.whitelist = ['T3_US_FNALLPC']
+# config.Site.ignoreGlobalBlacklist = True
+
 config.Site.storageSite = '_storageSite_'
