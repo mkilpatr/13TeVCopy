@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE | FatJetReader::LOADMVA;
+const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE | FatJetReader::LOADTOPMVA | FatJetReader::LOADWTAGMVA;
 
 //--------------------------------------------------------------------------------------------------
 FatJetReader::FatJetReader() : BaseReader(){
@@ -90,9 +90,12 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    if(options_ & LOADMVA){
-      TString cmsswpath = getenv("CMSSW_BASE");
+    TString cmsswpath = getenv("CMSSW_BASE");
+    if(options_ & LOADTOPMVA){
       softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml", "BDTG");
+    }
+    if(options_ & LOADWTAGMVA){
+      sdWTagMVA = new SoftdropWTagMVA(cmsswpath+"/src/data/HTTSoftdropMVA/sdWTag_ttbarTraining_v0.xml", "BDTG");
     }
 
     if(options_ & LOADRECO) {
@@ -250,15 +253,16 @@ void FatJetReader::refresh(){
       }
     }
     fatJets.back().setMVA(-9.);
-  }
-  std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
-  // add softdrop mva value
-  if(options_ & LOADMVA){
-    for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
-      fatJets[iJ].setMVA(softdropMVA->getSoftdropMVAScore(&(fatJets[iJ])));
+    // add softdrop mva value : do this after all needed variables are read
+    if(options_ & LOADTOPMVA){
+      fatJets.back().setMVA(softdropMVA->getSoftdropMVAScore(&fatJets.back()));
+    }
+    if(options_ & LOADWTAGMVA){
+      fatJets.back().setMVAWTag(sdWTagMVA->getSoftdropWTagMVAScore(&fatJets.back()));
     }
   }
+  std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
 }
 

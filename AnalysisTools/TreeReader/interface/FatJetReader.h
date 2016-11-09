@@ -15,6 +15,7 @@
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/FatJet.h"
 #include "AnalysisTools/ObjectSelection/interface/SoftdropMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropWTagMVA.h"
 #include "AnalysisTools/ObjectSelection/interface/HTTMVA.h"
 #include <TRandom3.h>
 
@@ -29,7 +30,8 @@ namespace ucsbsusy {
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
                     , LOADSHAPE   = (1 << 3)
                     , LOADCTAG    = (1 << 4)
-                    , LOADMVA     = (1 << 5)
+                    , LOADTOPMVA  = (1 << 5)
+                    , LOADWTAGMVA = (1 << 6)
     };
     static const int defaultOptions;
 
@@ -115,7 +117,7 @@ namespace ucsbsusy {
 
     private:
       SoftdropMVA * softdropMVA = nullptr;
-
+      SoftdropWTagMVA * sdWTagMVA = nullptr;
 };
 
 }
