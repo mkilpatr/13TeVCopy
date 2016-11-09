@@ -23,8 +23,9 @@ public:
   float getHTTMVAScore(const HTTFatJetF* fatjet);
   std::vector<const HTTFatJetF*> getHTTMVATops(const std::vector<const HTTFatJetF*> &fatjets, double WP);
 
-  static constexpr double WP_TIGHT = 0.75;
-  static constexpr double WP_LOOSE = 0.50;
+  static constexpr double WP_LOOSE  = 0.50;
+  static constexpr double WP_MEDIUM = 0.55;
+  static constexpr double WP_TIGHT  = 0.75;
 
   // accessed here and in extra tree fillers
   static bool isPreselected(const HTTFatJetF* fatjet);

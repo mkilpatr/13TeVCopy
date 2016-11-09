@@ -63,6 +63,7 @@ struct HTTMVAFiller {
 
   //// basic variables
   size i_nLooseHTTMVA;
+  size i_nMediumHTTMVA;
   size i_nTightHTTMVA;
   size i_basic_htt_matches_gen;
   size i_basic_htt_pt;
@@ -238,6 +239,7 @@ struct HTTMVAFiller {
 
   void book(TreeWriterData* data) {
     i_nLooseHTTMVA          = data->add<int  >("","nLooseHTTMVA","I",-9);
+    i_nMediumHTTMVA         = data->add<int  >("","nMediumHTTMVA","I",-9);
     i_nTightHTTMVA          = data->add<int  >("","nTightHTTMVA","I",-9);
     i_basic_htt_matches_gen = data->addMulti<bool >("","basic_htt_matches_gen",false);
     i_basic_htt_pt          = data->addMulti<float>("","basic_htt_pt",-9);
@@ -635,8 +637,9 @@ struct HTTMVAFiller {
     preparePreselectedFatjets(ana);
     prepareGenTops(ana);
 
-    data->fill<int  >(i_nLooseHTTMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const HTTFatJetF* fatjet){ return fatjet->mva() > 0.50; }));
-    data->fill<int  >(i_nTightHTTMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const HTTFatJetF* fatjet){ return fatjet->mva() > 0.75; }));
+    data->fill<int  >(i_nLooseHTTMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const HTTFatJetF* fatjet){ return fatjet->mva() > HTTMVA::WP_LOOSE; }));
+    data->fill<int  >(i_nMediumHTTMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const HTTFatJetF* fatjet){ return fatjet->mva() > HTTMVA::WP_MEDIUM; }));
+    data->fill<int  >(i_nTightHTTMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const HTTFatJetF* fatjet){ return fatjet->mva() > HTTMVA::WP_TIGHT; }));
     for(const auto &fatjet : preselectedFatjets) {
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, TMath::Min(fatjet->ropt()+0.1,1.5), fatjet->ropt()) : 0); // if not top process don't try to match
       data->fillMulti<bool >(i_basic_htt_matches_gen, (top ? true : false));
