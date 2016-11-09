@@ -185,6 +185,7 @@ struct ExtraVarsFiller {
   }
 
   void bookTest(TreeWriterData* data){
+    bookCleanedWTopVars(data);
   }
 
   void bookCleanedWTopVars(TreeWriterData* data){
@@ -193,6 +194,12 @@ struct ExtraVarsFiller {
 
     data->add<int>("A2_ntop", 0);
     data->add<int>("A2_nw", 0);
+
+    data->add<int>("A3_ntop", 0);
+    data->add<int>("A3_nw", 0);
+
+    data->add<int>("A4_ntop", 0);
+    data->add<int>("A4_nw", 0);
 
     data->add<int>("C1_ntop", 0);
     data->add<int>("C1_nw", 0);
@@ -398,12 +405,13 @@ struct ExtraVarsFiller {
   }
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    fillCleanedWTopVars(data, ana);
   }
 
   void fillCleanedWTopVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     vector<FatJetF*> sdTopLoose, sdTopTight;
     for (auto *fj : ana->fatJets) {
-      if (fj->pt()<400 || fj->softDropMass()<110) continue;
+      if (fj->pt()<400 || fj->softDropMass()<=120) continue;
       if (fj->mva() > SoftdropMVA::WP_TIGHT) sdTopTight.push_back(fj);
       if (fj->mva() > SoftdropMVA::WP_LOOSE) sdTopLoose.push_back(fj);
     }
@@ -417,6 +425,12 @@ struct ExtraVarsFiller {
     }
 
     vector<FatJetF*> sdWCut = ana->selectedSdWs;
+    vector<FatJetF*> sdWMedium, sdWTight;
+    for (auto *fj : ana->fatJets) {
+      if (fj->pt()<200 || fj->softDropMass()>120) continue;
+      if (fj->mva() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
+      if (fj->mva() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
+    }
 
     auto getCleanedAK4 = [](const vector<RecoJetF*>& inAK4jets, const vector<FatJetF*> &topJets, const vector<FatJetF*> wJets){
       vector<RecoJetF*> ak4s;
@@ -455,6 +469,19 @@ struct ExtraVarsFiller {
       data->fill<int>("nrestopT_sdLooseClean", resTop.size());
     }// end A2
 
+    {// A3
+      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWTight);
+      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
+      data->fill<int>("A3_ntop", sdTopTight.size() + resTop.size());
+      data->fill<int>("A3_nw", sdWTight.size());
+    }// end A3
+
+    {// A4
+      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWMedium);
+      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
+      data->fill<int>("A3_ntop", sdTopTight.size() + resTop.size());
+      data->fill<int>("A3_nw", sdWMedium.size());
+    }// end A4
 
     auto getCleanedSDJets = [](const vector<HTTFatJetF*> &httJets, const vector<FatJetF*> &sdJets){
       vector<FatJetF*> cleanedSDJets;

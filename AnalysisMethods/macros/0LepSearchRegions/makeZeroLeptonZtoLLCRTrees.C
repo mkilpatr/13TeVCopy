@@ -3,6 +3,7 @@
 #include "AnalysisMethods/macros/0LepSearchRegions/ZeroLeptonTreeHelper.hh"
 #endif
 
+//#define FILL_LEPTON_EXTRA
 using namespace ucsbsusy;
 
 class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
@@ -66,7 +67,35 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       filler.fillEventInfo(&data, this, true, &metplusdilep);
       extraFiller.fillTestVars(&data, this);
 
+#ifdef FILL_LEPTON_EXTRA
+      data.fill<float>("l1pt", selectedLeptons.at(0)->pt());
+      data.fill<float>("l1eta", selectedLeptons.at(0)->eta());
+      data.fill<float>("l2pt", selectedLeptons.at(1)->pt());
+      data.fill<float>("l2eta", selectedLeptons.at(1)->eta());
+      data.fill<bool> ("ismuon", selectedLeptons.at(0)->ismuon());
+
+      double minDR = 999;
+      PhysicsUtilities::findNearestDRDeref(*selectedLeptons.at(0), jets, minDR);
+      data.fill<float>("l1drj", minDR);
+      PhysicsUtilities::findNearestDRDeref(*selectedLeptons.at(1), jets, minDR);
+      data.fill<float>("l2drj", minDR);
+#endif
+
       return true;
+    }
+
+    void book() {
+      ZeroLeptonAnalyzer::book();
+
+#ifdef FILL_LEPTON_EXTRA
+      data.add<float>("l1pt",0);
+      data.add<float>("l1eta",0);
+      data.add<float>("l1drj",0);
+      data.add<float>("l2pt",0);
+      data.add<float>("l2eta",0);
+      data.add<float>("l2drj",0);
+      data.add<bool> ("ismuon",0);
+#endif
     }
 
 

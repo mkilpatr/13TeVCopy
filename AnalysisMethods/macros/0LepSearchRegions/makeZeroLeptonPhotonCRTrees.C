@@ -28,6 +28,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     size i_npho = 0;
     size i_phopt = 0;
     size i_phoeta = 0;
+    size i_drphojet = 0;
     size i_passgenmatch = 0;
     size i_drphotonparton = 0;
 
@@ -38,6 +39,7 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       i_npho              = data.add<int>("","npho","I",0);
       i_phopt             = data.add<float>("","phopt","F",0);
       i_phoeta            = data.add<float>("","phoeta","F",0);
+      i_drphojet          = data.add<float>("","drphojet","F",0);
       i_passgenmatch      = data.add<bool>("","passgenmatch","O",0);
       i_drphotonparton    = data.add<float>("","drphotonparton","F",-1);
 
@@ -152,6 +154,10 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<float>(i_phoeta, pho->eta());
       data.fill<bool>(i_passgenmatch, passGenMatch);
       data.fill<float>(i_drphotonparton, drphotonparton);
+
+      double minDR = 999;
+      PhysicsUtilities::findNearestDRDeref(*pho, jets, minDR);
+      data.fill<float>(i_drphojet, minDR);
 
       return true;
     }

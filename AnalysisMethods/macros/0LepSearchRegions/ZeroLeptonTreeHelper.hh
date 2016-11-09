@@ -72,6 +72,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     bool   islepcr    = false;
     bool   addlep2met = false;
     bool   applyCHFFilter = false ;
+    bool   useGenMET = false;
 
     void book() {
       filler.book(&data);
@@ -90,6 +91,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
     }
 
     bool fillEvent() {
+
+      // check if using genMET
+      if (useGenMET) met = genmet;
 
       // fill inclusive histograms
       extraFiller.fillHistograms(this);
