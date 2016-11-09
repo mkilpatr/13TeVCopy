@@ -17,7 +17,7 @@ class sms():
         # model name
         self.modelname = "T2tt"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 150.
         self.Xmax = 1200.
@@ -83,7 +83,7 @@ class sms():
         # model name
         self.modelname = "T2fbd"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow W^{+(*)} b #tilde{#chi}^{0}_{1}"
+        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b W^{+(*)} #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 250.
         self.Xmax = 600.

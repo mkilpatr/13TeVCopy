@@ -4,6 +4,8 @@
 #include "TGraph2D.h"
 #endif
 
+using namespace std;
+
 void SetupColors(){
   const unsigned num = 5;
   const int bands = 255;
@@ -25,7 +27,7 @@ void SetupColors(){
   gStyle->SetPalette(bands, colors);
 }
 
-void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
+void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root", const TString name = "T2tt")
 {
 
   SetupColors();
@@ -37,8 +39,8 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
   vector<double> mstops, mlsps;
   vector<double> sig;
 
-  for(int ibinx = 1; ibinx < hsig->GetNbinsX()+1; ++ibinx) {
-    for(int ibiny = 1; ibiny < hsig->GetNbinsX()+1; ++ibiny) {
+  for(int ibinx = 1; ibinx <= hsig->GetNbinsX()+1; ++ibinx) {
+    for(int ibiny = 1; ibiny <= hsig->GetNbinsY()+1; ++ibiny) {
       if(hsig->GetBinContent(ibinx, ibiny) != 0.0) {
         mstops.push_back(hsig->GetXaxis()->GetBinLowEdge(ibinx));
         mlsps.push_back(hsig->GetYaxis()->GetBinLowEdge(ibiny));
@@ -48,16 +50,17 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
     }
   }
 
-  TGraph2D gsig("gsig", "Observed Limit", sig.size(), &mstops.at(0), &mlsps.at(0), &sig.at(0));
+  TGraph2D gsig("gsig", ";m_{stop} [GeV];m_{LSP} [GeV]", sig.size(), &mstops.at(0), &mlsps.at(0), &sig.at(0));
   TGraph dots(mstops.size(), &mstops.at(0), &mlsps.at(0));
 
   double xmin = *min_element(mstops.cbegin(), mstops.cend());
   double xmax = *max_element(mstops.cbegin(), mstops.cend());
   double ymin = *min_element(mlsps.cbegin(), mlsps.cend());
   double ymax = *max_element(mlsps.cbegin(), mlsps.cend());
-  double bin_size = 12.5;
-  int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/bin_size))));
-  int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/bin_size))));
+  double xbin_size = 25;
+  double ybin_size = name=="T2tt" ? 25 : 10;
+  int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/xbin_size))));
+  int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/ybin_size))));
   printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
   gsig.SetNpx(nxbins);
   gsig.SetNpy(nybins);
@@ -71,7 +74,7 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
   //c.SetLogz();
   hsigcorr->SetMinimum(*min_element(sig.cbegin(), sig.cend()));
   hsigcorr->SetMaximum(*max_element(sig.cbegin(), sig.cend()));
-  hsigcorr->GetYaxis()->SetRangeUser(0.0,450.0);
+//  hsigcorr->GetYaxis()->SetRangeUser(0.0,450.0);
   hsigcorr->GetYaxis()->SetTitleOffset(1.5);
   hsigcorr->GetZaxis()->SetRangeUser(0.0,5.0);
   gsig.Draw("colz");
@@ -79,11 +82,12 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root")
   //          1.-gStyle->GetPadRightMargin(), 1.);
   //l.SetNColumns(2);
   //l.SetBorderSize(0);
-  dots.Draw("p same");
-  c.Print("sig_scan_exp.pdf");
+//  dots.Draw("p same");
+  c.Print("sig_scan_"+name+".pdf");
 
-  TFile file("sig_scan.root","recreate");
+  TFile file("sig_scan_"+name+".root","recreate");
   hsigcorr->Write("hsig_corr");
+  gsig.Write("gsig_corr");
   file.Close();
 
 

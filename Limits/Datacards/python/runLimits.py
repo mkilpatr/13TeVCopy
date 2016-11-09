@@ -63,10 +63,12 @@ def main():
                         help="Print last set of limits/significances calculated. [Default: False]")
     parser.add_argument("-f", "--fill", dest="fillAsymptoticLimits", action='store_true',
                         help="Fill root files with results of asymptotic limit calculations for all signal points. [Default: False]")
-    parser.add_argument("-l", "--limfile", dest="limitFile", default='results_T2tt.root',
-                        help="Name of output file with upper limit histograms. [Default: results_T2tt.root]")
-    parser.add_argument("-e", "--excfile", dest="exclusionFile", default='limit_scan_T2tt.root',
-                        help="Name of output file with exclusion curves and interpolated cross section limits. [Default: results_T2tt.root]")
+    parser.add_argument("-n", "--name", dest="name", default='T2tt',
+                        help="Name of the signal, used as suffix of the file names. [Default: T2tt]")
+#     parser.add_argument("-l", "--limfile", dest="limitFile", default='results_T2tt.root',
+#                         help="Name of output file with upper limit histograms. [Default: results_T2tt.root]")
+#     parser.add_argument("-e", "--excfile", dest="exclusionFile", default='limit_scan_T2tt.root',
+#                         help="Name of output file with exclusion curves and interpolated cross section limits. [Default: results_T2tt.root]")
     parser.add_argument("-i", "--interpolate", dest="addInterpolation", type=int, default=0, choices=[
                         0, 1], help="Whether or not to run Chris West's interpolation. [Options: 0 (no), 1 (yes). Default: 0]")
     parser.add_argument("-c", "--config", dest="configFile", default='dc_0l_setup.conf',
@@ -88,10 +90,13 @@ def main():
     if args.printLimits:
         printLimits(limconfig)
     elif args.fillAsymptoticLimits:
-        if limconfig.limitmethod == 'Asymptotic':
-            fillSignificances(limconfig)
+        if limconfig.limitmethod == 'Asymptotic' or limconfig.limitmethod == 'AsymptoticObs':
+            sigfile = 'significances_%s.root'%args.name
+            fillSignificances(limconfig, sigfile, args.name)
         else:
-            fillAsymptoticLimits(limconfig, args.limitFile, args.exclusionFile, args.addInterpolation)
+            limitFile = 'results_%s.root'%args.name
+            exclusionFile = 'limit_scan_%s.root'%args.name
+            fillAsymptoticLimits(limconfig, limitFile, exclusionFile, args.addInterpolation)
     elif args.maxLikelihoodFit:
         runMaxLikelihoodFit(limconfig, args.signalPoint)
     else:
@@ -175,25 +180,32 @@ def printLimits(config):
     print '\n'.join(limits)
     print '\n'
 
-def fillSignificances(config):
+def fillSignificances(config, sigfile, name):
     limits = []
     currentDir = os.getcwd()
-    outfile = TFile('significances_T2tt.root', 'RECREATE')
+    outfile = TFile(sigfile, 'RECREATE')
     maxmstop = 0.0
     minmstop = 0.0
     maxmlsp = 0.0
     minmlsp = 0.0
+    mstop_step = 1
+    mlsp_step = 10 if 'fbd' in sigfile else 1
     for signal in config.signals:
         mstop = int(signal.split('_')[1])
         mlsp = int(signal.split('_')[2])
         if mstop > maxmstop: maxmstop = mstop
-        if mstop > maxmstop: maxmstop = mstop
+        if mlsp > maxmlsp: maxmlsp = mlsp
+        if minmstop == 0.0 or mstop < minmstop: minmstop = mstop
         if minmlsp == 0.0 or mlsp < minmlsp: minmlsp = mlsp
-        if minmlsp == 0.0 or mlsp < minmlsp: minmlsp = mlsp
-    nbinsx = int((maxmstop - minmstop) / 12.5)
-    nbinsy = int((maxmlsp - minmlsp) / 12.5)
+    nbinsx = int((maxmstop - minmstop) / mstop_step)
+    nbinsy = int((maxmlsp - minmlsp) / mlsp_step)
+#     minmstop -= 0.5*mstop_step
+#     maxmstop -= 0.5*mstop_step
+#     minmlsp  -= 0.5*mlsp_step
+#     maxmlsp  -= 0.5*mlsp_step
+    print 'XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d' % (minmstop, maxmstop, minmlsp, maxmlsp, nbinsx, nbinsy)
 
-    hsig = TH2D('hsig', '', 36, 100, 1000, 20, 0, 500)
+    hsig = TH2D('hsig', '', nbinsx, minmstop, maxmstop, nbinsy, minmlsp, maxmlsp)
     for signal in config.signals:
         outputLocation = os.path.join(currentDir, config.limitdir, signal)
         rootFile = ''
@@ -214,12 +226,14 @@ def fillSignificances(config):
             mstop = int(signal.split('_')[1])
             mlsp = int(signal.split('_')[2])
             limit = output[1]
-            hsig.Fill(mstop, mlsp, limit)
+            bin = hsig.FindBin(mstop, mlsp)
+            hsig.SetBinContent(bin, limit)
+#             hsig.Fill(mstop, mlsp, limit)
 
     outfile.cd()
     hsig.Write()
     outfile.Close()
-    os.system('root -l -q -b makeSigScanPlots.C')
+    os.system('root -l -q -b makeSigScanPlots.C\\(\\"%s\\",\\"%s\\"\\)'%(sigfile, name))
 
     # print the results
     print '=' * 5, 'RESULTS', '(' + config.limitmethod + ')', '=' * 5
@@ -432,9 +446,9 @@ def calcLimit(config, signal):
         mlsp = int(signal.split('_')[2])
         sigtype = signal.split('_')[0]
         runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' -n ' + signal
-        if mstop >= 350 and mlsp < 350 and 'T2tt' in sigtype :
+        if (mstop<450 and 'fbd' not in sigtype) or (mstop >= 350 and mlsp < 350 and 'T2tt' in sigtype) :
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 10 -n ' + signal
-        if ('fbd' in sigtype or '4bd' in sigtype) and (mstop<=200):
+        if ('fbd' in sigtype or '4bd' in sigtype) and (mstop<=250):
             runLimitsCommand = 'combine -M Asymptotic ' + combinedDatacard + ' --rMin 0 --rMax 1 -n ' + signal
         if config.expectedonly :
             runLimitsCommand += ' --run expected'
@@ -455,6 +469,19 @@ def calcLimit(config, signal):
         runLimitsCommand = 'combine -M ProfileLikelihood ' + combinedDatacard + ' --significance -t -1 --toysFreq --expectSignal=1 -n ' + signal
         # runLimitsCommand =  'combine -M ProfileLikelihood '+combinedDatacard+' --significance -t -1 --expectSignal=1 -n '+signal
         # runLimitsCommand =  'combine -M ProfileLikelihood --significance '+combinedDatacard+' -n '+signal
+        # run the limit command and figure out what the output root file is
+        output = commands.getoutput(runLimitsCommand)
+        lprint(runLimitsCommand, output)
+
+        # pull the Significance out and store
+        tempSig = ''
+        for line in output.split('\n'):
+            if 'Significance' in line:
+                tempSig = line.replace('Significance', signal)
+        result = ('', '', tempSig)
+
+    elif config.limitmethod == 'AsymptoticObs':
+        runLimitsCommand = 'combine -M ProfileLikelihood ' + combinedDatacard + ' --uncapped 1 --significance --rMin -5 -n ' + signal
         # run the limit command and figure out what the output root file is
         output = commands.getoutput(runLimitsCommand)
         lprint(runLimitsCommand, output)
@@ -542,6 +569,7 @@ def runLimits(config):
     observeds = []  # store the Significance from each sig point to print at the end
 
     # run limits in parallel
+    print 'Running limits for %d signal points. Please wait...'%len(config.signals)
     signals = config.signals[:]
     pool = Pool(multiprocessing.cpu_count()-2)
     results = pool.map(functools.partial(calcLimit, config), signals)
@@ -563,7 +591,7 @@ def runLimits(config):
             print rlt[1]
 
     # rearrange significances to be more easily put in a table
-    if config.limitmethod == 'Asymptotic':
+    if config.limitmethod == 'Asymptotic' or config.limitmethod == 'AsymptoticObs':
         sigsamps = []
         siglims = []
         for s in results:
