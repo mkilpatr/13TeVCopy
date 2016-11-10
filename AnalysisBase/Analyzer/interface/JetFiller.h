@@ -51,7 +51,7 @@ public:
                           , FILLJETEXTRA    = (1 <<  7)   ///< additional info about jet energy fractions and multiplicities
                           , FILLJETCHHADN   = (1 <<  8)   ///< additional info about jet content: charged hadron multiplicity
   };
-  static const int defaultOptions = NULLOPT | FILLJETCHHADN;
+  static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
 };
 
