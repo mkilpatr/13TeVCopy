@@ -10,12 +10,14 @@
 
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 #include "AnalysisTools/TreeReader/interface/TreeReader.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
+
 
 using namespace std;
 using namespace ucsbsusy;
 
-const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE | FatJetReader::LOADTOPMVA | FatJetReader::LOADWTAGMVA;
+const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE;
 
 //--------------------------------------------------------------------------------------------------
 FatJetReader::FatJetReader() : BaseReader(){
@@ -54,6 +56,8 @@ FatJetReader::FatJetReader() : BaseReader(){
   fjsdsj2axis1_    = new vector<float>;
   fjsdsj2axis2_    = new vector<float>;
   fjsdsj2mult_     = new vector<int  >;
+  fjtopmva_        = new vector<float>;
+  fjwmva_          = new vector<float>;
   fj_puppi_pt_            = new vector<float>;
   fj_puppi_eta_           = new vector<float>;
   fj_puppi_phi_           = new vector<float>;
@@ -90,12 +94,11 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
 
     clog << "Loading (" << branchName << ") tops with: ";
 
-    TString cmsswpath = getenv("CMSSW_BASE");
-    if(options_ & LOADTOPMVA){
-      softdropMVA = new SoftdropMVA(cmsswpath+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml", "BDTG");
+    if(options_ & UPDATETOPMVA){
+      sdTopMVA = new SoftdropTopMVA(defaults::MVAWEIGHT_SOFTDROP_TOP);
     }
-    if(options_ & LOADWTAGMVA){
-      sdWTagMVA = new SoftdropWTagMVA(cmsswpath+"/src/data/HTTSoftdropMVA/sdWTag_ttbarTraining_v0.xml", "BDTG");
+    if(options_ & UPDATEWTAGMVA){
+      sdWTagMVA = new SoftdropWTagMVA(defaults::MVAWEIGHT_SOFTDROP_W);
     }
 
     if(options_ & LOADRECO) {
@@ -121,6 +124,8 @@ void FatJetReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_eta"    , &fjsdsj2eta_ ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_phi"    , &fjsdsj2phi_ ,true);
       treeReader->setBranchAddress(branchName_, "fatjet_sdsubjet2_csv"    , &fjsdsj2csv_ ,true);
+      treeReader->setBranchAddress(branchName_, "fatjet_topmva"           , &fjtopmva_   ,false);
+      treeReader->setBranchAddress(branchName_, "fatjet_wmva"             , &fjwmva_     ,false);
 
       if(options_ & LOADSHAPE){
         clog << " +JetShape ";
@@ -252,14 +257,15 @@ void FatJetReader::refresh(){
         }
       }
     }
-    fatJets.back().setMVA(-9.);
+    fatJets.back().setTopMVA(fjtopmva_->empty() ? -9 : fjtopmva_->at(iJ));
+    fatJets.back().setWMVA(fjwmva_->empty() ? -9 : fjwmva_->at(iJ));
 
     // add softdrop mva value : do this after all needed variables are read
-    if(options_ & LOADTOPMVA){
-      fatJets.back().setMVA(softdropMVA->getSoftdropMVAScore(&fatJets.back()));
+    if(options_ & UPDATETOPMVA){
+      fatJets.back().setTopMVA(sdTopMVA->getSoftdropMVAScore(&fatJets.back()));
     }
-    if(options_ & LOADWTAGMVA){
-      fatJets.back().setMVAWTag(sdWTagMVA->getSoftdropWTagMVAScore(&fatJets.back()));
+    if(options_ & UPDATEWTAGMVA){
+      fatJets.back().setWMVA(sdWTagMVA->getSoftdropWTagMVAScore(&fatJets.back()));
     }
   }
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());

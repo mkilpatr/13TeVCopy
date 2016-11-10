@@ -260,6 +260,8 @@ nominal_configuration = cms.PSet(
                                       puRemoval = cms.untracked.string("CHS"),
                                       fillJetShapeInfo  = cms.untracked.bool(True),
                                       fillSubjetCTag  = cms.untracked.bool(False),
+                                      fillTopTaggingMVA = cms.untracked.bool(True),
+                                      fillWTaggingMVA = cms.untracked.bool(True),
                                       sdSubjets  = cms.InputTag(''),
                                       puppiSubjets = cms.InputTag(''),
                                       ),
@@ -318,6 +320,7 @@ nominal_configuration = cms.PSet(
                                       isFilled = cms.untracked.bool(True),
                                       primaryvertices   = cms.InputTag('offlineSlimmedPrimaryVertices'),
                                       secondaryvertices = cms.InputTag('slimmedSecondaryVertices'),
+                                      fillMVA = cms.untracked.bool(True),
                                       ),
 
                                 )

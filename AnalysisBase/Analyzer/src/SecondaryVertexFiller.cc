@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // SecondaryVertexFiller
-// 
+//
 // Muon filler.
-// 
-// SecondaryVertexFiller.cc created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// SecondaryVertexFiller.cc created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/SecondaryVertexFiller.h"
@@ -21,6 +21,9 @@
 #include <TMath.h>
 #include <Math/SVector.h>
 
+#include "AnalysisTools/DataFormats/interface/SV.h"
+#include "AnalysisTools/ObjectSelection/interface/IVFMVA.h"
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 
 MagneticField *SecondaryVertexFiller::paramField_ = 0;
@@ -51,6 +54,15 @@ SecondaryVertexFiller::SecondaryVertexFiller(const edm::ParameterSet& cfg, edm::
   sv_d3d_          = data.addMulti<float>(branchName_,"sv_d3d",0);
   sv_d3derr_       = data.addMulti<float>(branchName_,"sv_d3derr",0);
   sv_costhetasvpv_ = data.addMulti<float>(branchName_,"sv_costhetasvpv",0);
+
+  if (options_ & LOADMVA){
+    ivfMVA_lpt_b = new IVFMVA(defaults::MVAWEIGHT_IVF_LOWPT_B);
+    ivfMVA_lpt_e = new IVFMVA(defaults::MVAWEIGHT_IVF_LOWPT_E);
+    ivfMVA_hpt_b = new IVFMVA(defaults::MVAWEIGHT_IVF_HIGHPT_B);
+    ivfMVA_hpt_e = new IVFMVA(defaults::MVAWEIGHT_IVF_HIGHPT_E);
+
+    sv_mva_          = data.addMulti<float>(branchName_,"sv_mva",-9);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -75,12 +87,12 @@ void SecondaryVertexFiller::fill()
 	   (*pvs_)[primaryVertexIndex_].position().Rho() <= 2.0 &&
 	   fabs((*pvs_)[primaryVertexIndex_].position().Z())<=24.0) { hasgoodvtx = true; }
 
-  
+
   if (hasgoodvtx) {
-    
+
     for (unsigned int i0 = 0; i0<svs_->size(); ++i0) {
-  
-      const reco::VertexCompositePtrCandidate &sv = (*svs_)[i0]; 
+
+      const reco::VertexCompositePtrCandidate &sv = (*svs_)[i0];
       const reco::Vertex & pv = (*pvs_)[0];
 
       if ( ((vertexDxy(sv,pv).value())>4.) || (vertexDdotP(sv,pv)<0.9) ) { continue; }
@@ -92,13 +104,35 @@ void SecondaryVertexFiller::fill()
       data.fillMulti<int  >(sv_ntracks_     , sv.numberOfDaughters() );
       data.fillMulti<float>(sv_chi2_        , sv.vertexChi2() );
       data.fillMulti<float>(sv_ndf_         , sv.vertexNdof() );
-      data.fillMulti<float>(sv_dxy_         , vertexDxy(sv,pv).value() );      
-      data.fillMulti<float>(sv_dxyerr_      , vertexDxy(sv,pv).error() );      
-      data.fillMulti<float>(sv_d3d_         , vertexD3d(sv,pv).value() );      
-      data.fillMulti<float>(sv_d3derr_      , vertexD3d(sv,pv).error() );      
+      data.fillMulti<float>(sv_dxy_         , vertexDxy(sv,pv).value() );
+      data.fillMulti<float>(sv_dxyerr_      , vertexDxy(sv,pv).error() );
+      data.fillMulti<float>(sv_d3d_         , vertexD3d(sv,pv).value() );
+      data.fillMulti<float>(sv_d3derr_      , vertexD3d(sv,pv).error() );
       data.fillMulti<float>(sv_costhetasvpv_, vertexDdotP(sv,pv) );
+
+
+      if (options_ & LOADMVA){
+        SVF tmpSVObj(CylLorentzVectorF(sv.pt(), sv.eta(), sv.phi(), sv.mass()), -1,
+            sv.numberOfDaughters(),
+            sv.vertexChi2(),
+            sv.vertexNdof(),
+            vertexDxy(sv,pv).value(),
+            vertexDxy(sv,pv).error(),
+            vertexD3d(sv,pv).value(),
+            vertexD3d(sv,pv).error(),
+            vertexDdotP(sv,pv));
+
+        float mva_ = -9;
+        if (sv.pt()<15.  && fabs(sv.eta())<1.2 ) { mva_ = ivfMVA_lpt_b->getIVFCandScore(tmpSVObj); }
+        if (sv.pt()<15.  && fabs(sv.eta())>=1.2) { mva_ = ivfMVA_lpt_e->getIVFCandScore(tmpSVObj); }
+        if (sv.pt()>=15. && fabs(sv.eta())<1.2 ) { mva_ = ivfMVA_hpt_b->getIVFCandScore(tmpSVObj); }
+        if (sv.pt()>=15. && fabs(sv.eta())>=1.2) { mva_ = ivfMVA_hpt_e->getIVFCandScore(tmpSVObj); }
+
+        data.fillMulti<float>(sv_mva_, mva_);
+      }
+
     }
-    
+
   } //end of checking if there is a good PV
 
   isFilled_ = true;

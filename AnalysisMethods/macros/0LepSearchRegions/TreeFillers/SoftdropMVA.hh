@@ -51,8 +51,9 @@
 #include <vector>
 #include "Math/LorentzVector.h"
 #include "Math/VectorUtil.h"
+
 #include "AnalysisTools/Utilities/interface/PartonMatching.h"
-#include "AnalysisTools/ObjectSelection/src/SoftdropMVA.cc"
+#include "AnalysisTools/ObjectSelection/src/SoftdropTopMVA.cc"
 #include "MVACommon.hh"
 
 using namespace ucsbsusy;
@@ -78,7 +79,7 @@ struct SoftdropMVAFiller {
 
   //// train variables
   size i_ak8_matches_gen;
- 
+
   size i_ak8_gen_top_pt;
   size i_ak8_gen_w_pt;
   size i_ak8_gen_b_pt;
@@ -282,7 +283,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<bool >(i_ak8_passCutBasedICHEP,  cfgSet::isSoftDropTagged(fatjet, 400, 105, 220, 0.67, 1e9, 0.46));
 
     // all other vars use ONE set of code located in AnalysisTools/ObjectSelection/src/SoftdropMVA.cc
-    auto varMap = SoftdropMVA::calcSoftdropMVAVars(fatjet, true);
+    auto varMap = SoftdropTopMVA::calcSoftdropMVAVars(fatjet, true);
 
     data->fillMulti<int  >(i_ak8_nsubjets,          int(varMap["ak8_nsubjets"]));
     data->fillMulti<float>(i_ak8_minsubjetpt,       varMap["ak8_minsubjetpt"]);
@@ -389,8 +390,8 @@ struct SoftdropMVAFiller {
     preselectedFatjets.clear();
     for (const auto *fatjet : ana->fatJets){
       if(dbg) std::cout << "[Sd MVA]     sd Top has pt, sd, raw masses: " << fatjet->pt() << " " << fatjet->softDropMass() << " " <<  fatjet->p4().mass() << std::endl;
-      if(dbg) std::cout << "[Sd MVA]               MVA score, isPreselected? " << fatjet->mva() << " " << SoftdropMVA::isPreselected(fatjet) << std::endl;
-      if(SoftdropMVA::isPreselected(fatjet)) {
+      if(dbg) std::cout << "[Sd MVA]               MVA score, isPreselected? " << fatjet->mva() << " " << SoftdropTopMVA::isPreselected(fatjet) << std::endl;
+      if(SoftdropTopMVA::isPreselected(fatjet)) {
         preselectedFatjets.push_back(fatjet);
       }
     }\
@@ -424,9 +425,9 @@ struct SoftdropMVAFiller {
     preparePreselectedFatjets(ana);
     prepareGenTops(ana);
 
-    data->fill<int  >(i_nLooseSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropMVA::WP_LOOSE; }));
-    data->fill<int  >(i_nMediumSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropMVA::WP_MEDIUM; }));
-    data->fill<int  >(i_nTightSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropMVA::WP_TIGHT; }));
+    data->fill<int  >(i_nLooseSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_LOOSE; }));
+    data->fill<int  >(i_nMediumSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_MEDIUM; }));
+    data->fill<int  >(i_nTightSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_TIGHT; }));
     for(const auto &fatjet : preselectedFatjets) {
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, 0.8, 0.8) : 0); // if not top process don't try to match
       data->fillMulti<bool >(i_basic_ak8_matches_gen, (top ? true : false));

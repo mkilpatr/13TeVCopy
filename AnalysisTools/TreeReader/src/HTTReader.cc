@@ -165,14 +165,14 @@ void HTTReader::refresh(){
 
     fatJets.back().addROptInfo(CylLorentzVectorF(ropt_pt->at(iJ),ropt_eta->at(iJ),ropt_phi->at(iJ),ropt_mass->at(iJ)),
         ropt->at(iJ),frec->at(iJ),roptcalc->at(iJ),ptforropt->at(iJ),ropt_tau1->at(iJ),ropt_tau2->at(iJ),ropt_tau3->at(iJ));
-    fatJets.back().setMVA(-9.);
+    fatJets.back().setTopMVA(-9.);
   }
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
   // set htt mva value
   if(options_ & LOADMVA){
     for(unsigned int iJ = 0; iJ < fatJets.size(); ++iJ){
-      fatJets[iJ].setMVA(httMVA->getHTTMVAScore(&(fatJets[iJ])));
+      fatJets[iJ].setTopMVA(httMVA->getHTTMVAScore(&(fatJets[iJ])));
     }
   }
 

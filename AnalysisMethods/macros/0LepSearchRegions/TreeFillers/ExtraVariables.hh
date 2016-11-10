@@ -412,24 +412,24 @@ struct ExtraVarsFiller {
     vector<FatJetF*> sdTopLoose, sdTopTight;
     for (auto *fj : ana->fatJets) {
       if (fj->pt()<400 || fj->softDropMass()<=120) continue;
-      if (fj->mva() > SoftdropMVA::WP_TIGHT) sdTopTight.push_back(fj);
-      if (fj->mva() > SoftdropMVA::WP_LOOSE) sdTopLoose.push_back(fj);
+      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT) sdTopTight.push_back(fj);
+      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE) sdTopLoose.push_back(fj);
     }
     data->fill<int>("nsdmvatopT", sdTopTight.size());
     data->fill<int>("nsdmvatopL", sdTopLoose.size());
 
     vector<HTTFatJetF *> httTopLoose, httTopTight;
     for (auto *fj : ana->httTops) {
-      if (fj->mva() > HTTMVA::WP_TIGHT) httTopTight.push_back(fj);
-      if (fj->mva() > HTTMVA::WP_LOOSE) httTopLoose.push_back(fj);
+      if (fj->top_mva() > HTTMVA::WP_TIGHT) httTopTight.push_back(fj);
+      if (fj->top_mva() > HTTMVA::WP_LOOSE) httTopLoose.push_back(fj);
     }
 
     vector<FatJetF*> sdWCut = ana->selectedSdWs;
     vector<FatJetF*> sdWMedium, sdWTight;
     for (auto *fj : ana->fatJets) {
       if (fj->pt()<200 || fj->softDropMass()>120) continue;
-      if (fj->mvaWTag() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
-      if (fj->mvaWTag() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
+      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
+      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
     }
 
     auto getCleanedAK4 = [](const vector<RecoJetF*>& inAK4jets, const vector<FatJetF*> &topJets, const vector<FatJetF*> wJets){

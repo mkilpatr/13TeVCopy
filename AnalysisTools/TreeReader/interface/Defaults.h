@@ -11,6 +11,7 @@
 #ifndef ANALYSISTOOLS_TREEREADER_DEFAULTS_H
 #define ANALYSISTOOLS_TREEREADER_DEFAULTS_H
 
+#include <cstdlib>
 #include <string>
 
 namespace defaults {
@@ -58,6 +59,15 @@ namespace defaults {
   const double TAU_MVA_VETO_DPHIPRESEL_MEDIUM = 0.53;
   const double TAU_MTCUT_VETO = 100.;
   const double TAU_DPHICUT_VETO = 1.34;
+
+  const std::string CMSSW_BASE = getenv ("CMSSW_BASE");
+  const std::string MVAWEIGHT_SOFTDROP_TOP = CMSSW_BASE+"/src/data/HTTSoftdropMVA/weights-t2tt850-sm-baseline-nodphi-nomtb-hqu-08112016.xml";
+  const std::string MVAWEIGHT_SOFTDROP_W   = CMSSW_BASE+"/src/data/HTTSoftdropMVA/sdWTag_ttbarTraining_v0.xml";
+  const std::string MVAWEIGHT_IVF_LOWPT_B  = CMSSW_BASE+"/src/data/ivf/pteta_low_b_BDTG.weights.xml";
+  const std::string MVAWEIGHT_IVF_LOWPT_E  = CMSSW_BASE+"/src/data/ivf/pteta_low_e_BDTG.weights.xml";
+  const std::string MVAWEIGHT_IVF_HIGHPT_B = CMSSW_BASE+"/src/data/ivf/pteta_high_b_BDTG.weights.xml";
+  const std::string MVAWEIGHT_IVF_HIGHPT_E = CMSSW_BASE+"/src/data/ivf/pteta_high_e_BDTG.weights.xml";
+
 }
 
 

@@ -15,7 +15,6 @@
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/SV.h"
 #include "AnalysisTools/ObjectSelection/interface/IVFMVA.h"
-#include <TRandom3.h>
 
 namespace ucsbsusy {
 
@@ -25,7 +24,7 @@ namespace ucsbsusy {
                       NULLOPT     = 0
                     , LOADRECO    = (1 << 0)
                     , FILLOBJ     = (1 << 1)   ///< Fill objects (as opposed to just pointers
-                    , LOADMVA     = (1 << 2)
+                    , UPDATEMVA   = (1 << 2)
     };
     static const int defaultOptions;
 
@@ -50,6 +49,7 @@ namespace ucsbsusy {
     std::vector<float>* svd3d_;
     std::vector<float>* svd3derr_;
     std::vector<float>* svcossvpv_;
+    std::vector<float>* svmva_;
 
     //the actual sv collection
     SVFCollection SVs;

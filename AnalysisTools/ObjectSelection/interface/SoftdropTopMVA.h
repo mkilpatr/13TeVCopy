@@ -5,8 +5,8 @@
  *      Author: patterson
  */
 
-#ifndef ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPMVA_H_
-#define ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPMVA_H_
+#ifndef ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPTOPMVA_H_
+#define ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPTOPMVA_H_
 
 #include "AnalysisTools/DataFormats/interface/Jet.h"
 #include "AnalysisTools/DataFormats/interface/FatJet.h"
@@ -16,10 +16,10 @@
 
 namespace ucsbsusy {
 
-class SoftdropMVA {
+class SoftdropTopMVA {
 public:
-  SoftdropMVA(TString weightfile, TString mvaname);
-  virtual ~SoftdropMVA();
+  SoftdropTopMVA(TString weightfile, TString mvaname="BDTG");
+  virtual ~SoftdropTopMVA();
 
   float getSoftdropMVAScore(const FatJetF* fatjet);
   std::vector<const FatJetF*> getSoftdropMVATops(const std::vector<const FatJetF*> &fatjets, double WP);
@@ -43,4 +43,4 @@ private:
 
 } /* namespace ucsbsusy */
 
-#endif /* ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPMVA_H_ */
+#endif /* ANALYSISTOOLS_OBJECTSELECTION_INTERFACE_SOFTDROPTOPMVA_H_ */

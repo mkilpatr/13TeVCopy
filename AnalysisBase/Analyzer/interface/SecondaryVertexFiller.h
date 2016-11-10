@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // MuonFiller
-// 
+//
 // Class to fill muon information in a TTree.
-// 
-// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_SECONDARYVERTEXFILLER_H
@@ -28,12 +28,19 @@ struct MagneticField;
 
 
 namespace ucsbsusy {
-  
+class IVFMVA;
+
   class SecondaryVertexFiller : public BaseFiller {
 
   public :
     SecondaryVertexFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc, const int options, const string branchName);
     ~SecondaryVertexFiller() {}
+
+    enum  Options           {
+                              NULLOPT         = 0
+                            , LOADMVA         = (1 <<  0)   ///< load MVA
+    };
+    static const int defaultOptions = NULLOPT;
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
@@ -59,6 +66,7 @@ namespace ucsbsusy {
     size sv_d3d_;
     size sv_d3derr_;
     size sv_costhetasvpv_;
+    size sv_mva_;
 
     static MagneticField *paramField_;
     Measurement1D IP2D(const reco::Track &tk, const reco::Vertex &vtx) const ;
@@ -73,11 +81,19 @@ namespace ucsbsusy {
     Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
     float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
 
+    // MVAs
+    //low pT (<15) and high pT (>15)
+    //barrel (|eta| <1.2) and endcap (|eta|> 1.2)
+    IVFMVA* ivfMVA_lpt_b = 0;
+    IVFMVA* ivfMVA_hpt_b = 0;
+    IVFMVA* ivfMVA_lpt_e = 0;
+    IVFMVA* ivfMVA_hpt_e = 0;
+
   public :
     // Data members
     edm::Handle<reco::VertexCollection> pvs_;
     edm::Handle<reco::VertexCompositePtrCandidateCollection> svs_;
- 
+
   };
 
 }

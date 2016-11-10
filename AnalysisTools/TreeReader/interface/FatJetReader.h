@@ -14,10 +14,8 @@
 
 #include "AnalysisTools/TreeReader/interface/BaseReader.h"
 #include "AnalysisTools/DataFormats/interface/FatJet.h"
-#include "AnalysisTools/ObjectSelection/interface/SoftdropMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropTopMVA.h"
 #include "AnalysisTools/ObjectSelection/interface/SoftdropWTagMVA.h"
-#include "AnalysisTools/ObjectSelection/interface/HTTMVA.h"
-#include <TRandom3.h>
 
 namespace ucsbsusy {
 
@@ -30,8 +28,8 @@ namespace ucsbsusy {
                     , FILLOBJ     = (1 << 2)   ///< Fill objects (as opposed to just pointers
                     , LOADSHAPE   = (1 << 3)
                     , LOADCTAG    = (1 << 4)
-                    , LOADTOPMVA  = (1 << 5)
-                    , LOADWTAGMVA = (1 << 6)
+                    , UPDATETOPMVA  = (1 << 5)
+                    , UPDATEWTAGMVA = (1 << 6)
     };
     static const int defaultOptions;
 
@@ -79,6 +77,8 @@ namespace ucsbsusy {
     std::vector<float>* fjsdsj2axis1_;
     std::vector<float>* fjsdsj2axis2_;
     std::vector<int  >* fjsdsj2mult_;
+    std::vector<float>* fjtopmva_;
+    std::vector<float>* fjwmva_;
 
     //Puppi variables
     std::vector<float>* fj_puppi_pt_          ;
@@ -116,7 +116,7 @@ namespace ucsbsusy {
     FatJetFCollection fatJets;
 
     private:
-      SoftdropMVA * softdropMVA = nullptr;
+      SoftdropTopMVA * sdTopMVA = nullptr;
       SoftdropWTagMVA * sdWTagMVA = nullptr;
 };
 

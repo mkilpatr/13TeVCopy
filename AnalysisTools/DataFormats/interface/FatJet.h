@@ -100,7 +100,7 @@ class FatJet : public Jet<CoordSystem>
     tau1_        (-9.),
     tau2_        (-9.),
     tau3_        (-9.),
-    mva_               (-9.),
+    topmva_            (-9.),
     puppi_softDropMass_(-9.),
     puppi_tau1_        (-9.),
     puppi_tau2_        (-9.),
@@ -118,7 +118,7 @@ class FatJet : public Jet<CoordSystem>
         tau1_        (inTau1),
         tau2_        (inTau2),
         tau3_        (inTau3),
-        mva_         (-9.),
+        topmva_      (-9.),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
@@ -133,8 +133,8 @@ class FatJet : public Jet<CoordSystem>
   float tau2()                 const { return tau2_        ;    }
   float tau3()                 const { return tau3_        ;    }
   size  nSubjets()             const { return subjets.size();   }
-  float mva()                  const { return mva_         ;    }
-  float mvaWTag()              const { return mvaW_        ;    }
+  float top_mva()              const { return topmva_      ;    }
+  float w_mva()                const { return wmva_        ;    }
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
     if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
@@ -189,8 +189,8 @@ class FatJet : public Jet<CoordSystem>
     puppi_subjets.emplace_back(inMomentum,-1,inCSV);
   }
 
-  void setMVA(const float inMVA) {mva_ = inMVA;}
-  void setMVAWTag(const float inMVA) {mvaW_ = inMVA;}
+  void setTopMVA(const float inMVA) {topmva_ = inMVA;}
+  void setWMVA(const float inMVA) {wmva_ = inMVA;}
 
     ~FatJet(){}
 
@@ -205,8 +205,8 @@ class FatJet : public Jet<CoordSystem>
     float tau1_        ;
     float tau2_        ;
     float tau3_        ;
-    float mva_         ;
-    float mvaW_ = -9   ;
+    float topmva_      ;
+    float wmva_ = -9   ;
 
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;

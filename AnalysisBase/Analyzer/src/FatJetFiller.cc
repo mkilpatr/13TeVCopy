@@ -14,6 +14,10 @@
 
 #include "AnalysisTools/JetShapeVariables/interface/QuarkGluonTaggingVariables.h"
 
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropTopMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropWTagMVA.h"
+
 using namespace ucsbsusy;
 
 //--------------------------------------------------------------------------------------------------
@@ -103,6 +107,15 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
     ifj_sdsubjet2_axis1_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_axis1",0);
     ifj_sdsubjet2_axis2_      = data.addMulti<float> (branchName_,"fatjet_sdsubjet2_axis2",0);
     ifj_sdsubjet2_jetMult_    = data.addMulti<int>   (branchName_,"fatjet_sdsubjet2_jetMult",0);
+  }
+
+  if(options_ & LOADTOPMVA){
+    sdTopMVA = new SoftdropTopMVA(defaults::MVAWEIGHT_SOFTDROP_TOP);
+    ifj_topmva  = data.addMulti<float>(branchName_,"fatjet_topmva", -9);
+  }
+  if(options_ & LOADWTAGMVA){
+    sdWTagMVA = new SoftdropWTagMVA(defaults::MVAWEIGHT_SOFTDROP_W);
+    ifj_wmva  = data.addMulti<float>(branchName_,"fatjet_wmva", -9);
   }
 
 }
@@ -202,20 +215,53 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_sdsubjet2_mass_,sdsubjets.size()>1 ? sdsubjets[1]->mass(): -9);
     data.fillMulti<float>(ifj_sdsubjet2_csv_ ,sdsubjets.size()>1 ? sdsubjets[1]->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") : -9);
 
+    std::vector<decltype(qgTaggingVar_->getQGVars())> qgvars_subjets; // save them for MVA eval
     if (options_ & LOADJETSHAPE){
-      if (sdsubjets.size()>0) qgTaggingVar_->compute(&(*sdsubjets[0]),true);
+      if (sdsubjets.size()>0) {
+        qgTaggingVar_->compute(&(*sdsubjets[0]),true); qgvars_subjets.push_back(qgTaggingVar_->getQGVars());
+      }
       data.fillMulti<float>(ifj_sdsubjet1_ptD_    ,sdsubjets.size()>0 ? qgTaggingVar_->getPtD()       : -9);
       data.fillMulti<float>(ifj_sdsubjet1_axis1_  ,sdsubjets.size()>0 ? qgTaggingVar_->getAxis1()     : -9);
       data.fillMulti<float>(ifj_sdsubjet1_axis2_  ,sdsubjets.size()>0 ? qgTaggingVar_->getAxis2()     : -9);
       data.fillMulti<int>  (ifj_sdsubjet1_jetMult_,sdsubjets.size()>0 ? qgTaggingVar_->getTotalMult() : -9);
 
-      if (sdsubjets.size()>1) qgTaggingVar_->compute(&(*sdsubjets[1]),true);
+      if (sdsubjets.size()>1) {
+        qgTaggingVar_->compute(&(*sdsubjets[1]),true); qgvars_subjets.push_back(qgTaggingVar_->getQGVars());
+      }
       data.fillMulti<float>(ifj_sdsubjet2_ptD_    ,sdsubjets.size()>1 ? qgTaggingVar_->getPtD()       : -9);
       data.fillMulti<float>(ifj_sdsubjet2_axis1_  ,sdsubjets.size()>1 ? qgTaggingVar_->getAxis1()     : -9);
       data.fillMulti<float>(ifj_sdsubjet2_axis2_  ,sdsubjets.size()>1 ? qgTaggingVar_->getAxis2()     : -9);
       data.fillMulti<int>  (ifj_sdsubjet2_jetMult_,sdsubjets.size()>1 ? qgTaggingVar_->getTotalMult() : -9);
     }
 
+
+    if ((options_ & LOADTOPMVA) || (options_ & LOADWTAGMVA)){
+      FatJetF tmpFatJetObj(CylLorentzVectorF(fatjet.pt(),fatjet.eta(),fatjet.phi(),fatjet.mass()),
+          -1,
+          fatjet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+          fatjet.userFloat("ak8PFJets"+puRemoval_+"PrunedMass"),fatjet.userFloat("ak8PFJets"+puRemoval_+"SoftDropMass"),
+          fatjet.userFloat("NjettinessAK8:tau1"),fatjet.userFloat("NjettinessAK8:tau2"),fatjet.userFloat("NjettinessAK8:tau3"));
+      for(unsigned isub=0; isub<sdsubjets.size(); ++isub){
+        const auto &subj = sdsubjets.at(isub);
+        decltype(qgTaggingVar_->getQGVars()) qg;
+        if (options_ & LOADJETSHAPE){
+          qg = qgvars_subjets.at(isub);
+        } else{
+          qgTaggingVar_->compute(&(*subj),true); qg = qgTaggingVar_->getQGVars();
+        }
+        tmpFatJetObj.addSubjet(CylLorentzVectorF(subj->pt(),subj->eta(),subj->phi(),subj->mass()),
+            subj->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+        tmpFatJetObj.subjets.back().addQuarkGluonVars(qg.at("ptD"), qg.at("axis1"), qg.at("axis2"), (int)qg.at("mult"));
+      }
+
+      if (options_ & LOADTOPMVA){
+        data.fillMulti<float>(ifj_topmva, sdTopMVA->getSoftdropMVAScore(&tmpFatJetObj));
+      }
+
+      if (options_ & LOADWTAGMVA){
+        data.fillMulti<float>(ifj_wmva, sdWTagMVA->getSoftdropWTagMVAScore(&tmpFatJetObj));
+      }
+    }
 
 
     // for puppi

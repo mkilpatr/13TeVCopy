@@ -17,7 +17,7 @@ namespace ucsbsusy {
 
 class SoftdropWTagMVA {
 public:
-  SoftdropWTagMVA(TString weightfile, TString mvaname);
+  SoftdropWTagMVA(TString weightfile, TString mvaname="BDTG");
   virtual ~SoftdropWTagMVA();
 
   float getSoftdropWTagMVAScore(const FatJetF* fatjet);

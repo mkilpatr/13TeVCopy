@@ -5,20 +5,20 @@
  *      Author: patterson
  */
 
-#include "AnalysisTools/ObjectSelection/interface/SoftdropMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropTopMVA.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 
 using namespace ucsbsusy;
 
 
-SoftdropMVA::SoftdropMVA(TString weightfile, TString mvaname) :mvaReader(weightfile, mvaname) {
+SoftdropTopMVA::SoftdropTopMVA(TString weightfile, TString mvaname) :mvaReader(weightfile, mvaname) {
   initSoftdropMVA();
 }
 
-SoftdropMVA::~SoftdropMVA() {
+SoftdropTopMVA::~SoftdropTopMVA() {
 }
 
-bool SoftdropMVA::isPreselected(const FatJetF* fatjet){
+bool SoftdropTopMVA::isPreselected(const FatJetF* fatjet){
   bool isPreselected =
           fatjet->pt()>200
           && fabs(fatjet->eta())<2.4
@@ -27,7 +27,7 @@ bool SoftdropMVA::isPreselected(const FatJetF* fatjet){
           && fatjet->subJet(0).pt()>20 && fatjet->subJet(1).pt()>20;
   return isPreselected;
 }
-float SoftdropMVA::getSoftdropMVAScore(const FatJetF* fatjet){
+float SoftdropTopMVA::getSoftdropMVAScore(const FatJetF* fatjet){
 
   if(!isPreselected(fatjet)) return -9.;
 
@@ -43,7 +43,7 @@ float SoftdropMVA::getSoftdropMVAScore(const FatJetF* fatjet){
 }
 
 // give me ana->fatJets and SoftdropMVA::WP_LOOSE or WP_TIGHT
-std::vector<const FatJetF*> SoftdropMVA::getSoftdropMVATops(const std::vector<const FatJetF*> &fatjets, double WP) {
+std::vector<const FatJetF*> SoftdropTopMVA::getSoftdropMVATops(const std::vector<const FatJetF*> &fatjets, double WP) {
   std::vector<const FatJetF*> SoftdropMVATops;
   for(const FatJetF * fj : fatjets){
     if(getSoftdropMVAScore(fj) > WP){
@@ -53,7 +53,7 @@ std::vector<const FatJetF*> SoftdropMVA::getSoftdropMVATops(const std::vector<co
   return SoftdropMVATops;
 }
 
-void SoftdropMVA::initSoftdropMVA() {
+void SoftdropTopMVA::initSoftdropMVA() {
   // variable order must match the order in XML file
 
   varsF = {
@@ -80,7 +80,7 @@ void SoftdropMVA::initSoftdropMVA() {
   mvaReader.addVariables(varsI);
 }
 
-std::map<TString, float> SoftdropMVA::calcSoftdropMVAVars(const FatJetF* fatjet, bool fullMonty) {
+std::map<TString, float> SoftdropTopMVA::calcSoftdropMVAVars(const FatJetF* fatjet, bool fullMonty) {
   bool dbg = false;
   if(dbg) std::cout << "[ObjectSelection/SoftdropMVA] calcSoftdropMVAVars fatjet pt " << fatjet->pt() << std::endl;
   std::map<TString, float> vars;

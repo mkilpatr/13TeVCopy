@@ -18,7 +18,7 @@ namespace ucsbsusy {
 
 class IVFMVA {
 public:
-  IVFMVA(TString weightfile, TString mvaname);
+  IVFMVA(TString weightfile, TString mvaname="BDTG");
   virtual ~IVFMVA();
 
   float getIVFCandScore(const SVF& sv);

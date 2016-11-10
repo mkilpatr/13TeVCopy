@@ -321,36 +321,38 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-  case AK8FATJETS : {
-    int defaultOptions = FatJetFiller::defaultOptions;
-    if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= FatJetFiller::LOADJETSHAPE;
-    if(cfg.getUntrackedParameter<bool>("fillSubjetCTag"))             defaultOptions |= FatJetFiller::LOADSUBJETCTAG;
+    case AK8FATJETS : {
+      int defaultOptions = FatJetFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= FatJetFiller::LOADJETSHAPE;
+      if(cfg.getUntrackedParameter<bool>("fillSubjetCTag"))             defaultOptions |= FatJetFiller::LOADSUBJETCTAG;
+      if(cfg.getUntrackedParameter<bool>("fillTopTaggingMVA"))          defaultOptions |= FatJetFiller::LOADTOPMVA;
+      if(cfg.getUntrackedParameter<bool>("fillWTaggingMVA"))            defaultOptions |= FatJetFiller::LOADWTAGMVA;
 
-    ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
-          options < 0 ? defaultOptions : options,
-				  branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
-				  );
-    initializedFillers.push_back(ak8fatjets);
-    break;
-  }
+      ak8fatjets = new FatJetFiller(cfg, consumesCollector(),
+            options < 0 ? defaultOptions : options,
+            branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName
+            );
+      initializedFillers.push_back(ak8fatjets);
+      break;
+    }
 
-  case HTTJETS : {
-    HTTjets = new HTTFiller(cfg, consumesCollector(),
-          0,
-          branchName == "" ? defaults::BRANCH_HTTJETS : branchName
-          );
-    initializedFillers.push_back(HTTjets);
-    break;
-  }
+    case HTTJETS : {
+      HTTjets = new HTTFiller(cfg, consumesCollector(),
+            0,
+            branchName == "" ? defaults::BRANCH_HTTJETS : branchName
+            );
+      initializedFillers.push_back(HTTjets);
+      break;
+    }
 
-  case AK8PUPPIFATJETS : {
-    ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
-				       0,
-				       branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName
-				       );
-    initializedFillers.push_back(ak8puppifatjets);
-    break;
-  }
+    case AK8PUPPIFATJETS : {
+      ak8puppifatjets = new FatJetFiller(cfg, consumesCollector(),
+                 0,
+                 branchName == "" ? defaults::BRANCH_AK8PUPPIFATJETS : branchName
+                 );
+      initializedFillers.push_back(ak8puppifatjets);
+      break;
+    }
 
     case TRIGGERS : {
       int defaultOptions = TriggerFiller::defaultOptions;
@@ -386,14 +388,17 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       break;
     }
 
-  case SV : {
-    sv = new SecondaryVertexFiller(cfg, consumesCollector(),
-				  0,
-				  branchName == "" ? defaults::BRANCH_SV : branchName
-				  );
-    initializedFillers.push_back(sv);
-    break;
-  }
+    case SV : {
+      int defaultOptions = SecondaryVertexFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillMVA"))            defaultOptions |= SecondaryVertexFiller::LOADMVA;
+
+      sv = new SecondaryVertexFiller(cfg, consumesCollector(),
+            options < 0 ? defaultOptions : options,
+            branchName == "" ? defaults::BRANCH_SV : branchName
+            );
+      initializedFillers.push_back(sv);
+      break;
+    }
 
     default : {
       cout << endl << "No settings for type: " << type << " found, maybe you should use the initialization enabling the event setup!" << endl;

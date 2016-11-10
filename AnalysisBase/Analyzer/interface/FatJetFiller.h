@@ -14,12 +14,12 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 #include "AnalysisBase/Analyzer/interface/BaseFiller.h"
-#include "TLorentzVector.h"
 
 namespace ucsbsusy {
 
 class QuarkGluonTaggingVariables;
-
+class SoftdropTopMVA;
+class SoftdropWTagMVA;
 
   class FatJetFiller : public BaseFiller {
 
@@ -31,8 +31,10 @@ class QuarkGluonTaggingVariables;
                               NULLOPT         = 0
                             , LOADJETSHAPE    = (1 <<  0)   ///< load jet shape variables
                             , LOADSUBJETCTAG  = (1 <<  1)   ///< load subjet c-tagging
+                            , LOADTOPMVA      = (1 <<  2)   ///< load softdrop top-tagging MVA
+                            , LOADWTAGMVA     = (1 <<  3)   ///< load softdrop W-tagging MVA
     };
-    static const int defaultOptions = NULLOPT | LOADJETSHAPE;
+    static const int defaultOptions = NULLOPT;
 
     void load(const edm::Event& iEvent, const edm::EventSetup &iSetup);
     void fill();
@@ -88,6 +90,8 @@ class QuarkGluonTaggingVariables;
     size ifj_sdsubjet2_axis1_;
     size ifj_sdsubjet2_axis2_;
     size ifj_sdsubjet2_jetMult_;
+    size ifj_topmva;
+    size ifj_wmva;
 
     size ifj_puppi_pt_;
     size ifj_puppi_eta_;
@@ -126,6 +130,8 @@ class QuarkGluonTaggingVariables;
 
   protected:
     QuarkGluonTaggingVariables* qgTaggingVar_;
+    SoftdropTopMVA * sdTopMVA = nullptr;
+    SoftdropWTagMVA * sdWTagMVA = nullptr;
 
   };
 
