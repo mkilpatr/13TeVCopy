@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // ElectronFiller
-// 
+//
 // Class to fill electron information in a TTree.
-// 
-// ElectronFiller.cc created on Thu Oct 16 12:21:38 CEST 2014 
-// 
+//
+// ElectronFiller.cc created on Thu Oct 16 12:21:38 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/ElectronFiller.h"
@@ -32,7 +32,6 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   mvatrigTightIdToken_ (cc.consumes<edm::ValueMap<bool> >    (cfg.getParameter<edm::InputTag>("mvatrigwp80Id"))),
   mvatrigMVAValueToken_(cc.consumes<edm::ValueMap<float> >   (cfg.getParameter<edm::InputTag>("mvatrigValuesMap"))),
   mvatrigMVACatToken_(cc.consumes<edm::ValueMap<int> >       (cfg.getParameter<edm::InputTag>("mvatrigCategoriesMap"))),
-  ca8jetToken_  (cc.consumes<reco::PFJetCollection>          (cfg.getParameter<edm::InputTag>("ca8jets"))),
   rhoToken_     (cc.consumes<double>                         (cfg.getParameter<edm::InputTag>("rho"))),
   jetToken_     (cc.consumes<pat::JetCollection>             (cfg.getParameter<edm::InputTag>("jets"))),
   pfcandToken_  (cc.consumes<pat::PackedCandidateCollection> (cfg.getParameter<edm::InputTag>("pfcands"))),
@@ -64,7 +63,6 @@ ElectronFiller::ElectronFiller(const edm::ParameterSet& cfg, edm::ConsumesCollec
   iptratio_    = data.addMulti<float>(branchName_,"ptratio",0);
   irhoiso_     = data.addMulti<float>(branchName_,"rhoiso",0);
   isip3d_      = data.addMulti<float>(branchName_,"sip3d",0);
-  iLSFIso_     = data.addMulti<float>(branchName_,"lsfIso",0);
   inExpHitsInner_      = data.addMulti<int  >(branchName_,"nExpHitsInner",0);
   inLostHitsInner_     = data.addMulti<int  >(branchName_,"nLostHitsInner",0);
   ipassConvVeto_       = data.addMulti<bool >(branchName_,"passConvVeto",false);
@@ -141,7 +139,6 @@ void ElectronFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetu
     iEvent.getByToken(mvatrigMVAValueToken_,mvatrig_value_map_);
     iEvent.getByToken(mvatrigMVACatToken_,mvatrig_category_map_);
   }
-  iEvent.getByToken(ca8jetToken_,ca8jets_);
   iEvent.getByToken(rhoToken_,rho_);
   iEvent.getByToken(jetToken_,ak4jets_);
   iEvent.getByToken(pfcandToken_,pfcands_);
@@ -169,7 +166,7 @@ void ElectronFiller::fill()
 
     float dbiso = el->pfIsolationVariables().sumChargedHadronPt + max(0.0 , el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - 0.5 * el->pfIsolationVariables().sumPUPt);
     data.fillMulti<float>(ipfdbetaiso_, dbiso);
-    
+
     const edm::Ptr<pat::Electron> elPtr(electrons_, el - electrons_->begin() );
     data.fillMulti<bool >(ivetoid_, (*veto_id_decisions_)[ elPtr ]);
     data.fillMulti<bool >(ilooseid_, (*loose_id_decisions_)[ elPtr ]);
@@ -190,12 +187,9 @@ void ElectronFiller::fill()
     data.fillMulti<float>(iptrel_, Isolation::leptonPtRel(*elPtr, *ak4jets_));
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(*elPtr, *ak4jets_));
 
-    double LSF = Isolation::LSF(*elPtr, *ca8jets_);
-    data.fillMulti<float>(iLSFIso_  ,LSF);
-
     double rhoiso=Isolation::rhoIso(*elPtr, *rho_);
     data.fillMulti<float>(irhoiso_, rhoiso);
- 
+
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
     data.fillMulti<float>(isip3d_, sip3d);
 

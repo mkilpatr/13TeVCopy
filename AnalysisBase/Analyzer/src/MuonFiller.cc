@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // MuonFiller
-// 
+//
 // Muon filler.
-// 
-// MuonFiller.cc created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// MuonFiller.cc created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/MuonFiller.h"
@@ -17,7 +17,6 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
   BaseFiller(options, branchName),
   evtInfoFiller_(evtInfoFiller),
   muonToken_    (cc.consumes<pat::MuonCollection>           (cfg.getParameter<edm::InputTag>("muons"))),
-  ca8jetToken_  (cc.consumes<reco::PFJetCollection>         (cfg.getParameter<edm::InputTag>("ca8jets"))),
   rhoToken_     (cc.consumes<double>                        (cfg.getParameter<edm::InputTag>("rho"))),
   jetToken_     (cc.consumes<pat::JetCollection>            (cfg.getParameter<edm::InputTag>("jets"))),
   pfcandToken_  (cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("pfcands"))),
@@ -52,7 +51,6 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
   iptratio_      = data.addMulti<float>(branchName_,"ptratio",0);
   isip3d_        = data.addMulti<float>(branchName_,"sip3d",0);
   irhoiso_       = data.addMulti<float>(branchName_,"rhoiso",0);
-  iLSFIso_       = data.addMulti<float>(branchName_,"lsfIso",0);
 
   if(options_ & FILLIDVARS) {
     inChi2_        = data.addMulti<float>(branchName_,"nChi2",0);
@@ -71,7 +69,7 @@ MuonFiller::MuonFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && c
     ipfphotoniso_  = data.addMulti<float>(branchName_,"pfphotoniso",0);
     ipfpuiso_      = data.addMulti<float>(branchName_,"pfpuiso",0);
   }
- 
+
   if(options_ & LOADGEN) {
     igenpt_           = data.addMulti<float>(branchName_, "gen_pt", 0);
     igeneta_          = data.addMulti<float>(branchName_, "gen_eta", 0);
@@ -90,7 +88,6 @@ void MuonFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
   reset();
   iEvent.getByToken(muonToken_,muons_);
-  iEvent.getByToken(ca8jetToken_,ca8jets_);
   iEvent.getByToken(rhoToken_,rho_);
   iEvent.getByToken(jetToken_,ak4jets_);
   iEvent.getByToken(pfcandToken_,pfcands_);
@@ -126,8 +123,6 @@ void MuonFiller::fill()
     data.fillMulti<bool >(iistracker_, mu.isTrackerMuon());
     data.fillMulti<bool >(iisstandalone_, mu.isStandAloneMuon());
 
-    double LSF = Isolation::LSF(mu, *ca8jets_);
-    data.fillMulti<float>(iLSFIso_  ,LSF);
     double rhoiso=Isolation::rhoIso(mu, *rho_);
     data.fillMulti<float>(irhoiso_  ,rhoiso);
     double sip3d=fabs(mu.dB(mu.PV3D) / mu.edB(mu.PV3D));
@@ -148,12 +143,12 @@ void MuonFiller::fill()
     data.fillMulti<float>(iptratio_,Isolation::leptonPtRatio(mu, *ak4jets_));
 
 
-    bool goodGlob = mu.isGlobalMuon() && 
-      mu.globalTrack()->normalizedChi2() < 3 && 
-      mu.combinedQuality().chi2LocalPosition < 12 && 
-      mu.combinedQuality().trkKink < 20; 
-    bool isMediumHIP_ = mu.isLooseMuon() && 
-      mu.innerTrack()->validFraction() > 0.49 && 
+    bool goodGlob = mu.isGlobalMuon() &&
+      mu.globalTrack()->normalizedChi2() < 3 &&
+      mu.combinedQuality().chi2LocalPosition < 12 &&
+      mu.combinedQuality().trkKink < 20;
+    bool isMediumHIP_ = mu.isLooseMuon() &&
+      mu.innerTrack()->validFraction() > 0.49 &&
       mu.segmentCompatibility() > (goodGlob ? 0.303 : 0.451);
     data.fillMulti<bool >(iismediumhip_,isMediumHIP_);
 

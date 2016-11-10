@@ -1,8 +1,0 @@
-<use name="fastjet"/>
-<use name="AnalysisTools/Utilities"/>
-<use name="AnalysisBase/Analyzer"/>
-<use name="ObjectProducers/PickyJetUtilities"/>
-<library   name="ObjectProducersLSFJetProducerPlugins" file="*.cc">
-  <use   name="FWCore/Framework"/>
-  <use   name="FWCore/PluginManager"/>
-</library>

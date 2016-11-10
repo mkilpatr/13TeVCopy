@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // ElectronFiller
-// 
+//
 // Class to fill electron information in a TTree.
-// 
-// ElectronFiller.h created on Thu Oct 16 12:21:38 CEST 2014 
-// 
+//
+// ElectronFiller.h created on Thu Oct 16 12:21:38 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_ELECTRONFILLER_H
@@ -67,7 +67,6 @@ namespace ucsbsusy {
       edm::EDGetTokenT<edm::ValueMap<bool> >           mvatrigTightIdToken_;
       edm::EDGetTokenT<edm::ValueMap<float> >          mvatrigMVAValueToken_;
       edm::EDGetTokenT<edm::ValueMap<int> >            mvatrigMVACatToken_;
-      edm::EDGetTokenT<reco::PFJetCollection>          ca8jetToken_;
       edm::EDGetTokenT<double>                         rhoToken_;
       edm::EDGetTokenT<pat::JetCollection>             jetToken_;
       edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
@@ -120,9 +119,7 @@ namespace ucsbsusy {
       size ipfneutraliso_;
       size ipfphotoniso_;
       size ipfpuiso_;
-      size iMVAiso_;
       // different isolations
-      size iLSFIso_;
       size iminiiso_;
       size iannulus_;
       size iminiisoeacorr_;
@@ -167,7 +164,6 @@ namespace ucsbsusy {
       edm::Handle<edm::ValueMap<bool> >           mvatrig_tight_id_decisions_;
       edm::Handle<edm::ValueMap<float> >          mvatrig_value_map_;
       edm::Handle<edm::ValueMap<int> >            mvatrig_category_map_;
-      edm::Handle<reco::PFJetCollection>          ca8jets_;
       edm::Handle<double>                         rho_;
       edm::Handle<pat::PackedCandidateCollection> pfcands_;
       edm::Handle<pat::JetCollection>             ak4jets_;

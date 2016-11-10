@@ -8,8 +8,8 @@ from ObjectProducers.JetProducers.jet_btagging_cfi import *
 
 ak4PatAssocSeq = cms.Sequence(ak4Jets * redGenAssoc * ak4FlvAssoc)
 
-redCA8 = ak4Jets.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter      = cms.double(.8) )
-ca8JetsSeq = cms.Sequence(redCA8)
+# redCA8 = ak4Jets.clone(jetAlgorithm = cms.string('CambridgeAachen'),rParameter      = cms.double(.8) )
+# ca8JetsSeq = cms.Sequence(redCA8)
 
 
 #ak4PuppiFlvAssoc        = ak4FlvAssoc.clone(genJetsSrc = cms.InputTag('ak4PuppiJets','Gen'),

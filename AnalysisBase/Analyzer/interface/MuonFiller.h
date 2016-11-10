@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // MuonFiller
-// 
+//
 // Class to fill muon information in a TTree.
-// 
-// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014 
-// 
+//
+// MuonFiller.h created on Fri Oct 17 12:11:09 CEST 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #ifndef ANALYSISBASE_ANALYZER_MUONFILLER_H
@@ -46,7 +46,6 @@ namespace ucsbsusy {
     const EventInfoFiller * evtInfoFiller_;
     // Input from the config file
     edm::EDGetTokenT<pat::MuonCollection>            muonToken_;
-    edm::EDGetTokenT<reco::PFJetCollection>          ca8jetToken_;
     edm::EDGetTokenT<double>                         rhoToken_;
     edm::EDGetTokenT<pat::JetCollection>             jetToken_;
     edm::EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
@@ -91,7 +90,6 @@ namespace ucsbsusy {
     size iminiisopu_;
     size iptrel_;
     size irhoiso_;
-    size iLSFIso_;
     size iptratio_;
     size isip3d_;
     // pat matched gen lepton info
@@ -109,7 +107,6 @@ namespace ucsbsusy {
     edm::Handle<pat::MuonCollection>            muons_;
     edm::Handle<double>                         rho_;
     edm::Handle<pat::PackedCandidateCollection> pfcands_;
-    edm::Handle<std::vector<reco::PFJet>>       ca8jets_;
     edm::Handle<pat::JetCollection>             ak4jets_;
   };
 

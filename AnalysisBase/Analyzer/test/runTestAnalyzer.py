@@ -251,8 +251,6 @@ process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
 process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 
 if ISDATA :
-    process.redCA8.produceGen = cms.bool(False)
-    process.redCA8.producePartonJets = cms.bool(False)
     process.ak4Jets.produceGen = cms.bool(False)
     process.ak4Jets.producePartonJets = cms.bool(False)
     delattr(process, 'ak4FlvAssoc')
@@ -374,23 +372,23 @@ if ISDATA: JETCorrLevels.append('L2L3Residual')
 jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addCMSTopTagger=True)
 
 # add HTTv2
-runHTT = False
-if runHTT:
-    from ObjectProducers.JetProducers.htt_cfg import *
-    process.httseq = cms.Sequence()
-    HTTJets(process,process.httseq,"CA15HTT",1.5)
+# runHTT = False
+# if runHTT:
+#     from ObjectProducers.JetProducers.htt_cfg import *
+#     process.httseq = cms.Sequence()
+#     HTTJets(process,process.httseq,"CA15HTT",1.5)
 
 # add subjet b/c-tagging
-runSubjetCTagging = False
-if runSubjetCTagging:
-    process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
-    bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
- 
-    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'CHS',   JETCorrPayload = 'AK8PFchs',   JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
-    process.TestAnalyzer.AK8FatJets.sdSubjets = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropPacked')
- 
-    jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
-    process.TestAnalyzer.AK8FatJets.puppiSubjets = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropPacked')
+# runSubjetCTagging = False
+# if runSubjetCTagging:
+#     process.TestAnalyzer.AK8FatJets.fillSubjetCTag = True
+#     bTagDiscriminators=['pfCombinedInclusiveSecondaryVertexV2BJetTags','pfCombinedMVAV2BJetTags','pfCombinedCvsLJetTags','pfCombinedCvsBJetTags']
+#  
+#     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'CHS',   JETCorrPayload = 'AK8PFchs',   JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
+#     process.TestAnalyzer.AK8FatJets.sdSubjets = cms.InputTag('selectedPatJetsAK8PFCHSSoftDropPacked')
+#  
+#     jetToolbox(process, 'ak8', 'dummy', 'out', PUMethod = 'Puppi', JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addSoftDrop=True, addSoftDropSubjets=True, bTagDiscriminators=bTagDiscriminators)
+#     process.TestAnalyzer.AK8FatJets.puppiSubjets = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropPacked')
 
 #==============================================================================================================================#
 # Also update jets with different JECs if needed
@@ -478,8 +476,7 @@ if updateJECs:
                                process.patJetsAK8ReapplyJEC *
                                process.met131TeVFilter *
                                process.ak4PatAssocSeq *
-                               process.httseq  *
-                               process.ca8JetsSeq *
+#                                process.httseq  *
                                process.egmGsfElectronIDSequence *
                                process.egmPhotonIDSequence*
                                process.BadChargedCandidateFilter *
@@ -489,12 +486,13 @@ if updateJECs:
 else :
     process.seq = cms.Sequence(process.met131TeVFilter *
                                process.ak4PatAssocSeq *
-                               process.httseq  *
-                               process.ca8JetsSeq *
+#                                process.httseq  *
                                process.egmGsfElectronIDSequence *
                                process.egmPhotonIDSequence *
                                process.BadChargedCandidateFilter *
                                process.BadPFMuonFilter)
+
+
 
 if ISFASTSIM :
     process.p = cms.Path(process.seq * process.TestAnalyzer)
