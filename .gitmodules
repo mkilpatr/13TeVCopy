@@ -15,7 +15,7 @@
 	url = git@github.com:cms-jet/JetToolbox.git
 [submodule "PhysicsTools"]
 	path = PhysicsTools
-	url = https://github.com/vdutta/PhysicsTools
+	url = git@github.com:hqucms/PhysicsTools.git 
 [submodule "AnalysisMethods/EstTools"]
 	path = AnalysisMethods/EstTools
 	url = git@github.com:UCSBSusy/EstTools.git
