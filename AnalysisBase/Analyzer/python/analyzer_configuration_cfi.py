@@ -250,7 +250,7 @@ nominal_configuration = cms.PSet(
                                   ),
 
                                   CMSTops = cms.untracked.PSet(
-                                      isFilled = cms.untracked.bool(True),
+                                      isFilled = cms.untracked.bool(False),
                                       fatJets  = cms.InputTag('patJetsCMSTopTagCHSPacked'),
                                       ),
                                       

@@ -329,13 +329,13 @@ process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', pro
 
 #==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
-from JMEAnalysis.JetToolbox.jetToolbox_cff import *
-
-JETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
-if ISDATA: JETCorrLevels.append('L2L3Residual')
-
-# add CTT
-jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addCMSTopTagger=True)
+# from JMEAnalysis.JetToolbox.jetToolbox_cff import *
+# 
+# JETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
+# if ISDATA: JETCorrLevels.append('L2L3Residual')
+# 
+# # add CTT
+# jetToolbox(process, 'ca8', 'dummy', 'out', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, miniAOD=True, runOnMC=(not ISDATA), addCMSTopTagger=True)
 
 # add HTTv2
 # runHTT = False
