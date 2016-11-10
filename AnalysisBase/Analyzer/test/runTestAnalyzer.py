@@ -24,12 +24,12 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
-#options.inputFiles = '/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/150/00000/2CF02CDC-D819-E611-AA68-02163E011A52.root'
-# options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/00A654EB-111B-E611-8E58-141877343E6D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
 #options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
+#options.inputFiles = '/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/036/00000/0E02D50E-989F-E611-A962-FA163EE15C80.root'
 options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTToSemiLeptonic_TuneCUETP8M1T4_alphaS01108_13TeV-powheg-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/00000/0ADCDA89-4F6E-E611-A828-08606E15E9C2.root'
 
 options.maxEvents = -1
@@ -80,11 +80,6 @@ if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'ST_' in DatasetName or 'tZq'
 else :
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
 
-# Turn on jet shape info for specific datasets
-if 'Photon' in DatasetName or 'JetHT' in DatasetName or 'DoubleMu' in DatasetName or 'GJets' in DatasetName or 'QCD' in DatasetName or 'DYJets' in DatasetName :
-    print 'Adding jet shape info'
-    process.TestAnalyzer.Jets.fillJetShapeInfo = cms.untracked.bool(True)
-
 # Turn on saving number of genjets for QCD patching
 if 'QCD' in DatasetName:
     process.TestAnalyzer.EventInfo.fillNumStdGenJets = cms.untracked.bool(True)
@@ -96,7 +91,6 @@ if 'reHLT' in DatasetName:
 # Settings
 ISDATA = False
 ISFASTSIM = False
-ISMINIAODV1 = False
 runMetCorrAndUnc = True
 updateJECs = True
 JECUNCFILE = 'data/JEC/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt'
@@ -112,10 +106,6 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
-    if 'RunIISpring15FSPremix' in DatasetName :
-        print 'Running on miniAODv1'
-        ISMINIAODV1 = True
-        process.TestAnalyzer.EventInfo.pileupSummaryInfos = cms.InputTag('addPileupInfo')
     if 'SMS' in DatasetName or 'T2bW' in DatasetName :
         print 'SMS: will save masses'
         process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
@@ -222,28 +212,6 @@ process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhoton
 if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' in DatasetName and not 'QCD' in DatasetName :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
     process.TestAnalyzer.Photons.fillPhotonIsoVars = cms.untracked.bool(False)
-
-#==============================================================================================================================#
-# HCAL Noise Filter
-if not ISFASTSIM :
-    process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
-    process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
-    process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion = cms.bool(False)
-
-    process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
-       inputLabel=cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
-       reverseDecision=cms.bool(False)
-    )
-    process.ApplyBaselineHBHEIsoNoiseFilter = cms.EDFilter('BooleanFlagFilter',
-       inputLabel=cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
-       reverseDecision=cms.bool(False)
-    )
-    process.ApplyBaselineHBHENoiseFilterRun2Loose = process.ApplyBaselineHBHENoiseFilter.clone(
-       inputLabel=cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Loose'),
-    )
-    process.ApplyBaselineHBHENoiseFilterRun2Tight = process.ApplyBaselineHBHENoiseFilter.clone(
-       inputLabel=cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
-    )
 
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
@@ -358,8 +326,6 @@ process.met131TeVFilter.isData = process.TestAnalyzer.isData
 process.met131TeVFilter.EventInfo.mets = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
 process.met131TeVFilter.EventInfo.metsOOB = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
 process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', processName=cms.InputTag.skipCurrentProcess())
-if ISMINIAODV1 :
-    process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', '', 'run')
 
 #==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
@@ -421,44 +387,7 @@ if updateJECs:
         jetSource=cms.InputTag("slimmedJetsAK8"),
         jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
     )
-    '''
-    # Raw MET
-    process.uncorrectedMet = cms.EDProducer("RecoMETExtractor",
-        correctionLevel=cms.string('raw'),
-        metSource=cms.InputTag("slimmedMETs", processName=cms.InputTag.skipCurrentProcess())
-        )
-    # Raw PAT MET
-    from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
-    addMETCollection(process, labelName="uncorrectedPatMet", metSource="uncorrectedMet")
-    if not ISDATA :
-        # MET
-        process.genMet = cms.EDProducer("GenMETExtractor",
-            metSource=cms.InputTag("slimmedMETs", processName=cms.InputTag.skipCurrentProcess())
-            )
-        process.uncorrectedPatMet.genMETSource = cms.InputTag('genMet')
-    else :
-        process.uncorrectedPatMet.addGenMET = cms.bool(False)
-    process.Type1CorrForNewJEC = cms.EDProducer("PATPFJetMETcorrInputProducer",
-        isMC=cms.bool(ISDATA != True),
-        jetCorrLabel=cms.InputTag("L3Absolute"),
-        jetCorrLabelRes=cms.InputTag("L2L3Residual"),
-        offsetCorrLabel=cms.InputTag("L1FastJet"),
-        skipEM=cms.bool(True),
-        skipEMfractionThreshold=cms.double(0.9),
-        skipMuonSelection=cms.string('isGlobalMuon | isStandAloneMuon'),
-        skipMuons=cms.bool(True),
-        src=cms.InputTag("patJetsReapplyJEC"),
-        type1JetPtThreshold=cms.double(15.0),
-        type2ExtraCorrFactor=cms.double(1.0),
-        type2ResidualCorrEtaMax=cms.double(9.9),
-        type2ResidualCorrLabel=cms.InputTag(""),
-        type2ResidualCorrOffset=cms.double(0.0)
-        )
-    process.slimmedMETsNewJEC = cms.EDProducer('CorrectedPATMETProducer',
-        src=cms.InputTag('uncorrectedPatMet'),
-        srcCorrections=cms.VInputTag(cms.InputTag('Type1CorrForNewJEC', 'type1'))
-        )
-    '''
+
     process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
     process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('patJetsAK8ReapplyJEC')
     process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
@@ -493,11 +422,7 @@ else :
                                process.BadPFMuonFilter)
 
 
-
-if ISFASTSIM :
-    process.p = cms.Path(process.seq * process.TestAnalyzer)
-else :
-    process.p = cms.Path(process.seq * process.HBHENoiseFilterResultProducer * process.TestAnalyzer)
+process.p = cms.Path(process.seq * process.TestAnalyzer)
 
 if ISDATA :
     process.p.remove(process.ak4PatAssocSeq)
