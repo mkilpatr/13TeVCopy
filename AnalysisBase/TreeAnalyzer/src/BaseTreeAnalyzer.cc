@@ -297,7 +297,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
-  load(cfgSet::CMSTOPS);
+//  load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS);
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);

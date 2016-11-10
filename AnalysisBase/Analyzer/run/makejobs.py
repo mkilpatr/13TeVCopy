@@ -518,7 +518,7 @@ elif args.submittype == 'crab':
             script.write("#!/bin/bash\n\n")
             for isamp in range(len(samples)):
                 samp = samples[isamp]
-                script.write("crab %s -d crab_projects/crab_%s\n\n" % (args.crabcommand, samp))
+                script.write("crab %s -d crab_projects/crab_%s\necho\n\n" % (args.crabcommand, samp))
         os.system("chmod +x %s.sh" % args.submit)
         print "Done!"
         exit()
@@ -552,7 +552,7 @@ elif args.submittype == 'crab':
     with open(args.submit + ".sh", "w") as script:
         script.write("#!/bin/bash\n\n")
         for cfg in crab_configs:
-            script.write("crab submit -c %s\n\n" % cfg)
+            script.write("crab submit -c %s\necho\n\n" % cfg)
 
     os.system("chmod +x %s.sh" % args.submit)
     print "Done!"
