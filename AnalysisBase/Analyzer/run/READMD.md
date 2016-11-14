@@ -41,7 +41,7 @@ For Step 1, you can also use CRAB:
 
 Remember to setup the CRAB environment before submitting:
 
-`source /cvmfs/cms.cern.ch/crab3/crab_light.(c)sh`
+`source /cvmfs/cms.cern.ch/crab3/crab.(c)sh`
 
 You can check the status of, resubmit, or kill **all** the jobs by
 

@@ -223,6 +223,7 @@ public:
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
 
+    bool updateMVA_; // FIXME
 };
 
 
