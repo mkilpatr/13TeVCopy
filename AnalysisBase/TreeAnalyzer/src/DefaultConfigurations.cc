@@ -103,7 +103,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
-  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::CTT | ucsbsusy::EventCorrectionSet::SDTOP | ucsbsusy::EventCorrectionSet::SDW;
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDTOP | ucsbsusy::EventCorrectionSet::SDW;
   standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016_12p9ifb_50bins_63mb.root",CMSSW_BASE);
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
@@ -113,7 +113,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.sdTopCorrType            = ucsbsusy::NOMINAL;
   standardCorrections.sdWCorrType              = ucsbsusy::NOMINAL;
 
-  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::PHOTON | ucsbsusy::TriggerCorrectionSet::ELECTRON | ucsbsusy::TriggerCorrectionSet::MUON | ucsbsusy::TriggerCorrectionSet::MET_OR_LEP;
+  standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::NULLOPT;
   standardCorrections.triggerCorrectionFile    =  TString::Format("%s/src/data/corrections/2016/trigCorr.root",CMSSW_BASE);
   standardCorrections.trigPhotonCorrType       = ucsbsusy::NOMINAL;
   standardCorrections.trigElectronCorrType     = ucsbsusy::NOMINAL;
