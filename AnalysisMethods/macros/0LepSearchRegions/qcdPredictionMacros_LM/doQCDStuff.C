@@ -22,7 +22,7 @@ void GetQCDTable(QCDSupport::CRegInfo& crinfo, QCDSupport::SRegInfo& srinfo) {
   for(unsigned int iS=0;iS<srinfo.nSR;++iS){
     if(QCDSupport::integrating_over_met){
       int minBin = 0;
-      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
         for(unsigned int iM=minBin;iM<srinfo.nMETBins[iS];++iM) cout <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "MET Integration Systematic LM"<< "\tqcd\t" << QCDSupport::integrating_met_systematic + 1 <<endl;
       }
     }
@@ -46,7 +46,7 @@ void GetQCDTable(QCDSupport::CRegInfo& crinfo, QCDSupport::SRegInfo& srinfo) {
   for(unsigned int iS=0;iS<srinfo.nSR;++iS){
     if(QCDSupport::integrating_over_met){
       int minBin = 0;
-      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
         for(unsigned int iM=0;iM<srinfo.nMETBins[iS];++iM) uncFile <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "qcd_den_tfstatunc_"<<(iM <= minBin ? TString::Format("%.0f",srinfo.metBins[iS][iM]) : TString::Format("%.0f",srinfo.metBins[iS][minBin]))<<"_"<<srinfo.srRegBinNames[iS]<<"\tqcd\t" << srinfo.getTFStatUnc_D(QCDSupport::SRegInfo::SRReg(iS),iM)  <<endl;
       } else {
         for(unsigned int iM=0;iM<srinfo.nMETBins[iS];++iM) uncFile <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "qcd_den_tfstatunc_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM)<<"\tqcd\t" << srinfo.getTFStatUnc_D(QCDSupport::SRegInfo::SRReg(iS),iM)  <<endl;
@@ -59,7 +59,7 @@ void GetQCDTable(QCDSupport::CRegInfo& crinfo, QCDSupport::SRegInfo& srinfo) {
   for(unsigned int iS=0;iS<srinfo.nSR;++iS){
     if(QCDSupport::integrating_over_met){
       int minBin = 0;
-      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
         for(unsigned int iM=0;iM<srinfo.nMETBins[iS];++iM) uncFile <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "qcd_bkgsubunc_"<<(iM <= minBin ? TString::Format("%.0f",srinfo.metBins[iS][iM]) : TString::Format("%.0f",srinfo.metBins[iS][minBin]))<<"_"<<crinfo.crRegBinNames[srinfo.crRegs[iS]]<<"\tqcd\t" << crinfo.getDataYieldCorrUnc(srinfo.crRegs[iS],iM)  <<endl;
       } else {
         for(unsigned int iM=0;iM<srinfo.nMETBins[iS];++iM) uncFile <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "qcd_bkgsubunc_"<< crinfo.getBinName(srinfo.crRegs[iS],iM)<<"\tqcd\t" << crinfo.getDataYieldCorrUnc(srinfo.crRegs[iS],iM)  <<endl;
@@ -71,7 +71,7 @@ void GetQCDTable(QCDSupport::CRegInfo& crinfo, QCDSupport::SRegInfo& srinfo) {
   for(unsigned int iS=0;iS<srinfo.nSR;++iS){
     if(QCDSupport::integrating_over_met){
       int minBin = 0;
-      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+      if( (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
         for(unsigned int iM=minBin;iM<srinfo.nMETBins[iS];++iM) uncFile <<"bin_"<< srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) <<"\t" << "qcd_met_integration_systematic_" << srinfo.getBinName(QCDSupport::SRegInfo::SRReg(iS),iM) << "\tqcd\t" << QCDSupport::integrating_met_systematic + 1 <<endl;
       }
     }
@@ -145,7 +145,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       if(names[iT] == "Data"){
         TH1F * hSN = (TH1F*)crinfo.dataYields[iS]->Clone();
         if(yMax < hSN->GetMaximum()) yMax = hSN->GetMaximum();
-        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
           if(TOTyMax < yMax) TOTyMax = yMax;
           TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
           data_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
@@ -163,7 +163,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       else if(names[iT] == "With orig. QCD MC"){
         TH1F * hSN = crinfo.CRmetGetters[iS]->getHistogram(trees[iT],qcdWVSEL,QCDSupport::stdQCDWeight,TString::Format("tree_%s_%u",crinfo.crRegBinNames[iS].Data(), iT));
         hSN->Add(crinfo.otherBKGScaledYields[iS]);
-        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
           TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
           Oqcd_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
           Oqcd_Int->SetBinError  (iS - 1, tempHist->GetBinError  (1));
@@ -174,7 +174,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       }
       else if (names[iT] == "Non-QCD bkg"){
         TH1F * hSN = (TH1F*)crinfo.otherBKGScaledYields[iS]->Clone();
-        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
           TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
           Nqcd_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
           Nqcd_Int->SetBinError  (iS - 1, tempHist->GetBinError  (1));
@@ -186,7 +186,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       else if (names[iT].Contains("T2tt")){
         TH1F* hSN = crinfo.CRmetGetters[iS]->getHistogram(trees[iT], t2ttSEL, QCDSupport::stdMCWeight, TString::Format("tree_%s_%u", crinfo.crRegBinNames[iS].Data(), iT));
         hSN->Scale(totMCYield / hSN->Integral(0, hSN->GetNbinsX() + 1));
-        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
           TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
           if(names[iT].Contains("425")){
             sig1_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
@@ -205,7 +205,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       }
       else {
         TH1F * hSN = (TH1F*)crinfo.qcdYieldsWithVeto[iS]->Clone();
-        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+        if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
           TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
           qcd_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
           qcd_Int->SetBinError  (iS - 1, tempHist->GetBinError  (1));
@@ -222,7 +222,7 @@ void MakeCRPlots(QCDSupport::CRegInfo& crinfo, vector<TString>& names, vector<TT
       double stat = crinfo.qcdYieldsWithVeto[iS]->GetBinError(iB);
       hSN->SetBinError(iB,TMath::Sqrt(subSyst*subSyst +stat*stat ));
     }
-    if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj) ){
+    if(QCDSupport::integrating_over_met && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_low_nj_mj500) && (iS != QCDSupport::CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500) ){
       TH1F* tempHist = copyHistIntoMergedHist(hSN, nBins - 1, tempMetBins, minBin + 1);
       unc_Int->SetBinContent(iS - 1, tempHist->GetBinContent(1));
       unc_Int->SetBinError  (iS - 1, tempHist->GetBinError  (1));
@@ -716,7 +716,7 @@ void doQCDStuff(){
   trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/../plots_16_09_28_NoSmear/qcd_orig_tree.root")); names.push_back("With orig. QCD MC"); colors.push_back(color_tW);
   trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2fbd_400_350_tree.root"));                      names.push_back("T2fbd(400, 350)");   colors.push_back(kMagenta);
 
-  //GetQCDTable(crinfo, srinfo);
+  GetQCDTable(crinfo, srinfo);
   //MakeCRPlots(crinfo, names, trees, colors);
   //MakeSRPlots(srinfo, names, trees, colors);
   MakeDPhiPlots(         crinfo, names, trees, colors);

@@ -56,59 +56,102 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
   const TString low_pTb12 = "((csvj1pt + csvj2pt)<100)";                                     const TString low_pTb12_R = "p_{T}(b_{1}) + p_{T}(b_{2}) < 100";              const TString low_pTb12_L = "\\ptbonetwo < 100";
   const TString med_pTb12 = "(((csvj1pt + csvj2pt)>=100) && ((csvj1pt + csvj2pt)<160))";     const TString med_pTb12_R = "100 #leq p_{T}(b_{1}) + p_{T}(b_{2}) < 160";     const TString med_pTb12_L = "100 \\leq \\ptbonetwo < 160";
   const TString hgh_pTb12 = "((csvj1pt + csvj2pt)>=160)";                                    const TString hgh_pTb12_R = "160 #leq p_{T}(b_{1}) + p_{T}(b_{2})";           const TString hgh_pTb12_L = "160 \\leq \\ptbonetwo";
+  const TString metJet_0to500 = "((met->pt() + min(jets[0]->pt(), min(jets[1]->pt(), jets[2]->pt()))) < 500)";	  const TString metJet_0to500_R = "(#slash{E}_{T} + j_{123}) < 500";       const TString metJet_0to500_L = "met + jets < 500";
+  const TString metJet_500toInf = "((met->pt() + min(jets[0]->pt(), min(jets[1]->pt(), jets[2]->pt()))) >= 500)";   const TString metJet_500toInf_R = "(#slash{E}_{T} + j_{123}) >= 500"; const TString metJet_500toInf_L = "met + jets >= 500";
+//TMath::Csc[dphistarmhtj1]Tmath::Sin[dphij1met-dphistar]*met->pt() = Jets[0]->pt()  
   TString processWeight(TString weight, int iCR) {return weight;}
 
   struct CRegInfo {
-    static const int nCR = 10;
-    enum                     CRReg{ CR_nb0_hgh_boost_low_nj, CR_nb0_hgh_boost_hgh_nj, CR_nb1_med_boost_low_pTb, CR_nb1_med_boost_med_pTb, CR_nb1_hgh_boost_low_pTb, CR_nb1_hgh_boost_med_pTb, CR_nb2_med_boost_low_pTb, CR_nb2_med_boost_med_pTb, CR_nb2_hgh_boost_low_pTb, CR_nb2_hgh_boost_med_pTb };
-    TString  crRegBinNames[nCR] = { "nb0_highboost_lownj",   "nb0_highboost_highnj",  "nb1_medboost_lowptb",    "nb1_medboost_medptb",    "nb1_highboost_lowptb",   "nb1_highboost_medptb",   "nb2_medboost_lowptb",    "nb2_medboost_medptb",    "nb2_highboost_lowptb",   "nb2_highboost_medptb"   };
+    static const int nCR = 20;
+    enum                     CRReg{ CR_nb0_hgh_boost_low_nj_mj500, CR_nb0_hgh_boost_hgh_nj_mj500, CR_nb1_med_boost_low_pTb_mj500, CR_nb1_med_boost_med_pTb_mj500, CR_nb1_hgh_boost_low_pTb_mj500, CR_nb1_hgh_boost_med_pTb_mj500, CR_nb2_med_boost_low_pTb_mj500, CR_nb2_med_boost_med_pTb_mj500, CR_nb2_hgh_boost_low_pTb_mj500, CR_nb2_hgh_boost_med_pTb_mj500, CR_nb0_hgh_boost_low_nj_mjInf, CR_nb0_hgh_boost_hgh_nj_mjInf, CR_nb1_med_boost_low_pTb_mjInf, CR_nb1_med_boost_med_pTb_mjInf, CR_nb1_hgh_boost_low_pTb_mjInf, CR_nb1_hgh_boost_med_pTb_mjInf, CR_nb2_med_boost_low_pTb_mjInf, CR_nb2_med_boost_med_pTb_mjInf, CR_nb2_hgh_boost_low_pTb_mjInf, CR_nb2_hgh_boost_med_pTb_mjInf };
+    TString  crRegBinNames[nCR] = { "nb0_highboost_lownj_mj500",   "nb0_highboost_highnj_mj500",  "nb1_medboost_lowptb_mj500",    "nb1_medboost_medptb_mj500",    "nb1_highboost_lowptb_mj500",   "nb1_highboost_medptb_mj500",   "nb2_medboost_lowptb_mj500",    "nb2_medboost_medptb_mj500",    "nb2_highboost_lowptb_mj500",   "nb2_highboost_medptb_mj500", "nb0_highboost_lownj_mjInf",   "nb0_highboost_highnj_mjInf",  "nb1_medboost_lowptb_mjInf",    "nb1_medboost_medptb_mjInf",    "nb1_highboost_lowptb_mjInf",   "nb1_highboost_medptb_mjInf",   "nb2_medboost_lowptb_mjInf",    "nb2_medboost_medptb_mjInf",    "nb2_highboost_lowptb_mjInf",   "nb2_highboost_medptb_mjInf"   };
     TString crSel[nCR] = {
-                       nb0 + " && " + hgh_boost + " && " + med_nj,
-                       nb0 + " && " + hgh_boost + " && " + hgh_nj,
-        mtb + " && " + nb1 + " && " + med_boost + " && " + low_pTb,
-        mtb + " && " + nb1 + " && " + med_boost + " && " + med_pTb,
-        mtb + " && " + nb1 + " && " + hgh_boost + " && " + low_pTb,
-        mtb + " && " + nb1 + " && " + hgh_boost + " && " + med_pTb,
-        mtb + " && " + nb2 + " && " + med_boost + " && " + low_pTb12,
-        mtb + " && " + nb2 + " && " + med_boost + " && " + med_pTb12,
-        mtb + " && " + nb2 + " && " + hgh_boost + " && " + low_pTb12,
-        mtb + " && " + nb2 + " && " + hgh_boost + " && " + med_pTb12,
+                       nb0 + " && " + hgh_boost + " && " + med_nj    + " && " + metJet_0to500,
+                       nb0 + " && " + hgh_boost + " && " + hgh_nj    + " && " + metJet_0to500,
+        mtb + " && " + nb1 + " && " + med_boost + " && " + low_pTb   + " && " + metJet_0to500,
+        mtb + " && " + nb1 + " && " + med_boost + " && " + med_pTb   + " && " + metJet_0to500,
+        mtb + " && " + nb1 + " && " + hgh_boost + " && " + low_pTb   + " && " + metJet_0to500,
+        mtb + " && " + nb1 + " && " + hgh_boost + " && " + med_pTb   + " && " + metJet_0to500,
+        mtb + " && " + nb2 + " && " + med_boost + " && " + low_pTb12 + " && " + metJet_0to500,
+        mtb + " && " + nb2 + " && " + med_boost + " && " + med_pTb12 + " && " + metJet_0to500,
+        mtb + " && " + nb2 + " && " + hgh_boost + " && " + low_pTb12 + " && " + metJet_0to500,
+        mtb + " && " + nb2 + " && " + hgh_boost + " && " + med_pTb12 + " && " + metJet_0to500,
+                       nb0 + " && " + hgh_boost + " && " + med_nj    + " && " + metJet_500toInf,
+                       nb0 + " && " + hgh_boost + " && " + hgh_nj    + " && " + metJet_500toInf,
+        mtb + " && " + nb1 + " && " + med_boost + " && " + low_pTb   + " && " + metJet_500toInf,
+        mtb + " && " + nb1 + " && " + med_boost + " && " + med_pTb   + " && " + metJet_500toInf,
+        mtb + " && " + nb1 + " && " + hgh_boost + " && " + low_pTb   + " && " + metJet_500toInf,
+        mtb + " && " + nb1 + " && " + hgh_boost + " && " + med_pTb   + " && " + metJet_500toInf,
+        mtb + " && " + nb2 + " && " + med_boost + " && " + low_pTb12 + " && " + metJet_500toInf,
+        mtb + " && " + nb2 + " && " + med_boost + " && " + med_pTb12 + " && " + metJet_500toInf,
+        mtb + " && " + nb2 + " && " + hgh_boost + " && " + low_pTb12 + " && " + metJet_500toInf,
+        mtb + " && " + nb2 + " && " + hgh_boost + " && " + med_pTb12 + " && " + metJet_500toInf,
     };
     TString crSelLabels[nCR] = {
-        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + med_nj_R    + "}",
-        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + hgh_nj_R    + "}",
-        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + "}",
-        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + "}",
-        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + "}",
-        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + "}",
-        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + "}",
-        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + "}",
-        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + "}",
-        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + med_nj_R    + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + hgh_nj_R    + ", " + metJet_0to500_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + ", " + metJet_0to500_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + ", " + metJet_0to500_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + ", " + metJet_0to500_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + ", " + metJet_0to500_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + med_nj_R    + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb0_R + "}{"                + hgh_nj_R    + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + low_pTb_R   + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb1_R + "}{" + mtb_R + ", " + med_pTb_R   + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + med_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + low_pTb12_R + ", " + metJet_500toInf_R + "}",
+        "#splitline{" + hgh_boost_R + ", " + nb2_R + "}{" + mtb_R + ", " + med_pTb12_R + ", " + metJet_500toInf_R + "}",
     };
     TString crSelNamesLatex[nCR] = {
-                       nb0_L + ", " + hgh_boost_L + ", " + med_nj_L,
-                       nb0_L + ", " + hgh_boost_L + ", " + hgh_nj_L,
-        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + low_pTb_L,
-        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + med_pTb_L,
-        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + low_pTb_L,
-        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + med_pTb_L,
-        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + low_pTb12_L,
-        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + med_pTb12_L,
-        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + low_pTb12_L,
-        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + med_pTb12_L,
+                       nb0_L + ", " + hgh_boost_L + ", " + med_nj_L    + ", " + metJet_0to500_L,
+                       nb0_L + ", " + hgh_boost_L + ", " + hgh_nj_L    + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + low_pTb_L   + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + med_pTb_L   + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + low_pTb_L   + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + med_pTb_L   + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + low_pTb12_L + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + med_pTb12_L + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + low_pTb12_L + ", " + metJet_0to500_L,
+        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + med_pTb12_L + ", " + metJet_0to500_L,
+                       nb0_L + ", " + hgh_boost_L + ", " + med_nj_L    + ", " + metJet_500toInf_L,
+                       nb0_L + ", " + hgh_boost_L + ", " + hgh_nj_L    + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + low_pTb_L   + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb1_L + ", " + med_boost_L + ", " + med_pTb_L   + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + low_pTb_L   + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb1_L + ", " + hgh_boost_L + ", " + med_pTb_L   + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + low_pTb12_L + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb2_L + ", " + med_boost_L + ", " + med_pTb12_L + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + low_pTb12_L + ", " + metJet_500toInf_L,
+        mtb_L + ", " + nb2_L + ", " + hgh_boost_L + ", " + med_pTb12_L + ", " + metJet_500toInf_L,
     };
     TString crSelNames[nCR] = {
-                       nb0_R + ", " + hgh_boost_R + ", " + med_nj_R,
-                       nb0_R + ", " + hgh_boost_R + ", " + hgh_nj_R,
-        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + low_pTb_R,
-        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + med_pTb_R,
-        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + low_pTb_R,
-        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + med_pTb_R,
-        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + low_pTb12_R,
-        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + med_pTb12_R,
-        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + low_pTb12_R,
-        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + med_pTb12_R,
+                       nb0_R + ", " + hgh_boost_R + ", " + med_nj_R    + ", " + metJet_0to500_R,
+                       nb0_R + ", " + hgh_boost_R + ", " + hgh_nj_R    + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + low_pTb_R   + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + med_pTb_R   + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + low_pTb_R   + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + med_pTb_R   + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + low_pTb12_R + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + med_pTb12_R + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + low_pTb12_R + ", " + metJet_0to500_R,
+        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + med_pTb12_R + ", " + metJet_0to500_R,
+                       nb0_R + ", " + hgh_boost_R + ", " + med_nj_R    + ", " + metJet_500toInf_R,
+                       nb0_R + ", " + hgh_boost_R + ", " + hgh_nj_R    + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + low_pTb_R   + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb1_R + ", " + med_boost_R + ", " + med_pTb_R   + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + low_pTb_R   + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb1_R + ", " + hgh_boost_R + ", " + med_pTb_R   + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + low_pTb12_R + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb2_R + ", " + med_boost_R + ", " + med_pTb12_R + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + low_pTb12_R + ", " + metJet_500toInf_R,
+        mtb_R + ", " + nb2_R + ", " + hgh_boost_R + ", " + med_pTb12_R + ", " + metJet_500toInf_R,
     };
     int nMETBins[nCR] = { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
     double* metBins[nCR] = {
@@ -275,7 +318,7 @@ cout << otherBKGScaledYields[iS]->FindFixBin(metBins[iS][minBin]) << ": " << oth
                 oBKGSY_Int->SetBinError  (iB, otherBKGScaledYields_Int_E);
           }
 
-          if( (iS == CR_nb0_hgh_boost_low_nj) || (iS == CR_nb0_hgh_boost_hgh_nj) ){
+          if( (iS == CR_nb0_hgh_boost_low_nj_mj500) || (iS == CR_nb0_hgh_boost_hgh_nj_mj500) ){
             dataYields.push_back(hd);
             qcdYieldsWithVeto.push_back(hqwv);
             origQCDYields.push_back(origQCD);
@@ -435,16 +478,16 @@ cout << otherBKGScaledYields[iS]->FindFixBin(metBins[iS][minBin]) << ": " << oth
         new HistogramGetter("met", "met", "#slash{#it{E}}_{T} [GeV]", nMETBins[9], metBins[9]),
     };
     CRegInfo::CRReg crRegs[nSR] = {
-        CRegInfo::CR_nb0_hgh_boost_low_nj,
-        CRegInfo::CR_nb0_hgh_boost_hgh_nj,
-        CRegInfo::CR_nb1_med_boost_low_pTb,
-        CRegInfo::CR_nb1_med_boost_med_pTb,
-        CRegInfo::CR_nb1_hgh_boost_low_pTb,
-        CRegInfo::CR_nb1_hgh_boost_med_pTb,
-        CRegInfo::CR_nb2_med_boost_low_pTb,
-        CRegInfo::CR_nb2_med_boost_med_pTb,
-        CRegInfo::CR_nb2_hgh_boost_low_pTb,
-        CRegInfo::CR_nb2_hgh_boost_med_pTb,
+        CRegInfo::CR_nb0_hgh_boost_low_nj_mj500 ,
+        CRegInfo::CR_nb0_hgh_boost_hgh_nj_mj500 ,
+        CRegInfo::CR_nb1_med_boost_low_pTb_mj500,
+        CRegInfo::CR_nb1_med_boost_med_pTb_mj500,
+        CRegInfo::CR_nb1_hgh_boost_low_pTb_mj500,
+        CRegInfo::CR_nb1_hgh_boost_med_pTb_mj500,
+        CRegInfo::CR_nb2_med_boost_low_pTb_mj500,
+        CRegInfo::CR_nb2_med_boost_med_pTb_mj500,
+        CRegInfo::CR_nb2_hgh_boost_low_pTb_mj500,
+        CRegInfo::CR_nb2_hgh_boost_med_pTb_mj500,
     };
 
     TString srPreQCD         = TString::Format("%s && %s && %s",                                   METPresel.Data(), BaselineExtraCuts.Data(), SR_def.Data());
