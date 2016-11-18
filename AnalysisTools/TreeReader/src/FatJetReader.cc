@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ | FatJetReader::LOADSHAPE;
+const int FatJetReader::defaultOptions = FatJetReader::LOADRECO | FatJetReader::FILLOBJ; //| FatJetReader::LOADSHAPE;
 
 //--------------------------------------------------------------------------------------------------
 FatJetReader::FatJetReader() : BaseReader(){

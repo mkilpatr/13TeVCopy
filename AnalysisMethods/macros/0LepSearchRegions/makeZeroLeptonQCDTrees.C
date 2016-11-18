@@ -167,9 +167,9 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
 
 
 
-
+      
       filler.fillEventInfo(&data, this);
-
+      extraFiller.fillQCDAngles(&data, this);
 
       return true;
     }
@@ -204,7 +204,7 @@ void makeZeroLeptonQCDTrees(TString sname = "htmht",
                            const TString fname = "/store/user/gouskos/13TeV/Spring15/20150813/htmht-2015b-pr_ntuple_postproc.root",
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://eoscms//eos/cms",
-                           const TString json="")
+                           const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
 {
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());
