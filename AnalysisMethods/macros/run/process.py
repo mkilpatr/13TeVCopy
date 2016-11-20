@@ -15,6 +15,8 @@ parser.add_argument("-t", "--submittype", dest="submittype", default="condor", c
 parser.add_argument("-q", "--queue", dest="queue", default="1nh", help="LSF submission queue. [Default: 1nh]")
 parser.add_argument("-j", "--json", dest="json", default="Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_NoL1T_v2.txt", help="json file to use. [Default: %(default)s]")
 parser.add_argument("--output-suffix", dest="suffix", default="_tree.root", help="Suffix of output file. [Default: %(default)s. Use '.json' with dumpJSON.C.]")
+parser.add_argument("--jobdir", dest="jobdir", default="jobs", help="Job dir. [Default: %(default)s]")
+parser.add_argument("--path-to-rootlogon", dest="rootlogon", default="../rootlogon.C", help="Path to the root logon file. [Default: %(default)s]")
 #parser.print_help()
 args = parser.parse_args()
 
@@ -44,6 +46,7 @@ with open((args.path+"/"+args.conf),"r") as f :
             files[snum-1].append(content[0])
             types[snum-1].append(0)
 
+os.system("mkdir -p %s" % args.jobdir)
 
 print "Creating submission file: ",args.submit+".sh"
 script = open(args.submit+".sh","w")
@@ -63,9 +66,9 @@ if [ ! "$CMSSW_BASE" ]; then
   exit 1
 fi
 
-cp {pathtomacro}/rootlogon.C $workdir
+cp {rootlogon} $workdir
 cp {pathtomacro}/$runmacro $workdir
-""".format(pathtomacro=args.path,runscript=args.script,stype=args.submittype)) 
+""".format(pathtomacro=args.path,runscript=args.script,stype=args.submittype,rootlogon=args.rootlogon))
     if args.json != '' : script.write("cp $workdir/src/data/JSON/{jsonfile} $workdir".format(jsonfile=args.json))
     script.write("""
     
@@ -77,8 +80,8 @@ for isam in range(len(samples)) :
         findex = ifile if len(files[isam]) > 1 else -1
         ismc = 1 if types[isam][ifile] == 0 else 0
         if args.submittype == "interactive" :
-            script.write("""root -l -q -b {pathtomacro}/rootlogon.C {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",\\"$outputdir\\",\\"$prefix\\",\\"{json}\\"\)\n""".format(
-            pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], json="$CMSSW_BASE/src/data/JSON/"+args.json if args.json!='' else '' 
+            script.write("""root -l -q -b {rootlogon} {pathtomacro}/$runmacro+\(\\"{sname}\\",{index},{mc},\\"{file}\\",\\"$outputdir\\",\\"$prefix\\",\\"{json}\\"\)\n""".format(
+            rootlogon=args.rootlogon, pathtomacro=args.path, sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], json="$CMSSW_BASE/src/data/JSON/"+args.json if args.json!='' else ''
             ))
         elif args.submittype == "lsf" :
             script.write("""bsub -q {queue} $runscript $runmacro {sname} {index} {mc} {file} $outputdir $prefix $workdir {json}\n""".format(
@@ -86,7 +89,7 @@ for isam in range(len(samples)) :
             ))
         elif args.submittype == "condor" :
             os.system("mkdir -p %s/logs" % args.outdir)
-            jobscript = open("submit_{}_{}.sh".format(samples[isam],ifile),"w")
+            jobscript = open(os.path.join(args.jobdir,"submit_{}_{}.sh".format(samples[isam],ifile)),"w")
             outputname = samples[isam]+args.suffix if findex == -1 else samples[isam]+"_{}".format(findex)+args.suffix
             addJSON = ',${CMSSW_BASE}/'+args.json if args.json !='' else ''
             jobscript.write("""
@@ -110,11 +113,11 @@ EOF
 
   condor_submit submit.cmd;
   rm submit.cmd""".format(
-            runscript=args.script, stype=args.submittype, pathtomacro=args.path, macro=args.macro, prefix=args.prefix, workdir="${CMSSW_BASE}", sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], num=ifile, outdir=args.outdir, abspathtomacro=os.path.abspath(args.path+"/"+args.macro), abspathtorlogon=os.path.abspath(args.path+"/rootlogon.C"), outname=outputname, addjson=addJSON, json=args.json
+            runscript=args.script, stype=args.submittype, macro=args.macro, prefix=args.prefix, workdir="${CMSSW_BASE}", sname=samples[isam], index=findex, mc=ismc, file=files[isam][ifile], num=ifile, outdir=args.outdir, outname=outputname, addjson=addJSON, json=args.json
             ))
             jobscript.close()
-            script.write("./submit_{name}_{j}.sh\n".format(name=samples[isam], j=ifile))
-            os.system("chmod +x submit_%s_%d.sh" %(samples[isam], ifile))
+            script.write("./{jobdir}/submit_{name}_{j}.sh\n".format(jobdir=args.jobdir, name=samples[isam], j=ifile))
+            os.system("chmod +x %s/submit_%s_%d.sh" %(args.jobdir, samples[isam], ifile))
 
 
 script.close()
