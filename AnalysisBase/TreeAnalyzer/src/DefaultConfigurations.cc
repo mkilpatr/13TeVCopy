@@ -104,7 +104,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDTOP | ucsbsusy::EventCorrectionSet::SDW;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016_12p9ifb_50bins_63mb.root",CMSSW_BASE);
+  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
   standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
   standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
   standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
