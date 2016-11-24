@@ -185,29 +185,14 @@ struct ExtraVarsFiller {
   }
 
   void bookTest(TreeWriterData* data){
-    bookCleanedWTopVars(data);
   }
 
-  void bookCleanedWTopVars(TreeWriterData* data){
+  void bookMulticlassWTopMVA(TreeWriterData* data){
 
-    data->add<int>("nsdtopT", 0); // softdrop MVA top, WP Tight
-    data->add<int>("nextrajets_sdT", 0); // number of remaining ak4 jets after cleaning vs sdTop/W
-    data->add<int>("nrestopT_sdT", 0); // number of resolved tops (WP Tight), after cleaning vs sdTop/W
-    data->add<int>("nrestopM_sdT", 0);
-    data->add<int>("nrestopL_sdT", 0);
-
-    data->add<int>("nsdtopM", 0);
-    data->add<int>("nextrajets_sdM", 0);
-    data->add<int>("nrestopT_sdM", 0);
-    data->add<int>("nrestopM_sdM", 0);
-    data->add<int>("nrestopL_sdM", 0);
-
-    data->add<int>("nsdtopL", 0);
-    data->add<int>("nextrajets_sdL", 0);
-    data->add<int>("nrestopT_sdL", 0);
-    data->add<int>("nrestopM_sdL", 0);
-    data->add<int>("nrestopL_sdL", 0);
-
+    // multiclass mva
+    data->add<int>("nmvaTopT", 0);
+    data->add<int>("nmvaWT", 0);
+    data->add<int>("nrestopM_topT_wT", 0);
 
   }
 
@@ -395,30 +380,24 @@ struct ExtraVarsFiller {
   }
 
   void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    fillCleanedWTopVars(data, ana);
   }
 
-  void fillCleanedWTopVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+  void fillMulticlassWTopMVA(TreeWriterData* data, BaseTreeAnalyzer* ana){
 
-    vector<FatJetF*> sdTopLoose, sdTopMedium, sdTopTight;
-    for (auto *fj : ana->fatJets) {
-      if (fj->pt()<400 || fj->softDropMass()<=110) continue; // pt>400, and orthogonal to W (by cutting on sdMass)
-      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT)  sdTopTight.push_back(fj);
-      if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) sdTopMedium.push_back(fj);
-      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE)  sdTopLoose.push_back(fj);
+    if (!ana->wtopMVA) ana->wtopMVA = new SoftdropWTopMulticlassMVA(defaults::MVAWEIGHT_SD_W_TOP);
+
+    // multiclass MVAs
+    vector<FatJetF*> mvaTopT, mvaWT;
+    for (auto *fj : ana->fatJets){
+      if (fj->pt()<200) continue;
+      auto discs = ana->wtopMVA->getMVAScore(fj);
+      auto top_score = discs.at(SoftdropWTopMulticlassMVA::TOP);
+      auto w_score = discs.at(SoftdropWTopMulticlassMVA::W);
+      if (fj->pt()>400 && top_score > SoftdropWTopMulticlassMVA::WP_TOP_TIGHT) mvaTopT.push_back(fj);
+      if (w_score > SoftdropWTopMulticlassMVA::WP_W_TIGHT) mvaWT.push_back(fj);
     }
-    data->fill<int>("nsdtopT", sdTopTight.size());
-    data->fill<int>("nsdtopM", sdTopMedium.size());
-    data->fill<int>("nsdtopL", sdTopLoose.size());
-
-    vector<FatJetF*> sdWCut = ana->selectedSdWs;
-
-//    vector<FatJetF*> sdWMedium, sdWTight;
-//    for (auto *fj : ana->fatJets) {
-//      if (fj->pt()<200 || fj->softDropMass()>120) continue;
-//      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT) sdWTight.push_back(fj);
-//      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) sdWMedium.push_back(fj);
-//    }
+    data->fill<int>("nmvaTopT", mvaTopT.size());
+    data->fill<int>("nmvaWT", mvaWT.size());
 
     auto getCleanedAK4 = [](const vector<RecoJetF*>& inAK4jets, const vector<FatJetF*> &topJets, const vector<FatJetF*> wJets){
       vector<RecoJetF*> ak4s;
@@ -441,49 +420,12 @@ struct ExtraVarsFiller {
       return ak4s;
     };
 
-    {// sdTopTight
-      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWCut);
-      data->fill<int>("nextrajets_sdT", ak4jets.size());
 
-      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, 0);
-      data->fill<int>("nrestopT_sdT", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_TIGHT;}));
-      data->fill<int>("nrestopM_sdT", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_MEDIUM;}));
-      data->fill<int>("nrestopL_sdT", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_LOOSE;}));
-    }// end sdTopTight
-
-    {// sdTopMedium
-      auto ak4jets = getCleanedAK4(ana->jets, sdTopMedium, sdWCut);
-      data->fill<int>("nextrajets_sdM", ak4jets.size());
-
-      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, 0);
-      data->fill<int>("nrestopT_sdM", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_TIGHT;}));
-      data->fill<int>("nrestopM_sdM", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_MEDIUM;}));
-      data->fill<int>("nrestopL_sdM", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_LOOSE;}));
-    }// end sdTopMedium
-
-    {// sdTopLoose
-      auto ak4jets = getCleanedAK4(ana->jets, sdTopLoose, sdWCut);
-      data->fill<int>("nextrajets_sdL", ak4jets.size());
-
-      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, 0);
-      data->fill<int>("nrestopT_sdL", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_TIGHT;}));
-      data->fill<int>("nrestopM_sdL", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_MEDIUM;}));
-      data->fill<int>("nrestopL_sdL", std::count_if(resTop.begin(), resTop.end(), [](TopCand &t){return t.disc > ResolvedTopMVA::WP_LOOSE;}));
-    }// end sdTopLoose
-
-//    {// A3
-//      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWTight);
-//      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
-//      data->fill<int>("A3_ntop", sdTopTight.size() + resTop.size());
-//      data->fill<int>("A3_nw", sdWTight.size());
-//    }// end A3
-//
-//    {// A4
-//      auto ak4jets = getCleanedAK4(ana->jets, sdTopTight, sdWMedium);
-//      auto resTop = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_TIGHT);
-//      data->fill<int>("A3_ntop", sdTopTight.size() + resTop.size());
-//      data->fill<int>("A3_nw", sdWMedium.size());
-//    }// end A4
+    {// multiClassMVA, topT, wT
+      auto ak4jets = getCleanedAK4(ana->jets, mvaTopT, mvaWT);
+      auto resTopM = ana->resTopMVA->getTopCandidates(ak4jets, ResolvedTopMVA::WP_MEDIUM);
+      data->fill<int>("nrestopM_topT_wT", resTopM.size());
+    }// end multiClassMVA, topT, wT
 
   }
 

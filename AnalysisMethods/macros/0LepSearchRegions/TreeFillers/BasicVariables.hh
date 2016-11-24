@@ -66,7 +66,6 @@ struct BasicVarsFiller {
   size i_nvetolep  ;
   size i_nvetotau  ;
   size i_nvetohpstaus;
-  size i_ncttstd   ;
   size i_nsdtoploose;
   size i_nsdwloose;
 
@@ -164,9 +163,13 @@ struct BasicVarsFiller {
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
     i_nvetotau       = data->add<int>("","nvetotau","I",0);
     i_nvetohpstaus   = data->add<int>("","nvetohpstaus","I",0);
-    i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_nsdtoploose    = data->add<int>("","nsdtoploose","I",0);
     i_nsdwloose      = data->add<int>("","nsdwloose","I",0);
+
+    // mva top/W variables
+    data->add<int>("nsdtop", 0);
+    data->add<int>("nsdw", 0);
+    data->add<int>("nrestop", 0);
 
     // Jet & MET variables
     i_njets          = data->add<int>("","njets","I",0);
@@ -333,10 +336,27 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nvetolep, ana->nSelLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
-    data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
     data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
     data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
+
+    // mva top/W variables
+    vector<FatJetF*> sdTopTight, sdWTight;
+    for (auto *fj : ana->fatJets) {
+      if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
+        sdTopTight.push_back(fj);
+      }
+      else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
+        sdWTight.push_back(fj);
+      }
+    }
+    data->fill<int>("nsdtop", sdTopTight.size());
+    data->fill<int>("nsdw", sdWTight.size());
+
+    vector<FatJetF*> sdwtops(sdTopTight); sdwtops.insert(sdwtops.end(), sdWTight.begin(), sdWTight.end());
+    auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops, 0.8);
+    auto resTops = ana->resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_MEDIUM);
+    data->fill<int>("nrestop", resTops.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;

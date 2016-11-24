@@ -341,6 +341,12 @@ double getNearestDR(const Thing1& reference, const std::vector<Thing2>& objects,
 template<typename Number>
 int sign(Number x) { return (x < 0 ? -1 : 1); }
 
+//_____________________________________________________________________________
+template<class T1, class T2>
+std::vector<T1> removeOverlapsDR(const std::vector<T1>& objToRemove, const std::vector<T2> &objToKeep, double distance);
+
+template<class T1, class T2>
+std::vector<T1> removeOverlapsDRDeref(const std::vector<T1>& ptrToRemove, const std::vector<T2> &ptrToKeep, double distance);
 
 };
 

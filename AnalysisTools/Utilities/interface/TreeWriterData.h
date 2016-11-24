@@ -95,25 +95,29 @@ class TreeWriter;
     template<typename Type, typename FillType>
     void fill(unsigned int index, const FillType var){
       auto *tv=dynamic_cast<TreeVar<Type>*>(data.at(index));
-      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Inconsistent type for variable: "+data.at(index)->bookName());
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Filling a value with wrong type to variable: "+data.at(index)->bookName()
+          +"\nOr you might have forgotten to book some variables!");
       tv->fill(var);
     }
     template<typename Type>
     void fill(unsigned int index){
       auto *tv=dynamic_cast<TreeVar<Type>*>(data.at(index));
-      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Inconsistent type for variable: "+data.at(index)->bookName());
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fill] Filling a value with wrong type to variable: "+data.at(index)->bookName()
+          +"\nOr you might have forgotten to book some variables!");
       tv->fill();
     }
     template<typename Type, typename FillType>
     void fillMulti(unsigned int index, const FillType var){
       auto *tv=dynamic_cast<TreeMultiVar<Type>*>(data.at(index));
-      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Inconsistent type for variable: "+data.at(index)->bookName());
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Filling a value with wrong type to variable: "+data.at(index)->bookName()
+          +"\nOr you might have forgotten to book some variables!");
       tv->fill(var);
     }
     template<typename Type>
     void fillMulti(unsigned int index){
       auto *tv=dynamic_cast<TreeMultiVar<Type>*>(data.at(index));
-      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Inconsistent type for variable: "+data.at(index)->bookName());
+      if (!tv) throw std::invalid_argument("[TreeWriterData::fillMulti] Filling a value with wrong type to variable: "+data.at(index)->bookName()
+          +"\nOr you might have forgotten to book some variables!");
       tv->fill();
     }
 
@@ -123,7 +127,7 @@ class TreeWriter;
       try {
         fill<Type, FillType>(var_pos.at(name), var);
       } catch (const std::out_of_range& e){
-        throw std::invalid_argument("[TreeWriterData::fill] Unknown variable: " + name);
+        throw std::invalid_argument("[TreeWriterData::fill] Variable _" + name + "_ is not booked!");
       }
     }
     template<typename Type, typename FillType>
@@ -131,7 +135,7 @@ class TreeWriter;
       try {
         fillMulti<Type, FillType>(var_pos.at(name), var);
       } catch (const std::out_of_range& e){
-        throw std::invalid_argument("[TreeWriterData::fillMulti] Unknown variable: " + name);
+        throw std::invalid_argument("[TreeWriterData::fillMulti] Variable _" + name + "_ is not booked!");
       }
     }
 

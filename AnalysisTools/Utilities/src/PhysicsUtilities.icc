@@ -301,3 +301,35 @@ double PhysicsUtilities::getNearestDR(const Thing1& reference, const std::vector
   return nearestDR;
 }
 #endif
+
+
+//_____________________________________________________________________________
+template<class T1, class T2>
+std::vector<T1> PhysicsUtilities::removeOverlapsDR(const std::vector<T1>& objToRemove, const std::vector<T2> &objToKeep, double distance){
+  std::vector<T1> output;
+  for (auto &j : objToRemove){
+    bool isOverlap = false;
+    for (auto &jtk : objToKeep){
+      if(deltaR(j, jtk) < distance) {
+        isOverlap = true; break;
+      }
+    }
+    if(!isOverlap) output.push_back(j);
+  }
+  return output;
+}
+
+template<class T1, class T2>
+std::vector<T1> PhysicsUtilities::removeOverlapsDRDeref(const std::vector<T1>& ptrToRemove, const std::vector<T2> &ptrToKeep, double distance){
+  std::vector<T1> output;
+  for (auto &j : ptrToRemove){
+    bool isOverlap = false;
+    for (auto &jtk : ptrToKeep){
+      if(deltaR(*j, *jtk) < distance) {
+        isOverlap = true; break;
+      }
+    }
+    if(!isOverlap) output.push_back(j);
+  }
+  return output;
+}
