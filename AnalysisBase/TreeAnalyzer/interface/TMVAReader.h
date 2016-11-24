@@ -44,6 +44,14 @@ public:
     return reader->EvaluateMVA(mvaName_);
   }
 
+  std::vector<float> evalMulti(){
+    if (firstCall_){
+      reader->BookMVA( mvaName_, weightfile_ );
+      firstCall_ = false;
+    }
+    return reader->EvaluateMulticlass(mvaName_);
+  }
+
 private:
   std::map<TString, Float_t> varMap_;
 
