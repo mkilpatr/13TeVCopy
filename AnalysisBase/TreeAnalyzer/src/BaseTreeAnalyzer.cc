@@ -39,6 +39,7 @@ void BaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency
 //--------------------------------------------------------------------------------------------------
 BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
     randGen           (new TRandom3(randomSeed)),
+//    wtopMVA           (new SoftdropWTopMulticlassMVA(defaults::MVAWEIGHT_SD_W_TOP)),
     run               (0),
     lumi              (0),
     event             (0),
