@@ -33,6 +33,7 @@
 #include "AnalysisTools/TreeReader/interface/HTTReader.h"
 
 #include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropWTopMulticlassMVA.h"
 
 namespace ucsbsusy {
 class BaseEventAnalyzer {
@@ -137,6 +138,7 @@ public:
     HTTReader           httReader           ;
 
     ResolvedTopMVA*     resTopMVA = nullptr ;
+    SoftdropWTopMulticlassMVA* wtopMVA = nullptr;
 
 
   public:
@@ -223,6 +225,7 @@ public:
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
 
+    bool updateMVA_; // FIXME
 };
 
 

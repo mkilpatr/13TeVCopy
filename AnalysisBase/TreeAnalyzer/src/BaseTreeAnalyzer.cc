@@ -39,6 +39,7 @@ void BaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency
 //--------------------------------------------------------------------------------------------------
 BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size randomSeed, bool isMCTree,cfgSet::ConfigSet * pars) : isLoaded_(false),isProcessed_(false), reader(fileName,treeName,"READ"),
     randGen           (new TRandom3(randomSeed)),
+//    wtopMVA           (new SoftdropWTopMulticlassMVA(defaults::MVAWEIGHT_SD_W_TOP)),
     run               (0),
     lumi              (0),
     event             (0),
@@ -70,6 +71,15 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     configSet         (pars ? *pars : cfgSet::ConfigSet())
 
 {
+  // FIXME
+  if (isMCTree && fileName.Contains("/store/user/lpcstop/noreplica/13TeV/111116")){
+    updateMVA_ = false;
+  }else {
+    updateMVA_ = true;
+    clog << "====================================================================\n"
+         << "Top/W MVA not filled in these ntuples. Will be evaluated on-the-fly!\n"
+         << "====================================================================\n";
+  }
 
   //Hack to get signal type from filename (sorry) until we integrat into weight code
   if(fileName.Contains("T2tt") ) evtInfoReader.signalType = defaults::T2tt;
@@ -298,7 +308,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
 //  load(cfgSet::CMSTOPS);
-  load(cfgSet::AK8FATJETS);
+  load(cfgSet::AK8FATJETS, FatJetReader::defaultOptions | (updateMVA_ ? (FatJetReader::UPDATETOPMVA | FatJetReader::UPDATEWTAGMVA) : FatJetReader::NULLOPT) ); // FIXME
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
