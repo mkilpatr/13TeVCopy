@@ -108,7 +108,7 @@ public:
   GenJetFCollection  genJets;
 
 private:
-  void addRecoJetToObjectList(const int iJ);
+  void addRecoJetToObjectList(const unsigned int iJ);
 };
 
 }

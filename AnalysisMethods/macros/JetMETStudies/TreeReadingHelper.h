@@ -103,7 +103,7 @@ TProfile * getProfile(TTree * tree,const PlotInfo& xInfo, TString yVar, TString 
 TH1F * getErrorHisto(TProfile * prof, PlotInfo& xInfo, TString histSample, bool fillErrors  = true){
   TString name = TString::Format("prof_%s_%s_%i",xInfo.name.Data(), histSample.Data(),xInfo.nH);
   TH1F * h = new TH1F(name,xInfo.var.Data(),xInfo.nBins,xInfo.minX,xInfo.maxX);
-  for(unsigned int iB = 0; iB <= xInfo.nBins; ++iB){
+  for(int iB = 0; iB <= xInfo.nBins; ++iB){
     h->SetBinContent(iB,fillErrors ? prof->GetBinError(iB) : prof->GetBinContent(iB));
     if(prof->GetBinEffectiveEntries(iB))h->SetBinError(iB,fillErrors ? prof->GetBinError(iB)/TMath::Sqrt(2*prof->GetBinEffectiveEntries(iB)) : prof->GetBinError(iB)/TMath::Sqrt(prof->GetBinEffectiveEntries(iB)));
   }
