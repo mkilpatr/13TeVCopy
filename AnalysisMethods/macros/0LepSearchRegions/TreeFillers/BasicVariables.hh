@@ -198,6 +198,10 @@ struct BasicVarsFiller {
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
 
+    data->add<float>("ak8isrpt", -1);
+    data->add<float>("dphiisrmet", -1);
+    data->add<float>("mtivfmet", 0);
+
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
@@ -379,21 +383,17 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
     }
 
-    vector<RecoJetF*> jetsCSVranked(jets);
-    cfgSet::sortByCSV(jetsCSVranked);
+    vector<RecoJetF*> bjetsCSVranked(ana->bJets); //use only jets passing CSVM
+    cfgSet::sortByCSV(bjetsCSVranked);
     double mtcsv1met = -99, mtcsv2met = -99, mtcsv12met = -99;
-    if(jetsCSVranked.size() > 0) {
-      data->fill<float>(i_csvj1pt, jetsCSVranked[0]->pt());
-      if(jetsCSVranked[0]->csv() > defaults::CSV_LOOSE){
-        mtcsv1met = JetKinematics::transverseMass(*jetsCSVranked[0], *met);
-        mtcsv12met = mtcsv1met;
-      }
-      if(jetsCSVranked.size() > 1){
-        data->fill<float>(i_csvj2pt, jetsCSVranked[1]->pt());
-        if (jetsCSVranked[1]->csv() > defaults::CSV_LOOSE){
-          mtcsv2met = JetKinematics::transverseMass(*jetsCSVranked[1], *met);
-          mtcsv12met = min(mtcsv1met, mtcsv2met);
-        }
+    if(bjetsCSVranked.size() > 0) {
+      data->fill<float>(i_csvj1pt, bjetsCSVranked[0]->pt());
+      mtcsv1met = JetKinematics::transverseMass(*bjetsCSVranked[0], *met);
+      mtcsv12met = mtcsv1met;
+      if(bjetsCSVranked.size() > 1){
+        data->fill<float>(i_csvj2pt, bjetsCSVranked[1]->pt());
+        mtcsv2met = JetKinematics::transverseMass(*bjetsCSVranked[1], *met);
+        mtcsv12met = min(mtcsv1met, mtcsv2met);
       }
     }
     data->fill<float>(i_mtcsv1met, mtcsv1met);
@@ -406,7 +406,18 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij1lmet, fabs(PhysicsUtilities::deltaPhi(*ana->isrJets[0],*met)));
     }
 
-    int nivf_ = 0;
+    vector<FatJetF*> ak8isrs;
+    for (auto *fj : ana->fatJets){
+      // ISR jet is required to fail CSVL and not tagged as top/W
+      if (fj->csv() > defaults::CSV_LOOSE) continue;
+      if (std::find(sdwtops.begin(), sdwtops.end(), fj) == sdwtops.end()) ak8isrs.push_back(fj);
+    }
+    if (!ak8isrs.empty()){
+      data->fill<float>("ak8isrpt", ak8isrs.front()->pt());
+      data->fill<float>("dphiisrmet", std::abs(PhysicsUtilities::deltaPhi(*ak8isrs.front(),*met)));
+    }
+
+    int nivf_ = 0; vector<SVF*> ivfs_;
     for (unsigned int iivf=0; iivf<ana->SVs.size(); ++iivf) {
 
       //DR between jets
@@ -424,9 +435,12 @@ struct BasicVarsFiller {
           ana->SVs[iivf]->pt()< 20.          &&
           ana->SVs[iivf]->svNTracks() >=3    &&
           mindrjetivf                 > 0.4  &&
-          ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4 ) { ++nivf_; }
+          ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4 ) { ++nivf_; ivfs_.push_back(ana->SVs[iivf]); }
     }
     data->fill<int>(i_nivf, nivf_);
+    if (nivf_>0){
+      data->fill<float>("mtivfmet", JetKinematics::transverseMass(*ivfs_.at(0), *met));
+    }
 
     // Lepton variables
     if(ana->selectedLepton) {
