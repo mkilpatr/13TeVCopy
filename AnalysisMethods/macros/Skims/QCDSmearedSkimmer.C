@@ -16,8 +16,7 @@ public:
 
   virtual void loadVariables() override {
     load(cfgSet::EVTINFO);
-    load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
-//    load(cfgSet::CMSTOPS);
+    load(cfgSet::AK4JETS,JetReader::defaultOptions | JetReader::LOADGEN);
   }
 
   virtual bool fillEvent() override {
