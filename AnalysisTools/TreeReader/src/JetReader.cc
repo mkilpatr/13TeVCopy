@@ -196,13 +196,10 @@ void JetReader::addRecoJetToObjectList(const int iJ){
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
-  if(!jetcmva_->empty()) recoJets.back().setCmva(jetcmva_->at(iJ));// FIXME
+  recoJets.back().setCmva(jetcmva_->at(iJ));
   recoJets.back().setCvsl(jetcvsl_->at(iJ));
   recoJets.back().setCvsb(jetcvsb_->at(iJ));
   recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);
-  recoJets.back().setChHadN2((jetchHadN2_->size()) ? (jetchHadN2_->at(iJ)) : -1);
-  recoJets.back().setChHadN4((jetchHadN4_->size()) ? (jetchHadN4_->at(iJ)) : -1);
-  recoJets.back().setChHadN6((jetchHadN6_->size()) ? (jetchHadN6_->at(iJ)) : -1);
   recoJets.back().setBetaStar(jetbetaStar_->size() ? jetbetaStar_->at(iJ) : -1);
   recoJets.back().setPtD(jetptD_->size() ? jetptD_->at(iJ) : -1);
   recoJets.back().setAxis1(jetaxis1_->size() ? jetaxis1_->at(iJ) : -1);
@@ -226,20 +223,20 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetlooseId_    ->push_back(inJet->looseid());
   jettightId_    ->push_back(1);
   jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
-  jetchHadN2_     ->push_back(inJet->chHadN2());
-  jetchHadN4_     ->push_back(inJet->chHadN4());
-  jetchHadN6_     ->push_back(inJet->chHadN6());
   jetcsv_        ->push_back(inJet->csv());
+  jetcmva_       ->push_back(inJet->cmva());
+  jetcvsl_       ->push_back(inJet->cvsl());
+  jetcvsb_       ->push_back(inJet->cvsb());
   jetarea_       ->push_back(0);
   jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );
   jetuncertainty_->push_back(inJet->uncertainty());
-  jetbetaStar_   ->push_back(0);
-  jetqgl_        ->push_back(-1);
-  jetptD_        ->push_back(0);
-  jetaxis1_      ->push_back(0);
-  jetaxis2_      ->push_back(0);
-  jetMult_       ->push_back(0);
-  jetcharge_     ->push_back(0);
+  jetbetaStar_   ->push_back(inJet->betaStar());
+  jetqgl_        ->push_back(inJet->qgl());
+  jetptD_        ->push_back(inJet->ptD());
+  jetaxis1_      ->push_back(inJet->axis1());
+  jetaxis2_      ->push_back(inJet->axis2());
+  jetMult_       ->push_back(inJet->jetMult());
+  jetcharge_     ->push_back(inJet->jetcharge());
   jetpullrap_    ->push_back(0);
   jetpullphi_    ->push_back(0);
 
