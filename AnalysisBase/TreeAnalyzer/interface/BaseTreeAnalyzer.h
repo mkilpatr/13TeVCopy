@@ -25,7 +25,6 @@
 #include "AnalysisTools/TreeReader/interface/PhotonReader.h"
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
-#include "AnalysisTools/TreeReader/interface/CMSTopReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
@@ -129,7 +128,6 @@ public:
     PhotonReader        photonReader        ;
     PFCandidateReader   pfcandReader        ;
     GenParticleReader   genParticleReader   ;
-    CMSTopReader        cmsTopReader        ;
     FatJetReader        fatJetReader        ;
     //FatJetReader        fatJetPuppiReader   ;
     CORRALReader        corralReader        ;
@@ -164,7 +162,9 @@ public:
     int   nBJets;
     int   nVetoHPSTaus;
     LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
-    int   nSelCTTTops;
+    int   nSdMVATopTight;
+    int   nSdMVAWTight;
+    int   nResMVATopMedium;
     int   nSelSdTops;
     int   nSelSdWs;
 
@@ -188,8 +188,9 @@ public:
     std::vector<RecoJetF*>       isrJets           ;
     std::vector<RecoJetF*>       nonBJets          ;
     std::vector<GenParticleF*>   genParts          ;
-    std::vector<CMSTopF*>        cttTops           ;
-    std::vector<CMSTopF*>        selectedCTTTops   ;
+    std::vector<FatJetF*>        sdMVATopTight     ;
+    std::vector<FatJetF*>        sdMVAWTight       ;
+    std::vector<TopCand>         resMVATopMedium  ;
     std::vector<FatJetF*>        selectedSdTops    ;
     std::vector<FatJetF*>        selectedSdWs      ;
     std::vector<FatJetF*>        fatJets;

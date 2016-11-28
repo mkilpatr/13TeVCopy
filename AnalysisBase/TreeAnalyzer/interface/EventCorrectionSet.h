@@ -9,6 +9,8 @@
 #define ANALYSISBASE_TREEANALYZER_INTERFACE_EVENTCORRECTIONSET_H_
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
+#include "AnalysisTools/DataFormats/interface/FatJet.h"
+#include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 
 namespace ucsbsusy {
 
@@ -28,15 +30,37 @@ class TruePUCorr : public HistogramCorrection {
     TruePUCorr(TFile* file) : HistogramCorrection("puWeight",file) {}
 };
 
-class CTTCorr : public Correction {
-  public :
-  CTTCorr(TString fileName) ;
-  ~CTTCorr();
-  float process(CORRTYPE effCorrType, CORRTYPE misCorrType, bool isTopLike, double maxGoodTopPT);
+class SdMVATopCorr : public Correction {
+  public:
+    SdMVATopCorr(TString fileName);
+    ~SdMVATopCorr();
+    float process(CORRTYPE corrType, const std::vector<FatJetF*> &sdMVATops);
 
-  TFile * inputFile;
-  TH1F* effSF;
-  TH1F* mistagSF;
+    TFile * sdMVATopInputFile;
+    TH1F  * sdMVATopDataFullSF;
+    TH1F  * sdMVATopFullFastSF;
+};
+
+class SdMVAWCorr : public Correction {
+  public:
+    SdMVAWCorr(TString fileName);
+    ~SdMVAWCorr();
+    float process(CORRTYPE corrType, const std::vector<FatJetF*> &sdMVAWs);
+
+    TFile * sdMVAWInputFile;
+    TH1F  * sdMVAWDataFullSF;
+    TH1F  * sdMVAWFullFastSF;
+};
+
+class ResMVATopCorr : public Correction {
+  public:
+    ResMVATopCorr(TString fileName);
+    ~ResMVATopCorr();
+    float process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops);
+
+    TFile * resMVATopInputFile;
+    TH1F  * resMVATopDataFullSF;
+    TH1F  * resMVATopFullFastSF;
 };
 
 class SdTopCorr : public Correction {
@@ -67,21 +91,25 @@ public:
                           , PU               = (1 <<  0)   ///< Correct PU
                           , TRUEPU           = (1 <<  1)   ///< Correct PU
                           , NORM             = (1 <<  2)   ///< Incl. normalization corrections
-                          , CTT              = (1 <<  3)   ///< CTT top tagging
-                          , SDTOP            = (1 <<  4)   ///< SD top tagging
-                          , SDW              = (1 <<  5)   ///< SD w tagging
+                          , SDMVATOP         = (1 <<  3)   ///< SD MVA top tagging
+                          , SDMVAW           = (1 <<  4)   ///< SD MVA w tagging
+                          , RESMVATOP        = (1 <<  5)   ///< RES MVA top tagging
+                          , SDTOP            = (1 <<  6)   ///< SD top tagging
+                          , SDW              = (1 <<  7)   ///< SD w tagging
   };
- EventCorrectionSet(): puCorr(0), truePUCorr(0), cttCorr(0), sdTopCorr(0), sdWCorr(0), puWeight(1), truePUWeight(1), normWeight(1),cttWeight(1),sdTopWeight(1),sdWWeight(1){}
+ EventCorrectionSet(): puCorr(0), truePUCorr(0), sdMVATopCorr(0), sdMVAWCorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), puWeight(1), truePUWeight(1), normWeight(1), sdMVATopWeight(1), sdMVAWWeight(1), resMVATopWeight(1), sdTopWeight(1),sdWWeight(1){}
 
   virtual ~EventCorrectionSet() {};
-  virtual void load(TString fileName, TString cttCorrName, TString sdCorrName, int correctionOptions = NULLOPT);
+  virtual void load(TString fileName, TString sdMVACorrName, TString resMVACorrName, TString sdCorrName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
   float getPUWeight() const {return puWeight;}
   float getTruePUWeight() const {return truePUWeight;}
   float getNormWeight() const {return normWeight;}
-  float getCTTWeight() const {return cttWeight;}
+  float getSdMVATopWeight() const {return sdMVATopWeight;}
+  float getSdMVAWWeight() const {return sdMVAWWeight;}
+  float getResMVATopWeight() const {return resMVATopWeight;}
   float getSdTopWeight() const {return sdTopWeight;}
   float getSdWWeight() const {return sdWWeight;}
 
@@ -89,7 +117,9 @@ private:
   //Correction list
   PUCorr * puCorr;
   TruePUCorr * truePUCorr;
-  CTTCorr * cttCorr;
+  SdMVATopCorr * sdMVATopCorr;
+  SdMVAWCorr * sdMVAWCorr;
+  ResMVATopCorr * resMVATopCorr;
   SdTopCorr * sdTopCorr;
   SdWCorr * sdWCorr;
 
@@ -97,7 +127,9 @@ private:
   float puWeight;
   float truePUWeight;
   float normWeight;
-  float cttWeight;
+  float sdMVATopWeight;
+  float sdMVAWWeight;
+  float resMVATopWeight;
   float sdTopWeight;
   float sdWWeight;
 

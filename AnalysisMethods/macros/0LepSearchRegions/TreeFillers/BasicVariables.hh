@@ -33,6 +33,9 @@ struct BasicVarsFiller {
   size i_leptnpweightHM;
   size i_isrWeight;
   size i_isrWeightTight;
+  size i_sdMVATopWeight;
+  size i_sdMVAWWeight;
+  size i_resMVATopWeight;
   size i_sdtopFastSimWeight;
   size i_sdwFastSimWeight;
 
@@ -130,6 +133,9 @@ struct BasicVarsFiller {
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
+    i_sdMVATopWeight = data->add<float>("","sdMVATopWeight","F",0);
+    i_sdMVAWWeight   = data->add<float>("","sdMVAWWeight","F",0);
+    i_resMVATopWeight    = data->add<float>("","resMVATopWeight","F",0);
     i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
     i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
 
@@ -243,6 +249,9 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
     data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
+    data->fill<float>(i_sdMVATopWeight, ana->eventCorrections.getSdMVATopWeight());
+    data->fill<float>(i_sdMVAWWeight, ana->eventCorrections.getSdMVAWWeight());
+    data->fill<float>(i_resMVATopWeight, ana->eventCorrections.getResMVATopWeight());
     data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
     data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
 
@@ -340,6 +349,7 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
     data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
 
+    /*
     // mva top/W variables
     vector<FatJetF*> sdTopTight, sdWTight;
     for (auto *fj : ana->fatJets) {
@@ -357,6 +367,10 @@ struct BasicVarsFiller {
     auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops, 0.8);
     auto resTops = ana->resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_MEDIUM);
     data->fill<int>("nrestop", resTops.size());
+    */
+    data->fill<int>("nsdtop",  sdMVATopTight.size());
+    data->fill<int>("nsdw",    sdMVAWTight.size());
+    data->fill<int>("nrestop", resMVATopsMedium.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;

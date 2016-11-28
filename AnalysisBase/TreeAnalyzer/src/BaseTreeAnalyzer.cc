@@ -58,7 +58,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nBJets            (0),
     nVetoHPSTaus      (0),
     selectedLepton    (0),
-    nSelCTTTops       (0),
     nSelSdTops        (0),
     nSelSdWs          (0),
     met               (0),
@@ -150,7 +149,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
 
@@ -243,12 +242,6 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
-    case cfgSet::CMSTOPS : {
-      int defaultOptions = CMSTopReader::defaultOptions;
-      reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
-      break;
-    }
-
     case cfgSet::AK8FATJETS : {
       int defaultOptions = FatJetReader::defaultOptions;
       reader.load(&fatJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName);
@@ -307,7 +300,6 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
-//  load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS, FatJetReader::defaultOptions | (updateMVA_ ? (FatJetReader::UPDATETOPMVA | FatJetReader::UPDATEWTAGMVA) : FatJetReader::NULLOPT) ); // FIXME
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
@@ -357,26 +349,49 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
-
-  if(cmsTopReader.isLoaded()){
-    nSelCTTTops = 0;
-    selectedCTTTops.clear();
-    cttTops.clear();
-    cttTops.reserve(cmsTopReader.cmsTops.size());
-    for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
-    std::sort(cttTops.begin(), cttTops.end(), PhysicsUtilities::greaterPTDeref<CMSTopF>());
-    for(auto* p : cttTops) if(cfgSet::isSelTaggedTop(*p)) selectedCTTTops.push_back(p);
-    nSelCTTTops = selectedCTTTops.size();
-  }
-
   if(fatJetReader.isLoaded()){
-    nSelSdTops = 0;
-    nSelSdWs = 0;
     fatJets.clear();
-    selectedSdTops.clear();
-    selectedSdWs.clear();
     fatJets.reserve(fatJetReader.fatJets.size());
     for(auto& p : fatJetReader.fatJets) fatJets.push_back(&p);
+
+    // mva-based softdrop tops and ws
+    nSdMVATopTight = 0;
+    nSdMVAWTight  = 0;
+    sdMVATopTight.clear();
+    sdMVAWTight.clear();
+    for(auto *fj : fatJets){
+      if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
+        sdMVATopTight.push_back(fj);
+      }
+      else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
+        sdMVAWTight.push_back(fj);
+      }
+    }
+    std::sort(sdMVATopTight.begin(), sdMVATopTight.end(), PhysicsUtilities::greaterPTDeref<FatJetF>()); // [](const FatJetF &a, const FatJetF &b){ return a.pt()>b.pt(); });
+    std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>()); // [](const FatJetF &a, const FatJetF &b){ return a.pt()>b.pt(); });
+    nSdMVATopTight = sdMVATopTight.size();
+    nSdMVAWTight   = sdMVAWTight.size();    
+
+    // set gen and reco categories of fatjets
+    for(auto *fj : fatJets){
+      fj->setRecoCategory(FatJetRecoCategory::NOTFILLED);
+      fj->setGenCategory(FatJetGenCategory::NOTFILLED);
+    }
+
+    // mva-based resolved tops (MUST GO AFTER MVA TOPS AND WS)
+    nResMVATopMedium = 0;
+    resMVATopMedium.clear();
+    vector<FatJetF*> sdwtops(sdMVATopTight); sdwtops.insert(sdwtops.end(), sdMVAWTight.begin(), sdMVAWTight.end());
+    auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops, 0.8);
+    resMVATopMedium = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_MEDIUM);
+    std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+    nResMVATopMedium = resMVATopMedium.size();
+
+    // cut-based softdrop tops and ws
+    nSelSdTops = 0;
+    nSelSdWs = 0;
+    selectedSdTops.clear();
+    selectedSdWs.clear();
     for(auto& fj : fatJets){
       if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) selectedSdTops.push_back(fj);
       if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) selectedSdWs.push_back(fj);
