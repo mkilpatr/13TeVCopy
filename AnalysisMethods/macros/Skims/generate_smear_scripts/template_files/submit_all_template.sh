@@ -10,7 +10,7 @@ if [ ! "$CMSSW_BASE" ]; then
   exit 1
 fi
 
-cp ../../0LepSearchRegions/qcdPredictionMacros//rootlogon.C $workdir
+cp ../../rootlogon.C $workdir
 cp ../$runmacro $workdir
 
 echo "$runscript $runmacro $workdir $outputdir"    

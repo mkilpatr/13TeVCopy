@@ -372,10 +372,11 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
   // ratio of "CMS" and extra text size
   float extraOverCmsTextSize  = 0.76;
 
-  TString lumi_13TeV = "2.3 fb^{-1}";
-  TString lumi_8TeV  = "19.7 fb^{-1}";
-  TString lumi_7TeV  = "5.1 fb^{-1}";
-  TString lumi_sqrtS = "13 TeV";
+  TString lumi_13TeV   = "2.3 fb^{-1}";
+  TString lumi_13TeV_2 = "12.9 fb^{-1}";
+  TString lumi_8TeV    = "19.7 fb^{-1}";
+  TString lumi_7TeV    = "5.1 fb^{-1}";
+  TString lumi_sqrtS   = "13 TeV";
 
   bool drawLogo      = false;
 
@@ -423,6 +424,10 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
   }
   else if ( iPeriod==4 ) {
     lumiText += lumi_13TeV;
+    lumiText += " (13 TeV)";
+  }
+  else if ( iPeriod==5 ) {
+    lumiText += lumi_13TeV_2;
     lumiText += " (13 TeV)";
   }
   else if ( iPeriod==7 ) { 

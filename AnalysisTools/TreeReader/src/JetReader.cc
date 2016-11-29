@@ -189,62 +189,64 @@ void JetReader::refresh(){
     std::sort(genJets.begin(),genJets.end(),PhysicsUtilities::greaterPT<GenJetF>());
 
 }
-//--------------------------------------------------------------------------------------------------
-void JetReader::addRecoJetToObjectList(const int iJ){
 
+//--------------------------------------------------------------------------------------------------
+void JetReader::addRecoJetToObjectList(const unsigned int iJ){
   GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
-  if(!jetcmva_->empty()) recoJets.back().setCmva(jetcmva_->at(iJ));// FIXME
-  recoJets.back().setCvsl(jetcvsl_->at(iJ));
-  recoJets.back().setCvsb(jetcvsb_->at(iJ));
-  recoJets.back().setChHadFrac((jetchHadEnFrac_->size()) ? (jetchHadEnFrac_->at(iJ)) : 2);
-  recoJets.back().setChHadN2((jetchHadN2_->size()) ? (jetchHadN2_->at(iJ)) : -1);
-  recoJets.back().setChHadN4((jetchHadN4_->size()) ? (jetchHadN4_->at(iJ)) : -1);
-  recoJets.back().setChHadN6((jetchHadN6_->size()) ? (jetchHadN6_->at(iJ)) : -1);
-  recoJets.back().setBetaStar(jetbetaStar_->size() ? jetbetaStar_->at(iJ) : -1);
-  recoJets.back().setPtD(jetptD_->size() ? jetptD_->at(iJ) : -1);
-  recoJets.back().setAxis1(jetaxis1_->size() ? jetaxis1_->at(iJ) : -1);
-  recoJets.back().setAxis2(jetaxis2_->size() ? jetaxis2_->at(iJ) : -1);
-  recoJets.back().setJetMult(jetMult_->size() ? jetMult_->at(iJ) : -1);
-  recoJets.back().setJetcharge(jetcharge_->size() ? jetcharge_->at(iJ) : -1);
-  recoJets.back().setQgl(jetqgl_->size() ? jetqgl_->at(iJ) : -1);
-
+  recoJets.back().setCmva(     jetcmva_       ->size() - 1 == iJ ? jetcmva_->at(iJ)        : -1);// FIXME
+  recoJets.back().setCvsl(     jetcvsl_       ->size() - 1 == iJ ? jetcvsl_->at(iJ)        : -1);
+  recoJets.back().setCvsb(     jetcvsb_       ->size() - 1 == iJ ? jetcvsb_->at(iJ)        : -1);
+  recoJets.back().setChHadFrac(jetchHadEnFrac_->size() - 1 == iJ ? jetchHadEnFrac_->at(iJ) :  2);
+  recoJets.back().setChHadN2(  jetchHadN2_    ->size() - 1 == iJ ? jetchHadN2_->at(iJ)     : -1);
+  recoJets.back().setChHadN4(  jetchHadN4_    ->size() - 1 == iJ ? jetchHadN4_->at(iJ)     : -1);
+  recoJets.back().setChHadN6(  jetchHadN6_    ->size() - 1 == iJ ? jetchHadN6_->at(iJ)     : -1);
+  recoJets.back().setBetaStar( jetbetaStar_   ->size() - 1 == iJ ? jetbetaStar_->at(iJ)    : -1);
+  recoJets.back().setPtD(      jetptD_        ->size() - 1 == iJ ? jetptD_->at(iJ)         : -1);
+  recoJets.back().setAxis1(    jetaxis1_      ->size() - 1 == iJ ? jetaxis1_->at(iJ)       : -1);
+  recoJets.back().setAxis2(    jetaxis2_      ->size() - 1 == iJ ? jetaxis2_->at(iJ)       : -1);
+  recoJets.back().setJetMult(  jetMult_       ->size() - 1 == iJ ? jetMult_->at(iJ)        : -1);
+  recoJets.back().setJetcharge(jetcharge_     ->size() - 1 == iJ ? jetcharge_->at(iJ)      : -1);
+  recoJets.back().setQgl(      jetqgl_        ->size() - 1 == iJ ? jetqgl_->at(iJ)         : -1);
 }
+
 //--------------------------------------------------------------------------------------------------
 void JetReader::addRecoJet(const RecoJetF * inJet){
   //first get the index...we will add it the end of the list
-  int index = jetpt_->size();
+  unsigned int index = jetpt_->size();
   //THen add all to all of the vectors
-  jetpt_         ->push_back(inJet->pt());
-  jeteta_        ->push_back(inJet->eta());
-  jetphi_        ->push_back(inJet->phi());
-  jetmass_       ->push_back(inJet->mass());
-  jetptraw_      ->push_back(inJet->pt_raw());
-  jetpuId_       ->push_back(1);
-  jetlooseId_    ->push_back(inJet->looseid());
-  jettightId_    ->push_back(1);
-  jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
-  jetchHadN2_     ->push_back(inJet->chHadN2());
-  jetchHadN4_     ->push_back(inJet->chHadN4());
-  jetchHadN6_     ->push_back(inJet->chHadN6());
-  jetcsv_        ->push_back(inJet->csv());
-  jetarea_       ->push_back(0);
-  jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );
-  jetuncertainty_->push_back(inJet->uncertainty());
-  jetbetaStar_   ->push_back(0);
-  jetqgl_        ->push_back(-1);
-  jetptD_        ->push_back(0);
-  jetaxis1_      ->push_back(0);
-  jetaxis2_      ->push_back(0);
-  jetMult_       ->push_back(0);
-  jetcharge_     ->push_back(0);
-  jetpullrap_    ->push_back(0);
-  jetpullphi_    ->push_back(0);
+  jetpt_  ->push_back(inJet->pt());
+  jeteta_ ->push_back(inJet->eta());
+  jetphi_ ->push_back(inJet->phi());
+  jetmass_->push_back(inJet->mass());
+  if(jetptraw_      ->size() == index) jetptraw_      ->push_back(inJet->pt_raw());
+  if(jetpuId_       ->size() == index) jetpuId_       ->push_back(1);
+  if(jetlooseId_    ->size() == index) jetlooseId_    ->push_back(inJet->looseid());
+  if(jettightId_    ->size() == index) jettightId_    ->push_back(1);
+  if(jetchHadEnFrac_->size() == index) jetchHadEnFrac_->push_back(inJet->chHadFrac());
+  if(jetchHadN2_    ->size() == index) jetchHadN2_    ->push_back(inJet->chHadN2());
+  if(jetchHadN4_    ->size() == index) jetchHadN4_    ->push_back(inJet->chHadN4());
+  if(jetchHadN6_    ->size() == index) jetchHadN6_    ->push_back(inJet->chHadN6());
+  if(jetcsv_        ->size() == index) jetcsv_        ->push_back(inJet->csv());
+  if(jetarea_       ->size() == index) jetarea_       ->push_back(0);
+  if(jetgenindex_   ->size() == index) jetgenindex_   ->push_back(inJet->genJet() ? inJet->genJet()->index(): -1 );
+  if(jetuncertainty_->size() == index) jetuncertainty_->push_back(inJet->uncertainty());
+  if(jetbetaStar_   ->size() == index) jetbetaStar_   ->push_back(0);
+  if(jetqgl_        ->size() == index) jetqgl_        ->push_back(-1);
+  if(jetptD_        ->size() == index) jetptD_        ->push_back(0);
+  if(jetaxis1_      ->size() == index) jetaxis1_      ->push_back(0);
+  if(jetaxis2_      ->size() == index) jetaxis2_      ->push_back(0);
+  if(jetMult_       ->size() == index) jetMult_       ->push_back(0);
+  if(jetcharge_     ->size() == index) jetcharge_     ->push_back(0);
+  if(jetpullrap_    ->size() == index) jetpullrap_    ->push_back(0);
+  if(jetpullphi_    ->size() == index) jetpullphi_    ->push_back(0);
+  if(jetcmva_       ->size() == index) jetcmva_       ->push_back(0);
+  if(jetcvsl_       ->size() == index) jetcvsl_       ->push_back(0);
+  if(jetcvsb_       ->size() == index) jetcvsb_       ->push_back(0);
 
   addRecoJetToObjectList(index);
-
 }
 
 //--------------------------------------------------------------------------------------------------

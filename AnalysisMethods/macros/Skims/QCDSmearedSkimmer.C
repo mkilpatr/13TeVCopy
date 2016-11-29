@@ -14,25 +14,25 @@ public:
   };
   virtual ~Copier() {};
 
-  virtual void loadVariables(){
+  virtual void loadVariables() override {
     load(cfgSet::EVTINFO);
     load(cfgSet::AK4JETS,JetReader::LOADRECO | JetReader::LOADGEN | JetReader::FILLOBJ);
 //    load(cfgSet::CMSTOPS);
   }
 
-  virtual bool fillEvent() {
+  virtual bool fillEvent() override {
     if(met->pt() < 200) return false;
 //    if(nJets < 2 || jets[0]->pt() < 75) return false;
     return true;
   }
 
-  void book() {
+  void book() override {
   }
 
   virtual BaseEventAnalyzer * setupEventAnalyzer() override {
     auto * smearer = new  QCDRespSmearingCopierEventAnalyzer();
 cout << TString(cfgSet::CMSSW_BASE) + "/" + smearTemplateName << endl;
-    smearer->smearOptions.respFileName   = TString(cfgSet::CMSSW_BASE) + "/src/data/corrections/2016/" + smearTemplateName;
+    smearer->smearOptions.respFileName   = TString(cfgSet::CMSSW_BASE) + "/src/AnalysisMethods/macros/JetMETStudies/" + smearTemplateName;
     smearer->smearOptions.respInputName  = "JetResByFlav";
 //    smearer->smearOptions.winType        = JetRespSmear::FLAT;
 //    smearer->smearOptions.doFlatSampling = false;
@@ -43,8 +43,7 @@ cout << TString(cfgSet::CMSSW_BASE) + "/" + smearTemplateName << endl;
 
 #endif
 
-void QCDSmearedSkimmer(string fileName = "root://cmsxrootd.fnal.gov//store/user/jzabel/13TeV/merged_combined_samples_wgtxsec/qcd_ht200to300_1_ntuple_wgtxsec.root", int fileIndex = -1,
-    string treeName = "Events", string outPostfix ="qcdSmearSkim", string templateName = "resTailOut_combined_filtered_puWeight_weight_WoH.root", bool isMC = true, int startEvent =-1, int maxEvents = -1) {
+void QCDSmearedSkimmer(string fileName = "root://cmsxrootd.fnal.gov//store/user/lpcstop/noreplica/13TeV/111116/qcd_orig/qcd_ht200to300_1_ntuple_postproc.root", int fileIndex = -1, string treeName = "Events", string outPostfix ="qcdSmear", string templateName = "resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", bool isMC = true, int startEvent =-1, int maxEvents = -1) {
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_search_set;
   cfg.corrections.jetResCorrType = ucsbsusy::NONE;
