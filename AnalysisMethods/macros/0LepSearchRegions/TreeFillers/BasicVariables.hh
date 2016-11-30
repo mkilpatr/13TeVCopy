@@ -349,28 +349,9 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
     data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
 
-    /*
-    // mva top/W variables
-    vector<FatJetF*> sdTopTight, sdWTight;
-    for (auto *fj : ana->fatJets) {
-      if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
-        sdTopTight.push_back(fj);
-      }
-      else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
-        sdWTight.push_back(fj);
-      }
-    }
-    data->fill<int>("nsdtop", sdTopTight.size());
-    data->fill<int>("nsdw", sdWTight.size());
-
-    vector<FatJetF*> sdwtops(sdTopTight); sdwtops.insert(sdwtops.end(), sdWTight.begin(), sdWTight.end());
-    auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops, 0.8);
-    auto resTops = ana->resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_MEDIUM);
-    data->fill<int>("nrestop", resTops.size());
-    */
-    data->fill<int>("nsdtop",  sdMVATopTight.size());
-    data->fill<int>("nsdw",    sdMVAWTight.size());
-    data->fill<int>("nrestop", resMVATopsMedium.size());
+    data->fill<int>("nsdtop",  ana->sdMVATopTight.size());
+    data->fill<int>("nsdw",    ana->sdMVAWTight.size());
+    data->fill<int>("nrestop", ana->resMVATopMedium.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;

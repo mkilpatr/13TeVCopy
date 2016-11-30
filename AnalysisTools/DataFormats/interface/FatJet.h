@@ -96,10 +96,10 @@ enum class FatJetRecoCategory {
 
 enum class FatJetGenCategory {
                     NOTFILLED         = 0
-                  , TOP_0p8           = (1 << 0)
-                  , W_0p8             = (1 << 1)
-                  , TOP_PRODUCTS_0p8  = (1 << 2)
-                  , W_PRODUCTS_0p8    = (1 << 3) 
+                  , TOP_0p8           = (1 << 0) // a hadronic gen top is within 0.8 of fatjet axis
+                  , W_0p8             = (1 << 1) // a hadronic gen w is within 0.8 of fatjet axis
+                  , TOP_PRODUCTS_0p8  = (1 << 2) // b/w1/w2 partons of a hadronic gen top are contained within 0.8 of fatjet axis
+                  , W_PRODUCTS_0p8    = (1 << 3) // w1/w2 partons of a hadronic gen w are contained within 0.8 of fatjet axis
 };
 
 template <class CoordSystem>

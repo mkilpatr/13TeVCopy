@@ -332,6 +332,7 @@ void BaseTreeAnalyzer::clearVariables() // clear all of the collections before p
   nonBJets.clear();
   isrJets.clear();
   hadronicGenTops.clear();
+  hadronicGenWs.clear();
   resMVATopMedium.clear();
 }
 //--------------------------------------------------------------------------------------------------
@@ -391,16 +392,11 @@ void BaseTreeAnalyzer::processVariables()
         sdMVAWTight.push_back(fj);
       }
     }
-    std::sort(sdMVATopTight.begin(), sdMVATopTight.end(), PhysicsUtilities::greaterPTDeref<FatJetF>()); // [](const FatJetF &a, const FatJetF &b){ return a.pt()>b.pt(); });
-    std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>()); // [](const FatJetF &a, const FatJetF &b){ return a.pt()>b.pt(); });
+    std::sort(sdMVATopTight.begin(), sdMVATopTight.end(), PhysicsUtilities::greaterPTDeref<FatJetF>());
+    std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>());
     nSdMVATopTight = sdMVATopTight.size();
     nSdMVAWTight   = sdMVAWTight.size();    
-
-    // set gen and reco categories of fatjets
-    for(auto *fj : fatJets){
-      fj->setRecoCategory(FatJetRecoCategory::NOTFILLED);
-      fj->setGenCategory(FatJetGenCategory::NOTFILLED);
-    }
+    std::cout << "size of top, w : " << nSdMVATopTight << " " << nSdMVAWTight << std::endl;
 
     // cut-based softdrop tops and ws
     nSelSdTops = 0;
@@ -491,7 +487,7 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-  // hadronic gen top collection (MUST GO AFTER GEN AND JETS)
+  // hadronic gen top and w collection (MUST GO AFTER GEN AND JETS)
   if(genParticleReader.isLoaded() && defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){  
     std::vector<GenJetF*> filteredGenJets;
     for(auto * j : jets){ if(j->genJet()) filteredGenJets.push_back(j->genJet());}
@@ -499,6 +495,20 @@ void BaseTreeAnalyzer::processVariables()
     for(unsigned int i = 0 ; i < partonEvent->topDecays.size() ; i++){
       PartonMatching::TopDecay* top = &partonEvent->topDecays[i];
       if(!top->isLeptonic) hadronicGenTops.push_back(top);
+    }
+    for(unsigned int i = 0 ; i < partonEvent->bosonDecays.size() ; i++){
+      PartonMatching::BosonDecay* w = &partonEvent->bosonDecays[i];
+      if(w->isHadronic) hadronicGenWs.push_back(w);
+    }
+    nHadronicGenTops = hadronicGenTops.size();
+    nHadronicGenWs   = hadronicGenWs.size();
+  }
+
+  // set gen and reco categories of fatjets (MUST GO AFTER GENHADRONICTOPS)
+  if(fatJetReader.isLoaded()){
+    for(auto *fj : fatJets){
+      fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
+      fj->setGenCategory(FatJetGenCategory::TOP_0p8);
     }
   }
 

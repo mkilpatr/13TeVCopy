@@ -41,9 +41,9 @@ struct ExtraVarsFiller {
   size i_dphicsv2met;
   size i_dphicsv12met;
   size i_meff;
-  size i_dphitopmet;
-  size i_toppt;
-  size i_httwoleadfatjet;
+  //size i_dphitopmet;
+  //size i_toppt;
+  //size i_httwoleadfatjet;
 
   size i_j2lpt;
   size i_dphicsv1csv2;
@@ -219,9 +219,9 @@ struct ExtraVarsFiller {
     i_dphicsv2met    = data->add<float>("","dphicsv2met","F",0);
     i_dphicsv12met   = data->add<float>("","dphicsv12met","F",0);
     i_meff           = data->add<float>("","meff","F",0);
-    i_dphitopmet     = data->add<float>("","dphitopmet","F",0);
-    i_toppt          = data->add<float>("","toppt","F",0);
-    i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
+    //i_dphitopmet     = data->add<float>("","dphitopmet","F",0);
+    //i_toppt          = data->add<float>("","toppt","F",0);
+    //i_httwoleadfatjet = data->add<float>("","httwoleadfatjet","F",0);
 
     i_j2lpt          = data->add<float>("","j2lpt","F",0);
     i_dphij2lmet     = data->add<float>("","dphij2lmet","F",0);
@@ -486,6 +486,7 @@ struct ExtraVarsFiller {
     }
     data->fill<float>(i_dphicsv12met,dphicsv12met);
 
+    /*
     if (ana->nSelCTTTops > 0) {
       data->fill<float>(i_toppt,ana->selectedCTTTops[0]->pt());
       data->fill<float>(i_dphitopmet,fabs(PhysicsUtilities::deltaPhi(*ana->selectedCTTTops[0], *ana->met)));
@@ -493,6 +494,7 @@ struct ExtraVarsFiller {
     if (ana->cttTops.size() > 1) {
       data->fill<float>(i_httwoleadfatjet,(ana->cttTops[0]->pt()+ana->cttTops[1]->pt()));
     }
+    */
 
     if (ana->isrJets.size() > 1) {
       data->fill<float>(i_j2lpt,ana->isrJets[1]->pt());
