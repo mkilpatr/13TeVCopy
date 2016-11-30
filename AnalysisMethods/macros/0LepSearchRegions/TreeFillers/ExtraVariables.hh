@@ -178,6 +178,36 @@ struct ExtraVarsFiller {
   size i_subjettopframebeta;
   size i_subjettopframebphi;
 
+  // QCD Angular variables
+  size i_dphimetj1  ;
+  size i_dphistarmetj1;
+  size i_dphistarmetj1_tilde;
+  size i_omegametj1 ;
+  size i_omegametj1_tilde;
+  size i_chimetj1   ;
+  size i_metj1      ;
+  size i_dphimetj2  ;
+  size i_dphistarmetj2;
+  size i_dphistarmetj2_tilde;
+  size i_omegametj2 ;
+  size i_omegametj2_tilde;
+  size i_chimetj2   ;
+  size i_metj2      ;
+  size i_dphimetj3  ;
+  size i_dphistarmetj3;
+  size i_dphistarmetj3_tilde;
+  size i_omegametj3 ;
+  size i_omegametj3_tilde;
+  size i_chimetj3   ;
+  size i_metj3      ;
+  size i_dphimetj4  ;
+  size i_dphistarmetj4;
+  size i_dphistarmetj4_tilde;
+  size i_omegametj4 ;
+  size i_omegametj4_tilde;
+  size i_chimetj4   ;
+  size i_metj4      ;
+
   void bookHist(TFile *outFile){
     outFile->cd();
     hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
@@ -250,6 +280,37 @@ struct ExtraVarsFiller {
     i_j1chhadn4      = data->add<int>("","j1chhadn4","I",0);
     i_j1chhadn6      = data->add<int>("","j1chhadn6","I",0);
 
+  }
+
+  void bookQCDAngles(TreeWriterData* data){
+    i_dphimetj1             = data->add<float>("","dphimetj1","F",0);
+    i_dphistarmetj1         = data->add<float>("","dphistarmetj1","F",0);
+    i_dphistarmetj1_tilde   = data->add<float>("","dphistarmetj1_tilde","F",0);
+    i_omegametj1            = data->add<float>("","omegametj1","F",0);
+    i_omegametj1_tilde      = data->add<float>("","omegametj1_tilde","F",0);
+    i_chimetj1              = data->add<float>("","chimetj1","F",0);
+    i_metj1                 = data->add<float>("","metj1","F",0);
+    i_metj2                 = data->add<float>("","metj2","F",0);
+    i_metj3                 = data->add<float>("","metj3","F",3);
+    i_metj4                 = data->add<float>("","metj4","F",3);
+    i_dphimetj2             = data->add<float>("","dphimetj2","F",0);
+    i_dphistarmetj2         = data->add<float>("","dphistarmetj2","F",0);
+    i_dphistarmetj2_tilde   = data->add<float>("","dphistarmetj2_tilde","F",0);
+    i_omegametj2            = data->add<float>("","omegametj2","F",0);
+    i_omegametj2_tilde      = data->add<float>("","omegametj2_tilde","F",0);
+    i_chimetj2              = data->add<float>("","chimetj2","F",0);
+    i_dphimetj3             = data->add<float>("","dphimetj3","F",3);
+    i_dphistarmetj3         = data->add<float>("","dphistarmetj3","F",3);
+    i_dphistarmetj3_tilde   = data->add<float>("","dphistarmetj3_tilde","F",3);
+    i_omegametj3            = data->add<float>("","omegametj3","F",3);
+    i_omegametj3_tilde      = data->add<float>("","omegametj3_tilde","F",3);
+    i_chimetj3              = data->add<float>("","chimetj3","F",3);
+    i_dphimetj4             = data->add<float>("","dphimetj4","F",3);
+    i_dphistarmetj4         = data->add<float>("","dphistarmetj4","F",3);
+    i_dphistarmetj4_tilde   = data->add<float>("","dphistarmetj4_tilde","F",3);
+    i_omegametj4            = data->add<float>("","omegametj4","F",3);
+    i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",3);
+    i_chimetj4              = data->add<float>("","chimetj4","F",3);
   }
 
   void bookLepton(TreeWriterData* data){
@@ -494,6 +555,48 @@ struct ExtraVarsFiller {
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
+  }
+
+  void fillQCDAngles(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
+    const auto &jets = ana->jets;
+    const MomentumF *met = useModifiedMET ? metn : ana->met;
+
+    if(jets.size() > 0) {
+      data->fill<float>(i_dphimetj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
+      data->fill<float>(i_dphistarmetj1, JetKinematics::absDPhiStarMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj1_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_omegametj1, JetKinematics::OmegaMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_omegametj1_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_chimetj1, JetKinematics::ChiMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_metj1, (jets[0]->p4() + met->p4()).pt());
+    }
+    if(jets.size() > 1) {
+      data->fill<float>(i_dphimetj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
+      data->fill<float>(i_dphistarmetj2, JetKinematics::absDPhiStarMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj2_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_omegametj2, JetKinematics::OmegaMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_omegametj2_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_chimetj2, JetKinematics::ChiMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_metj2, (jets[1]->p4() + met->p4()).pt()); 
+    }
+    if(jets.size() > 2) {
+      data->fill<float>(i_dphimetj3, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
+      data->fill<float>(i_dphistarmetj3, JetKinematics::absDPhiStarMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj3_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_omegametj3, JetKinematics::OmegaMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_omegametj3_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_chimetj3, JetKinematics::ChiMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_metj3, (jets[2]->p4() + met->p4()).pt());
+    }
+    if(jets.size() > 3) {
+      data->fill<float>(i_dphimetj4, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
+      data->fill<float>(i_dphistarmetj4, JetKinematics::absDPhiStarMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj4_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_omegametj4, JetKinematics::OmegaMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_omegametj4_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_chimetj4, JetKinematics::ChiMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_metj4, (jets[3]->p4() + met->p4()).pt());
+    }
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){

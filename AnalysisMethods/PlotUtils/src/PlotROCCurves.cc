@@ -32,7 +32,7 @@ void PlotROCCurves::addBackgroundTree(const TString fname, const TString tname, 
 
 }
 
-void PlotROCCurves::addROCVariable(const TString varname, const TString label, const TString sigsel, const TString bkgsel, const unsigned int color, const int nbins, const float xmin, const float xmax, const bool cutlessthan)
+void PlotROCCurves::addROCVariable(const TString varname, const TString label, const TString sigsel, const TString bkgsel, const unsigned int color, const unsigned int style, const int nbins, const float xmin, const float xmax, const bool cutlessthan)
 {
 
   assert(sigtree_);
@@ -47,18 +47,18 @@ void PlotROCCurves::addROCVariable(const TString varname, const TString label, c
   TString drawbkg = varname + ">>" + bkgname;
   bkgtree_->Draw(drawbkg, bkgsel);
 
-  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel_, bkglabel_, color, cutlessthan);
+  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel_, bkglabel_, color, style, cutlessthan);
 
 }
 
-void PlotROCCurves::addROCVariable(const TString varname, const TString label, TH1F* sighist, const TString siglabel, TH1F* bkghist, const TString bkglabel, const unsigned int color, const bool cutlessthan)
+void PlotROCCurves::addROCVariable(const TString varname, const TString label, TH1F* sighist, const TString siglabel, TH1F* bkghist, const TString bkglabel, const unsigned int color, const unsigned int style, const bool cutlessthan)
 {
 
-  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel, bkglabel, color, cutlessthan);
+  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel, bkglabel, color, style, cutlessthan);
 
 }
 
-void PlotROCCurves::addROCVariable(const TString varname, const TString label, const TString filename, const TString sighistname, const TString siglabel, const TString bkghistname, const TString bkglabel, const unsigned int color, const bool cutlessthan)
+void PlotROCCurves::addROCVariable(const TString varname, const TString label, const TString filename, const TString sighistname, const TString siglabel, const TString bkghistname, const TString bkglabel, const unsigned int color, const unsigned int style, const bool cutlessthan)
 {
 
   TFile* infile = TFile::Open(filename);
@@ -67,7 +67,7 @@ void PlotROCCurves::addROCVariable(const TString varname, const TString label, c
   assert(sighist);
   TH1F* bkghist = (TH1F*)infile->Get(bkghistname);
   assert(bkghist);
-  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel, bkglabel, color, cutlessthan);
+  rocplots_.emplace_back(sighist, bkghist, varname, label, siglabel, bkglabel, color, style, cutlessthan);
 
 }
 
@@ -83,7 +83,7 @@ void PlotROCCurves::addCompPlot(const TString compplotname, vector<TString> comp
     for(auto plot : rocplots_) {
       if(plot.varname == name) {
         TGraph* rocgr = computeROCCurve(plot.sighist, plot.bkghist, "", plot.reversecut, plotbkgrej, plotsigvsbkg);
-        rocplot->addGraph(rocgr, plot.label, "C", plot.color, 0, plot.color, 1);
+        rocplot->addGraph(rocgr, plot.label, "C", plot.color, 0, plot.color, plot.style);
         if(plot.siglabel != siglabel_ || plot.bkglabel != bkglabel_) {
           xlabel = plotsigvsbkg ? (plotbkgrej ? TString::Format("1 - %s",plot.bkglabel.Data()) : plot.bkglabel) : plot.siglabel;
           ylabel = plotsigvsbkg ? plot.siglabel : (plotbkgrej ? TString::Format("1 - %s",plot.bkglabel.Data()) : plot.bkglabel);

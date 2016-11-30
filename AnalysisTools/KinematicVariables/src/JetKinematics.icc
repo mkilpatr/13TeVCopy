@@ -51,6 +51,83 @@ double JetKinematics::absDPhiMETJ(const MET& met, const Jet& jet, const double m
   return PhysicsUtilities::absDeltaPhi(met,jet);
 }
 
+//___________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::fScaling(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+	return jet.pt()/met.pt();
+}
+
+//___________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::LawOfCos(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+	return TMath::Sqrt(1 + JetKinematics::fScaling(met,jet,minPT,maxEta)*JetKinematics::fScaling(met,jet,minPT,maxEta) + 2*JetKinematics::fScaling(met,jet,minPT,maxEta)*TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)));
+}
+
+//____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::absDPhiStarMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta){
+	if (!passCuts(jet,minPT,maxEta)) return noDist;
+	auto metn = met.p4() + jet.p4();
+	return PhysicsUtilities::absDeltaPhi(metn,jet);
+}
+
+//_____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::absDPhiStarMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+  if (!passCuts(jet,minPT,maxEta)) return noDist;
+  double gScaling = 0;
+  if(JetKinematics::fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    gScaling = TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta));
+  else
+    gScaling = -JetKinematics::fScaling(met,jet,minPT,maxEta);
+  double TanDPhiStar = 0; 
+  if(JetKinematics::fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    TanDPhiStar = TMath::Sin(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta))/(JetKinematics::fScaling(met,jet,minPT,maxEta) + gScaling);
+  else
+    TanDPhiStar = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/(JetKinematics::fScaling(met,jet,minPT,maxEta) + gScaling);
+  return TMath::ATan(TanDPhiStar);
+}
+
+//___________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::OmegaMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+  if (!passCuts(jet,minPT,maxEta)) return noDist;
+  double tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/JetKinematics::fScaling(met,jet,minPT,maxEta);
+  return TMath::ATan(tanOmega);
+}
+
+//____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::OmegaMETJ_tilde(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+  if (!passCuts(jet,minPT,maxEta)) return noDist;
+  double tanOmega = 0;
+  if(fScaling(met,jet,minPT,maxEta) + TMath::Cos(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta)) >= 0)
+    tanOmega = TMath::Sin(JetKinematics::absDPhiMETJ(met, jet, minPT, maxEta))/JetKinematics::fScaling(met,jet,minPT,maxEta);
+  else
+    tanOmega = JetKinematics::LawOfCos(met,jet,minPT,maxEta)/JetKinematics::fScaling(met,jet,minPT,maxEta);
+  return TMath::ATan(tanOmega);
+} 
+
+//____________________________________________________________________________
+template<typename MET,typename Jet>
+double JetKinematics::ChiMETJ(const MET& met, const Jet& jet, const double minPT, const double maxEta)
+{
+  if (!passCuts(jet,minPT,maxEta)) return noDist;
+  double Chi = 0;
+  if(JetKinematics::absDPhiMETJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
+    Chi = JetKinematics::OmegaMETJ(met,jet,minPT,maxEta);
+  else if(JetKinematics::absDPhiStarMETJ(met,jet,minPT,maxEta) <= TMath::PiOver2())
+    Chi = JetKinematics::absDPhiStarMETJ(met,jet,minPT,maxEta);
+  else
+    Chi = TMath::PiOver2();
+  return Chi;
+}
+
 //_____________________________________________________________________________
 template<typename MET,typename Jet>
 double JetKinematics::absDPhiMETJ12(const MET& met, const std::vector<Jet*>& jets, const double minPT, const double maxEta)

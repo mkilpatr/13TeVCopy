@@ -57,7 +57,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       i_maxMuPT                = data.add<float>("","maxMuPT","F",0);
       i_removeMuFrac           = data.add<float>("","removeMuFrac","F",0);
 
-
     }
 
     bool fillEvent() {
@@ -108,7 +107,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       const auto* pJ = &defaultJets->recoJets[jetNearMETInd];
       //There was a higher pt, filtered rank!
       bool passFilter  = jets.size() > jetNearMETInd &&  pJ->index() == jets[jetNearMETInd]->index();
-
 
       double pseudoGenPT = (met->p4() + pJ->p4()).pt();
       double MMPseudoResp = pseudoGenPT > 0 ? pJ->pt()/ pseudoGenPT : 999;
@@ -165,11 +163,8 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<float>(i_removeMuFrac,removeMuFrac);
 
 
-
-
-
       filler.fillEventInfo(&data, this);
-
+      extraFiller.fillQCDAngles(&data, this);
 
       return true;
     }
@@ -213,14 +208,13 @@ void makeZeroLeptonQCDTrees(TString sname = "htmht",
     sname += TString::Format("_%d",fileindex);
 
   TString fullname = fileprefix+fname;
-
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep(json);
   pars.corrections.jetResTailCorrType = NOMINAL;
   pars.corrections.jetResCorrType = ucsbsusy::NONE;
   pars.corrections.jetAndMETCorrections     = ucsbsusy::JetAndMETCorrectionSet::QCDRESPTAIL;
-
+  
   TString treeName = "Events";
   ZeroLeptonQCDAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
