@@ -386,10 +386,13 @@ void BaseTreeAnalyzer::processVariables()
     nSdMVATopTight = 0;
     nSdMVAWTight  = 0;
     for(auto *fj : fatJets){
+      fj->setRecoCategory(FatJetRecoCategory::RECONOTFILLED);
       if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
+        fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
         sdMVATopTight.push_back(fj);
       }
       else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
+        fj->setRecoCategory(FatJetRecoCategory::SDMVAW);
         sdMVAWTight.push_back(fj);
       }
     }
@@ -397,7 +400,6 @@ void BaseTreeAnalyzer::processVariables()
     std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>());
     nSdMVATopTight = sdMVATopTight.size();
     nSdMVAWTight   = sdMVAWTight.size();    
-    std::cout << "size of top, w : " << nSdMVATopTight << " " << nSdMVAWTight << std::endl;
 
     // cut-based softdrop tops and ws
     nSelSdTops = 0;
@@ -505,15 +507,34 @@ void BaseTreeAnalyzer::processVariables()
     nHadronicGenWs   = hadronicGenWs.size();
   }
 
-  // set gen and reco categories of fatjets (MUST GO AFTER GENHADRONICTOPS)
-  if(fatJetReader.isLoaded()){
+  // set gen categories of fatjets (MUST GO AFTER GENHADRONICTOPS/WS)
+  if( fatJetReader.isLoaded() && (nHadronicGenTops>0 || nHadronicGenWs>0) ){
     for(auto *fj : fatJets){
-      // reco category
-      if( std::find(
-      if ( std::find(vector.begin(), vector.end(), item) != vector.end() )
-
-      fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
-      fj->setGenCategory(FatJetGenCategory::TOP_0p8);
+      fj->setGenCategory(FatJetGenCategory::GENNOTFILLED);
+      // is element of hadronicGenTops within 0.8?
+      for(auto top : hadronicGenTops){
+        float nearDR = PhysicsUtilities::deltaR(*(top->top), *fj);
+        if(nearDR < 0.8) {
+          fj->setGenCategory(FatJetGenCategory::GENTOP);
+          // are top products contained?
+          if(PhysicsUtilities::deltaR(*(top->b->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(top->W_dau1->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(top->W_dau2->parton), *fj) > 0.8) continue;
+          fj->setGenCategory(FatJetGenCategory::GENTOP_CONTAINED);
+          break; // categories saturated -- move on!
+        }
+      }
+      for(auto w : hadronicGenWs){
+        float nearDR = PhysicsUtilities::deltaR(*(w->boson), *fj);
+        if(nearDR < 0.8){
+          fj->setGenCategory(FatJetGenCategory::GENW);
+          // are w products contained?
+          if(PhysicsUtilities::deltaR(*(w->boson_dau1->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(w->boson_dau2->parton), *fj) > 0.8) continue;
+          fj->setGenCategory(FatJetGenCategory::GENW_CONTAINED);
+          break; // categories saturated -- move on!
+        }
+      }
     }
   }
 

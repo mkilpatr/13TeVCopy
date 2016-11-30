@@ -88,18 +88,18 @@ class SubJet : public Jet<CoordSystem>
   int multiplicity_ = -1;
   };
 
-enum class FatJetRecoCategory {
-                    NOTFILLED         = 0
+enum FatJetRecoCategory {
+                    RECONOTFILLED     = 0
                   , SDMVATOP          = (1 << 0)
                   , SDMVAW            = (1 << 1)
 };
 
-enum class FatJetGenCategory {
-                    NOTFILLED         = 0
-                  , TOP_0p8           = (1 << 0) // a hadronic gen top is within 0.8 of fatjet axis
-                  , W_0p8             = (1 << 1) // a hadronic gen w is within 0.8 of fatjet axis
-                  , TOP_PRODUCTS_0p8  = (1 << 2) // b/w1/w2 partons of a hadronic gen top are contained within 0.8 of fatjet axis
-                  , W_PRODUCTS_0p8    = (1 << 3) // w1/w2 partons of a hadronic gen w are contained within 0.8 of fatjet axis
+enum FatJetGenCategory {
+                    GENNOTFILLED      = 0
+                  , GENTOP            = (1 << 0) // a hadronic gen top is within 0.8 of fatjet axis
+                  , GENW              = (1 << 1) // a hadronic gen w is within 0.8 of fatjet axis
+                  , GENTOP_CONTAINED  = (1 << 2) // b/w1/w2 partons of a hadronic gen top are contained within 0.8 of fatjet axis
+                  , GENW_CONTAINED    = (1 << 3) // w1/w2 partons of a hadronic gen w are contained within 0.8 of fatjet axis
 };
 
 template <class CoordSystem>
@@ -132,8 +132,8 @@ class FatJet : public Jet<CoordSystem>
         tau2_        (inTau2),
         tau3_        (inTau3),
         topmva_      (-9.),
-        recoCategory_(FatJetRecoCategory::NOTFILLED),
-        genCategory_(FatJetGenCategory::NOTFILLED),
+        recoCategory_(FatJetRecoCategory::RECONOTFILLED),
+        genCategory_(FatJetGenCategory::GENNOTFILLED),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
@@ -150,8 +150,8 @@ class FatJet : public Jet<CoordSystem>
   size  nSubjets()             const { return subjets.size();   }
   float top_mva()              const { return topmva_      ;    }
   float w_mva()                const { return wmva_        ;    }
-  FatJetRecoCategory recoCategory()  const { return recoCategory_;    }
-  FatJetGenCategory genCategory()    const { return genCategory_ ;    }
+  int recoCategory()           const { return recoCategory_;    }
+  int genCategory()            const { return genCategory_ ;    }
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
     if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
@@ -209,8 +209,8 @@ class FatJet : public Jet<CoordSystem>
   void setTopMVA(const float inMVA) {topmva_ = inMVA;}
   void setWMVA(const float inMVA) {wmva_ = inMVA;}
 
-  void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ = inGenCategory;}
-  void setRecoCategory(const FatJetRecoCategory inRecoCategory) {recoCategory_ = inRecoCategory;}
+  void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ |= inGenCategory;}
+  void setRecoCategory(const FatJetRecoCategory inRecoCategory) {recoCategory_ |= inRecoCategory;}
 
     ~FatJet(){}
 
@@ -226,8 +226,8 @@ class FatJet : public Jet<CoordSystem>
     float tau2_        ;
     float tau3_        ;
     float topmva_      ;
-    FatJetRecoCategory recoCategory_ ;
-    FatJetGenCategory genCategory_ ;
+    int recoCategory_  ;
+    int genCategory_   ;
     float wmva_ = -9   ;
 
     Momentum<CoordSystem> puppiMomentum;
