@@ -50,18 +50,18 @@ public:
   }
 
   // max number of subjets of one hadronic gen top which match j1,j2,j3
-  static int matchedsubjets(const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) const {
+  static int matchedsubjets(const std::vector<PartonMatching::TopDecay*> &tops, const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) {
     //if( j1 == 0 || j2 == 0 || j3 == 0) return -1;
     if(matchpt < 0 || matchdr < 0) return -1;
 
     //check if a single jet can be matched to a single parton
-    auto jetMatchesParton = [matchdr,matchpt](const GenParticleF* part, const RecoJetF* jet)->bool {
+    auto jetMatchesParton = [&](const GenParticleF* part, const RecoJetF* jet)->bool {
       if(!part || !jet) return false;
       return ( (PhysicsUtilities::deltaR(*part,*jet) < matchdr) && (abs(jet->pt() - part->pt())/part->pt() < matchpt) );
     };
 
     //check if a single jet can be matched to a top's three partons
-    auto jetMatchesTop = [matchdr,matchpt](const PartonMatching* top, const RecoJetF* jet)->bool {
+    auto jetMatchesTop = [&](const PartonMatching::TopDecay* top, const RecoJetF* jet)->bool {
       if(!jet || !top) return false;
       return jetMatchesParton(top->b->parton, jet) 
           || jetMatchesParton(top->W_dau1->parton, jet) 
@@ -69,15 +69,18 @@ public:
     };
 
     int maxmatchedsubjets = 0;
-    for(auto top : hadronicGenTops){
-      int matchedsubjets = jetMatchesTop(top,j1) + jetMatchesTop(top,j2) + jetMatchesTop(top,j3);
-      maxmatchedsubjets = max(maxmatchedsubjets, matchedsubjets);
+    for(auto top : tops){
+      int matchedsubjets = 0;
+      if(jetMatchesTop(top,j1)) matchedsubjets++;
+      if(jetMatchesTop(top,j2)) matchedsubjets++;
+      if(jetMatchesTop(top,j3)) matchedsubjets++;
+      maxmatchedsubjets = std::max(maxmatchedsubjets, matchedsubjets);
     }
     return maxmatchedsubjets;
   }
 
-  static int matchedsubjets(const TopCand &c) const { // wrapper for TopCands
-    return matchedsubjets(b, j2, j3);
+  static int matchedsubjets(const std::vector<PartonMatching::TopDecay*> &tops, const TopCand &c) { // wrapper for TopCands
+    return matchedsubjets(tops, c.b, c.j2, c.j3);
   }
 
 public:
