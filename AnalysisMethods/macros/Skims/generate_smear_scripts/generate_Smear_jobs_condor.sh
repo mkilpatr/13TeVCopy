@@ -26,8 +26,8 @@ for file_list_entry in "${FILE_LIST[@]}"; do
     suffix=`echo "$file_list_entry" | awk '{ print $3 }'`
     ismc=`echo "$file_list_entry" | awk '{ print $4 }'`
     prefix=`echo "$file_list_entry" | awk '{ print $5 }'`
-    outputpath=`echo "$file_list_entry" | awk '{ print $6 }'`/"${outputdir}"
-    eosmkdir "${outputpath}"
+    outputpath=`echo "$file_list_entry" | awk '{ print $6 }'`
+    eosmkdir /eos/uscms/"${outputpath}"
     sed -e s:MACRO_NAME:"${runmacro}":g -e s:OUTPUT_DIR:"${outputdir}":g -e s:SCRAM_DIR:"${scramdir}":g template_files/submit_all_template.sh > tempfile && mv tempfile ../"${outputdir}"/submit_all.sh
   else
     filename=`echo "$file_list_entry" | awk '{ print $1 }'`

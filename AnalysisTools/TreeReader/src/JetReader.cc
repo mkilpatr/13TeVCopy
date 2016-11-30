@@ -190,7 +190,10 @@ void JetReader::refresh(){
 
 }
 //--------------------------------------------------------------------------------------------------
-void JetReader::addRecoJetToObjectList(const int iJ){
+void JetReader::addRecoJetToObjectList(const unsigned int iJ){
+  // --- IMPORTANT ---
+  // Any variables used here should be added to JetReader::addRecoJet() too!
+  // -----------------
 
   GenJetF * matchedGen = (options_ & LOADGEN) ? (jetgenindex_->at(iJ) >= 0 ? &genJets[jetgenindex_->at(iJ)] : 0) : 0;
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
@@ -211,8 +214,13 @@ void JetReader::addRecoJetToObjectList(const int iJ){
 }
 //--------------------------------------------------------------------------------------------------
 void JetReader::addRecoJet(const RecoJetF * inJet){
+  // --- IMPORTANT ---
+  // This function should be fully in sync w/ JetReader::addRecoJetToObjectList() to avoid vectors w/ different lengths!
+  // Variables not filled in ntuples should NOT be added here, nor read in JetReader::addRecoJetToObjectList().
+  // -----------------
+
   //first get the index...we will add it the end of the list
-  int index = jetpt_->size();
+  unsigned int index = jetpt_->size();
   //THen add all to all of the vectors
   jetpt_         ->push_back(inJet->pt());
   jeteta_        ->push_back(inJet->eta());

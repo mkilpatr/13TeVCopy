@@ -2,9 +2,6 @@
 #include "AnalysisTools/QuickRefold/interface/TObjectContainer.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
-
-
-
 namespace JetRespSmear {
 
 //----------------------------------------------------------------------////
@@ -26,7 +23,6 @@ std::ostream& operator<<(std::ostream& os, const SmearOptions& a){
   return os;
 }
 
-
 SmearInfo::SmearInfo() : gJ(0),rJI(-1), cdf(0),minProb(0),maxProb(0),minRes(0),maxRes(0) {}
 SmearInfo::SmearInfo(const ucsbsusy::GenJetF* gJ, int rJI, const TH1 * cdf, double minProb, double maxProb, double minRes, double maxRes)
   : gJ(gJ),rJI(rJI), cdf(cdf),minProb(minProb),maxProb(maxProb),minRes(minRes),maxRes(maxRes) {}
@@ -46,7 +42,6 @@ double interpolateProbToRes(const TH1 * cdf, const double prob) {
   if(binAbove <= 1) return 0;
   double deltaProb = cdf->GetBinContent(binAbove) - cdf->GetBinContent(binAbove-1);
   double newResValue = cdf->GetBinCenter(binAbove);
-
 
   if(deltaProb > 0){
           double b = (cdf->GetBinContent(binAbove) * cdf->GetBinLowEdge(binAbove) - cdf->GetBinContent(binAbove-1) * (cdf->GetBinWidth(binAbove) + cdf->GetBinLowEdge(binAbove)) ) /
@@ -93,7 +88,6 @@ return A +B*x + C*x*x;
 }
 
 double getUpIntegratedScaledWindowPol2(const double res,const double minW,const double maxW){
-
   double A = maxW;
   double B = -.95;
   double C = minW - A - B;
@@ -105,10 +99,8 @@ double getUpIntegratedScaledWindowPol2(const double res,const double minW,const 
     if(.00001 > 1 +2*B +B*B -4*C*A -4*C*x + 8*C ) return 2;
     return ( 1 + B + 4*C - sqrt(1 +2*B +B*B -4*C*A -4*C*x + 8*C))/(2*C);
   }
-
 }
 double getLowIntegratedScaledWindowPol2(const double res,const double minW,const double maxW){
-
   double A = maxW;
   double B = -.95;
   double C = minW - A - B;
@@ -119,10 +111,7 @@ double getLowIntegratedScaledWindowPol2(const double res,const double minW,const
     return ( -1 - B + sqrt(double(1 + 2*B +B*B -4*C*A +4*C*x)))/(2*C);
   } else {
     return ( -1 + B + 4*C + sqrt(1 - 2*B +B*B -4*C*A +4*C*x - 8*C))/(2*C);
-
   }
-
-
 }
 
 //----------------------------------------------------------------------////
@@ -168,7 +157,6 @@ getWindowProb(cdf,minProb,maxProb,minRes,maxRes);
 }
 //----------------------------------------------------------------------////
 }
-
 
 namespace ucsbsusy{
 
@@ -268,7 +256,6 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     double deltaMet = testMet - met->pt() ;
     if( deltaMet > met->pt() + 100  && deltaMet > .55*gJ->pt())continue;
 
-
     if(rJI < 0 ){
       rJI = recoJets->size();
       RecoJetF newJet(ucsbsusy::CylLorentzVectorF(9.5, gJ->eta(), gJ->phi(),gJ->mass()), -1,
@@ -277,7 +264,6 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
       analyzer->defaultJets->addRecoJet(&newJet);
     }
     RecoJetF * rJ = &(*recoJets)[rJI];
-
 
     double origRes = rJ->pt() / gJ->pt();
 
@@ -300,18 +286,14 @@ void QCDRespSmearingBaseEventAnalyzer::applySmearing(BaseTreeAnalyzer * analyzer
     return;
   }
 
-
   //orignal values
   const RecoJetFCollection originalRecoJets = *recoJets;
   const MomentumF originalMET = (*met);
   const float originalWeight = (*weight);
-
   bool canSmear = false;
-
 
   //now for the smearing
   for(unsigned int iS = 0; iS < smearOptions.nSmears; ++iS){
-
     for(unsigned int iJ = 0; iJ < smearJets.size(); ++iJ ){
       JetRespSmear::SmearInfo * info = &smearJets[iJ];
 
@@ -402,10 +384,7 @@ void QCDRespSmearingBaseEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana,int r
   }
 }
 
-
-
 QCDRespSmearingCopierEventAnalyzer::QCDRespSmearingCopierEventAnalyzer() : QCDRespSmearingBaseEventAnalyzer(), i_smearWeight (0),i_bootstrapWeight (0) {}
-
 
 void QCDRespSmearingCopierEventAnalyzer::bookSmearingWeights (TreeCopier * analyzer) {
     i_smearWeight          = analyzer->fillingData()->add<float>("","smearWeight"                        ,"F",0);
@@ -429,7 +408,6 @@ void QCDRespSmearingCopierEventAnalyzer::runOneInstance(BaseTreeAnalyzer * analy
   fillSmearingWeights(newAna);
   newAna->fillFillingTree();
 }
-
 
 void QCDRespSmearingCopierEventAnalyzer::analyzeEvent(BaseTreeAnalyzer * ana, int reportFrequency, int numEvents, int startEvent){
   TreeCopier * newAna = dynamic_cast<TreeCopier*>(ana);
