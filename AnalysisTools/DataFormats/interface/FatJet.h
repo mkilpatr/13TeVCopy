@@ -88,6 +88,19 @@ class SubJet : public Jet<CoordSystem>
   int multiplicity_ = -1;
   };
 
+enum class FatJetRecoCategory {
+                    NOTFILLED         = 0
+                  , SDMVATOP          = (1 << 0)
+                  , SDMVAW            = (1 << 1)
+};
+
+enum class FatJetGenCategory {
+                    NOTFILLED         = 0
+                  , TOP_0p8           = (1 << 0)
+                  , W_0p8             = (1 << 1)
+                  , TOP_PRODUCTS_0p8  = (1 << 2)
+                  , W_PRODUCTS_0p8    = (1 << 3) 
+};
 
 template <class CoordSystem>
 class FatJet : public Jet<CoordSystem>
@@ -119,6 +132,8 @@ class FatJet : public Jet<CoordSystem>
         tau2_        (inTau2),
         tau3_        (inTau3),
         topmva_      (-9.),
+        recoCategory_(FatJetRecoCategory::NOTFILLED),
+        genCategory_(FatJetGenCategory::NOTFILLED),
         puppi_softDropMass_(-9.),
         puppi_tau1_        (-9.),
         puppi_tau2_        (-9.),
@@ -135,6 +150,8 @@ class FatJet : public Jet<CoordSystem>
   size  nSubjets()             const { return subjets.size();   }
   float top_mva()              const { return topmva_      ;    }
   float w_mva()                const { return wmva_        ;    }
+  FatJetRecoCategory recoCategory()  const { return recoCategory_;    }
+  FatJetGenCategory genCategory()    const { return genCategory_ ;    }
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
     if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
@@ -192,6 +209,9 @@ class FatJet : public Jet<CoordSystem>
   void setTopMVA(const float inMVA) {topmva_ = inMVA;}
   void setWMVA(const float inMVA) {wmva_ = inMVA;}
 
+  void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ = inGenCategory;}
+  void setRecoCategory(const FatJetRecoCategory inRecoCategory) {recoCategory_ = inRecoCategory;}
+
     ~FatJet(){}
 
   public:
@@ -206,6 +226,8 @@ class FatJet : public Jet<CoordSystem>
     float tau2_        ;
     float tau3_        ;
     float topmva_      ;
+    FatJetRecoCategory recoCategory_ ;
+    FatJetGenCategory genCategory_ ;
     float wmva_ = -9   ;
 
     Momentum<CoordSystem> puppiMomentum;

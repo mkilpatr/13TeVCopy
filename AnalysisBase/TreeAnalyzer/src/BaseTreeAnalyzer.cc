@@ -495,7 +495,7 @@ void BaseTreeAnalyzer::processVariables()
   if(genParticleReader.isLoaded() && defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){  
     std::vector<GenJetF*> filteredGenJets;
     for(auto * j : jets){ if(j->genJet()) filteredGenJets.push_back(j->genJet());}
-    partonEvent = PartonMatching::PartonEvent(genParticleReader,*defaultJets,filteredGenJets);
+    partonEvent = new PartonMatching::PartonEvent(genParticleReader,*defaultJets,filteredGenJets);
     for(unsigned int i = 0 ; i < partonEvent->topDecays.size() ; i++){
       PartonMatching::TopDecay* top = &partonEvent->topDecays[i];
       if(!top->isLeptonic) hadronicGenTops.push_back(top);
