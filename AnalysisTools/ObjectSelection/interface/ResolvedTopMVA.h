@@ -61,19 +61,27 @@ public:
     };
 
     //check if a single jet can be matched to a top's three partons
-    auto jetMatchesTop = [&](const PartonMatching::TopDecay* top, const RecoJetF* jet)->bool {
-      if(!jet || !top) return false;
-      return jetMatchesParton(top->b->parton, jet) 
-          || jetMatchesParton(top->W_dau1->parton, jet) 
-          || jetMatchesParton(top->W_dau2->parton, jet);
+    auto jetMatchesTop = [&](const PartonMatching::TopDecay* top, const RecoJetF* jet)->int {
+      if(!jet || !top) return -1; // no match
+      if(jetMatchesParton(top->b->parton,      jet)) return 0; // return unique ID for the parton to which it matches
+      if(jetMatchesParton(top->W_dau1->parton, jet)) return 1;
+      if(jetMatchesParton(top->W_dau2->parton, jet)) return 2;
+      return -1; // no match
     };
 
     int maxmatchedsubjets = 0;
     for(auto top : tops){
       int matchedsubjets = 0;
-      if(jetMatchesTop(top,j1)) matchedsubjets++;
-      if(jetMatchesTop(top,j2)) matchedsubjets++;
-      if(jetMatchesTop(top,j3)) matchedsubjets++;
+      std::vector<int> matchcodes;
+      int matchj1 = jetMatchesTop(top,j1);
+      int matchj2 = jetMatchesTop(top,j2);
+      int matchj3 = jetMatchesTop(top,j3);
+      if(matchj1 > -1) matchcodes.push_back(matchj1);
+      if(matchj2 > -1) matchcodes.push_back(matchj2);
+      if(matchj3 > -1) matchcodes.push_back(matchj3);
+      std::set<int> s( matchcodes.begin(), matchcodes.end() ); // trick to remove duplicates (two reco jets matching same parton)
+      matchcodes.assign( s.begin(), s.end() );
+      matchedsubjets = matchcodes.size();
       maxmatchedsubjets = std::max(maxmatchedsubjets, matchedsubjets);
     }
     return maxmatchedsubjets;
