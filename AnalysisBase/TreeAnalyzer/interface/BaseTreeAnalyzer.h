@@ -49,7 +49,9 @@ public:
 
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName,size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars);
-    virtual ~BaseTreeAnalyzer() {};
+    virtual ~BaseTreeAnalyzer() {
+      delete partonEvent; // precaution ... may remove
+    };
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -85,6 +87,7 @@ public:
 
     // Sub processes that can be overloaded
     virtual void loadVariables();       //load variables
+    virtual void clearVariables();      //clear event variables
     virtual void processVariables();    //event processing
     virtual void runEvent() = 0;        //analysis code
 
@@ -164,6 +167,7 @@ public:
     LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
     int   nSdMVATopTight;
     int   nSdMVAWTight;
+    int   nHadronicGenTops;
     int   nResMVATopMedium;
     int   nSelSdTops;
     int   nSelSdWs;
@@ -176,6 +180,7 @@ public:
     MomentumF* puppimet   ;
     MomentumF* genmet     ;
     bool       goodvertex ;
+    PartonMatching::PartonEvent* partonEvent       ; //for hadronicGenTops collection 
     std::vector<LeptonF*>        allLeptons        ; //All leptons in the tree w/o selection
     std::vector<LeptonF*>        selectedLeptons   ; //All leptons that pass either the primary or secondary selection
     std::vector<LeptonF*>        primaryLeptons    ; //All leptons that pass the primary (tighter) selection
@@ -190,6 +195,7 @@ public:
     std::vector<GenParticleF*>   genParts          ;
     std::vector<FatJetF*>        sdMVATopTight     ;
     std::vector<FatJetF*>        sdMVAWTight       ;
+    std::vector<PartonMatching::TopDecay*> hadronicGenTops   ;
     std::vector<TopCand>         resMVATopMedium  ;
     std::vector<FatJetF*>        selectedSdTops    ;
     std::vector<FatJetF*>        selectedSdWs      ;
