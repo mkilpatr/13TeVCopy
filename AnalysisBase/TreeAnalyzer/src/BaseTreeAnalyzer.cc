@@ -334,6 +334,7 @@ void BaseTreeAnalyzer::clearVariables() // clear all of the collections before p
   hadronicGenTops.clear();
   hadronicGenWs.clear();
   resMVATopMedium.clear();
+  resMVATopLoosest.clear();
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
@@ -507,6 +508,10 @@ void BaseTreeAnalyzer::processVariables()
   // set gen and reco categories of fatjets (MUST GO AFTER GENHADRONICTOPS)
   if(fatJetReader.isLoaded()){
     for(auto *fj : fatJets){
+      // reco category
+      if( std::find(
+      if ( std::find(vector.begin(), vector.end(), item) != vector.end() )
+
       fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
       fj->setGenCategory(FatJetGenCategory::TOP_0p8);
     }
@@ -519,6 +524,11 @@ void BaseTreeAnalyzer::processVariables()
   resMVATopMedium = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_MEDIUM);
   std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
   nResMVATopMedium = resMVATopMedium.size();
+
+  nResMVATopLoosest = 0;
+  resMVATopLoosest = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_LOOSEST);
+  std::sort(resMVATopLoosest.begin(), resMVATopLoosest.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+  nResMVATopLoosest = resMVATopLoosest.size();
 
   //load corrections corrections
   for(auto * iC : corrections){

@@ -170,6 +170,7 @@ public:
     int   nHadronicGenTops;
     int   nHadronicGenWs;
     int   nResMVATopMedium;
+    int   nResMVATopLoosest;
     int   nSelSdTops;
     int   nSelSdWs;
 
@@ -199,6 +200,7 @@ public:
     std::vector<PartonMatching::TopDecay*> hadronicGenTops   ;
     std::vector<PartonMatching::BosonDecay*> hadronicGenWs   ;
     std::vector<TopCand>         resMVATopMedium  ;
+    std::vector<TopCand>         resMVATopLoosest  ;
     std::vector<FatJetF*>        selectedSdTops    ;
     std::vector<FatJetF*>        selectedSdWs      ;
     std::vector<FatJetF*>        fatJets;
