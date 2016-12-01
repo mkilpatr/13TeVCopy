@@ -310,6 +310,7 @@ void BaseTreeAnalyzer::loadVariables()
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::clearVariables() // clear all of the collections before processVariables
 {
+  isReady_ = false;
   genParts.clear();
   fatJets.clear();
   sdMVATopTight.clear();
@@ -337,6 +338,7 @@ void BaseTreeAnalyzer::clearVariables() // clear all of the collections before p
   hadronicGenWs.clear();
   resMVATopMedium.clear();
   resMVATopCands.clear();
+  sdwtops_.clear();
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
@@ -473,16 +475,25 @@ void BaseTreeAnalyzer::processVariables()
       if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
         fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
         sdMVATopTight.push_back(fj);
+        sdwtops_.push_back(fj);
       }
       else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
         fj->setRecoCategory(FatJetRecoCategory::SDMVAW);
         sdMVAWTight.push_back(fj);
+        sdwtops_.push_back(fj);
       }
     }
     std::sort(sdMVATopTight.begin(), sdMVATopTight.end(), PhysicsUtilities::greaterPTDeref<FatJetF>());
     std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>());
     nSdMVATopTight = sdMVATopTight.size();
     nSdMVAWTight   = sdMVAWTight.size();
+
+    // ak8 ISR
+    for (auto *fj : fatJets){
+      // ISR jet is required to fail CSVL and not tagged as top/W
+      if (fj->csv() > defaults::CSV_LOOSE) continue;
+      if (std::find(sdwtops_.begin(), sdwtops_.end(), fj) == sdwtops_.end()) ak8isrJets.push_back(fj);
+    }
 
     // cut-based softdrop tops and ws
     nSelSdTops = 0;
@@ -494,6 +505,8 @@ void BaseTreeAnalyzer::processVariables()
     nSelSdTops = selectedSdTops.size();
     nSelSdWs = selectedSdWs.size();
   }
+
+
   /*
   if(fatJetPuppiReader.isLoaded()){
     fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
@@ -510,6 +523,12 @@ void BaseTreeAnalyzer::processVariables()
   }
   nJets    = jets.size();
   nBJets   = bJets.size();
+
+
+}
+//--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::processMoreVariables(){
+  if (isReady_) return; // not run twice
 
   // hadronic gen top and w collection (MUST GO AFTER GEN AND JETS)
   if(genParticleReader.isLoaded() && defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
@@ -561,9 +580,9 @@ void BaseTreeAnalyzer::processVariables()
     }
   }
 
+
   // mva-based resolved tops (MUST GO AFTER JETS AND SD MVA TOPS AND WS)
-  vector<FatJetF*> sdwtops(sdMVATopTight); sdwtops.insert(sdwtops.end(), sdMVAWTight.begin(), sdMVAWTight.end());
-  auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops, 0.8);
+  auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops_, 0.8);
   resMVATopCands = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_ALL); // sorted by MVA score
 
   nResMVATopMedium = 0;
@@ -573,22 +592,16 @@ void BaseTreeAnalyzer::processVariables()
   std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
   nResMVATopMedium = resMVATopMedium.size();
 
-  // ak8 ISR
-  for (auto *fj : fatJets){
-    // ISR jet is required to fail CSVL and not tagged as top/W
-    if (fj->csv() > defaults::CSV_LOOSE) continue;
-    if (std::find(sdwtops.begin(), sdwtops.end(), fj) == sdwtops.end()) ak8isrJets.push_back(fj);
-  }
-
+  // FIXME: do we need any corrections for preselection?
   //load corrections corrections
   for(auto * iC : corrections){
     iC->processCorrection(this);
   }
 
 
-
-
+  isReady_ = true;
 }
+
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::processData(){
   //only look at data

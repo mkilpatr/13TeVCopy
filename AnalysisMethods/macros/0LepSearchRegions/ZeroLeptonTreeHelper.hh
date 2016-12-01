@@ -94,8 +94,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       if(nJets < minnjets_) return false;
 
       if (applyTightPresel){
-        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && nResMVATopMedium==0
-            && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
         bool passHM = nJets>=5 && nBJets>=1;
         if (!passLM && !passHM) return false;
       }
@@ -110,11 +109,13 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         if (lepplusmet.pt() < metcut_)  return false;
 
+        processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
 //        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;
 
+        processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this);
 //        extraFiller.fillJetMETInfo(&data, this);
       }

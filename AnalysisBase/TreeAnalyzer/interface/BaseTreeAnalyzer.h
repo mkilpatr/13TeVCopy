@@ -81,6 +81,8 @@ public:
 
     void setEventNumber(const int newEventNumber) {reader.eventNumber = newEventNumber;}
 
+    bool isEventReady() const { return isReady_; }
+
     // Base function that runs the standard process
     virtual void analyze(int reportFrequency = 10000, int numEvents = -1, int startEvent = -1);
 
@@ -88,6 +90,7 @@ public:
     virtual void loadVariables();       //load variables
     virtual void clearVariables();      //clear event variables
     virtual void processVariables();    //event processing
+    virtual void processMoreVariables(); //expensive event processing -- should be called manually after preselection
     virtual void runEvent() = 0;        //analysis code
 
     virtual bool processData(); //process data sample
@@ -233,6 +236,9 @@ public:
     std::vector<CorrectionSet*> corrections;
 
     bool updateMVA_; // FIXME
+
+    std::vector<FatJetF*> sdwtops_;
+    bool isReady_ = false; // if everything is filled, i.e., processMoreVariables() has been executed
 };
 
 

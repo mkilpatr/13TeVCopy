@@ -221,6 +221,8 @@ struct BasicVarsFiller {
 
   void fillEventInfo(TreeWriterData *data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0) {
 
+//    assert(ana->isEventReady());
+
     const auto &jets = ana->jets;
     const MomentumF *met = useModifiedMET ? metn : ana->met;
     /* current set-up:
