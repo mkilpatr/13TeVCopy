@@ -149,7 +149,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
 
@@ -371,8 +371,6 @@ void BaseTreeAnalyzer::processVariables()
     }
   }
 
-
-
   if(genParticleReader.isLoaded()){
     genParts.reserve(genParticleReader.genParticles.size());
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
@@ -503,6 +501,8 @@ void BaseTreeAnalyzer::processVariables()
       PartonMatching::BosonDecay* w = &partonEvent->bosonDecays[i];
       if(w->isHadronic) hadronicGenWs.push_back(w);
     }
+    std::sort(hadronicGenTops.begin(), hadronicGenTops.end(), [](const PartonMatching::TopDecay* a, const PartonMatching::TopDecay* b){ return a->top->pt() > b->top->pt(); });
+    std::sort(hadronicGenWs.begin(),   hadronicGenWs.end(),   [](const PartonMatching::BosonDecay* a, const PartonMatching::BosonDecay* b){ return a->boson->pt() > b->boson->pt(); });
     nHadronicGenTops = hadronicGenTops.size();
     nHadronicGenWs   = hadronicGenWs.size();
   }
