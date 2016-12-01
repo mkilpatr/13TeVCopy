@@ -2,6 +2,7 @@
 #define ZEROLEPTONTREEHELPER_HH
 
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
+#include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/BasicVariables.hh"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/ExtraVariables.hh"
 

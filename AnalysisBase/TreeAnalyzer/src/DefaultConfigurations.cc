@@ -105,9 +105,11 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDTOP | ucsbsusy::EventCorrectionSet::SDW;
   standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
-  standardCorrections.cttCorrectionFile        =  TString::Format("%s/src/data/corrections/cttCorr.root",CMSSW_BASE);
-  standardCorrections.cttEffSFType             = ucsbsusy::NOMINAL;
-  standardCorrections.cttMistagSFType          = ucsbsusy::NOMINAL;
+  standardCorrections.sdMVACorrectionFile      =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
+  standardCorrections.sdMVATopCorrType         = ucsbsusy::NOMINAL;
+  standardCorrections.sdMVAWCorrType           = ucsbsusy::NOMINAL;
+  standardCorrections.resMVATopCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
+  standardCorrections.resMVATopCorrType        = ucsbsusy::NOMINAL;
   //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE);
   standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdTopWTagging-DataFull-correctedbymistagrate.root",CMSSW_BASE);
   standardCorrections.sdTopCorrType            = ucsbsusy::NOMINAL;

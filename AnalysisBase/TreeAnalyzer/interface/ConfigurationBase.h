@@ -190,11 +190,13 @@ namespace cfgSet {
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
-    TString cttCorrectionFile;
+    TString sdMVACorrectionFile;
+    TString resMVATopCorrectionFile;
     TString sdCorrectionFile;
     TString puCorrectionFile;
-    ucsbsusy::CORRTYPE cttEffSFType;
-    ucsbsusy::CORRTYPE cttMistagSFType;
+    ucsbsusy::CORRTYPE sdMVATopCorrType;
+    ucsbsusy::CORRTYPE sdMVAWCorrType;
+    ucsbsusy::CORRTYPE resMVATopCorrType;
     ucsbsusy::CORRTYPE sdTopCorrType;
     ucsbsusy::CORRTYPE sdWCorrType;
 
@@ -255,8 +257,9 @@ namespace cfgSet {
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-        cttEffSFType(ucsbsusy::NONE),
-        cttMistagSFType(ucsbsusy::NONE),
+        sdMVATopCorrType(ucsbsusy::NONE),
+        sdMVAWCorrType(ucsbsusy::NONE),
+        resMVATopCorrType(ucsbsusy::NONE),
         sdTopCorrType(ucsbsusy::NONE),
         sdWCorrType(ucsbsusy::NONE),
         trigPhotonCorrType(ucsbsusy::NONE),
@@ -305,8 +308,12 @@ namespace cfgSet {
           os << "PU ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
           os << "NORM ";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::CTT)
-          os << " CTT Eff("<< a.cttEffSFType <<") Mistag("<<a.cttMistagSFType<<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDMVATOP)
+          os << " SDMVATOP Eff("<< a.sdMVATopCorrType <<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDMVAW)
+          os << " SDMVAW Eff("<< a.sdMVAWCorrType <<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::RESMVATOP)
+          os << " RESMVATOP Eff("<< a.resMVATopCorrType <<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDTOP)
           os << " SDTOP Eff("<< a.sdTopCorrType <<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDW)

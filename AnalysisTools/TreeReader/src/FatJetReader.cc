@@ -13,7 +13,6 @@
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisTools/Utilities/interface/PhysicsUtilities.h"
 
-
 using namespace std;
 using namespace ucsbsusy;
 
@@ -267,6 +266,7 @@ void FatJetReader::refresh(){
     if(options_ & UPDATEWTAGMVA){
       fatJets.back().setWMVA(sdWTagMVA->getSoftdropWTagMVAScore(&fatJets.back()));
     }
+
   }
   std::sort(fatJets.begin(),fatJets.end(),PhysicsUtilities::greaterPT<FatJetF>());
 
