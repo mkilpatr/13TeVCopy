@@ -28,10 +28,13 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.cleanJetsvPhotons         = false;
   zl_search_jets.cleanJetsvTracks          = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
+  zl_search_jets.cleanFatJetsvLeptons      = false;
+  zl_search_jets.cleanFatJetsvPhotons      = false;
   zl_search_jets.setConfig();
 
   zl_photon_jets = zl_search_jets;
   zl_photon_jets.cleanJetsvPhotons = true;
+  zl_photon_jets.cleanFatJetsvPhotons = true;
 
   zl_lepton_jets = zl_search_jets;
   zl_lepton_jets.cleanJetsvLeptons   = false;
@@ -103,7 +106,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
-  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDTOP | ucsbsusy::EventCorrectionSet::SDW | ucsbsusy::EventCorrectionSet::SDMVA | ucsbsusy::EventCorrectionSet::RESMVATOP;
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDMVA | ucsbsusy::EventCorrectionSet::RESMVATOP;
   standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
   standardCorrections.sdMVACorrectionFile      =  TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_20161128.root",CMSSW_BASE);
   standardCorrections.sdMVAFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);

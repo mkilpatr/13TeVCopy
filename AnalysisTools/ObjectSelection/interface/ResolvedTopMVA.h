@@ -50,7 +50,7 @@ public:
   }
 
   // max number of subjets of one hadronic gen top which match j1,j2,j3
-  static int matchedsubjets(const std::vector<PartonMatching::TopDecay*> &tops, const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) {
+  static int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops, const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) {
     //if( j1 == 0 || j2 == 0 || j3 == 0) return -1;
     if(matchpt < 0 || matchdr < 0) return -1;
 
@@ -70,7 +70,7 @@ public:
     };
 
     int maxmatchedsubjets = 0;
-    for(auto top : tops){
+    for(const auto &top : tops){
       int matchedsubjets = 0;
       std::vector<int> matchcodes;
       int matchj1 = jetMatchesTop(top,j1);
@@ -87,8 +87,8 @@ public:
     return maxmatchedsubjets;
   }
 
-  static int matchedsubjets(const std::vector<PartonMatching::TopDecay*> &tops, const TopCand &c) { // wrapper for TopCands
-    return matchedsubjets(tops, c.b, c.j2, c.j3);
+  int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops) { // wrapper for TopCands
+    return nMatchedSubjets(tops, b, j2, j3);
   }
 
 public:
@@ -114,7 +114,7 @@ private:
   std::vector<TopCand> removeOverlap(std::vector<TopCand> &cands, double threshold);
 
 public:
-  static constexpr double WP_LOOSEST  = -1.0; // used for candidate studies
+  static constexpr double WP_ALL    = -1.0; // used for candidate studies
   static constexpr double WP_LOOSE  = 0.83;
   static constexpr double WP_MEDIUM = 0.98;
   static constexpr double WP_TIGHT  = 0.99;

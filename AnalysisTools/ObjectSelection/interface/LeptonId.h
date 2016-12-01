@@ -26,7 +26,7 @@ namespace ElectronISO {
 namespace MuonID {
   inline bool inclusive      (const ucsbsusy::MuonF* lep) {return true;}
   inline bool loose          (const ucsbsusy::MuonF* lep) {return lep->isloosemuon();}
-  inline bool medium         (const ucsbsusy::MuonF* lep) {return lep->ismediumhipmuon();}
+  inline bool medium         (const ucsbsusy::MuonF* lep) {return lep->ismediummuon();}
   inline bool tight          (const ucsbsusy::MuonF* lep) {return lep->istightmuon();}
 }
 

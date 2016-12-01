@@ -61,11 +61,10 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     virtual ~ZeroLeptonAnalyzer() {}
 
-    double metcut_   = 200.0 ;
-    int    minnjets_ =   2   ;
+    const double metcut_   = 200.0 ;
+    const int    minnjets_ =   2   ;
 
-    unsigned int minnisrj_ =   0   ;
-    double       isrptcut_ =   0.0 ;
+    bool applyTightPresel = false;
 
     bool   islepcr    = false;
     bool   addlep2met = false;
@@ -94,8 +93,11 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(nJets < minnjets_) return false;
 
-      if(isrJets.size() < minnisrj_) return false;
-      if(minnisrj_ > 0 && isrJets[0]->pt() < isrptcut_) return false;
+      if (applyTightPresel){
+        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+        bool passHM = nJets>=5 && nBJets>=1;
+        if (!passLM && !passHM) return false;
+      }
 
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
 
@@ -107,11 +109,13 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         if (lepplusmet.pt() < metcut_)  return false;
 
+        processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
 //        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;
 
+        processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this);
 //        extraFiller.fillJetMETInfo(&data, this);
       }
