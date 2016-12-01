@@ -64,18 +64,15 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
 
       if(!goodvertex) return false;
 
-      // For standard search
-//      metcut_ = 200; minnjets_ = 5; minnisrj_ = 0; isrptcut_ = 0;
-//      if(nBJets == 0 || std::count_if(jets.begin(), jets.end(), [](RecoJetF* j){return j->csv()>defaults::CSV_LOOSE;}) < 2) return false;
-
-      // for FBD search
-//      metcut_ = 200; minnjets_ = 2; minnisrj_ = 1; isrptcut_ = 250;
-//      if(met->pt()/(std::sqrt(JetKinematics::ht(jets, 20.0, 2.4))) < 10) return false;
-
       if(met->pt() < metcut_  ) return false;
       if(nJets < minnjets_) return false;
-      if(isrJets.size() < minnisrj_) return false;
-      if(minnisrj_ > 0 && isrJets[0]->pt() < isrptcut_) return false;
+
+      if (applyTightPresel){
+        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && nResMVATopMedium==0
+            && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+        bool passHM = nJets>=5 && nBJets>=1;
+        if (!passLM && !passHM) return false;
+      }
 
       // True response info
       int trueRespInd = process == defaults::QCD ? jetAndMETCorrections.getQCDRespTailCorrector()->mmInd : -1;

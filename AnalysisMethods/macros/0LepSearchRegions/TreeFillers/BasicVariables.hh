@@ -132,7 +132,7 @@ struct BasicVarsFiller {
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
     i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
     i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
-    data->add<float>("sdWTopWeight",0);
+    data->add<float>("sdMVAWeight",0);
     data->add<float>("resTopWeight",0);
 
     // Trigger and filters
@@ -251,7 +251,7 @@ struct BasicVarsFiller {
     data->fill<float>(i_isrWeightTight,     ana->isrCorrections.getISRWeightTight());
     data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
     data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
-    data->fill<float>("sdWTopWeight",       ana->eventCorrections.getSdMVAWeight());
+    data->fill<float>("sdMVAWeight",        ana->eventCorrections.getSdMVAWeight());
     data->fill<float>("resTopWeight",       ana->eventCorrections.getResMVATopWeight());
 
     // Trigger and filters
