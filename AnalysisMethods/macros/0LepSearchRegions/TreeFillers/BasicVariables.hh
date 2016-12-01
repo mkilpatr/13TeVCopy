@@ -200,7 +200,7 @@ struct BasicVarsFiller {
 
     data->add<float>("ak8isrpt", -1);
     data->add<float>("dphiisrmet", -1);
-    data->add<float>("mtivfmet", 0);
+
 
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
@@ -264,8 +264,9 @@ struct BasicVarsFiller {
     data->fill<bool >(i_passtright, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? passTrigPFHT900 : false));
 
     // METMHT trigger:
-    bool passTrigMETMHT120 = (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
-    data->fill<bool>(i_passmetmht   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT120 : false));
+    bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight)
+        || (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
+    data->fill<bool>(i_passmetmht   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT : false));
 
     // photon trigger: HLT_Photon165_HE10 || HLT_CaloJet500_NoJetID(JetHT) || HLT_ECALHT800(DoubleEG)
     bool passTrigPho165 = ana->triggerflag & kHLT_Photon165_HE10;
@@ -297,9 +298,9 @@ struct BasicVarsFiller {
         || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT350) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT400) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT600);
     bool passtriglepOR = (ana->process==defaults::DATA_SINGLEMU && passTrigMuHT)
         || (ana->process==defaults::DATA_SINGLEEL && !passTrigMuHT && passTrigElHT)
-        || (ana->process==defaults::DATA_MET && !passTrigMuHT && !passTrigElHT && passTrigMETMHT120)
-        || (ana->process==defaults::DATA_JETHT && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT120 && passTrigCaloJet500)
-        || (ana->process==defaults::DATA_DOUBLEEG && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT120 && !passTrigCaloJet500 && passTrigECALHT800);
+        || (ana->process==defaults::DATA_MET && !passTrigMuHT && !passTrigElHT && passTrigMETMHT)
+        || (ana->process==defaults::DATA_JETHT && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT && passTrigCaloJet500)
+        || (ana->process==defaults::DATA_DOUBLEEG && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT && !passTrigCaloJet500 && passTrigECALHT800);
     data->fill<bool>(i_passtriglepOR,  ana->isMC() || passtriglepOR);
 
     // dilepton trigger
@@ -381,6 +382,7 @@ struct BasicVarsFiller {
     }
     if(jets.size() > 3){
       data->fill<float>(i_dphij4met, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
+
     }
 
     vector<RecoJetF*> bjetsCSVranked(ana->bJets); //use only jets passing CSVM
@@ -438,9 +440,6 @@ struct BasicVarsFiller {
           ((ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr())) > 4 ) { ++nivf_; ivfs_.push_back(ana->SVs[iivf]); }
     }
     data->fill<int>(i_nivf, nivf_);
-    if (nivf_>0){
-      data->fill<float>("mtivfmet", JetKinematics::transverseMass(*ivfs_.at(0), *met));
-    }
 
     // Lepton variables
     if(ana->selectedLepton) {
