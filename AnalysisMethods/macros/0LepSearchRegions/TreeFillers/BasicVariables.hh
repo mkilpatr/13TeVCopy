@@ -33,6 +33,8 @@ struct BasicVarsFiller {
   size i_leptnpweightHM;
   size i_isrWeight;
   size i_isrWeightTight;
+  size i_sdMVAWeight;
+  size i_resMVATopWeight;
   size i_sdtopFastSimWeight;
   size i_sdwFastSimWeight;
 
@@ -66,7 +68,6 @@ struct BasicVarsFiller {
   size i_nvetolep  ;
   size i_nvetotau  ;
   size i_nvetohpstaus;
-  size i_ncttstd   ;
   size i_nsdtoploose;
   size i_nsdwloose;
 
@@ -131,6 +132,8 @@ struct BasicVarsFiller {
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
+    i_sdMVAWeight    = data->add<float>("","sdMVAWeight","F",0);
+    i_resMVATopWeight    = data->add<float>("","resMVATopWeight","F",0);
     i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
     i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
 
@@ -164,9 +167,13 @@ struct BasicVarsFiller {
     i_nvetolep       = data->add<int>("","nvetolep","I",0);
     i_nvetotau       = data->add<int>("","nvetotau","I",0);
     i_nvetohpstaus   = data->add<int>("","nvetohpstaus","I",0);
-    i_ncttstd        = data->add<int>("","ncttstd","I",0);
     i_nsdtoploose    = data->add<int>("","nsdtoploose","I",0);
     i_nsdwloose      = data->add<int>("","nsdwloose","I",0);
+
+    // mva top/W variables
+    data->add<int>("nsdtop", 0);
+    data->add<int>("nsdw", 0);
+    data->add<int>("nrestop", 0);
 
     // Jet & MET variables
     i_njets          = data->add<int>("","njets","I",0);
@@ -239,9 +246,11 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightLM,     ana->leptonCorrections.getTnPLepWeightLM());
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
-    data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
+    data->fill<float>(i_isrWeightTight,     ana->isrCorrections.getISRWeightTight());
+    data->fill<float>(i_sdMVAWeight,        ana->eventCorrections.getSdMVAWeight());
+    data->fill<float>(i_resMVATopWeight,    ana->eventCorrections.getResMVATopWeight());
     data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
-    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
+    data->fill<float>(i_sdwFastSimWeight,   ana->eventCorrections.getSdWWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
@@ -333,10 +342,13 @@ struct BasicVarsFiller {
     data->fill<int  >(i_nvetolep, ana->nSelLeptons);
     data->fill<int  >(i_nvetotau, ana->nVetoedTracks);
     data->fill<int  >(i_nvetohpstaus,ana->nVetoHPSTaus);
-    data->fill<int  >(i_ncttstd,  ana->nSelCTTTops);
 
     data->fill<int  >(i_nsdtoploose,  ana->selectedSdTops.size());
     data->fill<int  >(i_nsdwloose,    ana->selectedSdWs.size());
+
+    data->fill<int>("nsdtop",  ana->sdMVATopTight.size());
+    data->fill<int>("nsdw",    ana->sdMVAWTight.size());
+    data->fill<int>("nrestop", ana->resMVATopMedium.size());
 
     // Jet & MET variables
     int ntbjets = 0, nlbjets = 0;
