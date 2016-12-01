@@ -7,6 +7,7 @@
 #ifndef ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
 #define ANALYSISBASE_TREEANALYZER_BASETREEANALYZER_H
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <assert.h>
@@ -49,9 +50,7 @@ public:
 
   public:
     BaseTreeAnalyzer(TString fileName, TString treeName,size randomSeed, bool isMCTree,cfgSet::ConfigSet *pars);
-    virtual ~BaseTreeAnalyzer() {
-      delete partonEvent; // precaution ... may remove
-    };
+    virtual ~BaseTreeAnalyzer() {}
 
     // Load a variable type to be read from the TTree
     // use the defaultOptions if options is less than 1
@@ -165,14 +164,13 @@ public:
     int   nBJets;
     int   nVetoHPSTaus;
     LeptonF* selectedLepton; //"Primary lepton" if there is more than one in the selected leptons collection it is chosen randomly
-    int   nSdMVATopTight;
-    int   nSdMVAWTight;
-    int   nHadronicGenTops;
-    int   nHadronicGenWs;
-    int   nResMVATopMedium;
-    int   nResMVATopLoosest;
-    int   nSelSdTops;
-    int   nSelSdWs;
+    int   nSdMVATopTight = 0;
+    int   nSdMVAWTight = 0;
+    int   nHadronicGenTops = 0;
+    int   nHadronicGenWs = 0;
+    int   nResMVATopMedium = 0;
+    int   nSelSdTops = 0;
+    int   nSelSdWs = 0;
 
     //--------------------------------------------------------------------------------------------------
     // Stored collections
@@ -182,7 +180,7 @@ public:
     MomentumF* puppimet   ;
     MomentumF* genmet     ;
     bool       goodvertex ;
-    PartonMatching::PartonEvent* partonEvent       ; //for hadronicGenTops collection 
+    std::unique_ptr<PartonMatching::PartonEvent>  partonEvent; //for hadronicGenTops collection
     std::vector<LeptonF*>        allLeptons        ; //All leptons in the tree w/o selection
     std::vector<LeptonF*>        selectedLeptons   ; //All leptons that pass either the primary or secondary selection
     std::vector<LeptonF*>        primaryLeptons    ; //All leptons that pass the primary (tighter) selection
@@ -199,19 +197,17 @@ public:
     std::vector<FatJetF*>        sdMVAWTight       ;
     std::vector<PartonMatching::TopDecay*> hadronicGenTops   ;
     std::vector<PartonMatching::BosonDecay*> hadronicGenWs   ;
-    std::vector<TopCand>         resMVATopMedium  ;
-    std::vector<TopCand>         resMVATopLoosest  ;
+    std::vector<TopCand>         resMVATopCands    ; // All resTop candidates after removing overlaps: sorted by MVA score
+    std::vector<TopCand>         resMVATopMedium   ; // resTops passing Medium WP: sorted by PT
     std::vector<FatJetF*>        selectedSdTops    ;
     std::vector<FatJetF*>        selectedSdWs      ;
     std::vector<FatJetF*>        fatJets;
+    std::vector<FatJetF*>        ak8isrJets        ;
     //    std::vector<FatJetF*>        fatJetsPuppi;
     std::vector<TriggerObjectF*> triggerObjects    ;
     std::vector<TriggerInfo*>    triggerInfo       ;
-    std::vector<TauF*>           HPSTaus           ;
     std::vector<SVF*>            SVs;
     std::vector<HTTFatJetF*>     httTops           ;
-
-//    std::vector<TopCand>         resolvedTops      ;
 
 
     //--------------------------------------------------------------------------------------------------

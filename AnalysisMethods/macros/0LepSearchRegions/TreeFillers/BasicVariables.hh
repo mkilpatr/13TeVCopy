@@ -33,8 +33,6 @@ struct BasicVarsFiller {
   size i_leptnpweightHM;
   size i_isrWeight;
   size i_isrWeightTight;
-  size i_sdMVAWeight;
-  size i_resMVATopWeight;
   size i_sdtopFastSimWeight;
   size i_sdwFastSimWeight;
 
@@ -132,10 +130,10 @@ struct BasicVarsFiller {
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
-    i_sdMVAWeight    = data->add<float>("","sdMVAWeight","F",0);
-    i_resMVATopWeight    = data->add<float>("","resMVATopWeight","F",0);
     i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
     i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
+    data->add<float>("sdWTopWeight",0);
+    data->add<float>("resTopWeight",0);
 
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
@@ -251,10 +249,10 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
     data->fill<float>(i_isrWeightTight,     ana->isrCorrections.getISRWeightTight());
-    data->fill<float>(i_sdMVAWeight,        ana->eventCorrections.getSdMVAWeight());
-    data->fill<float>(i_resMVATopWeight,    ana->eventCorrections.getResMVATopWeight());
     data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
-    data->fill<float>(i_sdwFastSimWeight,   ana->eventCorrections.getSdWWeight());
+    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
+    data->fill<float>("sdWTopWeight",       ana->eventCorrections.getSdMVAWeight());
+    data->fill<float>("resTopWeight",       ana->eventCorrections.getResMVATopWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
@@ -408,15 +406,9 @@ struct BasicVarsFiller {
       data->fill<float>(i_dphij1lmet, fabs(PhysicsUtilities::deltaPhi(*ana->isrJets[0],*met)));
     }
 
-    vector<FatJetF*> ak8isrs;
-    for (auto *fj : ana->fatJets){
-      // ISR jet is required to fail CSVL and not tagged as top/W
-      if (fj->csv() > defaults::CSV_LOOSE) continue;
-      if (std::find(sdwtops.begin(), sdwtops.end(), fj) == sdwtops.end()) ak8isrs.push_back(fj);
-    }
-    if (!ak8isrs.empty()){
-      data->fill<float>("ak8isrpt", ak8isrs.front()->pt());
-      data->fill<float>("dphiisrmet", std::abs(PhysicsUtilities::deltaPhi(*ak8isrs.front(),*met)));
+    if (!ana->ak8isrJets.empty()){
+      data->fill<float>("ak8isrpt", ana->ak8isrJets.front()->pt());
+      data->fill<float>("dphiisrmet", std::abs(PhysicsUtilities::deltaPhi(*ana->ak8isrJets.front(),*met)));
     }
 
     int nivf_ = 0; vector<SVF*> ivfs_;

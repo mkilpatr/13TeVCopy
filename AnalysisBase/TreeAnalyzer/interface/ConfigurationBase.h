@@ -58,6 +58,9 @@ namespace cfgSet {
     bool  cleanJetsvTracks   ;
     float cleanJetsMaxDR           ;
 
+    bool  cleanFatJetsvLeptons;
+    bool  cleanFatJetsvPhotons;
+
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
       minPt         (-1),
@@ -72,7 +75,9 @@ namespace cfgSet {
       ignoreSeconaryLeptonsWhenCleaning  (false),
       cleanJetsvPhotons(false),
       cleanJetsvTracks  (false),
-      cleanJetsMaxDR           (-1)
+      cleanJetsMaxDR      (-1),
+      cleanFatJetsvLeptons(false),
+      cleanFatJetsvPhotons(false)
 
     {};
     virtual ~JetConfig() {};
@@ -91,6 +96,8 @@ namespace cfgSet {
       if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
       if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
+      if(a.cleanFatJetsvLeptons) os << "Cleaning FatJets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning FatJets vs. Selected Leptons is disabled" << std::endl;
+      if(a.cleanFatJetsvPhotons) os << "Cleaning FatJets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning FatJets vs. Selected Photons is disabled" << std::endl;
       return os;
     };
   };

@@ -28,10 +28,13 @@ void cfgSet::loadDefaultJetConfigurations() {
   zl_search_jets.cleanJetsvPhotons         = false;
   zl_search_jets.cleanJetsvTracks          = false;
   zl_search_jets.cleanJetsMaxDR            = 0.4;
+  zl_search_jets.cleanFatJetsvLeptons      = false;
+  zl_search_jets.cleanFatJetsvPhotons      = false;
   zl_search_jets.setConfig();
 
   zl_photon_jets = zl_search_jets;
   zl_photon_jets.cleanJetsvPhotons = true;
+  zl_photon_jets.cleanFatJetsvPhotons = true;
 
   zl_lepton_jets = zl_search_jets;
   zl_lepton_jets.cleanJetsvLeptons   = false;
