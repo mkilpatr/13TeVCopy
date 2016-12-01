@@ -33,8 +33,7 @@ struct BasicVarsFiller {
   size i_leptnpweightHM;
   size i_isrWeight;
   size i_isrWeightTight;
-  size i_sdMVATopWeight;
-  size i_sdMVAWWeight;
+  size i_sdMVAWeight;
   size i_resMVATopWeight;
   size i_sdtopFastSimWeight;
   size i_sdwFastSimWeight;
@@ -133,8 +132,7 @@ struct BasicVarsFiller {
     i_leptnpweightHM = data->add<float>("","leptnpweightHM","F",0);
     i_isrWeight      = data->add<float>("","isrWeight","F",0);
     i_isrWeightTight = data->add<float>("","isrWeightTight","F",0);
-    i_sdMVATopWeight = data->add<float>("","sdMVATopWeight","F",0);
-    i_sdMVAWWeight   = data->add<float>("","sdMVAWWeight","F",0);
+    i_sdMVAWeight    = data->add<float>("","sdMVAWeight","F",0);
     i_resMVATopWeight    = data->add<float>("","resMVATopWeight","F",0);
     i_sdtopFastSimWeight = data->add<float>("","sdtopFastSimWeight","F",0);
     i_sdwFastSimWeight   = data->add<float>("","sdwFastSimWeight","F",0);
@@ -248,12 +246,11 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightLM,     ana->leptonCorrections.getTnPLepWeightLM());
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
-    data->fill<float>(i_isrWeightTight,          ana->isrCorrections.getISRWeightTight());
-    data->fill<float>(i_sdMVATopWeight, ana->eventCorrections.getSdMVATopWeight());
-    data->fill<float>(i_sdMVAWWeight, ana->eventCorrections.getSdMVAWWeight());
-    data->fill<float>(i_resMVATopWeight, ana->eventCorrections.getResMVATopWeight());
+    data->fill<float>(i_isrWeightTight,     ana->isrCorrections.getISRWeightTight());
+    data->fill<float>(i_sdMVAWeight,        ana->eventCorrections.getSdMVAWeight());
+    data->fill<float>(i_resMVATopWeight,    ana->eventCorrections.getResMVATopWeight());
     data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
-    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
+    data->fill<float>(i_sdwFastSimWeight,   ana->eventCorrections.getSdWWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
