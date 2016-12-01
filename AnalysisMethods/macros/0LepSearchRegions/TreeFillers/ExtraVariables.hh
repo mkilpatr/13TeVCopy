@@ -11,8 +11,172 @@ using namespace ucsbsusy;
 
 struct ExtraVarsFiller {
 
-  ExtraVarsFiller() {}
+  struct GenHadTop {
+    MomentumF tp4;
+    MomentumF bp4;
+    MomentumF wj1p4;
+    MomentumF wj2p4;
+  };
 
+  struct GenHadW {
+    bool      fromTop;
+    MomentumF wp4;
+    MomentumF wj1p4;
+    MomentumF wj2p4;
+  };
+
+  float drak8togentq(FatJetF *fj,std::vector<GenHadTop> genhadtopp4_,float &drak8b_) {
+    float drak8top_ = 9.;
+    for (unsigned int i0=0; i0<genhadtopp4_.size(); ++i0) {
+      float drak8wj1 = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].wj1p4.p4());
+      float drak8wj2 = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].wj2p4.p4());
+      float drak8b   = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].bp4.p4()  );
+      float drt3q_   = std::max(std::max(drak8wj1,drak8wj2),drak8b);
+      if (drt3q_<drak8top_) { 
+	drak8top_ = drt3q_; 
+	drak8b_   = drak8b;
+      }
+    }
+    return drak8top_;
+  }
+
+  float drak8togent(FatJetF *fj,std::vector<GenHadTop> genhadtopp4_) {
+    float drak8top_ = 9.;
+    for (unsigned int i0=0; i0<genhadtopp4_.size(); ++i0) {
+      float drak8t_ = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].tp4.p4());
+      if (drak8t_<drak8top_) { drak8top_ = drak8t_; }
+    }
+
+    return drak8top_;
+  }
+
+
+  float drak8togenwq(FatJetF *fj,std::vector<GenHadW> genhadwp4_,bool &fromTop_) {
+    float drak8w_ = 9.; 
+    for (unsigned int i0=0; i0<genhadwp4_.size(); ++i0) {
+      float drak8wj1 = PhysicsUtilities::deltaR(fj->p4(),genhadwp4_[i0].wj1p4.p4());
+      float drak8wj2 = PhysicsUtilities::deltaR(fj->p4(),genhadwp4_[i0].wj2p4.p4());
+      float drw2q_   = std::max(drak8wj1,drak8wj2);
+      if (drw2q_<drak8w_) { 
+	drak8w_  = drw2q_; 
+	fromTop_ = genhadwp4_[i0].fromTop;
+      }
+    }
+    return drak8w_;
+  }
+
+
+  float drak8togenw(FatJetF *fj,std::vector<GenHadW> genhadwp4_) {
+    float drak8w_ = 9.;
+    for (unsigned int i0=0; i0<genhadwp4_.size(); ++i0) {
+      float tmpdrak8w_ = PhysicsUtilities::deltaR(fj->p4(),genhadwp4_[i0].wp4.p4());
+      if (tmpdrak8w_<drak8w_) { drak8w_ = tmpdrak8w_; }
+    }
+    return drak8w_;
+  }
+
+
+  void getgeninfo(const BaseTreeAnalyzer *ana, std::vector<GenHadTop> &genhadtopp4_, std::vector<GenHadW> &genhadwp4_) {
+
+    for(auto* p : ana->genParts) {
+
+      const GenParticleF * tmpgenhadt_ = 0;
+      const GenParticleF * tmpgenhadw_ = 0;
+      const GenParticleF * tmpgenb_    = 0;
+      const GenParticleF * tmpgenwj1_  = 0;
+      const GenParticleF * tmpgenwj2_  = 0;
+
+      // get the gen w [not coming from gen top]
+      if ( ((abs(p->pdgId())==24) && (p->numberOfMothers()==0)) || ((abs(p->pdgId())==24) && (abs(p->mother(0)->pdgId())!=6)) ) {
+
+	if (p->numberOfDaughters()<2) { continue; }
+
+	tmpgenhadw_ = p;
+
+	if (!(whadronicdecay(tmpgenhadw_))) { continue; }
+
+	tmpgenwj1_ = tmpgenhadw_->daughter(0);
+	tmpgenwj2_ = tmpgenhadw_->daughter(1);
+
+	MomentumF tmpw_;   tmpw_   = tmpgenhadw_->p4();
+	MomentumF tmpwj1_; tmpwj1_ = tmpgenwj1_->p4();
+	MomentumF tmpwj2_; tmpwj2_ = tmpgenwj2_->p4();
+
+	GenHadW tmpGenHadW_;
+	tmpGenHadW_.fromTop = false;
+	tmpGenHadW_.wp4     = tmpw_;
+	tmpGenHadW_.wj1p4   = tmpwj1_;
+	tmpGenHadW_.wj2p4   = tmpwj2_;
+	genhadwp4_.push_back(tmpGenHadW_);
+
+      }
+
+      // get the gen top                                                                                                                        
+      if (abs(p->pdgId())==6) {
+
+	if (p->numberOfDaughters()<2) { continue; }
+
+	tmpgenhadt_ = p;
+
+	if ((abs(p->daughter(0)->pdgId())==24) && (abs(p->daughter(1)->pdgId())==5)) {
+	  tmpgenhadw_ = p->daughter(0);
+	  tmpgenb_    = p->daughter(1);
+	}
+
+	else if ((abs(p->daughter(1)->pdgId())==24) && (abs(p->daughter(0)->pdgId())==5)) {
+	  tmpgenhadw_ = p->daughter(1);
+	  tmpgenb_    = p->daughter(0);
+	}
+
+	else { continue; }
+
+	if (!(whadronicdecay(tmpgenhadw_))) { continue; }
+
+	tmpgenwj1_ = tmpgenhadw_->daughter(0);
+	tmpgenwj2_ = tmpgenhadw_->daughter(1);
+
+	MomentumF tmpt_;   tmpt_   = tmpgenhadt_->p4();
+	MomentumF tmpw_;   tmpw_   = tmpgenhadw_->p4();
+	MomentumF tmpb_;   tmpb_   = tmpgenb_->p4();
+	MomentumF tmpwj1_; tmpwj1_ = tmpgenwj1_->p4();
+	MomentumF tmpwj2_; tmpwj2_ = tmpgenwj2_->p4();
+
+	GenHadTop tmpGenHadTop_;
+	tmpGenHadTop_.tp4   = tmpt_;
+	tmpGenHadTop_.bp4   = tmpb_;
+	tmpGenHadTop_.wj1p4 = tmpwj1_;
+	tmpGenHadTop_.wj2p4 = tmpwj2_;
+	genhadtopp4_.push_back(tmpGenHadTop_);
+
+	GenHadW tmpGenHadW_;
+	tmpGenHadW_.fromTop = true;
+	tmpGenHadW_.wp4     = tmpw_;
+	tmpGenHadW_.wj1p4   = tmpwj1_;
+	tmpGenHadW_.wj2p4   = tmpwj2_;
+	genhadwp4_.push_back(tmpGenHadW_);
+      } // end of checking the top
+    }
+  }
+
+
+  struct Ak8Jet {
+    float ak8pt;
+    float ak8eta;
+    float ak8mass;
+    float ak8tau1;
+    float ak8tau2;
+    float ak8tau3;
+    bool  ak8passwl; 
+    bool  ak8passwm; 
+    bool  ak8passwt; 
+    bool  ak8passtopl;
+    bool  ak8passtopm;
+    bool  ak8passtopt;
+  };
+
+
+  ExtraVarsFiller() {}
+    
   // Histograms
   TH1D* hsys = nullptr;
   TH1D* hpartonht = nullptr;
@@ -127,8 +291,8 @@ struct ExtraVarsFiller {
   size i_ak8wpasspt;
   size i_ak8toppassmass;
   size i_ak8toppasspt;
-  size i_ak8pt;
-  size i_ak8eta;
+  size i_ak8ptt;
+  size i_ak8etat;
   size i_ak8phi;
   size i_ak8rawmass;
   size i_ak8prunmass;
@@ -177,7 +341,108 @@ struct ExtraVarsFiller {
   size i_subjettopframebpl;
   size i_subjettopframebeta;
   size i_subjettopframebphi;
+  
+  // TopWSF
+  size i_efnl1_ntightmus;
+  size i_efnl1_dphitmumet;
+  size i_efnl1_ak8pt;
+  size i_efnl1_ak8eta;
+  size i_efnl1_ak8mass;
+  size i_efnl1_ak8tau1;
+  size i_efnl1_ak8tau2;
+  size i_efnl1_ak8tau3;
+  size i_efnl1_ak8drgent;
+  size i_efnl1_ak8drgentq;
+  size i_efnl1_ak8drgenw;
+  size i_efnl1_ak8drgenwq;
+  size i_efnl1_ak8drgentb;
+  size i_efnl1_ak8genwfromt;  
+  size i_efnl1_ak8bclose2lep;
+  size i_efnl1_ak8away2lep;
+  size i_efnl1_ak8passwl;
+  size i_efnl1_ak8passwm;
+  size i_efnl1_ak8passwt;
+  size i_efnl1_ak8passtopl;
+  size i_efnl1_ak8passtopm;
+  size i_efnl1_ak8passtopt;
+  size i_efnl1_ak8dphimet;
 
+  size i_efnl0_ak8pt_1;
+  size i_efnl0_ak8eta_1;
+  size i_efnl0_ak8mass_1;
+  size i_efnl0_ak8tau1_1;
+  size i_efnl0_ak8tau2_1;
+  size i_efnl0_ak8tau3_1;
+  size i_efnl0_ak8passwl_1;
+  size i_efnl0_ak8passwm_1;
+  size i_efnl0_ak8passwt_1;
+  size i_efnl0_ak8passtopl_1;
+  size i_efnl0_ak8passtopm_1;
+  size i_efnl0_ak8passtopt_1;
+  size i_efnl0_ak8pt_2;
+  size i_efnl0_ak8eta_2;
+  size i_efnl0_ak8mass_2;
+  size i_efnl0_ak8tau1_2;
+  size i_efnl0_ak8tau2_2;
+  size i_efnl0_ak8tau3_2;
+  size i_efnl0_ak8passwl_2;
+  size i_efnl0_ak8passwm_2;
+  size i_efnl0_ak8passwt_2;
+  size i_efnl0_ak8passtopl_2;
+  size i_efnl0_ak8passtopm_2;
+  size i_efnl0_ak8passtopt_2;
+
+
+
+  // Mistag
+  size i_mtnb0_ntightmus;
+  size i_mtnb0_dphitmumet;
+  size i_mtnb0_ak8pt;
+  size i_mtnb0_ak8eta;
+  size i_mtnb0_ak8mass;
+  size i_mtnb0_ak8tau1;
+  size i_mtnb0_ak8tau2;
+  size i_mtnb0_ak8tau3;
+  size i_mtnb0_ak8drgent;
+  size i_mtnb0_ak8drgentq;
+  size i_mtnb0_ak8drgenw;
+  size i_mtnb0_ak8drgenwq;
+  size i_mtnb0_ak8drgentb;
+  size i_mtnb0_ak8genwfromt;  
+  size i_mtnb0_ak8bclose2lep;
+  size i_mtnb0_ak8away2lep;
+  size i_mtnb0_ak8passwl;
+  size i_mtnb0_ak8passwm;
+  size i_mtnb0_ak8passwt;
+  size i_mtnb0_ak8passtopl;
+  size i_mtnb0_ak8passtopm;
+  size i_mtnb0_ak8passtopt;
+  size i_mtnb0_ak8dphimet;
+
+  size i_mtnl0_ntightmus;
+  size i_mtnl0_dphitmumet;
+  size i_mtnl0_ak8pt;
+  size i_mtnl0_ak8eta;
+  size i_mtnl0_ak8mass;
+  size i_mtnl0_ak8tau1;
+  size i_mtnl0_ak8tau2;
+  size i_mtnl0_ak8tau3;
+  size i_mtnl0_ak8drgent;
+  size i_mtnl0_ak8drgentq;
+  size i_mtnl0_ak8drgenw;
+  size i_mtnl0_ak8drgenwq;
+  size i_mtnl0_ak8drgentb;
+  size i_mtnl0_ak8genwfromt;  
+  size i_mtnl0_ak8bclose2lep;
+  size i_mtnl0_ak8away2lep;
+  size i_mtnl0_ak8passwl;
+  size i_mtnl0_ak8passwm;
+  size i_mtnl0_ak8passwt;
+  size i_mtnl0_ak8passtopl;
+  size i_mtnl0_ak8passtopm;
+  size i_mtnl0_ak8passtopt;
+
+  
   void bookHist(TFile *outFile){
     outFile->cd();
     hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
@@ -208,7 +473,116 @@ struct ExtraVarsFiller {
     data->add<int>("nrestopM_sdL", 0);
     data->add<int>("nrestopL_sdL", 0);
 
+  }
 
+  void bookMergeTopWSF(TreeWriterData* data){
+
+    i_efnl1_ntightmus     = data->add<unsigned int>("","efnl1_ntightmus"    ,"i",0);
+    i_efnl1_dphitmumet    = data->add<float>       ("","efnl1_dphitmumet"   ,"F",0);
+    i_efnl1_ak8pt         = data->add<float>       ("","efnl1_ak8pt"        ,"F",0);
+    i_efnl1_ak8eta        = data->add<float>       ("","efnl1_ak8eta"       ,"F",0);
+    i_efnl1_ak8mass       = data->add<float>       ("","efnl1_ak8mass"      ,"F",0);
+    i_efnl1_ak8tau1       = data->add<float>       ("","efnl1_ak8tau1"      ,"F",0);
+    i_efnl1_ak8tau2       = data->add<float>       ("","efnl1_ak8tau2"      ,"F",0);
+    i_efnl1_ak8tau3       = data->add<float>       ("","efnl1_ak8tau3"      ,"F",0);
+    i_efnl1_ak8drgent     = data->add<float>       ("","efnl1_ak8drgent"    ,"F",9);
+    i_efnl1_ak8drgentq    = data->add<float>       ("","efnl1_ak8drgentq"   ,"F",9);
+    i_efnl1_ak8drgenw     = data->add<float>       ("","efnl1_ak8drgenw"    ,"F",9);
+    i_efnl1_ak8drgenwq    = data->add<float>       ("","efnl1_ak8drgenwq"   ,"F",9);
+    i_efnl1_ak8drgentb    = data->add<float>       ("","efnl1_ak8drgentb"   ,"F",9);
+    i_efnl1_ak8genwfromt  = data->add<bool>        ("","efnl1_ak8genwfromt" ,"O",0);
+    i_efnl1_ak8bclose2lep = data->add<bool>        ("","efnl1_ak8bclose2lep","O",0);
+    i_efnl1_ak8away2lep   = data->add<bool>        ("","efnl1_ak8away2lep"  ,"O",0);
+    i_efnl1_ak8passwl     = data->add<bool>        ("","efnl1_ak8passwl"    ,"O",0);
+    i_efnl1_ak8passwm     = data->add<bool>        ("","efnl1_ak8passwm"    ,"O",0);
+    i_efnl1_ak8passwt     = data->add<bool>        ("","efnl1_ak8passwt"    ,"O",0);
+    i_efnl1_ak8passtopl   = data->add<bool>        ("","efnl1_ak8passtopl"  ,"O",0);
+    i_efnl1_ak8passtopm   = data->add<bool>        ("","efnl1_ak8passtopm"  ,"O",0);
+    i_efnl1_ak8passtopt   = data->add<bool>        ("","efnl1_ak8passtopt"  ,"O",0);
+    i_efnl1_ak8dphimet    = data->add<float>       ("","efnl1_ak8dphimet"   ,"F",0);
+  }
+
+  void bookMergeTopWSF0Lep(TreeWriterData* data){
+
+    i_efnl0_ak8pt_1       = data->add<float>("","efnl0_ak8pt_1"      ,"F",0);
+    i_efnl0_ak8eta_1      = data->add<float>("","efnl0_ak8eta_1"     ,"F",0);
+    i_efnl0_ak8mass_1     = data->add<float>("","efnl0_ak8mass_1"    ,"F",0);
+    i_efnl0_ak8tau1_1     = data->add<float>("","efnl0_ak8tau1_1"    ,"F",0);
+    i_efnl0_ak8tau2_1     = data->add<float>("","efnl0_ak8tau2_1"    ,"F",0);
+    i_efnl0_ak8tau3_1     = data->add<float>("","efnl0_ak8tau3_1"    ,"F",0);
+    i_efnl0_ak8passwl_1   = data->add<bool> ("","efnl0_ak8passwl_1"  ,"O",0);
+    i_efnl0_ak8passwm_1   = data->add<bool> ("","efnl0_ak8passwm_1"  ,"O",0);
+    i_efnl0_ak8passwt_1   = data->add<bool> ("","efnl0_ak8passwt_1"  ,"O",0);
+    i_efnl0_ak8passtopl_1 = data->add<bool> ("","efnl0_ak8passtopl_1","O",0);
+    i_efnl0_ak8passtopm_1 = data->add<bool> ("","efnl0_ak8passtopm_1","O",0);
+    i_efnl0_ak8passtopt_1 = data->add<bool> ("","efnl0_ak8passtopt_1","O",0);
+
+    i_efnl0_ak8pt_2       = data->add<float>("","efnl0_ak8pt_2"      ,"F",0);
+    i_efnl0_ak8eta_2      = data->add<float>("","efnl0_ak8eta_2"     ,"F",0);
+    i_efnl0_ak8mass_2     = data->add<float>("","efnl0_ak8mass_2"    ,"F",0);
+    i_efnl0_ak8tau1_2     = data->add<float>("","efnl0_ak8tau1_2"    ,"F",0);
+    i_efnl0_ak8tau2_2     = data->add<float>("","efnl0_ak8tau2_2"    ,"F",0);
+    i_efnl0_ak8tau3_2     = data->add<float>("","efnl0_ak8tau3_2"    ,"F",0);
+    i_efnl0_ak8passwl_2   = data->add<bool> ("","efnl0_ak8passwl_2"  ,"O",0);
+    i_efnl0_ak8passwm_2   = data->add<bool> ("","efnl0_ak8passwm_2"  ,"O",0);
+    i_efnl0_ak8passwt_2   = data->add<bool> ("","efnl0_ak8passwt_2"  ,"O",0);
+    i_efnl0_ak8passtopl_2 = data->add<bool> ("","efnl0_ak8passtopl_2","O",0);
+    i_efnl0_ak8passtopm_2 = data->add<bool> ("","efnl0_ak8passtopm_2","O",0);
+    i_efnl0_ak8passtopt_2 = data->add<bool> ("","efnl0_ak8passtopt_2","O",0);
+  }
+
+  void bookMergeMistagSFNb0(TreeWriterData* data){
+
+    i_mtnb0_ntightmus     = data->add<unsigned int>("","mtnb0_ntightmus"    ,"i",0);
+    i_mtnb0_dphitmumet    = data->add<float>       ("","mtnb0_dphitmumet"   ,"F",0);
+    i_mtnb0_ak8pt         = data->add<float>       ("","mtnb0_ak8pt"        ,"F",0);
+    i_mtnb0_ak8eta        = data->add<float>       ("","mtnb0_ak8eta"       ,"F",0);
+    i_mtnb0_ak8mass       = data->add<float>       ("","mtnb0_ak8mass"      ,"F",0);
+    i_mtnb0_ak8tau1       = data->add<float>       ("","mtnb0_ak8tau1"      ,"F",0);
+    i_mtnb0_ak8tau2       = data->add<float>       ("","mtnb0_ak8tau2"      ,"F",0);
+    i_mtnb0_ak8tau3       = data->add<float>       ("","mtnb0_ak8tau3"      ,"F",0);
+    i_mtnb0_ak8drgent     = data->add<float>       ("","mtnb0_ak8drgent"    ,"F",9);
+    i_mtnb0_ak8drgentq    = data->add<float>       ("","mtnb0_ak8drgentq"   ,"F",9);
+    i_mtnb0_ak8drgenw     = data->add<float>       ("","mtnb0_ak8drgenw"    ,"F",9);
+    i_mtnb0_ak8drgenwq    = data->add<float>       ("","mtnb0_ak8drgenwq"   ,"F",9);
+    i_mtnb0_ak8drgentb    = data->add<float>       ("","mtnb0_ak8drgentb"   ,"F",9);
+    i_mtnb0_ak8genwfromt  = data->add<bool>        ("","mtnb0_ak8genwfromt" ,"O",0);
+    i_mtnb0_ak8bclose2lep = data->add<bool>        ("","mtnb0_ak8bclose2lep","O",0);
+    i_mtnb0_ak8away2lep   = data->add<bool>        ("","mtnb0_ak8away2lep"  ,"O",0);
+    i_mtnb0_ak8passwl     = data->add<bool>        ("","mtnb0_ak8passwl"    ,"O",0);
+    i_mtnb0_ak8passwm     = data->add<bool>        ("","mtnb0_ak8passwm"    ,"O",0);
+    i_mtnb0_ak8passwt     = data->add<bool>        ("","mtnb0_ak8passwt"    ,"O",0);
+    i_mtnb0_ak8passtopl   = data->add<bool>        ("","mtnb0_ak8passtopl"  ,"O",0);
+    i_mtnb0_ak8passtopm   = data->add<bool>        ("","mtnb0_ak8passtopm"  ,"O",0);
+    i_mtnb0_ak8passtopt   = data->add<bool>        ("","mtnb0_ak8passtopt"  ,"O",0);
+    i_mtnb0_ak8dphimet    = data->add<float>       ("","mtnb0_ak8dphimet"   ,"F",0);
+  }
+
+
+  void bookMergeMistagSF0Lep(TreeWriterData* data){
+
+    i_mtnl0_ntightmus     = data->add<unsigned int>("","mtnb0_ntightmus"    ,"i",0);
+    i_mtnl0_dphitmumet    = data->add<float>       ("","mtnb0_dphitmumet"   ,"F",0);
+    i_mtnl0_ak8pt         = data->add<float>       ("","mtnl0_ak8pt"        ,"F",0);
+    i_mtnl0_ak8eta        = data->add<float>       ("","mtnl0_ak8eta"       ,"F",0);
+    i_mtnl0_ak8mass       = data->add<float>       ("","mtnl0_ak8mass"      ,"F",0);
+    i_mtnl0_ak8tau1       = data->add<float>       ("","mtnl0_ak8tau1"      ,"F",0);
+    i_mtnl0_ak8tau2       = data->add<float>       ("","mtnl0_ak8tau2"      ,"F",0);
+    i_mtnl0_ak8tau3       = data->add<float>       ("","mtnl0_ak8tau3"      ,"F",0);
+    i_mtnl0_ak8drgent     = data->add<float>       ("","mtnl0_ak8drgent"    ,"F",9);
+    i_mtnl0_ak8drgentq    = data->add<float>       ("","mtnl0_ak8drgentq"   ,"F",9);
+    i_mtnl0_ak8drgenw     = data->add<float>       ("","mtnl0_ak8drgenw"    ,"F",9);
+    i_mtnl0_ak8drgenwq    = data->add<float>       ("","mtnl0_ak8drgenwq"   ,"F",9);
+    i_mtnl0_ak8drgentb    = data->add<float>       ("","mtnl0_ak8drgentb"   ,"F",9);
+    i_mtnl0_ak8genwfromt  = data->add<bool>        ("","mtnl0_ak8genwfromt" ,"O",0);
+    i_mtnl0_ak8bclose2lep = data->add<bool>        ("","mtnl0_ak8bclose2lep","O",1);
+    i_mtnl0_ak8away2lep   = data->add<bool>        ("","mtnl0_ak8away2lep"  ,"O",1);
+    i_mtnl0_ak8passwl     = data->add<bool>        ("","mtnl0_ak8passwl"    ,"O",0);
+    i_mtnl0_ak8passwm     = data->add<bool>        ("","mtnl0_ak8passwm"    ,"O",0);
+    i_mtnl0_ak8passwt     = data->add<bool>        ("","mtnl0_ak8passwt"    ,"O",0);
+    i_mtnl0_ak8passtopl   = data->add<bool>        ("","mtnl0_ak8passtopl"  ,"O",0);
+    i_mtnl0_ak8passtopm   = data->add<bool>        ("","mtnl0_ak8passtopm"  ,"O",0);
+    i_mtnl0_ak8passtopt   = data->add<bool>        ("","mtnl0_ak8passtopt"  ,"O",0);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -324,8 +698,8 @@ struct ExtraVarsFiller {
     i_ak8wpasspt       = data->add<float>("","ak8wpasspt","F",0.);
     i_ak8toppassmass   = data->add<float>("","ak8toppassmass","F",0.);
     i_ak8toppasspt     = data->add<float>("","ak8toppasspt","F",0.);
-    i_ak8pt        = data->addMulti<float>("","ak8pt",0);
-    i_ak8eta       = data->addMulti<float>("","ak8eta",0);
+    i_ak8ptt        = data->addMulti<float>("","ak8ptt",0);
+    i_ak8etat       = data->addMulti<float>("","ak8etat",0);
     i_ak8phi       = data->addMulti<float>("","ak8phi",0);
     i_ak8rawmass   = data->addMulti<float>("","ak8rawmass",0);
     i_ak8prunmass  = data->addMulti<float>("","ak8prunmass",0);
@@ -486,6 +860,388 @@ struct ExtraVarsFiller {
 //    }// end A4
 
   }
+
+  
+
+  void fillMergeTopWSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+
+    // === get the gen info ===
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
+    //    std::cout << "size after = " << genhadtopp4_.size() << "\n";
+    //    std::cout << genhadtopp4_[0].bp4.pt() << " " << genhadtopp4_[0].wj1p4.pt() << "\n";
+
+
+
+    // === make the tags ===
+
+    // get a tight muon collection
+    std::vector<MomentumF> tightmuons; tightmuons.clear();
+    for(auto i: ana->selectedLeptons) {
+      
+      if (fabs(i->pdgid()) != 13)        { continue; }
+      if (i->pt()<45.)                   { continue; }
+      if (fabs(i->eta())>2.1)            { continue; }
+      if (!(((MuonF*)i)->istightmuon())) { continue; }
+      if (fabs(((MuonF*)i)->d0())>0.05)  { continue; }
+      if (fabs(((MuonF*)i)->dz())>0.1)   { continue; }
+      if (((MuonF*)i)->miniiso()>0.2)    { continue; }
+
+      MomentumF tmpTightMuons; tmpTightMuons = i->p4();
+
+      tightmuons.push_back(tmpTightMuons);
+    } // end of looping over the leptons
+    data->fill<unsigned int>(i_efnl1_ntightmus, tightmuons.size());
+    float dphitmumet_ = -9.;
+    if (tightmuons.size()>0) { dphitmumet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*ana->met)); }
+    data->fill<float>(i_efnl1_dphitmumet, dphitmumet_);
+
+    // get the medium and tight bjets
+    std::vector<MomentumF> csvtjets;
+    for(auto* j : ana->jets) {
+      if(j->csv() > defaults::CSV_TIGHT) {
+        MomentumF tmpVecCSVTJets; tmpVecCSVTJets = j->p4();
+        csvtjets.push_back(tmpVecCSVTJets); }
+    }
+
+
+    // find a b close to the lepton
+    bool ak8bclose2lep_ = false;  
+    if (tightmuons.size()>0 && csvtjets.size()>0 ) {
+      for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
+	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
+        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvtjets[i0]);
+	if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { ak8bclose2lep_ = true; }
+      }
+    } // end of finding a b-tag close to the tight lep
+    data->fill<bool>(i_efnl1_ak8bclose2lep, ak8bclose2lep_);
+
+
+
+    // === make the probes ===
+
+    bool  ak8away2lep_ = false;
+    bool  ak8drgentop_ = false;
+    bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
+    bool  ak8passtopl_ = false; bool ak8passtopm_ = false; bool ak8passtopt_ = false;
+    float ak8pt_   = 0.; float ak8eta_  = 0.; float ak8mass_ = 0.;
+    float ak8tau1_ = 0.; float ak8tau2_ = 0.; float ak8tau3_ = 0.;
+    float ak8drgent_ = 9.; float ak8drgentq_ = 9.; float ak8drgentb_ = 9.;
+    float ak8drgenw_ = 9.; float ak8drgenwq_ = 9.; bool ak8genwfromt_ = false;
+    float ak8dphimet_ = -9;
+    for (auto *fj : ana->fatJets) {
+
+      if (tightmuons.size()==0) { continue; }
+
+      float dphilepak8_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*fj));
+      if (dphilepak8_ < 2.) { continue; }
+      ak8away2lep_ = true;
+
+      float drak8gentb = 9.;
+      bool  wFromTop = false;    
+
+      ak8pt_        = fj->pt();
+      ak8eta_       = fj->eta();
+      ak8mass_      = fj->softDropMass();
+      ak8tau1_      = fj->tau1();
+      ak8tau2_      = fj->tau2();
+      ak8tau3_      = fj->tau3();
+      ak8dphimet_   = fabs(PhysicsUtilities::deltaPhi(*fj,*ana->met));
+      ak8drgent_    = drak8togent(fj,genhadtp4_);
+      ak8drgentq_   = drak8togentq(fj,genhadtp4_,drak8gentb);
+      ak8drgentb_   = drak8gentb;
+      ak8drgenw_    = drak8togenw(fj,genhadwp4_);
+      ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
+      ak8genwfromt_ = drak8gentb;
+
+      // distance to gen had top
+      //if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) { ak8drgentop_ = true; }
+      //      if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
+
+      // w-tags
+      if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { ak8passwl_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) { ak8passwm_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT ) { ak8passwt_ = true; }
+      //      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) { ak8passw_ = true; }
+
+      // top-tags
+      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
+      if (ak8away2lep_) { break; } 
+
+    } // end of looping over ak8 jets
+
+    data->fill<float>(i_efnl1_ak8pt       ,ak8pt_       );
+    data->fill<float>(i_efnl1_ak8eta      ,ak8eta_      );
+    data->fill<float>(i_efnl1_ak8mass     ,ak8mass_     );
+    data->fill<float>(i_efnl1_ak8tau1     ,ak8tau1_     );
+    data->fill<float>(i_efnl1_ak8tau2     ,ak8tau2_     );
+    data->fill<float>(i_efnl1_ak8tau3     ,ak8tau3_     );
+    data->fill<float>(i_efnl1_ak8drgent   ,ak8drgent_   );
+    data->fill<float>(i_efnl1_ak8drgentq  ,ak8drgentq_  );
+    data->fill<float>(i_efnl1_ak8drgentb  ,ak8drgentb_  );
+    data->fill<float>(i_efnl1_ak8drgenw   ,ak8drgenw_   );
+    data->fill<float>(i_efnl1_ak8drgenwq  ,ak8drgenwq_  );
+    data->fill<bool >(i_efnl1_ak8genwfromt,ak8genwfromt_);
+    data->fill<bool >(i_efnl1_ak8away2lep ,ak8away2lep_ );
+    data->fill<bool >(i_efnl1_ak8passwl   ,ak8passwl_   );
+    data->fill<bool >(i_efnl1_ak8passwm   ,ak8passwm_   );
+    data->fill<bool >(i_efnl1_ak8passwt   ,ak8passwt_   );
+    data->fill<bool >(i_efnl1_ak8passtopl ,ak8passtopl_ );
+    data->fill<bool >(i_efnl1_ak8passtopm ,ak8passtopm_ );
+    data->fill<bool >(i_efnl1_ak8passtopt ,ak8passtopt_ );
+    data->fill<float>(i_efnl1_ak8dphimet  ,ak8dphimet_  );
+
+  } // end of fillMergeTopWSF
+
+
+  void fillMergeTopWSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+    std::vector<Ak8Jet> ak8jets_; ak8jets_.clear();
+    for (auto *fj : ana->fatJets) {
+
+      if (fabs(fj->eta())>2.4) { continue; }
+      if (fabs(fj->pt())<200.) { continue; }
+
+      Ak8Jet tmpAk8Jet;
+
+      tmpAk8Jet.ak8pt   = fj->pt();
+      tmpAk8Jet.ak8eta  = fj->eta();
+      tmpAk8Jet.ak8mass = fj->softDropMass();
+      tmpAk8Jet.ak8tau1 = fj->tau1();
+      tmpAk8Jet.ak8tau2 = fj->tau2();
+      tmpAk8Jet.ak8tau3 = fj->tau3();
+
+      // w-tags
+      //      if (cfgSet::isSoftDropTagged(fj, 150, 60,  110, 1e9,  0.60)) { tmpAk8Jet.ak8passw = true; } else { tmpAk8Jet.ak8passw = false; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { tmpAk8Jet.ak8passwl = true; } else { tmpAk8Jet.ak8passwl = false; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) { tmpAk8Jet.ak8passwm = true; } else { tmpAk8Jet.ak8passwm = false; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT ) { tmpAk8Jet.ak8passwt = true; } else { tmpAk8Jet.ak8passwt = false; }
+
+      // top-tags
+      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { tmpAk8Jet.ak8passtopl = true; } else { tmpAk8Jet.ak8passtopl = false; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { tmpAk8Jet.ak8passtopm = true; } else { tmpAk8Jet.ak8passtopm = false; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { tmpAk8Jet.ak8passtopt = true; } else { tmpAk8Jet.ak8passtopt = false; }
+
+      ak8jets_.push_back(tmpAk8Jet);
+
+    } // end of looping over ak8 jets
+ 
+    data->fill<float>(i_efnl0_ak8pt_1       , ak8jets_[0].ak8pt       );
+    data->fill<float>(i_efnl0_ak8eta_1      , ak8jets_[0].ak8eta      );
+    data->fill<float>(i_efnl0_ak8mass_1     , ak8jets_[0].ak8mass     );
+    data->fill<float>(i_efnl0_ak8tau1_1     , ak8jets_[0].ak8tau1     );
+    data->fill<float>(i_efnl0_ak8tau2_1     , ak8jets_[0].ak8tau2     );
+    data->fill<float>(i_efnl0_ak8tau3_1     , ak8jets_[0].ak8tau3     );
+    data->fill<bool >(i_efnl0_ak8passwl_1   , ak8jets_[0].ak8passwl   );
+    data->fill<bool >(i_efnl0_ak8passwm_1   , ak8jets_[0].ak8passwm   );
+    data->fill<bool >(i_efnl0_ak8passwt_1   , ak8jets_[0].ak8passwt   );
+    data->fill<bool >(i_efnl0_ak8passtopl_1 , ak8jets_[0].ak8passtopl );
+    data->fill<bool >(i_efnl0_ak8passtopm_1 , ak8jets_[0].ak8passtopm );
+    data->fill<bool >(i_efnl0_ak8passtopt_1 , ak8jets_[0].ak8passtopt );
+    data->fill<float>(i_efnl0_ak8pt_2       , ak8jets_[1].ak8pt       );
+    data->fill<float>(i_efnl0_ak8eta_2      , ak8jets_[1].ak8eta      );
+    data->fill<float>(i_efnl0_ak8mass_2     , ak8jets_[1].ak8mass     );
+    data->fill<float>(i_efnl0_ak8tau1_2     , ak8jets_[1].ak8tau1     );
+    data->fill<float>(i_efnl0_ak8tau2_2     , ak8jets_[1].ak8tau2     );
+    data->fill<float>(i_efnl0_ak8tau3_2     , ak8jets_[1].ak8tau3     );
+    data->fill<bool >(i_efnl0_ak8passwl_2   , ak8jets_[1].ak8passwl   );
+    data->fill<bool >(i_efnl0_ak8passwm_2   , ak8jets_[1].ak8passwm   );
+    data->fill<bool >(i_efnl0_ak8passwt_2   , ak8jets_[1].ak8passwt   );
+    data->fill<bool >(i_efnl0_ak8passtopl_2 , ak8jets_[1].ak8passtopl );
+    data->fill<bool >(i_efnl0_ak8passtopm_2 , ak8jets_[1].ak8passtopm );
+    data->fill<bool >(i_efnl0_ak8passtopt_2 , ak8jets_[1].ak8passtopt );
+
+  } // end of fillMergeTopWSF0Lep
+
+
+  void fillMergeMistagSFNb0(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+    // === get the gen info ===
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
+
+
+    // === make the tags ===
+
+    // get a tight muon collection
+    std::vector<MomentumF> tightmuons; tightmuons.clear();
+    for(auto i: ana->selectedLeptons) {
+      
+      if (fabs(i->pdgid()) != 13)        { continue; }
+      if (i->pt()<45.)                   { continue; }
+      if (fabs(i->eta())>2.1)            { continue; }
+      if (!(((MuonF*)i)->istightmuon())) { continue; }
+      if (fabs(((MuonF*)i)->d0())>0.05)  { continue; }
+      if (fabs(((MuonF*)i)->dz())>0.1)   { continue; }
+      if (((MuonF*)i)->miniiso()>0.1)    { continue; }
+
+      MomentumF tmpTightMuons; tmpTightMuons = i->p4();
+
+      tightmuons.push_back(tmpTightMuons);
+    } // end of looping over the leptons
+
+    data->fill<unsigned int>(i_mtnb0_ntightmus, tightmuons.size());
+    float dphitmumet_ = -9.;
+    if (tightmuons.size()>0) { dphitmumet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*ana->met)); }
+    data->fill<float>(i_mtnb0_dphitmumet, dphitmumet_);
+    data->fill<bool>(i_mtnb0_ak8bclose2lep, true);
+
+    // === make the probes ===
+
+    bool  ak8away2lep_ = false;
+    bool  ak8drgentop_ = false;
+    bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
+    bool  ak8passtopl_ = false; bool ak8passtopm_ = false; bool ak8passtopt_ = false;
+    float ak8pt_   = 0.; float ak8eta_  = 0.; float ak8mass_ = 0.;
+    float ak8tau1_ = 0.; float ak8tau2_ = 0.; float ak8tau3_ = 0.;
+    float ak8drgent_ = 9.; float ak8drgentq_ = 9.; float ak8drgentb_ = 9.;
+    float ak8drgenw_ = 9.; float ak8drgenwq_ = 9.; bool ak8genwfromt_ = false;
+    float ak8dphimet_ = -9;
+    for (auto *fj : ana->fatJets) {
+
+      if (tightmuons.size()==0) { continue; }
+
+      float dphilepak8_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*fj));
+      if (dphilepak8_ < 2.) { continue; }
+      ak8away2lep_ = true;
+
+      float drak8gentb = 9.;
+      bool  wFromTop = false;
+
+      ak8pt_        = fj->pt();
+      ak8eta_       = fj->eta();
+      ak8mass_      = fj->softDropMass();
+      ak8tau1_      = fj->tau1();
+      ak8tau2_      = fj->tau2();
+      ak8tau3_      = fj->tau3();
+      ak8dphimet_   = fabs(PhysicsUtilities::deltaPhi(*fj,*ana->met));
+      ak8drgent_    = drak8togent(fj,genhadtp4_);
+      ak8drgentq_   = drak8togentq(fj,genhadtp4_,drak8gentb);
+      ak8drgentb_   = drak8gentb;
+      ak8drgenw_    = drak8togenw(fj,genhadwp4_);
+      ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
+      ak8genwfromt_ = drak8gentb;
+
+      // distance to gen had top
+      //if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) { ak8drgentop_ = true; }
+      //      if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
+
+      // w-tags
+      if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { ak8passwl_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) { ak8passwm_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT ) { ak8passwt_ = true; }
+
+      // top-tags
+      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
+      if (ak8away2lep_) { break; } 
+
+    } // end of looping over ak8 jets
+
+    data->fill<float>(i_mtnb0_ak8pt       ,ak8pt_       );
+    data->fill<float>(i_mtnb0_ak8eta      ,ak8eta_      );
+    data->fill<float>(i_mtnb0_ak8mass     ,ak8mass_     );
+    data->fill<float>(i_mtnb0_ak8tau1     ,ak8tau1_     );
+    data->fill<float>(i_mtnb0_ak8tau2     ,ak8tau2_     );
+    data->fill<float>(i_mtnb0_ak8tau3     ,ak8tau3_     );
+    data->fill<float>(i_mtnb0_ak8drgent   ,ak8drgent_   );
+    data->fill<float>(i_mtnb0_ak8drgentq  ,ak8drgentq_  );
+    data->fill<float>(i_mtnb0_ak8drgentb  ,ak8drgentb_  );
+    data->fill<float>(i_mtnb0_ak8drgenw   ,ak8drgenw_   );
+    data->fill<float>(i_mtnb0_ak8drgenwq  ,ak8drgenwq_  );
+    data->fill<bool >(i_mtnb0_ak8genwfromt,ak8genwfromt_);
+    data->fill<bool >(i_mtnb0_ak8away2lep ,ak8away2lep_ );
+    data->fill<bool >(i_mtnb0_ak8passwl   ,ak8passwl_   );
+    data->fill<bool >(i_mtnb0_ak8passwm   ,ak8passwm_   );
+    data->fill<bool >(i_mtnb0_ak8passwt   ,ak8passwt_   );
+    data->fill<bool >(i_mtnb0_ak8passtopl ,ak8passtopl_ );
+    data->fill<bool >(i_mtnb0_ak8passtopm ,ak8passtopm_ );
+    data->fill<bool >(i_mtnb0_ak8passtopt ,ak8passtopt_ );
+    data->fill<float>(i_mtnb0_ak8dphimet  ,ak8dphimet_  );
+
+  } // end of fillMergeMistagSFNb0
+
+
+  void fillMergeMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+    // === get the gen info ===
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
+
+
+    // === make the probes ===
+
+    bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
+    bool  ak8passtopl_ = false; bool ak8passtopm_ = false; bool ak8passtopt_ = false;
+    float ak8pt_   = 0.; float ak8eta_  = 0.; float ak8mass_ = 0.;
+    float ak8tau1_ = 0.; float ak8tau2_ = 0.; float ak8tau3_ = 0.;
+    float ak8drgent_ = 9.; float ak8drgentq_ = 9.; float ak8drgentb_ = 9.;
+    float ak8drgenw_ = 9.; float ak8drgenwq_ = 9.; bool ak8genwfromt_ = false;
+    for (auto *fj : ana->fatJets) {
+
+      if (fabs(fj->eta())>2.4) { continue; }
+      if (fabs(fj->pt())<200.) { continue; }
+
+
+      float drak8gentb = 9.;
+      bool  wFromTop = false;    
+
+      ak8pt_      = fj->pt();
+      ak8eta_     = fj->eta();
+      ak8mass_    = fj->softDropMass();
+      ak8tau1_    = fj->tau1();
+      ak8tau2_    = fj->tau2();
+      ak8tau3_    = fj->tau3();
+      ak8drgent_    = drak8togent(fj,genhadtp4_);
+      ak8drgentq_   = drak8togentq(fj,genhadtp4_,drak8gentb);
+      ak8drgentb_   = drak8gentb;
+      ak8drgenw_    = drak8togenw(fj,genhadwp4_);
+      ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
+      ak8genwfromt_ = drak8gentb;
+
+      // w-tags
+      if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { ak8passwl_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) { ak8passwm_ = true; }
+      if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT ) { ak8passwt_ = true; }
+
+      // top-tags
+      if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
+      if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
+
+      break;
+
+    } // end of looping over ak8 jets
+ 
+    data->fill<float>(i_mtnl0_ak8pt       ,ak8pt_       );
+    data->fill<float>(i_mtnl0_ak8eta      ,ak8eta_      );
+    data->fill<float>(i_mtnl0_ak8mass     ,ak8mass_     );
+    data->fill<float>(i_mtnl0_ak8tau1     ,ak8tau1_     );
+    data->fill<float>(i_mtnl0_ak8tau2     ,ak8tau2_     );
+    data->fill<float>(i_mtnl0_ak8tau3     ,ak8tau3_     );
+    data->fill<float>(i_mtnl0_ak8drgent   ,ak8drgent_   );
+    data->fill<float>(i_mtnl0_ak8drgentq  ,ak8drgentq_  );
+    data->fill<float>(i_mtnl0_ak8drgentb  ,ak8drgentb_  );
+    data->fill<float>(i_mtnl0_ak8drgenw   ,ak8drgenw_   );
+    data->fill<float>(i_mtnl0_ak8drgenwq  ,ak8drgenwq_  );
+    data->fill<bool >(i_mtnl0_ak8genwfromt,ak8genwfromt_);
+    data->fill<bool >(i_mtnl0_ak8passwl   ,ak8passwl_   );
+    data->fill<bool >(i_mtnl0_ak8passwm   ,ak8passwm_   );
+    data->fill<bool >(i_mtnl0_ak8passwt   ,ak8passwt_   );
+    data->fill<bool >(i_mtnl0_ak8passtopl ,ak8passtopl_ );
+    data->fill<bool >(i_mtnl0_ak8passtopm ,ak8passtopm_ );
+    data->fill<bool >(i_mtnl0_ak8passtopt ,ak8passtopt_ );
+
+  } // end of fillMergeMistagSF0Lep
+
+ 
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     for(auto wgt : *ana->evtInfoReader.systweights) {
@@ -821,7 +1577,7 @@ struct ExtraVarsFiller {
     data->fill<bool >(i_ak8fromgenhadw   , ak8fromgenhadw_  );
     data->fill<bool >(i_ak8fromgenhadt   , ak8fromgenhadt_  );
 
-    /*
+    /*    
     for(auto* fj : ana->fatJets) {
       // if (passSoftDropTaggerFJ(fj,110.,210.,0.50))    { ++nsdtopjmewp1tight_; }
       // if (passSoftDropTaggerFJ(fj,110.,210.,0.69))    { ++nsdtopjmewp1loose_; }
@@ -838,7 +1594,7 @@ struct ExtraVarsFiller {
       data->fillMulti<float>(i_ak8tau31   , (fj->fjTau3())/(fj->fjTau1()));
       data->fillMulti<float>(i_ak8tau32   , (fj->fjTau3())/(fj->fjTau2()));
     }
-    */
+  */
   }
 
 
@@ -942,22 +1698,22 @@ struct ExtraVarsFiller {
       return whadronicdecay_;
   }
 
-
+  
   bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, ParticleInfo::ParticleID matchtoid){
     // match fj to gen w or top
     for(auto* p : ana->genParts) {
       if (abs(p->pdgId()) == matchtoid && ParticleInfo::isLastInChain(p)){
         if( (ParticleInfo::isGenTopHadronic(p) && matchtoid==ParticleInfo::p_t) ||
             (ParticleInfo::isGenWHadronic(p)   && matchtoid==ParticleInfo::p_Wplus)){
-          std::cout << "found a candidate gen part with " << p->pdgId() << " " << p->p4() << std::endl;
-          std::cout << "and dr " << PhysicsUtilities::deltaR(*p, *fj) << std::endl;
+          //std::cout << "found a candidate gen part with " << p->pdgId() << " " << p->p4() << std::endl;
+          //std::cout << "and dr " << PhysicsUtilities::deltaR(*p, *fj) << std::endl;
           if(PhysicsUtilities::deltaR(*p, *fj) < dr) { return true; }
         }
       }
     }
     return false;
   }
-
+  
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     if(!ana->isMC()) return;
 
@@ -1033,7 +1789,7 @@ struct ExtraVarsFiller {
     data->fill<int  >(i_ngenbjets, ngenbjets);
 
   }
-
+  
 };
 
 #endif
