@@ -55,10 +55,15 @@ class ResMVATopCorr : public Correction {
   public:
     ResMVATopCorr(TString fileName);
     ~ResMVATopCorr();
-    float process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops);
+    float process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops);
 
     TFile * resMVATopInputFile;
-    TH1F  * resMVATopDataFullSF;
+
+    TH1F  * resTop_DataFull_toptagSF;    // top tag SFs
+    TH1F  * resTop_DataFull_topmistagSF; // top and w mistag SFs
+    TH1F  * resTop_Full_toptagEff;       // top and w tag fullsim MC effs
+    TH1F  * resTop_Full_topmistagEff;    // top and w mistag fullsim MC effs
+
     TH1F  * resMVATopFullFastSF;
 };
 

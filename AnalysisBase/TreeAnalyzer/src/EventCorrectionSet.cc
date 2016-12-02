@@ -58,7 +58,7 @@ float SdMVACorr::process(CORRTYPE corrType, const std::vector<FatJetF*> &fatjets
   //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
   //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
   //      we can thus keep a running uncertainty on the pmc and pdata products (the arg of sqrt)
-  // 
+  //
   //  for unc = 1/2 the distance please use consistently TMath::Abs(1.0 - sf)*0.5;
 
   float wgt = 1, pdata = 1, pmc = 1, wgtunc = 0, pdataunc = 0, pmcunc = 0;
@@ -167,50 +167,105 @@ float SdMVACorr::process(CORRTYPE corrType, const std::vector<FatJetF*> &fatjets
 ResMVATopCorr::ResMVATopCorr(TString fileName) : Correction("ResMVATop") {
   resMVATopInputFile = new TFile(fileName,"read");
   if(!resMVATopInputFile) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: file could not be found!");
-  resMVATopDataFullSF = (TH1F*)( resMVATopInputFile->Get("dummy") );
+
+  resTop_DataFull_toptagSF    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
+  resTop_DataFull_topmistagSF = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+  resTop_Full_toptagEff       = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-efnl1-nb1-restop") );
+  resTop_Full_topmistagEff    = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-mtnl0-nb1-restop") );
+
   resMVATopFullFastSF = (TH1F*)( resMVATopInputFile->Get("dummy") );
-  if(!resMVATopDataFullSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
+
+  if(!resTop_DataFull_toptagSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
   if(!resMVATopFullFastSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim/fastsim eff SF histograms could not be found!");
 }
 ResMVATopCorr::~ResMVATopCorr(){
   resMVATopInputFile->Close();
   delete resMVATopInputFile;
 }
-float ResMVATopCorr::process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops){
+float ResMVATopCorr::process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops){
   if(corrType == NONE) return 1;
   if(resMVATops.size() < 1) return 1;
-  float maxGoodPT = resMVATops.at(0).topcand.pt();
-  if(maxGoodPT <= 0.)  return 1;
 
-  auto getNoUnderOver = [](float value, const TH1 * hist) -> int {return std::min(std::max(hist->FindFixBin(value),1),hist->GetNbinsX());  };
-  TH1F * hdf = resMVATopDataFullSF;
-  TH1F * hff = resMVATopFullFastSF;
-  int binDataFull = getNoUnderOver(maxGoodPT,hdf);
-  int binFullFast = getNoUnderOver(maxGoodPT,hff);
+  bool dbg = false;
 
-  // current strategy (Nov 26, dummy)
-  //          for data/fullsim corrections:
-  //             for W tag, XXX.
-  //             for top tag, XXX.
-  //           for full/fastsim correction:
-  //             for top tag, XXX.
-  //             for w tag, XXX.
-  //             for both, XXX.
+  if(dbg) std::cout << "working with n resTops " << resMVATops.size() << std::endl;
+  auto getbin = [](float value, const TH1F * hist) -> int {return std::min(std::max(hist->FindFixBin(value),1),hist->GetNbinsX());  };
+  auto getbincontent = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinContent(getbin(value,hist)); };
+  auto getbinerror   = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinError(getbin(value,hist)); };
 
-  float sf_df     = hdf->GetBinContent(binDataFull);
-  float sf_df_unc = TMath::Abs(1 - sf_df)*.5;
-  float sf_ff     = hff->GetBinContent(binFullFast);
-  float sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
-
-  float sf    = sf_ff*sf_df;
-  float sfunc = sf*sqrt( pow(sf_df_unc/sf_df,2) + pow(sf_ff_unc/sf_ff,2) );
+  float wgt = 1, pdata = 1, pmc = 1, wgtunc = 0, pdataunc = 0, pmcunc = 0;
+  for(auto &cand : resMVATops){
+    float candpt = cand.topcand.pt();
+    if(dbg) std::cout << "  this cand resTop pt " << candpt << std::endl;
+    bool recotop = cand.disc > ResolvedTopMVA::WP_MEDIUM;
+    bool gentop  = cand.nMatchedSubjets(hadronicGenTops) >= 2;
+    if(dbg) std::cout << "  this cand recotop, gentop cats " << recotop << " " << gentop << std::endl;
+    if( recotop ) {
+      if(dbg) std::cout << "  in reco tagged cat" << std::endl;
+      // reco tagged categories
+      TH1F *sfhist=0, *effhist=0;
+      if( recotop && gentop ){
+        // t | gt
+        sfhist = resTop_DataFull_toptagSF,    effhist = resTop_Full_toptagEff;
+      }else if( recotop && !gentop ){
+        // t | !gt
+        sfhist = resTop_DataFull_topmistagSF, effhist = resTop_Full_topmistagEff;
+      }else{
+        assert(!"possible"); // should not get here
+      }
+      float sf   = getbincontent(candpt, sfhist);
+      float eff  = getbincontent(candpt, effhist);
+      float sfunc  = getbinerror(candpt, sfhist);
+      float effunc = getbinerror(candpt, effhist);
+      if(dbg) std::cout << "  sf, sfunc, eff, effunc " << sf << " " << sfunc << " " << eff << " " << effunc << std::endl;
+      pdata    *= sf*eff;
+      pdataunc += pow(sfunc/sf,2) + pow(effunc/eff,2);
+      pmc      *= eff;
+      pmcunc   += pow(effunc/eff,2);
+      if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
+    }else{
+      if(dbg) std::cout << "  in reco untagged cat" << std::endl;
+      // reco untagged categories
+      TH1F *sfhistt=0, *effhistt=0;
+      if( gentop ){
+        // !t!w | gt gw
+        sfhistt  = resTop_DataFull_toptagSF;
+        effhistt = resTop_Full_toptagEff;
+      }else if( !gentop ){
+        // !t!w | !gt !gw
+        sfhistt  = resTop_DataFull_topmistagSF;
+        effhistt = resTop_Full_topmistagEff;
+      }else{
+        assert(!"possible"); // should not get here
+      }
+      float sft  = getbincontent(candpt, sfhistt);
+      float efft = getbincontent(candpt, effhistt);
+      float sftunc  = getbinerror(candpt, sfhistt);
+      float efftunc = getbinerror(candpt, effhistt);
+      if(dbg) std::cout << "  sft, sfunct, efft, efftunc " << sft << " " << sftunc << " " << efft << " " << efftunc << std::endl;
+      pdata    *= (1 - sft*efft);
+      pdataunc += ( (pow(sftunc/sft,2)+pow(efftunc/efft,2)))/pow(1 - sft*efft, 2); // (C_unc^2 + D_unc^2)/(1-C-D)^2
+      pmc      *= (1 - efft);
+      pmcunc   += ( pow(efftunc/efft,2))/pow(1 - efft, 2);
+      if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
+    }
+  }//cands
+  wgt      = pdata/pmc;
+  pdataunc = pdata*sqrt(pdataunc); // convert to uncertainty
+  pmcunc   = pmc*sqrt(pmcunc);
+  wgtunc   = wgt*sqrt( pow(pdataunc/pdata,2) + pow(pmcunc/pmc,2) );
+  if(dbg) std::cout << "finally, wgt, wgtunc, pdata, pdataunc, pmc, pmcunc " << wgt << " " << wgtunc << " " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
+  //wgt *= ( pmc == 0 ? pdata/pmc : 0); // some precautions
+  //if(wgt > 0) wgt = max(  4.0, wgt );
+  //if(wgt < 0) wgt = min( -4.0, wgt );
 
   switch(corrType){
-    case UP:      return  sf + sfunc;
-    case DOWN:    return  sf - sfunc;
-    case NOMINAL: return  sf;
-    default: throw std::invalid_argument("ResMVATopCorr::process: Invalid argument!");
+    case UP:      return  wgt + wgtunc;
+    case DOWN:    return  wgt - wgtunc;
+    case NOMINAL: return  wgt;
+    default: throw std::invalid_argument("ResMVATopCorr::process: Invalid correction type! NOMINAL/UP/DOWN");
   }
+
 }
 
 SdTopCorr::SdTopCorr(TString fileName) : Correction("SdTop"), sdTopinputFile(0), sdTopDataFullSF(0), sdTopFullFastSF(0) {
@@ -247,7 +302,7 @@ float SdTopCorr::process(CORRTYPE corrType, double maxGoodTopPT){
 
   float sf_ff     = 1.;
   float sf_ff_unc = 0.;
-  if( (maxGoodTopPT > 400 && maxGoodTopPT < 450) || maxGoodTopPT > 800){ 
+  if( (maxGoodTopPT > 400 && maxGoodTopPT < 450) || maxGoodTopPT > 800){
     sf_ff     = hff->GetBinContent(binFullFast);
     sf_ff_unc = TMath::Abs(1 - sf_ff)*.5;
   }else{
@@ -398,7 +453,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & RESMVATOP) {
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    resMVATopWeight = resMVATopCorr->process(cfg.corrections.resMVATopCorrType, ana->resMVATopMedium);
+    resMVATopWeight = resMVATopCorr->process(cfg.corrections.resMVATopCorrType, ana->resMVATopMedium, ana->hadronicGenTops);
   }
 
   if(options_ & SDTOP) {
