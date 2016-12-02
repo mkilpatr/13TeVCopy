@@ -1,5 +1,5 @@
-#ifndef MISTAGSF0LEPTREEHELPER_HH
-#define MISTAGSF0LEPTREEHELPER_HH
+#ifndef MISTAGRESTOPSF0LEPTREEHELPER_HH
+#define MISTAGRESTOPSF0LEPTREEHELPER_HH
 
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/BasicVariables.hh"
@@ -66,7 +66,7 @@ public :
   
   void book() {
     filler.book(&data);
-    extraFiller.bookMergeMistagSF0Lep(&data);
+    extraFiller.bookResTopMistagSF0Lep(&data);
   }
   
   bool fillEvent() {
@@ -77,26 +77,26 @@ public :
     if (nSelLeptons > 0)     return false;
     //    if (met->pt() < metcut_) return false;
 
-
-    // get a probe jet away from muon
-    bool ak8probe_ = false;
-    for(unsigned int i0=0; i0<fatJets.size(); ++i0) {
-      auto fatjet = fatJets.at(i0);
-      if (fabs(fatjet->eta())>2.4) { continue; }
-      if (fabs(fatjet->pt())<200.) { continue; }
-      ak8probe_ = true;
-    }
-    if (!ak8probe_) return false;
-
     // calculate ht
     float ht_ = 0.;
     for(unsigned int i0=0; i0<jets.size(); ++i0) { ht_ += jets.at(i0)->pt(); }
     if (ht_ < 1000.) { return false; }
 
     processMoreVariables();
+
+    // get a probe jet away from muon
+    bool ak8probe_ = false;
+    for(unsigned int i0=0; i0<resMVATopCands.size(); ++i0) {
+      auto fatjet = resMVATopCands.at(i0);
+      if (fabs(fatjet.topcand.eta())>2.4) { continue; }
+      ak8probe_ = true;
+    }
+    if (!ak8probe_) return false;
+
+
     // fill inclusive histograms
     filler.fillEventInfo(&data, this);
-    extraFiller.fillMergeMistagSF0Lep(&data, this);
+    extraFiller.fillResTopMistagSF0Lep(&data, this);
     
     return true;
   }

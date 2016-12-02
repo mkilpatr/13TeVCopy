@@ -1,5 +1,5 @@
-#ifndef MISTAGSF0LEPTREEHELPER_HH
-#define MISTAGSF0LEPTREEHELPER_HH
+#ifndef RESTOPSFTREEHELPER_HH
+#define RESTOPSFTREEHELPER_HH
 
 #include "AnalysisBase/TreeAnalyzer/interface/TreeCopier.h"
 #include "AnalysisMethods/macros/0LepSearchRegions/TreeFillers/BasicVariables.hh"
@@ -60,43 +60,81 @@ public :
   
   virtual ~TopWSFAnalyzer() {}
   
-  double metcut_   = 50. ;
-  int    minnjets_ = 2  ;
+  double metcut_   = 60.0 ;
+  int    minnjets_ =   2   ;
   
   
   void book() {
     filler.book(&data);
-    extraFiller.bookMergeMistagSF0Lep(&data);
+    extraFiller.bookResTopSF(&data);
   }
   
   bool fillEvent() {
-
+    
     // baseline selection
     if (!goodvertex)         return false;
     if (nJets < minnjets_)   return false;
-    if (nSelLeptons > 0)     return false;
-    //    if (met->pt() < metcut_) return false;
+    if (nSelLeptons < 1)     return false;
+    if (met->pt() < metcut_) return false;
 
+    // get get tight muons
+    std::vector<MomentumF> tightmuons; tightmuons.clear();
+    for (unsigned int i0=0; i0<nSelLeptons; ++i0) {
+      auto lep = selectedLeptons.at(i0);
+      if (fabs(lep->pdgid()) != 13)        { continue; }
+      if (lep->pt()<45.)                   { continue; }
+      if (fabs(lep->eta())>2.1)            { continue; }
+      if (!(((MuonF*)lep)->istightmuon())) { continue; }
+      if (fabs(((MuonF*)lep)->d0())>0.05)  { continue; }
+      if (fabs(((MuonF*)lep)->dz())>0.1)   { continue; }
+      if (((MuonF*)lep)->miniiso()>0.1)    { continue; }
 
-    // get a probe jet away from muon
-    bool ak8probe_ = false;
-    for(unsigned int i0=0; i0<fatJets.size(); ++i0) {
-      auto fatjet = fatJets.at(i0);
-      if (fabs(fatjet->eta())>2.4) { continue; }
-      if (fabs(fatjet->pt())<200.) { continue; }
-      ak8probe_ = true;
+      MomentumF tmpTightMuons; tmpTightMuons = lep->p4();
+      tightmuons.push_back(tmpTightMuons);
     }
-    if (!ak8probe_) return false;
+    if (!(tightmuons.size()==1)) return false;
 
-    // calculate ht
-    float ht_ = 0.;
-    for(unsigned int i0=0; i0<jets.size(); ++i0) { ht_ += jets.at(i0)->pt(); }
-    if (ht_ < 1000.) { return false; }
+  
+    // get the tight bjets
+    std::vector<MomentumF> csvtjets;
+    for(unsigned int i0=0; i0<jets.size(); ++i0) {
+      auto jet = jets.at(i0);
+      if(jet->csv() > defaults::CSV_TIGHT) {
+        MomentumF tmpVecCSVTJets; tmpVecCSVTJets = jet->p4();
+        csvtjets.push_back(tmpVecCSVTJets); }
+    }
+    if (csvtjets.size()<1) return false;
+
+    // find a b close to the lepton
+    bool ak8bclose2lep_ = false;
+    if (tightmuons.size()>0 && csvtjets.size()>0 ) {
+      for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
+        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
+        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvtjets[i0]);
+      if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { ak8bclose2lep_ = true; }
+      }
+    } // end of finding a b-tag close to the tight lep
+    if (!ak8bclose2lep_) return false;
 
     processMoreVariables();
+
+    // get a probe jet away from muon
+    bool ak8away2lep_ = false;
+    for(unsigned int i0=0; i0<resMVATopCands.size(); ++i0) {
+      auto fatjet = resMVATopCands.at(i0);
+      if (tightmuons.size()==0) { continue; }
+      if (fabs(fatjet.topcand.eta())>2.4) { continue; }
+      float dphilepak8_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),fatjet.topcand));
+      if (dphilepak8_ < 2.3) { continue; }
+      ak8away2lep_ = true;
+    }
+    if (!ak8away2lep_) return false;
+
+
+
     // fill inclusive histograms
     filler.fillEventInfo(&data, this);
-    extraFiller.fillMergeMistagSF0Lep(&data, this);
+    extraFiller.fillResTopSF(&data, this);
     
     return true;
   }
