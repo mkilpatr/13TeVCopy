@@ -149,7 +149,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.resMVATopFullFastCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
 

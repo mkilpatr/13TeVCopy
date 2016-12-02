@@ -200,6 +200,7 @@ namespace cfgSet {
     TString sdMVACorrectionFile;
     TString sdMVAFullFastCorrectionFile;
     TString resMVATopCorrectionFile;
+    TString resMVATopFullFastCorrectionFile;
     TString sdCorrectionFile;
     TString puCorrectionFile;
     ucsbsusy::CORRTYPE sdMVACorrType;

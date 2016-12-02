@@ -164,16 +164,18 @@ float SdMVACorr::process(CORRTYPE corrType, const std::vector<FatJetF*> &fatjets
   }
 }
 
-ResMVATopCorr::ResMVATopCorr(TString fileName) : Correction("ResMVATop") {
+ResMVATopCorr::ResMVATopCorr(TString fileName, TString fileNameFullFast) : Correction("ResMVATop") {
   resMVATopInputFile = new TFile(fileName,"read");
+  resMVAFullFastInputFile = new TFile(fileNameFullFast,"read");
   if(!resMVATopInputFile) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: file could not be found!");
+  if(!resMVAFullFastInputFile) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: full/fast file could not be found!");
 
   resTop_DataFull_toptagSF    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
   resTop_DataFull_topmistagSF = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
   resTop_Full_toptagEff       = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-efnl1-nb1-restop") );
   resTop_Full_topmistagEff    = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-mtnl0-nb1-restop") );
 
-  resMVATopFullFastSF = (TH1F*)( resMVATopInputFile->Get("dummy") );
+  resMVATopFullFastSF = (TH1F*)( resMVAFullFastInputFile->Get("dummy") );
 
   if(!resTop_DataFull_toptagSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
   if(!resMVATopFullFastSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim/fastsim eff SF histograms could not be found!");
@@ -377,7 +379,7 @@ float SdWCorr::process(CORRTYPE corrType, double maxGoodWPT){
 }
 
 
-void EventCorrectionSet::load(TString fileName, TString sdMVACorrName, TString sdMVACorrNameFullFast, TString resMVATopCorrName, TString sdCorrName, int correctionOptions)
+void EventCorrectionSet::load(TString fileName, TString sdMVACorrName, TString sdMVACorrNameFullFast, TString resMVACorrName, TString resMVACorrNameFullFast, TString sdCorrName, int correctionOptions)
 {
 
   if(correctionOptions & PU) {
@@ -400,7 +402,7 @@ void EventCorrectionSet::load(TString fileName, TString sdMVACorrName, TString s
       corrections.push_back(sdMVACorr);
   }
   if(correctionOptions & RESMVATOP) {
-      resMVATopCorr = new ResMVATopCorr(resMVATopCorrName);
+      resMVATopCorr = new ResMVATopCorr(resMVACorrName, resMVACorrNameFullFast);
       corrections.push_back(resMVATopCorr);
   }
   if(correctionOptions & SDTOP) {
@@ -453,7 +455,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & RESMVATOP) {
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    resMVATopWeight = resMVATopCorr->process(cfg.corrections.resMVATopCorrType, ana->resMVATopMedium, ana->hadronicGenTops);
+    resMVATopWeight = resMVATopCorr->process(cfg.corrections.resMVATopCorrType, ana->resMVATopCands, ana->hadronicGenTops);
   }
 
   if(options_ & SDTOP) {

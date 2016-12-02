@@ -146,14 +146,8 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       MomentumF metpluspho;
       metpluspho.setP4(met->p4() + pho->p4());
 
-      if (applyTightPresel){
-        if (metpluspho.pt() < metcut_) return false;
-        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && metpluspho.pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
-        bool passHM = nJets>=5 && nBJets>=1;
-        if (!passLM && !passHM) return false;
-      }
-
       processMoreVariables(); // call this before filling, but after all preselections
+
       filler.fillEventInfo(&data, this, true, &metpluspho);
       extraFiller.fillTestVars(&data, this);
 

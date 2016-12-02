@@ -112,6 +112,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.sdMVAFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
   standardCorrections.sdMVACorrType            = ucsbsusy::NOMINAL;
   standardCorrections.resMVATopCorrectionFile  =  TString::Format("%s/src/data/corrections/2017/restop/restop_sf_20161201.root",CMSSW_BASE);
+  standardCorrections.resMVATopFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
   standardCorrections.resMVATopCorrType        = ucsbsusy::NOMINAL;
   //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE);
   standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdTopWTagging-DataFull-correctedbymistagrate.root",CMSSW_BASE);

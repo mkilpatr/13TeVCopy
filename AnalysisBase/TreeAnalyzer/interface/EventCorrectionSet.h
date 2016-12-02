@@ -53,11 +53,12 @@ class SdMVACorr : public Correction {
 
 class ResMVATopCorr : public Correction {
   public:
-    ResMVATopCorr(TString fileName);
+    ResMVATopCorr(TString fileName, TString fileNameFullFast);
     ~ResMVATopCorr();
     float process(CORRTYPE corrType, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops);
 
     TFile * resMVATopInputFile;
+    TFile * resMVAFullFastInputFile;
 
     TH1F  * resTop_DataFull_toptagSF;    // top tag SFs
     TH1F  * resTop_DataFull_topmistagSF; // top and w mistag SFs
@@ -65,6 +66,7 @@ class ResMVATopCorr : public Correction {
     TH1F  * resTop_Full_topmistagEff;    // top and w mistag fullsim MC effs
 
     TH1F  * resMVATopFullFastSF;
+
 };
 
 class SdTopCorr : public Correction {
@@ -103,7 +105,7 @@ public:
  EventCorrectionSet(): puCorr(0), truePUCorr(0), sdMVACorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), puWeight(1), truePUWeight(1), normWeight(1), sdMVAWeight(1), resMVATopWeight(1), sdTopWeight(1),sdWWeight(1){}
 
   virtual ~EventCorrectionSet() {};
-  virtual void load(TString fileName, TString sdMVACorrName, TString sdMVACorrNameFullFast, TString resMVACorrName, TString sdCorrName, int correctionOptions = NULLOPT);
+  virtual void load(TString fileName, TString sdMVACorrName, TString sdMVACorrNameFullFast, TString resMVACorrName, TString resMVACorrNameFullFast, TString sdCorrName, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors

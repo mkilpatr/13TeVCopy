@@ -64,13 +64,6 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
       if(nJets < minnjets_)                 return false;
       if(metplusdilep.pt() < 100)           return false;
 
-      if (applyTightPresel){
-        if (metplusdilep.pt() < metcut_) return false;
-        bool passLM = nSdMVATopTight==0 && nSdMVAWTight==0 && ak8isrJets.size() && ak8isrJets.front()->pt()>300 && metplusdilep.pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
-        bool passHM = nJets>=5 && nBJets>=1;
-        if (!passLM && !passHM) return false;
-      }
-
       processMoreVariables(); // call this before filling, but after all preselections
 
       filler.fillEventInfo(&data, this, true, &metplusdilep);
