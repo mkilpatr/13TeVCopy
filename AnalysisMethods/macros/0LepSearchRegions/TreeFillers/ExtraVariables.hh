@@ -392,7 +392,16 @@ struct ExtraVarsFiller {
   size i_efnl0_ak8passtopm_2;
   size i_efnl0_ak8passtopt_2;
 
-
+  // TopWSF
+  size i_efnl1_res_ntightmus;
+  size i_efnl1_res_dphitmumet;
+  size i_efnl1_res_pt;
+  size i_efnl1_res_eta;
+  size i_efnl1_res_mass;
+  size i_efnl1_res_nmatchsj;
+  size i_efnl1_res_bclose2lep;
+  size i_efnl1_res_away2lep;
+  size i_efnl1_res_dphimet;
 
   // Mistag
   size i_mtnb0_ntightmus;
@@ -442,6 +451,16 @@ struct ExtraVarsFiller {
   size i_mtnl0_ak8passtopm;
   size i_mtnl0_ak8passtopt;
 
+  size i_mtnl0_res_ntightmus;
+  size i_mtnl0_res_dphitmumet;
+  size i_mtnl0_res_pt;
+  size i_mtnl0_res_eta;
+  size i_mtnl0_res_mass;
+  size i_mtnl0_res_nmatchsj;
+  size i_mtnl0_res_bclose2lep;
+  size i_mtnl0_res_away2lep;
+  size i_mtnl0_res_dphimet;
+
   
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -486,6 +505,21 @@ struct ExtraVarsFiller {
     i_efnl1_ak8dphimet    = data->add<float>       ("","efnl1_ak8dphimet"   ,"F",0);
   }
 
+
+  void bookResTopSF(TreeWriterData* data){
+
+    i_efnl1_res_ntightmus  = data->add<unsigned int>("","efnl1_res_ntightmus"  ,"i",0);
+    i_efnl1_res_dphitmumet = data->add<float>       ("","efnl1_res_dphitmumet" ,"F",0);
+    i_efnl1_res_pt         = data->add<float>       ("","efnl1_res_pt"         ,"F",0);
+    i_efnl1_res_eta        = data->add<float>       ("","efnl1_res_eta"        ,"F",0);
+    i_efnl1_res_mass       = data->add<float>       ("","efnl1_res_mass"       ,"F",0);
+    i_efnl1_res_nmatchsj   = data->add<int  >       ("","efnl1_res_nmatchsj"   ,"I",-1);
+    i_efnl1_res_bclose2lep = data->add<bool >       ("","efnl1_res_bclose2lep" ,"O",0);
+    i_efnl1_res_away2lep   = data->add<bool >       ("","efnl1_res_away2lep"   ,"O",0);
+    i_efnl1_res_dphimet    = data->add<float>       ("","efnl1_res_dphimet"    ,"F",0);
+  }
+
+
   void bookMergeTopWSF0Lep(TreeWriterData* data){
 
     i_efnl0_ak8pt_1       = data->add<float>("","efnl0_ak8pt_1"      ,"F",0);
@@ -514,6 +548,21 @@ struct ExtraVarsFiller {
     i_efnl0_ak8passtopm_2 = data->add<bool> ("","efnl0_ak8passtopm_2","O",0);
     i_efnl0_ak8passtopt_2 = data->add<bool> ("","efnl0_ak8passtopt_2","O",0);
   }
+
+
+  void bookResTopMistagSF0Lep(TreeWriterData* data){
+
+    i_mtnl0_res_ntightmus  = data->add<unsigned int>("","mtnl0_res_ntightmus"  ,"i",0);
+    i_mtnl0_res_dphitmumet = data->add<float>       ("","mtnl0_res_dphitmumet" ,"F",0);
+    i_mtnl0_res_pt         = data->add<float>       ("","mtnl0_res_pt"         ,"F",0);
+    i_mtnl0_res_eta        = data->add<float>       ("","mtnl0_res_eta"        ,"F",0);
+    i_mtnl0_res_mass       = data->add<float>       ("","mtnl0_res_mass"       ,"F",0);
+    i_mtnl0_res_nmatchsj   = data->add<int  >       ("","mtnl0_res_nmatchsj"   ,"I",-1);
+    i_mtnl0_res_bclose2lep = data->add<bool >       ("","mtnl0_res_bclose2lep" ,"O",0);
+    i_mtnl0_res_away2lep   = data->add<bool >       ("","mtnl0_res_away2lep"   ,"O",0);
+    i_mtnl0_res_dphimet    = data->add<float>       ("","mtnl0_res_dphimet"    ,"F",0);
+  }
+
 
   void bookMergeMistagSFNb0(TreeWriterData* data){
 
@@ -801,7 +850,6 @@ struct ExtraVarsFiller {
     }// end multiClassMVA, topT, wT
 
   }
-
   
 
   void fillMergeTopWSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -937,6 +985,94 @@ struct ExtraVarsFiller {
     data->fill<float>(i_efnl1_ak8dphimet  ,ak8dphimet_  );
 
   } // end of fillMergeTopWSF
+
+
+
+
+  void fillResTopSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+
+    // === make the tags ===
+
+    // get a tight muon collection
+    std::vector<MomentumF> tightmuons; tightmuons.clear();
+    for(auto i: ana->selectedLeptons) {
+      
+      if (fabs(i->pdgid()) != 13)        { continue; }
+      if (i->pt()<45.)                   { continue; }
+      if (fabs(i->eta())>2.1)            { continue; }
+      if (!(((MuonF*)i)->istightmuon())) { continue; }
+      if (fabs(((MuonF*)i)->d0())>0.05)  { continue; }
+      if (fabs(((MuonF*)i)->dz())>0.1)   { continue; }
+      if (((MuonF*)i)->miniiso()>0.2)    { continue; }
+
+      MomentumF tmpTightMuons; tmpTightMuons = i->p4();
+
+      tightmuons.push_back(tmpTightMuons);
+    } // end of looping over the leptons
+    data->fill<unsigned int>(i_efnl1_res_ntightmus, tightmuons.size());
+    float dphitmumet_ = -9.;
+    if (tightmuons.size()>0) { dphitmumet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*ana->met)); }
+    data->fill<float>(i_efnl1_res_dphitmumet, dphitmumet_);
+
+    // get the medium and tight bjets
+    std::vector<MomentumF> csvtjets;
+    for(auto* j : ana->jets) {
+      if(j->csv() > defaults::CSV_TIGHT) {
+        MomentumF tmpVecCSVTJets; tmpVecCSVTJets = j->p4();
+        csvtjets.push_back(tmpVecCSVTJets); }
+    }
+
+
+    // find a b close to the lepton
+    bool bclose2lep_ = false;  
+    if (tightmuons.size()>0 && csvtjets.size()>0 ) {
+      for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
+	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
+        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvtjets[i0]);
+	if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { bclose2lep_ = true; }
+      }
+    } // end of finding a b-tag close to the tight lep
+    data->fill<bool>(i_efnl1_res_bclose2lep, bclose2lep_);
+
+
+
+    // === make the probes ===
+
+    bool  away2lep_ = false;
+    int   nmatchsj_ = -1.;
+    float pt_   = 0.; float eta_  = 0.; float mass_ = 0.;
+    float dphimet_ = -9;
+
+    for (auto &fj : ana->resMVATopCands) {
+
+      if (tightmuons.size()==0) { continue; }
+
+      float dphilep_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),fj.topcand));
+      if (dphilep_ < 2.) { continue; }
+      away2lep_ = true;
+
+
+
+      pt_         = fj.topcand.pt();
+      eta_        = fj.topcand.eta();
+      mass_       = fj.topcand.mass();
+      nmatchsj_   = fj.nMatchedSubjets(ana->hadronicGenTops);
+      dphimet_ = fabs(PhysicsUtilities::deltaPhi(fj.topcand,*ana->met));
+
+      if (away2lep_) { break; } 
+
+    } // end of looping over ak8 jets
+
+    data->fill<float>(i_efnl1_res_pt       ,pt_       );
+    data->fill<float>(i_efnl1_res_eta      ,eta_      );
+    data->fill<float>(i_efnl1_res_mass     ,mass_     );
+    data->fill<int  >(i_efnl1_res_nmatchsj ,nmatchsj_ );
+    data->fill<bool >(i_efnl1_res_away2lep ,away2lep_ );
+    data->fill<float>(i_efnl1_res_dphimet  ,dphimet_  );
+
+  } // end of fillResTopSF
+
 
 
   void fillMergeTopWSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -1181,6 +1317,40 @@ struct ExtraVarsFiller {
     data->fill<bool >(i_mtnl0_ak8passtopt ,ak8passtopt_ );
 
   } // end of fillMergeMistagSF0Lep
+
+
+
+
+
+  void fillResTopMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
+
+    // === make the probes ===
+    float pt_   = 0.; float eta_  = 0.; float mass_ = 0.;
+    int   nmatchsj_ = -1.;
+
+    for (auto &fj : ana->resMVATopCands) {
+
+
+      if (fabs(fj.topcand.eta())>2.4) { continue; }
+      //      if (fabs(fj->pt())<200.) { continue; }
+      pt_       = fj.topcand.pt();
+      eta_      = fj.topcand.eta();
+      mass_     = fj.topcand.mass();
+      nmatchsj_   = fj.nMatchedSubjets(ana->hadronicGenTops);
+
+      break;
+
+    } // end of looping over ak8 jets
+ 
+    data->fill<float>(i_mtnl0_res_pt       ,pt_       );
+    data->fill<float>(i_mtnl0_res_eta      ,eta_      );
+    data->fill<float>(i_mtnl0_res_mass     ,mass_     );
+    data->fill<int  >(i_mtnl0_res_nmatchsj ,nmatchsj_ );
+
+  } // end of fillResTopMistagSF0Lep
+
+
 
  
 

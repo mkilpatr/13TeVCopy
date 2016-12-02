@@ -87,7 +87,8 @@ public:
     return maxmatchedsubjets;
   }
 
-  int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops) const { // wrapper for TopCands
+
+  int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops) const {
     return nMatchedSubjets(tops, b, j2, j3);
   }
 

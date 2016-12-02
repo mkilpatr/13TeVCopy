@@ -1,9 +1,11 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 //#include "AnalysisMethods/macros/0LepSearchRegions/TopWSFTreeHelper.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFNb0TreeHelper.hh"
-#include "AnalysisMethods/macros/0LepSearchRegions/MistagSF0LepTreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSF0LepTreeHelper.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFGammaTreeHelper.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/TopWSFDiJetTreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/ResTopSFTreeHelper.hh"
+#include "AnalysisMethods/macros/0LepSearchRegions/MistagResTopSF0LepTreeHelper.hh"
 #endif
 
 using namespace ucsbsusy;
