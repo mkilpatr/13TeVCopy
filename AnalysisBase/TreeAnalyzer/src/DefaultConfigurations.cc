@@ -108,7 +108,7 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDMVA | ucsbsusy::EventCorrectionSet::RESMVATOP;
   standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
-  standardCorrections.sdMVACorrectionFile      =  TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_20161128.root",CMSSW_BASE);
+  standardCorrections.sdMVACorrectionFile      =  TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",CMSSW_BASE);
   standardCorrections.sdMVAFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
   standardCorrections.sdMVACorrType            = ucsbsusy::NOMINAL;
   standardCorrections.resMVATopCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
