@@ -1,10 +1,15 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "HMParameters.hh"
+#include <fstream>
+#include "AnalysisTools/TreeReader/interface/Defaults.h"
+#include "AnalysisMethods/PlotUtils/interface/Plot.hh"
+#include "AnalysisMethods/PlotUtils/interface/SFGetter.hh"
+#include "AnalysisMethods/EstTools/utils/HistGetter.hh"
+#include "AnalysisMethods/EstTools/HighMass/HMParameters.hh"
 
 using namespace std;
 using namespace EstTools;
 
-const string inputDir  = "path_to_trees";
+const string inputDir  = "../run/plots_16_11_30";
 const string outputDir = "MakeQCDRespTailSF";
 const TString header = "#sqrt{s} = 13 TeV, L = " + lumistr + " fb^{-1}";
 TString local_METPresel, local_ResTailExtraCuts;
@@ -19,9 +24,9 @@ vector <TString> genSelNames;
 vector <TString> genSelMathNames;
 vector <TString> ttbarWNormSels;
 vector <double>  otherBkgNorms;
-TTree* tree_data = getTree(inputDir + "/met_tree_skimmed.root");
-TTree* tree_qcd  = getTree(inputDir + "/qcd_tree_skimmed.root");
-TTree* tree_bkg  = getTree(inputDir + "/nonQCD_tree_skimmed.root");
+TTree* tree_data;
+TTree* tree_qcd;
+TTree* tree_bkg;
 
 void generateScaleFactorsAndUncs();
 void getTailSFRegion();
@@ -33,7 +38,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400);
 void MakeQCDRespTailSF(){
   StyleTools::SetStyle();
   local_ResTailExtraCuts = "(((dphij1met < .1) || (dphij2met < .1)) && (nvetolep == 0) && (pseudoRespPassFilter == 1))";
-  local_METPresel = "met >= 250" + datasel;
+  local_METPresel = "met >= 250" + trigSR + datasel;
 //  local_METPresel = "met >= 200 && j2pt >= 75" + datasel;
 //  local_METPresel = "met >= 200 && met < 225 && j2pt >= 75" + datasel;
 //  local_METPresel = "met >= 225 && met < 250 && j2pt >= 75" + datasel;
@@ -107,6 +112,9 @@ void MakeQCDRespTailSF(){
     cout << genSels[iB] << ", " << genSelNames[iB] << ", " << genSelMathNames[iB] << endl;
   }
 
+  tree_data = getTree(inputDir + "/met_tree.root");
+  tree_qcd  = getTree(inputDir + "/qcd_tree.root");
+  tree_bkg  = getTree(inputDir + "/nonQCD_tree.root");
   generateScaleFactorsAndUncs();
   getTailSFRegion();
 }
@@ -117,9 +125,10 @@ void generateScaleFactorsAndUncs(){
   TString ttbarWNormSelNames[] = {"Incl", "bTag"};
   HistogramGetter normHisto ("norm", "met", "norm", 1, 150, 1000);
   for(unsigned int iS = 0; iS < ttbarWNormSels.size(); ++iS){
-    TH1F* dataH  = normHisto.getHistogram(tree_data, ttbarWNormSels[iS], "1.0",   TString::Format("Data_%i",  iS);
-    TH1F* qcdH   = normHisto.getHistogram(tree_qcd,  ttbarWNormSels[iS],  wgtvar, TString::Format("qcd_%i",   iS);
-    TH1F* otherH = normHisto.getHistogram(tree_bkg,  ttbarWNormSels[iS],  wgtvar, TString::Format("other_%i", iS);
+cout << ttbarWNormSels[iS] << endl;
+    TH1F* dataH  = normHisto.getHistogram(tree_data, ttbarWNormSels[iS], "1.0",   TString::Format("Data_%i",  iS));
+    TH1F* qcdH   = normHisto.getHistogram(tree_qcd,  ttbarWNormSels[iS],  wgtvar, TString::Format("qcd_%i",   iS));
+    TH1F* otherH = normHisto.getHistogram(tree_bkg,  ttbarWNormSels[iS],  wgtvar, TString::Format("other_%i", iS));
     otherH->Add(qcdH);
     dataH->Divide(otherH);
     cout << "ttbar+W norm: " << ttbarWNormSelNames[iS] << " " << dataH->GetBinContent(1) << " +/- " << dataH->GetBinError(1) << endl;
@@ -134,7 +143,8 @@ void generateScaleFactorsAndUncs(){
     }
   }
 
-  TString sel = local_METPresel + " && " local_ResTailExtraCuts;
+  TString sel = local_METPresel + " && " + local_ResTailExtraCuts;
+cout << sel << endl;
   vector <double> SF;
   vector <double> SFTotStatUnc;
   vector <double> SFTotDataStatUnc;
@@ -146,9 +156,9 @@ void generateScaleFactorsAndUncs(){
   //Now do the central value
   cout << "Starting first pass: " << endl;
   cout << "Loading data!" << endl;
-  SFGetter::PseudoVectorGausGenerator dataVector(dataTree, bkgTree, &bkgSFs, &bkgUNCs, sel, "1.0", wgtvar, recoSels, rand);
+  SFGetter::PseudoVectorGausGenerator dataVector(tree_data, tree_bkg, &bkgSFs, &bkgUNCs, sel, "1.0", wgtvar, recoSels, rand);
   cout << "Loading MC!" << endl;
-  SFGetter::PseudoMatrixBootstrapGenerator mcMatrix(qcdTree, sel, wgtvar, recoSels, genSels, 50, "bootstrapWeight");
+  SFGetter::PseudoMatrixBootstrapGenerator mcMatrix(tree_qcd, sel, wgtvar, recoSels, genSels, 50, "bootstrapWeight");
   SFGetter::MatrixSolver solver(&dataVector, &mcMatrix, 10000);
   SF = solver.getSF();
   SFTotStatUnc = solver.getSFError();
@@ -158,7 +168,7 @@ void generateScaleFactorsAndUncs(){
   //Now do it again without an uncertainty on the background subtraction
   cout << "Starting second pass: " << endl;
   cout << "Loading data!" << endl;
-  SFGetter::PseudoVectorGausGenerator dataVectorNoBKGUnc(dataTree, bkgTree, &bkgSFs, 0, sel, "1.0", wgtvar, recoSels, rand);
+  SFGetter::PseudoVectorGausGenerator dataVectorNoBKGUnc(tree_data, tree_bkg, &bkgSFs, 0, sel, "1.0", wgtvar, recoSels, rand);
   mcMatrix.reset();
   SFGetter::MatrixSolver solverNoBKGUnc(&dataVectorNoBKGUnc, &mcMatrix, 10000);
   SFNoBKGUncDataStatUnc = solverNoBKGUnc.getSFDataError();
@@ -167,9 +177,9 @@ void generateScaleFactorsAndUncs(){
   const TString upHeavyMCWeight = lumistr + "*weight*truePUWeight*upBTagHeavyWeight";
   cout << "Starting third pass: " << endl;
   cout << "Loading data!" << endl;
-  SFGetter::PseudoVectorGausGenerator dataVectorUpHeavy(dataTree, bkgTree, &bkgSFs, &bkgUNCs, sel, "1.0", upHeavyMCWeight, recoSels, rand);
+  SFGetter::PseudoVectorGausGenerator dataVectorUpHeavy(tree_data, tree_bkg, &bkgSFs, &bkgUNCs, sel, "1.0", upHeavyMCWeight, recoSels, rand);
   cout << "Loading MC!" << endl;
-  SFGetter::PseudoMatrixGausGenerator mcMatrixUpHeavy(qcdTree, sel, upHeavyMCWeight, recoSels, genSels, rand);
+  SFGetter::PseudoMatrixGausGenerator mcMatrixUpHeavy(tree_qcd, sel, upHeavyMCWeight, recoSels, genSels, rand);
   SFGetter::MatrixSolver solverUpHeavy(&dataVectorUpHeavy, &mcMatrixUpHeavy, 10000);
   SFHeavyUp = solverUpHeavy.getSF();
 
@@ -177,24 +187,24 @@ void generateScaleFactorsAndUncs(){
   const TString upLightMCWeight = lumistr + "*weight*truePUWeight*upBTagLightWeight";
   cout << "Starting fourth pass: " << endl;
   cout << "Loading data!" << endl;
-  SFGetter::PseudoVectorGausGenerator dataVectorUpLight(dataTree, bkgTree, &bkgSFs, &bkgUNCs, sel, "1.0", upLightMCWeight, recoSels, rand);
+  SFGetter::PseudoVectorGausGenerator dataVectorUpLight(tree_data, tree_bkg, &bkgSFs, &bkgUNCs, sel, "1.0", upLightMCWeight, recoSels, rand);
   cout << "Loading MC!" << endl;
-  SFGetter::PseudoMatrixGausGenerator mcMatrixUpLight(qcdTree, sel, upLightMCWeight, recoSels, genSels, rand);
+  SFGetter::PseudoMatrixGausGenerator mcMatrixUpLight(tree_qcd, sel, upLightMCWeight, recoSels, genSels, rand);
   SFGetter::MatrixSolver solverUpLight(&dataVectorUpLight, &mcMatrixUpLight, 10000);
   SFLightUp = solverUpLight.getSF();
 
   //Print results;
   int nDim = SF.size();
   for(unsigned int i = 0; i < nDim; ++i) cout << genSelNames[i].Data() << "\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SF[i]                                                                                                               ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFTotStatUnc[i]                                                                                                     ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFTotDataStatUnc[i]                                                                                                 ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFNoBKGUncDataStatUnc[i]                                                                                            ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFMCStatUnc[i]                                                                                                      ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFHeavyUp[i]                                                                                                        ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFLightUp[i]                                                                                                        ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFHeavyUp[i] - SF[i]                                                                                                ) <<"\t"; cout << endl;
-  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFLightUp[i] - SF[i]                                                                                                ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SF[i]                   ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFTotStatUnc[i]         ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFTotDataStatUnc[i]     ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFNoBKGUncDataStatUnc[i]) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFMCStatUnc[i]          ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFHeavyUp[i]            ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFLightUp[i]            ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFHeavyUp[i] - SF[i]    ) <<"\t"; cout << endl;
+  for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",SFLightUp[i] - SF[i]    ) <<"\t"; cout << endl;
   for(unsigned int i = 0; i < nDim; ++i) cout << TString::Format("%.2f",TMath::Sqrt(TMath::Abs(SFTotDataStatUnc[i]*SFTotDataStatUnc[i] - SFNoBKGUncDataStatUnc[i]*SFNoBKGUncDataStatUnc[i]))) <<"\t"; cout << endl;
 
   vector<double> allUnc;
@@ -208,24 +218,24 @@ void generateScaleFactorsAndUncs(){
   ofstream tabFile;
   tabFile.open (outputDir + "/qcd_tail_sf.tex", ios::out | ios::trunc);
   assert(tabFile.is_open());
-  tabfile << "\\begin{table}[h!]" << endl;
-  tabfile << "  \\caption{\\label{tab:qcd_tailsf}}" << endl;
-  tabfile << "  \\begin{center}" << endl;
-  tabfile << "    \\begin{tabular}{|c|"; for(unsigned int i = 0; i < nDim; ++i) cout << "c|"; cout << "}" << endl;
-  tabfile << "      \\hline" << endl;
-  tabfile << "       & ";                    for(unsigned int i = 0; i < nDim; ++i){ TString tempString = genSelMathNames[i]                                                                                                                            + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      Correction & ";          for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SF[i])                                                                                                                + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      \\hline" << endl;
-  tabfile << "      Data statistics & ";     for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SFNoBKGUncDataStatUnc[i])                                                                                             + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      QCD MC statistics & ";   for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SFMCStatUnc[i])                                                                                                       + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      Non-QCD subtraction & "; for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Sqrt(TMath::Abs(SFTotDataStatUnc[i]*SFTotDataStatUnc[i] - SFNoBKGUncDataStatUnc[i]*SFNoBKGUncDataStatUnc[i]))) + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      Light b-tag SF & ";      for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Abs(SFLightUp[i] - SF[i]) )                                                                                    + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      Heavy b-tag SF & ";      for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Abs(SFHeavyUp[i] - SF[i]) )                                                                                    + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "      \\hline" << endl;
-  tabfile << "      Total unc. & ";          for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", allUnc[i] )                                                                                                           + (i == nDim - 1 ? "" : " & "); cout << tempString; } cout << " \\\\ \\hline" << endl;
-  tabfile << "    \\end{tabular}" << endl;
-  tabfile << "  \\end{center}" << endl;
-  tabfile << "\\end{table}" << endl;
+  tabFile << "\\begin{table}[h!]" << endl;
+  tabFile << "  \\caption{\\label{tab:qcd_tailsf}}" << endl;
+  tabFile << "  \\begin{center}" << endl;
+  tabFile << "    \\begin{tabular}{|c|"; for(unsigned int i = 0; i < nDim; ++i) tabFile << "c|"; tabFile << "}" << endl;
+  tabFile << "      \\hline" << endl;
+  tabFile << "       & ";                    for(unsigned int i = 0; i < nDim; ++i){ TString tempString = genSelMathNames[i]                                                                                                                            + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      Correction & ";          for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SF[i])                                                                                                                + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      \\hline" << endl;
+  tabFile << "      Data statistics & ";     for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SFNoBKGUncDataStatUnc[i])                                                                                             + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      QCD MC statistics & ";   for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", SFMCStatUnc[i])                                                                                                       + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      Non-QCD subtraction & "; for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Sqrt(TMath::Abs(SFTotDataStatUnc[i]*SFTotDataStatUnc[i] - SFNoBKGUncDataStatUnc[i]*SFNoBKGUncDataStatUnc[i]))) + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      Light b-tag SF & ";      for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Abs(SFLightUp[i] - SF[i]) )                                                                                    + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      Heavy b-tag SF & ";      for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", TMath::Abs(SFHeavyUp[i] - SF[i]) )                                                                                    + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "      \\hline" << endl;
+  tabFile << "      Total unc. & ";          for(unsigned int i = 0; i < nDim; ++i){ TString tempString = TString::Format("%.2f", allUnc[i] )                                                                                                           + (i == nDim - 1 ? "" : " & "); tabFile << tempString; } tabFile << " \\\\ \\hline" << endl;
+  tabFile << "    \\end{tabular}" << endl;
+  tabFile << "  \\end{center}" << endl;
+  tabFile << "\\end{table}" << endl;
   tabFile.close();
 
   double xbins[] = { 0, .33, .5, .66, 1 };
@@ -240,7 +250,7 @@ void generateScaleFactorsAndUncs(){
   corrHist->SetBinContent(3, 2, SF[3]); corrHist->SetBinError(3, 2, allUnc[3]);
   corrHist->SetBinContent(4, 2, SF[3]); corrHist->SetBinError(4, 2, allUnc[3]);
 
-  TFile * corrFile = new TFile(outputDir + "/qcdJetRespTailCorr.root", "recreate");
+  TFile* corrFile = new TFile(TString(outputDir + "/qcdJetRespTailCorr.root").Data(), "recreate");
   corrHist->Write();
   corrFile->Close();
 }
@@ -248,7 +258,7 @@ void generateScaleFactorsAndUncs(){
 void getTailSFRegion(){
   gSystem->mkdir(TString(outputDir), true);
 
-  TString presel = local_METPresel + " && " local_ResTailExtraCuts;
+  TString presel = local_METPresel + " && " + local_ResTailExtraCuts;
   vector <int> colors = { 821, 811, 812 };
   double bins[] = { 0, .1, .33, .5, .66, .8, 1 };
   HistogramGetter histG("pseudoResp", "pseudoResp", "#it{r}_{pseudo,jet}", 6, bins);
@@ -260,9 +270,9 @@ void getTailSFRegion(){
     TString sel = TString::Format("%s && %s", presel.Data(), selRecoBins[iB].Data());
 cout << sel << endl;
 cout << sel + " && " + selGenBins[((iB + 1) % 2)] << endl;
-    TH1F* dataH  = histG.getHistogram(tree_data, sel,                                       "1.0",  TString::Format("Data_%i",  iB);
-    TH1F* otherH = histG.getHistogram(tree_bkg,  sel,                                       wgtvar, TString::Format("other_%i", iB);
-    TH1F* qcdH   = histG.getHistogram(tree_qcd,  sel + " && " + selGenBins[((iB + 1) % 2)], wgtvar, TString::Format("qcd_%i",   iB);
+    TH1F* dataH  = histG.getHistogram(tree_data, sel,                                       "1.0",  TString::Format("Data_%i",  iB));
+    TH1F* otherH = histG.getHistogram(tree_bkg,  sel,                                       wgtvar, TString::Format("other_%i", iB));
+    TH1F* qcdH   = histG.getHistogram(tree_qcd,  sel + " && " + selGenBins[((iB + 1) % 2)], wgtvar, TString::Format("qcd_%i",   iB));
     otherH->Scale(otherBkgNorms[iB]);
     yMax = dataH->GetMaximum();
     plot->addHist(   dataH,  "Data", "", 1, 0, 1);
@@ -282,7 +292,8 @@ cout << sel + " && " + genSels[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() +
     }
     plot->setLegend(.5, .65, .92, .87);
     plot->getLegend()->SetNColumns(2);
-    plot->setDrawCMSLumi();
+//    plot->setDrawCMSLumi(lumistr);
+    plot->setDrawCMSLumi("35.601");
     plot->drawRatioStack(canvas);
     setTitleOffset(canvas, .850);
     canvas->SaveAs(outputDir + "/" + plot->getName() + ".pdf");
@@ -296,7 +307,7 @@ TTree* getTree(TString filename){
   return st;
 }
 
-void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
+void setTitleOffset(TCanvas *c, double xOff, double yOff){
   TList * list = c->GetListOfPrimitives();
   for(unsigned int iP = 0; iP < list->GetSize(); ++iP){
     TH1 * h = dynamic_cast<TH1*>(list->At(iP));
