@@ -58,7 +58,6 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     nBJets            (0),
     nVetoHPSTaus      (0),
     selectedLepton    (0),
-    nSelCTTTops       (0),
     nSelSdTops        (0),
     nSelSdWs          (0),
     met               (0),
@@ -82,10 +81,10 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   }
 
   //Hack to get signal type from filename (sorry) until we integrat into weight code
-  if(fileName.Contains("T2tt") ) evtInfoReader.signalType = defaults::T2tt;
-  else if (fileName.Contains("T2bW") ) evtInfoReader.signalType = defaults::T2bW;
-  else if (fileName.Contains("T2fb") ) evtInfoReader.signalType = defaults::T2fb;
-  else if (fileName.Contains("T2tb") ) evtInfoReader.signalType = defaults::T2tb;
+  if(      fileName.Contains("T2tt", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tt;
+  else if (fileName.Contains("T2bW", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2bW;
+  else if (fileName.Contains("T2fb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2fb;
+  else if (fileName.Contains("T2tb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tb;
   //
 
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
@@ -150,7 +149,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile,configSet.corrections.cttCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.resMVATopFullFastCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
     }
 
@@ -243,12 +242,6 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       break;
     }
 
-    case cfgSet::CMSTOPS : {
-      int defaultOptions = CMSTopReader::defaultOptions;
-      reader.load(&cmsTopReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_CMSTOPS : branchName);
-      break;
-    }
-
     case cfgSet::AK8FATJETS : {
       int defaultOptions = FatJetReader::defaultOptions;
       reader.load(&fatJetReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_AK8FATJETS : branchName);
@@ -307,7 +300,6 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
-//  load(cfgSet::CMSTOPS);
   load(cfgSet::AK8FATJETS, FatJetReader::defaultOptions | (updateMVA_ ? (FatJetReader::UPDATETOPMVA | FatJetReader::UPDATEWTAGMVA) : FatJetReader::NULLOPT) ); // FIXME
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
@@ -316,10 +308,44 @@ void BaseTreeAnalyzer::loadVariables()
   if(isMC()) load(cfgSet::GENPARTICLES);
 }
 //--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::clearVariables() // clear all of the collections before processVariables
+{
+  isReady_ = false;
+  genParts.clear();
+  fatJets.clear();
+  sdMVATopTight.clear();
+  sdMVAWTight.clear();
+  selectedSdTops.clear();
+  selectedSdWs.clear();
+  ak8isrJets.clear();
+  //fatJetsPuppi.clear();
+  triggerObjects.clear();
+  triggerInfo.clear();
+  SVs.clear();
+  httTops.clear();
+  allLeptons.clear();
+  selectedLeptons.clear();
+  primaryLeptons.clear();
+  secondaryLeptons.clear();
+  vetoedTracks.clear();
+  vetoedTaus.clear();
+  selectedPhotons.clear();
+  jets.clear();
+  bJets.clear();
+  nonBJets.clear();
+  isrJets.clear();
+  hadronicGenTops.clear();
+  hadronicGenWs.clear();
+  resMVATopMedium.clear();
+  resMVATopCands.clear();
+  sdwtops_.clear();
+}
+//--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processVariables()
 {
   isProcessed_ = true;
 
+  clearVariables();
 
   if(evtInfoReader.isLoaded()) {
     run   = evtInfoReader.run;
@@ -349,75 +375,30 @@ void BaseTreeAnalyzer::processVariables()
     }
   }
 
-
-
   if(genParticleReader.isLoaded()){
-    genParts.clear();
     genParts.reserve(genParticleReader.genParticles.size());
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
 
-
-  if(cmsTopReader.isLoaded()){
-    nSelCTTTops = 0;
-    selectedCTTTops.clear();
-    cttTops.clear();
-    cttTops.reserve(cmsTopReader.cmsTops.size());
-    for(auto& p : cmsTopReader.cmsTops) cttTops.push_back(&p);
-    std::sort(cttTops.begin(), cttTops.end(), PhysicsUtilities::greaterPTDeref<CMSTopF>());
-    for(auto* p : cttTops) if(cfgSet::isSelTaggedTop(*p)) selectedCTTTops.push_back(p);
-    nSelCTTTops = selectedCTTTops.size();
-  }
-
-  if(fatJetReader.isLoaded()){
-    nSelSdTops = 0;
-    nSelSdWs = 0;
-    fatJets.clear();
-    selectedSdTops.clear();
-    selectedSdWs.clear();
-    fatJets.reserve(fatJetReader.fatJets.size());
-    for(auto& p : fatJetReader.fatJets) fatJets.push_back(&p);
-    for(auto& fj : fatJets){
-      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) selectedSdTops.push_back(fj);
-      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) selectedSdWs.push_back(fj);
-    }
-    nSelSdTops = selectedSdTops.size();
-    nSelSdWs = selectedSdWs.size();
-  }
-  /*
-  if(fatJetPuppiReader.isLoaded()){
-    fatJetsPuppi.clear();
-    fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
-    for(auto& p : fatJetPuppiReader.fatJets) fatJetsPuppi.push_back(&p);
-  }
-  */
   if(trigObjReader.isLoaded()){
     triggerflag =  trigObjReader.triggerflag;
-    triggerObjects.clear();
     triggerObjects.reserve(trigObjReader.trigobjs.size());
     for(auto& to : trigObjReader.trigobjs)
       triggerObjects.push_back(&to);
-    triggerInfo.clear();
     triggerInfo.reserve(trigObjReader.triginfo.size());
     for(auto& tI : trigObjReader.triginfo)
       triggerInfo.push_back(&tI);
   }
 
   if(svReader.isLoaded()){
-    SVs.clear();
     SVs.reserve(svReader.SVs.size());
     for(auto& p : svReader.SVs) SVs.push_back(&p);
   }
 
   if(httReader.isLoaded()){
-    httTops.clear();
     for(auto& fj : httReader.fatJets) httTops.push_back(&fj);
   }
 
-  allLeptons.clear();
-  selectedLeptons.clear();
-  primaryLeptons.clear();
-  secondaryLeptons.clear();
   selectedLepton = 0;
   if(muonReader.isLoaded() || electronReader.isLoaded()){
     allLeptons.reserve(electronReader.electrons.size() + muonReader.muons.size());
@@ -450,7 +431,6 @@ void BaseTreeAnalyzer::processVariables()
   nSecondaryLeptons = secondaryLeptons.size();
   if(nSelLeptons > 0) selectedLepton = nSelLeptons == 1 ? selectedLeptons.front() : selectedLeptons[randGen->Uniform(0,nSelLeptons)];
 
-  vetoedTracks.clear();
   if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
     cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.tracks);
   std::sort(vetoedTracks.begin(), vetoedTracks.end(), PhysicsUtilities::greaterPTDeref<PFCandidateF>());
@@ -460,12 +440,81 @@ void BaseTreeAnalyzer::processVariables()
     cfgSet::selectPhotons(selectedPhotons,photonReader.photons, configSet.photons);
 
   // must not preceed selectLeptons
-  vetoedTaus.clear();
   if(tauReader.isLoaded() && configSet.taus.isConfig())
     cfgSet::selectTaus(vetoedTaus, selectedLeptons, tauReader.taus, configSet.taus);
   nVetoHPSTaus = vetoedTaus.size();
 
-  jets.clear(); bJets.clear(); nonBJets.clear(); isrJets.clear();
+  // fatJets: must not precede selectedPhotons/selectLeptons
+  if(fatJetReader.isLoaded()){
+
+    // clean fatjets vs Photons/Leptons
+    vector<bool> vetoed(fatJetReader.fatJets.size(), false);
+    double nearDR = 0;
+    if (configSet.jets.cleanFatJetsvLeptons){
+      for (const auto *lep : selectedLeptons){
+        auto idx = PhysicsUtilities::findNearestDR(*lep, fatJetReader.fatJets, nearDR, 0.8);
+        if (idx>=0) vetoed.at(idx) = true;
+      }
+    }
+    if (configSet.jets.cleanFatJetsvPhotons){
+      for (const auto *pho : selectedPhotons){
+        auto idx = PhysicsUtilities::findNearestDR(*pho, fatJetReader.fatJets, nearDR, 0.8);
+        if (idx>=0) vetoed.at(idx) = true;
+      }
+    }
+    for (unsigned i=0; i<vetoed.size(); ++i){
+      if(!vetoed.at(i)) fatJets.push_back(&fatJetReader.fatJets.at(i));
+    }
+
+
+    // mva-based softdrop tops and ws
+    nSdMVATopTight = 0;
+    nSdMVAWTight  = 0;
+    for(auto *fj : fatJets){
+      fj->setRecoCategory(FatJetRecoCategory::RECONOTFILLED);
+      if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
+        fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
+        sdMVATopTight.push_back(fj);
+        sdwtops_.push_back(fj);
+      }
+      else if (fj->pt()>200 && fj->softDropMass()<=110 && fj->w_mva() > SoftdropWTagMVA::WP_TIGHT){
+        fj->setRecoCategory(FatJetRecoCategory::SDMVAW);
+        sdMVAWTight.push_back(fj);
+        sdwtops_.push_back(fj);
+      }
+    }
+    std::sort(sdMVATopTight.begin(), sdMVATopTight.end(), PhysicsUtilities::greaterPTDeref<FatJetF>());
+    std::sort(sdMVAWTight.begin(), sdMVAWTight.end(),     PhysicsUtilities::greaterPTDeref<FatJetF>());
+    nSdMVATopTight = sdMVATopTight.size();
+    nSdMVAWTight   = sdMVAWTight.size();
+
+    // ak8 ISR
+    for (auto *fj : fatJets){
+      // ISR jet is required to fail CSVL and not tagged as top/W
+      if (fj->csv() > defaults::CSV_LOOSE) continue;
+      if (std::find(sdwtops_.begin(), sdwtops_.end(), fj) == sdwtops_.end()) ak8isrJets.push_back(fj);
+    }
+
+    // cut-based softdrop tops and ws
+    nSelSdTops = 0;
+    nSelSdWs = 0;
+    for(auto& fj : fatJets){
+      if (cfgSet::isSoftDropTagged(fj, 400, 110, 210, 0.69, 1e9)) selectedSdTops.push_back(fj);
+      if (cfgSet::isSoftDropTagged(fj, 200, 60,  110, 1e9,  0.60)) selectedSdWs.push_back(fj);
+    }
+    nSelSdTops = selectedSdTops.size();
+    nSelSdWs = selectedSdWs.size();
+  }
+
+
+  /*
+  if(fatJetPuppiReader.isLoaded()){
+    fatJetsPuppi.reserve(fatJetPuppiReader.fatJets.size());
+    for(auto& p : fatJetPuppiReader.fatJets) fatJetsPuppi.push_back(&p);
+  }
+  */
+
+  // must be after leptons/tracks/photons for cleaning purpose
   if(defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
     if(configSet.jets.applyAdHocPUCorr) cfgSet::applyAdHocPUCorr(defaultJets->recoJets, *defaultJets->jetarea_, rho);
 
@@ -475,21 +524,84 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-  //fill MVA resolved tops
-//  if (cfgSet::useResolvedTopMVA){
-//    resolvedTops = resTopMVA->getTopCandidates(jets, ResolvedTopMVA::WP_TIGHT);
-//    std::sort(resolvedTops.begin(), resolvedTops.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
-//  }
 
+}
+//--------------------------------------------------------------------------------------------------
+void BaseTreeAnalyzer::processMoreVariables(){
+  if (isReady_) return; // not run twice
+
+  // hadronic gen top and w collection (MUST GO AFTER GEN AND JETS)
+  if(genParticleReader.isLoaded() && defaultJets && defaultJets->isLoaded() && configSet.jets.isConfig()){
+    std::vector<GenJetF*> filteredGenJets;
+    for(auto * j : jets){ if(j->genJet()) filteredGenJets.push_back(j->genJet());}
+    partonEvent.reset(new PartonMatching::PartonEvent(genParticleReader,*defaultJets,filteredGenJets));
+    for(unsigned int i = 0 ; i < partonEvent->topDecays.size() ; i++){
+      PartonMatching::TopDecay* top = &partonEvent->topDecays[i];
+      if(!top->isLeptonic) hadronicGenTops.push_back(top);
+    }
+    for(unsigned int i = 0 ; i < partonEvent->bosonDecays.size() ; i++){
+      PartonMatching::BosonDecay* w = &partonEvent->bosonDecays[i];
+      if(w->isHadronic) hadronicGenWs.push_back(w);
+    }
+    std::sort(hadronicGenTops.begin(), hadronicGenTops.end(), [](const PartonMatching::TopDecay* a, const PartonMatching::TopDecay* b){ return a->top->pt() > b->top->pt(); });
+    std::sort(hadronicGenWs.begin(),   hadronicGenWs.end(),   [](const PartonMatching::BosonDecay* a, const PartonMatching::BosonDecay* b){ return a->boson->pt() > b->boson->pt(); });
+    nHadronicGenTops = hadronicGenTops.size();
+    nHadronicGenWs   = hadronicGenWs.size();
+  }
+
+  // set gen categories of fatjets (MUST GO AFTER GENHADRONICTOPS/WS)
+  if( fatJetReader.isLoaded() && (nHadronicGenTops>0 || nHadronicGenWs>0) ){
+    for(auto *fj : fatJets){
+      fj->setGenCategory(FatJetGenCategory::GENNOTFILLED);
+      // is element of hadronicGenTops within 0.8?
+      for(const auto &top : hadronicGenTops){
+        float nearDR = PhysicsUtilities::deltaR(*(top->top), *fj);
+        if(nearDR < 0.8) {
+          fj->setGenCategory(FatJetGenCategory::GENTOP);
+          // are top products contained?
+          if(PhysicsUtilities::deltaR(*(top->b->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(top->W_dau1->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(top->W_dau2->parton), *fj) > 0.8) continue;
+          fj->setGenCategory(FatJetGenCategory::GENTOP_CONTAINED);
+          break; // categories saturated -- move on!
+        }
+      }
+      for(const auto &w : hadronicGenWs){
+        float nearDR = PhysicsUtilities::deltaR(*(w->boson), *fj);
+        if(nearDR < 0.8){
+          fj->setGenCategory(FatJetGenCategory::GENW);
+          // are w products contained?
+          if(PhysicsUtilities::deltaR(*(w->boson_dau1->parton), *fj) > 0.8) continue;
+          if(PhysicsUtilities::deltaR(*(w->boson_dau2->parton), *fj) > 0.8) continue;
+          fj->setGenCategory(FatJetGenCategory::GENW_CONTAINED);
+          break; // categories saturated -- move on!
+        }
+      }
+    }
+  }
+
+
+  // mva-based resolved tops (MUST GO AFTER JETS AND SD MVA TOPS AND WS)
+  auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops_, 0.8);
+  resMVATopCands = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_ALL); // sorted by MVA score
+
+  nResMVATopMedium = 0;
+  for (auto &res : resMVATopCands){
+    if (res.disc > ResolvedTopMVA::WP_MEDIUM) resMVATopMedium.push_back(res);
+  }
+  std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
+  nResMVATopMedium = resMVATopMedium.size();
+
+  // FIXME: do we need any corrections for preselection?
   //load corrections corrections
   for(auto * iC : corrections){
     iC->processCorrection(this);
   }
 
 
-
-
+  isReady_ = true;
 }
+
 //--------------------------------------------------------------------------------------------------
 bool BaseTreeAnalyzer::processData(){
   //only look at data

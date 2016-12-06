@@ -58,6 +58,9 @@ namespace cfgSet {
     bool  cleanJetsvTracks   ;
     float cleanJetsMaxDR           ;
 
+    bool  cleanFatJetsvLeptons;
+    bool  cleanFatJetsvPhotons;
+
     JetConfig(TString inName = "NULL") :BaseConfig(inName),
       jetCollection(NONE),
       minPt         (-1),
@@ -72,7 +75,9 @@ namespace cfgSet {
       ignoreSeconaryLeptonsWhenCleaning  (false),
       cleanJetsvPhotons(false),
       cleanJetsvTracks  (false),
-      cleanJetsMaxDR           (-1)
+      cleanJetsMaxDR      (-1),
+      cleanFatJetsvLeptons(false),
+      cleanFatJetsvPhotons(false)
 
     {};
     virtual ~JetConfig() {};
@@ -91,6 +96,8 @@ namespace cfgSet {
       if(a.cleanJetsvPhotons) os << "Cleaning Jets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning Jets vs. Selected Photons is disabled" << std::endl;
       if(a.cleanJetsvTracks) os << "Cleaning Jets vs. Vetoed Tracks is enabled" <<std::endl; else os << "Cleaning Jets vs. Vetoed Tracks is disabled" << std::endl;
       if(a.cleanJetsMaxDR) os << "Cleaning Jets max DR enabled" <<std::endl; else os << "Cleaning Jets max DR is disabled" << std::endl;
+      if(a.cleanFatJetsvLeptons) os << "Cleaning FatJets vs. Selected Leptons is enabled" <<std::endl; else os << "Cleaning FatJets vs. Selected Leptons is disabled" << std::endl;
+      if(a.cleanFatJetsvPhotons) os << "Cleaning FatJets vs. Selected Photons is enabled" <<std::endl; else os << "Cleaning FatJets vs. Selected Photons is disabled" << std::endl;
       return os;
     };
   };
@@ -190,11 +197,14 @@ namespace cfgSet {
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
-    TString cttCorrectionFile;
+    TString sdMVACorrectionFile;
+    TString sdMVAFullFastCorrectionFile;
+    TString resMVATopCorrectionFile;
+    TString resMVATopFullFastCorrectionFile;
     TString sdCorrectionFile;
     TString puCorrectionFile;
-    ucsbsusy::CORRTYPE cttEffSFType;
-    ucsbsusy::CORRTYPE cttMistagSFType;
+    ucsbsusy::CORRTYPE sdMVACorrType;
+    ucsbsusy::CORRTYPE resMVATopCorrType;
     ucsbsusy::CORRTYPE sdTopCorrType;
     ucsbsusy::CORRTYPE sdWCorrType;
 
@@ -255,8 +265,8 @@ namespace cfgSet {
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-        cttEffSFType(ucsbsusy::NONE),
-        cttMistagSFType(ucsbsusy::NONE),
+        sdMVACorrType(ucsbsusy::NONE),
+        resMVATopCorrType(ucsbsusy::NONE),
         sdTopCorrType(ucsbsusy::NONE),
         sdWCorrType(ucsbsusy::NONE),
         trigPhotonCorrType(ucsbsusy::NONE),
@@ -305,8 +315,10 @@ namespace cfgSet {
           os << "PU ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
           os << "NORM ";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::CTT)
-          os << " CTT Eff("<< a.cttEffSFType <<") Mistag("<<a.cttMistagSFType<<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDMVA)
+          os << " SDMVA Eff("<< a.sdMVACorrType <<")";
+        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::RESMVATOP)
+          os << " RESMVATOP Eff("<< a.resMVATopCorrType <<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDTOP)
           os << " SDTOP Eff("<< a.sdTopCorrType <<")";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDW)

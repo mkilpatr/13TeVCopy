@@ -60,21 +60,21 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if (selectedPhotons.empty()) return;
       pho = selectedPhotons.front();
 
-      // clean leptons vs recoPhoton
-      vector<LeptonF*> tmpLeptons;
-      for (auto *lep : selectedLeptons){
-        if (PhysicsUtilities::deltaR2(*pho, *lep)>0.16) tmpLeptons.push_back(lep);
-      }
-      selectedLeptons = tmpLeptons;
-      nSelLeptons = selectedLeptons.size();
-
-      // clean vetoedTracks vs recoPhoton
-      vector<PFCandidateF*> tmpTracks;
-      for (auto *trk : vetoedTracks){
-        if (PhysicsUtilities::deltaR2(*pho, *trk)>0.16) tmpTracks.push_back(trk);
-      }
-      vetoedTracks = tmpTracks;
-      nVetoedTracks = vetoedTracks.size();
+//      // clean leptons vs recoPhoton
+//      vector<LeptonF*> tmpLeptons;
+//      for (auto *lep : selectedLeptons){
+//        if (PhysicsUtilities::deltaR2(*pho, *lep)>0.16) tmpLeptons.push_back(lep);
+//      }
+//      selectedLeptons = tmpLeptons;
+//      nSelLeptons = selectedLeptons.size();
+//
+//      // clean vetoedTracks vs recoPhoton
+//      vector<PFCandidateF*> tmpTracks;
+//      for (auto *trk : vetoedTracks){
+//        if (PhysicsUtilities::deltaR2(*pho, *trk)>0.16) tmpTracks.push_back(trk);
+//      }
+//      vetoedTracks = tmpTracks;
+//      nVetoedTracks = vetoedTracks.size();
 
       if (!isMC()) return; // end of data
 
@@ -141,9 +141,12 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       if(!pho)                              return false;
       if(!passDRSel)                        return false;
       if(!goodvertex)                       return false;
+      if(nJets < minnjets_)                 return false;
 
       MomentumF metpluspho;
       metpluspho.setP4(met->p4() + pho->p4());
+
+      processMoreVariables(); // call this before filling, but after all preselections
 
       filler.fillEventInfo(&data, this, true, &metpluspho);
       extraFiller.fillTestVars(&data, this);

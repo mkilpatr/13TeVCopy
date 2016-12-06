@@ -28,7 +28,7 @@ std::vector<TopCand> ResolvedTopMVA::getTopCandidates(const std::vector<RecoJetF
 
   std::vector<TopCand> allCands;
   for (unsigned iB=0; iB<2; ++iB){
-    if(csvJets.at(iB)->csv() < defaults::CSV_LOOSE) break; // b must pass CSVL
+//    if(csvJets.at(iB)->csv() < defaults::CSV_LOOSE) break; // b must pass CSVL
 
     for (unsigned i2=0; i2<csvJets.size()-1; ++i2){
       if (i2==iB) continue;

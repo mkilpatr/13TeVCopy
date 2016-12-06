@@ -61,8 +61,10 @@ class ZtoLLCRAnalyzer : public ZeroLeptonAnalyzer {
 
       if(!passZtoLLSel)                     return false;
       if(!goodvertex)                       return false;
-      if(nJets < 2)                         return false;
+      if(nJets < minnjets_)                 return false;
       if(metplusdilep.pt() < 100)           return false;
+
+      processMoreVariables(); // call this before filling, but after all preselections
 
       filler.fillEventInfo(&data, this, true, &metplusdilep);
       extraFiller.fillTestVars(&data, this);
