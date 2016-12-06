@@ -347,7 +347,7 @@ void StyleTools::SetTDRStyle()
   return;
 }
 
-void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
+void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText, TString lumi_pass)
 {
 
   // Global variables
@@ -407,7 +407,11 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText)
   pad->cd();
 
   TString lumiText;
-  if( iPeriod==1 ) {
+  if( iPeriod==-1 ) {
+      lumiText += lumi_pass;
+      lumiText += " (13 TeV)";
+  }
+  else if( iPeriod==1 ) {
       lumiText += lumi_7TeV;
       lumiText += " (7 TeV)";
   }

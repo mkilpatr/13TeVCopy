@@ -45,6 +45,7 @@ Plot::Plot(TString name, TString title, TString xtitle, TString ytitle):
   fPlotStackUncertainty(false),
   fDrawCMSLumi(false),
   fCMSLumiPosX(10),
+  fCMSLumiText(""),
   fCMSLumiExtraText("Preliminary"),
   fCMSLumiPeriod(4)
 {
@@ -857,7 +858,7 @@ void Plot::drawRatioStack(TCanvas *c, TH1F* hData, TH1F* hMC, bool doSave, TStri
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText, fCMSLumiText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1243,7 +1244,7 @@ void Plot::drawRatioStack(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText, fCMSLumiText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1397,7 +1398,7 @@ void Plot::drawRatios(TCanvas *c, unsigned int baseIndex, bool doSave, TString f
   
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(p1, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText, fCMSLumiText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 
@@ -1756,7 +1757,7 @@ void Plot::draw(TCanvas *c, bool doSave, TString format)
 
   // Add header and lumi text
   if(fDrawCMSLumi)
-    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText);
+    StyleTools::CMS_lumi(c, fCMSLumiPeriod, fCMSLumiPosX, fCMSLumiExtraText, fCMSLumiText);
   else
     header(fLumiText.Data(), fChanText.Data(), fHeaderX, fHeaderY);
 

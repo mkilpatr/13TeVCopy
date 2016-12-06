@@ -64,7 +64,7 @@ namespace StyleTools {
   void      SetLegendStyle (TLegend* leg);
   void      SetStyle       ();
   void      SetTDRStyle    ();
-  void      CMS_lumi       (TPad* pad, int iPeriod=5, int iPosX=10, TString extraText = "Preliminary");
+  void      CMS_lumi       (TPad* pad, int iPeriod=5, int iPosX=10, TString extraText = "Preliminary", TString lumi_pass = "");
   ColorMap  DefaultColors  ();
   
   TCanvas* newAlbum(Int_t numItems, const Char_t* name, const Char_t* title, Int_t width, Int_t height, Int_t rows, Int_t columns);
