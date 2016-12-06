@@ -462,8 +462,10 @@ void BaseTreeAnalyzer::processVariables()
         if (idx>=0) vetoed.at(idx) = true;
       }
     }
-    for (unsigned i=0; i<vetoed.size(); ++i){
-      if(!vetoed.at(i)) fatJets.push_back(&fatJetReader.fatJets.at(i));
+    for (unsigned i=0; i<fatJetReader.fatJets.size(); ++i){
+      auto &fj = fatJetReader.fatJets.at(i);
+      if (fj.pt() < 200 || fj.eta()>2.4) continue;
+      if(!vetoed.at(i)) fatJets.push_back(&fj);
     }
 
 
