@@ -169,8 +169,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
-//HACK      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagFastSimEffFile,configSet.corrections.bTagFastSimSFFile,configSet.corrections.bTagCorrections);
-//HACK      corrections.push_back(&bTagCorrections);
+      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagFastSimEffFile,configSet.corrections.bTagFastSimSFFile,configSet.corrections.bTagCorrections);
+      corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResCorrFile,configSet.corrections.jetResTailFile,randGen);
