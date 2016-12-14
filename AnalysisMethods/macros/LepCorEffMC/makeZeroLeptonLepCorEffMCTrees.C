@@ -44,6 +44,8 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
     bool isOneLepTTbar = false;
     bool applyCHFFilter    = false ;
 
+    size i_nvetoele;
+    size i_nvetomu;
     size i_genmupt;
     size i_genmueta;
     size i_genelept;
@@ -77,10 +79,12 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
     void book() {
       filler.book(&data);
       //extraFiller.bookTest(&data);
-      //extraFiller.bookSyst(&data);
+      extraFiller.bookSyst(&data);
       //extraFiller.bookJetMET(&data);
-      extraFiller.bookLepton(&data);
-      extraFiller.bookGen(&data);
+      //extraFiller.bookLepton(&data);
+      //extraFiller.bookGen(&data);
+      i_nvetoele = data.add<int>("","nvetoele","I",0);
+      i_nvetomu  = data.add<int>("","nvetomu","I",0);
       i_genmupt     = data.addMulti<float>("","genmupt",0);
       i_genmueta    = data.addMulti<float>("","genmueta",0);
       i_genelept    = data.addMulti<float>("","genelept",0);
@@ -115,6 +119,7 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
       if(!goodvertex) return false;
       if(nJets     < minnjets_) return false;
       if(met->pt() < metcut_  ) return false;
+
 
       // alternative: turn off iso in both, then for iso eff, make vars with it on.
       //   pros: none? cons: have to predict which iso to turn on (maintenance)
@@ -187,6 +192,7 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
         }
       }
 
+      ///////// fillGenInfo ///////////
       // gen el/mu counting and matching. most copied from zerohelper
       std::vector<float> gentoppt_; gentoppt_.clear();
       //int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptTaus = 0;
@@ -204,6 +210,8 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
             recEl_.push_back(lep);
           }
         }
+        data.fill<int  >(i_nvetomu, recMu_.size());
+        data.fill<int  >(i_nvetoele, recEl_.size());
         for(auto* p : this->genParts) {
           if(ParticleInfo::isA(ParticleInfo::p_stop1, p) and !stop1)
             stop1 = p;
@@ -251,9 +259,9 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
       //filler.fillJetInfo  (&data, jets, bJets, met);
 
       //extraFiller.fillTestVars(&data, this);
-      //extraFiller.fillSystInfo(&data, this);
-      extraFiller.fillLeptonInfo(&data, this);
-      extraFiller.fillGenInfo(&data, this);
+      extraFiller.fillSystInfo(&data, this);
+      //extraFiller.fillLeptonInfo(&data, this);
+      //extraFiller.fillGenInfo(&data, this);
 
       return true;
     }
@@ -293,7 +301,7 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
   std::cout << "*** Options: isId, isSR: " << isId << " " << isSR << std::endl;
   std::cout << "*** Changing lep config to : " << ((isSR) ? "zl_search_set (SR)" : "zl_lepton_set (CR)") << std::endl;
   std::cout << "*** relaxing pt/eta requirements to 5/2.4" << std::endl;
-  cfgSet::ConfigSet pars = (isSR) ? pars0lep(json) : pars0lepCR(json);
+  cfgSet::ConfigSet pars = (isSR) ? pars0lep(json) : pars1LCR(json);
   if((!isSR) && (pars.electrons.type != LeptonSelection::ZL_CTR_ELE)) std::cout << "Houston, we have a problem. Ele type for CR is not ZL_CTR_ELE" << std::endl;
   pars.electrons.maxETA  = 2.4;
   pars.electrons.minPT   = 5.0;
@@ -321,5 +329,6 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
   if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) a.applyCHFFilter = true;
 
   a.analyze(10000);
+  //a.analyze(10000,10000);
 
 }//mainfxn
