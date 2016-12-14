@@ -201,15 +201,6 @@ namespace cfgSet {
     TString eventCorrectionFile;
     TString puCorrectionFile;
 
-    // should update dec '16 to look like lep (many files)
-    /*
-    TString topWCorrectionFile;
-    TString sdMVACorrectionFile;
-    TString sdMVAFullFastCorrectionFile;
-    TString resMVATopCorrectionFile;
-    TString resMVATopFullFastCorrectionFile;
-    */
-
     TString sdCorrectionFile; ///// ICHEP16 OUTDATED /////
     ucsbsusy::CORRTYPE sdTopCorrType; // --
     ucsbsusy::CORRTYPE sdWCorrType; // --
