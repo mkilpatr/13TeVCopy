@@ -123,8 +123,7 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       float sf   = getbincontent(fjpt, sfhist);
       float eff  = getbincontent(fjpt, effhist);
       float sfunc  = getbinerror(fjpt, sfhist);
-      float effunc = getbinerror(fjpt, effhist);
-      if(dbg) std::cout << "  sf, sfunc, eff, effunc " << sf << " " << sfunc << " " << eff << " " << effunc << std::endl;
+      if(dbg) std::cout << "  sf, sfunc, eff " << sf << " " << sfunc << " " << eff << " " << std::endl;
 
       ///// SYSTEMATICS /////
       // the SF is in 'sf'. check if SF category is top or w and apply corresponding systematic.
@@ -174,9 +173,9 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       ///// END SYSTEMATICS /////
 
       pdata    *= sf*eff;
-      pdataunc += pow(sfunc/sf,2) + pow(effunc/eff,2);
+      pdataunc += pow(sfunc/sf,2);
       pmc      *= eff;
-      pmcunc   += pow(effunc/eff,2);
+      pmcunc   += 0;
       if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
 
     }else{
@@ -216,10 +215,8 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       float effw = getbincontent(fjpt, effhistw);
       float sftunc  = getbinerror(fjpt, sfhistt);
       float sfwunc  = getbinerror(fjpt, sfhistw);
-      float efftunc = getbinerror(fjpt, effhistt);
-      float effwunc = getbinerror(fjpt, effhistw);
-      if(dbg) std::cout << "  sft, sfunct, efft, efftunc " << sft << " " << sftunc << " " << efft << " " << efftunc << std::endl;
-      if(dbg) std::cout << "  sfw, sfuncw, effw, effwunc " << sfw << " " << sfwunc << " " << effw << " " << effwunc << std::endl;
+      if(dbg) std::cout << "  sft, sfunct, efft, " << sft << " " << sftunc << " " << efft << " " << std::endl;
+      if(dbg) std::cout << "  sfw, sfuncw, effw, " << sfw << " " << sfwunc << " " << effw << " " << std::endl;
 
       ///// SYSTEMATICS /////
       // in untagged categories the top/w categories of the SFs are more clear.
@@ -266,9 +263,9 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       ///// END SYSTEMATICS /////
 
       pdata    *= (1 - sft*efft - sfw*effw);
-      pdataunc += ( (pow(sftunc/sft,2)+pow(efftunc/efft,2)) + (pow(sfwunc/sfw,2)+pow(effwunc/effw,2)) )/pow(1 - sft*efft - sfw*effw, 2); // (C_unc^2 + D_unc^2)/(1-C-D)^2
+      pdataunc += ( pow(sftunc/sft,2) + pow(sfwunc/sfw,2) )/pow(1 - sft*efft - sfw*effw, 2); // (C_unc^2 + D_unc^2)/(1-C-D)^2
       pmc      *= (1 - efft - effw);
-      pmcunc   += ( pow(efftunc/efft,2) + pow(effwunc/effw,2) )/pow(1 - efft - effw, 2);
+      pmcunc   += 0;
       if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
     }
   }//fatjets
@@ -377,8 +374,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       float sf   = getbincontent(candpt, sfhist);
       float eff  = getbincontent(candpt, effhist);
       float sfunc  = getbinerror(candpt, sfhist);
-      float effunc = getbinerror(candpt, effhist);
-      if(dbg) std::cout << "  sf, sfunc, eff, effunc " << sf << " " << sfunc << " " << eff << " " << effunc << std::endl;
+      if(dbg) std::cout << "  sf, sfunc, eff,  " << sf << " " << sfunc << " " << eff << " " << std::endl;
 
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved tagged systs: " << std::endl;
@@ -409,9 +405,9 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       ///// END SYSTEMATICS /////
 
       pdata    *= sf*eff;
-      pdataunc += pow(sfunc/sf,2) + pow(effunc/eff,2);
+      pdataunc += pow(sfunc/sf,2);
       pmc      *= eff;
-      pmcunc   += pow(effunc/eff,2);
+      pmcunc   += 0; 
       if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
     }else{
       if(dbg) std::cout << "  in reco untagged cat" << std::endl;
@@ -431,8 +427,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       float sft  = getbincontent(candpt, sfhistt);
       float efft = getbincontent(candpt, effhistt);
       float sftunc  = getbinerror(candpt, sfhistt);
-      float efftunc = getbinerror(candpt, effhistt);
-      if(dbg) std::cout << "  sft, sfunct, efft, efftunc " << sft << " " << sftunc << " " << efft << " " << efftunc << std::endl;
+      if(dbg) std::cout << "  sft, sfunct, efft,  " << sft << " " << sftunc << " " << efft << " " << std::endl;
 
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved untagged systs: " << std::endl;
@@ -463,9 +458,9 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       ///// END SYSTEMATICS /////
 
       pdata    *= (1 - sft*efft);
-      pdataunc += ( (pow(sftunc/sft,2)+pow(efftunc/efft,2)))/pow(1 - sft*efft, 2); // (C_unc^2 + D_unc^2)/(1-C-D)^2
+      pdataunc += pow(sftunc/sft,2)/pow(1 - sft*efft, 2); // (C_unc^2 + D_unc^2)/(1-C-D)^2
       pmc      *= (1 - efft);
-      pmcunc   += ( pow(efftunc/efft,2))/pow(1 - efft, 2);
+      pmcunc   += 0;
       if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
     }
   }//cands
