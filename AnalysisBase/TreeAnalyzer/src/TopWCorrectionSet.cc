@@ -607,11 +607,11 @@ void TopWCorrectionSet::load(TString sdCorrName, int correctionOptions)
   options_ = correctionOptions; // bring options bits into CorrectionSet class for use by processCorrection()
 
   if(correctionOptions & SDMVA) {
-      sdMVACorr = new SdMVACorr(correctionOptions);
+      sdMVACorr = new SdMVACorr();
       corrections.push_back(sdMVACorr);
   }
   if(correctionOptions & RESMVATOP) {
-      resMVATopCorr = new ResMVATopCorr(correctionOptions);
+      resMVATopCorr = new ResMVATopCorr();
       corrections.push_back(resMVATopCorr);
   }
   ///// ICHEP16 OUTDATED /////

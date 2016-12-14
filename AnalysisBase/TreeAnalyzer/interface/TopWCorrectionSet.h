@@ -145,6 +145,8 @@ public:
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
+  SdMVACorr * getSdMVACorr() const {return sdMVACorr;} // very useful for systematics calculations
+  ResMVATopCorr * getResMVATopCorr() const {return resMVATopCorr;}
   float getSdMVAWeight() const {return sdMVAWeight;}
   float getResMVATopWeight() const {return resMVATopWeight;}
   float getSdTopWeight() const {return sdTopWeight;} ///// ICHEP16 OUTDATED /////
