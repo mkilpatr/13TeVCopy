@@ -145,8 +145,8 @@ public:
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
-  SdMVACorr * getSdMVACorr() const {return sdMVACorr;} // very useful for systematics calculations
-  ResMVATopCorr * getResMVATopCorr() const {return resMVATopCorr;}
+  float getAnySdMVAWeight(int correctionOptions, const std::vector<FatJetF*> &fatjets) const { return sdMVACorr->process(correctionOptions,fatjets); }
+  float getAnyResMVATopWeight(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops) const { return resMVATopCorr->process(correctionOptions,resMVATops, hadronicGenTops); }
   float getSdMVAWeight() const {return sdMVAWeight;}
   float getResMVATopWeight() const {return resMVATopWeight;}
   float getSdTopWeight() const {return sdTopWeight;} ///// ICHEP16 OUTDATED /////

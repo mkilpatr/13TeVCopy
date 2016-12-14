@@ -6,6 +6,7 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TopWCorrectionSet.h"
 
 using namespace ucsbsusy;
 
@@ -623,6 +624,8 @@ struct ExtraVarsFiller {
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
     i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
+    data->add<float>("sdMVAWeight_Nominal",1);
+    data->add<float>("resTopWeight_Nominal",1);
   }
 
   void bookJetMET(TreeWriterData* data){
@@ -706,7 +709,7 @@ struct ExtraVarsFiller {
     i_genb2eta       = data->add<float>("","genb2eta","F",0);
     i_dphigenb1genb2 = data->add<float>("","dphigenb1genb2","F",0);
     i_drgenb1genb2   = data->add<float>("","drgenb1genb2","F",0);
-    i_genlepq        = data->add<float>("","genlepq","F",0);
+    i_genlepq        = data->add<int>("","genlepq","I",0);
     i_ngenmu         = data->add<int>("","ngenmu","I",0);
     i_ngenel         = data->add<int>("","ngenel","I",0);
     i_ngentau        = data->add<int>("","ngentau","I",0);
@@ -1361,6 +1364,15 @@ struct ExtraVarsFiller {
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
+
+    float sdMVAWeight_Nominal;
+    float resTopWeight_Nominal;
+    int options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP; // nominal
+    if(!sdMVAWeight_Nominal) sdMVAWeight_Nominal = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    if(!resTopWeight_Nominal) resTopWeight_Nominal = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+
+    data->fill<float>("sdMVAWeight_Nominal", sdMVAWeight_Nominal);
+    data->fill<float>("resTopWeight_Nominal", resTopWeight_Nominal);
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
