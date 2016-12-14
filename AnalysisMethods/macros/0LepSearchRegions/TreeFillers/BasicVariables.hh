@@ -251,10 +251,10 @@ struct BasicVarsFiller {
     data->fill<float>(i_leptnpweightHM,     ana->leptonCorrections.getTnPLepWeightHM());
     data->fill<float>(i_isrWeight,          ana->isrCorrections.getISRWeight());
     data->fill<float>(i_isrWeightTight,     ana->isrCorrections.getISRWeightTight());
-    data->fill<float>(i_sdtopFastSimWeight, ana->eventCorrections.getSdTopWeight());
-    data->fill<float>(i_sdwFastSimWeight, ana->eventCorrections.getSdWWeight());
-    data->fill<float>("sdMVAWeight",        ana->eventCorrections.getSdMVAWeight());
-    data->fill<float>("resTopWeight",       ana->eventCorrections.getResMVATopWeight());
+    data->fill<float>(i_sdtopFastSimWeight, ana->topWCorrections.getSdTopWeight());
+    data->fill<float>(i_sdwFastSimWeight,   ana->topWCorrections.getSdWWeight());
+    data->fill<float>("sdMVAWeight",        ana->topWCorrections.getSdMVAWeight());
+    data->fill<float>("resTopWeight",       ana->topWCorrections.getResMVATopWeight());
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));

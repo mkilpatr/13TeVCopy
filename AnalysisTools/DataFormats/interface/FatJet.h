@@ -92,6 +92,7 @@ enum FatJetRecoCategory {
                     RECONOTFILLED     = 0
                   , SDMVATOP          = (1 << 0)
                   , SDMVAW            = (1 << 1)
+                  , RECOUNTAGGED      = (1 << 2) // no reco category
 };
 
 enum FatJetGenCategory {
@@ -100,6 +101,7 @@ enum FatJetGenCategory {
                   , GENW              = (1 << 1) // a hadronic gen w is within 0.8 of fatjet axis
                   , GENTOP_CONTAINED  = (1 << 2) // b/w1/w2 partons of a hadronic gen top are contained within 0.8 of fatjet axis
                   , GENW_CONTAINED    = (1 << 3) // w1/w2 partons of a hadronic gen w are contained within 0.8 of fatjet axis
+                  , GENUNTAGGED       = (1 << 4) // no gen category
 };
 
 template <class CoordSystem>
