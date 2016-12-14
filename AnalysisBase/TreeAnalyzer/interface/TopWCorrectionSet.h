@@ -17,7 +17,7 @@ namespace ucsbsusy {
 
 class SdMVACorr : public Correction {
   public:
-    SdMVACorr(int correctionOptions);
+    SdMVACorr();
     ~SdMVACorr();
     float process(int correctionOptions, const std::vector<FatJetF*> &fatjets);
 
@@ -57,7 +57,7 @@ class SdMVACorr : public Correction {
 
 class ResMVATopCorr : public Correction {
   public:
-    ResMVATopCorr(int correctionOptions);
+    ResMVATopCorr();
     ~ResMVATopCorr();
     float process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops);
 

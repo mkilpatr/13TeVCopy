@@ -1,6 +1,7 @@
 /*
  * getLepCorEffs.C
  * adapted from mullin, june 2016
+ * last updated Dec 2016 for AN SUS-16-437
  *
  * creates pdf/svg/root 2D id and iso eff plots for electrons and muons
  * can also create many additional plots for studies
@@ -51,7 +52,8 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h" 
 
   // settings - four subdirs {id,iso}/{sr/cr} assumed
-  const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/20072016-LepEff/";
+  const TString treedir = "/uscms_data/d1/apatters/trees/20161214-lepsf/";
+  //const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/20072016-LepEff/";
   //const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/LepEff/80X-22062016/merged/";
   //const TString treedir = "/eos/uscms/store/user/apatters/ntuples/LepEff/80X-22062016/merged/";
   //const TString treedir = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160201_madgraph_SR_Iso/"; // Sam's trees to reproduce AN plot. change for {CR,SR}x{Id,Iso}.
@@ -60,7 +62,7 @@
 
   //const bool isId  = lowerTString(treedir).Contains("id"); //outdated method, keeping in case useful
   //const bool isSR  = lowerTString(treedir).Contains("sr");
-  //TFile* f = TFile::Open(treedir + ((isSR) ? "/sr/" : "/cr/") + "ttbarplusw-mg_tree.root","READONLY");
+  //TFile* f = TFile::Open(treedir + ((isSR) ? "/sr/" : "/cr/") + "ttbarplusw_tree.root","READONLY");
   //TTree* t = (TTree*)f->Get("Events");
 
   // lumi, weights, selections
@@ -90,19 +92,25 @@
   const TString dphij34met = " && dphij3met>0.5 && dphij4met>0.5";
   const TString dphij123   = " && dphij12met>1 && dphij3met>0.5 && dphij4met>0.5";
   const TString dphij1lmet = " && dphij1lmet>2";
+  const TString dphij1234met = " && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5";
+  const TString dphiLM       = " && dphij1met>0.5 && dphij2met>0.15 && dphij3met>0.15";
+  const TString zerotopw     = " && nsdtop==0 && nsdw==0 && nrestop==0";
+  const TString isr300       = " && ak8isrpt>300 && dphiisrmet>2";
   const TString metovsqrtht= " && metovsqrtht>10";
   const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
   const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
-  const TString nearHMbase   = trig +              met + njets + nlbjets + nbjets;
-  const TString nearLMbase   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht;
+  //const TString nearHMbase   = trig +              met + njets + nlbjets + nbjets; // ICHEP16
+  //const TString nearLMbase   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // ICHEP16
+  const TString nearHMbase   = trig + njets + met + nbjets + dphij1234met; // Moriond17
+  const TString nearLMbase   = trig + njets2 + met + zerotopw + metovsqrtht + isr300 + dphiLM;
   const TString commonbase   = trig +              met + njets2;
   //const TString lepeffbase   = "1==1" + met + njets75 + njets + nlbjets + nbjets; // triggers removed
 
   // lumi, weight, trig, selections being set
-  const TString lumistr  = "2.317";
+  const TString lumistr  = "36.2";
   const TString mcwgt    = lumistr + "*weight";
-  const TString weight   = lumistr + "*weight*truePUWeight*btagWeight";
-  const TString baseline = nearHMbase;
+  const TString weight   = lumistr + "*weight*truePUWeight*topptWeight*btagWeight";
+  const TString baseline = nearHMbase; //CHANGEME
 
   // set bins of histograms
   std::vector<float> binsPt       { 5, 10, 20, 30, 40, 50, 60, 80, 120};

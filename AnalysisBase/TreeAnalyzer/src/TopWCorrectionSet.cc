@@ -7,7 +7,7 @@ namespace ucsbsusy {
 
 // load the needed files & histos
 // strategy: they're all tiny histos loaded once at runtime. so LOAD THEM ALL. user can swap the filename+histname to the dummy root filename+"dummy" if needed.
-SdMVACorr::SdMVACorr(int correctionOptions) : Correction("SdMVA") {
+SdMVACorr::SdMVACorr() : Correction("SdMVA") {
 
   sdMVAInputFile         = new TFile(fileName,"read");
   sdMVAFullFastInputFile = new TFile(fileNameFullFast,"read");
@@ -289,7 +289,7 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
 
 
 
-ResMVATopCorr::ResMVATopCorr(int correctionOptions) : Correction("ResMVATop") {
+ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
 
   resMVATopInputFile      = new TFile(fileName,"read");
   resMVASystsFile         = new TFile(fileNameSysts,"read");

@@ -36,18 +36,10 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
   public :
     LepCorAnalyzer(TString fileName, TString treeName, TString outfileName, size randomSeed, bool isMCTree, cfgSet::ConfigSet *pars) :
       ZeroLeptonAnalyzer(fileName, treeName, outfileName, randomSeed, isMCTree, pars) {
-      //zIsInvisible = true; if(fileName.Contains("dy")) zIsInvisible = false;
-      if (fileName.Contains("/store/user/ocolegro/13TeV/030616/merged/ttbar-mg-onelep")){
-        clog << "##############################################" << endl;
-        clog << "######    Will correct ttbar-1l xsec   #######" << endl;
-        clog << "##############################################" << endl;
-        isOneLepTTbar = true;
-      }
     }
 
     const double metcut_   = 200.0 ;
     const int    minnjets_ =   2   ;
-    //const double minj2pt_  = 75.0  ;
 
     bool isOneLepTTbar = false;
     bool applyCHFFilter    = false ;
@@ -118,14 +110,10 @@ class LepCorAnalyzer : public ZeroLeptonAnalyzer {
 
     bool fillEvent() {
 
-      //if (isOneLepTTbar) weight *= 0.5;
-
-      //if(applyCHFFilter && !filler.passCHFFilter(jets)) return false;
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
 
       if(!goodvertex) return false;
       if(nJets     < minnjets_) return false;
-      //if(jets.at(1)->pt() < minj2pt_)  return false;
       if(met->pt() < metcut_  ) return false;
 
       // alternative: turn off iso in both, then for iso eff, make vars with it on.
@@ -292,8 +280,6 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
   gSystem->mkdir(outputdir,true); // only works in interactive. in condor outputdir = '.'
   TString outfilename = outputdir+"/"+sname+"_tree.root";
 
-  TString treeName = "Events";
-
   // manually, or through the filename, set the options (four possibilities)
   // if running on condor, note outputdir = '.', so we cannot use the name.
   // can __always__ change manually between submissions using first two lines.
@@ -321,17 +307,18 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
     //pars.muons.passID      = &MuonID::inclusive;
   }
 
-  // disable JetID for signal samples
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW")) pars.jets.applyJetID = false;
-  pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
-
   std::cout << std::endl << "*****************************************" << std::endl;
   std::cout << "Handling : " << ((isId) ? "Id" : "Iso") << " effs for the " << ((isSR) ? "SR (veto) region lepton WPs" : "CR lepton WPs") << std::endl;
 
+  // disable JetID for signal samples
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) pars.jets.applyJetID = false;
+  pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
+
+  TString treeName = "Events";
   LepCorAnalyzer a(fullname, treeName, outfilename, fileindex+2, isMC, &pars);
 
   // CHF filter for FastSim
-  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd")) a.applyCHFFilter = true;
+  if (sname.Contains("T2tt") || sname.Contains("T2tb") || sname.Contains("T2bW") || sname.Contains("T2fbd") || sname.Contains("T2cc")) a.applyCHFFilter = true;
 
   a.analyze(10000);
 
