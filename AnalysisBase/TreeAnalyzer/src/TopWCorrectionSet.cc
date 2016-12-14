@@ -132,7 +132,6 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_UP){
         if(dbg) std::cout << "    merged stats up systs, factor on sf of " << 1 + sfunc << std::endl;
         sf  *= (1 + sfunc);
-        eff *= (1 + effunc);
       }
       if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS){
         float syst = getbincontent(fjpt, (recotop ? sdMVA_Full_systs_t_ps : sdMVA_Full_systs_w_ps));
@@ -227,9 +226,7 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(dbg) std::cout << "  merged untagged systs: " << std::endl;
       if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_UP){
         sft  *= (1 + sftunc);
-        efft *= (1 + efftunc);
         sfw  *= (1 + sfwunc);
-        effw *= (1 + effwunc);
         if(dbg) std::cout << "    merged stats up systs, factor on sft, sfw of " << 1+sftunc << " " << 1+sfwunc << std::endl;
       }
       if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS){
@@ -388,7 +385,6 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP){
         if(dbg) std::cout << "    RESOLVED stats up systs, factor on sf of " << 1 + sfunc << std::endl;
         sf  *= (1 + sfunc);
-        eff *= (1 + effunc);
       }
       if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS){
         float syst = getbincontent(candpt, resTop_Full_systs_ps);
@@ -443,7 +439,6 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP){
         if(dbg) std::cout << "    RESOLVED stats up systs, factor on sft of " << 1 + sftunc << std::endl;
         sft  *= (1 + sftunc);
-        efft *= (1 + efftunc);
       }
       if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS){
         float syst = getbincontent(candpt, resTop_Full_systs_ps);
