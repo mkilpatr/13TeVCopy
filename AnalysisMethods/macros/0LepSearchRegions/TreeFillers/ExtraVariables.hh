@@ -619,12 +619,7 @@ struct ExtraVarsFiller {
     i_mtnl0_ak8passtopt   = data->add<bool>        ("","mtnl0_ak8passtopt"  ,"O",0);
   }
 
-  void bookSyst(TreeWriterData* data){
-    i_systweights       = data->addMulti<float>("","systweights",0);
-    i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
-    i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
-    i_costhetastar      = data->add<float>("","costhetastar","F",-1);
-
+  void bookTopWSyst(TreeWriterData* data){
     // top/w tagging systs
     data->add<float>("sdMVAWeight_Nominal",0);
     data->add<float>("sdMVAWeight_STATS_UP",0);
@@ -638,6 +633,13 @@ struct ExtraVarsFiller {
     data->add<float>("resTopWeight_PS",0);
     data->add<float>("resTopWeight_GEN",0);
     data->add<float>("resTopWeight_MISTAG_UP",0);
+  }
+
+  void bookSyst(TreeWriterData* data){
+    i_systweights       = data->addMulti<float>("","systweights",0);
+    i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
+    i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
+    i_costhetastar      = data->add<float>("","costhetastar","F",-1);
   }
 
   void bookJetMET(TreeWriterData* data){
@@ -1367,15 +1369,7 @@ struct ExtraVarsFiller {
 
 
 
- 
-
-  void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    for(auto wgt : *ana->evtInfoReader.systweights) {
-      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
-    }
-    data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
-    data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
-    data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
+  void fillTopWSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     /////// top/w systematics
     float sdMVAWeight_Nominal;
@@ -1439,6 +1433,15 @@ struct ExtraVarsFiller {
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP; // MISTAG_UP
     resTopWeight_MISTAG_UP = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
     data->fill<float>("resTopWeight_MISTAG_UP", resTopWeight_MISTAG_UP);
+  }
+
+  void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
+    data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
+    data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
+    data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
