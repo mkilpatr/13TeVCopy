@@ -80,8 +80,8 @@
   const TString dphij4met  = " && dphij4met>0.5";
   const TString dphij34met = " && dphij3met>0.5 && dphij4met>0.5";
   const TString dphij123   = " && dphij12met>1 && dphij3met>0.5 && dphij4met>0.5";
-  const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
-  const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
+  //const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
+  //const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
 
   // moriond17
   const TString trig       = "passmetfilters";
@@ -97,8 +97,8 @@
   const TString metovsqrtht= " && metovsqrtht>10";
 
   // ichep16
-  //const TString nearHMbase   = trig +              met + njets + nlbjets + nbjets; // ICHEP16
-  //const TString nearLMbase   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // ICHEP16
+  //const TString nearHMbasenodphi   = trig +              met + njets + nlbjets + nbjets; // ICHEP16
+  //const TString nearLMbasenodphi   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // ICHEP16
   //  const TString commonbase   = trig +              met + njets2;
   //const TString lepeffbase   = "1==1" + met + njets75 + njets + nlbjets + nbjets; // triggers removed
 
@@ -110,11 +110,11 @@
 
   const TString lumistr  = "36.2";
   const TString mcwgt    = lumistr + "*weight"; // not used by default
-  const TString weight   = lumistr + "*weight*truePUWeight*topptWeight*btagWeight"; // Moriond17
+  const TString weight   = lumistr + "*weight*truePUWeight*topptWeight*btagWeight*sdMVAWeight*resTopWeight"; // Moriond17 //CHANGEME
   //const TString weight = lumistr + "*weight*truePUWeight*btagWeight"; // ICHEP16
 
-  bool inHM = false; //CHANGEME high delta-M? chooses baseline cut
-  bool nodphi = false; //CHANGEME dphi or no dphi? chooses baseline cut
+  bool inHM = true; //CHANGEME high delta-M? chooses baseline cut
+  bool nodphi = true; //CHANGEME remove dphi cut? 
   const TString baseline = (inHM ? (nodphi ? nearHMbasenodphi : nearHMbase) : (nodphi ? nearLMbasenodphi : nearLMbase) ); //CHANGEME
 
   // set bins of histograms
@@ -323,7 +323,7 @@ void createEff2D( TTree* t, bool isId, bool isSR, TString outPlotFileName,
   if( isMu && isId ) { // only for muon ID
     h_eff->SetMinimum( (isSR) ? 0.90 : 0.75 ); // mu id sr was 0.94
   }else { // el/mu iso, and ele id
-    h_eff->SetMinimum( (isSR) ? 0.70 : 0.45 );
+    h_eff->SetMinimum( (isSR) ? 0.60 : 0.40 );
   }
 
   // save histo to root file. will be used in data directory
