@@ -142,11 +142,12 @@ public:
   CorrectionSet();
   virtual ~CorrectionSet();
   virtual void processCorrection(const BaseTreeAnalyzer * ana) = 0;
+  TString name;
+
 protected:
   virtual void loadSimple(TString correctionSetName, int correctionOptions);
   virtual void loadFile(TString correctionSetName, TString fileName, int correctionOptions);
 
-  TString name;
   TFile * file;
   int options_;
   std::vector<Correction *> corrections;

@@ -11,12 +11,12 @@
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/WPolCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/EventCorrectionSet.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TopWCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TriggerCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/LeptonCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JetAndMETCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/ISRCorrectionSet.h"
-
 
 #include <iostream>
 
@@ -189,25 +189,30 @@ namespace cfgSet {
     int ttbarCorrections;
     int wpolCorrections;
     int eventCorrections;
+    int topWCorrections;
     int triggerCorrections;
     int puCorrections;
     int leptonCorrections;
     int jetAndMETCorrections;
 
+    TString dummy1DCorrectionsFile;
 
     TString ttbarCorrectionFile;
     TString eventCorrectionFile;
+    TString puCorrectionFile;
+
+    // should update dec '16 to look like lep (many files)
+    /*
+    TString topWCorrectionFile;
     TString sdMVACorrectionFile;
     TString sdMVAFullFastCorrectionFile;
     TString resMVATopCorrectionFile;
     TString resMVATopFullFastCorrectionFile;
-    TString sdCorrectionFile;
-    TString puCorrectionFile;
-    ucsbsusy::CORRTYPE sdMVACorrType;
-    ucsbsusy::CORRTYPE resMVATopCorrType;
-    ucsbsusy::CORRTYPE sdTopCorrType;
-    ucsbsusy::CORRTYPE sdWCorrType;
+    */
 
+    TString sdCorrectionFile; ///// ICHEP16 OUTDATED /////
+    ucsbsusy::CORRTYPE sdTopCorrType; // --
+    ucsbsusy::CORRTYPE sdWCorrType; // --
 
     TString triggerCorrectionFile;
     ucsbsusy::CORRTYPE trigPhotonCorrType;
@@ -261,14 +266,13 @@ namespace cfgSet {
         ttbarCorrections(ucsbsusy::TtbarCorrectionSet::NULLOPT),
         wpolCorrections(ucsbsusy::WPolCorrectionSet::NULLOPT),
         eventCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
+        topWCorrections(ucsbsusy::TopWCorrectionSet::NULLOPT),
         triggerCorrections(ucsbsusy::TriggerCorrectionSet::NULLOPT),
         puCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
         leptonCorrections(ucsbsusy::LeptonCorrectionSet::NULLOPT),
         jetAndMETCorrections(ucsbsusy::EventCorrectionSet::NULLOPT),
-        sdMVACorrType(ucsbsusy::NONE),
-        resMVATopCorrType(ucsbsusy::NONE),
-        sdTopCorrType(ucsbsusy::NONE),
-        sdWCorrType(ucsbsusy::NONE),
+        sdTopCorrType(ucsbsusy::NONE), ///// ICHEP16 OUTDATED /////
+        sdWCorrType(ucsbsusy::NONE), // --
         trigPhotonCorrType(ucsbsusy::NONE),
         trigElectronCorrType(ucsbsusy::NONE),
         trigMuonCorrType(ucsbsusy::NONE),
@@ -315,14 +319,20 @@ namespace cfgSet {
           os << "PU ";
         if(a.eventCorrections & ucsbsusy::EventCorrectionSet::NORM)
           os << "NORM ";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDMVA)
-          os << " SDMVA Eff("<< a.sdMVACorrType <<")";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::RESMVATOP)
-          os << " RESMVATOP Eff("<< a.resMVATopCorrType <<")";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDTOP)
-          os << " SDTOP Eff("<< a.sdTopCorrType <<")";
-        if(a.eventCorrections & ucsbsusy::EventCorrectionSet::SDW)
-          os << " SDW Eff("<< a.sdWCorrType <<")";
+        os << std::endl;
+
+      }
+
+      if(a.topWCorrections != ucsbsusy::TopWCorrectionSet::NULLOPT){
+        os << "Applying Top/W corrections -> ";
+        if(a.topWCorrections & ucsbsusy::TopWCorrectionSet::SDMVA)
+          os << " SDMVA";
+        if(a.topWCorrections & ucsbsusy::TopWCorrectionSet::RESMVATOP)
+          os << " RESMVATOP";
+        if(a.topWCorrections & ucsbsusy::TopWCorrectionSet::ICHEP16SDTOP) ///// ICHEP16 OUTDATED /////
+          os << " ICHEP16 SDTOP";
+        if(a.topWCorrections & ucsbsusy::TopWCorrectionSet::ICHEP16SDW) ///// ICHEP16 OUTDATED /////
+          os << " ICHEP16 SDW";
         os << std::endl;
 
       }

@@ -149,8 +149,13 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.resMVATopFullFastCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
+    }
+
+    if(configSet.corrections.topWCorrections != TopWCorrectionSet::NULLOPT){
+      topWCorrections.load(configSet.corrections.sdCorrectionFile, configSet.corrections.topWCorrections);
+      corrections.push_back(&topWCorrections);
     }
 
     if(configSet.corrections.triggerCorrections != TriggerCorrectionSet::NULLOPT){
@@ -164,8 +169,8 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
-      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagFastSimEffFile,configSet.corrections.bTagFastSimSFFile,configSet.corrections.bTagCorrections);
-      corrections.push_back(&bTagCorrections);
+//HACK      bTagCorrections.load(configSet.corrections.bTagEffFile,configSet.corrections.bTagSFFile,configSet.corrections.bTagFastSimEffFile,configSet.corrections.bTagFastSimSFFile,configSet.corrections.bTagCorrections);
+//HACK      corrections.push_back(&bTagCorrections);
     }
     if(configSet.corrections.jetAndMETCorrections != JetAndMETCorrectionSet::NULLOPT){
       jetAndMETCorrections.load(configSet.corrections.jetAndMETCorrections,configSet.corrections.jetResFile,configSet.corrections.jetResCorrFile,configSet.corrections.jetResTailFile,randGen);
@@ -526,7 +531,16 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-
+  //load corrections except those which MUST come later in processMoreVariables.
+  //for these, if we were to include them here in a first pass, they would be INCORRECTLY FILLED (I tested this). Eg all gen categories aren't filled.
+  //some protection put in place by throwing exception when encountering "NOTFILLED" default  gen categories.
+  //tradeoff is that these SFs will default to '1' if the user forgets to call processMoreVariables(). Also there are no resolved tops so they'll notice!
+  // LIST AND REASON:
+  //   iC->name == "TOPW", b/c the merged top/w SFs req' the gen cats to be filled, and resolved SFs req' the resolved candidates
+  for(auto * iC : corrections){
+    if(iC->name == TString("TOPW")) continue;
+    iC->processCorrection(this);
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processMoreVariables(){
@@ -582,7 +596,6 @@ void BaseTreeAnalyzer::processMoreVariables(){
     }
   }
 
-
   // mva-based resolved tops (MUST GO AFTER JETS AND SD MVA TOPS AND WS)
   auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops_, 0.8);
   resMVATopCands = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_ALL); // sorted by MVA score
@@ -594,12 +607,11 @@ void BaseTreeAnalyzer::processMoreVariables(){
   std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
   nResMVATopMedium = resMVATopMedium.size();
 
-  // FIXME: do we need any corrections for preselection?
-  //load corrections corrections
+  //load only the corrections which required processMoreVariables (just "TOPW" for now). see above corrections loop in processVariables().
   for(auto * iC : corrections){
+    if(iC->name != "TOPW") continue;
     iC->processCorrection(this);
   }
-
 
   isReady_ = true;
 }
