@@ -621,18 +621,18 @@ struct ExtraVarsFiller {
 
   void bookTopWSyst(TreeWriterData* data){
     // top/w tagging systs
-    data->add<float>("sdMVAWeight_Nominal",0);
-    data->add<float>("sdMVAWeight_STATS_UP",0);
-    data->add<float>("sdMVAWeight_PS",0);
-    data->add<float>("sdMVAWeight_GEN",0);
-    data->add<float>("sdMVAWeight_MISTAG_W_UP",0);
-    data->add<float>("sdMVAWeight_MISTAG_T_UP",0);
+    data->add<float>("sdMVAWeight_Nominal",1);
+    data->add<float>("sdMVAWeight_STATS_UP",1);
+    data->add<float>("sdMVAWeight_PS",1);
+    data->add<float>("sdMVAWeight_GEN",1);
+    data->add<float>("sdMVAWeight_MISTAG_W_UP",1);
+    data->add<float>("sdMVAWeight_MISTAG_T_UP",1);
 
-    data->add<float>("resTopWeight_Nominal",0);
-    data->add<float>("resTopWeight_STATS_UP",0);
-    data->add<float>("resTopWeight_PS",0);
-    data->add<float>("resTopWeight_GEN",0);
-    data->add<float>("resTopWeight_MISTAG_UP",0);
+    data->add<float>("resTopWeight_Nominal",1);
+    data->add<float>("resTopWeight_STATS_UP",1);
+    data->add<float>("resTopWeight_PS",1);
+    data->add<float>("resTopWeight_GEN",1);
+    data->add<float>("resTopWeight_MISTAG_UP",1);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -1370,6 +1370,7 @@ struct ExtraVarsFiller {
 
 
   void fillTopWSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    if(!ana->isMC()) return; // defaults
 
     /////// top/w systematics
     float sdMVAWeight_Nominal;
