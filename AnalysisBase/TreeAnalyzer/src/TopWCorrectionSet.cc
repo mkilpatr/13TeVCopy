@@ -92,8 +92,8 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
   for(auto fj : fatjets){
     if(dbg) std::cout << "  this fatjet pt " << fj->pt() << std::endl;
 
-    if(fj->genCategory() == FatJetGenCategory::GENNOTFILLED)   throw std::invalid_argument(TString::Format("[SdMVACorr::process] Fatjet of pt %.2f has gen category not filled. Cannot continue. Compare with genCategory filler in BaseTreeAnalyzer.cc", fj->pt()) );
-    if(fj->recoCategory() == FatJetRecoCategory::RECONOTFILLED) throw std::invalid_argument(TString::Format("[SdMVACorr::process] Fatjet of pt %.2f has reco category not filled. Cannot continue. Compare with recoCategory filler in BaseTreeAnalyzer.cc", fj->pt()) );
+    //if(fj->genCategory() == FatJetGenCategory::GENNOTFILLED)   throw std::invalid_argument(TString::Format("[SdMVACorr::process] Fatjet of pt %.2f has gen category not filled. Cannot continue. Compare with genCategory filler in BaseTreeAnalyzer.cc", fj->pt()) );
+    //if(fj->recoCategory() == FatJetRecoCategory::RECONOTFILLED) throw std::invalid_argument(TString::Format("[SdMVACorr::process] Fatjet of pt %.2f has reco category not filled. Cannot continue. Compare with recoCategory filler in BaseTreeAnalyzer.cc", fj->pt()) );
     bool recotop = fj->recoCategory() & FatJetRecoCategory::SDMVATOP;
     bool recow   = fj->recoCategory() & FatJetRecoCategory::SDMVAW;
     bool gentop  = fj->genCategory()  & FatJetGenCategory::GENTOP;
