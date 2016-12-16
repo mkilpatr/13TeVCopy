@@ -6,7 +6,7 @@ import time
 import ast
 from shutil import copy
 from ConfigParser import SafeConfigParser
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from ROOT import gROOT, TFile, TTree, TH1, TH1D, TH2D, Double
 from math import sqrt
 from array import array
@@ -98,6 +98,12 @@ class Datacard:
             self.uncnames = []
             self.uncertainties = {}
             self.compileUncertainties()
+            self.fillUncertaintyValues()
+            if self.printuncs :
+                # printout for debugging
+                print 'printing uncertanties by bin: uncName(' + 'type ::: ' + 'cr_nevts :: ' + 'vals) [-1 means it will be calculated later]'
+                for k in sorted(self.uncertainties.keys()):
+                    print self.uncertainties[k]
 
     def __getattr__(self, name):
         # Look up attributes in self.config as well.
@@ -119,10 +125,10 @@ class Datacard:
                     continue;
                 line = line.strip().rstrip('\n')
                 entries = re.split('\s+:\s+', line)
-                srbins = entries[0]
-                crbins = entries[1]
-                crlabel = entries[1].split('_')[1]
-                self.srtocrbinmaps[crlabel][srbins] = crbins
+                srbin = entries[0]
+                crbin = entries[1]
+                crlabel = crbin.split('_')[1]
+                self.srtocrbinmaps[crlabel][srbin] = crbin
 
     def produceDatacards(self):
         '''Make datacards, one for every bin combination.
@@ -138,7 +144,7 @@ class Datacard:
                 os.makedirs(self.datacarddir)
             else :
                 print 'will be overwritten'
-                os.popen('rm -rf ' + self.datacarddir + '/*')
+                os.popen('rm -rf ' + self.datacarddir)
         else :
             os.makedirs(self.datacarddir)
         copy(self.conf_file, self.datacarddir)
@@ -154,9 +160,9 @@ class Datacard:
         print '\n~~~Making datacards for ', fitregion.type, ' region ', fitregion.label, '~~~'
         # loop over all bins
         ibin = -1
-        for bin in fitregion.binlist :
+        for binlabel in fitregion.binlist :
             ibin += 1
-            binFileBaseName = '_%s.txt' % bin
+            binFileBaseName = '_%s.txt' % binlabel
             if fitregion.type == 'control' :
                 binFileBaseName = '_' + fitregion.label + binFileBaseName
             templateFile = os.path.join(self.datacarddir, 'template' + binFileBaseName)
@@ -175,44 +181,45 @@ class Datacard:
             lineRate = 'rate'.ljust(self.yieldwidth) + 'SIGRATE'
 
             # loop through backgrounds to get yields
-            ibkg = -1
+            ibkg = 0
             nBkgEvts = []
-            for background in fitregion.backgrounds :
+            bkgs_to_process = fitregion.backgrounds[-1:] if fitregion.type == 'control' else fitregion.backgrounds # for cr fit regions, bkg is the last element in 'backgrounds'
+
+            def add_a_proc(process_name, num_events):
                 ibkg += 1
-                samp = background
-                if fitregion.type == 'control' :
-                    background = background.split('_')[0]
-                    if ibkg > 0 :
-                        continue
+                nBkgEvts.append(num_events)
                 lineSBBin += str(ibin).ljust(self.yieldwidth)
-                lineProcess1 += background.ljust(self.yieldwidth)
-                lineProcess2 += str(ibkg + 1).ljust(self.yieldwidth)
+                lineProcess1 += process_name.ljust(self.yieldwidth)
+                lineProcess2 += str(ibkg).ljust(self.yieldwidth)
+                lineRate += str(num_events).ljust(self.yieldwidth)
+
+            for background in bkgs_to_process :
                 nevts = None
-                for frname, fr in self.extcontrolregions.iteritems() :
-                    if background == fr.backgrounds[2] :
-                        for uncname, unc in self.uncertainties.iteritems() :
-                            if uncname.split('_')[0] == frname and bin in uncname and unc.type == 'gmN' :
-                                nevts = float(unc.cr_nevts[bin]['data'] * unc.cr_nevts[bin]['mcsr'] / unc.cr_nevts[bin]['mc'])
-                                if unc.cr_nevts[bin]['mcsub'] > 0.0 :
-                                    nevts *= unc.cr_nevts[bin]['mcsub']
-                                break
-                        break
+                if background in self.bkgtocrmap:
+                    cr = self.bkgtocrmap[background]
+                    if cr.type == 'external':
+                        # only for external cr: fit cr is processed separately
+                        crbin = self.srtocrbinmaps[cr.label][binlabel]
+                        nevts = float(unc.cr_nevts[crbin]['data']) / unc.cr_nevts[crbin]['mc'] * max(cr.get(cr.srmcname, binlabel)[0], 1e-9)
+                        if unc.cr_nevts[crbin]['mcsub'] > 0.0 :
+                            nevts *= unc.cr_nevts[crbin]['mcsub']
+                        add_a_proc(background, nevts)
+
                 if nevts is None:
-                    nevts = fitregion.get(samp, bin)[0]
-                nBkgEvts.append(nevts)
-                lineRate += str(nevts).ljust(self.yieldwidth)
+                    # singal region or fit cr
+                    nevts = fitregion.get(background, binlabel)[0]
+                    add_a_proc(background, nevts)
 
             # compute data yield if applicable
             datayield = 0
             if self.has_data and not (self.blind_sr and fitregion.type == 'signal') :
-                datayield = int(fitregion.get(fitregion.dataname, bin)[0])
+                datayield = int(fitregion.get(fitregion.dataname, binlabel)[0])
             else :
                 datayield = int(round(sum(nBkgEvts)))
 
             lineSObs = 'observation'.ljust(self.yieldwidth) + str(datayield)
 
             # fill uncertainties
-            # for now ignore differences in systematics for different signal samples
             lineSys = ''
             nUncs = 0
             if self.usedummyuncs or not self.uncertainties :
@@ -221,11 +228,7 @@ class Datacard:
                 nUncs += 1
                 ibkg = -1
                 lineSysBkg = ''
-                for background in fitregion.backgrounds :
-                    if fitregion.type == 'control' :
-                        background = background.split('_')[0]
-                        if ibkg > -1 :
-                            continue
+                for background in bkgs_to_process :
                     ibkg += 1
                     lineSysSig += '-\t'
                     lineSysBkg += 'sys' + background + 'bin' + str(ibin) + '\tlnN\t-\t'
@@ -243,10 +246,7 @@ class Datacard:
             # fill uncertainties according to values defined in uncertainty config files
                 for uncname in sorted(self.uncertainties.keys()) :
                     unc = self.uncertainties[uncname]
-                    if not unc.vals.has_key(bin) and not unc.vals.has_key('all') :
-                        continue
-                    backgrounds = [fitregion.backgrounds[0].split('_')[0]] if fitregion.type == 'control' else [b for b in fitregion.backgrounds]
-                    uncline = self.getUncertaintyLine(uncname, unc, bin, backgrounds, nBkgEvts)
+                    uncline = self.getUncertaintyLine(uncname, binlabel, bkgs_to_process)
                     lineSys += uncline
                     if not uncline == '' :
                         nUncs += 1
@@ -271,7 +271,7 @@ class Datacard:
 
             # now loop through the signal files to get the actual datacards
             for signal in self.signals:
-                nSig = fitregion.get(signal, bin)[0]
+                nSig = fitregion.get(signal, binlabel)[0]
                 if nSig == 0.0 :
                     nSig = 0.00000001
 
@@ -290,14 +290,14 @@ class Datacard:
                         # any of the following if cases are problematic!
                         if not self.uncertainties.has_key(uncname) :
                             print 'Didn\'t find uncertainty', uncname, 'in uncertainty list'
-                        elif not self.uncertainties[uncname].vals.has_key(bin) :
-                            print 'Uncertainty', uncname, 'not defined for bin', bin
-                        elif not self.uncertainties[uncname].vals[bin].has_key(signal) :
-                            print 'Uncertainty', uncname, 'not filled for', signal, 'in bin', bin
+                        elif not self.uncertainties[uncname].vals.has_key(binlabel) :
+                            print 'Uncertainty', uncname, 'not defined for bin', binlabel
+                        elif not self.uncertainties[uncname].vals[binlabel].has_key(signal) :
+                            print 'Uncertainty', uncname, 'not filled for', signal, 'in bin', binlabel
                         else :
                             hasUncVal = True
-                        sigUncVal = self.uncertainties[uncname].vals[bin][signal] if hasUncVal else 1.0
-                        newline = line.replace('$SIG', 'signal').replace('SIGUNC', '%4.2f' % sigUncVal)
+                        sigUncVal = self.uncertainties[uncname].vals[binlabel][signal] if hasUncVal else 1.0
+                        newline = line.replace('$SIG', 'signal').replace('SIGUNC', '%4.3f' % sigUncVal)
                         dclines[iline] = newline
                 datacard = '\n'.join(dclines)
 
@@ -313,11 +313,21 @@ class Datacard:
     def getDummyUncertainties(self, procname):
         """Function to get dummy uncertanties.
         """
-        if procname == 'sig' :
+        if procname == 'signal' :
             return 1.1
         else :
             return 1.3
         return '-'
+
+    def _getBinList(self, uncname):
+        crname = uncname.split('_')[0]
+        if crname in self.extcontrolregions:
+            binlist = self.extcontrolregions[crname].binlist[:]
+        else:
+            binlist = self.signalregion.binlist[:]
+            for cr in self.fitcontrolregions.values():
+                binlist += cr.binlist
+        return binlist
 
     def compileUncertainties(self):
         """Get list of all uncertainty names and values and samples to which they must be applied
@@ -337,37 +347,28 @@ class Datacard:
                     self.uncertainties[name] = Uncertainty(name, type)
                     self.uncnames.append(name)
                 else :
-                    binlist = self.signalregion.binlist[:]
-                    crname = name.split('_')[0]
-                    if crname not in self.extcontrolregions:
-                        for cr in self.fitcontrolregions.values() :
-                            binlist += cr.binlist
+                    binlist = self._getBinList(name)
                     for binlabel in binlist :
                         uncname = name.replace('$BIN', binlabel)
-                        if '$BKG' not in uncname :
+                        if '$BKG' not in uncname:
+                            # '$SIG' will be grouped together w/ the same uncname
                             if self.uncertainties.has_key(uncname) :
                                 continue
                             self.uncertainties[uncname] = Uncertainty(uncname, type)
                             self.uncnames.append(uncname)
-                        else :
-                            for sample in self.backgrounds :
-                                sampuncname = uncname.replace('$BKG', sample)
+                        else:
+                            for samp in self.backgrounds:
+                                sampuncname = uncname.replace('$BKG', samp)
                                 if self.uncertainties.has_key(sampuncname) :
                                     continue
                                 self.uncertainties[sampuncname] = Uncertainty(sampuncname, type)
                                 self.uncnames.append(sampuncname)
-        print '\n~~~Filling uncertainty values~~~'
-        self.fillUncertaintyValues()
-        if self.printuncs :
-            # printout for debugging
-            print 'printing uncertanties by bin: uncName(' + 'type ::: ' + 'cr_nevts :: ' + 'vals) [-1 means it will be calculated later]'
-            for k in sorted(self.uncertainties.keys()):
-                print self.uncertainties[k]
 
     def fillUncertaintyValues(self):
         """Get values of each designated uncertainty
         """
         # mcstatuncs = open('mcstatuncs.txt','w')
+        print '\n~~~Filling uncertainty values~~~'
         for file in self.uncvalfiles :
             print 'Opening ', file
             with open(os.path.join(self.setupbase, file), 'r') as f :
@@ -375,152 +376,120 @@ class Datacard:
                     if line.startswith('#') or line.startswith('%') or line.strip() == '' :
                         continue
                     line = line.strip().rstrip('\n')
+                    # example line: [all     lumi                signal,diboson              1.062]
                     entries = re.split('\s+', line)
-                    binnames = []
-                    uncnames = []
-                    if not entries[0] == 'perbin' :
-                        binnames = [entries[0]]
-                        uncnames = [entries[1]]
-                    else :
-                        binlist = self.signalregion.binlist[:]
-                        for cr in self.fitcontrolregions.values() :
-                            binlist += cr.binlist
-                        binnames = binlist[:]
-                        uncnames = [ entries[1] + '_' + bin for bin in binlist ]
-                    samples = entries[2].split(',')
-                    if '$SIG' in entries[1] and entries[2] == 'signal' :
-                        samples = self.signals
-                    uncVal = None
-                    if len(entries) >= 4:
-                        uncVal = entries[3]
-                    for i in range(len(binnames)):
-                        binname = binnames[i]
-                        uncname = uncnames[i]
-                        hasunc = False
-                        if not self.uncertainties.has_key(uncname) :
-                            for name, unc in self.uncertainties.iteritems() :
-                                if name in uncname :
+                    _bin,_uncname,_samples = entries[:3]
+                    binlist = self._getBinList(_uncname) if _bin=='all' or _bin=='perbin' else _bin.strip().split(',')
+                    samples = _samples.strip().split(',')
+                    uncval = entries[3] if len(entries)>3 else None
+                    for samp in samples:
+                        if samp!='signal' and samp not in self.backgrounds and samp not in self.signals:
+                            print '[Warning] Uncertainty %s is defined for an unknown sample %s and will be ignored!'%(_uncname, samp)
+                            samples.erase(samp)
+                    if 'signal' in samples:
+                        samples.erase('signal')
+                        samples += self.signals
+                    if _bin != 'perbin':
+                        # correlated unc
+                        uncname = _uncname
+                        
+                        hasunc = uncname in self.uncertainties
+                        if not hasunc:
+                            # check if unc w/o suffix is defined
+                            for name, unc in self.uncertainties.iteritems():
+                                if uncname.startswith(name):
                                     self.uncertainties[uncname] = Uncertainty(uncname, unc.type)
                                     self.uncnames.append(uncname)
                                     hasunc = True
                                     break
-                        else :
-                            hasunc = True
                         if not hasunc :
-                            if self.printuncs :
-                                print 'Didn\'t find uncertainty ', uncname
-                            continue
-                        if len(uncname) > self.colwidth :
+                            print ' [Warning] Uncertainty', uncname, 'is not defined and will be ingored!'
+
+                        if len(uncname) > self.colwidth:
                             self.colwidth = len(uncname) + 5
                         unc = self.uncertainties[uncname]
-                        for samp in samples :
-                            if samp == 'signal' or samp in self.signals or samp in self.backgrounds :
-                                if not unc.vals.has_key(binname) :
-                                    unc.vals[binname] = {}
-                                if unc.type == 'gmN' :
-                                    crname = uncname.split('_')[0]
-                                    if not self.extcontrolregions.has_key(crname) :
-                                        continue
-                                    if binname not in self.signalregion.binlist:
-                                        continue
+                        for binlabel in binlist:
+                            for samp in samples:
+                                unc.vals[binlabel][samp] = float(uncval)
+                    else:
+                        # uncorrelated 'perbin' unc
+                        for binlabel in binlist:
+                            for samp in samples:
+                                uncname = _uncname.replace('$BKG', samp)
+                                if '$BIN' in uncname:
+                                    uncname = uncname.replace('$BIN', binlabel)
+                                else:
+                                    uncname = '_'.join([uncname, binlabel])
+                                
+                                unc = self.uncertainties[uncname]
+                                crname = uncname.split('_')[0]
+                                if unc.type == 'gmN':
+                                    # for, e.g., photoncr_stat
                                     cr = self.extcontrolregions[crname]
-                                    srtocrbinmap = self.srtocrbinmaps[cr.label]
-                                    crbinname = srtocrbinmap[binname]
-                                    if not unc.cr_nevts.has_key(binname):
-                                        unc.cr_nevts[binname] = {}
-                                    unc.cr_nevts[binname]['mcsr'] = max(cr.get(cr.srmcname, binname)[0], 0.000000001)
-                                    crnevts = int(round(cr.get(cr.dataname, crbinname)[0]))
-                                    unc.cr_nevts[binname]['data'] = max(crnevts, 1)
-                                    unc.cr_nevts[binname]['mc'] = max(cr.get(cr.crmcname, crbinname)[0], 0.00000001)
-                                    unc.cr_nevts[binname]['mcsub'] = max(cr.get(cr.crsubname, crbinname)[0], 0.00000001) if cr.crsubname else 0.0
+                                    crnevts = int(round(cr.get(cr.dataname, binlabel)[0]))
+                                    unc.cr_nevts[binlabel]['data'] = max(crnevts, 1)
+                                    unc.cr_nevts[binlabel]['mc'] = max(cr.get(cr.crmcname, binlabel)[0], 0.00000001)
+                                    unc.cr_nevts[binlabel]['mcsub'] = max(cr.get(cr.crsubname, binlabel)[0], 0.00000001) if cr.crsubname else 0.0
                                     if hasattr(cr, 'crnormsel'):
-                                        unc.cr_nevts[binname]['mcsub'] *= cr.get('crnorm', crbinname)[0]
+                                        unc.cr_nevts[binlabel]['mcsub'] *= cr.get('crnorm', binlabel)[0]
                                     if hasattr(cr, 'crsubRawMC'):
-                                        unc.cr_nevts[binname]['mcsub'] += max(cr.get(cr.crsubRawMC, crbinname)[0], 0.00000001)
+                                        unc.cr_nevts[binlabel]['mcsub'] += max(cr.get(cr.crsubRawMC, binlabel)[0], 0.00000001)
                                     # Get the subtraction correction
-                                    if unc.cr_nevts[binname]['mcsub'] > 0 :
-                                        if unc.cr_nevts[binname]['data'] < 10 :
-                                            tempMC = cr.get(cr.crmcname + '_subsel', crbinname)[0]
-                                            unc.cr_nevts[binname]['mcsub'] = (1.0 - (unc.cr_nevts[binname]['mcsub'] / (tempMC + unc.cr_nevts[binname]['mcsub'])))
+                                    if unc.cr_nevts[binlabel]['mcsub'] > 0 :
+                                        if unc.cr_nevts[binlabel]['data'] < 10 :
+                                            tempMC = cr.get(cr.crmcname + '_subsel', binlabel)[0]
+                                            unc.cr_nevts[binlabel]['mcsub'] = (1.0 - (unc.cr_nevts[binlabel]['mcsub'] / (tempMC + unc.cr_nevts[binlabel]['mcsub'])))
                                         else :
-                                            unc.cr_nevts[binname]['mcsub'] = (1.0 - (unc.cr_nevts[binname]['mcsub'] / float(unc.cr_nevts[binname]['data'])))
+                                            unc.cr_nevts[binlabel]['mcsub'] = (1.0 - (unc.cr_nevts[binlabel]['mcsub'] / float(unc.cr_nevts[binlabel]['data'])))
 
-                                    unc.vals[binname][samp] = -1
-                                    unc.label = uncname.replace(binname, srtocrbinmap[binname])
-                                elif unc.type == 'lnU' :
-                                    crname = uncname.split('_')[0]
-                                    if not self.fitcontrolregions.has_key(crname) :
-                                        continue
-                                    cr = self.fitcontrolregions[crname]
-                                    srtocrbinmap = self.srtocrbinmaps[cr.label]
-                                    unc.vals[binname][samp] = float(uncVal) if uncVal else 2
+                                    unc.vals[binlabel][samp] = -1
+                                elif unc.type == 'lnU':
+                                    unc.vals[binlabel][samp] = float(uncval) if uncval else 2
                                     # to use lnN unc, comment the line above and uncomment the lines below
-                                    # crbinname = srtocrbinmap[binname] if binname in srtocrbinmap else binname
-                                    # crnevts = int(cr.get(cr.dataname, crbinname)[0])
+                                    # cr = self.fitcontrolregions[crname]
+                                    # crnevts = int(cr.get(cr.dataname, binlabel)[0])
                                     # crnevts = max(crnevts, 1)
-                                    # unc.vals[binname][samp] = 1 + sqrt(crnevts)/crnevts
+                                    # unc.vals[binlabel][samp] = 1 + sqrt(crnevts)/crnevts
                                     # unc.type = 'lnN'
-                                    if binname in srtocrbinmap :
-                                        unc.label = uncname.replace(binname, srtocrbinmap[binname])
-                                else :
-                                    if binname == 'all' or uncVal:
-                                        unc.vals[binname][samp] = float(uncVal)
-                                    else:
-                                        # mcstat unc for bkg from 'external' cr
-                                        crname = uncname.split('_')[0]
-                                        if self.extcontrolregions.has_key(crname) :
-                                            if binname not in self.signalregion.binlist :
-                                                continue
-                                            cr = self.extcontrolregions[crname]
-                                            srtocrbinmap = self.srtocrbinmaps[cr.label]
-                                            crbinname = srtocrbinmap[binname]
-                                            (srevts, srunc) = cr.get(cr.srmcname, binname)
-                                            (crevts, crunc) = cr.get(cr.crmcname, crbinname)
-                                            crstatuncname = uncname.replace(binname, srtocrbinmap[binname])
-                                            if not self.uncertainties.has_key(crstatuncname) :
-                                                self.uncertainties[crstatuncname] = Uncertainty(crstatuncname, unc.type)
-                                                self.uncnames.append(crstatuncname)
-                                            if not self.uncertainties[crstatuncname].vals.has_key(binname) :
-                                                self.uncertainties[crstatuncname].vals[binname] = {}
-                                            # cr mcstat unc
-                                            self.uncertainties[crstatuncname].vals[binname][samp] = 1 + (crunc / crevts) if crevts > 0 else 2.00
-                                            # sr mcstat unc
-                                            if srevts == 0:
-                                                unc.vals[binname][samp] = 2.00
-                                            else:
-                                                unc.vals[binname][samp] = 1 + (srunc / srevts)
-                                        else :
-                                            # mcstat unc for bkg from raw MC (sr and 'fit' cr)
-                                            cr = None
-                                            sample = samp
-                                            if binname not in self.signalregion.binlist :
-                                                for fcr in self.fitcontrolregions.values() :
-                                                    if fcr.label == binname.split('_')[1] :
-                                                        cr = fcr
-                                                        break
-                                                if not samp in cr.crmcname and not samp in self.signals :
-                                                    continue
-                                                if samp not in self.signals:
-                                                    sample = cr.crmcname
-                                            else :
-                                                cr = self.signalregion
-                                            (mcevts, mcunc) = cr.get(sample, binname)
+                                elif unc.type == 'lnN':
+                                    if crname in self.extcontrolregions:
+                                        # mcstat unc for 'external' cr, e.g., photoncr_mcstat
+                                        (crevts, crunc) = cr.get(cr.crmcname, binlabel)
+                                        self.uncertainties[crstatuncname].vals[binlabel][samp] = 1 + (crunc / crevts) if crevts > 0 else 2.00
+                                    else :
+                                        # mcstat unc for sr bkgs/signals
+                                        def _fill(binlabel, value):
+                                            (mcevts, mcunc) = value
                                             if not mcevts == 0 :
                                                 if mcunc > mcevts :
-                                                    print 'Warning! %s has %s uncertainty %4.2f in bin %s, setting to 100' % (samp, uncname, 100.0 * mcunc / mcevts, binname)
-                                                    unc.vals[binname][samp] = 2.0
+                                                    print 'Warning! %s has %s uncertainty %4.2f in bin %s, setting to 100' % (samp, uncname, 100.0 * mcunc / mcevts, binlabel)
+                                                    unc.vals[binlabel][samp] = 2.0
                                                 else :
-                                                    unc.vals[binname][samp] = 1 + (mcunc / mcevts)
+                                                    unc.vals[binlabel][samp] = 1 + (mcunc / mcevts)
                                             else :
-                                                unc.vals[binname][samp] = 2.0
-                                            # mcstatuncs.write('%s\t%s\t%s\t%4.3f\n' % (binname,uncname,samp,unc.vals[binname][samp]))
+                                                unc.vals[binlabel][samp] = 2.0
+                                            
+                                        cr=self.bkgtocrmap[samp] if samp in self.bkgtocrmap else None 
+                                        if cr: 
+                                            # from ext/fit control region
+                                            _fill(binlabel, cr.get(cr.srmcname, binlabel))
+                                        else:
+                                            # from raw MC
+                                            _fill(binlabel, self.signalregion.get(samp, binlabel))
+                                else:
+                                    raise Exception('Type %s is not supported for perbin uncertainty!'%unc.type)
+                                # mcstatuncs.write('%s\t%s\t%s\t%4.3f\n' % (binname,uncname,samp,unc.vals[binname][samp]))
         # mcstatuncs.close()
 
-    def getUncertaintyLine(self, uncname, unc, binlabel, backgrounds, nbkgevts):
+    def getUncertaintyLine(self, uncname, binlabel, backgrounds, crbins):
         """Get line with uncertainty name, type, and values correctly formatted
         """
-        isglobal = unc.vals.has_key('all')
+        unc = self.uncertainties[uncname]
+        crname = uncname.split('_')[0]
+        if crname not in self.extcontrolregions.keys()+self.fitcontrolregions.keys(): crname = None
+        crbinlabel = 'bin'+unc.split('_bin')[-1] if crname else None
         if '$SIG' in unc.label :
+            # only for signal mc stats (?)
             uncline = unc.label.ljust(self.colwidth - 2)
         else :
             uncline = unc.label.ljust(self.colwidth)
@@ -528,44 +497,30 @@ class Datacard:
         # don't count uncertainties with no entries for any of the processes
         hasEntry = False
         if unc.type == 'gmN' :
-            if not unc.cr_nevts.has_key(binlabel) :
+            if crbinlabel not in unc.cr_nevts:
                 print 'Control region yields not loaded for ', uncname
                 return ''
-            uncline += str(unc.cr_nevts[binlabel]['data']).ljust(self.evtwidth)
+            uncline += str(unc.cr_nevts[crbinlabel]['data']).ljust(self.evtwidth)
             hasEntry = True
         else:
             uncline += ' ' * self.evtwidth
-        if not isglobal and unc.vals[binlabel].has_key('signal') :
-            uncline += ('%4.2f' % unc.vals[binlabel]['signal']).ljust(self.uncwidth)
-            hasEntry = True
-        elif not isglobal and unc.vals[binlabel].has_key(self.signals[0]) :
-            uncline += ('SIGUNC').ljust(self.uncwidth - 2)
-            hasEntry = True
-        elif isglobal and unc.vals['all'].has_key('signal') :
-            if 'lumi' in unc.label :
-                uncline += ('%4.3f' % unc.vals['all']['signal']).ljust(self.uncwidth)
-            else :
-                uncline += ('%4.2f' % unc.vals['all']['signal']).ljust(self.uncwidth)
+        if self.signals[0] in unc.vals[binlabel]:
+            # if this uncname is relevant for signal
+            uncline += ('SIGUNC').ljust(self.uncwidth - 3)
             hasEntry = True
         else :
             uncline += '-'.ljust(self.uncwidth)
-        ibkg = -1
         # background uncerts
-        for background in backgrounds :
-            ibkg += 1
-            if not isglobal and unc.vals[binlabel].has_key(background) :
-                if unc.type == 'gmN' :
-                    uncline += ('%6.5f' % float(nbkgevts[ibkg] / float(unc.cr_nevts[binlabel]['data']))).ljust(self.uncwidth)
-                else :
-                    uncline += ('%4.2f' % unc.vals[binlabel][background]).ljust(self.uncwidth)
+        for background in backgrounds:
+            unc_binlabel = crbinlabel if crname else binlabel
+            if background in unc.vals[unc_binlabel]:
+                if unc.type == 'gmN':
+                    cr = self.extcontrolregions[crname]
+                    uncline += ('%6.5f' % ( max(cr.get(cr.srmcname, binlabel)[0], 1e-9) / unc.cr_nevts[crbinlabel]['mc'])).ljust(self.uncwidth)
+                else:
+                    uncline += ('%4.3f' % unc.vals[unc_binlabel][background]).ljust(self.uncwidth)
                 hasEntry = True
-            elif isglobal and unc.vals['all'].has_key(background) :
-                if 'lumi' in unc.label :
-                    uncline += ('%4.3f' % unc.vals['all'][background]).ljust(self.uncwidth)
-                else :
-                    uncline += ('%4.2f' % unc.vals['all'][background]).ljust(self.uncwidth)
-                hasEntry = True
-            else :
+            else:
                 uncline += '-'.ljust(self.uncwidth)
         uncline += '\n'
         if not hasEntry :
@@ -622,13 +577,15 @@ class FitRegion:
             print binlabel
 
     def getBinLabels(self, region, catetory_name, category):
-        '''Get bin name, e.g., 'bin_medboost_lowptb_250' for sr, and 'bin_photoncr_medboost_lowptb_250' for cr.
+        '''Get bin name, e.g., 'bin_medboost_lowptb_250to350' for sr, and 'bin_photoncr_medboost_lowptb_250to350' for cr.
         Category format:
         catA: { 'cut': '(j1lpt>250 && j1lpt<500) && csvj1pt<40',
                 'var': 'met',
                 'bin': [250, 350, 450, 550, 1000] }'''
         region = '_' + region if region else ''
-        return ['bin%s_%d_%s' % (region, lowedge, catetory_name) for lowedge in category['bin'][:-1]]
+        bins = category['bin']
+        nbins = len(bins)-1
+        return ['bin%s_%s_%sto%s' % (region, catetory_name, str(bins[i]), str(bins[i+1]) if i<nbins else 'inf') for i in range(nbins)]
 #        return ['bin%s_%s_%d' % (region, catetory_name, lowedge) for lowedge in category['bin'][:-1]]
 
     def compileBinList(self):
@@ -791,8 +748,8 @@ class Uncertainty:
         self.name = name
         self.type = type
         self.label = name
-        self.cr_nevts = {}
-        self.vals = {}
+        self.cr_nevts = defaultdict()
+        self.vals = defaultdict()
     def __str__(self):
         printStr = self.name + '(' + self.type + ' ::: '
         for k in self.cr_nevts.keys():
