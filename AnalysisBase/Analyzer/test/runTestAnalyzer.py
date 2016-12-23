@@ -93,7 +93,8 @@ ISDATA = False
 ISFASTSIM = False
 runMetCorrAndUnc = True
 updateJECs = True
-JECUNCFILE = 'data/JEC/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt'
+usePrivateSQlite = True
+JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt'
 
 # FastSim samples
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName or 'PUSpring16Fast' in DatasetName :
@@ -101,6 +102,7 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
     ISFASTSIM = True
     #runMetCorrAndUnc = True
     #updateJECs = True
+    usePrivateSQlite = True
     JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
@@ -113,9 +115,11 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    runMetCorrAndUnc = False
-    updateJECs = False
-    JECUNCFILE = 'data/JEC/Spring16_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
+#     runMetCorrAndUnc = False
+#     updateJECs = False
+    usePrivateSQlite = True
+    JECUNCFILE = '' #FIXME: IOV dependence
+#     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt'
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
     jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
@@ -230,7 +234,6 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = ISFASTSIM # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -246,7 +249,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Spring16_25nsV6_DATA" if ISDATA else "Spring16_25nsV6_MC"
+    era = "Spring16_23Sep2016AllV2_DATA" if ISDATA else "Spring16_23Sep2016V2_MC"
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
     dBFile = era+'.db' if runCRAB else os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
