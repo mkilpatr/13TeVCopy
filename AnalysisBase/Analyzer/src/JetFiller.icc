@@ -22,6 +22,11 @@ namespace JetFunctions{
       if(j.neutralEmEnergyFraction()<0.90 && j.neutralMultiplicity()>10 ) return true;
       else return false;
     }
+    else if(fabs(j.eta())>2.7){
+      if(j.neutralEmEnergyFraction>0.01 && j.neutralHadronEnergyFraction<0.98 && j.neutralMultiplicity()>2) return true;
+      else return false;
+    }
+    // for |eta|<=2.7
     if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
     if( !(j.neutralEmEnergyFraction()<0.99)                  ) return false;
     if( !(j.neutralHadronEnergyFraction()<0.99)              ) return false;
@@ -38,19 +43,24 @@ namespace JetFunctions{
       if(j.neutralEmEnergyFraction()<0.90 && j.neutralMultiplicity()>10 ) return true;
       else return false;
     }
+    else if(fabs(j.eta())>2.7){
+      if(j.neutralEmEnergyFraction>0.01 && j.neutralHadronEnergyFraction<0.98 && j.neutralMultiplicity()>2) return true;
+      else return false;
+    }
+    // for |eta|<=2.7
     if( !(j.chargedMultiplicity()+j.neutralMultiplicity()>1) ) return false;
     if( !(j.neutralEmEnergyFraction()<0.9)                   ) return false;
     if( !(j.neutralHadronEnergyFraction()<0.9)               ) return false;
     //if( !(j.muonEnergyFraction()<0.8)                        ) return false;
     if(fabs(j.eta())<2.4){
       if( !(j.chargedMultiplicity()>0)         ) return false;
-      if( !(j.chargedEmEnergyFraction()<0.9)   ) return false;
+      if( !(j.chargedEmEnergyFraction()<0.99)  ) return false;
       if( !(j.chargedHadronEnergyFraction()>0) ) return false;
     }
     return true;
   }
   template<typename Jet> bool passMuonEnergyFraction(const Jet& j){
-    if(fabs(j.eta())>3.0) return true;
+    if(fabs(j.eta())>2.7) return true;
     if( !(j.muonEnergyFraction()<0.8) ) return false;
     return true;
   }

@@ -89,6 +89,7 @@ public :
 
     float csv()         const { return csv_;    }
     bool  looseid()     const { return looseid_;}
+    bool  tightid()     const { return tightid_;}
     float pt_raw()      const { return pt_raw_; }
     float uncertainty() const { return uncertainty_;}
     float chHadFrac()   const { return chHadFrac_;}
@@ -100,7 +101,8 @@ public :
 
     void  setPtr(GenJet<CoordSystem> *inGenJet = 0) { genJet_   = inGenJet; }
     void  setCsv(const float inCsv)               {csv_         = inCsv;    }
-    void  setLooseId(const float inLooseId)       {looseid_     = inLooseId;}
+    void  setLooseId(bool inLooseId)              {looseid_     = inLooseId;}
+    void  setTightId(bool inTightId)              {tightid_     = inTightId;}
     void  setPtRaw(const float inPtRaw )          {pt_raw_      = inPtRaw;  }
     void  setUncertainty(const float inUncert)    {uncertainty_ = inUncert; }
     void  setChHadFrac(const float inChHadFrac)   {chHadFrac_   = inChHadFrac;}
@@ -196,6 +198,7 @@ protected :
     float pt_raw_ = -10;                  //magnitude of uncorrected transverse momentum
     float uncertainty_ = -10;             //JEC error magnitude
     bool  looseid_ = false;                 //passes loose jet id or not
+    bool  tightid_ = false;                 //passes loose jet id or not
     float chHadFrac_ = -10;               //charged hadron fraction
     int   chHadN2_ = -10;                 //charged hadron multiplicity pt 2+
     int   chHadN4_ = -10;                 //charged hadron multiplicity pt 4+

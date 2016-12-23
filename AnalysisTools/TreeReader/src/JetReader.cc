@@ -199,6 +199,7 @@ void JetReader::addRecoJetToObjectList(const unsigned int iJ){
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
+  recoJets.back().setTightId(jettightId_->at(iJ));
   recoJets.back().setCmva(jetcmva_->size() ? jetcmva_->at(iJ) : -9); //FIXME
   recoJets.back().setCvsl(jetcvsl_->at(iJ));
   recoJets.back().setCvsb(jetcvsb_->at(iJ));
@@ -229,7 +230,7 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetptraw_      ->push_back(inJet->pt_raw());
   jetpuId_       ->push_back(1);
   jetlooseId_    ->push_back(inJet->looseid());
-  jettightId_    ->push_back(1);
+  jettightId_    ->push_back(inJet->tightid());
   jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
   jetcsv_        ->push_back(inJet->csv());
   jetcmva_       ->push_back(inJet->cmva());
