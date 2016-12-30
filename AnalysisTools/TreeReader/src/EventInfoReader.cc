@@ -54,6 +54,7 @@ EventInfoReader::EventInfoReader()
   signalType = defaults::NUM_SIGTYPES;
   datrec = 0;
   datareco = defaults::MC;
+  isfastsim = false;
   metfilterbitpass_old = new vector<bool>;
   metfilterbitpass = 0;
   massparams = new vector<size16>;
@@ -104,6 +105,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"massparams", &massparams);
   treeReader->setBranchAddress(branchName,"process", &proc);
   treeReader->setBranchAddress(branchName,"datareco", &datrec);
+  treeReader->setBranchAddress(branchName,"isfastsim", &isfastsim);
   treeReader->setBranchAddress(branchName,"xsection", &xsec);
   treeReader->setBranchAddress(branchName,"wgtXSec", &xsecweight);
   treeReader->setBranchAddress(branchName,"evtWgtGen", &genevtweight);

@@ -23,7 +23,7 @@ namespace JetFunctions{
       else return false;
     }
     else if(fabs(j.eta())>2.7){
-      if(j.neutralEmEnergyFraction>0.01 && j.neutralHadronEnergyFraction<0.98 && j.neutralMultiplicity()>2) return true;
+      if(j.neutralEmEnergyFraction()>0.01 && j.neutralHadronEnergyFraction()<0.98 && j.neutralMultiplicity()>2) return true;
       else return false;
     }
     // for |eta|<=2.7
@@ -44,7 +44,7 @@ namespace JetFunctions{
       else return false;
     }
     else if(fabs(j.eta())>2.7){
-      if(j.neutralEmEnergyFraction>0.01 && j.neutralHadronEnergyFraction<0.98 && j.neutralMultiplicity()>2) return true;
+      if(j.neutralEmEnergyFraction()>0.01 && j.neutralHadronEnergyFraction()<0.98 && j.neutralMultiplicity()>2) return true;
       else return false;
     }
     // for |eta|<=2.7
@@ -143,6 +143,19 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
   ijetcvsl_        = data.addMulti<float>(branchName_,"jet_cvsl"        , 0);
   ijetcvsb_        = data.addMulti<float>(branchName_,"jet_cvsb"        , 0);
   ijetuncertainty_ = data.addMulti<float>(branchName_, "jet_uncertainty", 0);
+  if(options_ & LOADDEEPFLAVOR){
+    ijetdeepcsv_probudsg_  = data.addMulti<float>(branchName_,"jet_deepcsv_probudsg" , 0);
+    ijetdeepcsv_probb_     = data.addMulti<float>(branchName_,"jet_deepcsv_probb"    , 0);
+    ijetdeepcsv_probc_     = data.addMulti<float>(branchName_,"jet_deepcsv_probc"    , 0);
+    ijetdeepcsv_probbb_    = data.addMulti<float>(branchName_,"jet_deepcsv_probbb"   , 0);
+    ijetdeepcsv_probcc_    = data.addMulti<float>(branchName_,"jet_deepcsv_probcc"   , 0);
+
+    ijetdeepcmva_probudsg_ = data.addMulti<float>(branchName_,"jet_deepcmva_probudsg", 0);
+    ijetdeepcmva_probb_    = data.addMulti<float>(branchName_,"jet_deepcmva_probb"   , 0);
+    ijetdeepcmva_probc_    = data.addMulti<float>(branchName_,"jet_deepcmva_probc"   , 0);
+    ijetdeepcmva_probbb_   = data.addMulti<float>(branchName_,"jet_deepcmva_probbb"  , 0);
+    ijetdeepcmva_probcc_   = data.addMulti<float>(branchName_,"jet_deepcmva_probcc"  , 0);
+  }
 
   if(options_ & LOADGEN) {
     ijetgenindex_ = data.addMulti<int16  >(branchName_,"jet_genIndex",-1);
@@ -369,6 +382,18 @@ void JetFiller<Jet>::fill()
       data.fillMulti<float>(ijetcvsb_    ,0);
       data.fillMulti<bool> (ijetlooseId_ ,false);
       data.fillMulti<bool> (ijettightId_ ,false);
+      if(options_ & LOADDEEPFLAVOR) {
+        data.fillMulti<float>(ijetdeepcsv_probudsg_  ,0);
+        data.fillMulti<float>(ijetdeepcsv_probb_     ,0);
+        data.fillMulti<float>(ijetdeepcsv_probc_     ,0);
+        data.fillMulti<float>(ijetdeepcsv_probbb_    ,0);
+        data.fillMulti<float>(ijetdeepcsv_probcc_    ,0);
+        data.fillMulti<float>(ijetdeepcmva_probudsg_ ,0);
+        data.fillMulti<float>(ijetdeepcmva_probb_    ,0);
+        data.fillMulti<float>(ijetdeepcmva_probc_    ,0);
+        data.fillMulti<float>(ijetdeepcmva_probbb_   ,0);
+        data.fillMulti<float>(ijetdeepcmva_probcc_   ,0);
+      }
       if(options_ & FILLJETCHHADN){
         data.fillMulti<int> (ijetchHadN2_       ,0);
         data.fillMulti<int> (ijetchHadN4_       ,0);
@@ -419,6 +444,19 @@ void JetFiller<Jet>::fill()
     data.fillMulti<float>(ijetcvsb_ ,getcvsbDisc(j));
     data.fillMulti<bool> (ijetlooseId_ ,JetFunctions::passLooseJetId(j));
     data.fillMulti<bool> (ijettightId_ ,JetFunctions::passTightJetId(j));
+
+    if(options_ & LOADDEEPFLAVOR){
+      data.fillMulti<float>(ijetdeepcsv_probudsg_  ,getbDisc(j, "deepFlavourJetTags:probudsg"));
+      data.fillMulti<float>(ijetdeepcsv_probb_     ,getbDisc(j, "deepFlavourJetTags:probb"));
+      data.fillMulti<float>(ijetdeepcsv_probc_     ,getbDisc(j, "deepFlavourJetTags:probc"));
+      data.fillMulti<float>(ijetdeepcsv_probbb_    ,getbDisc(j, "deepFlavourJetTags:probbb"));
+      data.fillMulti<float>(ijetdeepcsv_probcc_    ,getbDisc(j, "deepFlavourJetTags:probcc"));
+      data.fillMulti<float>(ijetdeepcmva_probudsg_ ,getbDisc(j, "deepFlavourCMVAJetTags:probudsg"));
+      data.fillMulti<float>(ijetdeepcmva_probb_    ,getbDisc(j, "deepFlavourCMVAJetTags:probb"));
+      data.fillMulti<float>(ijetdeepcmva_probc_    ,getbDisc(j, "deepFlavourCMVAJetTags:probc"));
+      data.fillMulti<float>(ijetdeepcmva_probbb_   ,getbDisc(j, "deepFlavourCMVAJetTags:probbb"));
+      data.fillMulti<float>(ijetdeepcmva_probcc_   ,getbDisc(j, "deepFlavourCMVAJetTags:probcc"));
+    }
 
     if(options_ & FILLJETCHHADN) {
       assert(pfCandidateFiller_->isLoaded());

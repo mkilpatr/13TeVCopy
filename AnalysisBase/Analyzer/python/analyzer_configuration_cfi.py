@@ -61,6 +61,7 @@ nominal_configuration = cms.PSet(
                                       isMassScan             = cms.untracked.bool(False),
                                       stdGenJets             = cms.InputTag('slimmedGenJets'),
                                       fillNumStdGenJets      = cms.untracked.bool(False),
+                                      isFastSim              = cms.untracked.bool(False),
                                   ),
                                     
                                   Jets = cms.untracked.PSet(  
@@ -77,6 +78,7 @@ nominal_configuration = cms.PSet(
                                       completeMinJetPt  = cms.untracked.double(20.0),
                                       fillJetGenInfo    = cms.untracked.bool(True),
                                       fillJetShapeInfo  = cms.untracked.bool(True),
+                                      fillDeepFlavor    = cms.untracked.bool(True),
                                       fillTopJetAssoc   = cms.untracked.bool(True),
                                       fillqgl           = cms.untracked.bool(True),
                                       superJets         = cms.untracked.InputTag(''),
@@ -103,6 +105,7 @@ nominal_configuration = cms.PSet(
                                       fillCustomBtagInfo = cms.untracked.bool(True),
                                       fillJetGenInfo     = cms.untracked.bool(True),
                                       fillJetShapeInfo   = cms.untracked.bool(False),
+                                      fillDeepFlavor     = cms.untracked.bool(False),
                                       fillTopJetAssoc    = cms.untracked.bool(True),
                                       applyJEC           = cms.untracked.bool(False),
                                       fillqgl            = cms.untracked.bool(False),
