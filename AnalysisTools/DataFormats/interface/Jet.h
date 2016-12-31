@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 
@@ -190,6 +192,31 @@ public :
     cmva_ = cmva;
   }
 
+  float deepCSV(const std::string &label = ""){
+    try{
+      if (label=="")
+        return deepcsv_values_.at("probb") + deepcsv_values_.at("probbb");
+      else
+        return deepcsv_values_.at(label);
+    }catch (const std::out_of_range& e) {
+      throw std::invalid_argument("[Jet::deepCSV] Invalid argument: "+label);
+    }
+  }
+
+  float deepCMVA(const std::string &label = ""){
+    try{
+      if (label=="")
+        return deepcmva_values_.at("probb") + deepcmva_values_.at("probbb");
+      else
+        return deepcmva_values_.at(label);
+    }catch (const std::out_of_range& e) {
+      throw std::invalid_argument("[Jet::deepCMVA] Invalid argument: "+label);
+    }
+  }
+
+  void setDeepCSV(const std::string &label, float value) { deepcsv_values_[label] = value; }
+  void setDeepCMVA(const std::string &label, float value) { deepcmva_values_[label] = value; }
+
 protected :
     float csv_ = -10;                     //pointer to csv information
     float cmva_ = -10;                    //cmva
@@ -210,6 +237,8 @@ protected :
     float axis2_ = -10;
     int   jetMult_ = -10;
     float jetcharge_ = -10;
+    std::unordered_map<std::string, float> deepcsv_values_;
+    std::unordered_map<std::string, float> deepcmva_values_;
     GenJet<CoordSystem>  *genJet_;  //Matched genJet
 
 };
