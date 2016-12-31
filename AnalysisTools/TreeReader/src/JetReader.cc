@@ -265,8 +265,8 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetptraw_      ->push_back(inJet->pt_raw());
   jetpuId_       ->push_back(1);
   jetlooseId_    ->push_back(inJet->looseid());
-  jettightId_    ->push_back(inJet->tightid());
-  jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
+  jettightId_    ->push_back(1);
+  jetchHadEnFrac_->push_back(inJet->chHadFrac());
   jetcsv_        ->push_back(inJet->csv());
   jetcmva_       ->push_back(inJet->cmva());
   jetcvsl_       ->push_back(inJet->cvsl());
