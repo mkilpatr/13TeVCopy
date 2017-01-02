@@ -154,6 +154,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),
                                       options < 0 ? defaultOptions : options
                                       );
+      if(isMC() && cfg.getUntrackedParameter<bool>("isFastSim")) eventInfo->isFastSim_ = true;
       initializedFillers.push_back(eventInfo);
       break;
     }
@@ -179,6 +180,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
       if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= PatJetFiller::LOADUNCFROMFILE;
       if(cfg.getUntrackedParameter<bool>("fillExtraJetInfo"))           defaultOptions |= PatJetFiller::FILLJETEXTRA;
+      if(cfg.getUntrackedParameter<bool>("fillDeepFlavor"))             defaultOptions |= PatJetFiller::LOADDEEPFLAVOR;
 
       ak4Jets = new PatJetFiller(cfg, consumesCollector(),
                                  options < 0 ? defaultOptions : options,
@@ -197,9 +199,10 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(cfg.getUntrackedParameter<bool>("fillJetShapeInfo"))           defaultOptions |= RecoJetFiller::LOADJETSHAPE;
       if(cfg.getUntrackedParameter<bool>("fillCustomBtagInfo"))         defaultOptions |= RecoJetFiller::LOADBTAG;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillTopJetAssoc"))  defaultOptions |= RecoJetFiller::SAVETOPASSOC;
-      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= PatJetFiller::SAVEQGL;
+      if(cfg.getUntrackedParameter<bool>("fillqgl"))                    defaultOptions |= RecoJetFiller::SAVEQGL;
       if(cfg.getUntrackedParameter<bool>("loadJecUncFile"))             defaultOptions |= RecoJetFiller::LOADUNCFROMFILE;
       if(cfg.getUntrackedParameter<bool>("fillExtraJetInfo"))           defaultOptions |= RecoJetFiller::FILLJETEXTRA;
+      if(cfg.getUntrackedParameter<bool>("fillDeepFlavor"))             defaultOptions |= RecoJetFiller::LOADDEEPFLAVOR;
 
       puppiJets = new RecoJetFiller(cfg, consumesCollector(),
                                     options < 0 ? defaultOptions : options,

@@ -76,6 +76,7 @@ namespace ucsbsusy {
       size irun_          ;
       size ilumi_         ;
       size ievent_        ;
+      size ifastsim_      ;
       size inpv_          ;
       size igoodvertex_   ;
       size irho_          ;
@@ -130,6 +131,7 @@ namespace ucsbsusy {
       edm::Handle<GenEventInfoProduct>             genEvtInfo_;
       edm::Handle<LHEEventProduct>                 lheEvtInfo_;
       edm::Handle<reco::GenJetCollection>          stdGenJets_;
+      bool isFastSim_;
 
   };
 

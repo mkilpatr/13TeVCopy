@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ucsbsusy;
 
-const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ | JetReader::LOADJETSHAPE;
+const int JetReader::defaultOptions = JetReader::LOADRECO | JetReader::FILLOBJ | JetReader::LOADJETSHAPE | JetReader::LOADDEEPFLAVOR;
 
 //--------------------------------------------------------------------------------------------------
 JetReader::JetReader() : BaseReader(){
@@ -34,6 +34,16 @@ JetReader::JetReader() : BaseReader(){
   jetarea_          = new vector<float>;
   jetgenindex_      = new vector<int16  >;
   jetuncertainty_   = new vector<float>;
+  jetdeepcsv_probudsg_  = new vector<float>;
+  jetdeepcsv_probb_     = new vector<float>;
+  jetdeepcsv_probc_     = new vector<float>;
+  jetdeepcsv_probbb_    = new vector<float>;
+  jetdeepcsv_probcc_    = new vector<float>;
+  jetdeepcmva_probudsg_ = new vector<float>;
+  jetdeepcmva_probb_    = new vector<float>;
+  jetdeepcmva_probc_    = new vector<float>;
+  jetdeepcmva_probbb_   = new vector<float>;
+  jetdeepcmva_probcc_   = new vector<float>;
   genjetpt_         = new vector<float>;
   genjeteta_        = new vector<float>;
   genjetphi_        = new vector<float>;
@@ -95,15 +105,15 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_, "jet_mass"    , &jetmass_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_ptraw"   , &jetptraw_ );
     treeReader->setBranchAddress(branchName_, "jet_puId"    , &jetpuId_  );
-    treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_  );
-    treeReader->setBranchAddress(branchName_, "jet_tightId" , &jettightId_  );
+    treeReader->setBranchAddress(branchName_, "jet_looseId" , &jetlooseId_, true);
+    treeReader->setBranchAddress(branchName_, "jet_tightId" , &jettightId_, true);
     treeReader->setBranchAddress(branchName_, "jet_csv"     , &jetcsv_   ,true);
-    treeReader->setBranchAddress(branchName_, "jet_cmva"    , &jetcmva_  ,false);// FIXME
+    treeReader->setBranchAddress(branchName_, "jet_cmva"    , &jetcmva_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_cvsl"    , &jetcvsl_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_cvsb"    , &jetcvsb_  ,true);
     treeReader->setBranchAddress(branchName_, "jet_area"    , &jetarea_  ,false);
-    treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_);
-    treeReader->setBranchAddress(branchName_, "jet_chHadEnFrac", &jetchHadEnFrac_  );
+    treeReader->setBranchAddress(branchName_, "jet_uncertainty", &jetuncertainty_, true);
+    treeReader->setBranchAddress(branchName_, "jet_chHadEnFrac", &jetchHadEnFrac_, true);
     treeReader->setBranchAddress(branchName_, "jet_chHadN2", &jetchHadN2_ );
     treeReader->setBranchAddress(branchName_, "jet_chHadN4", &jetchHadN4_ );
     treeReader->setBranchAddress(branchName_, "jet_chHadN6", &jetchHadN6_ );
@@ -138,6 +148,19 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
       treeReader->setBranchAddress(branchName_,"genjet_pullrap" , &genjetpullrap_     );
       treeReader->setBranchAddress(branchName_,"genjet_pullphi" , &genjetpullphi_    );
     }
+  }
+  if(options_ & LOADDEEPFLAVOR){
+    treeReader->setBranchAddress(branchName_, "jet_deepcsv_probudsg" , &jetdeepcsv_probudsg_ ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcsv_probb"    , &jetdeepcsv_probb_    ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcsv_probc"    , &jetdeepcsv_probc_    ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcsv_probbb"   , &jetdeepcsv_probbb_   ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcsv_probcc"   , &jetdeepcsv_probcc_   ,true);
+
+    treeReader->setBranchAddress(branchName_, "jet_deepcmva_probudsg", &jetdeepcmva_probudsg_,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcmva_probb"   , &jetdeepcmva_probb_   ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcmva_probc"   , &jetdeepcmva_probc_   ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcmva_probbb"  , &jetdeepcmva_probbb_  ,true);
+    treeReader->setBranchAddress(branchName_, "jet_deepcmva_probcc"  , &jetdeepcmva_probcc_  ,true);
   }
   if(options_ & LOADTOPASSOC){
     clog <<"topassoc ";
@@ -199,6 +222,7 @@ void JetReader::addRecoJetToObjectList(const unsigned int iJ){
   recoJets.emplace_back(CylLorentzVectorF(jetpt_->at(iJ), jeteta_->at(iJ), jetphi_->at(iJ), jetmass_->at(iJ)), iJ,
                                (*jetcsv_)[iJ], jetptraw_->at(iJ), (jetuncertainty_->size()) ? (jetuncertainty_->at(iJ)) : 0,
                                (*jetlooseId_)[iJ],  matchedGen);
+  recoJets.back().setTightId(jettightId_->at(iJ));
   recoJets.back().setCmva(jetcmva_->size() ? jetcmva_->at(iJ) : -9); //FIXME
   recoJets.back().setCvsl(jetcvsl_->at(iJ));
   recoJets.back().setCvsb(jetcvsb_->at(iJ));
@@ -210,7 +234,19 @@ void JetReader::addRecoJetToObjectList(const unsigned int iJ){
   recoJets.back().setJetMult(jetMult_->size() ? jetMult_->at(iJ) : -1);
   recoJets.back().setJetcharge(jetcharge_->size() ? jetcharge_->at(iJ) : -1);
   recoJets.back().setQgl(jetqgl_->size() ? jetqgl_->at(iJ) : -1);
+  if (options_ & LOADDEEPFLAVOR){
+    recoJets.back().setDeepCSV("probudsg",  jetdeepcsv_probudsg_->at(iJ));
+    recoJets.back().setDeepCSV("probb",     jetdeepcsv_probb_->at(iJ));
+    recoJets.back().setDeepCSV("probc",     jetdeepcsv_probc_->at(iJ));
+    recoJets.back().setDeepCSV("probbb",    jetdeepcsv_probbb_->at(iJ));
+    recoJets.back().setDeepCSV("probcc",    jetdeepcsv_probcc_->at(iJ));
 
+    recoJets.back().setDeepCMVA("probudsg", jetdeepcmva_probudsg_->at(iJ));
+    recoJets.back().setDeepCMVA("probb",    jetdeepcmva_probb_->at(iJ));
+    recoJets.back().setDeepCMVA("probc",    jetdeepcmva_probc_->at(iJ));
+    recoJets.back().setDeepCMVA("probbb",   jetdeepcmva_probbb_->at(iJ));
+    recoJets.back().setDeepCMVA("probcc",   jetdeepcmva_probcc_->at(iJ));
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void JetReader::addRecoJet(const RecoJetF * inJet){
@@ -230,7 +266,7 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetpuId_       ->push_back(1);
   jetlooseId_    ->push_back(inJet->looseid());
   jettightId_    ->push_back(1);
-  jetchHadEnFrac_  ->push_back(inJet->chHadFrac());
+  jetchHadEnFrac_->push_back(inJet->chHadFrac());
   jetcsv_        ->push_back(inJet->csv());
   jetcmva_       ->push_back(inJet->cmva());
   jetcvsl_       ->push_back(inJet->cvsl());
@@ -247,6 +283,19 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
   jetcharge_     ->push_back(inJet->jetcharge());
   jetpullrap_    ->push_back(0);
   jetpullphi_    ->push_back(0);
+
+  if (options_ & LOADDEEPFLAVOR){
+    jetdeepcsv_probudsg_ ->push_back(-1);
+    jetdeepcsv_probb_    ->push_back(-1);
+    jetdeepcsv_probc_    ->push_back(-1);
+    jetdeepcsv_probbb_   ->push_back(-1);
+    jetdeepcsv_probcc_   ->push_back(-1);
+    jetdeepcmva_probudsg_->push_back(-1);
+    jetdeepcmva_probb_   ->push_back(-1);
+    jetdeepcmva_probc_   ->push_back(-1);
+    jetdeepcmva_probbb_  ->push_back(-1);
+    jetdeepcmva_probcc_  ->push_back(-1);
+  }
 
   addRecoJetToObjectList(index);
 

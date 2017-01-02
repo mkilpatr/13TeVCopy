@@ -19,3 +19,9 @@
 [submodule "RecoMET"]
 	path = RecoMET
 	url = git@github.com:hqucms/RecoMET.git
+[submodule "DataFormats"]
+	path = DataFormats
+	url = git@github.com:hqucms/DataFormats.git
+[submodule "RecoBTag"]
+	path = RecoBTag
+	url = git@github.com:hqucms/RecoBTag.git

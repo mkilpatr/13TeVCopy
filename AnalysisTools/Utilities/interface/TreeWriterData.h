@@ -65,6 +65,7 @@ class TreeWriter;
     template<typename Type>
     unsigned int add(const std::string prefix,const std::string name,const std::string type,const Type defaultValue){
       assert(!isBooked);
+      if (var_pos.find(name) != var_pos.end()) throw std::invalid_argument("[TreeWriterData::add] Variable w/ the same name has already been added: "+name);
       data.push_back(new TreeVar<Type>(prefix,name,type,defaultValue));
       var_pos[name] = data.size() -1;
       return data.size() -1;
@@ -72,6 +73,7 @@ class TreeWriter;
     template<typename Type>
     unsigned int addMulti(const std::string prefix,const std::string name,const Type defaultValue){
       assert(!isBooked);
+      if (var_pos.find(name) != var_pos.end()) throw std::invalid_argument("[TreeWriterData::addMulti] Variable w/ the same name has already been added: "+name);
       data.push_back(new TreeMultiVar<Type>(prefix,name,defaultValue));
       var_pos[name] = data.size() -1;
       return data.size() -1;

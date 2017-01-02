@@ -35,11 +35,13 @@ EventInfoFiller::EventInfoFiller(
   met_(0),
   metOOB_(0),
   metNoHF_(0),
-  puppimet_(0)
+  puppimet_(0),
+  isFastSim_(false)
 {
   irun_           =  data.add<unsigned int>(branchName_,"run"       ,"i",0);
   ilumi_          =  data.add<unsigned int>(branchName_,"lumi"      ,"i",0);
   ievent_         =  data.add<unsigned int>(branchName_,"event"     ,"i",0);
+  ifastsim_       =  data.add<bool>        (branchName_,"isfastsim" ,"O",0);
   inpv_           =  data.add<unsigned int>(branchName_,"npv"       ,"i",0);
   irho_           =  data.add<float>       (branchName_,"rho"       ,"F",0);
   ipvx_           =  data.add<float>       (branchName_,"pv_x"      ,"F",0);
@@ -125,6 +127,7 @@ void EventInfoFiller::fill()
   data.fill<unsigned int>(irun_       ,eventCoords.run);
   data.fill<unsigned int>(ilumi_      ,eventCoords.lumi);
   data.fill<unsigned int>(ievent_     ,eventCoords.event);
+  data.fill<bool>        (ifastsim_   ,isFastSim_);
   data.fill<unsigned int>(inpv_       ,vertices_->size());
   data.fill<bool>        (igoodvertex_,hasgoodvtx );
   data.fill<float>       (irho_       ,(*rho_));
