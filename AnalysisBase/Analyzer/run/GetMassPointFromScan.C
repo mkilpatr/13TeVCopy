@@ -74,5 +74,6 @@ void GetMassPointFromScan(const TString infilename,
   outfile->Close();
 
   delete outfile;
+  delete chain;
 
 }

@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 #include "AnalysisTools/DataFormats/interface/Momentum.h"
 
@@ -89,6 +91,7 @@ public :
 
     float csv()         const { return csv_;    }
     bool  looseid()     const { return looseid_;}
+    bool  tightid()     const { return tightid_;}
     float pt_raw()      const { return pt_raw_; }
     float uncertainty() const { return uncertainty_;}
     float chHadFrac()   const { return chHadFrac_;}
@@ -100,7 +103,8 @@ public :
 
     void  setPtr(GenJet<CoordSystem> *inGenJet = 0) { genJet_   = inGenJet; }
     void  setCsv(const float inCsv)               {csv_         = inCsv;    }
-    void  setLooseId(const float inLooseId)       {looseid_     = inLooseId;}
+    void  setLooseId(bool inLooseId)              {looseid_     = inLooseId;}
+    void  setTightId(bool inTightId)              {tightid_     = inTightId;}
     void  setPtRaw(const float inPtRaw )          {pt_raw_      = inPtRaw;  }
     void  setUncertainty(const float inUncert)    {uncertainty_ = inUncert; }
     void  setChHadFrac(const float inChHadFrac)   {chHadFrac_   = inChHadFrac;}
@@ -188,6 +192,31 @@ public :
     cmva_ = cmva;
   }
 
+  float deepCSV(const std::string &label = ""){
+    try{
+      if (label=="")
+        return deepcsv_values_.at("probb") + deepcsv_values_.at("probbb");
+      else
+        return deepcsv_values_.at(label);
+    }catch (const std::out_of_range& e) {
+      throw std::invalid_argument("[Jet::deepCSV] Invalid argument: "+label);
+    }
+  }
+
+  float deepCMVA(const std::string &label = ""){
+    try{
+      if (label=="")
+        return deepcmva_values_.at("probb") + deepcmva_values_.at("probbb");
+      else
+        return deepcmva_values_.at(label);
+    }catch (const std::out_of_range& e) {
+      throw std::invalid_argument("[Jet::deepCMVA] Invalid argument: "+label);
+    }
+  }
+
+  void setDeepCSV(const std::string &label, float value) { deepcsv_values_[label] = value; }
+  void setDeepCMVA(const std::string &label, float value) { deepcmva_values_[label] = value; }
+
 protected :
     float csv_ = -10;                     //pointer to csv information
     float cmva_ = -10;                    //cmva
@@ -196,6 +225,7 @@ protected :
     float pt_raw_ = -10;                  //magnitude of uncorrected transverse momentum
     float uncertainty_ = -10;             //JEC error magnitude
     bool  looseid_ = false;                 //passes loose jet id or not
+    bool  tightid_ = false;                 //passes loose jet id or not
     float chHadFrac_ = -10;               //charged hadron fraction
     int   chHadN2_ = -10;                 //charged hadron multiplicity pt 2+
     int   chHadN4_ = -10;                 //charged hadron multiplicity pt 4+
@@ -207,6 +237,8 @@ protected :
     float axis2_ = -10;
     int   jetMult_ = -10;
     float jetcharge_ = -10;
+    std::unordered_map<std::string, float> deepcsv_values_;
+    std::unordered_map<std::string, float> deepcmva_values_;
     GenJet<CoordSystem>  *genJet_;  //Matched genJet
 
 };

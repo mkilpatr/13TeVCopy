@@ -12,7 +12,10 @@ config.JobType.psetName = '_psetName_'
 
 config.Data.inputDataset = '_inputDataset_'
 config.JobType.pyCfgParams = ['inputDataset=%s' % config.Data.inputDataset]
-config.JobType.inputFiles = [os.path.expandvars("$CMSSW_BASE/src/data/JEC/Spring16_25nsFastSimMC_V1.db")]
+config.JobType.inputFiles = [os.path.expandvars("$CMSSW_BASE/src/data/JEC/Spring16_25nsFastSimMC_V1.db"),
+                             os.path.expandvars("$CMSSW_BASE/src/data/JEC/Spring16_23Sep2016AllV2_DATA.db"),
+                             os.path.expandvars("$CMSSW_BASE/src/data/JEC/Spring16_23Sep2016V2_MC.db"),
+                             ]
 
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'

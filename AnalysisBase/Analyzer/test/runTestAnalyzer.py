@@ -28,9 +28,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/3A31E06F-EF1C-E611-8C8A-FA163E6BD80D.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/70000/000843D6-AC1C-E611-AB18-0025901A9EFC.root'
-#options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
+options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
 #options.inputFiles = '/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/036/00000/0E02D50E-989F-E611-A962-FA163EE15C80.root'
-options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTToSemiLeptonic_TuneCUETP8M1T4_alphaS01108_13TeV-powheg-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/00000/0ADCDA89-4F6E-E611-A828-08606E15E9C2.root'
+#options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/TTToSemiLeptonic_TuneCUETP8M1T4_alphaS01108_13TeV-powheg-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/00000/0ADCDA89-4F6E-E611-A828-08606E15E9C2.root'
 
 options.maxEvents = -1
 
@@ -93,19 +93,23 @@ ISDATA = False
 ISFASTSIM = False
 runMetCorrAndUnc = True
 updateJECs = True
-JECUNCFILE = 'data/JEC/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt'
+usePrivateSQlite = True
+JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt'
+updateBTagging = True
 
 # FastSim samples
-if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'T2bW' in DatasetName or 'PUSpring16Fast' in DatasetName :
+if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'PUSpring16Fast' in DatasetName :
     print 'Running on FastSim'
     ISFASTSIM = True
     #runMetCorrAndUnc = True
     #updateJECs = True
+    usePrivateSQlite = True
     JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
+    process.TestAnalyzer.EventInfo.isFastSim = cms.untracked.bool(True)
     if 'SMS' in DatasetName or 'T2bW' in DatasetName :
         print 'SMS: will save masses'
         process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
@@ -113,9 +117,10 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    runMetCorrAndUnc = False
-    updateJECs = False
-    JECUNCFILE = 'data/JEC/Spring16_25nsV6_DATA_Uncertainty_AK4PFchs.txt'
+#     runMetCorrAndUnc = False
+#     updateJECs = False
+    usePrivateSQlite = True
+#     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
     jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
@@ -230,7 +235,6 @@ process.TestAnalyzer.Jets.jetCorrInputFile = cms.untracked.FileInPath(JECUNCFILE
 # Custom METs
 # Configurable options
 runOnData = ISDATA  # data/MC switch
-usePrivateSQlite = ISFASTSIM # use external JECs (sqlite file)
 useHFCandidates = True  # create an additionnal NoHF slimmed MET collection if the option is set to false
 applyResiduals = True  # application of residual corrections.
 
@@ -246,7 +250,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Spring16_25nsV6_DATA" if ISDATA else "Spring16_25nsV6_MC"
+    era = "Spring16_23Sep2016AllV2_DATA" if ISDATA else "Spring16_23Sep2016V2_MC"
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
     dBFile = era+'.db' if runCRAB else os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
@@ -358,68 +362,79 @@ process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', pro
 
 #==============================================================================================================================#
 # Also update jets with different JECs if needed
-if updateJECs:
+if updateJECs or updateBTagging:
+    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+
     print 'Adding sequence to update JECs'
+    JETCorrLevels = ['L1FastJet','L2Relative','L3Absolute']
+    if ISDATA and applyResiduals: JETCorrLevels.append('L2L3Residual')
 
-    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors
-    process.patJetCorrFactorsReapplyJEC = updatedPatJetCorrFactors.clone(
-        src=cms.InputTag("slimmedJets"),
-        levels=['L1FastJet',
-                  'L2Relative',
-                  'L3Absolute'],
-        payload='AK4PFchs')  # Make sure to choose the appropriate levels and payload here!
-    process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(
-        src=cms.InputTag("slimmedJetsAK8"),
-        levels=['L1FastJet',
-                  'L2Relative',
-                  'L3Absolute'],
-        payload='AK8PFchs')  # Make sure to choose the appropriate levels and payload here!
-    if ISDATA and applyResiduals:
-        process.patJetCorrFactorsReapplyJEC.levels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
-        process.patJetCorrFactorsReapplyJECAK8.levels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+    bTagDiscriminators = None
+    if updateBTagging:
+        print 'Adding sequence to update b-tagging'
+        bTagDiscriminators = [
+            'deepFlavourJetTags:probudsg',
+            'deepFlavourJetTags:probb',
+            'deepFlavourJetTags:probc',
+            'deepFlavourJetTags:probbb',
+            'deepFlavourJetTags:probcc',
+            'deepFlavourCMVAJetTags:probudsg',
+            'deepFlavourCMVAJetTags:probb',
+            'deepFlavourCMVAJetTags:probc',
+            'deepFlavourCMVAJetTags:probbb',
+            'deepFlavourCMVAJetTags:probcc',
+        ]
 
-    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJets
-    process.patJetsReapplyJEC = updatedPatJets.clone(
-        jetSource=cms.InputTag("slimmedJets"),
-        jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
-    )
-    process.patJetsAK8ReapplyJEC = updatedPatJets.clone(
-        jetSource=cms.InputTag("slimmedJetsAK8"),
-        jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
-    )
+    jetToolbox(process, 'ak4', 'jetSequence', 'out', PUMethod = 'CHS', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels = JETCorrLevels, runOnMC=(not ISDATA), bTagDiscriminators=bTagDiscriminators)
+    jetToolbox(process, 'ak8', 'jetSequence', 'out', PUMethod = 'CHS', updateCollection='slimmedJetsAK8', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, runOnMC=(not ISDATA))
 
-    process.TestAnalyzer.Jets.jets = cms.InputTag('patJetsReapplyJEC')
-    process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('patJetsAK8ReapplyJEC')
-    process.TestAnalyzer.Muons.jets = cms.InputTag('patJetsReapplyJEC')
-    process.TestAnalyzer.Electrons.jets = cms.InputTag('patJetsReapplyJEC')
-    process.TestAnalyzer.Photons.jets = cms.InputTag('patJetsReapplyJEC')
-    process.TestAnalyzer.PFCandidates.jets = cms.InputTag('patJetsReapplyJEC')
+### old updateJEC ###
+#     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors
+#     process.patJetCorrFactorsReapplyJEC = updatedPatJetCorrFactors.clone(
+#         src=cms.InputTag("slimmedJets"),
+#         levels=['L1FastJet',
+#                   'L2Relative',
+#                   'L3Absolute'],
+#         payload='AK4PFchs')  # Make sure to choose the appropriate levels and payload here!
+#     process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(
+#         src=cms.InputTag("slimmedJetsAK8"),
+#         levels=['L1FastJet',
+#                   'L2Relative',
+#                   'L3Absolute'],
+#         payload='AK8PFchs')  # Make sure to choose the appropriate levels and payload here!
+#     if ISDATA and applyResiduals:
+#         process.patJetCorrFactorsReapplyJEC.levels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+#         process.patJetCorrFactorsReapplyJECAK8.levels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
+# 
+#     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJets
+#     process.patJetsReapplyJEC = updatedPatJets.clone(
+#         jetSource=cms.InputTag("slimmedJets"),
+#         jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
+#     )
+#     process.patJetsAK8ReapplyJEC = updatedPatJets.clone(
+#         jetSource=cms.InputTag("slimmedJetsAK8"),
+#         jetCorrFactorsSource=cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8"))
+#     )
+
+    process.TestAnalyzer.Jets.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    process.TestAnalyzer.AK8FatJets.fatJets = cms.InputTag('selectedUpdatedPatJetsAK8PFCHS')
+    process.TestAnalyzer.Muons.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    process.TestAnalyzer.Electrons.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    process.TestAnalyzer.Photons.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    process.TestAnalyzer.PFCandidates.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     #process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
-    process.QGTagger.srcJets = cms.InputTag('patJetsReapplyJEC')
+    process.QGTagger.srcJets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     if not ISDATA :
-        process.redGenAssoc.recoJetsSrc = cms.InputTag('patJetsReapplyJEC')
-
-    process.seq = cms.Sequence(process.patJetCorrFactorsReapplyJEC *
-                               process.patJetCorrFactorsReapplyJECAK8 *
-                               process.patJetsReapplyJEC *
-                               process.patJetsAK8ReapplyJEC *
-                               process.met131TeVFilter *
-                               process.ak4PatAssocSeq *
-#                                process.httseq  *
-                               process.egmGsfElectronIDSequence *
-                               process.egmPhotonIDSequence*
-                               process.BadChargedCandidateFilter *
-                               process.BadPFMuonFilter)
+        process.redGenAssoc.recoJetsSrc = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
 
 
-else :
-    process.seq = cms.Sequence(process.met131TeVFilter *
-                               process.ak4PatAssocSeq *
-#                                process.httseq  *
-                               process.egmGsfElectronIDSequence *
-                               process.egmPhotonIDSequence *
-                               process.BadChargedCandidateFilter *
-                               process.BadPFMuonFilter)
+process.seq = cms.Sequence(process.met131TeVFilter *
+                           process.ak4PatAssocSeq *
+#                            process.httseq  *
+                           process.egmGsfElectronIDSequence *
+                           process.egmPhotonIDSequence *
+                           process.BadChargedCandidateFilter *
+                           process.BadPFMuonFilter)
 
 
 process.p = cms.Path(process.seq * process.TestAnalyzer)

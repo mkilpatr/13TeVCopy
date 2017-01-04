@@ -92,6 +92,7 @@ enum FatJetRecoCategory {
                     RECONOTFILLED     = 0
                   , SDMVATOP          = (1 << 0)
                   , SDMVAW            = (1 << 1)
+                  , RECOUNTAGGED      = (1 << 2) // no reco category
 };
 
 enum FatJetGenCategory {
@@ -100,6 +101,7 @@ enum FatJetGenCategory {
                   , GENW              = (1 << 1) // a hadronic gen w is within 0.8 of fatjet axis
                   , GENTOP_CONTAINED  = (1 << 2) // b/w1/w2 partons of a hadronic gen top are contained within 0.8 of fatjet axis
                   , GENW_CONTAINED    = (1 << 3) // w1/w2 partons of a hadronic gen w are contained within 0.8 of fatjet axis
+                  , GENUNTAGGED       = (1 << 4) // no gen category
 };
 
 template <class CoordSystem>
@@ -117,7 +119,9 @@ class FatJet : public Jet<CoordSystem>
     puppi_softDropMass_(-9.),
     puppi_tau1_        (-9.),
     puppi_tau2_        (-9.),
-    puppi_tau3_        (-9.)
+    puppi_tau3_        (-9.),
+    recoCategory_      (0),
+    genCategory_       (0)
   {}
 
   template <class InputCoordSystem>
@@ -150,8 +154,12 @@ class FatJet : public Jet<CoordSystem>
   size  nSubjets()             const { return subjets.size();   }
   float top_mva()              const { return topmva_      ;    }
   float w_mva()                const { return wmva_        ;    }
-  int recoCategory()           const { return recoCategory_;    }
-  int genCategory()            const { return genCategory_ ;    }
+  int   recoCategory()         const { return recoCategory_;    }
+  int   genCategory()          const { return genCategory_ ;    }
+  bool  looseid()              const { return looseid_; }
+  bool  tightid()              const { return tightid_; }
+  bool  passMuEnFrac()         const { return passMuEnFrac_; }
+
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
     if(idx >= nSubjets() )throw std::invalid_argument("Not a valid subjet index!");
@@ -208,6 +216,10 @@ class FatJet : public Jet<CoordSystem>
 
   void setTopMVA(const float inMVA) {topmva_ = inMVA;}
   void setWMVA(const float inMVA) {wmva_ = inMVA;}
+  void setLooseid(bool looseid) { looseid_ = looseid; }
+  void setTightid(bool tightid) { tightid_ = tightid; }
+  void setPassMuEnFrac(bool passMuEnFrac) { passMuEnFrac_ = passMuEnFrac; }
+
 
   void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ |= inGenCategory;}
   void setRecoCategory(const FatJetRecoCategory inRecoCategory) {recoCategory_ |= inRecoCategory;}
@@ -229,6 +241,9 @@ class FatJet : public Jet<CoordSystem>
     int recoCategory_  ;
     int genCategory_   ;
     float wmva_ = -9   ;
+    bool looseid_ = false;
+    bool tightid_ = false;
+    bool passMuEnFrac_ = false;
 
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;

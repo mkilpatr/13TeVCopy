@@ -28,6 +28,7 @@ public :
                           , LOADTOPASSOC    = (1 <<  3)   ///< load top - jet assoc
                           , LOADJETEXTRA    = (1 <<  4)   ///< load extra jet info
                           , FILLOBJ         = (1 <<  5)   ///< Fill objects (as opposed to just pointers
+                          , LOADDEEPFLAVOR  = (1 <<  6)   ///< load deep neural net based b-taggers
   };
   static const int defaultOptions;
 
@@ -56,6 +57,17 @@ public:
   std::vector<float>* jetarea_;
   std::vector<int16>* jetgenindex_;
   std::vector<float> *jetuncertainty_;
+  // deep flavors
+  std::vector<float>* jetdeepcsv_probudsg_;
+  std::vector<float>* jetdeepcsv_probb_;
+  std::vector<float>* jetdeepcsv_probc_;
+  std::vector<float>* jetdeepcsv_probbb_;
+  std::vector<float>* jetdeepcsv_probcc_;
+  std::vector<float>* jetdeepcmva_probudsg_;
+  std::vector<float>* jetdeepcmva_probb_;
+  std::vector<float>* jetdeepcmva_probc_;
+  std::vector<float>* jetdeepcmva_probbb_;
+  std::vector<float>* jetdeepcmva_probcc_;
   // For genjets matched to reco jets
   std::vector<float>* genjetpt_;
   std::vector<float>* genjeteta_;

@@ -216,14 +216,15 @@ public:
     //--------------------------------------------------------------------------------------------------
     // Correction sets
     //--------------------------------------------------------------------------------------------------
-    TtbarCorrectionSet  ttbarCorrections;
-    WPolCorrectionSet   wpolCorrections;
-    EventCorrectionSet  eventCorrections;
-    TriggerCorrectionSet triggerCorrections;
-    LeptonCorrectionSet leptonCorrections;
-    JetAndMETCorrectionSet  jetAndMETCorrections;
-    BTagCorrectionSet    bTagCorrections;
-    ISRCorrectionSet    isrCorrections;
+    TtbarCorrectionSet         ttbarCorrections;
+    WPolCorrectionSet          wpolCorrections;
+    EventCorrectionSet         eventCorrections;
+    TopWCorrectionSet          topWCorrections;
+    TriggerCorrectionSet       triggerCorrections;
+    LeptonCorrectionSet        leptonCorrections;
+    JetAndMETCorrectionSet     jetAndMETCorrections;
+    BTagCorrectionSet          bTagCorrections;
+    ISRCorrectionSet           isrCorrections;
 
     JetReader  * defaultJets;
 

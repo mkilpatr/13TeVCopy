@@ -149,8 +149,13 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.puCorrections != EventCorrectionSet::NULLOPT){
-      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.sdMVACorrectionFile, configSet.corrections.sdMVAFullFastCorrectionFile, configSet.corrections.resMVATopCorrectionFile, configSet.corrections.resMVATopFullFastCorrectionFile, configSet.corrections.sdCorrectionFile, configSet.corrections.puCorrections);
+      eventCorrections.load(configSet.corrections.puCorrectionFile, configSet.corrections.puCorrections);
       corrections.push_back(&eventCorrections);
+    }
+
+    if(configSet.corrections.topWCorrections != TopWCorrectionSet::NULLOPT){
+      topWCorrections.load(configSet.corrections.sdCorrectionFile, configSet.corrections.topWCorrections);
+      corrections.push_back(&topWCorrections);
     }
 
     if(configSet.corrections.triggerCorrections != TriggerCorrectionSet::NULLOPT){
@@ -473,7 +478,7 @@ void BaseTreeAnalyzer::processVariables()
     nSdMVATopTight = 0;
     nSdMVAWTight  = 0;
     for(auto *fj : fatJets){
-      fj->setRecoCategory(FatJetRecoCategory::RECONOTFILLED);
+      fj->setRecoCategory(FatJetRecoCategory::RECOUNTAGGED);
       if (fj->pt()>400 && fj->softDropMass()>110 && fj->top_mva() > SoftdropTopMVA::WP_TIGHT){
         fj->setRecoCategory(FatJetRecoCategory::SDMVATOP);
         sdMVATopTight.push_back(fj);
@@ -526,7 +531,15 @@ void BaseTreeAnalyzer::processVariables()
   nJets    = jets.size();
   nBJets   = bJets.size();
 
-
+  //load corrections except those which MUST come later in processMoreVariables.
+  //for these, if we were to include them here in a first pass, they would be INCORRECTLY FILLED (I tested this). Eg gen categories aren't filled in processVariables().
+  //tradeoff is that these SFs will default to '1' if the user forgets to call processMoreVariables(). Also there are no resolved tops so they'll notice!
+  // LIST AND REASON:
+  //   iC->name == "TOPW", b/c the merged top/w SFs req' the gen cats to be filled, and resolved SFs req' the resolved candidates
+  for(auto * iC : corrections){
+    if(iC->name == TString("TOPW")) continue;
+    iC->processCorrection(this);
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void BaseTreeAnalyzer::processMoreVariables(){
@@ -554,7 +567,7 @@ void BaseTreeAnalyzer::processMoreVariables(){
   // set gen categories of fatjets (MUST GO AFTER GENHADRONICTOPS/WS)
   if( fatJetReader.isLoaded() && (nHadronicGenTops>0 || nHadronicGenWs>0) ){
     for(auto *fj : fatJets){
-      fj->setGenCategory(FatJetGenCategory::GENNOTFILLED);
+      fj->setGenCategory(FatJetGenCategory::GENUNTAGGED);
       // is element of hadronicGenTops within 0.8?
       for(const auto &top : hadronicGenTops){
         float nearDR = PhysicsUtilities::deltaR(*(top->top), *fj);
@@ -582,7 +595,6 @@ void BaseTreeAnalyzer::processMoreVariables(){
     }
   }
 
-
   // mva-based resolved tops (MUST GO AFTER JETS AND SD MVA TOPS AND WS)
   auto cleanedAK4 = PhysicsUtilities::removeOverlapsDRDeref(jets, sdwtops_, 0.8);
   resMVATopCands = resTopMVA->getTopCandidates(cleanedAK4, ResolvedTopMVA::WP_ALL); // sorted by MVA score
@@ -594,12 +606,11 @@ void BaseTreeAnalyzer::processMoreVariables(){
   std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
   nResMVATopMedium = resMVATopMedium.size();
 
-  // FIXME: do we need any corrections for preselection?
-  //load corrections corrections
+  //load only the corrections which required processMoreVariables (just "TOPW" for now). see above corrections loop in processVariables().
   for(auto * iC : corrections){
+    if(iC->name != "TOPW") continue;
     iC->processCorrection(this);
   }
-
 
   isReady_ = true;
 }

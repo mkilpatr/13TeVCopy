@@ -50,6 +50,8 @@ public:
                           , LOADUNCFROMFILE = (1 <<  6)   ///< load jet uncertainties from external file
                           , FILLJETEXTRA    = (1 <<  7)   ///< additional info about jet energy fractions and multiplicities
                           , FILLJETCHHADN   = (1 <<  8)   ///< additional info about jet content: charged hadron multiplicity
+                          , LOADDEEPFLAVOR  = (1 <<  9)   ///< deep neural net based b-taggers
+
   };
   static const int defaultOptions = NULLOPT;
   static const std::string REGENJET;  // userClass label for the redefined genJet of the given jet
@@ -71,6 +73,7 @@ public:
 
       virtual float getJecUncorrection(const Jet& jet) const = 0;
       virtual float getPUJetId(const Jet& jet) const = 0;
+      virtual float getbDisc(const Jet& jet, const std::string &label) const = 0;
       virtual float getbDisc(const Jet& jet) const = 0;
       virtual float getcmvaDisc(const Jet& jet) const = 0;
       virtual float getcvslDisc(const Jet& jet) const = 0;
@@ -126,6 +129,16 @@ public:
       size ijetcmva_     ;
       size ijetcvsl_     ;
       size ijetcvsb_     ;
+      size ijetdeepcsv_probudsg_;
+      size ijetdeepcsv_probb_;
+      size ijetdeepcsv_probc_;
+      size ijetdeepcsv_probbb_;
+      size ijetdeepcsv_probcc_;
+      size ijetdeepcmva_probudsg_;
+      size ijetdeepcmva_probb_;
+      size ijetdeepcmva_probc_;
+      size ijetdeepcmva_probbb_;
+      size ijetdeepcmva_probcc_;
       size ijetarea_     ;
       size ijetgenindex_ ;
       size ijetsuperindex_ ;

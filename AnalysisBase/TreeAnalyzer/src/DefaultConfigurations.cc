@@ -103,21 +103,19 @@ void cfgSet::loadDefaultPhotonConfigurations() {
 cfgSet::CorrectionConfig cfgSet::standardCorrections("standardCorrections");
 
 void cfgSet::loadDefaultCorrections() {
+  standardCorrections.dummy1DCorrectionsFile   = TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
+
   standardCorrections.ttbarCorrections         = ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
-  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU | ucsbsusy::EventCorrectionSet::SDMVA | ucsbsusy::EventCorrectionSet::RESMVATOP;
-  standardCorrections.puCorrectionFile         =  TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
-  standardCorrections.sdMVACorrectionFile      =  TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",CMSSW_BASE);
-  standardCorrections.sdMVAFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
-  standardCorrections.sdMVACorrType            = ucsbsusy::NOMINAL;
-  standardCorrections.resMVATopCorrectionFile  =  TString::Format("%s/src/data/corrections/2017/restop/restop_sf_20161201.root",CMSSW_BASE);
-  standardCorrections.resMVATopFullFastCorrectionFile  =  TString::Format("%s/src/data/corrections/dummy.root",CMSSW_BASE);
-  standardCorrections.resMVATopCorrType        = ucsbsusy::NOMINAL;
-  //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE);
-  standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdTopWTagging-DataFull-correctedbymistagrate.root",CMSSW_BASE);
-  standardCorrections.sdTopCorrType            = ucsbsusy::NOMINAL;
-  standardCorrections.sdWCorrType              = ucsbsusy::NOMINAL;
+  standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU;
+  standardCorrections.puCorrectionFile         = TString::Format("%s/src/data/corrections/puWeights_2016bcdefgh_35p5ifb_50bins_69p2mb.root",CMSSW_BASE);
+
+  standardCorrections.topWCorrections          = ucsbsusy::TopWCorrectionSet::SDMVA | ucsbsusy::TopWCorrectionSet::RESMVATOP; // Moriond17
+  //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE); ////// ICHEP16 OUTDATED //////
+  standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdTopWTagging-DataFull-correctedbymistagrate.root",CMSSW_BASE); ////// ICHEP16 OUTDATED //////
+  standardCorrections.sdTopCorrType            = ucsbsusy::NOMINAL; ////// ICHEP16 OUTDATED //////
+  standardCorrections.sdWCorrType              = ucsbsusy::NOMINAL; ////// ICHEP16 OUTDATED //////
 
   standardCorrections.triggerCorrections       = ucsbsusy::TriggerCorrectionSet::NULLOPT;
   standardCorrections.triggerCorrectionFile    =  TString::Format("%s/src/data/corrections/2016/trigCorr.root",CMSSW_BASE);

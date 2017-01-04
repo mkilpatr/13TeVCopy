@@ -6,6 +6,7 @@
 #include "AnalysisTools/KinematicVariables/interface/JetKinematics.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
+#include "AnalysisBase/TreeAnalyzer/interface/TopWCorrectionSet.h"
 
 using namespace ucsbsusy;
 
@@ -618,6 +619,22 @@ struct ExtraVarsFiller {
     i_mtnl0_ak8passtopt   = data->add<bool>        ("","mtnl0_ak8passtopt"  ,"O",0);
   }
 
+  void bookTopWSyst(TreeWriterData* data){
+    // top/w tagging systs
+    data->add<float>("sdMVAWeight_Nominal",1);
+    data->add<float>("sdMVAWeight_STATS_UP",1);
+    data->add<float>("sdMVAWeight_PS",1);
+    data->add<float>("sdMVAWeight_GEN",1);
+    data->add<float>("sdMVAWeight_MISTAG_W_UP",1);
+    data->add<float>("sdMVAWeight_MISTAG_T_UP",1);
+
+    data->add<float>("resTopWeight_Nominal",1);
+    data->add<float>("resTopWeight_STATS_UP",1);
+    data->add<float>("resTopWeight_PS",1);
+    data->add<float>("resTopWeight_GEN",1);
+    data->add<float>("resTopWeight_MISTAG_UP",1);
+  }
+
   void bookSyst(TreeWriterData* data){
     i_systweights       = data->addMulti<float>("","systweights",0);
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
@@ -706,7 +723,7 @@ struct ExtraVarsFiller {
     i_genb2eta       = data->add<float>("","genb2eta","F",0);
     i_dphigenb1genb2 = data->add<float>("","dphigenb1genb2","F",0);
     i_drgenb1genb2   = data->add<float>("","drgenb1genb2","F",0);
-    i_genlepq        = data->add<float>("","genlepq","F",0);
+    i_genlepq        = data->add<int>("","genlepq","I",0);
     i_ngenmu         = data->add<int>("","ngenmu","I",0);
     i_ngenel         = data->add<int>("","ngenel","I",0);
     i_ngentau        = data->add<int>("","ngentau","I",0);
@@ -1352,7 +1369,72 @@ struct ExtraVarsFiller {
 
 
 
- 
+  void fillTopWSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    if(!ana->isMC()) return; // defaults
+
+    /////// top/w systematics
+    float sdMVAWeight_Nominal;
+    float sdMVAWeight_STATS_UP;
+    float sdMVAWeight_PS;
+    float sdMVAWeight_GEN;
+    float sdMVAWeight_MISTAG_W_UP;
+    float sdMVAWeight_MISTAG_T_UP;
+
+    float resTopWeight_Nominal;
+    float resTopWeight_STATS_UP;
+    float resTopWeight_PS;
+    float resTopWeight_GEN;
+    float resTopWeight_MISTAG_UP;
+
+    int options;
+
+    // merged
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP; // nominal
+    sdMVAWeight_Nominal = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_Nominal", sdMVAWeight_Nominal);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_UP; // STATS_UP
+    sdMVAWeight_STATS_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_STATS_UP", sdMVAWeight_STATS_UP);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_PS; // PS
+    sdMVAWeight_PS = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_PS", sdMVAWeight_PS);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_GEN; // GEN
+    sdMVAWeight_GEN = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_GEN", sdMVAWeight_GEN);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_UP; // MISTAG_W_UP
+    sdMVAWeight_MISTAG_W_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_MISTAG_W_UP", sdMVAWeight_MISTAG_W_UP);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_UP; // MISTAG_T_UP
+    sdMVAWeight_MISTAG_T_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
+    data->fill<float>("sdMVAWeight_MISTAG_T_UP", sdMVAWeight_MISTAG_T_UP);
+
+
+    // resolved
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP; // nominal
+    resTopWeight_Nominal = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+    data->fill<float>("resTopWeight_Nominal", resTopWeight_Nominal);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP; // STATS_UP
+    resTopWeight_STATS_UP = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+    data->fill<float>("resTopWeight_STATS_UP", resTopWeight_STATS_UP);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_PS; // PS
+    resTopWeight_PS = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+    data->fill<float>("resTopWeight_PS", resTopWeight_PS);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_GEN; // GEN
+    resTopWeight_GEN = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+    data->fill<float>("resTopWeight_GEN", resTopWeight_GEN);
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP; // MISTAG_UP
+    resTopWeight_MISTAG_UP = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
+    data->fill<float>("resTopWeight_MISTAG_UP", resTopWeight_MISTAG_UP);
+  }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     for(auto wgt : *ana->evtInfoReader.systweights) {

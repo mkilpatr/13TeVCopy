@@ -64,6 +64,7 @@ namespace ucsbsusy {
       defaults::SignalType signalType;
       size8             datrec;
       defaults::DataReco datareco;
+      bool          isfastsim;
 
       std::vector<bool>          * metfilterbitpass_old;
       size                         metfilterbitpass;
