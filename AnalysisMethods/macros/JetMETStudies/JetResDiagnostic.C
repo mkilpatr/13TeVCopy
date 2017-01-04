@@ -31,7 +31,7 @@ void getDiagnostic(TString p_FileDir, vector <pair <TString, TString> >& p_FileN
   if(tempName.Contains("_b")){
     hist_num  = nJetPTs + 1;
   }
-  for(unsigned int iP = 0; iP < nJetPTs; ++iP, ++hist_num){
+  for(int iP = 0; iP < nJetPTs; ++iP, ++hist_num){
     float yMin = 9999., yMax = 0.;
     TString title = TString::Format("%.0f #leq p_{T} < %.0f", p_JetPTs[iP], p_JetPTs[iP + 1]);
     TString name  = TString::Format("%s_%u", p_HistName.Data(), hist_num);
@@ -101,12 +101,14 @@ void JetResDiagnostic() {
 //  vector <pair <TString, TString> > fileNames = { make_pair("resTailOut_combined_puWeight_WoH.root",          "no filters"),
 //                                                  make_pair("resTailOut_combined_filtered_puWeight_WoH.root", "filtered") };
 //  TString suffix = "puWeight_noFilter_vs_filtered";
-  vector <pair <TString, TString> > fileNames = { make_pair("resTailOut_combined_filtered_puWeight_weight_WoH.root",      "no CHEF cut"),
-                                                  make_pair("resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", "CHEF > 0.1") };
-  TString suffix = "noCHEF_vs_CHEF";
+//  vector <pair <TString, TString> > fileNames = { make_pair("resTailOut_combined_filtered_puWeight_weight_WoH.root",      "no CHEF cut"),
+//                                                  make_pair("resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", "CHEF > 0.1") };
+//  TString suffix = "noCHEF_vs_CHEF";
 //  vector <pair <TString, TString> > fileNames = { make_pair("resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root",    "CHEF > 0.1"),
 //                                                  make_pair("resTailOut_combined_filtered_newCHEF_puWeight_weight_WoH.root", "0.1 < CHEF < 0.95") };
 //  TString suffix = "CHEF_vs_newCHEF";
+  vector <pair <TString, TString> > fileNames = { make_pair("resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", "CHEF > 0.1") };
+  TString suffix = "CHEF";
 
   outputDir += "_" + suffix;
   gSystem->mkdir(outputDir, true);
