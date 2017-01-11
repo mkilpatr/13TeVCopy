@@ -74,7 +74,7 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
   //                * product of ( 1 - sfeff( t | !gt ) - sfeff( w | !gw) ) for every fj in the ( !t!w | !gt !gw ) category, darkness
   //       P(MC) = same, replacing sfeff by eff
   //    ---> event weight = P(data)/P(MC)
-  // 
+  //
   //    stat uncertainties on effs and SFs (not systs!)
   //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
   //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
@@ -128,47 +128,48 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       ///// SYSTEMATICS /////
       // the SF is in 'sf'. check if SF category is top or w and apply corresponding systematic.
       if(dbg) std::cout << "  merged tagged systs: " << std::endl;
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_UP){
-        if(dbg) std::cout << "    merged stats up systs, factor on sf of " << 1 + sfunc << std::endl;
-        sf  *= (1 + sfunc);
+      // variations on the efficiencies
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_W) && genw && recow){
+        if(dbg) std::cout << "    merged stats W systs, sf after variation is " << sf + sfunc << std::endl;
+        sf  += sfunc;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_T) && gentop && recotop){
+        if(dbg) std::cout << "    merged stats top systs, sf after variation is " << sf + sfunc << std::endl;
+        sf  += sfunc;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS) && ((genw && recow) || (gentop && recotop))){
         float syst = getbincontent(fjpt, (recotop ? sdMVA_Full_systs_t_ps : sdMVA_Full_systs_w_ps));
         if(dbg) std::cout << "    merged ps systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_GEN){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_GEN) && ((genw && recow) || (gentop && recotop))){
         float syst = getbincontent(fjpt, (recotop ? sdMVA_Full_systs_t_gen : sdMVA_Full_systs_w_gen));
         if(dbg) std::cout << "    merged gen systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_UP){
-        if(recow){
-          float syst = getbincontent(fjpt, sdMVA_Full_systs_w_mis_u);
-          if(dbg) std::cout << "    merged mistag w up systs, factor on sf of " << syst << std::endl;
-          sf /= syst;
-        }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_W) && genw && recow){
+        float syst = getbincontent(fjpt, sdMVA_Full_systs_w_mis_u);
+        if(dbg) std::cout << "    merged mistag w up systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_DOWN){
-        if(recow){
-          float syst = getbincontent(fjpt, sdMVA_Full_systs_w_mis_d);
-          if(dbg) std::cout << "    merged mistag w down systs, factor on sf of " << syst << std::endl;
-          sf /= syst;
-        }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_T) && gentop && recotop){
+        float syst = getbincontent(fjpt, sdMVA_Full_systs_t_mis_u);
+        if(dbg) std::cout << "    merged mistag t up systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_UP){
-        if(recotop){
-          float syst = getbincontent(fjpt, sdMVA_Full_systs_t_mis_u);
-          if(dbg) std::cout << "    merged mistag t up systs, factor on sf of " << syst << std::endl;
-          sf /= syst;
-        }
+      // variations on the mistag rate
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_W) && (!genw) && recow){
+        if(dbg) std::cout << "    merged stats W systs, sf after variation is " << sf + sfunc << std::endl;
+        sf  += sfunc;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_DOWN){
-        if(recotop){
-          float syst = getbincontent(fjpt, sdMVA_Full_systs_t_mis_d);
-          if(dbg) std::cout << "    merged mistag t down systs, factor on sf of " << syst << std::endl;
-          sf /= syst;
-        }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_T) && (!gentop) && recotop){
+        if(dbg) std::cout << "    merged stats top systs, sf after variation is " << sf + sfunc << std::endl;
+        sf  += sfunc;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB) && ((!gentop && recotop) || (!genw && recow))){
+        float syst = 1.2; // flat 20%
+        if(dbg) std::cout << "    merged mistag nb systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
       }
       ///// END SYSTEMATICS /////
 
@@ -218,47 +219,59 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(dbg) std::cout << "  sft, sfunct, efft, " << sft << " " << sftunc << " " << efft << " " << std::endl;
       if(dbg) std::cout << "  sfw, sfuncw, effw, " << sfw << " " << sfwunc << " " << effw << " " << std::endl;
 
+
+
       ///// SYSTEMATICS /////
       // in untagged categories the top/w categories of the SFs are more clear.
       if(dbg) std::cout << "  merged untagged systs: " << std::endl;
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_UP){
-        sft  *= (1 + sftunc);
-        sfw  *= (1 + sfwunc);
-        if(dbg) std::cout << "    merged stats up systs, factor on sft, sfw of " << 1+sftunc << " " << 1+sfwunc << std::endl;
+      // variations on the efficiencies
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_W) && genw){
+        sfw  += sfwunc;
+        if(dbg) std::cout << "    merged stats W systs, sfw after variation is " << sfw+sfwunc << std::endl;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS){
-        float systt = getbincontent(fjpt, sdMVA_Full_systs_t_ps);
-        float systw = getbincontent(fjpt, sdMVA_Full_systs_w_ps);
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_STATS_T) && gentop){
+        sft  += sftunc;
+        if(dbg) std::cout << "    merged stats top systs, sft after variation is " << sft+sftunc << std::endl;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_PS)){
+        float systt = gentop ? getbincontent(fjpt, sdMVA_Full_systs_t_ps) : 1;
+        float systw = genw ? getbincontent(fjpt, sdMVA_Full_systs_w_ps) : 1;
         if(dbg) std::cout << "    merged ps systs, factor on sft, sfw of " << systt << " " << systw << std::endl;
         sft /= systt;
         sfw /= systw;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_GEN){
-        float systt = getbincontent(fjpt, sdMVA_Full_systs_t_gen);
-        float systw = getbincontent(fjpt, sdMVA_Full_systs_w_gen);
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_GEN)){
+        float systt = gentop ? getbincontent(fjpt, sdMVA_Full_systs_t_gen) : 1;
+        float systw = genw ? getbincontent(fjpt, sdMVA_Full_systs_w_gen) : 1;
         if(dbg) std::cout << "    merged gen systs, factor on sft, sfw of " << systt << " " << systw << std::endl;
         sft /= systt;
         sfw /= systw;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_UP){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_W) && genw){
         float systw = getbincontent(fjpt, sdMVA_Full_systs_w_mis_u);
         if(dbg) std::cout << "    merged mistag w up systs, factor on sfw of " << systw << std::endl;
         sfw /= systw;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_DOWN){
-        float systw = getbincontent(fjpt, sdMVA_Full_systs_w_mis_d);
-        if(dbg) std::cout << "    merged mistag w down systs, factor on sfw of " << systw << std::endl;
-        sfw /= systw;
-      }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_UP){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_T) && gentop){
         float systt = getbincontent(fjpt, sdMVA_Full_systs_t_mis_u);
         if(dbg) std::cout << "    merged mistag t up systs, factor on sft of " << systt << std::endl;
         sft /= systt;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_DOWN){
-        float systt = getbincontent(fjpt, sdMVA_Full_systs_t_mis_d);
-        if(dbg) std::cout << "    merged mistag t down systs, factor on sft of " << systt << std::endl;
+      // variations on the mistag rate
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_W) && (!genw)){
+        sfw  += sfwunc;
+        if(dbg) std::cout << "    merged mistag stats W systs, sfw after variation is " << sfw+sfwunc << std::endl;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_T) && (!gentop)){
+        sft  += sftunc;
+        if(dbg) std::cout << "    merged mistag stats top systs, sft after variation is " << sft+sftunc << std::endl;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB)){
+        float systt = (!gentop) ? 1.2 : 1;
+        float systw = (!genw) ? 1.2 : 1;
+        if(dbg) std::cout << "    merged mistag nb systs, factor on sft, sfw of " << systt << " " << systw << std::endl;
         sft /= systt;
+        sfw /= systw;
       }
       ///// END SYSTEMATICS /////
 
@@ -337,7 +350,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
   //                * product of ( 1 - sfeff( t | !gt ) ) for every candidate in the (!t | !gt) category, darkness
   //       P(MC) = same, replacing sfeff by eff
   //    ---> event weight = P(data)/P(MC)
-  // 
+  //
   //    stat uncertainties on effs and SFs (not systs!)
   //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
   //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
@@ -378,28 +391,33 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
 
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved tagged systs: " << std::endl;
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP){
-        if(dbg) std::cout << "    RESOLVED stats up systs, factor on sf of " << 1 + sfunc << std::endl;
-        sf  *= (1 + sfunc);
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS) && gentop){
+        if(dbg) std::cout << "    RESOLVED stats systs, sf after variation is " << sf + sfunc << std::endl;
+        sf += sfunc;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_ps);
         if(dbg) std::cout << "    RESOLVED ps systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_GEN){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_GEN) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_gen);
         if(dbg) std::cout << "    RESOLVED gen systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_mis_u);
         if(dbg) std::cout << "    RESOLVED mistag t up systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_DOWN){
-        float syst = getbincontent(candpt, resTop_Full_systs_mis_d);
-        if(dbg) std::cout << "    RESOLVED mistag t down systs, factor on sf of " << syst << std::endl;
+      // mistag
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS) && (!gentop)){
+        if(dbg) std::cout << "    RESOLVED mistag stats systs, sf after variation is " << sf + sfunc << std::endl;
+        sf += sfunc;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB) && (!gentop)){
+        float syst = 1.2;
+        if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
       ///// END SYSTEMATICS /////
@@ -407,7 +425,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       pdata    *= sf*eff;
       pdataunc += pow(sfunc/sf,2);
       pmc      *= eff;
-      pmcunc   += 0; 
+      pmcunc   += 0;
       if(dbg) std::cout << "  pdata, pdataunc, pmc, pmcunc " << pdata << " " << pdataunc << " " << pmc << " " << pmcunc << std::endl;
     }else{
       if(dbg) std::cout << "  in reco untagged cat" << std::endl;
@@ -431,28 +449,33 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
 
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved untagged systs: " << std::endl;
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP){
-        if(dbg) std::cout << "    RESOLVED stats up systs, factor on sft of " << 1 + sftunc << std::endl;
-        sft  *= (1 + sftunc);
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS) && gentop){
+        if(dbg) std::cout << "    RESOLVED stats systs, sf after variation is " << sft + sftunc << std::endl;
+        sft += sftunc;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_PS) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_ps);
         if(dbg) std::cout << "    RESOLVED ps systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_GEN){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_GEN) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_gen);
         if(dbg) std::cout << "    RESOLVED gen systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP){
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_mis_u);
         if(dbg) std::cout << "    RESOLVED mistag t up systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
-      if(correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_DOWN){
-        float syst = getbincontent(candpt, resTop_Full_systs_mis_d);
-        if(dbg) std::cout << "    RESOLVED mistag t down systs, factor on sf of " << syst << std::endl;
+      // mistag
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS) && (!gentop)){
+        if(dbg) std::cout << "    RESOLVED stats mistag systs, sf after variation is " << sft + sftunc << std::endl;
+        sft += sftunc;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB) && (!gentop)){
+        float syst = 1.2;
+        if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
       ///// END SYSTEMATICS /////
@@ -616,7 +639,7 @@ void TopWCorrectionSet::load(TString sdCorrName, int correctionOptions)
   }
 }
 
-// per-event, parse the options bits for correction type and build up the weights using each process(). the TopWCorrectionSet getters() give access to the TreeFiller. 
+// per-event, parse the options bits for correction type and build up the weights using each process(). the TopWCorrectionSet getters() give access to the TreeFiller.
 // the systematics are handled by each corrector by passing the whole options bits to them.
 void TopWCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 

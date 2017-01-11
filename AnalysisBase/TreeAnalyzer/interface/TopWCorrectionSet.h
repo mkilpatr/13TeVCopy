@@ -79,7 +79,7 @@ class ResMVATopCorr : public Correction {
     TH1F  * resTop_Full_topmistagEff;    // mistag
 
     // systematics
-    TH1F  * resTop_Full_systs;           // top and w systematics MC effs
+//    TH1F  * resTop_Full_systs;           // top and w systematics MC effs
     TH1F  * resTop_Full_systs_ps;        // parton showering (herwig/pythia)
     TH1F  * resTop_Full_systs_gen;       // generator (powheg/mg)
     TH1F  * resTop_Full_systs_mis_u;     // scaling mistag SF for the subtraction of unmatched MC in the SF calculation
@@ -125,18 +125,25 @@ public:
                         , RESMVATOP                  = (1 <<  1)   ///< RES MVA top tagging
                         , ICHEP16SDTOP               = (1 <<  2)   ///< cut-based SD top tagging ///// ICHEP16 OUTDATED /////
                         , ICHEP16SDW                 = (1 <<  3)   ///< cut-based SD w tagging ///// ICHEP16 OUTDATED /////
-                        , SYSTS_MERGED_STATS_UP      = (1 <<  4)   // systs - merged - stats - up
-                        , SYSTS_RESOLVED_STATS_UP    = (1 <<  5)   // systs - resolved - stats - up
-                        , SYSTS_MERGED_PS            = (1 <<  8)   // systs - merged - parton showering
-                        , SYSTS_MERGED_GEN           = (1 <<  9)   // systs - merged - generator
-                        , SYSTS_MERGED_MISTAG_W_UP   = (1 << 10)   // systs - merged - w mistag SF - up
-                        , SYSTS_MERGED_MISTAG_W_DOWN = (1 << 11)   // systs - merged - w mistag SF - down
-                        , SYSTS_MERGED_MISTAG_T_UP   = (1 << 12)   // systs - merged - t mistag SF - up
-                        , SYSTS_MERGED_MISTAG_T_DOWN = (1 << 13)   // systs - merged - t mistag SF - down 
+                        // variations on merged top/W eff
+                        , SYSTS_MERGED_STATS_W       = (1 <<  4)   // systs - merged - stats - W
+                        , SYSTS_MERGED_STATS_T       = (1 <<  5)   // systs - merged - stats - T
+                        , SYSTS_MERGED_PS            = (1 <<  6)   // systs - merged - parton showering
+                        , SYSTS_MERGED_GEN           = (1 <<  7)   // systs - merged - generator
+                        , SYSTS_MERGED_MISTAG_UP_W   = (1 <<  8)   // systs - merged - w mistag SF up by 20%
+                        , SYSTS_MERGED_MISTAG_UP_T   = (1 <<  9)   // systs - merged - t mistag SF up by 20%
+                        // variations on merged top/W mistag rate
+                        , SYSTS_MERGED_MISTAG_STATS_W= (1 << 10)   // systs - merged - mistag - stats - w
+                        , SYSTS_MERGED_MISTAG_STATS_T= (1 << 11)   // systs - merged - mistag - stats - top
+                        , SYSTS_MERGED_MISTAG_NB     = (1 << 12)   // systs - merged - mistag - nb
+                        // variations on resolved top eff
+                        , SYSTS_RESOLVED_STATS       = (1 << 13)   // systs - resolved - stats - up
                         , SYSTS_RESOLVED_PS          = (1 << 14)   // systs - RESOLVED - parton showering
                         , SYSTS_RESOLVED_GEN         = (1 << 15)   // systs - RESOLVED - generator
-                        , SYSTS_RESOLVED_MISTAG_UP   = (1 << 16)   // systs - RESOLVED - mistag SF - up
-                        , SYSTS_RESOLVED_MISTAG_DOWN = (1 << 17)   // systs - RESOLVED - mistag SF - down
+                        , SYSTS_RESOLVED_MISTAG_UP   = (1 << 16)   // systs - RESOLVED - mistag SF up by 20%
+                        // variations on resolved top mistag eff
+                        , SYSTS_RESOLVED_MISTAG_STATS= (1 << 17)   // systs - RESOLVED - mistag SF - stat
+                        , SYSTS_RESOLVED_MISTAG_NB   = (1 << 18)   // systs - RESOLVED - mistag SF - nb
   };
 
   TopWCorrectionSet(): sdMVACorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), sdMVAWeight(1), resMVATopWeight(1), sdTopWeight(1), sdWWeight(1){}
