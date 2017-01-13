@@ -48,6 +48,22 @@ TH1F * getHistogram(TTree * tree, TString var, TString histName, TString histSam
   return h;
 }
 
+template<typename T> T* getHistogram(T* hist, TTree * tree, TString var, TString histName, TString histSample, int nB, double* bins, TString selection, TString * extraSel = 0, TString * weight =0, unsigned int iH = 0){
+  TString name = TString::Format("%s_%s_%i",histName.Data(), histSample.Data(),iH);
+  TString sel = selection;
+  if(extraSel)
+    sel += *extraSel;
+  if(weight)
+    sel = TString::Format("%s*(%s)",weight->Data(),sel.Data());
+
+  hist = new T(name,var.Data(),nB,bins);
+  hist->Sumw2();
+  tree->Draw(TString::Format("%s>>+%s",var.Data(),name.Data()),sel,"goff");
+  if(hist) hist = (T*)hist->Clone();
+  PlotTools::toUnderflow(hist);
+  PlotTools::toOverflow(hist);
+  return hist;
+}
 
 TH1F * getHistogram(TTree * tree, TString var, TString histName, TString histSample, int nB, double minX, double maxX, TString selection, TString * extraSel = 0, TString * weight =0, unsigned int iH = 0){
   TString name = TString::Format("%s_%s_%i",histName.Data(), histSample.Data(),iH);
@@ -66,8 +82,29 @@ TH1F * getHistogram(TTree * tree, TString var, TString histName, TString histSam
   return h;
 }
 
+template<typename T> T* getHistogram(T* hist, TTree * tree, TString var, TString histName, TString histSample, int nB, double minX, double maxX, TString selection, TString * extraSel = 0, TString * weight =0, unsigned int iH = 0){
+  TString name = TString::Format("%s_%s_%i",histName.Data(), histSample.Data(),iH);
+  TString sel = selection;
+  if(extraSel)
+    sel += *extraSel;
+  if(weight)
+    sel = TString::Format("%s*(%s)",weight->Data(),sel.Data());
+
+  hist = new T(name,var.Data(),nB,minX,maxX);
+  hist->Sumw2();
+  tree->Draw(TString::Format("%s>>+%s",var.Data(),name.Data()),sel,"goff");
+  if(hist) hist = (T*)hist->Clone();
+  PlotTools::toUnderflow(hist);
+  PlotTools::toOverflow(hist);
+  return hist;
+}
+
 TH1F * getHistogram(TTree * tree,const PlotInfo& info,TString sample,TString selection,TString * extraSel = 0, TString * weight =0){
   return getHistogram(tree,info.var, info.name,sample,info.nBins,info.minX,info.maxX,selection,extraSel,weight,info.getN());
+}
+
+template<typename T> T* getHistogram(T* hist, TTree * tree,const PlotInfo& info,TString sample,TString selection,TString * extraSel = 0, TString * weight =0){
+  return getHistogram(hist, tree,info.var, info.name,sample,info.nBins,info.minX,info.maxX,selection,extraSel,weight,info.getN());
 }
 
 TProfile * getProfile(TTree * tree,TString histName, TString histSample,TString xVar, TString yVar, int nBinsx, double* binsX, TString selection, TString * extraSel = 0, TString *weight = 0, unsigned int iH = 0){

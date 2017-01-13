@@ -24,26 +24,26 @@ void getRes(TTree * tree,TFile* oF){
   PlotInfo resPlot("res" ,"recojetpt/genjetpt"          ,"p_{T,reco}/p_{T,gen}",200,0,2);
   Plot * plot  = new Plot("jetres","shoot","","Events");
   Plot * plot2 = new Plot("jetres","shoot","","Events");
-  QuickRefold::TH1FContainer * a = new QuickRefold::TH1FContainer("JetRes",1);
+  QuickRefold::TH1DContainer * a = new QuickRefold::TH1DContainer("JetRes",1);
   a->addAxis(0,"PT",nJetPTS,jetPTs);
   a->stopSetup();
   for(int iP =0; iP < nJetPTS; ++iP){
     TString title = TString::Format("%.0f-%.0f",jetPTs[iP],jetPTs[iP+1] );
     TString cut = TString::Format("genjetpt >= %f && genjetpt < %f && genjetrank <= 1",jetPTs[iP],jetPTs[iP+1] );
-    TH1F * hD  = getHistogram(tree,resPlot,"qcd",cut,0,&weight);
+    TH1D * hD  = getHistogram(hD, tree,resPlot,"qcd",cut,0,&weight);
     if(hD == 0) continue;
     PlotTools::normalize(hD);
     int color = iP+1;
     if(color>= 10) color++;
-    plot->addHist(hD,title,"",color,0,color);
+    plot->addHist((TH1F*)hD,title,"",color,0,color);
     oF->cd();
-    hD = (TH1F*)hD->Clone();
+    hD = (TH1D*)hD->Clone();
     hD->Write();
-    TH1F * hComp = (TH1F*)hD->Clone();
+    TH1D * hComp = (TH1D*)hD->Clone();
     for(unsigned int iB = hComp->GetNbinsX(); iB >= 1; --iB){
       hComp->SetBinContent(iB,hComp->Integral(0,iB) );
     }
-    plot2->addHist(hComp,title,"",color,0,color);
+    plot2->addHist((TH1F*)hComp,title,"",color,0,color);
     a->setBin(0,jetPTs[iP] + 10);
     a->setValue(*hComp);
   }
@@ -72,7 +72,7 @@ void getFlvDepRes(TTree * tree,TFile* oF){
   PlotInfo resPlot("res" ,"recojetpt/genjetpt"          ,"p_{T,reco}/p_{T,gen}",200,0,2);
   Plot * plot  = new Plot("jetres","shoot","","Events");
   Plot * plot2 = new Plot("jetres","shoot","","Events");
-  QuickRefold::TH1FContainer * a = new QuickRefold::TH1FContainer("JetResByFlav",2);
+  QuickRefold::TH1DContainer * a = new QuickRefold::TH1DContainer("JetResByFlav",2);
   a->addAxis(0,"PT",nJetPTS,jetPTs);
   a->addAxis(1,"L_or_B",2,-.5,1.5);
   a->stopSetup();
@@ -84,11 +84,11 @@ void getFlvDepRes(TTree * tree,TFile* oF){
       if(iP == nJetPTS -1){
         cut = TString::Format("genjetpt >= %f && genjetrank <= 1 && %s",jetPTs[iP],FLVS[iF].Data() );
       }
-      TH1F * hD  = getHistogram(tree,resPlot,iF == 0 ? "light" : "b",cut,0,&weight);
+      TH1D * hD  = getHistogram(hD, tree,resPlot,iF == 0 ? "light" : "b",cut,0,&weight);
       if(hD == 0) continue;
       int color = iP+1;
       if(color>= 10) color++;
-      plot->addHist(hD,title,"",color,0,color);
+      plot->addHist((TH1F*)hD,title,"",color,0,color);
 //fill any holes
       int binS = hD->FindBin(1.0);
       for(int iB = binS; iB > 1; --iB){
@@ -111,9 +111,9 @@ void getFlvDepRes(TTree * tree,TFile* oF){
       }
       PlotTools::normalize(hD);
       oF->cd();
-      hD = (TH1F*)hD->Clone();
+      hD = (TH1D*)hD->Clone();
       hD->Write();
-      TH1F * hComp = (TH1F*)hD->Clone();
+      TH1D * hComp = (TH1D*)hD->Clone();
       TString temp_name = hComp->GetName();
       temp_name.Insert(temp_name.Sizeof() - ((iP + 1 < 10) && (iF == 0) ? 3 : 4), "_comp");
       cout << temp_name << endl;
@@ -122,7 +122,7 @@ void getFlvDepRes(TTree * tree,TFile* oF){
         hComp->SetBinContent(iB,hComp->Integral(0,iB) );
       }
       hComp->Write();
-      plot2->addHist(hComp,title,"",color,0,color);
+      plot2->addHist((TH1F*)hComp,title,"",color,0,color);
       a->setBin(0,jetPTs[iP] + 10);
       a->setValue(*hComp);
     }
@@ -149,7 +149,7 @@ void getFlvDepRes(TTree * tree,TFile* oF){
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_plus.root", const TString treeName = "Events", const TString outFile = "resTailOut_plus_puWeight_WoH.root", const TString weightString = "puWeight")
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_combined.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
-void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered_CHEF.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_CHEF_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
+void GetJetResForTailSmear(const TString inFile="jetResSkim_combined_filtered_CHEF.root", const TString treeName = "Events", const TString outFile = "resTailOut_combined_filtered_CHEF_puWeight_weight_WoH_NORMALIZED.root", const TString weightString = "puWeight*weight")
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_prev.root", const TString treeName = "Events", const TString outFile = "resTailOut_prev_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_orig.root", const TString treeName = "Events", const TString outFile = "resTailOut_orig_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_plus.root", const TString treeName = "Events", const TString outFile = "resTailOut_plus_puWeight_weight_WoH.root", const TString weightString = "puWeight*weight")

@@ -4,12 +4,12 @@
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
 #include "AnalysisMethods/PlotUtils/interface/SFGetter.hh"
 #include "AnalysisMethods/EstTools/utils/HistGetter.hh"
-#include "AnalysisMethods/EstTools/HighMass/HMParameters.hh"
+#include "AnalysisMethods/EstTools/Moriond2017/SRParameters.hh"
 
 using namespace std;
 using namespace EstTools;
 
-const string inputDir  = "../run/plots_16_11_30";
+const string inputDir  = "../run/tmp/trees/sr";
 const string outputDir = "MakeQCDRespTailSF";
 const TString header = "#sqrt{s} = 13 TeV, L = " + lumistr + " fb^{-1}";
 TString local_METPresel, local_ResTailExtraCuts;
@@ -31,7 +31,6 @@ TTree* tree_bkg;
 void generateScaleFactorsAndUncs();
 void getTailSFRegion();
 TTree* getTree(TString filename);
-void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400);
 
 #endif
 
@@ -39,6 +38,7 @@ void MakeQCDRespTailSF(){
   StyleTools::SetStyle();
   local_ResTailExtraCuts = "(((dphij1met < .1) || (dphij2met < .1)) && (nvetolep == 0) && (pseudoRespPassFilter == 1))";
   local_METPresel = "met >= 250" + trigSR + datasel;
+//  local_METPresel = "met >= 250 && njets >= 5" + trigSR + datasel;
 //  local_METPresel = "met >= 200 && j2pt >= 75" + datasel;
 //  local_METPresel = "met >= 200 && met < 225 && j2pt >= 75" + datasel;
 //  local_METPresel = "met >= 225 && met < 250 && j2pt >= 75" + datasel;
@@ -55,7 +55,7 @@ void MakeQCDRespTailSF(){
   ttbarWNormSels.push_back(TString::Format("%s && nvetolep >= 1 && mtlepmet < 100 && nbjets >= 1", local_METPresel.Data()));
 
 //Set binning
-  selRecoBins.push_back(TString::Format("pseudoRespCSV <  %.3f", defaults::CSV_LOOSE)); selRecoBinNames.push_back("Jet is not light b-tagged");
+  selRecoBins.push_back(TString::Format("pseudoRespCSV <  %.3f", defaults::CSV_LOOSE));  selRecoBinNames.push_back("Jet is not light b-tagged");
   selRecoBins.push_back(TString::Format("pseudoRespCSV >= %.3f", defaults::CSV_MEDIUM)); selRecoBinNames.push_back("Jet is medium b-tagged");
   selGenBins.push_back("trueRespFlv != 4"); selGenBinNames.push_back("!b");
   selGenBins.push_back("trueRespFlv == 4"); selGenBinNames.push_back("b");
@@ -112,9 +112,12 @@ void MakeQCDRespTailSF(){
     cout << genSels[iB] << ", " << genSelNames[iB] << ", " << genSelMathNames[iB] << endl;
   }
 
+  cout << "**********************************************************************************************************" << endl;
+  cout << "                  MAKE SURE YOUR HEADER FILE IS POINTING TO THE CORRECT PARAMETER FILE" << endl;
+  cout << "**********************************************************************************************************" << endl;
   tree_data = getTree(inputDir + "/met_tree.root");
   tree_qcd  = getTree(inputDir + "/qcd_tree.root");
-  tree_bkg  = getTree(inputDir + "/nonQCD_tree.root");
+  tree_bkg  = getTree(inputDir + "/ttbarplusw_tree.root");
   generateScaleFactorsAndUncs();
   getTailSFRegion();
 }
@@ -125,7 +128,7 @@ void generateScaleFactorsAndUncs(){
   TString ttbarWNormSelNames[] = {"Incl", "bTag"};
   HistogramGetter normHisto ("norm", "met", "norm", 1, 150, 1000);
   for(unsigned int iS = 0; iS < ttbarWNormSels.size(); ++iS){
-cout << ttbarWNormSels[iS] << endl;
+cout << wgtvar << "*(" << ttbarWNormSels[iS] << ")" << endl;
     TH1F* dataH  = normHisto.getHistogram(tree_data, ttbarWNormSels[iS], "1.0",   TString::Format("Data_%i",  iS));
     TH1F* qcdH   = normHisto.getHistogram(tree_qcd,  ttbarWNormSels[iS],  wgtvar, TString::Format("qcd_%i",   iS));
     TH1F* otherH = normHisto.getHistogram(tree_bkg,  ttbarWNormSels[iS],  wgtvar, TString::Format("other_%i", iS));
@@ -258,45 +261,91 @@ cout << sel << endl;
 void getTailSFRegion(){
   gSystem->mkdir(TString(outputDir), true);
 
-  TString presel = local_METPresel + " && " + local_ResTailExtraCuts;
+//  vector <pair <TString, pair <TString, TString> > > cutDefsNames = { make_pair("common",      make_pair("met >= 250 && (passmetmht || ismc) && passjson && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99", "Common")),
+//                                                                      make_pair("CR",          make_pair("(dphij1met<0.1 || dphij2met<0.1 || dphij3met<0.1)",                                                                      "CR")),
+//                                                                      make_pair("nvlep0",      make_pair("nvetolep==0",                                                                                                            "N_{vlep} = 0")),
+  vector <pair <TString, pair <TString, TString> > > cutDefsNames = { make_pair("common",      make_pair("met >= 250 && (passmetmht || ismc) && passjson && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && (dphij1met<0.1 || dphij2met<0.1 || dphij3met<0.1) && nvetolep==0", "Common")),
+                                                                      make_pair("nvtau0",      make_pair("nvetotau==0",                                                                                                            "N_{vtau} = 0")),
+                                                                      make_pair("nb1",         make_pair("nbjets==1",                                                                                                              "N_{b} = 1")),
+                                                                      make_pair("highmtb",     make_pair("mtcsv12met>175",                                                                                                         "m_{T}(b) > 175")),
+                                                                      make_pair("njge7",       make_pair("njets>=7",                                                                                                               "N_{j} #geq 7")),
+                                                                      make_pair("respFilt",    make_pair("pseudoRespPassFilter == 1",                                                                                              "m_{T}(lep) < 100")) };
+
+  vector <pair <TString, pair <TString, TString> > > presel;
+  for(unsigned int i = 0; i < cutDefsNames.size(); ++i){
+    presel.push_back(cutDefsNames[0]);
+    for(unsigned int j = 1; j <= i; ++j){
+      presel.back().first         += "_"    + cutDefsNames[j].first;
+      presel.back().second.first  += " && " + cutDefsNames[j].second.first;
+      presel.back().second.second += ", "   + cutDefsNames[j].second.second;
+    }
+  }
+  cutDefsNames.clear();
+//  cutDefsNames.push_back(make_pair("common",   make_pair("met >= 250 && (passmetmht || ismc) && passjson && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99", "Common")));
+//  cutDefsNames.push_back(make_pair("CR",       make_pair("(dphij1met<0.1 || dphij2met<0.1 || dphij3met<0.1)",                                                                      "CR")));
+//  cutDefsNames.push_back(make_pair("nvlep0",   make_pair("nvetolep==0",                                                                                                            "N_{vlep} = 0")));
+  cutDefsNames.push_back(make_pair("common",   make_pair("met >= 250 && (passmetmht || ismc) && passjson && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && (dphij1met<0.1 || dphij2met<0.1 || dphij3met<0.1) && nvetolep==0", "Common")));
+  cutDefsNames.push_back(make_pair("respFilt", make_pair("pseudoRespPassFilter == 1",                                                                                              "m_{T}(lep) < 100")));
+  cutDefsNames.push_back(make_pair("nvtau0",   make_pair("nvetotau==0",                                                                                                            "N_{vtau} = 0")));
+  cutDefsNames.push_back(make_pair("nb1",      make_pair("nbjets==1",                                                                                                              "N_{b} = 1")));
+  cutDefsNames.push_back(make_pair("highmtb",  make_pair("mtcsv12met>175",                                                                                                         "m_{T}(b) > 175")));
+  cutDefsNames.push_back(make_pair("njge7",    make_pair("njets>=7",                                                                                                               "N_{j} #geq 7")));
+  for(unsigned int i = 1; i < cutDefsNames.size(); ++i){
+    presel.push_back(cutDefsNames[0]);
+    for(unsigned int j = 1; j <= i; ++j){
+      presel.back().first         += "_"    + cutDefsNames[j].first;
+      presel.back().second.first  += " && " + cutDefsNames[j].second.first;
+      presel.back().second.second += ", "   + cutDefsNames[j].second.second;
+    }
+  }
+
+  presel.push_back(make_pair("standard", make_pair(local_METPresel + " && " + local_ResTailExtraCuts, "Standard")));
+  for(unsigned int i = 0; i < presel.size(); ++i){
+    cout << presel[i].first         << endl;
+    cout << presel[i].second.first  << endl;
+    cout << presel[i].second.second << endl;
+    cout << "**********************************************************************************************************" << endl;
+  }
+
   vector <int> colors = { 821, 811, 812 };
   double bins[] = { 0, .1, .33, .5, .66, .8, 1 };
   HistogramGetter histG("pseudoResp", "pseudoResp", "#it{r}_{pseudo,jet}", 6, bins);
 
   float yMax = 0.;
-  for(unsigned int iB = 0; iB < region_bins.size(); ++iB){
-    TString name = TString::Format("tailSFReg_%u", iB);
-    Plot* plot = new Plot(name, selRecoBinNames[iB], histG.plotInfo->xTitle, "Events");
-    TString sel = TString::Format("%s && %s", presel.Data(), selRecoBins[iB].Data());
-cout << sel << endl;
-cout << sel + " && " + selGenBins[((iB + 1) % 2)] << endl;
-    TH1F* dataH  = histG.getHistogram(tree_data, sel,                                       "1.0",  TString::Format("Data_%i",  iB));
-    TH1F* otherH = histG.getHistogram(tree_bkg,  sel,                                       wgtvar, TString::Format("other_%i", iB));
-    TH1F* qcdH   = histG.getHistogram(tree_qcd,  sel + " && " + selGenBins[((iB + 1) % 2)], wgtvar, TString::Format("qcd_%i",   iB));
-    otherH->Scale(otherBkgNorms[iB]);
-    yMax = dataH->GetMaximum();
-    plot->addHist(   dataH,  "Data", "", 1, 0, 1);
-    plot->addToStack(otherH, "Non-QCD MC", StyleTools::color_ttbar, 1001, 1, 1, 3);
-    plot->addToStack(qcdH,   selGenBinNames[((iB + 1) % 2)], StyleTools::color_znunu, 1001, 1, 1, 3);
-    for(unsigned int iSB = 0; iSB <= region_bins[iB].size(); ++iSB){
-cout << sel + " && " + genSels[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)] << endl;
-      qcdH = histG.getHistogram(tree_qcd, sel + " && " + genSels[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)], wgtvar, TString::Format("qcd_%u_%u", iB, iSB));
-      plot->addToStack(qcdH, genSelNames[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)], colors[iSB], 1001, 1, 1, 3);
+  for(unsigned int iPS = 0; iPS < presel.size(); ++iPS){
+    for(unsigned int iB = 0; iB < region_bins.size(); ++iB){
+      TString name = TString::Format("tailSFReg_%s_%u", presel[iPS].first.Data(), iB);
+      Plot* plot = new Plot(name, selRecoBinNames[iB], histG.plotInfo->xTitle, "Events");
+      TString sel = TString::Format("%s && %s", presel[iPS].second.first.Data(), selRecoBins[iB].Data());
+  cout << sel << endl;
+  cout << wgtvar << "*(" << sel + " && " + selGenBins[((iB + 1) % 2)] << ")" << endl;
+      TH1F* dataH  = histG.getHistogram(tree_data, sel,                                       "1.0",  TString::Format("Data_%i",  iB));
+      TH1F* otherH = histG.getHistogram(tree_bkg,  sel,                                       wgtvar, TString::Format("other_%i", iB));
+      TH1F* qcdH   = histG.getHistogram(tree_qcd,  sel + " && " + selGenBins[((iB + 1) % 2)], wgtvar, TString::Format("qcd_%i",   iB));
+      otherH->Scale(otherBkgNorms[iB]);
+      yMax = dataH->GetMaximum();
+      plot->addHist(   dataH,  "Data", "", 1, 0, 1);
+      plot->addToStack(otherH, "Non-QCD MC", StyleTools::color_ttbar, 1001, 1, 1, 3);
+      plot->addToStack(qcdH,   selGenBinNames[((iB + 1) % 2)], StyleTools::color_znunu, 1001, 1, 1, 3);
+      for(unsigned int iSB = 0; iSB <= region_bins[iB].size(); ++iSB){
+  cout << wgtvar << "*(" << sel + " && " + genSels[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)] << ")" << endl;
+        qcdH = histG.getHistogram(tree_qcd, sel + " && " + genSels[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)], wgtvar, TString::Format("qcd_%u_%u", iB, iSB));
+        plot->addToStack(qcdH, genSelNames[iSB + (iB == 0 ? 0 : region_bins[iB - 1].size() + 1)], colors[iSB], 1001, 1, 1, 3);
+      }
+      TCanvas* canvas = new TCanvas;
+      plot->setHeader(header, "");
+      if(iB == 1){
+        plot->setYRange(0., 1.7 * yMax);
+      } else {
+        plot->setYRange(0., 2.5 * yMax);
+      }
+      plot->setLegend(.5, .65, .92, .87);
+      plot->getLegend()->SetNColumns(2);
+      plot->setDrawCMSLumi(getLumi());
+      plot->drawRatioStack(canvas);
+      setTitleOffset(canvas, .850);
+      canvas->SaveAs(outputDir + "/" + plot->getName() + ".pdf");
     }
-    TCanvas* canvas = new TCanvas;
-    plot->setHeader(header, "");
-    if(iB == 1){
-      plot->setYRange(0., 1.7 * yMax);
-    } else {
-      plot->setYRange(0., 2.5 * yMax);
-    }
-    plot->setLegend(.5, .65, .92, .87);
-    plot->getLegend()->SetNColumns(2);
-//    plot->setDrawCMSLumi(lumistr);
-    plot->setDrawCMSLumi("35.601");
-    plot->drawRatioStack(canvas);
-    setTitleOffset(canvas, .850);
-    canvas->SaveAs(outputDir + "/" + plot->getName() + ".pdf");
   }
 }
 
@@ -305,14 +354,4 @@ TTree* getTree(TString filename){
   TTree* st = 0;
   sf->GetObject("Events", st);
   return st;
-}
-
-void setTitleOffset(TCanvas *c, double xOff, double yOff){
-  TList * list = c->GetListOfPrimitives();
-  for(unsigned int iP = 0; iP < list->GetSize(); ++iP){
-    TH1 * h = dynamic_cast<TH1*>(list->At(iP));
-    if(h == 0) continue;
-    h->GetXaxis()->SetTitleOffset(xOff);
-    h->GetYaxis()->SetTitleOffset(yOff);
-  }
 }
