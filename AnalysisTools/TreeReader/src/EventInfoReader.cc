@@ -29,6 +29,7 @@ EventInfoReader::EventInfoReader()
   met_pt = 0;
   met_phi = 0;
   metsumEt = 0;
+  met_significance = 0;
   metNoHF_pt = 0;
   metNoHF_phi = 0;
   metNoHF_sumEt = 0;
@@ -89,6 +90,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"met_pt", &met_pt);
   treeReader->setBranchAddress(branchName,"met_phi", &met_phi);
   treeReader->setBranchAddress(branchName,"met_sumEt", &metsumEt);
+  treeReader->setBranchAddress(branchName,"met_significance", &met_significance);
   treeReader->setBranchAddress(branchName,"metnohf_pt", &metNoHF_pt);
   treeReader->setBranchAddress(branchName,"metnohf_phi", &metNoHF_phi);
   treeReader->setBranchAddress(branchName,"metnohf_sumEt", &metNoHF_sumEt);

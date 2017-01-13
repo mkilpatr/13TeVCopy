@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2_v1'),
+                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_TrancheIV_v6'),
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_miniAODv2_v1'),      #Global tag
+                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_TrancheIV_v6'),      #Global tag
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section

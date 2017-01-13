@@ -25,3 +25,6 @@
 [submodule "RecoBTag"]
 	path = RecoBTag
 	url = git@github.com:hqucms/RecoBTag.git
+[submodule "RecoEgamma"]
+	path = RecoEgamma
+	url = git@github.com:hqucms/RecoEgamma.git

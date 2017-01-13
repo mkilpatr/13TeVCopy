@@ -55,6 +55,7 @@ EventInfoFiller::EventInfoFiller(
   imetpt_         =  data.add<float>       (branchName_,"met_pt"    ,"F",0);
   imetphi_        =  data.add<float>       (branchName_,"met_phi"   ,"F",0);
   imetsumEt_      =  data.add<float>       (branchName_,"met_sumEt" ,"F",0);
+  imetsignificance_ =  data.add<float>     (branchName_,"met_significance","F",0);
   irawmetpt_      =  data.add<float>       (branchName_,"rawmet_pt"    ,"F",0);
   irawmetphi_     =  data.add<float>       (branchName_,"rawmet_phi"   ,"F",0);
   irawmetsumEt_   =  data.add<float>       (branchName_,"rawmet_sumEt" ,"F",0);
@@ -163,6 +164,7 @@ void EventInfoFiller::fill()
   data.fill<float>       (imetpt_            ,met_->pt());
   data.fill<float>       (imetphi_           ,met_->phi());
   data.fill<float>       (imetsumEt_         ,met_->sumEt());
+  data.fill<float>       (imetsignificance_  ,met_->significance());
   data.fill<float>       (irawmetpt_         ,metOOB_->uncorPt());
   data.fill<float>       (irawmetphi_        ,metOOB_->uncorPhi());
   data.fill<float>       (irawmetsumEt_      ,metOOB_->uncorSumEt());
