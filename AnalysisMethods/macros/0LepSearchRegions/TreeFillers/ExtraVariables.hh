@@ -33,8 +33,8 @@ struct ExtraVarsFiller {
       float drak8wj2 = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].wj2p4.p4());
       float drak8b   = PhysicsUtilities::deltaR(fj->p4(),genhadtopp4_[i0].bp4.p4()  );
       float drt3q_   = std::max(std::max(drak8wj1,drak8wj2),drak8b);
-      if (drt3q_<drak8top_) { 
-	drak8top_ = drt3q_; 
+      if (drt3q_<drak8top_) {
+	drak8top_ = drt3q_;
 	drak8b_   = drak8b;
       }
     }
@@ -53,13 +53,13 @@ struct ExtraVarsFiller {
 
 
   float drak8togenwq(FatJetF *fj,std::vector<GenHadW> genhadwp4_,bool &fromTop_) {
-    float drak8w_ = 9.; 
+    float drak8w_ = 9.;
     for (unsigned int i0=0; i0<genhadwp4_.size(); ++i0) {
       float drak8wj1 = PhysicsUtilities::deltaR(fj->p4(),genhadwp4_[i0].wj1p4.p4());
       float drak8wj2 = PhysicsUtilities::deltaR(fj->p4(),genhadwp4_[i0].wj2p4.p4());
       float drw2q_   = std::max(drak8wj1,drak8wj2);
-      if (drw2q_<drak8w_) { 
-	drak8w_  = drw2q_; 
+      if (drw2q_<drak8w_) {
+	drak8w_  = drw2q_;
 	fromTop_ = genhadwp4_[i0].fromTop;
       }
     }
@@ -112,7 +112,7 @@ struct ExtraVarsFiller {
 
       }
 
-      // get the gen top                                                                                                                        
+      // get the gen top
       if (abs(p->pdgId())==6) {
 
 	if (p->numberOfDaughters()<2) { continue; }
@@ -167,9 +167,9 @@ struct ExtraVarsFiller {
     float ak8tau1;
     float ak8tau2;
     float ak8tau3;
-    bool  ak8passwl; 
-    bool  ak8passwm; 
-    bool  ak8passwt; 
+    bool  ak8passwl;
+    bool  ak8passwm;
+    bool  ak8passwt;
     bool  ak8passtopl;
     bool  ak8passtopm;
     bool  ak8passtopt;
@@ -177,7 +177,7 @@ struct ExtraVarsFiller {
 
 
   ExtraVarsFiller() {}
-    
+
   // Histograms
   TH1D* hsys = nullptr;
   TH1D* hpartonht = nullptr;
@@ -342,7 +342,7 @@ struct ExtraVarsFiller {
   size i_subjettopframebpl;
   size i_subjettopframebeta;
   size i_subjettopframebphi;
-  
+
   // TopWSF
   size i_efnl1_ntightmus;
   size i_efnl1_dphitmumet;
@@ -357,7 +357,7 @@ struct ExtraVarsFiller {
   size i_efnl1_ak8drgenw;
   size i_efnl1_ak8drgenwq;
   size i_efnl1_ak8drgentb;
-  size i_efnl1_ak8genwfromt;  
+  size i_efnl1_ak8genwfromt;
   size i_efnl1_ak8bclose2lep;
   size i_efnl1_ak8away2lep;
   size i_efnl1_ak8passwl;
@@ -418,7 +418,7 @@ struct ExtraVarsFiller {
   size i_mtnb0_ak8drgenw;
   size i_mtnb0_ak8drgenwq;
   size i_mtnb0_ak8drgentb;
-  size i_mtnb0_ak8genwfromt;  
+  size i_mtnb0_ak8genwfromt;
   size i_mtnb0_ak8bclose2lep;
   size i_mtnb0_ak8away2lep;
   size i_mtnb0_ak8passwl;
@@ -442,7 +442,7 @@ struct ExtraVarsFiller {
   size i_mtnl0_ak8drgenw;
   size i_mtnl0_ak8drgenwq;
   size i_mtnl0_ak8drgentb;
-  size i_mtnl0_ak8genwfromt;  
+  size i_mtnl0_ak8genwfromt;
   size i_mtnl0_ak8bclose2lep;
   size i_mtnl0_ak8away2lep;
   size i_mtnl0_ak8passwl;
@@ -462,7 +462,7 @@ struct ExtraVarsFiller {
   size i_mtnl0_res_away2lep;
   size i_mtnl0_res_dphimet;
 
-  
+
   void bookHist(TFile *outFile){
     outFile->cd();
     hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
@@ -621,18 +621,25 @@ struct ExtraVarsFiller {
 
   void bookTopWSyst(TreeWriterData* data){
     // top/w tagging systs
-    data->add<float>("sdMVAWeight_Nominal",1);
-    data->add<float>("sdMVAWeight_STATS_UP",1);
+    data->add<float>("sdMVAWeight_STATS_W",1);
+    data->add<float>("sdMVAWeight_STATS_T",1);
     data->add<float>("sdMVAWeight_PS",1);
     data->add<float>("sdMVAWeight_GEN",1);
-    data->add<float>("sdMVAWeight_MISTAG_W_UP",1);
-    data->add<float>("sdMVAWeight_MISTAG_T_UP",1);
+    data->add<float>("sdMVAWeight_MISTAG_UP_W",1);
+    data->add<float>("sdMVAWeight_MISTAG_UP_T",1);
 
-    data->add<float>("resTopWeight_Nominal",1);
-    data->add<float>("resTopWeight_STATS_UP",1);
+    data->add<float>("sdMVAWeight_MISTAG_STATS_W",1);
+    data->add<float>("sdMVAWeight_MISTAG_STATS_T",1);
+    data->add<float>("sdMVAWeight_MISTAG_NB",1);
+
+
+    data->add<float>("resTopWeight_STATS",1);
     data->add<float>("resTopWeight_PS",1);
     data->add<float>("resTopWeight_GEN",1);
     data->add<float>("resTopWeight_MISTAG_UP",1);
+
+    data->add<float>("resTopWeight_MISTAG_STATS",1);
+    data->add<float>("resTopWeight_MISTAG_NB",1);
   }
 
   void bookSyst(TreeWriterData* data){
@@ -867,14 +874,14 @@ struct ExtraVarsFiller {
     }// end multiClassMVA, topT, wT
 
   }
-  
+
 
   void fillMergeTopWSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
 
     // === get the gen info ===
-    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
-    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
     //    std::cout << "size after = " << genhadtopp4_.size() << "\n";
     //    std::cout << genhadtopp4_[0].bp4.pt() << " " << genhadtopp4_[0].wj1p4.pt() << "\n";
@@ -886,7 +893,7 @@ struct ExtraVarsFiller {
     // get a tight muon collection
     std::vector<MomentumF> tightmuons; tightmuons.clear();
     for(auto i: ana->selectedLeptons) {
-      
+
       if (fabs(i->pdgid()) != 13)        { continue; }
       if (i->pt()<45.)                   { continue; }
       if (fabs(i->eta())>2.1)            { continue; }
@@ -914,7 +921,7 @@ struct ExtraVarsFiller {
 
 
     // find a b close to the lepton
-    bool ak8bclose2lep_ = false;  
+    bool ak8bclose2lep_ = false;
     if (tightmuons.size()>0 && csvtjets.size()>0 ) {
       for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
 	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
@@ -946,7 +953,7 @@ struct ExtraVarsFiller {
       ak8away2lep_ = true;
 
       float drak8gentb = 9.;
-      bool  wFromTop = false;    
+      bool  wFromTop = false;
 
       ak8pt_        = fj->pt();
       ak8eta_       = fj->eta();
@@ -976,7 +983,7 @@ struct ExtraVarsFiller {
       if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
-      if (ak8away2lep_) { break; } 
+      if (ak8away2lep_) { break; }
 
     } // end of looping over ak8 jets
 
@@ -1014,7 +1021,7 @@ struct ExtraVarsFiller {
     // get a tight muon collection
     std::vector<MomentumF> tightmuons; tightmuons.clear();
     for(auto i: ana->selectedLeptons) {
-      
+
       if (fabs(i->pdgid()) != 13)        { continue; }
       if (i->pt()<45.)                   { continue; }
       if (fabs(i->eta())>2.1)            { continue; }
@@ -1042,7 +1049,7 @@ struct ExtraVarsFiller {
 
 
     // find a b close to the lepton
-    bool bclose2lep_ = false;  
+    bool bclose2lep_ = false;
     if (tightmuons.size()>0 && csvtjets.size()>0 ) {
       for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
 	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
@@ -1077,7 +1084,7 @@ struct ExtraVarsFiller {
       nmatchsj_   = fj.nMatchedSubjets(ana->hadronicGenTops);
       dphimet_ = fabs(PhysicsUtilities::deltaPhi(fj.topcand,*ana->met));
 
-      if (away2lep_) { break; } 
+      if (away2lep_) { break; }
 
     } // end of looping over ak8 jets
 
@@ -1123,7 +1130,7 @@ struct ExtraVarsFiller {
       ak8jets_.push_back(tmpAk8Jet);
 
     } // end of looping over ak8 jets
- 
+
     data->fill<float>(i_efnl0_ak8pt_1       , ak8jets_[0].ak8pt       );
     data->fill<float>(i_efnl0_ak8eta_1      , ak8jets_[0].ak8eta      );
     data->fill<float>(i_efnl0_ak8mass_1     , ak8jets_[0].ak8mass     );
@@ -1155,8 +1162,8 @@ struct ExtraVarsFiller {
   void fillMergeMistagSFNb0(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     // === get the gen info ===
-    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
-    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
 
 
@@ -1165,7 +1172,7 @@ struct ExtraVarsFiller {
     // get a tight muon collection
     std::vector<MomentumF> tightmuons; tightmuons.clear();
     for(auto i: ana->selectedLeptons) {
-      
+
       if (fabs(i->pdgid()) != 13)        { continue; }
       if (i->pt()<45.)                   { continue; }
       if (fabs(i->eta())>2.1)            { continue; }
@@ -1234,7 +1241,7 @@ struct ExtraVarsFiller {
       if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
-      if (ak8away2lep_) { break; } 
+      if (ak8away2lep_) { break; }
 
     } // end of looping over ak8 jets
 
@@ -1265,8 +1272,8 @@ struct ExtraVarsFiller {
   void fillMergeMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     // === get the gen info ===
-    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear(); 
-    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear(); 
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
 
 
@@ -1285,7 +1292,7 @@ struct ExtraVarsFiller {
 
 
       float drak8gentb = 9.;
-      bool  wFromTop = false;    
+      bool  wFromTop = false;
 
       ak8pt_      = fj->pt();
       ak8eta_     = fj->eta();
@@ -1313,7 +1320,7 @@ struct ExtraVarsFiller {
       break;
 
     } // end of looping over ak8 jets
- 
+
     data->fill<float>(i_mtnl0_ak8pt       ,ak8pt_       );
     data->fill<float>(i_mtnl0_ak8eta      ,ak8eta_      );
     data->fill<float>(i_mtnl0_ak8mass     ,ak8mass_     );
@@ -1359,7 +1366,7 @@ struct ExtraVarsFiller {
       break;
 
     } // end of looping over ak8 jets
- 
+
     data->fill<float>(i_mtnl0_res_pt       ,pt_       );
     data->fill<float>(i_mtnl0_res_eta      ,eta_      );
     data->fill<float>(i_mtnl0_res_mass     ,mass_     );
@@ -1372,68 +1379,56 @@ struct ExtraVarsFiller {
   void fillTopWSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     if(!ana->isMC()) return; // defaults
 
-    /////// top/w systematics
-    float sdMVAWeight_Nominal;
-    float sdMVAWeight_STATS_UP;
-    float sdMVAWeight_PS;
-    float sdMVAWeight_GEN;
-    float sdMVAWeight_MISTAG_W_UP;
-    float sdMVAWeight_MISTAG_T_UP;
-
-    float resTopWeight_Nominal;
-    float resTopWeight_STATS_UP;
-    float resTopWeight_PS;
-    float resTopWeight_GEN;
-    float resTopWeight_MISTAG_UP;
-
     int options;
 
     // merged
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP; // nominal
-    sdMVAWeight_Nominal = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_Nominal", sdMVAWeight_Nominal);
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_W; // STATS_W
+    data->fill<float>("sdMVAWeight_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_UP; // STATS_UP
-    sdMVAWeight_STATS_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_STATS_UP", sdMVAWeight_STATS_UP);
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_T; // STATS_T
+    data->fill<float>("sdMVAWeight_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_PS; // PS
-    sdMVAWeight_PS = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_PS", sdMVAWeight_PS);
+    data->fill<float>("sdMVAWeight_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_GEN; // GEN
-    sdMVAWeight_GEN = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_GEN", sdMVAWeight_GEN);
+    data->fill<float>("sdMVAWeight_GEN", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_W_UP; // MISTAG_W_UP
-    sdMVAWeight_MISTAG_W_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_MISTAG_W_UP", sdMVAWeight_MISTAG_W_UP);
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_W; // MISTAG_UP_W
+    data->fill<float>("sdMVAWeight_MISTAG_UP_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_T_UP; // MISTAG_T_UP
-    sdMVAWeight_MISTAG_T_UP = ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets);
-    data->fill<float>("sdMVAWeight_MISTAG_T_UP", sdMVAWeight_MISTAG_T_UP);
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_T; // MISTAG_UP_T
+    data->fill<float>("sdMVAWeight_MISTAG_UP_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
+    // mistag
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_W; // MISTAG_STAT_W
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_T; // MISTAG_STAT_T
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB; // MISTAG_NB
+    data->fill<float>("sdMVAWeight_MISTAG_NB", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
 
     // resolved
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP; // nominal
-    resTopWeight_Nominal = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
-    data->fill<float>("resTopWeight_Nominal", resTopWeight_Nominal);
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_STATS_UP; // STATS_UP
-    resTopWeight_STATS_UP = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
-    data->fill<float>("resTopWeight_STATS_UP", resTopWeight_STATS_UP);
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_STATS; // STATS
+    data->fill<float>("resTopWeight_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_PS; // PS
-    resTopWeight_PS = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
-    data->fill<float>("resTopWeight_PS", resTopWeight_PS);
+    data->fill<float>("resTopWeight_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_GEN; // GEN
-    resTopWeight_GEN = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
-    data->fill<float>("resTopWeight_GEN", resTopWeight_GEN);
+    data->fill<float>("resTopWeight_GEN", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP; // MISTAG_UP
-    resTopWeight_MISTAG_UP = ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops);
-    data->fill<float>("resTopWeight_MISTAG_UP", resTopWeight_MISTAG_UP);
+    data->fill<float>("resTopWeight_MISTAG_UP", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+
+    // mistag
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS; // MISTAG_STATS
+    data->fill<float>("resTopWeight_MISTAG_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB; // MISTAG_NB
+    data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -1772,7 +1767,7 @@ struct ExtraVarsFiller {
     data->fill<bool >(i_ak8fromgenhadw   , ak8fromgenhadw_  );
     data->fill<bool >(i_ak8fromgenhadt   , ak8fromgenhadt_  );
 
-    /*    
+    /*
     for(auto* fj : ana->fatJets) {
       // if (passSoftDropTaggerFJ(fj,110.,210.,0.50))    { ++nsdtopjmewp1tight_; }
       // if (passSoftDropTaggerFJ(fj,110.,210.,0.69))    { ++nsdtopjmewp1loose_; }
@@ -1893,7 +1888,7 @@ struct ExtraVarsFiller {
       return whadronicdecay_;
   }
 
-  
+
   bool doesFatJetMatch(const BaseTreeAnalyzer *ana, FatJetF* fj, float dr, ParticleInfo::ParticleID matchtoid){
     // match fj to gen w or top
     for(auto* p : ana->genParts) {
@@ -1908,7 +1903,7 @@ struct ExtraVarsFiller {
     }
     return false;
   }
-  
+
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
     if(!ana->isMC()) return;
 
@@ -1984,7 +1979,7 @@ struct ExtraVarsFiller {
     data->fill<int  >(i_ngenbjets, ngenbjets);
 
   }
-  
+
 };
 
 #endif
