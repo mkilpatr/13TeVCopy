@@ -91,6 +91,7 @@ namespace ucsbsusy {
       size imetpt_        ;
       size imetphi_       ;
       size imetsumEt_     ;
+      size imetsignificance_;
       size irawmetpt_     ;
       size irawmetphi_    ;
       size irawmetsumEt_  ;

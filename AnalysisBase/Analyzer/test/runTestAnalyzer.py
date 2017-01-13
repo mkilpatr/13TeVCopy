@@ -46,6 +46,12 @@ options.register('inputDataset',
                  VarParsing.varType.string,
                  "Input dataset")
 
+options.register('eventsToProcess',
+                  '',
+                  VarParsing.multiplicity.list,
+                  VarParsing.varType.string,
+                  "Events to process")
+
 options.parseArguments()
 
 process.TFileService = cms.Service('TFileService',
@@ -58,6 +64,8 @@ process.source = cms.Source('PoolSource',
     fileNames=cms.untracked.vstring (options.inputFiles),
     skipEvents=cms.untracked.uint32(options.skipEvents)
 )
+if options.eventsToProcess:
+    process.source.eventsToProcess = cms.untracked.VEventRange(options.eventsToProcess)
 
 #==============================================================================================================================#
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configuration
@@ -84,16 +92,12 @@ else :
 if 'QCD' in DatasetName:
     process.TestAnalyzer.EventInfo.fillNumStdGenJets = cms.untracked.bool(True)
 
-# For reHLT samples
-if 'reHLT' in DatasetName:
-    process.TestAnalyzer.Triggers.bits = cms.InputTag('TriggerResults','','HLT2')
-
-# Settings
+# Settings: default for FullSim MC
 ISDATA = False
 ISFASTSIM = False
 runMetCorrAndUnc = True
-updateJECs = True
-usePrivateSQlite = True
+updateJECs = False
+usePrivateSQlite = False
 JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt'
 updateBTagging = True
 
@@ -101,10 +105,11 @@ updateBTagging = True
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'PUSpring16Fast' in DatasetName :
     print 'Running on FastSim'
     ISFASTSIM = True
-    #runMetCorrAndUnc = True
-    #updateJECs = True
+    runMetCorrAndUnc = True
+    updateJECs = True
     usePrivateSQlite = True
     JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
+    process.TestAnalyzer.globalTag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2_v1')
     process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
     process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
@@ -117,8 +122,8 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-#     runMetCorrAndUnc = False
-#     updateJECs = False
+    runMetCorrAndUnc = True
+    updateJECs = True
     usePrivateSQlite = True
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence
     import FWCore.PythonUtilities.LumiList as LumiList
@@ -201,8 +206,7 @@ process.TestAnalyzer.Electrons.mvatrigCategoriesMap = cms.InputTag("electronMVAV
 switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
 # Define which IDs we want to produce
-# my_photon_id_modules = ['AnalysisTools.ObjectSelection.cutBasedPhotonID_Spring15_25ns_V1_cff']
-my_photon_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_25ns_V1_cff']
+my_photon_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring16_V2p2_cff']
 
 # Add them to the VID producer
 if process.TestAnalyzer.Photons.isFilled:
@@ -210,9 +214,9 @@ if process.TestAnalyzer.Photons.isFilled:
         setupAllVIDIdsInModule(process, idmod, setupVIDPhotonSelection)
 
 # Set ID tags
-process.TestAnalyzer.Photons.looseId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose")
-process.TestAnalyzer.Photons.mediumId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium")
-process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-tight")
+process.TestAnalyzer.Photons.looseId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-loose")
+process.TestAnalyzer.Photons.mediumId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-medium")
+process.TestAnalyzer.Photons.tightId = cms.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-tight")
 
 if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' in DatasetName and not 'QCD' in DatasetName :
     process.TestAnalyzer.Photons.fillPhotonIDVars = cms.untracked.bool(False)
@@ -250,7 +254,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Spring16_23Sep2016AllV2_DATA" if ISDATA else "Spring16_23Sep2016V2_MC"
+    era = "Spring16_23Sep2016AllV2_DATA" if ISDATA else ""
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
     dBFile = era+'.db' if runCRAB else os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
