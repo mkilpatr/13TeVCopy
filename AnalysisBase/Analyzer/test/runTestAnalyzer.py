@@ -81,7 +81,7 @@ print DatasetName
 if 'TTZ' in DatasetName or 'TTW' in DatasetName or 'ST_' in DatasetName or 'tZq' in DatasetName or 'SMS' in DatasetName or 'T2bW' in DatasetName or 'TTJets' in DatasetName or 'WJets' in DatasetName or 'WW' in DatasetName or 'WZ' in DatasetName or 'ZZ' in DatasetName:
     print 'Adding theory weights'
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(True)
-    if 'SMS' in DatasetName or 'T2bW' in DatasetName :
+    if 'T2tt_mStop-500_mLSP-325' in DatasetName or 'T2tt_mStop-425_mLSP-325' in DatasetName or 'T2tt_mStop-850_mLSP-100' in DatasetName:
         process.TestAnalyzer.EventInfo.lheEvtInfo = cms.InputTag('source')
 else :
     process.TestAnalyzer.EventInfo.saveSystematicWeights = cms.untracked.bool(False)
@@ -109,9 +109,8 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
     JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
     process.TestAnalyzer.globalTag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2_v1')
     process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
-    process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'HLT')
-    process.TestAnalyzer.METFilters.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
+    process.TestAnalyzer.EventInfo.lheEvtInfo = cms.InputTag('source')
     process.TestAnalyzer.EventInfo.isFastSim = cms.untracked.bool(True)
     if 'SMS' in DatasetName or 'T2bW' in DatasetName :
         print 'SMS: will save masses'

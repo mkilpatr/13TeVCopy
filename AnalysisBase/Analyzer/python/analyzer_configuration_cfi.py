@@ -308,13 +308,8 @@ nominal_configuration = cms.PSet(
                                       ),
 
                                   METFilters = cms.untracked.PSet(
-                                      isFastSim = cms.untracked.bool(False),
                                       isFilled = cms.untracked.bool(True),
                                       bits     = cms.InputTag('TriggerResults','','PAT'),
-                                      hbhe     = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
-                                      hbheiso       = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
-                                      hbherun2loose = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Loose'),
-                                      hbherun2tight = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResultRun2Tight'),
                                       badchcandfilter = cms.InputTag('BadChargedCandidateFilter'),
                                       badpfmuonfilter = cms.InputTag('BadPFMuonFilter'),
                                       ),
