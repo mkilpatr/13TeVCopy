@@ -142,6 +142,7 @@ public:
 
     ResolvedTopMVA*     resTopMVA = nullptr ;
     SoftdropWTopMulticlassMVA* wtopMVA = nullptr;
+    bool isTTbarPowheg = false;
 
 
   public:
@@ -235,8 +236,6 @@ public:
     const bool   isMC_;
     cfgSet::ConfigSet   configSet;
     std::vector<CorrectionSet*> corrections;
-
-    bool updateMVA_; // FIXME
 
     std::vector<FatJetF*> sdwtops_;
     bool isReady_ = false; // if everything is filled, i.e., processMoreVariables() has been executed

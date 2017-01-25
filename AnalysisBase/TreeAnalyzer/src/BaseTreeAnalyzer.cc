@@ -70,21 +70,14 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     configSet         (pars ? *pars : cfgSet::ConfigSet())
 
 {
-  // FIXME
-  if (isMCTree && fileName.Contains("/store/user/lpcstop/noreplica/13TeV/111116")){
-    updateMVA_ = false;
-  }else {
-    updateMVA_ = true;
-    clog << "====================================================================\n"
-         << "Top/W MVA not filled in these ntuples. Will be evaluated on-the-fly!\n"
-         << "====================================================================\n";
-  }
-
+  TString baseFileName(fileName);
+  baseFileName.Remove(0, baseFileName.Last('/')+1);
+  if(baseFileName.Contains("ttbar") && baseFileName.Contains("powheg")) isTTbarPowheg = true;
   //Hack to get signal type from filename (sorry) until we integrat into weight code
-  if(      fileName.Contains("T2tt", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tt;
-  else if (fileName.Contains("T2bW", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2bW;
-  else if (fileName.Contains("T2fb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2fb;
-  else if (fileName.Contains("T2tb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tb;
+  if(      baseFileName.Contains("T2tt", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tt;
+  else if (baseFileName.Contains("T2bW", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2bW;
+  else if (baseFileName.Contains("T2fb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2fb;
+  else if (baseFileName.Contains("T2tb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tb;
   //
 
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
@@ -305,7 +298,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
-  load(cfgSet::AK8FATJETS, FatJetReader::defaultOptions | (updateMVA_ ? (FatJetReader::UPDATETOPMVA | FatJetReader::UPDATEWTAGMVA) : FatJetReader::NULLOPT) ); // FIXME
+  load(cfgSet::AK8FATJETS);
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
   load(cfgSet::SV);
