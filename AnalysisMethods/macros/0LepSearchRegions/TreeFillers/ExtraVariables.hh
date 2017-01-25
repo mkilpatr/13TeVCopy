@@ -181,6 +181,7 @@ struct ExtraVarsFiller {
   // Histograms
   TH1D* hsys = nullptr;
   TH1D* hpartonht = nullptr;
+  TH1D* htopptweight = nullptr;
 
   // Test vars -- Add here first for testing, and move to other categories or BasicVarsFiller later!
 
@@ -467,6 +468,7 @@ struct ExtraVarsFiller {
     outFile->cd();
     hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
     hpartonht = new TH1D("hpartonht", ";parton HT;Events", 300, 0, 3000);
+    htopptweight = new TH1D("htopptweight", ";dummy;Events", 1, 0, 10);
   }
 
   void bookTest(TreeWriterData* data){
@@ -822,6 +824,8 @@ struct ExtraVarsFiller {
           partons.push_back(p);
       }
       hpartonht->Fill(JetKinematics::ht(partons), ana->weight);
+
+      htopptweight->Fill(1, ana->weight * ana->ttbarCorrections.getTopPTWeight());
     }
   }
 
