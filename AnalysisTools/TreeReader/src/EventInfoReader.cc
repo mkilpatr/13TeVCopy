@@ -30,6 +30,9 @@ EventInfoReader::EventInfoReader()
   met_phi = 0;
   metsumEt = 0;
   met_significance = 0;
+  calomet_pt = 0;
+  calomet_phi = 0;
+  calomet_sumEt = 0;
   metNoHF_pt = 0;
   metNoHF_phi = 0;
   metNoHF_sumEt = 0;
@@ -91,6 +94,9 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(branchName,"met_phi", &met_phi);
   treeReader->setBranchAddress(branchName,"met_sumEt", &metsumEt);
   treeReader->setBranchAddress(branchName,"met_significance", &met_significance);
+  treeReader->setBranchAddress(branchName,"calomet_pt", &calomet_pt);
+  treeReader->setBranchAddress(branchName,"calomet_phi", &calomet_phi);
+  treeReader->setBranchAddress(branchName,"calomet_sumEt", &calomet_sumEt);
   treeReader->setBranchAddress(branchName,"metnohf_pt", &metNoHF_pt);
   treeReader->setBranchAddress(branchName,"metnohf_phi", &metNoHF_phi);
   treeReader->setBranchAddress(branchName,"metnohf_sumEt", &metNoHF_sumEt);
@@ -125,6 +131,7 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
 void EventInfoReader::refresh()
 {
   met.setP4(CylLorentzVectorF(met_pt,0,met_phi,0));
+  calomet.setP4(CylLorentzVectorF(calomet_pt,0,calomet_phi,0));
   metNoHF.setP4(CylLorentzVectorF(metNoHF_pt,0,metNoHF_phi,0));
   puppimet.setP4(CylLorentzVectorF(puppimet_pt,0,puppimet_phi,0));
   genmet.setP4(CylLorentzVectorF(genmet_pt,0,genmet_phi,0));
