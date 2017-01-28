@@ -6,6 +6,12 @@
 
 //Actual functions that do the smearing
 
+namespace QuickRefold {
+template<typename data>
+class TObjectContainer;
+typedef   TObjectContainer<TH1D>  TH1DContainer;
+}
+
 namespace ucsbsusy {
 class QCDRespSmearingBaseEventAnalyzer;
 }
@@ -102,7 +108,7 @@ public:
 
   JetRespSmear::SmearOptions smearOptions;
   TFile * respFile;
-  const QuickRefold::TH1FContainer* respCont;
+  const QuickRefold::TH1DContainer* respCont;
   float smearWeight;
   std::vector<ucsbsusy::size8> bootstrapWeights;
 

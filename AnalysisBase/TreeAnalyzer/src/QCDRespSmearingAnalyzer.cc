@@ -192,7 +192,7 @@ void QCDRespSmearingBaseEventAnalyzer::setupSmearing(BaseTreeAnalyzer * analyzer
 
     respFile = TFile::Open(smearOptions.respFileName,"read");
     if(!respFile) throw std::invalid_argument("QCDRespSmearingAnalyzer::setupSmearing: Response file not found!");
-    respCont = (const QuickRefold::TH1FContainer*)(respFile->Get(smearOptions.respInputName) );
+    respCont = (const QuickRefold::TH1DContainer*)(respFile->Get(smearOptions.respInputName) );
     if(!respCont) throw std::invalid_argument("QCDRespSmearingAnalyzer::setupSmearing: Response container not found!");
     bootstrapWeights.resize(smearOptions.nBootstraps);
     for(auto& b : bootstrapWeights) b = 1;

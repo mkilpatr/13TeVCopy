@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------------------
-// 
+//
 // GenParticleFiller
-// 
+//
 // Filler for MC truth information.
-// 
-// GenParticleFiller.cc created on Mon Nov 10 20:01:46 CET 2014 
-// 
+//
+// GenParticleFiller.cc created on Mon Nov 10 20:01:46 CET 2014
+//
 //--------------------------------------------------------------------------------------------------
 
 #include "AnalysisBase/Analyzer/interface/GenParticleFiller.h"
@@ -120,8 +120,8 @@ void GenParticleFiller::addHardInteraction(reco::GenParticleRefVector& outPartic
     else if(ParticleInfo::isDocIntermediate(status)) addable = true;
     //Add all BSM particles in status==1 (to include e.g., LSP)
     else if(ParticleInfo::isBSM(pdgId) && ParticleInfo::isFinal(status)) addable = true;
-    //Add all EWK bosons in final status (to pick up status=1 photons)
-    else if(ParticleInfo::isEWKBoson(pdgId) && ParticleInfo::isFinal(status)) addable = true;
+    //Add all EWK bosons [ (1) need status=1 photons (2) need converted photon for decay history ]
+    else if(ParticleInfo::isEWKBoson(pdgId)) addable = true;
     //also add all direct decay products of EWK bosons
     else if(!ParticleInfo::isEWKBoson(pdgId)) {
       for(unsigned int iM = 0; iM < part->numberOfMothers(); ++iM)
