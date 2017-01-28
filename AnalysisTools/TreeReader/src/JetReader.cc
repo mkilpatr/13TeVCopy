@@ -34,6 +34,7 @@ JetReader::JetReader() : BaseReader(){
   jetarea_          = new vector<float>;
   jetgenindex_      = new vector<int16  >;
   jetuncertainty_   = new vector<float>;
+  jetisrmatch_      = new vector<bool>;
   jetdeepcsv_probudsg_  = new vector<float>;
   jetdeepcsv_probb_     = new vector<float>;
   jetdeepcsv_probc_     = new vector<float>;
@@ -127,6 +128,7 @@ void JetReader::load(TreeReader *treeReader, int options, string branchName)
     treeReader->setBranchAddress(branchName_,"genjet_mass"  , &genjetmass_  ,true);
     treeReader->setBranchAddress(branchName_,"genjet_flavor", &genjetflavor_,true);
 
+    treeReader->setBranchAddress(branchName_,"jet_isrMatch",  &jetisrmatch_ ,false);// FIXME
   }
   if(options_ & LOADJETSHAPE){
     clog << "jetshape ";
@@ -247,6 +249,9 @@ void JetReader::addRecoJetToObjectList(const unsigned int iJ){
     recoJets.back().setDeepCMVA("probbb",   jetdeepcmva_probbb_->at(iJ));
     recoJets.back().setDeepCMVA("probcc",   jetdeepcmva_probcc_->at(iJ));
   }
+  if (options_ & LOADGEN){
+    recoJets.back().setIsrMatch(jetisrmatch_->size() ? jetisrmatch_->at(iJ) : false);
+  }
 }
 //--------------------------------------------------------------------------------------------------
 void JetReader::addRecoJet(const RecoJetF * inJet){
@@ -295,6 +300,10 @@ void JetReader::addRecoJet(const RecoJetF * inJet){
     jetdeepcmva_probc_   ->push_back(-1);
     jetdeepcmva_probbb_  ->push_back(-1);
     jetdeepcmva_probcc_  ->push_back(-1);
+  }
+
+  if (options_ & LOADGEN){
+    jetisrmatch_         ->push_back(false);
   }
 
   addRecoJetToObjectList(index);
