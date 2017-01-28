@@ -49,9 +49,9 @@ namespace defaults {
   const double CSVValues[] = {0.460,0.800,0.935};
 
   //Will be depreciated in next run
-  const double CSV_LOOSE        = 0.460;
-  const double CSV_MEDIUM       = 0.800;
-  const double CSV_TIGHT        = 0.935;
+  const double CSV_LOOSE        = 0.5426;
+  const double CSV_MEDIUM       = 0.8484;
+  const double CSV_TIGHT        = 0.9535;
   ///
 
   const double TAU_MVA_VETO_MTPRESEL_MEDIUM = 0.71;

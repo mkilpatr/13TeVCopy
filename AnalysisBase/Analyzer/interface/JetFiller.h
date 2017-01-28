@@ -144,7 +144,7 @@ public:
       size ijetsuperindex_ ;
       size ijetuncertainty_;
       // For ISR reweighting
-      size ijetisrmatch_;
+      size ijetdecaymatch_;
       // For genjets matched to reco jets
       size igenjetpt_    ;
       size igenjeteta_   ;

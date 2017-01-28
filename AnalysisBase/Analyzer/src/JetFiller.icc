@@ -165,7 +165,7 @@ JetFiller<Jet>::JetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector &
     igenjetmass_   = data.addMulti<float>(branchName_,"genjet_mass"  ,0);
     igenjetflavor_ = data.addMulti<size8  >(branchName_,"genjet_flavor",0);
 
-    ijetisrmatch_  = data.addMulti<bool> (branchName_,"jet_isrMatch",0);
+    ijetdecaymatch_  = data.addMulti<bool> (branchName_,"jet_decayMatch",0);
   }
   if(options_ & LOADSUPER) {
     ijetsuperindex_    = data.addMulti<int16  >(branchName_,"jet_superIndex",-1);
@@ -368,9 +368,9 @@ void JetFiller<Jet>::fill()
       }
 
       // ISR matching: https://github.com/manuelfs/babymaker/blob/0136340602ee28caab14e3f6b064d1db81544a0a/bmaker/plugins/bmaker_full.cc#L1268-L1295
-      bool isrMatched=false;
+      bool matched=false;
       for (const auto &gp : *genParticleFiller_->genParticles_) {
-        if (isrMatched) break;
+        if (matched) break;
         if (gp.status()!=23 || abs(gp.pdgId())>5) continue;
         int momid = abs(gp.mother()->pdgId());
         if(!(momid==6 || momid==23 || momid==24 || momid==25 || momid>1e6)) continue;
@@ -378,12 +378,12 @@ void JetFiller<Jet>::fill()
         for (unsigned idau = 0; idau < gp.numberOfDaughters(); idau++) {
           double dR = PhysicsUtilities::deltaR(j, gp.daughter(idau)->p4());
           if(dR<0.3){
-              isrMatched = true;
+              matched = true;
               break;
           }
         }
       } // Loop over MC particles
-      data.fillMulti<bool>(ijetisrmatch_, isrMatched);
+      data.fillMulti<bool>(ijetdecaymatch_, matched);
 
     }
 
