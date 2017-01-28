@@ -59,6 +59,9 @@ EventInfoFiller::EventInfoFiller(
   irawmetpt_      =  data.add<float>       (branchName_,"rawmet_pt"    ,"F",0);
   irawmetphi_     =  data.add<float>       (branchName_,"rawmet_phi"   ,"F",0);
   irawmetsumEt_   =  data.add<float>       (branchName_,"rawmet_sumEt" ,"F",0);
+  icalometpt_     =  data.add<float>       (branchName_,"calomet_pt"   ,"F",0);
+  icalometphi_    =  data.add<float>       (branchName_,"calomet_phi"  ,"F",0);
+  icalometsumEt_  =  data.add<float>       (branchName_,"calomet_sumEt","F",0);
   imetnohfpt_     =  data.add<float>       (branchName_,"metnohf_pt"   ,"F",0);
   imetnohfphi_    =  data.add<float>       (branchName_,"metnohf_phi"  ,"F",0);
   imetnohfsumEt_  =  data.add<float>       (branchName_,"metnohf_sumEt","F",0);
@@ -168,6 +171,9 @@ void EventInfoFiller::fill()
   data.fill<float>       (irawmetpt_         ,metOOB_->uncorPt());
   data.fill<float>       (irawmetphi_        ,metOOB_->uncorPhi());
   data.fill<float>       (irawmetsumEt_      ,metOOB_->uncorSumEt());
+  data.fill<float>       (icalometpt_        ,metOOB_->caloMETPt());
+  data.fill<float>       (icalometphi_       ,metOOB_->caloMETPhi());
+  data.fill<float>       (icalometsumEt_     ,metOOB_->caloMETSumEt());
   //data.fill<float>       (imetnohfpt_        ,metNoHF_->pt());
   //data.fill<float>       (imetnohfphi_       ,metNoHF_->phi());
   //data.fill<float>       (imetnohfsumEt_     ,metNoHF_->sumEt());

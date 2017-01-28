@@ -40,6 +40,9 @@ namespace ucsbsusy {
       float         met_phi;
       float         metsumEt;
       float         met_significance;
+      float         calomet_pt;
+      float         calomet_phi;
+      float         calomet_sumEt;
       float         metNoHF_pt;
       float         metNoHF_phi;
       float         metNoHF_sumEt;
@@ -87,6 +90,7 @@ namespace ucsbsusy {
 
 
       MomentumF    met;
+      MomentumF    calomet;
       MomentumF    metNoHF;
       MomentumF    puppimet;
       MomentumF    genmet;

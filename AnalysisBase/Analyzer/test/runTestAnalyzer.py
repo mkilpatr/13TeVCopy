@@ -94,9 +94,9 @@ if 'QCD' in DatasetName:
 ISDATA = False
 ISFASTSIM = False
 runMetCorrAndUnc = True
-updateJECs = False
-usePrivateSQlite = False
-JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt'
+updateJECs = True
+usePrivateSQlite = True
+JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt' # not used
 updateBTagging = True
 
 # FastSim samples
@@ -122,7 +122,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     runMetCorrAndUnc = True
     updateJECs = True
     usePrivateSQlite = True
-#     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence
+#     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
     jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
@@ -251,7 +251,7 @@ if not useHFCandidates:
 if usePrivateSQlite:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     import os
-    era = "Spring16_23Sep2016AllV2_DATA" if ISDATA else ""
+    era = "Summer16_23Sep2016AllV3_DATA" if ISDATA else "Summer16_23Sep2016V3_MC"
     if ISFASTSIM :
         era = "Spring16_25nsFastSimMC_V1"
     dBFile = era+'.db' if runCRAB else os.path.expandvars("$CMSSW_BASE/src/data/JEC/" + era + ".db")
