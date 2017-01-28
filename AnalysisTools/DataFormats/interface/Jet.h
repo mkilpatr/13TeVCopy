@@ -88,13 +88,13 @@ public :
           uncertainty_(inUncert), looseid_(inLooseId), genJet_(inGenJet) {}
     ~RecoJet() {}
 
-
     float csv()         const { return csv_;    }
     bool  looseid()     const { return looseid_;}
     bool  tightid()     const { return tightid_;}
     float pt_raw()      const { return pt_raw_; }
     float uncertainty() const { return uncertainty_;}
     float chHadFrac()   const { return chHadFrac_;}
+    bool  decayMatch()  const { return decayMatch_; }
     int   chHadN2()      const { return chHadN2_;}
     int   chHadN4()      const { return chHadN4_;}
     int   chHadN6()      const { return chHadN6_;}
@@ -108,6 +108,7 @@ public :
     void  setPtRaw(const float inPtRaw )          {pt_raw_      = inPtRaw;  }
     void  setUncertainty(const float inUncert)    {uncertainty_ = inUncert; }
     void  setChHadFrac(const float inChHadFrac)   {chHadFrac_   = inChHadFrac;}
+    void  setDecayMatch(bool matched)             {decayMatch_  = matched;      }
     void  setChHadN2(const int inNChHad)           {chHadN2_      = inNChHad; }
     void  setChHadN4(const int inNChHad)           {chHadN4_      = inNChHad; }
     void  setChHadN6(const int inNChHad)           {chHadN6_      = inNChHad; }
@@ -192,7 +193,7 @@ public :
     cmva_ = cmva;
   }
 
-  float deepCSV(const std::string &label = ""){
+  float deepCSV(const std::string &label = "") const {
     try{
       if (label=="")
         return deepcsv_values_.at("probb") + deepcsv_values_.at("probbb");
@@ -203,7 +204,7 @@ public :
     }
   }
 
-  float deepCMVA(const std::string &label = ""){
+  float deepCMVA(const std::string &label = "") const {
     try{
       if (label=="")
         return deepcmva_values_.at("probb") + deepcmva_values_.at("probbb");
@@ -237,6 +238,7 @@ protected :
     float axis2_ = -10;
     int   jetMult_ = -10;
     float jetcharge_ = -10;
+    bool  decayMatch_ = false;
     std::unordered_map<std::string, float> deepcsv_values_;
     std::unordered_map<std::string, float> deepcmva_values_;
     GenJet<CoordSystem>  *genJet_;  //Matched genJet

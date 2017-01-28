@@ -57,6 +57,7 @@ public:
   std::vector<float>* jetarea_;
   std::vector<int16>* jetgenindex_;
   std::vector<float> *jetuncertainty_;
+  std::vector<bool>*  jetdecaymatch_;
   // deep flavors
   std::vector<float>* jetdeepcsv_probudsg_;
   std::vector<float>* jetdeepcsv_probb_;
