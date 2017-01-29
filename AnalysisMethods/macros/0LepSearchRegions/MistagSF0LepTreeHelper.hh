@@ -91,9 +91,9 @@ public :
     // calculate ht
     float ht_ = 0.;
     for(unsigned int i0=0; i0<jets.size(); ++i0) { ht_ += jets.at(i0)->pt(); }
-    if (ht_ < 1000.) { return false; }
+    if (ht_ < 900.) { return false; }
 
-    processMoreVariables();
+    //    processMoreVariables();
     // fill inclusive histograms
     filler.fillEventInfo(&data, this);
     extraFiller.fillMergeMistagSF0Lep(&data, this);

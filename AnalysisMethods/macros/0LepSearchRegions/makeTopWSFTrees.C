@@ -28,7 +28,8 @@ void makeTopWSFTrees(TString sname = "T2tt_750_100",
 
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
-  cfgSet::ConfigSet pars = pars0lep(json);
+  //  cfgSet::ConfigSet pars = pars0lep(json);
+  cfgSet::ConfigSet pars = pars0LepPhoton(json);
 
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 

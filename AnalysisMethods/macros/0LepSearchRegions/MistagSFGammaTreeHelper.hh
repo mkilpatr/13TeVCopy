@@ -60,7 +60,7 @@ public :
   
   virtual ~TopWSFAnalyzer() {}
   
-  double metcut_   = 50. ;
+  double metcut_   = 0. ;
   int    minnjets_ = 2  ;
 
   const double DR_CUT = 0.4;
@@ -72,7 +72,7 @@ public :
   bool             flagBypassDRSel= false;
   float            drphotonparton = -1;
   
-  
+
   void book() {
     filler.book(&data);
     extraFiller.bookMergeMistagSF0Lep(&data);
@@ -172,12 +172,12 @@ public :
 
     // baseline selection
     if (!goodvertex)         return false;
-    if (nJets < minnjets_)   return false;
+    if (nJets < minnjets_)   return false; 
     // if (nSelLeptons > 0)     return false;
     // if (met->pt() < metcut_) return false;
-    if(!pho)                              return false;
-    if(!passDRSel)                        return false;
-    if(!goodvertex)                       return false;
+    if(!pho)                              return false; 
+    if(!passDRSel)                        return false; 
+    if(!goodvertex)                       return false; 
 
     MomentumF metpluspho;
     metpluspho.setP4(met->p4() + pho->p4());
@@ -192,9 +192,9 @@ public :
     if (!ak8probe_) return false;
 
     // calculate ht
-    float ht_ = 0.;
-    for(unsigned int i0=0; i0<jets.size(); ++i0) { ht_ += jets.at(i0)->pt(); }
-    if (ht_ < 1000.) { return false; }
+    //float ht_ = 0.;
+    //for(unsigned int i0=0; i0<jets.size(); ++i0) { ht_ += jets.at(i0)->pt(); }
+    //    if (ht_ < 1000.) { return false; }
 
     // fill inclusive histograms
     filler.fillEventInfo(&data, this, true, &metpluspho);
