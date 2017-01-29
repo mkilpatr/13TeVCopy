@@ -29,11 +29,13 @@ class SdMVACorr : public Correction {
     TFile * sdMVAFullFastInputFile;
     TFile * sdMVASystsFile;
 
-    // data/fullsim scale factors
-    TH1F  * sdMVA_DataFull_toptagSF;    // tag
-    TH1F  * sdMVA_DataFull_wtagSF;
-    TH1F  * sdMVA_DataFull_topmistagSF; // mistag
-    TH1F  * sdMVA_DataFull_wmistagSF;
+    // data/fullsim tagging scale factors (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_DataFull_toptagSF;
+    std::map<std::string, TH1F*> sdMVA_DataFull_wtagSF;
+
+    // data/fullsim mistagging scale factors (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_DataFull_topmistagSF;
+    std::map<std::string, TH1F*> sdMVA_DataFull_wmistagSF;
 
     // fullsim MC efficiencies
     TH1F  * sdMVA_Full_toptagEff;       // tag
@@ -70,9 +72,11 @@ class ResMVATopCorr : public Correction {
     TFile * resMVAFullFastInputFile;
     TFile * resMVASystsFile;
 
-    // data/fullsim scale factors
-    TH1F  * resTop_DataFull_toptagSF;    // tag
-    TH1F  * resTop_DataFull_topmistagSF; // mistag
+    // data/fullsim tagging scale factors
+    std::map<std::string, TH1F*> resTop_DataFull_toptagSF;
+
+    // data/fullsim mistagging scale factors
+    std::map<std::string, TH1F*> resTop_DataFull_topmistagSF;
 
     // fullsim MC efficiencies
     TH1F  * resTop_Full_toptagEff;       // tag

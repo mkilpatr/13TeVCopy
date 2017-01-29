@@ -17,10 +17,16 @@ SdMVACorr::SdMVACorr() : Correction("SdMVA") {
   if(!sdMVASystsFile)         throw std::invalid_argument("SdMVACorr::SdMVACorr: systs correction file could not be found!");
   if(!sdMVAFullFastInputFile) throw std::invalid_argument("SdMVACorr::SdMVACorr: full/fast correction file could not be found!");
 
-  sdMVA_DataFull_toptagSF    = (TH1F*)( sdMVAInputFile->Get("ratio-t-efnl1-nb1") );
-  sdMVA_DataFull_wtagSF      = (TH1F*)( sdMVAInputFile->Get("ratio-w-efnl1-nb1") );
-  sdMVA_DataFull_topmistagSF = (TH1F*)( sdMVAInputFile->Get("ratio-t-mtnl0-nb1") );
-  sdMVA_DataFull_wmistagSF   = (TH1F*)( sdMVAInputFile->Get("ratio-w-mtnl0-nb1") );
+  // FIXME - change names to low/high eta hist names when they come
+  sdMVA_DataFull_toptagSF["lowEta"]  = (TH1F*)( sdMVAInputFile->Get("ratio-t-efnl1-nb1") );
+  sdMVA_DataFull_toptagSF["highEta"] = (TH1F*)( sdMVAInputFile->Get("ratio-t-efnl1-nb1") );
+  sdMVA_DataFull_wtagSF["lowEta"]    = (TH1F*)( sdMVAInputFile->Get("ratio-w-efnl1-nb1") );
+  sdMVA_DataFull_wtagSF["highEta"]   = (TH1F*)( sdMVAInputFile->Get("ratio-w-efnl1-nb1") );
+
+  sdMVA_DataFull_topmistagSF["lowEta"]  = (TH1F*)( sdMVAInputFile->Get("ratio-t-mtnl0-nb1") );
+  sdMVA_DataFull_topmistagSF["highEta"] = (TH1F*)( sdMVAInputFile->Get("ratio-t-mtnl0-nb1") );
+  sdMVA_DataFull_wmistagSF["lowEta"]    = (TH1F*)( sdMVAInputFile->Get("ratio-w-mtnl0-nb1") );
+  sdMVA_DataFull_wmistagSF["highEta"]   = (TH1F*)( sdMVAInputFile->Get("ratio-w-mtnl0-nb1") );
 
   sdMVA_Full_toptagEff       = (TH1F*)( sdMVAInputFile->Get("eff-mc-t-efnl1-nb1") );
   sdMVA_Full_wtagEff         = (TH1F*)( sdMVAInputFile->Get("eff-mc-w-efnl1-nb1") );
@@ -38,7 +44,7 @@ SdMVACorr::SdMVACorr() : Correction("SdMVA") {
 
   sdMVAFullFastSF            = (TH1F*)( sdMVAFullFastInputFile->Get("dummy") );
 
-  if(!sdMVA_DataFull_toptagSF) throw std::invalid_argument("SdMVACorr::SdMVACorr: data/fullsim eff SF histograms could not be found!");
+  if(sdMVA_DataFull_toptagSF.empty()) throw std::invalid_argument("SdMVACorr::SdMVACorr: data/fullsim eff SF histograms could not be found!");
   if(!sdMVA_Full_toptagEff)    throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim eff histograms could not be found!");
   if(!sdMVA_Full_systs_t_ps)   throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim systs histograms could not be found!");
   if(!sdMVAFullFastSF)         throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim/fastsim eff SF histograms could not be found!");
@@ -99,30 +105,34 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
     bool gentop  = fj->genCategory()  & FatJetGenCategory::GENTOP;
     bool genw    = fj->genCategory()  & FatJetGenCategory::GENW;
     if(dbg) std::cout << "  this fatjet recotop, recow, gentop, genw cats " << recotop << " " << recow << " " << gentop << " " << genw << std::endl;
-    float fjpt = fj->pt();
+    float fjpt  = fj->pt();
+    float fjabseta = TMath::Abs(fj->eta());
+    std::string fjeta_str = (fjabseta > 1.5) ? "highEta" : "lowEta"; // here decide key into map<string,TH1F*>
 
     if( recotop || recow) {
       if(dbg) std::cout << "  in reco tagged cat" << std::endl;
       // reco tagged categories
-      TH1F *sfhist=0, *effhist=0;
+      //TH1F *sfhist=0, *effhist=0;
+      TH1F* effhist = 0;
+      std::map<std::string, TH1F*> *sfhist = 0; 
       if( recotop && gentop ){
         // t | gt
-        sfhist = sdMVA_DataFull_toptagSF,    effhist = sdMVA_Full_toptagEff;
+        sfhist = &sdMVA_DataFull_toptagSF,    effhist = sdMVA_Full_toptagEff;
       }else if( recotop && !gentop ){
         // t | !gt
-        sfhist = sdMVA_DataFull_topmistagSF, effhist = sdMVA_Full_topmistagEff;
+        sfhist = &sdMVA_DataFull_topmistagSF, effhist = sdMVA_Full_topmistagEff;
       }else if( recow && genw ){
         // w | gw
-        sfhist = sdMVA_DataFull_wtagSF,      effhist = sdMVA_Full_wtagEff;
+        sfhist = &sdMVA_DataFull_wtagSF,      effhist = sdMVA_Full_wtagEff;
       }else if( recow && !genw ){
         // w | !gw
-        sfhist = sdMVA_DataFull_wmistagSF,   effhist = sdMVA_Full_wmistagEff;
+        sfhist = &sdMVA_DataFull_wmistagSF,   effhist = sdMVA_Full_wmistagEff;
       }else{
         assert(!"possible");
       }
-      float sf   = getbincontent(fjpt, sfhist);
+      float sf   = getbincontent(fjpt, (*sfhist)[fjeta_str]);
       float eff  = getbincontent(fjpt, effhist);
-      float sfunc  = getbinerror(fjpt, sfhist);
+      float sfunc  = getbinerror(fjpt, (*sfhist)[fjeta_str]);
       if(dbg) std::cout << "  sf, sfunc, eff " << sf << " " << sfunc << " " << eff << " " << std::endl;
 
       ///// SYSTEMATICS /////
@@ -182,40 +192,43 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
     }else{
       if(dbg) std::cout << "  in reco untagged cat" << std::endl;
       // reco untagged categories
-      TH1F *sfhistt=0, *sfhistw=0, *effhistt=0, *effhistw=0;
+      //TH1F *sfhistt=0, *sfhistw=0, *effhistt=0, *effhistw=0;
+      TH1F *effhistt = 0, *effhistw = 0;
+      std::map<std::string, TH1F*> *sfhistt = 0, *sfhistw = 0;
+
       if( gentop && genw ){
         // !t!w | gt gw
-        sfhistt  = sdMVA_DataFull_toptagSF;
-        sfhistw  = sdMVA_DataFull_wtagSF;
+        sfhistt  = &sdMVA_DataFull_toptagSF;
+        sfhistw  = &sdMVA_DataFull_wtagSF;
         effhistt = sdMVA_Full_toptagEff;
         effhistw = sdMVA_Full_wtagEff;
       }else if( gentop && !genw ){
         // !t!w | gt !gw
-        sfhistt  = sdMVA_DataFull_toptagSF;
-        sfhistw  = sdMVA_DataFull_wmistagSF;
+        sfhistt  = &sdMVA_DataFull_toptagSF;
+        sfhistw  = &sdMVA_DataFull_wmistagSF;
         effhistt = sdMVA_Full_toptagEff;
         effhistw = sdMVA_Full_wmistagEff;
       }else if( !gentop && genw ){
         // !t!w | !gt gw
-        sfhistt  = sdMVA_DataFull_topmistagSF;
-        sfhistw  = sdMVA_DataFull_wtagSF;
+        sfhistt  = &sdMVA_DataFull_topmistagSF;
+        sfhistw  = &sdMVA_DataFull_wtagSF;
         effhistt = sdMVA_Full_topmistagEff;
         effhistw = sdMVA_Full_wtagEff;
       }else if( !gentop && !genw ){
         // !t!w | !gt !gw
-        sfhistt  = sdMVA_DataFull_topmistagSF;
-        sfhistw  = sdMVA_DataFull_wmistagSF;
+        sfhistt  = &sdMVA_DataFull_topmistagSF;
+        sfhistw  = &sdMVA_DataFull_wmistagSF;
         effhistt = sdMVA_Full_topmistagEff;
         effhistw = sdMVA_Full_wmistagEff;
       }else{
         assert(!"possible");
       }
-      float sft  = getbincontent(fjpt, sfhistt);
-      float sfw  = getbincontent(fjpt, sfhistw);
+      float sft  = getbincontent(fjpt, (*sfhistt)[fjeta_str]);
+      float sfw  = getbincontent(fjpt, (*sfhistw)[fjeta_str]);
       float efft = getbincontent(fjpt, effhistt);
       float effw = getbincontent(fjpt, effhistw);
-      float sftunc  = getbinerror(fjpt, sfhistt);
-      float sfwunc  = getbinerror(fjpt, sfhistw);
+      float sftunc  = getbinerror(fjpt, (*sfhistt)[fjeta_str]);
+      float sfwunc  = getbinerror(fjpt, (*sfhistw)[fjeta_str]);
       if(dbg) std::cout << "  sft, sfunct, efft, " << sft << " " << sftunc << " " << efft << " " << std::endl;
       if(dbg) std::cout << "  sfw, sfuncw, effw, " << sfw << " " << sfwunc << " " << effw << " " << std::endl;
 
@@ -305,8 +318,13 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   if(!resMVASystsFile)         throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: systs file could not be found!");
   if(!resMVAFullFastInputFile) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: full/fast file could not be found!");
 
-  resTop_DataFull_toptagSF    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
-  resTop_DataFull_topmistagSF = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+  // FIXME: change to low/high eta histo names when they come
+  resTop_DataFull_toptagSF["lowEta"]    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
+  resTop_DataFull_topmistagSF["lowEta"] = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+
+  resTop_DataFull_toptagSF["highEta"]    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
+  resTop_DataFull_topmistagSF["highEta"] = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+
   resTop_Full_toptagEff       = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-efnl1-nb1-restop") );
   resTop_Full_topmistagEff    = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-mtnl0-nb1-restop") );
 
@@ -317,7 +335,7 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
 
   resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("dummy") );
 
-  if(!resTop_DataFull_toptagSF) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
+  if(resTop_DataFull_toptagSF.empty()) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
   if(!resTop_Full_systs_ps)     throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: systs histograms could not be found!");
   if(!resMVATopFullFastSF)      throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim/fastsim eff SF histograms could not be found!");
 }
@@ -367,26 +385,31 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
   float wgt = 1, pdata = 1, pmc = 1, wgtunc = 0, pdataunc = 0, pmcunc = 0;
   for(auto &cand : resMVATops){
     float candpt = cand.topcand.pt();
-    if(dbg) std::cout << "  this cand resTop pt " << candpt << std::endl;
+    float candabseta = TMath::Abs(cand.topcand.eta());
+    std::string candeta_str = (candabseta > 1.5) ? "highEta" : "lowEta"; // here decide key into map<string,TH1F*>
+
+    if(dbg) std::cout << "  this cand resTop pt, abseta " << candpt << " " << candabseta << std::endl;
     bool recotop = cand.disc > ResolvedTopMVA::WP_MEDIUM;
     bool gentop  = cand.nMatchedSubjets(hadronicGenTops) >= 2;
     if(dbg) std::cout << "  this cand recotop, gentop cats " << recotop << " " << gentop << std::endl;
     if( recotop ) {
       if(dbg) std::cout << "  in reco tagged cat" << std::endl;
       // reco tagged categories
-      TH1F *sfhist=0, *effhist=0;
+      //TH1F *sfhist=0, *effhist=0;
+      TH1F *effhist = 0;
+      std::map<std::string, TH1F*> *sfhist; 
       if( recotop && gentop ){
         // t | gt
-        sfhist = resTop_DataFull_toptagSF,    effhist = resTop_Full_toptagEff;
+        sfhist = &resTop_DataFull_toptagSF,    effhist = resTop_Full_toptagEff;
       }else if( recotop && !gentop ){
         // t | !gt
-        sfhist = resTop_DataFull_topmistagSF, effhist = resTop_Full_topmistagEff;
+        sfhist = &resTop_DataFull_topmistagSF, effhist = resTop_Full_topmistagEff;
       }else{
         assert(!"possible");
       }
-      float sf   = getbincontent(candpt, sfhist);
+      float sf   = getbincontent(candpt, (*sfhist)[candeta_str]);
       float eff  = getbincontent(candpt, effhist);
-      float sfunc  = getbinerror(candpt, sfhist);
+      float sfunc  = getbinerror(candpt, (*sfhist)[candeta_str]);
       if(dbg) std::cout << "  sf, sfunc, eff,  " << sf << " " << sfunc << " " << eff << " " << std::endl;
 
       ///// SYSTEMATICS /////
@@ -430,21 +453,23 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
     }else{
       if(dbg) std::cout << "  in reco untagged cat" << std::endl;
       // reco untagged categories
-      TH1F *sfhistt=0, *effhistt=0;
+      //TH1F *sfhistt=0, *effhistt=0;
+      TH1F *effhistt = 0;
+      std::map<std::string, TH1F*> *sfhistt;
       if( gentop ){
         // !t | gt
-        sfhistt  = resTop_DataFull_toptagSF;
+        sfhistt  = &resTop_DataFull_toptagSF;
         effhistt = resTop_Full_toptagEff;
       }else if( !gentop ){
         // !t | !gt
-        sfhistt  = resTop_DataFull_topmistagSF;
+        sfhistt  = &resTop_DataFull_topmistagSF;
         effhistt = resTop_Full_topmistagEff;
       }else{
         assert(!"possible");
       }
-      float sft  = getbincontent(candpt, sfhistt);
+      float sft  = getbincontent(candpt, (*sfhistt)[candeta_str]);
       float efft = getbincontent(candpt, effhistt);
-      float sftunc  = getbinerror(candpt, sfhistt);
+      float sftunc  = getbinerror(candpt, (*sfhistt)[candeta_str]);
       if(dbg) std::cout << "  sft, sfunct, efft,  " << sft << " " << sftunc << " " << efft << " " << std::endl;
 
       ///// SYSTEMATICS /////
