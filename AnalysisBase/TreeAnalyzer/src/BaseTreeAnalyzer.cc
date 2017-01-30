@@ -462,7 +462,7 @@ void BaseTreeAnalyzer::processVariables()
     }
     for (unsigned i=0; i<fatJetReader.fatJets.size(); ++i){
       auto &fj = fatJetReader.fatJets.at(i);
-      if (fj.pt() < 200 || fj.eta()>2.4) continue;
+      if (fj.pt() < 200 || fj.absEta()>2.4) continue;
       if(!vetoed.at(i)) fatJets.push_back(&fj);
     }
 
