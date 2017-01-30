@@ -223,8 +223,8 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       }
       float sft  = getbincontent(fjpt, (*sfhistt)[fjeta_str]);
       float sfw  = getbincontent(fjpt, (*sfhistw)[fjeta_str]);
-      float efft = getbincontent(fjpt, (*effhistt[fjeta_str]);
-      float effw = getbincontent(fjpt, (*effhistw[fjeta_str]);
+      float efft = getbincontent(fjpt, (*effhistt)[fjeta_str]);
+      float effw = getbincontent(fjpt, (*effhistw)[fjeta_str]);
       float sftunc  = getbinerror(fjpt, (*sfhistt)[fjeta_str]);
       float sfwunc  = getbinerror(fjpt, (*sfhistw)[fjeta_str]);
       if(dbg) std::cout << "  sft, sfunct, efft, " << sft << " " << sftunc << " " << efft << " " << std::endl;
@@ -336,7 +336,8 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("dummy") );
 
   if(resTop_DataFull_toptagSF.empty()) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
-  if(resTop_Full_systs_ps.empty())     throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: systs histograms could not be found!");
+  if(resTop_Full_toptagEff.empty()) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim eff histograms could not be found!");
+  if(!resTop_Full_systs_ps)     throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: systs histograms could not be found!");
   if(!resMVATopFullFastSF)      throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim/fastsim eff SF histograms could not be found!");
 }
 ResMVATopCorr::~ResMVATopCorr(){

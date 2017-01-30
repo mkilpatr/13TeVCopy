@@ -37,11 +37,13 @@ class SdMVACorr : public Correction {
     std::map<std::string, TH1F*> sdMVA_DataFull_topmistagSF;
     std::map<std::string, TH1F*> sdMVA_DataFull_wmistagSF;
 
-    // fullsim MC efficiencies
-    TH1F  * sdMVA_Full_toptagEff;       // tag
-    TH1F  * sdMVA_Full_wtagEff;
-    TH1F  * sdMVA_Full_topmistagEff;    // mistag
-    TH1F  * sdMVA_Full_wmistagEff;
+    // fullsim MC tagging effs (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_Full_toptagEff;
+    std::map<std::string, TH1F*> sdMVA_Full_wtagEff;
+
+    // fullsim MC mistagging effs (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_Full_topmistagEff;
+    std::map<std::string, TH1F*> sdMVA_Full_wmistagEff;
 
     // systematics
     TH1F  * sdMVA_Full_systs_t_ps;      // parton showering (herwig/pythia)
@@ -78,9 +80,11 @@ class ResMVATopCorr : public Correction {
     // data/fullsim mistagging scale factors
     std::map<std::string, TH1F*> resTop_DataFull_topmistagSF;
 
-    // fullsim MC efficiencies
-    TH1F  * resTop_Full_toptagEff;       // tag
-    TH1F  * resTop_Full_topmistagEff;    // mistag
+    // fullsim tagging MC effs
+    std::map<std::string, TH1F*> resTop_Full_toptagEff;
+
+    // fullsim mistagging MC effs
+    std::map<std::string, TH1F*> resTop_Full_topmistagEff;
 
     // systematics
 //    TH1F  * resTop_Full_systs;           // top and w systematics MC effs
