@@ -21,7 +21,8 @@ class SdMVACorr : public Correction {
     float process(int correctionOptions, const std::vector<FatJetF*> &fatjets);
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",defaults::CMSSW_BASE.c_str());
-    TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14
+    //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14 2016
+    TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Jan 30 2017
     TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str());
     TString fileNameFullFast = TString::Format("%s/src/data/corrections/dummy.root",defaults::CMSSW_BASE.c_str());
 
@@ -29,17 +30,21 @@ class SdMVACorr : public Correction {
     TFile * sdMVAFullFastInputFile;
     TFile * sdMVASystsFile;
 
-    // data/fullsim scale factors
-    TH1F  * sdMVA_DataFull_toptagSF;    // tag
-    TH1F  * sdMVA_DataFull_wtagSF;
-    TH1F  * sdMVA_DataFull_topmistagSF; // mistag
-    TH1F  * sdMVA_DataFull_wmistagSF;
+    // data/fullsim tagging scale factors (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_DataFull_toptagSF;
+    std::map<std::string, TH1F*> sdMVA_DataFull_wtagSF;
 
-    // fullsim MC efficiencies
-    TH1F  * sdMVA_Full_toptagEff;       // tag
-    TH1F  * sdMVA_Full_wtagEff;
-    TH1F  * sdMVA_Full_topmistagEff;    // mistag
-    TH1F  * sdMVA_Full_wmistagEff;
+    // data/fullsim mistagging scale factors (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_DataFull_topmistagSF;
+    std::map<std::string, TH1F*> sdMVA_DataFull_wmistagSF;
+
+    // fullsim MC tagging effs (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_Full_toptagEff;
+    std::map<std::string, TH1F*> sdMVA_Full_wtagEff;
+
+    // fullsim MC mistagging effs (eta <> 1.5)
+    std::map<std::string, TH1F*> sdMVA_Full_topmistagEff;
+    std::map<std::string, TH1F*> sdMVA_Full_wmistagEff;
 
     // systematics
     TH1F  * sdMVA_Full_systs_t_ps;      // parton showering (herwig/pythia)
@@ -70,13 +75,17 @@ class ResMVATopCorr : public Correction {
     TFile * resMVAFullFastInputFile;
     TFile * resMVASystsFile;
 
-    // data/fullsim scale factors
-    TH1F  * resTop_DataFull_toptagSF;    // tag
-    TH1F  * resTop_DataFull_topmistagSF; // mistag
+    // data/fullsim tagging scale factors
+    std::map<std::string, TH1F*> resTop_DataFull_toptagSF;
 
-    // fullsim MC efficiencies
-    TH1F  * resTop_Full_toptagEff;       // tag
-    TH1F  * resTop_Full_topmistagEff;    // mistag
+    // data/fullsim mistagging scale factors
+    std::map<std::string, TH1F*> resTop_DataFull_topmistagSF;
+
+    // fullsim tagging MC effs
+    std::map<std::string, TH1F*> resTop_Full_toptagEff;
+
+    // fullsim mistagging MC effs
+    std::map<std::string, TH1F*> resTop_Full_topmistagEff;
 
     // systematics
 //    TH1F  * resTop_Full_systs;           // top and w systematics MC effs
