@@ -21,7 +21,8 @@ class SdMVACorr : public Correction {
     float process(int correctionOptions, const std::vector<FatJetF*> &fatjets);
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",defaults::CMSSW_BASE.c_str());
-    TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14
+    //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14 2016
+    TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Jan 30 2017
     TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str());
     TString fileNameFullFast = TString::Format("%s/src/data/corrections/dummy.root",defaults::CMSSW_BASE.c_str());
 
