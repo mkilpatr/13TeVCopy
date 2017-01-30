@@ -156,14 +156,15 @@ double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorIn
   //light jets use incl...b/c use comb
   const BTagCalibrationReader * reader = corrReaders[sfFlavor == BTagEntry::FLAV_UDSG ?  INCL : COMB ] [wp] [sytType];
 
-  //Current SFs are only valid between 30-670 GeV
+  // SFs readable from 20 - 1000 GeV. Systs beyond endpoints are doubled. Per:
+  //   https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80XReReco#AK4_jets
   double newPT = -1;
   if(sfFlavor == BTagEntry::FLAV_UDSG){
     if(jetPT < 20) newPT = 20;
     else if(jetPT > 1000) newPT = 999;
   } else {
-    if(jetPT < 30) newPT = 30;
-    else if(jetPT > 670) newPT = 669;
+    if(jetPT < 20) newPT = 20;
+    else if(jetPT > 1000) newPT = 999;
   }
   if(newPT > 0){
     if(sytType == DOWN || sytType == UP){
