@@ -149,7 +149,7 @@ double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetF
 
 double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike) const {
   // formula written in header
-  bool dbg = true;
+  bool dbg = false;
 
   // get correction type from jet's matched gen flavor
   JetFlavorInfo::JetFlavor flavor = j->genJet() ? JetFlavorInfo::JetFlavor(j->genJet()->flavor()) : JetFlavorInfo::unmatched_jet;
@@ -206,7 +206,7 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
 
 
 double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT) const {
-  bool dbg = true;
+  bool dbg = false;
   if(dbg) std::cout << "[BTagByEvtWeightCorr::getEvtWeight] starting calculation with " << jets.size() << " jets" << std::endl;
 
   double btagWeight = 1;
@@ -236,7 +236,7 @@ void BTagCorrectionSet::load(TString effFileName,TString sfFileName,TString fast
 }
 
 void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-  bool dbg = true;
+  bool dbg = false;
 
   bTagByEvtWeight = 1;
   bTagFastSimByEvtWeight = 1;
