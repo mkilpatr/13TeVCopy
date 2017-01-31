@@ -49,8 +49,8 @@ public:
   double getJetEffSF       (double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, CORRTYPE systType) const;
   double getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, CORRTYPE systType) const;
 
-  double getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike  ) const;
-  double getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT  ) const;
+  double getJetWeight(const BaseTreeAnalyzer * ana, const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike  ) const;
+  double getEvtWeight(const BaseTreeAnalyzer * ana, const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT  ) const;
 
   BTagCalibration * calib;
   double (BTagByEvtWeightCorr::*effGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTtbarLike) const;

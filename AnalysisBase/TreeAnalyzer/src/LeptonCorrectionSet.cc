@@ -9,11 +9,18 @@ namespace ucsbsusy {
 const std::vector<double> LepCorr::eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
 const std::vector<double> LepCorr::muCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
 const std::vector<double> LepCorr::tauCorrPtBins = {0., 20., 40., 1000.};
+
+// load the needed files & histos
 TnPCorr::TnPCorr(TString corrName,
                  const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
                  const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel
                  ) : Correction(corrName)
 {
+  bool dbg = false;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::TnPCorr]" << std::endl;
+
+  TString baseDir = TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/",getenv("CMSSW_BASE"));
+
   bool loadElectrons = false;
   if(elSel.type != LeptonSelection::NONE_ELE) {
     if(secElSel.type == LeptonSelection::NONE_ELE) {
@@ -61,8 +68,6 @@ TnPCorr::TnPCorr(TString corrName,
   elConfKin.passISO = &ElectronISO::inclusive;
   muConfKin.passID  = &MuonID::inclusive;
   muConfKin.passISO = &MuonISO::inclusive;
-
-  TString baseDir = TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/",getenv("CMSSW_BASE"));
 
   if(loadElectrons) {
     elConfNoIso = elConf;
@@ -555,16 +560,19 @@ void LeptonCorrectionSet::load(TString fileNameLM, TString fileNameHM,
 }
 
 void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
+  bool dbg = false;
+  if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection]" << std::endl;
+
   selLepWeightLM  = 1.;
-  vetoLepWeightLM = 1.;
-  tnpEvtWeightLM  = 1.;
   selLepWeightHM  = 1.;
+  vetoLepWeightLM = 1.;
   vetoLepWeightHM = 1.;
+  tnpEvtWeightLM  = 1.;
   tnpEvtWeightHM  = 1.;
   if(!ana->isMC()) return;
 
   if(options_ & LEP) {
-
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
     int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptGenTaus = 0;
     int nSelectedElectrons = 0;  int nSelectedMuons = 0;
     ///COUNT GEN LEPS
@@ -715,9 +723,9 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   }
 
   if(options_ & TNP) {
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option TNP" << std::endl;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    bool isFastSim = false;
-    if(ana->process == defaults::SIGNAL){ isFastSim=true; }
+    bool isFastSim = ana->evtInfoReader.isfastsim;
     tnpEvtWeightLM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, "LM",isFastSim);
     tnpEvtWeightHM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, "HM",isFastSim);
   }

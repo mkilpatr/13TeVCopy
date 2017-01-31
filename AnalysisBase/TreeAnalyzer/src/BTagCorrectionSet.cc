@@ -147,7 +147,7 @@ double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetF
   return getJetEffSF(jetPT, jetETA, flavor, wp, systType);
 }
 
-double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike) const {
+double BTagByEvtWeightCorr::getJetWeight(const BaseTreeAnalyzer * ana, const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike) const {
   // formula written in header
   bool dbg = false;
 
@@ -192,9 +192,9 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
 
     // sanity check
     if( (mcEff <= 0) || (mcEff > 1) || (dataEff <= 0) || (dataEff > 1) ){
-      std::cout << std::endl << "[BTagByEvtWeightCorr::getJetWeight] Sth wrong with this term. Eff or SF wonky, must throw exception. Check these: " << std::endl << 
-        TString::Format("j pT %.3f / WP %d / effL %.3f / effH %.3f / sfL %.3f / sfH %.3f", j->pt(), iWP, effL, effH, sfL, sfH) << std::endl;
-      throw std::range_error("");
+      std::clog << std::endl << "[BTagByEvtWeightCorr::getJetWeight] Sth wrong with this term. Eff or SF wonky, must throw exception. Check these: " << std::endl << 
+        TString::Format("run %d / lumi %d / event %d / j pT %.3f / WP %d / effL %.3f / effH %.3f / sfL %.3f / sfH %.3f", ana->run, ana->lumi, ana->event, j->pt(), iWP, effL, effH, sfL, sfH) << std::endl;
+      //throw std::range_error("");
     }
 
     return dataEff/mcEff;
@@ -205,7 +205,7 @@ double BTagByEvtWeightCorr::getJetWeight(const RecoJetF* j, CORRTYPE lightCorrTy
 }
 
 
-double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT) const {
+double BTagByEvtWeightCorr::getEvtWeight(const BaseTreeAnalyzer * ana, const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT) const {
   bool dbg = false;
   if(dbg) std::cout << "[BTagByEvtWeightCorr::getEvtWeight] starting calculation with " << jets.size() << " jets" << std::endl;
 
@@ -214,7 +214,7 @@ double BTagByEvtWeightCorr::getEvtWeight(const std::vector<RecoJetF*>& jets, COR
     if(dbg) std::cout << "[BTagByEvtWeightCorr::getEvtWeight] " << TString::Format("jet pt %.3f, eta %.3f, current evt weight %.3f",j->pt(),j->absEta(),btagWeight) << std::endl;
     if(j->absEta() > maxETA) continue;
     if(j->pt() < minPT) continue;
-    btagWeight *= getJetWeight(j,lightCorrType,heavyCorrType,isTtbarLike);
+    btagWeight *= getJetWeight(ana, j,lightCorrType,heavyCorrType,isTtbarLike);
   }
   if(dbg) std::cout << "[BTagByEvtWeightCorr::getEvtWeight] final evt weight " << btagWeight << std::endl;
   if(dbg) std::cout << "[BTagByEvtWeightCorr::getEvtWeight] ******** END OF EVENT ********** " << std::endl << std::endl;
@@ -255,12 +255,12 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(options_ & BYEVTWEIGHT){
     if(dbg) std::cout << "[BTagByEvtWeightCorr::processCorrection] Starting non-fastsim event weight" << std::endl;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
+    bTagByEvtWeight = bTagByEvtWeightCorr->getEvtWeight(ana, ana->jets,cfg.corrections.lightBTagCorrType,cfg.corrections.heavyBTagCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
   if((options_ & FASTSIMBYEVTWEIGHT) && isFastSim){
     if(dbg) std::cout << "[BTagByEvtWeightCorr::processCorrection] Starting fastsim event weight" << std::endl;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
-    bTagFastSimByEvtWeight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana->jets,cfg.corrections.lightFastSimBTagCorrType,cfg.corrections.heavyFastSimBTagCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
+    bTagFastSimByEvtWeight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana, ana->jets,cfg.corrections.lightFastSimBTagCorrType,cfg.corrections.heavyFastSimBTagCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
   }
 }
 

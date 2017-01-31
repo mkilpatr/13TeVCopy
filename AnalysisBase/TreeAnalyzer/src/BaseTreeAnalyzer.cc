@@ -158,8 +158,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
-      //leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
-      leptonCorrections.load(configSet.corrections.leptonCorrectionFile, configSet.corrections.leptonCorrectionFile2,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
+      leptonCorrections.load(configSet.corrections.leptonCorrectionFileLM, configSet.corrections.leptonCorrectionFileHM,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
