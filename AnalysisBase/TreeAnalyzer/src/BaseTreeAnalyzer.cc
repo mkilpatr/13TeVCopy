@@ -78,6 +78,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   else if (baseFileName.Contains("T2bW", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2bW;
   else if (baseFileName.Contains("T2fb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2fb;
   else if (baseFileName.Contains("T2tb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tb;
+  else if (baseFileName.Contains("T2cc", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2cc;
   //
 
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;
@@ -157,8 +158,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
     }
 
     if(configSet.corrections.leptonCorrections != LeptonCorrectionSet::NULLOPT){
-      //leptonCorrections.load(configSet.corrections.leptonCorrectionFile,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
-      leptonCorrections.load(configSet.corrections.leptonCorrectionFile, configSet.corrections.leptonCorrectionFile2,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
+      leptonCorrections.load(configSet.corrections.leptonCorrectionFileLM, configSet.corrections.leptonCorrectionFileHM,configSet.electrons, configSet.secondaryElectrons,configSet.muons, configSet.secondaryMuons,configSet.corrections.leptonCorrections);
       corrections.push_back(&leptonCorrections);
     }
     if(configSet.corrections.bTagCorrections != BTagCorrectionSet::NULLOPT){
