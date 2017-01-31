@@ -42,20 +42,20 @@ public:
   BTagByEvtWeightCorr(TString effInput, TString sfInput, bool isFastSim );
   ~BTagByEvtWeightCorr();
 
-  double getJetEff(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
-  double getJetFastSimEff(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
-  double getJetEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
-  double getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
+  int flavorToOurHistBin(JetFlavorInfo::JetFlavor flavor) const;
 
-  double getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike  ) const;
-  double getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTTBARLike, double maxETA, double minPT  ) const;
+  double getJetEff         (double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTtbarLike) const;
+  double getJetFastSimEff  (double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTtbarLike) const;
+  double getJetEffSF       (double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, CORRTYPE systType) const;
+  double getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, CORRTYPE systType) const;
 
-
+  double getJetWeight(const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike  ) const;
+  double getEvtWeight(const std::vector<RecoJetF*>& jets, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike, double maxETA, double minPT  ) const;
 
   BTagCalibration * calib;
-  double (BTagByEvtWeightCorr::*effGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTTBARLike) const;
-  double (BTagByEvtWeightCorr::*sfGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE sytType) const;
-  std::vector<std::vector<std::vector<BTagCalibrationReader*> > > corrReaders; // [mujet/COMB] [L/M/T] [ Nom/Up/Down]
+  double (BTagByEvtWeightCorr::*effGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor, defaults::CSVWPs wp, bool isTtbarLike) const;
+  double (BTagByEvtWeightCorr::*sfGetter)(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE systType) const;
+  std::vector<BTagCalibrationReader*> corrReadersByOp;
   TFile * effFile;
   const QuickRefold::TH1FContainer * eff;
 };
@@ -64,8 +64,8 @@ public:
 class BTagCorrectionSet : public CorrectionSet {
 public:
   enum  CorrectionOptions {
-                            NULLOPT          = 0
-                          , BYEVTWEIGHT      = (1 <<  0)
+                            NULLOPT            = 0
+                          , BYEVTWEIGHT        = (1 << 0)
                           , FASTSIMBYEVTWEIGHT = (1 << 1)
 
   };

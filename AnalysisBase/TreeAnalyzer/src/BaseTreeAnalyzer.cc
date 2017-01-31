@@ -78,6 +78,7 @@ BaseTreeAnalyzer::BaseTreeAnalyzer(TString fileName, TString treeName, size rand
   else if (baseFileName.Contains("T2bW", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2bW;
   else if (baseFileName.Contains("T2fb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2fb;
   else if (baseFileName.Contains("T2tb", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2tb;
+  else if (baseFileName.Contains("T2cc", TString::kIgnoreCase) ) evtInfoReader.signalType = defaults::T2cc;
   //
 
   clog << "Running over: " << (isMC_ ? "MC" : "data") <<endl;

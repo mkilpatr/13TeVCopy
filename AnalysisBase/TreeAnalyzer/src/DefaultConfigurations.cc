@@ -149,11 +149,11 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/2016/csvEffs.root",CMSSW_BASE);
-  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2017/CSVv2Moriond17_2017_1_26_BtoH.csv",CMSSW_BASE);
+  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2017/btag/CSVv2Moriond17_2017_1_26_BtoH.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/2016/csvFastSimEffs.root",CMSSW_BASE);
-  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/2017/fastsim_csvv2_ttbar_26_1_2017.csv",CMSSW_BASE);
+  standardCorrections.bTagFastSimSFFile         =  TString::Format("%s/src/data/corrections/2017/btag/fastsim_csvv2_ttbar_26_1_2017.csv",CMSSW_BASE);
   standardCorrections.heavyFastSimBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightFastSimBTagCorrType        = ucsbsusy::NOMINAL;
 
