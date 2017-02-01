@@ -212,8 +212,6 @@ namespace cfgSet {
     ucsbsusy::CORRTYPE trigMetOrLepCorrType;
 
 
-    TString leptonCorrectionFileLM;
-    TString leptonCorrectionFileHM;
     ucsbsusy::CORRTYPE tnpElCorrType;
     ucsbsusy::CORRTYPE tnpMuCorrType;
     //ucsbsusy::CORRTYPE tnpElIdCorrType;
@@ -357,18 +355,18 @@ namespace cfgSet {
       }
 
       if(a.leptonCorrections != ucsbsusy::LeptonCorrectionSet::NULLOPT){
-        os << "Applying lepton corrections from " << a.leptonCorrectionFileLM.Data() << " and " << a.leptonCorrectionFileHM.Data() << " and the TnP files... " <<" -> ";
+        os << "Applying lepton corrections -> "; 
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP)
-          os << "LEP ";
+          os << " LEP ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::USE_HPSTAUS)
-          os << "USE_HPSTAUS ";
+          os << " USE_HPSTAUS ";
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_UP)
-          os << "VARY_UP " << std::endl;
+          os << " LEP_VARY_UP " << std::endl;
         else if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::LEP_VARY_DOWN)
-          os << "VARY_DOWN " << std::endl;
+          os << " LEP_VARY_DOWN " << std::endl;
         os << std::endl;
         if(a.leptonCorrections & ucsbsusy::LeptonCorrectionSet::TNP) {
-          os << "Applying TnP lepton corrections using selected leptons"<< std::endl;
+          os << "Applying TnP lepton corrections"<< std::endl;
         }
       }
       if(a.puCorrections != ucsbsusy::EventCorrectionSet::NULLOPT){

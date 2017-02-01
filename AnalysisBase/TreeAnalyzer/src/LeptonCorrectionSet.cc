@@ -1,501 +1,479 @@
+//
+// strategy as of jan 30 2017
+// by event reweighting
+// recommendations are per
+//   (data/fullsim) https://twiki.cern.ch/twiki/bin/view/CMS/SUSLeptonSF
+//   (fullsim/fastsim) https://twiki.cern.ch/twiki/bin/view/CMS/SUSLeptonSFMC
+//
+// see getLepWeight section for details of current recommendations, and how we apply all the SFs/Effs/Systematics
+// search for #CHANGENAMES for locations of file names / histogram names for updating
+//
+// "TnPCorr": corrects e/mu effs
+// ------------------------------
+//
+// lepton control region (inverted veto): 
+//   evt weight "lepselweight" = product over each selected lepton of [SF] ~ P(DATA)/P(MC) with effs cancelling
+// veto region: 
+//   evt weight "lepvetoweight" = product over each lep failing ID of [ (1-eff(ID)*SF(ID))/(1-eff(ID)) ]
+//                               *product over each lep passing ID but failing ISO of [ SF_ID*(1-eff(ISO)*SF(ISO))/(1-eff(ISO)) ]
+// where effs are measured in CRs (>=1 gen lep) of ttbarplusw MC and SFs are provided centrally.
+// these effs are different enough after HM / LM baselines that we split them.
+//
+// "LepCorr": corrects tau effs
+// ------------------------------
+//
+//  evt weight "leptnpweight" = [ Data(CR_tau) - SF_NORM*MC(CR_tau,0gentau) ]/[ SF_NORM*MC(CR_tau,1gentau) ]
+//  measured in a CR_tau = at least one reco tau, zero reco el/mu.
+//  different enough after HM / LM baseline that we split them.
+//
+// ------------------------------
+//  for leps:
+//    MC_corr(SR) = SF*MC(SR)
+//  for taus:
+//    MC_corr(SR) = MC(SR) + (1-Corr_tau)*MC(CR_tau,1gentau)
+//  achieve both using cutstring
+//    lepselweight*lepvetoweight*leptnpweight*( (nvetolep==0) && (nvetotau==0 || (ismc && npromptgentau>0)) )
+//  focusing on tau part:
+//    leptnpweight*(nvetotau==0 || (ismc && npromptgentau>0))
+//                            = 1*(nvetotau == 0) for data
+//                            OR
+//                            = 1*(nvetotau == 0) + (1-Corr_tau)*(nvetotau>=1 && npromptgentau>0) 
+//                            = 1*MC(SR) + (1-Corr_tau)*MC(CR_tau, 1gentau) for MC as promised
+//
+//
+
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
 #include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 #include "TFile.h"
 
-
 namespace ucsbsusy {
 
-const std::vector<double> LepCorr::eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
-const std::vector<double> LepCorr::muCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
-const std::vector<double> LepCorr::tauCorrPtBins = {0., 20., 40., 1000.};
 
 // load the needed files & histos
-TnPCorr::TnPCorr(TString corrName,
-                 const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
+LepCorr::LepCorr() : Correction("LEP") {
+  bool dbg = true;
+  if(dbg) std::cout << "[LeptonCorrectionSet::LepCorr::LepCorr]" << std::endl;
+
+  //#CHANGENAMES
+  TString strFileLepLM   =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_LM.root",getenv("CMSSW_BASE"));
+  TString strFileLepHM   =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_morebins_HM.root",getenv("CMSSW_BASE"));
+
+  fileLepLM              = TFile::Open(strFileLepLM,"read");
+  fileLepHM              = TFile::Open(strFileLepHM,"read");
+  if(!fileLepLM)           throw std::invalid_argument("LeptonCorectionSet::LepCorr: Lep LM file could not be found!");
+  if(!fileLepHM)           throw std::invalid_argument("LeptonCorectionSet::LepCorr: Lep HM file could not be found!");
+
+  TString strHistLepLM   = "LEP";
+  TString strHistLepHM   = "LEP";
+  histLepLM              = (TH1F*)(fileLepLM->Get(strHistLepLM));
+  histLepHM              = (TH1F*)(fileLepHM->Get(strHistLepHM));
+  if(!histLepLM)           throw std::invalid_argument("LeptonCorectionSet::LepCorr: Lep LM hist could not be found!");
+  if(!histLepHM)           throw std::invalid_argument("LeptonCorectionSet::LepCorr: Lep HM hist could not be found!");
+}
+
+LepCorr::~LepCorr() {
+  // close then delete file ptrs?
+}
+
+// load the needed configs, files, & histos
+// change any file or histo names in this function
+TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
                  const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel
-                 ) : Correction(corrName)
-{
-  bool dbg = false;
+                 ) : Correction("TNP") {
+  bool dbg = true;
   if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::TnPCorr]" << std::endl;
 
-  TString baseDir = TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/",getenv("CMSSW_BASE"));
-
-  bool loadElectrons = false;
-  if(elSel.type != LeptonSelection::NONE_ELE) {
-    if(secElSel.type == LeptonSelection::NONE_ELE) {
-      loadElectrons = true;
-      elConf    = elSel;
-      elConfKin = elSel;
-    }
-    else if(elSel.type == secElSel.type){
-      loadElectrons = true;
-      elConf    = elSel;
-      elConfKin = elSel;
-      if(secElSel.minPT  < elConfKin.minPT ) elConfKin.minPT  = secElSel.minPT;
-      if(secElSel.maxETA > elConfKin.maxETA) elConfKin.maxETA = secElSel.maxETA;
-    }
-    else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electrons and secondaryElectrons need to be the same type for these corrections!");
-  }
-  else if(secElSel.type != LeptonSelection::NONE_ELE) {
-    loadElectrons = true;
-    elConf    = secElSel;
-    elConfKin = secElSel;
+  // check these primary/secondary lep configs. must be 0l (SEL) or 1l (CTR) and equal.
+  if(    (   elSel.type != LeptonSelection::ZL_SEL_ELE &&    elSel.type != LeptonSelection::ZL_CTR_ELE) || // el are 0l or 1l?
+        !(secElSel.type != LeptonSelection::ZL_SEL_ELE && secElSel.type != LeptonSelection::ZL_CTR_ELE) ||
+         (   muSel.type != LeptonSelection::ZL_SEL_MU  &&    muSel.type != LeptonSelection::ZL_CTR_MU ) || // mu are 0l or 1l?
+        !(secMuSel.type != LeptonSelection::ZL_SEL_MU  && secMuSel.type != LeptonSelection::ZL_CTR_MU ) ||
+        !(   elSel.type != secElSel.type)                                                               || // el primary/secondary are same?
+        !(   muSel.type != secMuSel.type)                                                               ){ // mu primary/secondary are same?
+    throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el/mu primary/secondary configs must be equal and either ZL_SEL_X (veto & inverted veto regions) or ZL_CTR_X (quality single-lepton region).");
   }
 
-  bool loadMuons = false;
-  if(muSel.type != LeptonSelection::NONE_MU) {
-    if(secMuSel.type == LeptonSelection::NONE_MU) {
-      loadMuons = true;
-      muConf    = muSel;
-      muConfKin = muSel;
-    }
-    else if(muSel.type == secMuSel.type){
-      loadMuons = true;
-      muConf    = muSel;
-      muConfKin = muSel;
-      if(secMuSel.minPT  < muConfKin.minPT ) muConfKin.minPT  = secMuSel.minPT;
-      if(secMuSel.maxETA > muConfKin.maxETA) muConfKin.maxETA = secMuSel.maxETA;
-    }
-    else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muons and secondaryMuons need to be the same type for these corrections!");
-  }
-  else if(secMuSel.type != LeptonSelection::NONE_MU) {
-    loadMuons = true;
-    muConf    = secMuSel;
-    muConfKin = secMuSel;
-  }
-  elConfKin.passID  = &ElectronID::inclusive;
-  elConfKin.passISO = &ElectronISO::inclusive;
-  muConfKin.passID  = &MuonID::inclusive;
-  muConfKin.passISO = &MuonISO::inclusive;
+  isCR = (muSel.type == LeptonSelection::ZL_CTR_MU);
+  assert(isCR == (elSel.type == LeptonSelection::ZL_CTR_ELE)); // do ELE and MU agree on isCR?
 
-  if(loadElectrons) {
-    elConfNoIso = elConf;
-    elConfNoIso.passISO = &ElectronISO::inclusive;
-    elConfNoIso.minPT  = elConfKin.minPT  ;
-    elConfNoIso.maxETA = elConfKin.maxETA ;
+  // load lepton configs and make configs: ConfKin (neither Id nor Iso), ConfNoIso (Id but no iso), and the main Conf (Id and Iso). 
+  elConf              = elSel; 
+  elConfKin           = elSel;
+  elConfNoIso         = elSel;
+  elConfKin.minPT     = std::min( elSel.minPT,  secElSel.minPT  ); // use loosest pt/eta between primary/secondary configs
+  elConfKin.maxETA    = std::max( elSel.maxETA, secElSel.maxETA );
+  elConfKin.passID    = &ElectronID::inclusive;
+  elConfKin.passISO   = &ElectronISO::inclusive;
+  elConfNoIso.minPT   = elConfKin.minPT  ; // NB: reusing those loosest pt/eta
+  elConfNoIso.maxETA  = elConfKin.maxETA ;
+  elConfNoIso.passISO = &ElectronISO::inclusive;
 
-    TString elFileName;
-    TString elMCVetoLMIdEffFileName, elMCVetoLMIsoEffFileName;
-    TString elMCVetoHMIdEffFileName, elMCVetoHMIsoEffFileName;
-    TString elFullFastIdFileName, elFullFastIsoFileName;
+  // same for muons
+  muConf              = muSel;
+  muConfKin           = muSel;
+  muConfNoIso         = muSel;
+  muConfKin.minPT     = std::min( muSel.minPT,  secMuSel.minPT  );
+  muConfKin.maxETA    = std::max( muSel.maxETA, secMuSel.maxETA );
+  muConfKin.passID    = &MuonID::inclusive;
+  muConfKin.passISO   = &MuonISO::inclusive;
+  muConfNoIso.minPT   = muConfKin.minPT  ;
+  muConfNoIso.maxETA  = muConfKin.maxETA ;
+  muConfNoIso.passISO = &MuonISO::inclusive;
 
-    TString elIdHistName, elIsoHistName;
-    TString elMCVetoLMIdEffHistName, elMCVetoLMIsoEffHistName;
-    TString elMCVetoHMIdEffHistName, elMCVetoHMIsoEffHistName;
-    TString elFullFastIdHistName, elFullFastIsoHistName;
 
-    // electron files and histograms
-    if(elConf.type==LeptonSelection::ZL_SEL_ELE){
-      elMCVetoLMIdEffFileName  = "lepCorMCEff_LM_El_Id_SR.root";
-      elMCVetoLMIsoEffFileName = "lepCorMCEff_LM_El_Iso_SR.root";
-      elMCVetoHMIdEffFileName  = "lepCorMCEff_HM_El_Id_SR.root";
-      elMCVetoHMIsoEffFileName = "lepCorMCEff_HM_El_Iso_SR.root";
-      elFullFastIdFileName     = "sf_el_vetoCB.root";
-      elFullFastIsoFileName    = "sf_el_vetoCB_mini01.root";
-      elFullFastIdHistName     = "histo2D";
-      elFullFastIsoHistName    = "histo2D";
-      elIdHistName  = "GsfElectronToVeto";
-      elIsoHistName = "MVAVLooseElectronToMini"; // is MiniIso < 0.1 [pt,eta]
-    }
-    else if(elConf.type==LeptonSelection::ZL_CTR_ELE){
-      elMCVetoLMIdEffFileName  = "lepCorMCEff_LM_El_Id_CR.root";
-      elMCVetoLMIsoEffFileName = "lepCorMCEff_LM_El_Iso_CR.root";
-      elMCVetoHMIdEffFileName  = "lepCorMCEff_HM_El_Id_CR.root";
-      elMCVetoHMIsoEffFileName = "lepCorMCEff_HM_El_Iso_CR.root";
-      elFullFastIdFileName     = "sf_el_mediumCB.root";
-      elFullFastIsoFileName    = "sf_el_mediumCB_mini01.root";
-      elFullFastIdHistName     = "histo2D";
-      elFullFastIsoHistName    = "histo2D";
-      elIdHistName  = "GsfElectronToMedium";
-      elIsoHistName = "MVAVLooseElectronToMini"; // is MiniIso < 0.1 [pt,eta]
-    }
-    else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Invalid option for cfgSet::zl_lepton_set.electrons.type! Use 'ZL_SEL_ELE' or 'ZL_CTR_ELE'!");
+  TString baseDir = TString::Format("%s/src/data/corrections/2017/lep/",getenv("CMSSW_BASE"));
 
-    TString elTrackerFileName = "egammaEffi.txt_SF2D_Tracking12p9invfb.root";
-    TString elTrackerHistName = "EGamma_SF2D";
+  // load electron files, different for 0l/1l configs
+  // ----------------------------------------------------------------------------------------------------------------
+  //#CHANGENAMES
+  TString strElSfIdIso                 = "scaleFactors_BtoH_36p4_Moriond17.root";
+  TString strElSfTracker               = "egammaEffi.txt_EGM2D_Moriond17.root";
+  //TString strElSfFullFastId            = (isCR) ? "sf_el_mediumCB.root"           : "sf_el_vetoCB.root";
+  TString strElSfFullFastIdIso         = (isCR) ? "sf_el_mediumCB_mini01.root"    : "sf_el_vetoCB_mini01.root"; // for 1lep Ctr, ele is med miniIso (0.2) rather... no bother for now.
+  TString strElMCEffsLM                = "lepCorMCEff_LM.root";
+  TString strElMCEffsHM                = "lepCorMCEff_HM.root";
 
-    fileEl               = TFile::Open(baseDir+"scaleFactors12p9invfb-retrieved26072016.root","read");
-    fileTrackerEl        = TFile::Open(baseDir+elTrackerFileName       ,"read");
-    fileFullFastIdEl     = TFile::Open(baseDir+"/FullFast/"+elFullFastIdFileName    ,"read");
-    fileFullFastIsoEl    = TFile::Open(baseDir+"/FullFast/"+elFullFastIsoFileName   ,"read");
-    fileMCVetoLMIdEffEl  = TFile::Open(baseDir+elMCVetoLMIdEffFileName ,"read");
-    fileMCVetoLMIsoEffEl = TFile::Open(baseDir+elMCVetoLMIsoEffFileName,"read");
-    fileMCVetoHMIdEffEl  = TFile::Open(baseDir+elMCVetoHMIdEffFileName ,"read");
-    fileMCVetoHMIsoEffEl = TFile::Open(baseDir+elMCVetoHMIsoEffFileName,"read");
-    if(!fileEl              ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ID/Iso file could not be found!");
-    if(!fileFullFastIdEl    ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el fullfast ID file could not be found!");
-    if(!fileFullFastIsoEl   ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el fullfast Iso file could not be found!");
-    if(!fileMCVetoLMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff file could not be found!");
-    if(!fileMCVetoLMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff file could not be found!");
-    if(!fileMCVetoHMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff file could not be found!");
-    if(!fileMCVetoHMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff file could not be found!");
-    if(!fileTrackerEl       ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el tracker SF file could not be found!");
+  fileElSf                             = TFile::Open(baseDir + strElSfIdIso,"read"); // for el, contains id & iso hists
+  fileElSfTracker                      = TFile::Open(baseDir + strElSfTracker,"read");
+  //fileElSfFullFastId                   = TFile::Open(baseDir + "/fastsim/"+strElSfFullFastId,"read");
+  fileElSfFullFastIdIso                = TFile::Open(baseDir + "/fastsim/"+strElSfFullFastIdIso,"read");
+  fileElMCEffsLM                       = TFile::Open(baseDir + strElMCEffsLM,"read");
+  fileElMCEffsHM                       = TFile::Open(baseDir + strElMCEffsHM,"read");
+  if(!fileElSf)                        throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF file could not be found!");
+  if(!fileElSfTracker)                 throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF tracker file could not be found!");
+  //if(!fileElSfFullFastId)              throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF fullfast id file could not be found!");
+  if(!fileElSfFullFastIdIso)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF fullfast iso file could not be found!");
+  if(!fileElMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC lm effs file could not be found!");
+  if(!fileElMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC hm effs file could not be found!");
 
-    HistIdEl           = (TH2F*)(fileEl            ->Get(elIdHistName ));
-    HistIsoEl          = (TH2F*)(fileEl            ->Get(elIsoHistName));
-    HistFullFastIdEl   = (TH2F*)(fileFullFastIdEl  ->Get(elFullFastIdHistName));
-    HistFullFastIsoEl  = (TH2F*)(fileFullFastIsoEl ->Get(elFullFastIsoHistName));
-    HistMCVetoLMIdEffEl  = (TH2F*)(fileMCVetoLMIdEffEl ->Get("lepCorMCEff_El_Id"));
-    HistMCVetoLMIsoEffEl = (TH2F*)(fileMCVetoLMIsoEffEl->Get("lepCorMCEff_El_Iso"));
-    HistMCVetoHMIdEffEl  = (TH2F*)(fileMCVetoHMIdEffEl ->Get("lepCorMCEff_El_Id"));
-    HistMCVetoHMIsoEffEl = (TH2F*)(fileMCVetoHMIsoEffEl->Get("lepCorMCEff_El_Iso"));
-    HistTrackerEl        = (TH2F*)(fileTrackerEl->Get(elTrackerHistName));
-    if(!HistIdEl          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ID hist could not be found!");
-    if(!HistIsoEl         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el ISO hist could not be found!");
-    if(!HistFullFastIdEl  ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el fullfast id hist could not be found!");
-    if(!HistFullFastIsoEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el fullfast iso hist could not be found!");
-    if(!HistMCVetoLMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff hist could not be found!");
-    if(!HistMCVetoLMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff hist could not be found!");
-    if(!HistMCVetoHMIdEffEl ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC ID Eff hist could not be found!");
-    if(!HistMCVetoHMIsoEffEl) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el MC Iso Eff hist could not be found!");
-    if(!HistTrackerEl)        throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el tracker SF hist could not be found!");
-  } // loadElectrons
+  // load electron histos from electron files
+  //#CHANGENAMES
+  TString strHistElSfId                = (isCR) ? "GsfElectronToCutBasedSpring15M"  : "GsfElectronToCutBasedSpring15V";
+  TString strHistElSfIso               = (isCR) ? "MVAVLooseElectronToMini2" : "MVAVLooseElectronToMini";
+  TString strHistElSfTracker           = "EGamma_SF2D";
+  TString strHistElSfFullFastIdIso     = "histo3D";
+  TString strHistElMCEffs              = "lepCorMCEff_El_"; // lepCorMCEff_El_Id NB: plus "Id"/"Iso" below
 
-  if(loadMuons) {
-    muConfNoIso = muConf;
-    muConfNoIso.passISO = &MuonISO::inclusive;
-    muConfNoIso.minPT  = muConfKin.minPT  ;
-    muConfNoIso.maxETA = muConfKin.maxETA ;
+  histElSfId                           = (TH2F*)(fileElSf->Get(strHistElSfId));
+  histElSfIso                          = (TH2F*)(fileElSf->Get(strHistElSfIso));
+  histElSfTracker                      = (TH2F*)(fileElSfTracker->Get(strHistElSfTracker));
+  //histElSfFullFastId                   = (TH2F*)(fileElSfFullFastId ->Get(strHistElSfFullFastIdIso));
+  histElSfFullFastIdIso                = (TH3D*)(fileElSfFullFastIdIso->Get(strHistElSfFullFastIdIso));
+  histElMCEffsLMId                     = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
+  histElMCEffsLMIso                    = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  histElMCEffsHMId                     = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR")));
+  histElMCEffsHMIso                    = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  if(!histElSfId)                      throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF id histo not found!");
+  if(!histElSfIso)                     throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF iso histo not found!");
+  if(!histElSfTracker)                 throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF tracker histo not found!");
+  //if(!histElSfFullFastId)              throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF fullfast id histo not found!");
+  if(!histElSfFullFastIdIso)           throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF fullfast iso histo not found!");
+  if(!histElMCEffsLMId)                throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF lm id histo not found!");
+  if(!histElMCEffsLMIso)               throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF lm iso histo not found!");
+  if(!histElMCEffsHMId)                throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF hm id histo not found!");
+  if(!histElMCEffsHMIso)               throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF hm iso histo not found!");
 
-    TString muIP2DFileName, muFullFastIP2DFileName;
-    TString muIdFileName, muIsoFileName;
-    TString muMCVetoLMIdEffFileName, muMCVetoLMIsoEffFileName;
-    TString muMCVetoHMIdEffFileName, muMCVetoHMIsoEffFileName;
-    TString muFullFastIdFileName, muFullFastIsoFileName;
-    TString muIP2DHistName, muFullFastIP2DHistName;
-    TString muIdHistName, muIsoHistName;
-    TString muMCVetoLMIdEffHistName, muMCVetoLMIsoEffHistName;
-    TString muMCVetoHMIdEffHistName, muMCVetoHMIsoEffHistName;
-    TString muFullFastIdHistName, muFullFastIsoHistName;
+  // load muon files, different for 0l/1l configs
+  // ----------------------------------------------------------------------------------------------------------------
+  //#CHANGENAMES
+  TString strMuSfId                    = (isCR) ? "TnP_NUM_MediumID_DENOM_generalTracks_VAR_map_pt_eta.root" : // LooseID (0l), MediumID (1l)
+                                                  "TnP_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+  TString strMuSfIso                   = (isCR) ? "TnP_NUM_MiniIsoTight_DENOM_MediumID_VAR_map_pt_eta.root" : // same miniIso for 0l/1l over diff IDs
+                                                  "TnP_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+  TString strMuSfIp2d                  = (isCR) ? "TnP_NUM_TightIP2D_DENOM_MediumID_VAR_map_pt_eta.root" : // MediumIp2D (0l), TightIp2D(1l) over diff IDs
+                                                  "TnP_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
+  TString strMuSfTracker               = "dummyMuSfTracker.root"; // "general_tracks_and_early_general_tracks_corr_ratio.root"; // NOT YET AVAILABLE (Jan 30). created dummy with SF 1 err 0
+  //TString strMuSfFullFastId            = (isCR) ? "sf_mu_medium.root"             : "sf_mu_loose.root";
+  TString strMuSfFullFastIdIso         = (isCR) ? "sf_mu_mediumID_mini02.root"    : "sf_mu_looseID_mini02.root";
+  //TString strMuSfFullFastIp2d          = (isCR) ? "sf_mu_tightIP2D.root"          : "sf_mu_looseIP2D.root";
+  TString strMuMCEffsLM                = "lepCorMCEff_LM.root";
+  TString strMuMCEffsHM                = "lepCorMCEff_HM.root";
 
-    // muon files and histograms
-    if(muConf.type==LeptonSelection::ZL_SEL_MU){
-      muIdFileName           = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-      muIsoFileName          = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
-      muIP2DFileName         = "TnP_MuonID_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
-      muIP2DHistName         = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass";
-      muFullFastIdFileName     = "sf_mu_loose.root";
-      muFullFastIsoFileName    = "sf_mu_looseID_mini02.root";
-      muFullFastIdHistName     = "histo2D"; // hey! that's the combination to my luggage!
-      muFullFastIsoHistName    = "histo2D";
-      muFullFastIP2DFileName   = "sf_mu_looseIP2D.root";
-      muFullFastIP2DHistName   = "histo2D";
-      muMCVetoLMIdEffFileName  = "lepCorMCEff_LM_Mu_Id_SR.root";
-      muMCVetoLMIsoEffFileName = "lepCorMCEff_LM_Mu_Iso_SR.root";
-      muMCVetoHMIdEffFileName  = "lepCorMCEff_HM_Mu_Id_SR.root";
-      muMCVetoHMIsoEffFileName = "lepCorMCEff_HM_Mu_Iso_SR.root";
-      muIdHistName           = "pt_abseta_PLOT_pair_probeMultiplicity_bin0";
-      muIsoHistName          = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass";
-    }
-    else if(muConf.type==LeptonSelection::ZL_CTR_MU){
-      muIdFileName        = "TnP_MuonID_NUM_MediumID_DENOM_generalTracks_VAR_map_pt_eta.root";
-      muIsoFileName       = "TnP_MuonID_NUM_MiniIsoTight_DENOM_MediumID_VAR_map_pt_eta.root";
-      muIP2DFileName         = "TnP_MuonID_NUM_TightIP2D_DENOM_MediumID_VAR_map_pt_eta.root";
-      muIP2DHistName         = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_Medium2016_pass";
-      muFullFastIdFileName     = "sf_mu_medium.root";
-      muFullFastIsoFileName    = "sf_mu_mediumID_mini02.root";
-      muFullFastIdHistName     = "histo2D";
-      muFullFastIsoHistName    = "histo2D";
-      muFullFastIP2DFileName   = "sf_mu_tightIP2D.root";
-      muFullFastIP2DHistName   = "histo2D";
-      muMCVetoLMIdEffFileName  = "lepCorMCEff_LM_Mu_Id_CR.root";
-      muMCVetoLMIsoEffFileName = "lepCorMCEff_LM_Mu_Iso_CR.root";
-      muMCVetoHMIdEffFileName  = "lepCorMCEff_HM_Mu_Id_CR.root";
-      muMCVetoHMIsoEffFileName = "lepCorMCEff_HM_Mu_Iso_CR.root";
-      muIdHistName        = "pt_abseta_PLOT_pair_probeMultiplicity_bin0";
-      muIsoHistName       = "pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_Medium2016_pass";
-    }
-    else throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Invalid option for cfgSet::zl_lepton_set.muons.type! Use 'ZL_SEL_MU' or 'ZL_CTR_Mu'!");
+  fileMuSfId                           = TFile::Open(baseDir + strMuSfId,"read");
+  fileMuSfIso                          = TFile::Open(baseDir + strMuSfIso,"read");
+  fileMuSfIp2d                         = TFile::Open(baseDir + strMuSfIp2d,"read");
+  fileMuSfTracker                      = TFile::Open(baseDir + strMuSfTracker,"read");
+  //fileMuSfFullFastId                   = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastId,"read");
+  fileMuSfFullFastIdIso                = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastIdIso,"read");
+  //fileMuSfFullFastIp2d                 = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastIp2d,"read");
+  fileMuMCEffsLM                       = TFile::Open(baseDir + strMuMCEffsLM,"read");
+  fileMuMCEffsHM                       = TFile::Open(baseDir + strMuMCEffsHM,"read");
+  if(!fileMuSfId)                      throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf id file could not be found!");
+  if(!fileMuSfIso)                     throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf iso file could not be found!");
+  if(!fileMuSfIp2d)                    throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf ip2d file could not be found!");
+  //if(!fileMuSfFullFastId)              throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf fullfast id file could not be found!");
+  if(!fileMuSfFullFastIdIso)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf fullfast iso file could not be found!");
+  //if(!fileMuSfFullFastIp2d)            throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf fullfast ip2d file could not be found!");
+  if(!fileMuSfTracker)                 throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf tracker file could not be found!");
+  if(!fileMuMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff lm file could not be found!");
+  if(!fileMuMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff hm file could not be found!");
 
-    TString muTrackerFileName      = "general_tracks_and_early_general_tracks_corr_ratio.root";
-    TString muTrackerPtg10HistName = "mutrksfptg10";
-    TString muTrackerPtl10HistName = "mutrksfptl10";
+  // load muon histos
+  //#CHANGENAMES
+  TString strHistMuSfId                = "SF"; // yup
+  TString strHistMuSfIso               = "SF";
+  TString strHistMuSfIp2d              = "SF";
+  TString strHistMuSfTrackerGt10       = "mutrksfptg10"; // pt>10 tracker corrections
+  TString strHistMuSfTrackerLt10       = "mutrksfptl10"; // pt<10
+  //TString strHistMuSfFullFastId        = "histo2D";
+  TString strHistMuSfFullFastIdIso     = "histo3D";
+  //TString strHistMuSfFullFastIp2d      = "histo2D"; // hey! that's the combination to my luggage!
+  TString strHistMuMCEffs              = "lepCorMCEff_Mu_"; //NB: plus "Id"/"Iso" below
 
-    fileIdMu           = TFile::Open(baseDir+muIdFileName          ,"read");
-    fileIsoMu          = TFile::Open(baseDir+muIsoFileName         ,"read");
-    fileFullFastIdMu     = TFile::Open(baseDir+"/FullFast/"+muFullFastIdFileName    ,"read");
-    fileFullFastIsoMu    = TFile::Open(baseDir+"/FullFast/"+muFullFastIsoFileName   ,"read");
-    fileFullFastIP2DMu   = TFile::Open(baseDir+"/FullFast/"+muFullFastIP2DFileName, "read");
-    fileMCVetoLMIdEffMu  = TFile::Open(baseDir+muMCVetoLMIdEffFileName ,"read");
-    fileMCVetoLMIsoEffMu = TFile::Open(baseDir+muMCVetoLMIsoEffFileName,"read");
-    fileMCVetoHMIdEffMu  = TFile::Open(baseDir+muMCVetoHMIdEffFileName ,"read");
-    fileMCVetoHMIsoEffMu = TFile::Open(baseDir+muMCVetoHMIsoEffFileName,"read");
-    fileTrackerMu      = TFile::Open(baseDir+muTrackerFileName     ,"read");
-    fileIP2DMu         = TFile::Open(baseDir+muIP2DFileName, "read");
-
-    if(!fileIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID file could not be found!");
-    if(!fileIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu Iso file could not be found!");
-    if(!fileFullFastIdMu  ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID fileFullFast could not be found!");
-    if(!fileFullFastIsoMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu Iso fileFullFast could not be found!");
-    if(!fileMCVetoLMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff file could not be found!");
-    if(!fileMCVetoLMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff file could not be found!");
-    if(!fileMCVetoHMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff file could not be found!");
-    if(!fileMCVetoHMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff file could not be found!");
-    if(!fileTrackerMu     ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: meow! mu tracker SF file could not be found!");
-    if(!fileIP2DMu        ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu IP2D SF file could not be found!");
-    if(!fileFullFastIP2DMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu fullfast IP2D SF file could not be found!");
-
-    HistIdMu           = (TH2F*)(fileIdMu          ->Get(muIdHistName ));
-    HistIsoMu          = (TH2F*)(fileIsoMu         ->Get(muIsoHistName));
-    HistFullFastIdMu   = (TH2F*)(fileFullFastIdMu  ->Get(muFullFastIdHistName));
-    HistFullFastIsoMu  = (TH2F*)(fileFullFastIsoMu ->Get(muFullFastIsoHistName));
-    HistMCVetoLMIdEffMu  = (TH2F*)(fileMCVetoLMIdEffMu ->Get("lepCorMCEff_Mu_Id"));
-    HistMCVetoLMIsoEffMu = (TH2F*)(fileMCVetoLMIsoEffMu->Get("lepCorMCEff_Mu_Iso"));
-    HistMCVetoHMIdEffMu  = (TH2F*)(fileMCVetoHMIdEffMu ->Get("lepCorMCEff_Mu_Id"));
-    HistMCVetoHMIsoEffMu = (TH2F*)(fileMCVetoHMIsoEffMu->Get("lepCorMCEff_Mu_Iso"));
-    HistTrackerPtg10Mu = (TH1F*)(fileTrackerMu->Get(muTrackerPtg10HistName));
-    HistTrackerPtl10Mu = (TH1F*)(fileTrackerMu->Get(muTrackerPtl10HistName));
-    HistIP2DMu         = (TH2F*)(fileIP2DMu->Get(muIP2DHistName));
-    HistFullFastIP2DMu = (TH2F*)(fileFullFastIP2DMu->Get(muFullFastIP2DHistName));
-
-    if(!HistIdMu          ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID hist could not be found!");
-    if(!HistIsoMu         ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ISO hist could not be found!");
-    if(!HistFullFastIdMu  ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ID HistFullFast could not be found!");
-    if(!HistFullFastIsoMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu ISO HistFullFast could not be found!");
-    if(!HistMCVetoLMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff hist could not be found!");
-    if(!HistMCVetoLMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff hist could not be found!");
-    if(!HistMCVetoHMIdEffMu ) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC ID Eff hist could not be found!");
-    if(!HistMCVetoHMIsoEffMu) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC Iso Eff hist could not be found!");
-    if(!HistTrackerPtg10Mu)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist g10 could not be found!");
-    if(!HistTrackerPtl10Mu)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu tracker SF hist l10 could not be found!");
-    if(!HistIP2DMu)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu IP SF hist could not be found!");
-    if(!HistFullFastIP2DMu)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu fullfast IP SF hist could not be found!");
-  } // loadMuons
-
+  histMuSfId                           = (TH2F*)(fileMuSfId->Get(strHistMuSfId));
+  histMuSfIso                          = (TH2F*)(fileMuSfIso->Get(strHistMuSfIso));
+  histMuSfIp2d                         = (TH2F*)(fileMuSfIp2d->Get(strHistMuSfIp2d));
+  histMuSfTrackerGt10                  = (TH1F*)(fileMuSfTracker->Get(strHistMuSfTrackerGt10));
+  histMuSfTrackerLt10                  = (TH1F*)(fileMuSfTracker->Get(strHistMuSfTrackerLt10));
+  //histMuSfFullFastId                   = (TH2F*)(fileMuSfFullFastId->Get(strHistMuSfFullFastId));
+  histMuSfFullFastIdIso                = (TH3D*)(fileMuSfFullFastIdIso->Get(strHistMuSfFullFastIdIso));
+  //histMuSfFullFastIp2d                 = (TH2F*)(fileMuSfFullFastIp2d->Get(strHistMuSfFullFastIp2d));
+  histMuMCEffsLMId                     = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
+  histMuMCEffsLMIso                    = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  histMuMCEffsHMId                     = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR")));
+  histMuMCEffsHMIso                    = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  if(!histMuSfId)                      throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf id histo not found!");
+  if(!histMuSfIso)                     throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf iso histo not found!");
+  if(!histMuSfIp2d)                    throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf ip2d histo not found!");
+  if(!histMuSfTrackerGt10)             throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf tracker gt10 histo not found!");
+  if(!histMuSfTrackerLt10)             throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf tracker lt10 histo not found!");
+  //if(!histMuSfFullFastId)              throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf full/fast id histo not found!");
+  if(!histMuSfFullFastIdIso)           throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf full/fast iso histo not found!");
+  //if(!histMuSfFullFastIp2d)            throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf full/fast ip2d histo not found!");
+  if(!histMuMCEffsLMId)                throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu mc eff lm id histo not found!");
+  if(!histMuMCEffsLMIso)               throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu mc eff lm iso histo not found!");
+  if(!histMuMCEffsHMId)                throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu mc eff hm id histo not found!");
+  if(!histMuMCEffsHMIso)               throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu mc eff hm iso histo not found!");
 }
 
 TnPCorr::~TnPCorr() {
-  if(fileEl            ) fileEl            ->Close();
-  if(fileIdMu          ) fileIdMu          ->Close();
-  if(fileIsoMu         ) fileIsoMu         ->Close();
-  if(fileFullFastIdEl  ) fileFullFastIdEl  ->Close();
-  if(fileFullFastIsoEl ) fileFullFastIsoEl ->Close();
-  if(fileFullFastIdMu  ) fileFullFastIdMu  ->Close();
-  if(fileFullFastIsoMu ) fileFullFastIsoMu ->Close();
-  if(fileMCVetoLMIdEffEl ) fileMCVetoLMIdEffEl ->Close();
-  if(fileMCVetoLMIdEffMu ) fileMCVetoLMIdEffMu ->Close();
-  if(fileMCVetoHMIdEffEl ) fileMCVetoHMIdEffEl ->Close();
-  if(fileMCVetoHMIdEffMu ) fileMCVetoHMIdEffMu ->Close();
-  if(fileMCVetoLMIsoEffEl) fileMCVetoLMIsoEffEl->Close();
-  if(fileMCVetoLMIsoEffMu) fileMCVetoLMIsoEffMu->Close();
-  if(fileMCVetoHMIsoEffEl) fileMCVetoHMIsoEffEl->Close();
-  if(fileMCVetoHMIsoEffMu) fileMCVetoHMIsoEffMu->Close();
-  if(fileTrackerMu     ) fileTrackerMu     ->Close();
-  if(fileIP2DMu        ) fileIP2DMu        ->Close();
-  if(fileFullFastIP2DMu) fileFullFastIP2DMu->Close();
-  if(fileTrackerEl     ) fileTrackerEl     ->Close();
-
-  delete fileEl            ;
-  delete fileIdMu          ;
-  delete fileIsoMu         ;
-  delete fileFullFastIdEl  ;
-  delete fileFullFastIsoEl ;
-  delete fileFullFastIdMu  ;
-  delete fileFullFastIsoMu ;
-  delete fileMCVetoLMIdEffEl ;
-  delete fileMCVetoLMIdEffMu ;
-  delete fileMCVetoLMIsoEffEl;
-  delete fileMCVetoLMIsoEffMu;
-  delete fileMCVetoHMIdEffEl ;
-  delete fileMCVetoHMIdEffMu ;
-  delete fileMCVetoHMIsoEffEl;
-  delete fileMCVetoHMIsoEffMu;
-  delete fileTrackerMu     ;
-  delete fileIP2DMu        ;
-  delete fileFullFastIP2DMu;
-  delete fileTrackerEl     ;
+  // close then delete file ptrs?
 }
 
-float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, TString region, bool isFastSim ) const {
-  float wt  = 1.0;
-  int   id  = lep->pdgid();
-  float pt  = lep->pt();
-  float eta = lep->eta();
-  float abseta = lep->absEta();
-  if     (id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
-  else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
-  float sfid     = 1.0;
-  float sfip2d   = 1.0;
-  float sftrack  = 1.0;
-  float sfiso    = 1.0;
-  float sffullfastid = 1.0;
-  float sffullfastiso = 1.0;
-  float sffullfastip2d = 1.0;
-  float sfuncid  = 0.0;
-  float sfunciso = 0.0;
-  float sfunctrack=0.0;
-  float effid    = 1.0;
-  float effiso   = 1.0;
-  bool passId    = false;
-  bool passIdIso = false;
-  float failIdWt = 1.0;
-  // July 2016 recommended systs: 1% extra on track for HIP blah (+ 3% if pT<20), 1% on ID and 1% on ISO for normal systs.
-  //   also 1% systs on each of id and iso full-fastsim SFs
-  // ELE: sfid = (ID SF)*(Tracking SF)
-  // MU:  sfid = (ID SF)*(Tracking SF)*(IP2D SF)
-  // if fastsim, multiply ID or ISO SFs by the corresponding FullFast version
-  if(id==11){
-    sfid             = getElIDValue(pt,abseta);
-    sfiso            = getElIsoValue(pt,abseta);
-    sftrack          = getElTrackerValue(eta,pt); // NB arguments from egamma pog
-    sfunctrack       = getElTrackerError(eta,pt);
-    if(isFastSim) sffullfastid  = getElFullFastIDValue(pt,abseta);
-    if(isFastSim) sffullfastiso = getElFullFastIsoValue(pt,abseta);
+// getLepWeight
+//
+// Moriond17 recommendations
+// ---------------------------
+// per:
+//   (data/fullsim) https://twiki.cern.ch/twiki/bin/view/CMS/SUSLeptonSF
+//   (fullsim/fastsim) https://twiki.cern.ch/twiki/bin/view/CMS/SUSLeptonSFMC
+//
+// electrons:
+//   apply id+iso+tracker SFs. use hist errors as systs (<=2% level). add 1% extra syst if pT < 20 or > 80.
+// muons:
+//   apply ip2d+id+iso SFs. IGNORE hist errors (stats). flat 3% systs per muon, work ongoing to reduce. tracker SFs not yet available.
+//
+// fastsim:
+//    just one idiso SF.
+//    ip2d and miniIso cuts don't require additional full/fastsim SFs per latest presentation:
+//      (slide 4) https://indico.cern.ch/event/458586/contributions/1127094/attachments/1183175/1713902/khvastunov_SUSY_6Nov_2015.pdf
+//    ignore hist errors (stats, <~ 2%)
+//    binned in 3d (pt,eta,pu) -- strongly recommended to do 3d not 2d
+//    systs percentages to apply are:
+//               (10-20,20-30,30+ GeV)
+//      muon id loose +miniiso       3/1/1
+//      muon id medium +miniiso      3/1/1
+//      electron id veto + miniiso   5/5/5
+//      electron id medium + miniiso 10/8/5
+//
+float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isGenMuon, bool isLM, bool isFastSim, bool isCR, int nPV) {
+  bool dbg = true;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << 
+                     TString::Format("with isGenMuon %d, isLM %d, isFastSim %d, isCR %d, nPV %d: ",isGenMuon,isLM,isFastSim,isCR,nPV) << std::endl;
 
-    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron track SF is zero!");
-    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron id SF is zero!");
-    if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron iso SF is zero!");
-    if(sffullfastid == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: electron fullfast id SF is zero!");
+  int   pdgid  = abs(lep->pdgid()); // already abs
+  float pt     = lep->pt();
+  float eta    = lep->eta();
+  float abseta = TMath::Abs(eta);
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("lep pdgid %d, pt %.3f, eta %.3f",pdgid,pt,eta) << std::endl;
 
-    float sfidrelerror    = 0.01;
-    float sfisorelerror   = 0.01;
-    float sftrackrelerror = sfunctrack/sftrack + ((pt > 20) ? 0.01 : 0.04); // 1 pct syst dataset depedence. +3pct syst for pt<20.
-    float sffullfastidrelerror = 0.01;
-    float sffullfastisorelerror = 0.01;
-    sfuncid  = sfid*sftrack*sffullfastid*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) + pow(sffullfastidrelerror,2) ); //uncorrelated
-    sfunciso = sfiso*sffullfastiso*sqrt( pow(sfisorelerror,2) + pow(sffullfastisorelerror,2) );
-    sfid    *= sftrack*sffullfastid; // must come after sfuncid calculation
-    sfiso   *= sffullfastiso;
+  // if lep fails both id and iso (Kin config), return with 1
+  if(pdgid == 11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return 1;
+  if(pdgid == 13 && (!cfgSet::isSelMuon(    *(MuonF*)lep    ,muConfKin))) return 1;
 
-    if     (elCorrType  == UP  ) sfid  += sfuncid;
-    else if(elCorrType  == DOWN) sfid  -= sfuncid;
-    if     (elCorrType == UP  ) sfiso += sfunciso;
-    else if(elCorrType == DOWN) sfiso -= sfunciso;
-    effid    = getElMCIdEffValue(pt,abseta,region);
-    effiso   = getElMCIsoEffValue(pt,abseta,region);
-    if(cfgSet::isSelElectron(*(ElectronF*)lep, elConfNoIso)) passId    = true;
-    if(cfgSet::isSelElectron(*(ElectronF*)lep, elConf)     ) passIdIso = true;
-    if(effid>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: electron ID eff is >=1!");
-    failIdWt = (1.0-effid*sfid)/(1.0-effid);
+  // sfs and effs to fill
+  float SfId            = 1;
+  float SfIso           = 1;
+  //float SfIp2d          = 1;
+  float SfTracker       = 1; // which hist depends on pT
+  float SfFullFastIdIso = 1;
+  float SfMCEffsId      = 1; // which hist depends on LM/HM
+  float SfMCEffsIso     = 1;
+
+  // uncertainties in sfs, where recommended, to fill
+  float UncSfId        = 0;
+  float UncSfIso       = 0;
+  //float UncSfIp2d      = 0;
+  float UncSfTracker   = 0;
+  float UncSfMCEffsId  = 0;
+  float UncSfMCEffsIso = 0;
+
+  bool  passId    = false;
+  bool  passIso   = false;
+  float weight    = 1;
+
+  bool isEl = (pdgid == 11);
+  if(!isEl && (pdgid != 13)) assert(!"possible - pdgId neither 11 nor 13");
+
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] filling SFs. isEl? " << isEl << std::endl;
+  if(isEl) {
+    // load ip2d, id, iso, tracker. fastsim: load idiso
+    SfId               = getbincontent2d(pt,abseta,histElSfId);   // (pt,abseta)
+    UncSfId            = getbinerror2d  (pt,abseta,histElSfId);
+    SfIso              = getbincontent2d(pt,abseta,histElSfIso);  // (pt,abseta)
+    UncSfIso           = getbinerror2d  (pt,abseta,histElSfIso);
+    SfTracker          = getbincontent2d(eta,pt,histElSfTracker); // (**eta**,pt), a 1d graph is available
+    UncSfTracker       = getbinerror2d(pt,abseta,histElSfTracker);
+    SfFullFastIdIso    = (!isFastSim) ? 1 : getbincontent3d(pt,abseta,nPV,histElSfFullFastIdIso); // (pt,abseta,npv)
+    SfMCEffsId         = (isLM) ? getbincontent2d(pt,abseta,histElMCEffsLMId) // (pt,abseta)
+                                : getbincontent2d(pt,abseta,histElMCEffsHMId);
+    UncSfMCEffsId      = (isLM) ? getbinerror2d  (pt,abseta,histElMCEffsLMId)  
+                                : getbinerror2d  (pt,abseta,histElMCEffsHMId);
+    SfMCEffsIso         = (isLM) ? getbincontent2d(pt,abseta,histElMCEffsLMIso) // (pt,abseta)
+                                 : getbincontent2d(pt,abseta,histElMCEffsHMIso);
+    UncSfMCEffsIso      = (isLM) ? getbinerror2d  (pt,abseta,histElMCEffsLMIso)  
+                                 : getbinerror2d  (pt,abseta,histElMCEffsHMIso);
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] is electron! \n " << 
+                      TString::Format("SfId %.3f +/- %.3f, SfIso %.3f +/- %.3f, SfTracker %.3f +/- %.3f, SfFullFastIdIso %.3f, SfMCEffsId %.3f +/- %.3f, SfMCEffsIso %.3f +/- %.3f", 
+                      SfId, UncSfId, SfIso, UncSfIso, SfTracker,UncSfTracker,SfFullFastIdIso,SfMCEffsId,UncSfMCEffsId,SfMCEffsIso,UncSfMCEffsIso) << std::endl;
+
+    // Moriond17: extra 1% for low or high pT, and fastsim has special table of extra systs
+    float extrasyst = ( pt < 20 || pt > 80 ) ? 0.01 : 0;
+    float extrafastsyst = 0;
+    if(isFastSim){
+      if(!isCR) extrafastsyst = 0.05;
+      else extrafastsyst = pt < 10 ? 0.10 : (pt < 20 ? 0.08 : 0.05);
+    }
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("extrasyst %.3f, extrafastsyst %.3f",extrasyst,extrafastsyst) << std::endl;
+
+    // fold all SFs into just the Id/Iso SFs
+    SfId  *= SfTracker;
+    SfIso *= SfFullFastIdIso;
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("folded SFs into id/iso: SfId %.3f, SfIso %.3f",SfId,SfIso) << std::endl;
+
+    // calculate systematics on folded Id/Iso SFs
+    UncSfId  = SfId*SfTracker*sqrt( pow(UncSfId/SfId,2) + pow(UncSfTracker/SfTracker,2) );
+    UncSfIso = SfFullFastIdIso*UncSfIso + extrasyst + extrafastsyst;
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("id/iso unc: UncSfId %.3f, UncSfIso %.3f",UncSfId,UncSfIso) << std::endl;
+
+    // if systematics requested, propagate the uncertainties to the SFs
+    if(elCorrType == UP) {
+      SfId += UncSfId; SfIso += UncSfIso;
+    }else if(elCorrType == DOWN){
+      SfId -= UncSfId; SfIso -= UncSfIso;
+    }
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("after systematics propagated: SfId %.3f, SfIso %.3f",SfId,SfIso) << std::endl;
+
+    // for purpose of correction formula, check if passes Id (iso turned off) or Iso
+    passId  = cfgSet::isSelElectron(*(ElectronF*)lep, elConfNoIso);
+    passIso = cfgSet::isSelElectron(*(ElectronF*)lep, elConf);
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("passId %d, passIso %d",passId,passIso) << std::endl;
   }
-  else if(id==13) {
-    sfid       = getMuIDValue(pt,abseta);
-    sfiso      = getMuIsoValue(pt,abseta);
-    sftrack    = (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
-    sfip2d     = getMuIP2DValue(pt,abseta);
-    sffullfastid  = getMuFullFastIDValue(pt,abseta);
-    sffullfastiso = getMuFullFastIsoValue(pt,abseta);
-    sffullfastip2d = getMuFullFastIP2DValue(pt,abseta);
-    sfunctrack = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta));
-    if(isFastSim) sffullfastid  = getMuFullFastIDValue(pt,abseta);
-    if(isFastSim) sffullfastiso = getMuFullFastIsoValue(pt,abseta);
-    if(isFastSim) sffullfastip2d = getMuFullFastIP2DValue(pt,abseta);
+  // if muon
+  else if(!isEl){
+    // load ip2d, id, iso. fastsim: load idiso
+    SfId               = getbincontent2d(pt,abseta,histMuSfId);   // (pt,abseta)
+    UncSfId            = getbinerror2d  (pt,abseta,histMuSfId);
+    SfIso              = getbincontent2d(pt,abseta,histMuSfIso);  // (pt,abseta)
+    UncSfIso           = getbinerror2d  (pt,abseta,histMuSfIso);
+    //SfTracker          = getbincontent2d(eta,pt,histMuSfTracker); // (**eta**,pt), a 1d graph is available
+    //UncSfTracker       = getbinerror2d(pt,abseta,histMuSfTracker);
+    SfFullFastIdIso    = (!isFastSim) ? 1 : getbincontent3d(pt,abseta,nPV,histMuSfFullFastIdIso); // (pt,abseta,npv)
+    SfMCEffsId         = (isLM) ? getbincontent2d(pt,abseta,histMuMCEffsLMId) // (pt,abseta)
+                                : getbincontent2d(pt,abseta,histMuMCEffsHMId);
+    UncSfMCEffsId      = (isLM) ? getbinerror2d  (pt,abseta,histMuMCEffsLMId)  
+                                : getbinerror2d  (pt,abseta,histMuMCEffsHMId);
+    SfMCEffsIso        = (isLM) ? getbincontent2d(pt,abseta,histMuMCEffsLMIso) // (pt,abseta)
+                                : getbincontent2d(pt,abseta,histMuMCEffsHMIso);
+    UncSfMCEffsIso     = (isLM) ? getbinerror2d  (pt,abseta,histMuMCEffsLMIso)  
+                                : getbinerror2d  (pt,abseta,histMuMCEffsHMIso);
 
-    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
-    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon id SF is zero!");
-    if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon iso SF is zero!");
-    if(sfip2d == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon ip2d SF is zero!");
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] is muon! \n " << 
+                      TString::Format("SfId %.3f +/- %.3f, SfIso %.3f +/- %.3f, SfFullFastIdIso %.3f, SfMCEffsId %.3f +/- %.3f, SfMCEffsIso %.3f +/- %.3f", 
+                      SfId, UncSfId, SfIso, UncSfIso, SfFullFastIdIso,SfMCEffsId,UncSfMCEffsId,SfMCEffsIso,UncSfMCEffsIso) << std::endl;
 
-    float sfidrelerror    = 0.01;
-    float sfisorelerror   = 0.01;
-    float sftrackrelerror = sfunctrack/sftrack + 0.01;
-    float sfip2drelerror  = 0.00; // recommended 3% syst per leg, so don't add any more syst to the id sf
-    float sffullfastidrelerror = 0.01;
-    float sffullfastisorelerror = 0.01;
-    float sffullfastip2drelerror = 0.00; // recommended 2% extra syst per leg for fastsim, so don't add more
-    
-    sfuncid   = sfid*sftrack*sfip2d*sffullfastid*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) + pow(sfip2drelerror,2) + pow(sffullfastidrelerror,2) + pow(sffullfastip2drelerror,2));
-    sfunciso  = sfiso*sffullfastiso*sqrt( pow(sfisorelerror,2) + pow(sffullfastisorelerror,2) );
-    sfid     *= sftrack*sfip2d*sffullfastid*sffullfastip2d; // must come after sfuncid calculation
-    sfiso    *= sffullfastiso;
+    // Moriond17: extra 3% for time being, and fastsim has special table of extra systs
+    float extrasyst = 0.03;
+    float extrafastsyst = 0;
+    if(isFastSim){
+      extrafastsyst = pt < 10 ? 0.03 : (pt < 20 ? 0.01 : 0.01);
+    }
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("extrasyst %.3f, extrafastsyst %.3f",extrasyst,extrafastsyst) << std::endl;
 
-    if     (muCorrType  == UP  ) sfid  += sfuncid;
-    else if(muCorrType  == DOWN) sfid  -= sfuncid;
-    if     (muCorrType == UP  ) sfiso += sfunciso;
-    else if(muCorrType == DOWN) sfiso -= sfunciso;
-    //effid    = getMuMCIdEffValue(pt,abseta,region); // get this from gen muons since we don't store generalTracks
-    effiso   = getMuMCIsoEffValue(pt,abseta,region);
-    if(cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) passId    = true;
-    if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
-    failIdWt = 1.0; // handle with gen muons
+    // fold all SFs into just the Id/Iso SFs
+    //SfId  *= SfTracker;
+    SfIso *= SfFullFastIdIso;
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("folded SFs into id/iso: SfId %.3f, SfIso %.3f",SfId,SfIso) << std::endl;
+
+    // calculate systematics on folded Id/Iso SFs
+    UncSfId  = SfId*SfTracker*sqrt( pow(UncSfId/SfId,2) + pow(UncSfTracker/SfTracker,2) );
+    UncSfIso = SfFullFastIdIso*UncSfIso + extrasyst + extrafastsyst;
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("id/iso unc: UncSfId %.3f, UncSfIso %.3f",UncSfId,UncSfIso) << std::endl;
+
+    // if systematics requested, propagate the uncertainties to the SFs
+    if(muCorrType == UP) {
+      SfId += UncSfId; SfIso += UncSfIso;
+    }else if(muCorrType == DOWN){
+      SfId -= UncSfId; SfIso -= UncSfIso;
+    }
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("after systematics propagated: SfId %.3f, SfIso %.3f",SfId,SfIso) << std::endl;
+
+    // for purpose of correction formula, check if passes Id (iso turned off) or Iso
+    passId  = cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso);
+    passIso = cfgSet::isSelMuon(*(MuonF*)lep, muConf);
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("passId %d, passIso %d",passId,passIso) << std::endl;
   }
 
-  if(passIdIso) {
-    wt = sfid * sfiso;
+  // calculate the weights given just effid, effiso, sfid, and sfiso
+  if(passId && passIso){
+    weight = SfId*SfIso;
+  }else if(passId){
+    weight = SfId*(1-SfIso*SfMCEffsIso)/(1-SfMCEffsIso);
+  }else{
+    if(isEl){
+      weight = (1-SfId*SfMCEffsId)/(1-SfMCEffsId);
+    }else{
+      weight = 1; // if muon fails id, set weight=1 and it's handled in getEvtWeight by using gen muons
+    }
   }
-  else if(passId) {
-    if(effiso>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: Iso eff is >=1!");
-    wt = sfid * (1.0-effiso*sfiso)/(1.0-effiso);
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] final weight is " << weight << std::endl;
+
+  // special case: we're given a gen muon
+  if(isGenMuon){
+    weight = (1-SfId*SfMCEffsId)/(1-SfMCEffsId);
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] but weight, theres more! (was a gen muon): " << weight << std::endl;
   }
-  else {
-    wt = failIdWt;
-  }
-  if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
-  if(wt >  2.0) wt =  2.0; // also don't want large positive weights
-  return wt;
+
+  weight = std::min(std::max(weight,-2.0f),2.0f); // cap at +/- 2
+  return weight;
 }
 
-// muon id via gen muons. copy and paste from getLepWeight, some minor changes.
-float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE muCorrType, TString region, bool isFastSim ) const {
-  float wt = 1.0;
-  //int   id  = lep->pdgid();
-  float pt  = lep->pt();
-  float eta = lep->eta();
-  float abseta = lep->absEta();
-  //if     (id==11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return wt;
-  //else if(id==13 && (!cfgSet::isSelMuon(*(MuonF*)lep        ,muConfKin))) return wt;
-  if     (pt <muConfKin.minPT)  return wt;
-  else if(abseta>muConfKin.maxETA) return wt;
-  float sfid     = 1.0;
-  float sfip2d   = 1.0;
-  float sftrack  = 1.0;
-  float sffullfastid = 1.0;
-  float sffullfastip2d = 1.0;
-  //float sfiso    = 1.0;
-  float sfuncid  = 0.0;
-  float sfunctrack=0.0;
-  //float sfunciso = 0.0;
-  float effid     = 1.0;
+// the weight for muons which fail Id are handled using gen muons (b/c we don't save anything looser...). See getEvtWeight for details.
+float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM, bool isFastSim, bool isCR, int nPV ) {
+  bool dbg = true;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] using gen to fake muon of pt " << lep->pt() << std::endl;
 
-    sfid       = getMuIDValue(pt,abseta);
-    //sfiso      = getMuIsoValue(pt,abseta);
-    sftrack    = (pt > 10) ? getMuTrackerPtg10Value(eta) : getMuTrackerPtl10Value(eta);
-    sfip2d     = getMuIP2DValue(pt,abseta);
-    sffullfastid = getMuFullFastIDValue(pt,abseta);
-    sffullfastip2d = getMuFullFastIP2DValue(pt,abseta);
-    //sfunciso   = getMuIsoError(pt,abseta);
-    sfunctrack = ((pt > 10) ? getMuTrackerPtg10Error(eta) : getMuTrackerPtl10Error(eta));
-    if(isFastSim) sffullfastid  = getMuFullFastIDValue(pt,abseta);
-    if(isFastSim) sffullfastip2d  = getMuFullFastIP2DValue(pt,abseta);
+  // convert GenParticleF to a LeptonF to imitate a reco muon
+  LeptonF * muon = new LeptonF(lep->p4()); // walks like a muon
+  muon->setPdgId(13);                      // talks like a muon
+  muon->setIsMuon(true);                   // totally a muon (need this to pass first few lines of getLepWeight)
 
-    if(sftrack == 0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon track SF is zero!");
-    if(sfid == 0)    throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon id SF is zero!");
-    //if(sfiso == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon iso SF is zero!");
-    if(sfip2d == 0)   throw std::invalid_argument("LeptonCorectionSet::TnPCorr::getLepWeight: muon ip2d SF is zero!");
+  bool isGenMuon = true;
+  float weight = getLepWeight(muon, elCorrType, muCorrType, isGenMuon, isLM, isFastSim, isCR, nPV);
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] fake muon got weight " << weight << std::endl;
 
-    float sfidrelerror    = 0.01;
-    //float sfisorelerror   = 0.01;
-    float sftrackrelerror = sfunctrack/sftrack + 0.01;
-    float sfip2drelerror  = 0.00; // recommended 3% syst per leg, so don't add any more syst to the id sf
-    float sffullfastidrelerror = 0.01;
-    //float sffullfastisorelerror = 0.01;
-    float sffullfastip2drelerror = 0.00; // recommended 2% extra syst per leg for fastsim, so don't add more
-
-    sfuncid   = sfid*sftrack*sfip2d*sffullfastid*sqrt( pow(sfidrelerror,2) + pow(sftrackrelerror,2) + pow(sfip2drelerror,2) + pow(sffullfastidrelerror,2) + pow(sffullfastip2drelerror,2));
-    //sfunciso  = sfiso*sffullfastiso*sqrt( pow(sfisorelerror,2) + pow(sffullfastisorelerror,2) );
-    sfid     *= sftrack*sfip2d*sffullfastid*sffullfastip2d; // must come after sfuncid calculation
-    //sfiso    *= sffullfastiso;
-
-    if     (muCorrType  == UP  ) sfid  += sfuncid;
-    else if(muCorrType  == DOWN) sfid  -= sfuncid;
-    //if     (muCorrType == UP  ) sfiso += sfunciso;
-    //else if(muCorrType == DOWN) sfiso -= sfunciso;
-    effid    = getMuMCIdEffValue(pt,abseta,region); // get this from gen muons since we don't store generalTracks
-    //effiso   = getMuMCIsoEffValue(pt,abseta,region);
-    //if(cfgSet::isSelMuon(*(MuonF*)lep, muConfNoIso)) passId    = true;
-    //if(cfgSet::isSelMuon(*(MuonF*)lep, muConf)     ) passIdIso = true;
-    //failIdWt = 1.0; // handle with gen muons
-    if(effid>=1.0) throw std::invalid_argument("LeptonCorectionSet::TnPCorr: muon ID eff is >=1!");
-    wt = (1.0-effid*sfid)/(1.0-effid);
-    if(wt < -2.0) wt = -2.0; // don't want large negative weights ... need to treat these cases better
-    if(wt >  2.0) wt =  2.0; // also don't want large positive weights
-    return wt;
+  delete muon;
+  return weight;
 }
 
 float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
-                            CORRTYPE elCorrType, CORRTYPE muCorrType, TString region, bool isFastSim ) const {
-  // store gen leptons for matching
+                            CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM, bool isFastSim, bool isCR, int nPV) {
+  bool dbg = true;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] " 
+                    << TString::Format("with isLM %d, isFastSim %d, isCR %d, nPV %d",isLM,isFastSim,isCR,nPV) << std::endl;
+
+  // store gen el/mu with W/Z/tau mothers
   std::vector<const GenParticleF*> genEl_;
   std::vector<const GenParticleF*> genMu_;
   for(const auto* p : genParts) {
@@ -504,9 +482,12 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
         const GenParticleF* dau = p->daughter(id);
         if     (ParticleInfo::isA(ParticleInfo::p_eminus , dau)) genEl_.push_back(dau);
         else if(ParticleInfo::isA(ParticleInfo::p_muminus, dau)) genMu_.push_back(dau);
-      } // W,Z daughters
-    } // genPart is a Z or W
-  } // genParts
+      }
+    }
+  }
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] " << TString::Format("genEl %lu, genMu %lu",genEl_.size(),genMu_.size()) << std::endl;
+
+  // match (dr 0.4) those gen el/mu to allLeptons
   float weight = 1.0;
   for(auto* lep : allLeptons) {
     if     (lep->pdgid()==11 && (elCorrType==NONE)) continue;
@@ -515,52 +496,85 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
     int near = -1;
     if     (lep->pdgid()==11) near = PhysicsUtilities::findNearestDRDeref(*lep, genEl_, nearDR, 0.4);
     else if(lep->pdgid()==13) near = PhysicsUtilities::findNearestDRDeref(*lep, genMu_, nearDR, 0.4);
-    if(near >= 0) weight *= getLepWeight(lep,elCorrType,muCorrType,region,isFastSim);
+    if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] looping thru allLeptons for nearness to genEl or genMu: " << TString::Format("near index %d, nearDR %.3f",near,nearDR) << std::endl;
+    if(near >= 0) weight *= getLepWeight(lep,elCorrType,muCorrType,false,isLM,isFastSim,isCR,nPV);
   }
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] after looping thru allLeptons, weight is " << weight << std::endl;
+
+  // but that left out muons failing Id (it set weight=1 in that case). we need looser muons. use gen muons as substitute.
+  // store reco mu from allLeptons
   std::vector<const LeptonF*> recMu_;
   for(const auto* lep : allLeptons) if(lep->pdgid()==13) recMu_.push_back(lep);
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] found recMus: " << recMu_.size() << std::endl;
   if(muCorrType!=NONE) {
     for(auto* lep : genMu_) {
       double nearDR = 0;
       int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-      if(near<0) weight *= getGenLepWeight(lep,muCorrType,region,isFastSim);
-      else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,muCorrType,region,isFastSim);
+      if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] looping thru genMu. nearness to any recMu: " << TString::Format("near index %d, nearDR %.3f",near,nearDR) << std::endl;
+      if(near<0) weight *= getGenLepWeight(lep,elCorrType,muCorrType,isLM,isFastSim,isCR,nPV);
+      else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,elCorrType,muCorrType,isLM,isFastSim,isCR,nPV);
     }
   }
-  if(weight < -2.0) weight = -2.0; // also don't want large overall
-  if(weight >  2.0) weight =  2.0; // event weight changes
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] after looping thru genMu_, weight is finally " << weight << std::endl;
+
+  // cap weights at 2
+  if(weight < -2.0) weight = -2.0;
+  if(weight >  2.0) weight =  2.0;
   return weight;
 }
 
-void LeptonCorrectionSet::load(TString fileNameLM, TString fileNameHM,
-                               const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
+void LeptonCorrectionSet::load(const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
                                const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel,
                                int correctionOptions)
 {
+  name = "LEP";
+  options_ = correctionOptions;
+
+  if(correctionOptions & USE_HPSTAUS){ // user may switch back to HPS taus
+    setUseHPSTaus(true);
+  }
+
   if(correctionOptions & LEP) {
-    loadSimple("LEP",correctionOptions);
-    if(options_ & LEP) {
-      lepCorr = new LepCorr(fileNameLM,fileNameHM);
-      corrections.push_back(lepCorr);
-      setMultiPtBins(true); // hack - stick with multipt bins
-      if(options_ & USE_HPSTAUS){
-        setUseHPSTaus(true);
-      }
-      if(options_ & MULTI_PT_BINS){
-        setMultiPtBins(true);
-      }
-    }
+    lepCorr = new LepCorr();
+    corrections.push_back(lepCorr);
   }
   if(correctionOptions & TNP) {
-    if(options_ & TNP) {
-      tnpCorr = new TnPCorr("TNP", elSel, secElSel, muSel, secMuSel);
-      corrections.push_back(tnpCorr);
-    }
+    tnpCorr = new TnPCorr(elSel, secElSel, muSel, secMuSel);
+    corrections.push_back(tnpCorr);
   }
 }
 
+void countRecoLepsAndGenTaus(const BaseTreeAnalyzer * ana, int &nPromptGenTaus, int &nSelectedElectrons, int &nSelectedMuons){
+  nPromptGenTaus = 0, nSelectedElectrons = 0, nSelectedMuons = 0;
+
+  // count reco leptons
+  for(auto* i : ana->selectedLeptons) {
+    if(fabs(i->pdgid()) == 11) { nSelectedElectrons++; }
+    if(fabs(i->pdgid()) == 13) { nSelectedMuons++;     }
+  }
+
+  // count gen hadronic taus
+  for(auto* p : ana->genParts) {
+    const GenParticleF * genPartMom = 0;
+    if(p->numberOfMothers() < 1) continue;
+    genPartMom = p->mother(0);
+
+    // tau from W/Z
+    if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
+      bool lepDecay = false;
+      // hadronic?
+      for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
+        const GenParticleF* dau = p->daughter(itd);
+        if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
+      }
+      if(!lepDecay) { nPromptGenTaus++; }
+    }
+  }
+
+}
+
 void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-  bool dbg = false;
+  bool dbg = true;
   if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection]" << std::endl;
 
   selLepWeightLM  = 1.;
@@ -573,164 +587,100 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   if(options_ & LEP) {
     if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
-    int nGoodGenMu = 0; int nGoodGenEle = 0; int nPromptGenTaus = 0;
-    int nSelectedElectrons = 0;  int nSelectedMuons = 0;
-    ///COUNT GEN LEPS
-    for(auto* p : ana->genParts) {
-      const GenParticleF * genPartMom = 0;
-      if (p->numberOfMothers()>0) 
-        genPartMom = p->mother(0);
-      else
-        continue;
-      // electron from W/Z/tau
-      if (ParticleInfo::isA(ParticleInfo::p_eminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom) || ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom)))
-        nGoodGenEle++;
-      // muon from W/Z/tau
-      else if (ParticleInfo::isA(ParticleInfo::p_muminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom) || ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom)))
-        nGoodGenMu++;
-      // tau from W/Z
-      else if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
-        bool lepDecay = false;
-        for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
-          const GenParticleF* dau = p->daughter(itd);
-          if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
-        }
-        // hadronic tau
-        if(!lepDecay)
-          nPromptGenTaus++;
+
+    // lep histo bins
+    const std::vector<double> eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
+    const std::vector<double> muCorrPtBins  = {0., 20., 30., 40., 70., 100., 1000.};
+    const std::vector<double> tauCorrPtBins = {0., 20., 40., 1000.};
+    const unsigned int nEleBins = eleCorrPtBins.size()-1;
+    const unsigned int nMuBins  = muCorrPtBins.size()-1;
+    const unsigned int nTauBins = tauCorrPtBins.size()-1;
+    // convenient bin numbers
+    const unsigned int binDefaultZeroCorr   = 1;
+    const unsigned int binEleFirst          = binDefaultZeroCorr + 1;
+    const unsigned int binEleLast           = binEleFirst + nEleBins-1;
+    const unsigned int binMuFirst           = binEleLast + 1;
+    const unsigned int binMuLast            = binMuFirst  + nMuBins-1;
+    const unsigned int binTauFirst          = binMuLast  + 1;
+    const unsigned int binTauLast           = binTauFirst + nTauBins-1;
+    const unsigned int binHpsTaus           = binTauLast + 1;
+    const unsigned int binFakes             = binHpsTaus + 1;
+
+    // determine region
+    int nPromptGenTaus = 0, nSelectedElectrons = 0, nSelectedMuons = 0;
+    countRecoLepsAndGenTaus(ana, nPromptGenTaus, nSelectedElectrons, nSelectedMuons);
+    enum REGION { TAU_SELECTED, HPS_SELECTED, FAKE, VETO };
+    REGION region;
+    if(     !useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) region = REGION::TAU_SELECTED;
+    else if( useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) region = REGION::HPS_SELECTED;
+    else if( nSelectedMuons >= 1 || nSelectedElectrons >= 1 || ana->nVetoedTracks >= 1) region = REGION::FAKE;
+    else region = REGION::VETO;
+
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " 
+                      << TString::Format("Region %d. Found %d vetoed tracks, %d prompt hadronic gen taus, %d selected electrons, %d selected muons", 
+                                         region, ana->nVetoedTracks, nPromptGenTaus, nSelectedElectrons, nSelectedMuons) << std::endl;
+    //if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] lepCorr bins: " << TString::Format("binEleFirst is %d, binMuFirst %d, binTauFirst %d, binFakes %d, binDefaultZeroCorr %d",
+    //                                                                                      binEleFirst,binMuFirst,binTauFirst,binFakes,binDefaultZeroCorr) << std::endl;
+
+    // determine bin in Lep hists to use
+    int bin = binDefaultZeroCorr;
+    if(region == TAU_SELECTED){
+      // several pT bins. seek out bin corresponding to our tau pt
+      float trackPt = ana->vetoedTracks[0]->pt();
+      if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] region is TAU_SELECTED, searching for pT bin for " << trackPt << std::endl;
+      for(unsigned int iBin = binTauFirst; iBin <= binTauLast; iBin++){
+        //float binLowPt  = tauCorrPtBins[iBin - binTauFirst];
+        float binHighPt = tauCorrPtBins[iBin - binTauFirst + 1];
+        if(trackPt > binHighPt && iBin != binTauLast){ continue; } // try next bin if there is one
+        bin = iBin; // use this bin
+        break;
+      }
+    }else if(region == HPS_SELECTED){
+      bin = binHpsTaus;
+    }else if(region == FAKE){
+      bin = binFakes;
+    }else if(region == VETO){
+      bin = binDefaultZeroCorr;
+    }else{ assert(!"Possible: region altered outside enum"); }
+
+    // fetch corr from Lep hists
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] fetching Corr from bin " << bin << std::endl;
+    float corrLM, corrHM, uncCorrLM, uncCorrHM;
+    corrLM = lepCorr->histLepLM->GetBinContent(bin);
+    corrHM = lepCorr->histLepHM->GetBinContent(bin);
+    uncCorrLM = lepCorr->histLepLM->GetBinError(bin);
+    uncCorrHM = lepCorr->histLepHM->GetBinError(bin);
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " << TString::Format("corrLM %.3f +/- %.3f, corrHM %.3f +/- %.3f", corrLM, uncCorrLM, corrHM, uncCorrHM) << std::endl;
+
+    // apply systematics to Corr
+    if(region == TAU_SELECTED || region == HPS_SELECTED){
+      if( (options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP) ){
+        corrLM += uncCorrLM; corrHM += uncCorrHM;
+      }else if( (options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN) ){
+        corrLM -= uncCorrLM; corrHM -= uncCorrHM;
       }
     }
 
-    if(multiPtBins) {
-      for(auto* i : ana->selectedLeptons) {
-        if(fabs(i->pdgid()) == 11) {
-          nSelectedElectrons++;
-        }
-        if(fabs(i->pdgid()) == 13) {
-          nSelectedMuons++;
-        }
-      }
-    } else {
-      for(auto* i : ana->selectedLeptons) {
-        if(fabs(i->pdgid()) == 11) {
-          nSelectedElectrons++;
-        }
-        if(fabs(i->pdgid()) == 13) {
-          nSelectedMuons++;
-        }
-      }
-    }
+    // determine weights (Corr or 1-Corr)
+    vetoLepWeightLM = 1 - corrLM;
+    selLepWeightLM  = corrLM;
+    vetoLepWeightHM = 1 - corrHM;
+    selLepWeightHM  = corrHM;
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " << TString::Format("LEP weights finally: vetoLM  %.3f / selLM  %.3f / vetoHM  %.3f / selHM  %.3f", vetoLepWeightLM, selLepWeightLM, vetoLepWeightHM, selLepWeightHM) << std::endl;
 
-    // tau selected region
-    if (!useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      if(multiPtBins) {
-        for(unsigned int iptbin = 0; iptbin < LepCorr::tauCorrPtBins.size()-1; ++iptbin) {
-          if(iptbin == LepCorr::tauCorrPtBins.size()-2) {
-            if(ana->vetoedTracks[0]->pt() > LepCorr::tauCorrPtBins[iptbin]) {
-            lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin,1);
-            lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin,2);
-            }
-          } else {
-            if(ana->vetoedTracks[0]->pt() > LepCorr::tauCorrPtBins[iptbin] && ana->vetoedTracks[0]->pt() <= LepCorr::tauCorrPtBins[iptbin+1]) {
-              lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin,1);
-              lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + iptbin,2);
-            }
-          }
-        }
-      } else {
-        if(ana->vetoedTracks[0]->pt() > 20.0) {
-          lepCorr->setTargetBin(LepCorr::tauCorrBinHighPt,1);
-          lepCorr->setTargetBin(LepCorr::tauCorrBinHighPt,2);
-        }else{
-          lepCorr->setTargetBin(LepCorr::tauCorrBinLowPt,1);
-          lepCorr->setTargetBin(LepCorr::tauCorrBinLowPt,2);
-        }
-      }
-    }
-    // HPS tau selected region
-    else if (useHPS && ana->nVetoHPSTaus >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      if(multiPtBins){
-        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size() - 1,1);
-        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size() - 1,2);
-      }else{
-        lepCorr->setTargetBin(LepCorr::hpsTauCorrBin,1);
-        lepCorr->setTargetBin(LepCorr::hpsTauCorrBin,2);
-      }
-    }
-    // fake region
-    else  if ((nSelectedMuons >= 1) || (nSelectedElectrons >= 1) || (ana->nVetoedTracks >= 1)) {
-      if(multiPtBins) {
-        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size(),1);
-        lepCorr->setTargetBin(LepCorr::muCorrPtBins.size() + LepCorr::eleCorrPtBins.size() + LepCorr::tauCorrPtBins.size(),2);
-      }else{
-        lepCorr->setTargetBin(LepCorr::fakeBin,1);
-        lepCorr->setTargetBin(LepCorr::fakeBin,2);
-      }
-    }
-    // veto region
-    else {
-      lepCorr->setTargetBin(LepCorr::defaultBin,1); // the veto region for which vetoLepWeight = 1, selLepWeight = 0
-      lepCorr->setTargetBin(LepCorr::defaultBin,2);
-    }
-
-    vetoLepWeightLM = 1 - lepCorr->get(1);
-    selLepWeightLM  = lepCorr->get(1);
-    vetoLepWeightHM = 1 - lepCorr->get(2);
-    selLepWeightHM  = lepCorr->get(2);
-  
-
-    // adjust weights for systematic variations 
-
-    // tau selected region
-    if (!useHPS && ana->nVetoedTracks >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
-        vetoLepWeightLM -= lepCorr->getError(1);
-        selLepWeightLM  += lepCorr->getError(1);
-        vetoLepWeightHM -= lepCorr->getError(2);
-        selLepWeightHM  += lepCorr->getError(2);
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
-        vetoLepWeightLM += lepCorr->getError(1);
-        selLepWeightLM  -= lepCorr->getError(1);
-        vetoLepWeightHM += lepCorr->getError(2);
-        selLepWeightHM  -= lepCorr->getError(2);
-      }
-    }
-    // HPS tau selected region
-    else if (useHPS && ana->nVetoHPSTaus >= 1 && nSelectedElectrons == 0 && nSelectedMuons == 0 && nPromptGenTaus >= 1) {
-      if((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) {
-        vetoLepWeightLM -= lepCorr->getError(1);
-        selLepWeightLM  += lepCorr->getError(1);
-        vetoLepWeightHM -= lepCorr->getError(2);
-        selLepWeightHM  += lepCorr->getError(2);
-      }
-      else if((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) {
-        vetoLepWeightLM += lepCorr->getError(1);
-        selLepWeightLM  -= lepCorr->getError(1);
-        vetoLepWeightHM += lepCorr->getError(2);
-        selLepWeightHM  -= lepCorr->getError(2);
-      }
-    }
-    // fake region
-    else  if ((nSelectedMuons >= 1) || (nSelectedElectrons >= 1) || (ana->nVetoedTracks >= 1)) {
-      // keep for structure
-    }
-    // veto region
-    else {
-      // keep for structure
-    }
-
-  }
+  }//if option LEP
 
   if(options_ & TNP) {
     if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option TNP" << std::endl;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bool isFastSim = ana->evtInfoReader.isfastsim;
-    tnpEvtWeightLM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, "LM",isFastSim);
-    tnpEvtWeightHM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, "HM",isFastSim);
+    bool isCR = tnpCorr->isCR;
+    int nPV = ana->nPV;
+    tnpEvtWeightLM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, true,isFastSim, isCR, nPV);
+    tnpEvtWeightHM = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, cfg.corrections.tnpElCorrType, cfg.corrections.tnpMuCorrType, false,isFastSim, isCR, nPV);
+    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " << TString::Format("TNP weights finally: LM %.3f / HM %.3f", tnpEvtWeightLM, tnpEvtWeightHM) << std::endl;
   }
 
 }
 
 } /* namespace ucsbsusy */
-
