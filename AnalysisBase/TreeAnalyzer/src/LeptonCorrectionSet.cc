@@ -52,7 +52,7 @@ namespace ucsbsusy {
 
 // load the needed files & histos
 LepCorr::LepCorr() : Correction("LEP") {
-  bool dbg = true;
+  bool dbg = false;
   if(dbg) std::cout << "[LeptonCorrectionSet::LepCorr::LepCorr]" << std::endl;
 
   //#CHANGENAMES
@@ -81,7 +81,7 @@ LepCorr::~LepCorr() {
 TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
                  const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel
                  ) : Correction("TNP") {
-  bool dbg = true;
+  bool dbg = false;
   if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::TnPCorr]" << std::endl;
 
   // check these primary/secondary lep configs. must be 0l (SEL) or 1l (CTR) and equal.
@@ -150,7 +150,7 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   // load electron histos from electron files
   //#CHANGENAMES
   TString strHistElSfId                = (isCR) ? "GsfElectronToCutBasedSpring15M"  : "GsfElectronToCutBasedSpring15V";
-  TString strHistElSfIso               = (isCR) ? "MVAVLooseElectronToMini2" : "MVAVLooseElectronToMini";
+  TString strHistElSfIso               = (isCR) ? "MVAVLooseElectronToMini2" : "MVAVLooseElectronToMini2";
   TString strHistElSfTracker           = "EGamma_SF2D";
   TString strHistElSfFullFastIdIso     = "histo3D";
   TString strHistElMCEffs              = "lepCorMCEff_El_"; // lepCorMCEff_El_Id NB: plus "Id"/"Iso" below
@@ -278,7 +278,7 @@ TnPCorr::~TnPCorr() {
 //      electron id medium + miniiso 10/8/5
 //
 float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isGenMuon, bool isLM, bool isFastSim, bool isCR, int nPV) {
-  bool dbg = true;
+  bool dbg = false;
   if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << 
                      TString::Format("with isGenMuon %d, isLM %d, isFastSim %d, isCR %d, nPV %d: ",isGenMuon,isLM,isFastSim,isCR,nPV) << std::endl;
 
@@ -289,8 +289,13 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
   if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getLepWeight] " << TString::Format("lep pdgid %d, pt %.3f, eta %.3f",pdgid,pt,eta) << std::endl;
 
   // if lep fails both id and iso (Kin config), return with 1
-  if(pdgid == 11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return 1;
-  if(pdgid == 13 && (!cfgSet::isSelMuon(    *(MuonF*)lep    ,muConfKin))) return 1;
+  if(!isGenMuon){
+    if(pdgid == 11 && (!cfgSet::isSelElectron(*(ElectronF*)lep,elConfKin))) return 1;
+    if(pdgid == 13 && (!cfgSet::isSelMuon(    *(MuonF*)lep    ,muConfKin))) return 1;
+  }else{
+    if(pt < muConfKin.minPT) return 1;
+    if(abseta > muConfKin.maxETA) return 1;
+  }
 
   // sfs and effs to fill
   float SfId            = 1;
@@ -451,8 +456,8 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
 
 // the weight for muons which fail Id are handled using gen muons (b/c we don't save anything looser...). See getEvtWeight for details.
 float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM, bool isFastSim, bool isCR, int nPV ) {
-  bool dbg = true;
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] using gen to fake muon of pt " << lep->pt() << std::endl;
+  bool dbg = false;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] starting getGenLepWeight. Using gen to fake muon of pt " << lep->pt() << std::endl;
 
   // convert GenParticleF to a LeptonF to imitate a reco muon
   LeptonF * muon = new LeptonF(lep->p4()); // walks like a muon
@@ -469,8 +474,8 @@ float TnPCorr::getGenLepWeight(const GenParticleF* lep, CORRTYPE elCorrType, COR
 
 float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::vector<LeptonF*>& selectedLeptons, const std::vector<GenParticleF*> genParts,
                             CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM, bool isFastSim, bool isCR, int nPV) {
-  bool dbg = true;
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] " 
+  bool dbg = false;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] starting getevtweight " 
                     << TString::Format("with isLM %d, isFastSim %d, isCR %d, nPV %d",isLM,isFastSim,isCR,nPV) << std::endl;
 
   // store gen el/mu with W/Z/tau mothers
@@ -485,7 +490,7 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
       }
     }
   }
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] " << TString::Format("genEl %lu, genMu %lu",genEl_.size(),genMu_.size()) << std::endl;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] " << TString::Format("found: genEl %lu, genMu %lu",genEl_.size(),genMu_.size()) << std::endl;
 
   // match (dr 0.4) those gen el/mu to allLeptons
   float weight = 1.0;
@@ -499,23 +504,23 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
     if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] looping thru allLeptons for nearness to genEl or genMu: " << TString::Format("near index %d, nearDR %.3f",near,nearDR) << std::endl;
     if(near >= 0) weight *= getLepWeight(lep,elCorrType,muCorrType,false,isLM,isFastSim,isCR,nPV);
   }
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] after looping thru allLeptons, weight is " << weight << std::endl;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] matching those to allLeptons and calling getLepWeight -> new weight of " << weight << std::endl;
 
   // but that left out muons failing Id (it set weight=1 in that case). we need looser muons. use gen muons as substitute.
   // store reco mu from allLeptons
   std::vector<const LeptonF*> recMu_;
   for(const auto* lep : allLeptons) if(lep->pdgid()==13) recMu_.push_back(lep);
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getGenLepWeight] found recMus: " << recMu_.size() << std::endl;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] found recMus (and will now loop through genMus): " << recMu_.size() << std::endl;
   if(muCorrType!=NONE) {
     for(auto* lep : genMu_) {
       double nearDR = 0;
       int near = PhysicsUtilities::findNearestDRDeref(*lep, recMu_, nearDR, 0.4);
-      if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] looping thru genMu. nearness to any recMu: " << TString::Format("near index %d, nearDR %.3f",near,nearDR) << std::endl;
+      if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] in loop thru genMu. May call getGenLepWeight. nearness of this genMu to any recMu: " << TString::Format("near index %d, nearDR %.3f",near,nearDR) << std::endl;
       if(near<0) weight *= getGenLepWeight(lep,elCorrType,muCorrType,isLM,isFastSim,isCR,nPV);
       else if(!cfgSet::isSelMuon(*(MuonF*)recMu_[near], muConfNoIso)) weight *= getGenLepWeight(lep,elCorrType,muCorrType,isLM,isFastSim,isCR,nPV);
     }
   }
-  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] after looping thru genMu_, weight is finally " << weight << std::endl;
+  if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::getEvtWeight] done looping thru genMu. -> new weight of  " << weight << std::endl << std::endl;
 
   // cap weights at 2
   if(weight < -2.0) weight = -2.0;
@@ -574,7 +579,7 @@ void countRecoLepsAndGenTaus(const BaseTreeAnalyzer * ana, int &nPromptGenTaus, 
 }
 
 void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-  bool dbg = true;
+  bool dbg = false;
   if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection]" << std::endl;
 
   selLepWeightLM  = 1.;
@@ -586,7 +591,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(!ana->isMC()) return;
 
   if(options_ & LEP) {
-    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
+    if(dbg) std::cout << std::endl << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
 
     // lep histo bins
     const std::vector<double> eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
@@ -671,7 +676,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   }//if option LEP
 
   if(options_ & TNP) {
-    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] option TNP" << std::endl;
+    if(dbg) std::cout << std::endl << "[LeptonCorrectionSet::processCorrection] option TNP" << std::endl;
     const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
     bool isFastSim = ana->evtInfoReader.isfastsim;
     bool isCR = tnpCorr->isCR;
