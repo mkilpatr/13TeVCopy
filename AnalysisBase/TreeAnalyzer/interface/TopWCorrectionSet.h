@@ -67,7 +67,7 @@ class ResMVATopCorr : public Correction {
     float process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops);
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_sf_20161201.root",defaults::CMSSW_BASE.c_str());
-    TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14
+    TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Feb 1
     TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str()); //NOT A BUG - systs are stored in same file as merged
     TString fileNameFullFast = TString::Format("%s/src/data/corrections/dummy.root",defaults::CMSSW_BASE.c_str());
 

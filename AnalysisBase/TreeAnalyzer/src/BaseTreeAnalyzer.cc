@@ -594,7 +594,7 @@ void BaseTreeAnalyzer::processMoreVariables(){
 
   nResMVATopMedium = 0;
   for (auto &res : resMVATopCands){
-    if (res.disc > ResolvedTopMVA::WP_MEDIUM) resMVATopMedium.push_back(res);
+    if (res.disc > ResolvedTopMVA::WP_MEDIUM && res.topcand.pt() > 100) resMVATopMedium.push_back(res);
   }
   std::sort(resMVATopMedium.begin(), resMVATopMedium.end(), [](const TopCand &a, const TopCand &b){ return a.topcand.pt()>b.topcand.pt(); });
   nResMVATopMedium = resMVATopMedium.size();
