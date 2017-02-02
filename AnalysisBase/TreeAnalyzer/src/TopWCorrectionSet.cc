@@ -152,8 +152,8 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
     if( recotop || recow) {
       if(dbg) std::cout << "  in reco tagged cat" << std::endl;
       // reco tagged categories
-      std::map<std::string, TH1F*> *sfhist = 0; 
-      std::map<std::string, TH1F*> *effhist = 0; 
+      std::map<std::string, TH1F*> *sfhist = 0;
+      std::map<std::string, TH1F*> *effhist = 0;
       if( recotop && gentop ){
         // t | gt
         sfhist = &sdMVA_DataFull_toptagSF,    effhist = &sdMVA_Full_toptagEff;
@@ -356,16 +356,16 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   if(!resMVASystsFile)         throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: systs file could not be found!");
   if(!resMVAFullFastInputFile) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: full/fast file could not be found!");
 
-  resTop_DataFull_toptagSF["lowEta"]    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
-  resTop_DataFull_topmistagSF["lowEta"] = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+  resTop_DataFull_toptagSF["lowEta"]    = (TH1F*)( resMVATopInputFile->Get("sf_eff_restop") );
+  resTop_DataFull_toptagSF["highEta"]    = (TH1F*)( resMVATopInputFile->Get("sf_eff_restop") );
 
-  resTop_DataFull_toptagSF["highEta"]    = (TH1F*)( resMVATopInputFile->Get("ratio-t-efnl1-nb1-restop") );
-  resTop_DataFull_topmistagSF["highEta"] = (TH1F*)( resMVATopInputFile->Get("ratio-t-mtnl0-nb1-restop") );
+  resTop_DataFull_topmistagSF["lowEta"] = (TH1F*)( resMVATopInputFile->Get("sf_mistag_restop") );
+  resTop_DataFull_topmistagSF["highEta"] = (TH1F*)( resMVATopInputFile->Get("sf_mistag_restop") );
 
-  resTop_Full_toptagEff["lowEta"]        = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-efnl1-nb1-restop") );
-  resTop_Full_toptagEff["highEta"]       = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-efnl1-nb1-restop") );
-  resTop_Full_topmistagEff["lowEta"]     = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-mtnl0-nb1-restop") );
-  resTop_Full_topmistagEff["highEta"]    = (TH1F*)( resMVATopInputFile->Get("eff-mc-t-mtnl0-nb1-restop") );
+  resTop_Full_toptagEff["lowEta"]        = (TH1F*)( resMVATopInputFile->Get("mc_eff_restop") );
+  resTop_Full_toptagEff["highEta"]       = (TH1F*)( resMVATopInputFile->Get("mc_eff_restop") );
+  resTop_Full_topmistagEff["lowEta"]     = (TH1F*)( resMVATopInputFile->Get("mc_mistag_restop") );
+  resTop_Full_topmistagEff["highEta"]    = (TH1F*)( resMVATopInputFile->Get("mc_mistag_restop") );
 
   resTop_Full_systs_ps           = (TH1F*)( resMVASystsFile->Get("rest-sys-ps-0") );
   resTop_Full_systs_gen          = (TH1F*)( resMVASystsFile->Get("rest-sys-generator-0") );
@@ -435,8 +435,8 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
     if( recotop ) {
       if(dbg) std::cout << "  in reco tagged cat" << std::endl;
       // reco tagged categories
-      std::map<std::string, TH1F*> *sfhist; 
-      std::map<std::string, TH1F*> *effhist; 
+      std::map<std::string, TH1F*> *sfhist;
+      std::map<std::string, TH1F*> *effhist;
       if( recotop && gentop ){
         // t | gt
         sfhist = &resTop_DataFull_toptagSF,    effhist = &resTop_Full_toptagEff;
