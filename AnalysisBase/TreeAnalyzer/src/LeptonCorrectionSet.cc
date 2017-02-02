@@ -122,7 +122,8 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   muConfNoIso.passISO = &MuonISO::inclusive;
 
 
-  TString baseDir = TString::Format("%s/src/data/corrections/2017/lep/",getenv("CMSSW_BASE"));
+  TString oldBaseDir = TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/",getenv("CMSSW_BASE"));
+  TString baseDir    = TString::Format("%s/src/data/corrections/2017/lep/",getenv("CMSSW_BASE"));
 
   // load electron files, different for 0l/1l configs
   // ----------------------------------------------------------------------------------------------------------------
@@ -131,21 +132,33 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   TString strElSfTracker               = "egammaEffi.txt_EGM2D_Moriond17.root";
   //TString strElSfFullFastId            = (isCR) ? "sf_el_mediumCB.root"           : "sf_el_vetoCB.root";
   TString strElSfFullFastIdIso         = (isCR) ? "sf_el_mediumCB_mini01.root"    : "sf_el_vetoCB_mini01.root"; // for 1lep Ctr, ele is med miniIso (0.2) rather... no bother for now.
-  TString strElMCEffsLM                = "lepCorMCEff_LM.root";
-  TString strElMCEffsHM                = "lepCorMCEff_HM.root";
+  //TString strElMCEffsLM                = "lepCorMCEff_LM.root";
+  //TString strElMCEffsHM                = "lepCorMCEff_HM.root";
+  TString strElMCEffsLMId              = "lepCorMCEff_LM_El_Id_" +TString(isCR ? "CR.root" : "SR.root");
+  TString strElMCEffsLMIso             = "lepCorMCEff_LM_El_Iso_"+TString(isCR ? "CR.root" : "SR.root");
+  TString strElMCEffsHMId              = "lepCorMCEff_HM_El_Id_" +TString(isCR ? "CR.root" : "SR.root");
+  TString strElMCEffsHMIso             = "lepCorMCEff_HM_El_Iso_"+TString(isCR ? "CR.root" : "SR.root");
 
   fileElSf                             = TFile::Open(baseDir + strElSfIdIso,"read"); // for el, contains id & iso hists
   fileElSfTracker                      = TFile::Open(baseDir + strElSfTracker,"read");
   //fileElSfFullFastId                   = TFile::Open(baseDir + "/fastsim/"+strElSfFullFastId,"read");
   fileElSfFullFastIdIso                = TFile::Open(baseDir + "/fastsim/"+strElSfFullFastIdIso,"read");
-  fileElMCEffsLM                       = TFile::Open(baseDir + strElMCEffsLM,"read");
-  fileElMCEffsHM                       = TFile::Open(baseDir + strElMCEffsHM,"read");
+  //fileElMCEffsLM                       = TFile::Open(oldBaseDir + strElMCEffsLM,"read");
+  //fileElMCEffsHM                       = TFile::Open(oldBaseDir + strElMCEffsHM,"read");
+  fileElMCEffsLMId                     = TFile::Open(oldBaseDir + strElMCEffsLMId,"read");
+  fileElMCEffsHMId                     = TFile::Open(oldBaseDir + strElMCEffsHMId,"read");
+  fileElMCEffsLMIso                    = TFile::Open(oldBaseDir + strElMCEffsLMIso,"read");
+  fileElMCEffsHMIso                    = TFile::Open(oldBaseDir + strElMCEffsHMIso,"read");
   if(!fileElSf)                        throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF file could not be found!");
   if(!fileElSfTracker)                 throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF tracker file could not be found!");
   //if(!fileElSfFullFastId)              throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF fullfast id file could not be found!");
   if(!fileElSfFullFastIdIso)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele SF fullfast iso file could not be found!");
-  if(!fileElMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC lm effs file could not be found!");
-  if(!fileElMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC hm effs file could not be found!");
+  //if(!fileElMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC lm effs file could not be found!");
+  //if(!fileElMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC hm effs file could not be found!");
+  if(!fileElMCEffsLMId)                throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC lm effs id file could not be found!");
+  if(!fileElMCEffsLMIso)               throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC lm effs iso file could not be found!");
+  if(!fileElMCEffsHMId)                throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC hm effs id file could not be found!");
+  if(!fileElMCEffsHMIso)               throw std::invalid_argument("LeptonCorectionSet::TnPCorr: ele MC hm effs iso file could not be found!");
 
   // load electron histos from electron files
   //#CHANGENAMES
@@ -160,10 +173,14 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   histElSfTracker                      = (TH2F*)(fileElSfTracker->Get(strHistElSfTracker));
   //histElSfFullFastId                   = (TH2F*)(fileElSfFullFastId ->Get(strHistElSfFullFastIdIso));
   histElSfFullFastIdIso                = (TH3D*)(fileElSfFullFastIdIso->Get(strHistElSfFullFastIdIso));
-  histElMCEffsLMId                     = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
-  histElMCEffsLMIso                    = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
-  histElMCEffsHMId                     = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR")));
-  histElMCEffsHMIso                    = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  //histElMCEffsLMId                     = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
+  //histElMCEffsLMIso                    = (TH2F*)(fileElMCEffsLM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  //histElMCEffsHMId                     = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Id_"+(isCR ? "CR" : "SR")));
+  //histElMCEffsHMIso                    = (TH2F*)(fileElMCEffsHM->Get(strHistElMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  histElMCEffsLMId                     = (TH2F*)(fileElMCEffsLMId->Get(strHistElMCEffs+"Id")); // format lepCorMCEff_Mu_Iso_CR
+  histElMCEffsLMIso                    = (TH2F*)(fileElMCEffsLMIso->Get(strHistElMCEffs+"Iso"));
+  histElMCEffsHMId                     = (TH2F*)(fileElMCEffsHMId->Get(strHistElMCEffs+"Id"));
+  histElMCEffsHMIso                    = (TH2F*)(fileElMCEffsHMIso->Get(strHistElMCEffs+"Iso"));
   if(!histElSfId)                      throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF id histo not found!");
   if(!histElSfIso)                     throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF iso histo not found!");
   if(!histElSfTracker)                 throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: ele SF tracker histo not found!");
@@ -187,8 +204,12 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   //TString strMuSfFullFastId            = (isCR) ? "sf_mu_medium.root"             : "sf_mu_loose.root";
   TString strMuSfFullFastIdIso         = (isCR) ? "sf_mu_mediumID_mini02.root"    : "sf_mu_looseID_mini02.root";
   //TString strMuSfFullFastIp2d          = (isCR) ? "sf_mu_tightIP2D.root"          : "sf_mu_looseIP2D.root";
-  TString strMuMCEffsLM                = "lepCorMCEff_LM.root";
-  TString strMuMCEffsHM                = "lepCorMCEff_HM.root";
+  //TString strMuMCEffsLM                = "lepCorMCEff_LM.root";
+  //TString strMuMCEffsHM                = "lepCorMCEff_HM.root";
+  TString strMuMCEffsLMId              = "lepCorMCEff_LM_Mu_Id_" +TString(isCR ? "CR.root" : "SR.root");
+  TString strMuMCEffsLMIso             = "lepCorMCEff_LM_Mu_Iso_"+TString(isCR ? "CR.root" : "SR.root");
+  TString strMuMCEffsHMId              = "lepCorMCEff_HM_Mu_Id_" +TString(isCR ? "CR.root" : "SR.root");
+  TString strMuMCEffsHMIso             = "lepCorMCEff_HM_Mu_Iso_"+TString(isCR ? "CR.root" : "SR.root");
 
   fileMuSfId                           = TFile::Open(baseDir + strMuSfId,"read");
   fileMuSfIso                          = TFile::Open(baseDir + strMuSfIso,"read");
@@ -197,8 +218,12 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   //fileMuSfFullFastId                   = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastId,"read");
   fileMuSfFullFastIdIso                = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastIdIso,"read");
   //fileMuSfFullFastIp2d                 = TFile::Open(baseDir + "/fastsim/"+strMuSfFullFastIp2d,"read");
-  fileMuMCEffsLM                       = TFile::Open(baseDir + strMuMCEffsLM,"read");
-  fileMuMCEffsHM                       = TFile::Open(baseDir + strMuMCEffsHM,"read");
+  //fileMuMCEffsLM                       = TFile::Open(oldBaseDir + strMuMCEffsLM,"read");
+  //fileMuMCEffsHM                       = TFile::Open(oldBaseDir + strMuMCEffsHM,"read");
+  fileMuMCEffsLMId                     = TFile::Open(oldBaseDir + strMuMCEffsLMId,"read");
+  fileMuMCEffsHMId                     = TFile::Open(oldBaseDir + strMuMCEffsHMId,"read");
+  fileMuMCEffsLMIso                    = TFile::Open(oldBaseDir + strMuMCEffsLMIso,"read");
+  fileMuMCEffsHMIso                    = TFile::Open(oldBaseDir + strMuMCEffsHMIso,"read");
   if(!fileMuSfId)                      throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf id file could not be found!");
   if(!fileMuSfIso)                     throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf iso file could not be found!");
   if(!fileMuSfIp2d)                    throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf ip2d file could not be found!");
@@ -206,8 +231,12 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   if(!fileMuSfFullFastIdIso)           throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf fullfast iso file could not be found!");
   //if(!fileMuSfFullFastIp2d)            throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf fullfast ip2d file could not be found!");
   if(!fileMuSfTracker)                 throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu sf tracker file could not be found!");
-  if(!fileMuMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff lm file could not be found!");
-  if(!fileMuMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff hm file could not be found!");
+  //if(!fileMuMCEffsLM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff lm file could not be found!");
+  //if(!fileMuMCEffsHM)                  throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu mc eff hm file could not be found!");
+  if(!fileMuMCEffsLMId)                throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC lm effs id file could not be found!");
+  if(!fileMuMCEffsLMIso)               throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC lm effs iso file could not be found!");
+  if(!fileMuMCEffsHMId)                throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC hm effs id file could not be found!");
+  if(!fileMuMCEffsHMIso)               throw std::invalid_argument("LeptonCorectionSet::TnPCorr: mu MC hm effs iso file could not be found!");
 
   // load muon histos
   //#CHANGENAMES
@@ -229,10 +258,14 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   //histMuSfFullFastId                   = (TH2F*)(fileMuSfFullFastId->Get(strHistMuSfFullFastId));
   histMuSfFullFastIdIso                = (TH3D*)(fileMuSfFullFastIdIso->Get(strHistMuSfFullFastIdIso));
   //histMuSfFullFastIp2d                 = (TH2F*)(fileMuSfFullFastIp2d->Get(strHistMuSfFullFastIp2d));
-  histMuMCEffsLMId                     = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
-  histMuMCEffsLMIso                    = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
-  histMuMCEffsHMId                     = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR")));
-  histMuMCEffsHMIso                    = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  //histMuMCEffsLMId                     = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR"))); // format lepCorMCEff_Mu_Iso_CR
+  //histMuMCEffsLMIso                    = (TH2F*)(fileMuMCEffsLM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  //histMuMCEffsHMId                     = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Id_"+(isCR ? "CR" : "SR")));
+  //histMuMCEffsHMIso                    = (TH2F*)(fileMuMCEffsHM->Get(strHistMuMCEffs+"Iso_"+(isCR ? "CR" : "SR")));
+  histMuMCEffsLMId                     = (TH2F*)(fileMuMCEffsLMId->Get(strHistMuMCEffs+"Id")); // format lepCorMCEff_Mu_Iso_CR
+  histMuMCEffsLMIso                    = (TH2F*)(fileMuMCEffsLMIso->Get(strHistMuMCEffs+"Iso"));
+  histMuMCEffsHMId                     = (TH2F*)(fileMuMCEffsHMId->Get(strHistMuMCEffs+"Id"));
+  histMuMCEffsHMIso                    = (TH2F*)(fileMuMCEffsHMIso->Get(strHistMuMCEffs+"Iso"));
   if(!histMuSfId)                      throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf id histo not found!");
   if(!histMuSfIso)                     throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf iso histo not found!");
   if(!histMuSfIp2d)                    throw std::invalid_argument("LeptonCorrectionSet::TnpCorr: mu sf ip2d histo not found!");
