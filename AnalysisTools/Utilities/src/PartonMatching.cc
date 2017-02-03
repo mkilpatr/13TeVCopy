@@ -138,7 +138,8 @@ BosonDecay::BosonDecay(const Particle * inBoson, int indx, const std::vector<Par
         (isLep != ParticleInfo::isLeptonOrNeutrino(dau1Ref->pdgId()))
     ){
       ParticleInfo::printGenParticleInfo(boson,-1);
-      throw std::invalid_argument("BosonDecay::BosonDecay(): Boson has abnormal decay!");
+      cerr << "BosonDecay::BosonDecay(): Boson has abnormal decay!" << endl;
+//      throw std::invalid_argument("BosonDecay::BosonDecay(): Boson has abnormal decay!");//FIXME
     }
     dau2Ref = dau;
   }
