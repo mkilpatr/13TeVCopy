@@ -44,6 +44,7 @@ namespace ucsbsusy {
       bool  isloose()         const { return isloose_; }
       bool  ismedium()        const { return ismedium_; }
       bool  istight()         const { return istight_; }
+      bool  passHighPtId()    const { return passHighPtId_; }
       bool  hasPixelSeed()    const { return hasPixelSeed_; }
       bool  passElectronVeto()const { return passElectronVeto_; }
 
@@ -55,6 +56,7 @@ namespace ucsbsusy {
       void  setIsLoose(bool newType)      { isloose_ = newType;   }
       void  setIsMedium(bool newType)     { ismedium_ = newType;  }
       void  setIsTight(bool newType)      { istight_ = newType;   }
+      void  setPassHighPtId(bool passHighPtId) { passHighPtId_ = passHighPtId; }
       void  setHasPixelSeed(bool hasPixelSeed) { hasPixelSeed_ = hasPixelSeed; }
       void  setPassElectronVeto(bool passElectronVeto) { passElectronVeto_ = passElectronVeto;}
 
@@ -67,6 +69,7 @@ namespace ucsbsusy {
       bool  isloose_;
       bool  ismedium_;
       bool  istight_;
+      bool  passHighPtId_ = false;
       bool  passElectronVeto_;
       bool  hasPixelSeed_;
 
@@ -137,7 +140,7 @@ namespace ucsbsusy {
       float pfchargedHadronIso_;
       float pfneutralHadronIso_;
       float pfphotonIso_;
-      float pfpuiso_;     
+      float pfpuiso_;
       float phiRC_;
       float etaRC_;
       float rhoPFchargedHadronIsoRC_;
