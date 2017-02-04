@@ -645,10 +645,15 @@ struct ExtraVarsFiller {
   }
 
   void bookSyst(TreeWriterData* data){
-    i_systweights       = data->addMulti<float>("","systweights",0);
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
     i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
+    data->add<float>("truePUWeight_UP",0);
+    data->add<float>("truePUWeight_DOWN",0);
+  }
+
+  void bookPDFScaleSyst(TreeWriterData* data){
+    i_systweights       = data->addMulti<float>("","systweights",0);
   }
 
   void bookJetMET(TreeWriterData* data){
@@ -1436,12 +1441,17 @@ struct ExtraVarsFiller {
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    for(auto wgt : *ana->evtInfoReader.systweights) {
-      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
-    }
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
+    data->fill<float>("truePUWeight_UP",   ana->eventCorrections.getTruePUWeight(UP));
+    data->fill<float>("truePUWeight_DOWN", ana->eventCorrections.getTruePUWeight(DOWN));
+  }
+
+  void fillPDFScaleSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
