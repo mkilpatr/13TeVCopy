@@ -42,6 +42,7 @@ void PhotonSkimmer(TString sname = "gjets",
   cfgSet::loadDefaultConfigurations();
   cfgSet::ConfigSet cfg = cfgSet::zl_photon_set;
   cfg.photons.minPt = 150;
+  cfg.photons.usePixelSeedVeto = false;
   cfg.corrections = cfgSet::CorrectionConfig();
 
   printf("Processing file %d of %s sample\n", (fileindex > -1 ? fileindex : 0), sname.Data());

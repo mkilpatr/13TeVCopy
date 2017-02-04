@@ -23,6 +23,7 @@ namespace ucsbsusy {
                             , LOADRECO        = (1 <<  0)   ///< Load standard photons
                             , LOADEXTRECO     = (1 <<  1)   ///< Load extra info
                             , FILLOBJ         = (1 <<  2)   ///< Fill objects (as opposed to just pointers)
+                            , LOADHIGHPTID    = (1 <<  3)   ///< Load high PT photon ID [AN2016_167]
     };
     static const int defaultOptions;
 
@@ -46,6 +47,12 @@ namespace ucsbsusy {
       std::vector<bool>  *    istight;
       std::vector<bool>  *    hasPixelSeed;
       std::vector<bool>  *    passElectronVeto;
+
+      std::vector<float> *    full5x5sigietaieta;
+      std::vector<float> *    hOverE;
+      std::vector<float> *    pfchargedHadronIso;
+      std::vector<float> *    pfphotonIso;
+      float                   rho;
 
       PhotonFCollection photons;
 

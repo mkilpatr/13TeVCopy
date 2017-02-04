@@ -13,7 +13,9 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
   public :
 
     PhotonCRAnalyzer(TString fileName, TString treeName, TString outfileName, size randSeed, bool isMCTree,cfgSet::ConfigSet *pars) :
-      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {}
+      ZeroLeptonAnalyzer(fileName, treeName, outfileName, randSeed, isMCTree, pars) {
+      cfg_photon20 = pars->photons; cfg_photon20.minPt = 20;
+    }
 
     const double DR_CUT = 0.4;
 
@@ -24,7 +26,8 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     bool             flagBypassDRSel= false;
     float            drphotonparton = -1;
 
-    size i_trigPhoWeight = 0;
+    cfgSet::PhotonConfig cfg_photon20;
+
     size i_npho = 0;
     size i_phopt = 0;
     size i_phoeta = 0;
@@ -35,7 +38,9 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
     void book() {
       ZeroLeptonAnalyzer::book();
 
-      i_trigPhoWeight     = data.add<float>("","trigPhoWeight","F",1);
+      data.add<int>("npho20", 0);
+      data.add<float>("pho2pt", -1);
+
       i_npho              = data.add<int>("","npho","I",0);
       i_phopt             = data.add<float>("","phopt","F",0);
       i_phoeta            = data.add<float>("","phoeta","F",0);
@@ -151,7 +156,6 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       filler.fillEventInfo(&data, this, true, &metpluspho);
       extraFiller.fillTestVars(&data, this);
 
-      data.fill<float>(i_trigPhoWeight, triggerCorrections.getTrigPhoWeight());
       data.fill<int>(i_npho, selectedPhotons.size());
       data.fill<float>(i_phopt, pho->pt());
       data.fill<float>(i_phoeta, pho->eta());
@@ -161,6 +165,14 @@ class PhotonCRAnalyzer : public ZeroLeptonAnalyzer {
       double minDR = 999;
       PhysicsUtilities::findNearestDRDeref(*pho, jets, minDR);
       data.fill<float>(i_drphojet, minDR);
+
+      vector<const PhotonF*> photons;
+      for (const auto &pho : photonReader.photons){
+        if (cfgSet::isSelPhoton(pho, cfg_photon20)) photons.push_back(&pho);
+      }
+
+      data.fill<int>("npho20", photons.size());
+      data.fill<float>("pho2pt", photons.size()>1 ? photons.at(1)->pt() : -1);
 
       return true;
     }
@@ -186,6 +198,7 @@ void makeZeroLeptonPhotonCRTrees(TString sname = "gjets_photoncr",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0LepPhoton(json);
+//  pars.photons.selected = &ucsbsusy::PhotonF::passHighPtId;
 
 
   PhotonCRAnalyzer a(fullname, "Events", outfilename, fileindex+2,isMC, &pars);
