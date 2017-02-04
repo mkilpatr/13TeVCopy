@@ -29,7 +29,6 @@ void EventCorrectionSet::load(TString fileName, int correctionOptions)
 void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   puWeight = 1;
-  truePUWeight = 1;
   normWeight = 1;
 
   if(!ana->isMC()) return;
@@ -40,8 +39,7 @@ void EventCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   }
 
   if(options_ & TRUEPU) {
-    truePUCorr->setAxis(std::min(ana->nPU,float(37.0)));
-    truePUWeight = truePUCorr->get();
+    truePUCorr->setTargetBin(ana->nPU);
   }
 
   if(options_ & NORM) {

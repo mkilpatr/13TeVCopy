@@ -127,8 +127,8 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
         bool isTTBARLike = false;
         if(process == defaults::TTBAR || process == defaults::SINGLE_T || process == defaults::TTZ || process == defaults::TTW )
           isTTBARLike = true;
-        data.fill<float>(i_upBTagLightWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(jets,UP,NOMINAL,isTTBARLike, configSet.jets.maxBJetEta,configSet.jets.minBJetPt)));
-        data.fill<float>(i_upBTagHeavyWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(jets,NOMINAL,UP,isTTBARLike, configSet.jets.maxBJetEta,configSet.jets.minBJetPt)));
+        data.fill<float>(i_upBTagLightWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(this,jets,UP,NOMINAL,isTTBARLike, configSet.jets.maxBJetEta,configSet.jets.minBJetPt)));
+        data.fill<float>(i_upBTagHeavyWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(this,jets,NOMINAL,UP,isTTBARLike, configSet.jets.maxBJetEta,configSet.jets.minBJetPt)));
       }
 
       //copy the bootstrapweights
