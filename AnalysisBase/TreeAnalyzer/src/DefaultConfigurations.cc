@@ -109,7 +109,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.ttbarCorrectionFile      =  TString::Format("%s/src/data/corrections/ttbarCorr.root",CMSSW_BASE);
 
   standardCorrections.puCorrections            = ucsbsusy::EventCorrectionSet::TRUEPU;
-  standardCorrections.puCorrectionFile         = TString::Format("%s/src/data/corrections/2017/puWeights_2016_36p8ifb_75bins_69p2mb.root",CMSSW_BASE);
+  standardCorrections.puCorrectionFile         = TString::Format("%s/src/data/corrections/2017/truePUWeights_2016_36p8ifb_75bins_69p2mb.root",CMSSW_BASE);
 
   standardCorrections.topWCorrections          = ucsbsusy::TopWCorrectionSet::SDMVA | ucsbsusy::TopWCorrectionSet::RESMVATOP; // Moriond17
   //standardCorrections.sdCorrectionFile         = TString::Format("%s/src/data/corrections/2016/SdSF_12p9invfb_DataFull_Corrected_and_FullFast.root",CMSSW_BASE); ////// ICHEP16 OUTDATED //////
@@ -147,7 +147,7 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
   standardCorrections.bTagEffFile              =  TString::Format("%s/src/data/corrections/2017/btag/csvEffs_20170131.root",CMSSW_BASE);
-  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2017/btag/CSVv2Moriond17_2017_1_26_BtoH.csv",CMSSW_BASE);
+  standardCorrections.bTagSFFile               =  TString::Format("%s/src/data/corrections/2017/btag/CSVv2_Moriond17_B_H.csv",CMSSW_BASE);
   standardCorrections.heavyBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.lightBTagCorrType        = ucsbsusy::NOMINAL;
   standardCorrections.bTagFastSimEffFile        =  TString::Format("%s/src/data/corrections/2017/btag/csvFastSimEffs_20170131.root",CMSSW_BASE);

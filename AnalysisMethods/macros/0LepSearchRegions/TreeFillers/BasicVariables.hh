@@ -39,8 +39,7 @@ struct BasicVarsFiller {
   // Trigger and filters
   size i_passjson  ;
   size i_passmetmht;
-  size i_passtrige ;
-  size i_passtrigmu;
+  size i_passtriglep;
   size i_passtriglepOR;
   size i_passtrigphoton;
   size i_passtrigphoOR;
@@ -138,8 +137,7 @@ struct BasicVarsFiller {
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passmetmht     = data->add<bool>("","passmetmht","O",0);
-    i_passtrige      = data->add<bool>("","passtrige","O",0);
-    i_passtrigmu     = data->add<bool>("","passtrigmu","O",0);
+    i_passtriglep    = data->add<bool>("","passtriglep","O",0);
     i_passtriglepOR  = data->add<bool>("","passtriglepOR","O",0);
     i_passtrigphoton = data->add<bool>("","passtrigphoton", "O",0);
     i_passtrigphoOR  = data->add<bool>("","passtrigphoOR", "O",0);
@@ -158,6 +156,7 @@ struct BasicVarsFiller {
 //    i_pass_badPFMuon                            = data->add<bool>("","pass_badPFMuon"                         ,"O",0);
 
     // Basic event variables
+    data->add<float>("calomet", 0);
     i_genmet         = data->add<float>("","genmet","F",0);
     i_origmet        = data->add<float>("","origmet","F",0);
     i_met            = data->add<float>("","met","F",0);
@@ -199,7 +198,6 @@ struct BasicVarsFiller {
     data->add<float>("ak8isrpt", -1);
     data->add<float>("dphiisrmet", -1);
 
-
     // Lepton variables
     i_leptonpt       = data->add<float>("","leptonpt","F",0);
     i_leptoneta      = data->add<float>("","leptoneta","F",0);
@@ -238,7 +236,7 @@ struct BasicVarsFiller {
     data->fill<unsigned int>(i_process, ana->process);
     data->fill<bool >(i_ismc,   ana->isMC());
     data->fill<float>(i_weight, ana->weight);
-    data->fill<float>(i_truePUWeight,       ana->eventCorrections.getTruePUWeight());
+    data->fill<float>(i_truePUWeight,       ana->evtInfoReader.isfastsim ? 1.0 : ana->eventCorrections.getTruePUWeight()); // no PU reweighting on fastsim
     data->fill<float>(i_btagWeight,         ana->bTagCorrections.getBTagByEvtWeight());
     data->fill<float>(i_btagFastSimWeight,  ana->bTagCorrections.getBTagFastSimByEvtWeight());
     data->fill<float>(i_qcdRespTailWeight,  ana->jetAndMETCorrections.getQCDRespTailWeight());
@@ -261,35 +259,32 @@ struct BasicVarsFiller {
 
     // HT trigger:
     bool passTrigPFHT900 = ana->triggerflag & kHLT_PFHT900;
-    data->fill<bool >(i_passtright, ana->isMC() ? true : (ana->process==defaults::DATA_JETHT ? passTrigPFHT900 : false));
+    data->fill<bool >(i_passtright, passTrigPFHT900);
 
-    // METMHT trigger:
+    // METMHT trigger: not applied on MC (for signals)
     bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight)
         || (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
     data->fill<bool>(i_passmetmht   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT : false));
 
-    // photon trigger: HLT_Photon165_HE10 || HLT_CaloJet500_NoJetID(JetHT) || HLT_ECALHT800(DoubleEG)
+    // photon trigger: HLT_Photon165_HE10 || HLT_CaloJet500_NoJetID(JetHT)
     bool passTrigPho165 = ana->triggerflag & kHLT_Photon165_HE10;
     bool passTrigCaloJet500 = ana->triggerflag & kHLT_CaloJet500_NoJetID;
-    bool passTrigECALHT800 = ana->triggerflag & kHLT_ECALHT800;
     bool passtrigphoOR = (ana->process==defaults::DATA_SINGLEPHO && passTrigPho165)
-        || (ana->process==defaults::DATA_JETHT && !passTrigPho165 && passTrigCaloJet500)
-        || (ana->process==defaults::DATA_DOUBLEEG && !passTrigPho165 && !passTrigCaloJet500 && passTrigECALHT800);
-    data->fill<bool>(i_passtrigphoton, ana->isMC() || (ana->process==defaults::DATA_SINGLEPHO ? passTrigPho165 : false));
-    data->fill<bool>(i_passtrigphoOR,  ana->isMC() || passtrigphoOR);
+        || (ana->process==defaults::DATA_JETHT && !passTrigPho165 && passTrigCaloJet500);
+    data->fill<bool>(i_passtrigphoton, passTrigPho165);
+    data->fill<bool>(i_passtrigphoOR,  ana->isMC() ? (passTrigPho165 || passTrigCaloJet500) : passtrigphoOR);
 
     // single lepton trigger
     bool passTrigEl = ana->triggerflag & kHLT_Ele27_WPTight_Gsf;
     bool passTrigMu = (ana->triggerflag & kHLT_IsoMu24) || (ana->triggerflag & kHLT_IsoTkMu24);
-    data->fill<bool>(i_passtrigmu,     ana->isMC() || (ana->process==defaults::DATA_SINGLEMU ? passTrigMu: false));
-    data->fill<bool>(i_passtrige,      ana->isMC() || (ana->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
+    bool passTrigLep = (ana->process==defaults::DATA_SINGLEMU && passTrigMu)
+        || (ana->process==defaults::DATA_SINGLEEL && (!passTrigMu) && passTrigEl);
+    data->fill<bool>(i_passtriglep,     ana->isMC() ? (passTrigEl || passTrigMu) : passTrigLep);
 
     // single lepton trigger OR:
     // SingleMuon: kHLT_IsoMu24 || kHLT_IsoTkMu24 || kHLT_Mu15_IsoVVVL_PFHT(350|400|600)(_PFMET50)
     // SingleElectron: kHLT_Ele27_WPTight_Gsf || kHLT_Ele15_IsoVVVL_PFHT(350|400|600)(_PFMET50)
     // MET: kHLT_PFMET120_PFMHT120_IDTight || kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight
-    // JetHT: HLT_CaloJet500_NoJetID
-    // DoubleEG: kHLT_ECALHT800
     bool passTrigMuHT = (ana->triggerflag & kHLT_IsoMu24) || (ana->triggerflag & kHLT_IsoTkMu24)
         || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT350_PFMET50) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT400_PFMET50)
         || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT350) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT400) || (ana->triggerflag & kHLT_Mu15_IsoVVVL_PFHT600);
@@ -298,16 +293,17 @@ struct BasicVarsFiller {
         || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT350) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT400) || (ana->triggerflag & kHLT_Ele15_IsoVVVL_PFHT600);
     bool passtriglepOR = (ana->process==defaults::DATA_SINGLEMU && passTrigMuHT)
         || (ana->process==defaults::DATA_SINGLEEL && !passTrigMuHT && passTrigElHT)
-        || (ana->process==defaults::DATA_MET && !passTrigMuHT && !passTrigElHT && passTrigMETMHT)
-        || (ana->process==defaults::DATA_JETHT && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT && passTrigCaloJet500)
-        || (ana->process==defaults::DATA_DOUBLEEG && !passTrigMuHT && !passTrigElHT && !passTrigMETMHT && !passTrigCaloJet500 && passTrigECALHT800);
-    data->fill<bool>(i_passtriglepOR,  ana->isMC() || passtriglepOR);
+        || (ana->process==defaults::DATA_MET && !passTrigMuHT && !passTrigElHT && passTrigMETMHT);
+    data->fill<bool>(i_passtriglepOR,  ana->isMC() ? (passTrigMuHT || passTrigElHT || passTrigMETMHT) : passtriglepOR);
 
     // dilepton trigger
     bool passTrigElEl = ana->triggerflag & kHLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
-    bool passTrigMuMu = (ana->run<=280385) ? (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL) // use noDZ before RunH
-        : (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
-    data->fill<bool>(i_passtrigdilep,  ana->isMC() || ((ana->process==defaults::DATA_DOUBLEMU && passTrigMuMu) || (ana->process==defaults::DATA_DOUBLEEG && passTrigElEl && (!passTrigMuMu))));
+//    bool passTrigMuMu = (ana->run<=280385) ? (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL) // use noDZ before RunH
+//        : (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+    bool passTrigMuMu = (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL)
+        || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ) || (ana->triggerflag & kHLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+    bool passTrigDiLep = (ana->process==defaults::DATA_DOUBLEMU && passTrigMuMu) || (ana->process==defaults::DATA_DOUBLEEG && passTrigElEl && (!passTrigMuMu));
+    data->fill<bool>(i_passtrigdilep,  ana->isMC() ? (passTrigElEl || passTrigMuMu) : passTrigDiLep );
 
     // dilepton trigger OR:
     // DoubleMu: kHLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL(_DZ) || kHLT_(Tk)Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL(_DZ) || kHLT_Mu30_TkMu11
@@ -322,13 +318,22 @@ struct BasicVarsFiller {
         || (ana->process==defaults::DATA_DOUBLEEG && !passTrigMuMuOR && passTrigElElOR)
         || (ana->process==defaults::DATA_SINGLEMU && !passTrigMuMuOR && !passTrigElElOR && passTrigMu50)
         || (ana->process==defaults::DATA_SINGLEEL && !passTrigMuMuOR && !passTrigElElOR && !passTrigMu50 && passTrigEle115);
-    data->fill<bool>(i_passtrigdilepOR,  ana->isMC() || passtrigdilepOR);
+    data->fill<bool>(i_passtrigdilepOR,  ana->isMC() ? (passTrigMuMuOR || passTrigElElOR || passTrigMu50 || passTrigEle115) : passtrigdilepOR);
 
     data->fill<float>(i_j1chEnFrac, jets.front()->chHadFrac());  // take the leading jet after cleaning/jetid/etc.
 //    data->fill<float>(i_j1chEnFrac, ana->defaultJets->recoJets.front().chHadFrac());
 
     const auto &evt = ana->evtInfoReader;
     bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
+    if (ana->isMC()){
+      if (evt.isfastsim){
+        // FastSim MC
+        passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
+      }else{
+        // FullSim MC
+        passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
+      }
+    }
     data->fill<bool>(i_passmetfilters,  passmetfilters);
 //    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
 //    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
@@ -340,6 +345,7 @@ struct BasicVarsFiller {
 //    data->fill<bool>(i_pass_badPFMuon                         ,ana->evtInfoReader.badPFMuon                         );
 
     // Basic event variables
+    data->fill<float>("calomet", ana->evtInfoReader.calomet.pt());
     data->fill<float>(i_genmet, ana->genmet->pt());
     data->fill<float>(i_origmet, ana->met->pt());
     data->fill<float>(i_met, metn ? metn->pt() : ana->met->pt()); // fill modified met if given
@@ -409,8 +415,9 @@ struct BasicVarsFiller {
     }
 
     if (!ana->ak8isrJets.empty()){
-      data->fill<float>("ak8isrpt", ana->ak8isrJets.front()->pt());
-      data->fill<float>("dphiisrmet", std::abs(PhysicsUtilities::deltaPhi(*ana->ak8isrJets.front(),*met)));
+      const FatJetF *isr = ana->ak8isrJets.front();
+      data->fill<float>("ak8isrpt", isr->pt());
+      data->fill<float>("dphiisrmet", std::abs(PhysicsUtilities::deltaPhi(*isr,*met)));
     }
 
     int nivf_ = 0; vector<SVF*> ivfs_;

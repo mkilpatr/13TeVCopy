@@ -8,14 +8,14 @@
 #include <TCanvas.h>
 #include <vector>
 
-void pileupReweightGen() {
+const TH1D* getPUWeight(TString data_pu, TString syst_type) {
 
   const int N_PU_BINS = 75;
 
   TH1D* pu_generated = new TH1D("pu_generated","Generated pileup distribution (i.e., MC)",N_PU_BINS,0,N_PU_BINS);
 
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData
-  TFile* data_pufile = new TFile("pileup_data_2016_36p8ifb_75bins_69p2mb.root");
+  TFile* data_pufile = new TFile(data_pu);
   TH1D* data_puhist = (TH1D*)data_pufile->Get("pileup");
 
   double x;
@@ -47,12 +47,29 @@ void pileupReweightGen() {
 
   }
 
-  data_puhist->SetNameTitle("puWeight","puWeight");
+  TString hname = "puWeight_" + syst_type;
+  data_puhist->SetNameTitle(hname,hname);
 
-  TFile* outfile = new TFile("puWeights_2016_36p8ifb_75bins_69p2mb.root","RECREATE");
+  return data_puhist;
+
+}
+
+void pileupReweightGen(){
+  TFile* outfile = new TFile("truePUWeights_2016_36p8ifb_75bins_69p2mb.root","RECREATE");
+  const TH1D * data_puhist;
+
+  // nominal
+  data_puhist = getPUWeight("pileup_data_2016_36p8ifb_75bins_69p2mb.root", "nominal");
   outfile->cd();
-  data_puhist->Write("puWeight");
+  data_puhist->Write();
+  // up (minbias xsec +5%)
+  data_puhist = getPUWeight("pileup_data_2016_36p8ifb_75bins_65p74mb.root", "up");
+  outfile->cd();
+  data_puhist->Write();
+  // down (minbias xsec -5%)
+  data_puhist = getPUWeight("pileup_data_2016_36p8ifb_75bins_72p66mb.root", "down");
+  outfile->cd();
+  data_puhist->Write();
+
   outfile->Close();
-
-
 }
