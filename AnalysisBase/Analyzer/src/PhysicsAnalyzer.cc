@@ -18,7 +18,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , printLHERunInfo     (iConfig.getUntrackedParameter<bool   >("printLHERunInfo",false))
 , printGenLumiInfo    (iConfig.getUntrackedParameter<bool   >("printGenLumiInfo",false))
 , getGenLumiHeader    (iConfig.getUntrackedParameter<bool   >("getGenLumiHeader",false))
-, lheInfoToken_       (consumes<LHERunInfoProduct>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("lheEvtInfo")))
+, lheInfoToken_       (consumes<LHERunInfoProduct,edm::InRun>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("lheEvtInfo")))
 , genLumiHeaderToken_ (consumes<GenLumiInfoHeader,edm::InLumi>(iConfig.getUntrackedParameter<edm::ParameterSet>("EventInfo").getParameter<edm::InputTag>("genEvtInfo")))
 // ---- Configure event information
 , eventInfo           (0)
@@ -58,7 +58,7 @@ PhysicsAnalyzer::~PhysicsAnalyzer() {for(auto f : initializedFillers) delete f; 
 void PhysicsAnalyzer::beginJob() {}
 
 //--------------------------------------------------------------------------------------------------
-void PhysicsAnalyzer::beginRun(edm::Run const &run, edm::EventSetup const &es)
+void PhysicsAnalyzer::endRun(edm::Run const &run, edm::EventSetup const &es)
 {
 
   if(!printLHERunInfo) return;

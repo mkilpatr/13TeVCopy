@@ -51,7 +51,7 @@ namespace ucsbsusy {
       virtual ~PhysicsAnalyzer();
 
       virtual void beginJob() override;
-      virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+      virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
       virtual void book();
       virtual bool load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
