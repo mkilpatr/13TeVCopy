@@ -79,7 +79,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.bookJetMET(&data);
 //      extraFiller.bookLepton(&data);
 //      extraFiller.bookGen(&data);
-//      extraFiller.bookSyst(&data);
     }
 
     bool fillEvent() {
@@ -125,7 +124,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.fillSystInfo(&data, this);
 //      extraFiller.fillLeptonInfo(&data, this);
 //      extraFiller.fillGenInfo(&data, this);
-//      extraFiller.fillSystInfo(&data,this);
       return true;
     }
 
