@@ -66,10 +66,12 @@ namespace ucsbsusy {
       TFile * fileElSfTracker;
       //TFile * fileElSfFullFastId;
       TFile * fileElSfFullFastIdIso;
-      TFile * fileElMCEffsLMId;
-      TFile * fileElMCEffsLMIso;
-      TFile * fileElMCEffsHMId;
-      TFile * fileElMCEffsHMIso;
+      TFile * fileElMCEffsLM;
+      TFile * fileElMCEffsHM;
+      //TFile * fileElMCEffsLMId;
+      //TFile * fileElMCEffsLMIso;
+      //TFile * fileElMCEffsHMId;
+      //TFile * fileElMCEffsHMIso;
 
       // electron histos
       TH2F * histElSfId;
@@ -90,10 +92,12 @@ namespace ucsbsusy {
       //TFile * fileMuSfFullFastId;
       TFile * fileMuSfFullFastIdIso;
       //TFile * fileMuSfFullFastIp2d;
-      TFile * fileMuMCEffsLMId;
-      TFile * fileMuMCEffsLMIso;
-      TFile * fileMuMCEffsHMId;
-      TFile * fileMuMCEffsHMIso;
+      TFile * fileMuMCEffsLM;
+      TFile * fileMuMCEffsHM;
+      //TFile * fileMuMCEffsLMId;
+      //TFile * fileMuMCEffsLMIso;
+      //TFile * fileMuMCEffsHMId;
+      //TFile * fileMuMCEffsHMIso;
 
       // muon histos;
       TH2F * histMuSfId;
