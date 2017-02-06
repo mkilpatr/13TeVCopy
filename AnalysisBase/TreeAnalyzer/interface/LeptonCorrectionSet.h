@@ -22,6 +22,8 @@ namespace ucsbsusy {
     public:
       LepCorr();
       virtual ~LepCorr();
+      void getEvtWeight(const BaseTreeAnalyzer * ana, CORRTYPE tauCorrType, float &outVetoLepWeightLM, float &outSelLepWeightLM, float &outVetoLepWeightHM, float &outSelLepWeightHM, bool useHPS=false);
+      void countRecoLepsAndGenTaus(const BaseTreeAnalyzer * ana, int &nPromptGenTaus, int &nSelectedElectrons, int &nSelectedMuons);
 
       TFile * fileLepLM;
       TFile * fileLepHM;
@@ -123,10 +125,10 @@ namespace ucsbsusy {
         TNP           = (1 << 1), // apply tnp lepton corrections
         LEP_VARY_UP   = (1 << 2), // systematic variation up, all flavours
         LEP_VARY_DOWN = (1 << 3), // systematic variation down, all flavours
-        ELE_VARY_UP   = (1 << 4), // systematic variation up, specific flavour
-        ELE_VARY_DOWN = (1 << 5), // systematic variation down, specific flavour
-        MU_VARY_UP    = (1 << 6), //
-        MU_VARY_DOWN  = (1 << 7), //
+        //ELE_VARY_UP   = (1 << 4), // systematic variation up, specific flavour
+        //ELE_VARY_DOWN = (1 << 5), // systematic variation down, specific flavour
+        //MU_VARY_UP    = (1 << 6), //
+        //MU_VARY_DOWN  = (1 << 7), //
         TAU_VARY_UP   = (1 << 8), //
         TAU_VARY_DOWN = (1 << 9), //
         USE_HPSTAUS   = (1 << 10), //
@@ -139,18 +141,26 @@ namespace ucsbsusy {
                         int correctionOptions = NULLOPT);
       virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
-      // accessors
+      // lep (tau) correction accessors
       float getVetoLepWeightLM()     const { return vetoLepWeightLM; }
       float getVetoLepWeightHM()     const { return vetoLepWeightHM; }
 
       float getSelLepWeightLM()      const { return selLepWeightLM;  }
       float getSelLepWeightHM()      const { return selLepWeightHM;  }
 
+      // systematics accessors // logical OR with ucsbsusy::LeptonCorrectionSet::LEP/TAU_VARY_UP/DOWN. Default = LEP | TNP
+      float getLepWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE tauCorrType, bool isLM, bool isVetoWeight) const;
+
       void  setUseHPSTaus(bool setHPS)   { useHPS = setHPS;      }
+      bool  getUseHPSTaus()              { return useHPS ? true : false;        }
       //void  setMultiPtBins(bool setBins) { multiPtBins = setBins; }
 
+      // tnp (el/mu) correction accessors
       float getTnPLepWeightLM()      const { return tnpEvtWeightLM;  }
       float getTnPLepWeightHM()      const { return tnpEvtWeightHM;  }
+
+      // systematics accessors
+      float getTnPWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM) const;
 
     private :
       LepCorr* lepCorr;
