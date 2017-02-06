@@ -116,6 +116,12 @@ BosonDecay::BosonDecay(const Particle * inBoson, int indx, const std::vector<Par
     return;
   }
 
+  if(boson->pdgId() == ParticleInfo::p_h0) {
+    // FIXME: abnomral decay w/ higgs
+    isHadronic = false;
+    return;
+  }
+
   if(boson->numberOfDaughters() < 2){
     ParticleInfo::printGenParticleInfo(boson,-1);
     throw std::invalid_argument("BosonDecay::BosonDecay(): Boson has abnormal decay!");
