@@ -60,14 +60,14 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
         if (isSR){
           bool passDPhiLM = dphij1met>0.5 && dphij2met>0.15 && dphij3met>0.15;
           bool passDPhiHM = dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5;
-          bool passLM = passDPhiLM && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+          bool passLM = passDPhiLM && met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10 && ak8isrJets.size() && ak8isrJets.front()->pt()>200;
           bool passHM = passDPhiHM && nJets>=5 && nBJets>=1;
           if (!passLM && !passHM) return false;
         }else{
           bool passInvertDPhi = (dphij1met<0.1 || dphij2met<0.1 || dphij3met<0.1);
           if (!passInvertDPhi) return false;
 
-          bool passLM = met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+          bool passLM = met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10 && ak8isrJets.size() && ak8isrJets.front()->pt()>200;
           bool passHM = nJets>=5 && nBJets>=1;
           if (!passLM && !passHM) return false;
         }

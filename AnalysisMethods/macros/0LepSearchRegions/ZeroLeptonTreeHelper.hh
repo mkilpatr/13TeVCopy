@@ -94,7 +94,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       if(nJets < minnjets_) return false;
 
       if (applyTightPresel){
-        bool passLM = met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
+        bool passLM = met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10 && ak8isrJets.size() && ak8isrJets.front()->pt()>200;
         bool passHM = nJets>=5 && nBJets>=1;
         if (!passLM && !passHM) return false;
       }
