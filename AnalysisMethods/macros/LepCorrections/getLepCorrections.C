@@ -37,14 +37,24 @@ vector<TH1F*> getRatios(vector<TH1F*> num_hists, vector<TH1F*> den_hists, bool c
   return ratios;
 }
 
-void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/trees/21072016-taumceff/sr/",
+void getLepCorrections(const TString inputidr = "/eos/uscms/store/user/apatters/trees/20170205-moriond-lepsf/",
+                       //const TString inputdir = "/uscms_data/d1/apatters/trees/20170201-lepsf/sr/",
+                       //const TString inputdir = "/eos/uscms/store/user/apatters/trees/20170203-ichep/sr/",
                        const TString outputdir = "plots_lepcorrs/",
-                       const TString lumistr = "9200",
+                       const TString lumistr = "36200",
                        const bool    plotlog = false,
                        const TString format = "svg")
 {
 
   gSystem->mkdir(outputdir, true);
+
+  const TString trig       = "passmetfilters";
+  const TString njets      = " && njets>=5";
+  const TString nbjets     = " && nbjets>=1";
+  const TString dphij1234met = " && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5";
+  const TString dphiLM       = " && dphij1met>0.5 && dphij2met>0.15 && dphij3met>0.15";
+  const TString zerotopw     = " && nsdtop==0 && nsdw==0 && nrestop==0";
+  const TString isr300       = " && ak8isrpt>300 && dphiisrmet>2";
 
   const TString dphij1lmet = " && dphij1lmet>2";
   const TString j1lpt      = " && j1lpt>250";
@@ -52,13 +62,17 @@ void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/
   const TString njl        = " && njl>=1";
   const TString njets2     = " && njets>=2";
   const TString met        = " && met>250";
-  const TString nbjets     = " && nbjets>=1";
   const TString nlbjets    = " && nlbjets>=2";
-  const TString njets      = " && njets>=5";
+  const TString pu10to20   = " && npv>10 && npv<20";
+
   map<TString,TString> sel;
-  sel["trig"]       = "passjson && passmetmht100 && passmetfilters";
+  const TString nearHMbasenodphi   = trig + njets + met + nbjets;
+  const TString nearLMbasenodphi   = trig + njets2 + met + zerotopw + metovsqrtht + isr300;
+  sel["base"] = nearLMbasenodphi; // Moriond17
+
+  sel["trig"]       = "passjson && passmetmht && passmetfilters";
   //sel["base"]      = sel["trig"] + met +  njets + nlbjets + nbjets; // HM
-  sel["base"] = sel["trig"] + met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // LM
+  //sel["base"] = sel["trig"] + met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // LM
   //sel["base"] = sel["trig"] + met + njets2 + metovsqrtht; // LM noboost
   //sel["base"]       = sel["trig"] + " && met>250 && njets>=5 && nlbjets>=2 && nbjets>=1";
   sel["inclcr"]     = sel["base"] + " && dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5";
@@ -75,6 +89,7 @@ void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/
   sel["taucr"]      = sel["inclcr"] + " && nvetolep==0 && nvetotau>0";
   sel["hpstaucr"]   = sel["inclcr"] + " && nvetolep==0 && nvetohpstaus>0";
 
+
   TFile* datafile = new TFile(inputdir+"/data_tree.root");
   TTree* datatree = (TTree*)datafile->Get("Events");
   assert(datatree);
@@ -83,7 +98,8 @@ void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/
   TTree* mctree = (TTree*)mcfile->Get("Events");
   assert(mctree);
 
-  TString wgtexpr = lumistr + "*0.001*weight*truePUWeight*btagWeight";
+  TString wgtexpr = lumistr + "*0.001*weight*truePUWeight*topptWeight*btagWeight*sdMVAWeight*resTopWeight"; // Moriond17
+  //TString wgtexpr = lumistr + "*0.001*weight";
 
   vector<TH1F*> data_incl, data_sel, data_sel_nobins;
   vector<TH1F*> mc_incl, mc_sel;
@@ -165,8 +181,8 @@ void getLepCorrections(const TString inputdir = "/eos/uscms/store/user/apatters/
       cout << "\nEFF_TERM in bin " << ibin << ": " << h->GetBinContent(ibin) << " +/- " << h->GetBinError(ibin) << endl;
       cout << "\nFAKE_TERM in bin " << ibin << ": " << fake_term[i]->GetBinContent(ibin) << " +/- " << fake_term[i]->GetBinError(ibin) << endl;
     }
-    h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1)); // independent corrections
-    //h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1)); // stacked corrections
+    //h->Scale(1.0/sf[i]->Integral(0, sf[i]->GetNbinsX()+1)); // independent corrections
+    h->Scale(1.0/sf[0]->Integral(0, sf[0]->GetNbinsX()+1)); // stacked corrections
     h->Add(fake_term[i], -1);
     corr.push_back(h);
     for(int ibin = 1; ibin < h->GetNbinsX()+1; ++ibin) {

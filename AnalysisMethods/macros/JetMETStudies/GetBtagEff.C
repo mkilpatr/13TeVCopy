@@ -21,7 +21,7 @@ void checkSelection(TString name, TTree * tree){
 
   TString SELS[] = {"passBaseline >= 0","","passBaseline >= 1",""};
   TString SELNAMES[] = {"","Baseline",""};
-  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
+  TString CSVSELS[] = {"csv >= 0.5426","csv >= 0.8484","csv >= 0.9535",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -119,7 +119,7 @@ void checkEtaBinning(TString name, TString fileName){
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
 
-  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
+  TString CSVSELS[] = {"csv >= 0.5426","csv >= 0.8484","csv >= 0.9535",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -224,6 +224,9 @@ void checkEtaBinning(TString name, TString fileName){
 
 
 void makeEffs(){
+
+  TFile * f = new TFile("csvEffs.root","recreate");
+
   const TString treeName = "Events";
   TFile * lf = new TFile("wz_baseline.root","read");
   TTree * lt =0;
@@ -272,7 +275,7 @@ void makeEffs(){
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
 
-  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
+  TString CSVSELS[] = {"csv >= 0.5426","csv >= 0.8484","csv >= 0.9535",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -387,15 +390,16 @@ void makeEffs(){
           cout << endl;
 
           a->setValue(*hD);
-
+          f->cd();
+          hD->Write();
+          std::cout << "Wrote " << hD->GetName() << std::endl;//AP
         }
       }
 
     }
   }
 
-
-  TFile * f = new TFile("csvEffs.root","recreate");
+  f->cd();
   a->Write();
   f->Close();
 
@@ -404,6 +408,8 @@ void makeEffs(){
 
 
 void makeFastSimEffs(){
+  TFile * f = new TFile("csvFastSimEffs.root","recreate");
+
   const TString treeName = "Events";
   TFile * lf = new TFile("T2tt_fast.root","read");
   TTree * lt =0;
@@ -443,7 +449,7 @@ void makeFastSimEffs(){
   double jetPTOthers[] = {20,30,35,40,45,50,60,80,1000};
   int nJetPTOthers = 8;
 
-  TString CSVSELS[] = {"csv >= 0.460","csv >= 0.800","csv >= 0.935",""};
+  TString CSVSELS[] = {"csv >= 0.5426","csv >= 0.8484","csv >= 0.9535",""};
   TString CSVNAMES[] = {"Loose","Medium","Tight",""};
   TString FLVSELS[] = {"flavor == 4","flavor == 3","(flavor == 2 || flavor == 6)","(flavor == 1 || flavor == 5)","(flavor == 0 || flavor == 9)",""};
   TString FLVNAMES[] = {"B","C","UDS","G","O",""};
@@ -552,16 +558,18 @@ void makeFastSimEffs(){
           cout << endl;
 
           a->setValue(*hD);
+          f->cd();
+          hD->Write();
+          std::cout << "Wrote " << hD->GetName() << std::endl;//AP
 
         }
       }
 
     }
-
-
-  TFile * f = new TFile("csvFastSimEffs.root","recreate");
+  f->cd();
   a->Write();
   f->Close();
+
 
 
 }
