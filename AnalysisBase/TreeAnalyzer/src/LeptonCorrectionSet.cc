@@ -84,15 +84,17 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   bool dbg = false;
   if(dbg) std::cout << "[LeptonCorrectionSet::TnPCorr::TnPCorr]" << std::endl;
 
+/*
   // check these primary/secondary lep configs. must be 0l (SEL) or 1l (CTR) and equal.
   if(    (   elSel.type != LeptonSelection::ZL_SEL_ELE &&    elSel.type != LeptonSelection::ZL_CTR_ELE) || // el are 0l or 1l?
-        !(secElSel.type != LeptonSelection::ZL_SEL_ELE && secElSel.type != LeptonSelection::ZL_CTR_ELE) ||
+         (secElSel.type != LeptonSelection::ZL_SEL_ELE && secElSel.type != LeptonSelection::ZL_CTR_ELE) ||
          (   muSel.type != LeptonSelection::ZL_SEL_MU  &&    muSel.type != LeptonSelection::ZL_CTR_MU ) || // mu are 0l or 1l?
-        !(secMuSel.type != LeptonSelection::ZL_SEL_MU  && secMuSel.type != LeptonSelection::ZL_CTR_MU ) ||
-        !(   elSel.type != secElSel.type)                                                               || // el primary/secondary are same?
-        !(   muSel.type != secMuSel.type)                                                               ){ // mu primary/secondary are same?
+         (secMuSel.type != LeptonSelection::ZL_SEL_MU  && secMuSel.type != LeptonSelection::ZL_CTR_MU ) ||
+         (   elSel.type != secElSel.type)                                                               || // el primary/secondary are same?
+         (   muSel.type != secMuSel.type)                                                               ){ // mu primary/secondary are same?
     throw std::invalid_argument("LeptonCorectionSet::TnPCorr: el/mu primary/secondary configs must be equal and either ZL_SEL_X (veto & inverted veto regions) or ZL_CTR_X (quality single-lepton region).");
   }
+*/
 
   isCR = (muSel.type == LeptonSelection::ZL_CTR_MU);
   assert(isCR == (elSel.type == LeptonSelection::ZL_CTR_ELE)); // do ELE and MU agree on isCR?
