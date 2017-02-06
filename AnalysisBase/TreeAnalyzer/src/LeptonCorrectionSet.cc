@@ -56,8 +56,8 @@ LepCorr::LepCorr() : Correction("LEP") {
   if(dbg) std::cout << "[LeptonCorrectionSet::LepCorr::LepCorr]" << std::endl;
 
   //#CHANGENAMES
-  TString strFileLepLM   =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_LM.root",getenv("CMSSW_BASE"));
-  TString strFileLepHM   =  TString::Format("%s/src/data/corrections/2016/lepCorMCEffsAndSFs/lepCorr_HM.root",getenv("CMSSW_BASE"));
+  TString strFileLepLM   =  TString::Format("%s/src/data/corrections/2017/lep/lepCorr_LM.root",getenv("CMSSW_BASE"));
+  TString strFileLepHM   =  TString::Format("%s/src/data/corrections/2017/lep/lepCorr_HM.root",getenv("CMSSW_BASE"));
 
   fileLepLM              = TFile::Open(strFileLepLM,"read");
   fileLepHM              = TFile::Open(strFileLepHM,"read");
