@@ -291,8 +291,8 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
   // manually, or through the filename, set the options (four possibilities)
   // if running on condor, note outputdir = '.', so we cannot use the name.
   // can __always__ change manually between submissions using first two lines.
-  bool isSR = false; //CHANGEME
-  bool isId = false;
+  bool isSR = true; //CHANGEME
+  bool isId = true;
   //bool isSR = outputdir.Contains("/sr"); // only works interactively
   //bool isId = outputdir.Contains("/id");
 
@@ -301,7 +301,7 @@ void makeZeroLeptonLepCorEffMCTrees(TString sname = "T2tt_750_100",
   std::cout << "*** Options: isId, isSR: " << isId << " " << isSR << std::endl;
   std::cout << "*** Changing lep config to : " << ((isSR) ? "zl_search_set (SR)" : "zl_lepton_set (CR)") << std::endl;
   std::cout << "*** relaxing pt/eta requirements to 5/2.4" << std::endl;
-  cfgSet::ConfigSet pars = (isSR) ? pars0lep(json) : pars1LCR(json);
+  cfgSet::ConfigSet pars = (isSR) ? pars0lep(json) : pars0lepDiLepCR(json);
   if((!isSR) && (pars.electrons.type != LeptonSelection::ZL_CTR_ELE)) std::cout << "Houston, we have a problem. Ele type for CR is not ZL_CTR_ELE" << std::endl;
   pars.electrons.maxETA  = 2.4;
   pars.electrons.minPT   = 5.0;
