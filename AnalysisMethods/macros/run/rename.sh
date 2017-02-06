@@ -6,7 +6,7 @@ cd $workdir
 
 # sr
 cd sr/
-hadd diboson_tree.root ww_tree.root wz_tree.root zz_tree.root tWZ_tree.root
+hadd diboson_tree.root ww_tree.root wz_tree.root zz_tree.root tWZ_tree.root ttH_tree.root
 ln -s ../qcd/* ./
 cd ..
 
@@ -20,7 +20,7 @@ cd ..
 cd zllcr/
 hadd doublelep_tree.root doubleeg_tree.root doublemu_tree.root singleel_tree.root singlemu_tree.root
 hadd z-soup_tree.root dyll_tree.root ttZ_tree.root wz_tree.root zz_tree.root
-hadd t-soup_tree.root ttbar-powheg_tree.root ttW_tree.root tW_tree.root ww_tree.root
+hadd t-soup_tree.root ttbar_tree.root ttW_tree.root tW_tree.root ww_tree.root
 cd ..
 
 exit 0
