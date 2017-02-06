@@ -142,7 +142,7 @@ void cfgSet::loadDefaultCorrections() {
 
   standardCorrections.metResSystRunIType       = ucsbsusy::NONE;
 
-  standardCorrections.jetResTailFile           = TString::Format("%s/src/data/corrections/2016/qcdJetRespTailCorr.root",CMSSW_BASE);
+  standardCorrections.jetResTailFile           = TString::Format("%s/src/data/corrections/2017/qcd/qcdJetRespTailCorr.root",CMSSW_BASE);
   standardCorrections.jetResTailCorrType       = ucsbsusy::NOMINAL;
 
   standardCorrections.bTagCorrections          = ucsbsusy::BTagCorrectionSet::BYEVTWEIGHT | ucsbsusy::BTagCorrectionSet::FASTSIMBYEVTWEIGHT;
