@@ -1,37 +1,42 @@
 /*
  * getLepCorEffs.C
  * adapted from mullin, june 2016
- * last updated Dec 2016 for AN SUS-16-437
+ * last updated Feb 2017 for AN-16-437 / SUS-16-049
  *
  * a short macro to compute the MC lepton effs
- * creates pdf/svg/root 2D id and iso eff plots for electrons and muons
+ * creates pdf/svg/root with 2D id and iso eff plots for electrons and muons
  * can also create many additional plots for studies
  *
- * read the README in this directory! once you have the four sets of ttbarplusw trees in <somewhere>/{id,iso}/{sr,cr}, run this macro.
- * first time changes: see 'CHANGEME'. filenames, selection strings are all there.
- *
+ * currently, must make four sets of ttbarplusw trees (id/iso times sr/cr lepton configs). See README.
+ *   trees must be in file structure <somewhere>/{id,iso}/{sr,cr}, eg asdf/id/sr/ttbarplusw_tree.root
+ * and currently, we split between HM / LM baselines. Two roots for the data directory.
+ * see "CHANGEME" locations
  * run with root -l -b getLepCorEffs.C+ with rootlogon.C copied into this directory
  *
- * options you might change:
- *   see 'CHANGEME' locations
- *   the binning in eg 'binsPt'. see plotAll2D to change which bin vector is used.
- *   the input 'treedir' and output 'outdir' for pdf/svg/root plots
- *     **** if treedir contains '_id', code does ID eff calculation. if not, ISO calculation.
- *          same with if it contains '_sr': code does search region or control region strings.
- *   the lumi, weights, selection strings
+ * produces lepCorMCEff_HM.root (or LM) to drop into data dir
+ *   contains four 2D (pT,eta) histograms: Id/Iso times SR/CR.
+ *
+ *
+ * ID eff formula:
+ *  NOTE: For ID trees the iso cuts are turned off. pt/eta cuts are relaxed to 5/2.4.
+ *        The genmueta cut is used because the gen mu might be outside 2.4 but matched to reco mu in 2.4.
+ *   denominator = baseline + ngoodgenmu>=1 + abs(genmueta)<2.4
+ *   numerator = denominator + ngenmumatched>=1
+ *
+ *   denominator = baseline + ngoodgenele>=1
+ *   numerator = denominator + nvetoele>=1
+ *
+ * ISO eff formula:
+ *  NOTE: For ISO trees the id/iso cuts are untouched. pt/eta cuts are relaxed to 5/2.4
+ *   denominator = baseline + 
+ *   
+ *
  *
  * essential functions:
  *   void plotAll2D( TString histExtraName = "", TString extraCuts = "" )
- *     wraps calls to createEff2D
+ *     wrapper for calls to createEff2D
  *   void createEff2D( TString histName, TString varX, TString varY, int nBinsX, int nBinsY, float binsX[], float binsY[], TString extraCuts = "" )
  *     creates and saves 2D eff plots as pdf/svg and histos as roots to be dropped into the data directory.
- *
- * extra functions (to be re-introduced):
- *   void plotGen( TString outPlotFileName, TString var, int nBins, float min, float max, vector<TString> allExtraCuts, vector<TString> labels )
- *   void createEff( TString histName, TString var, int nBins, float bins[], vector<TString> allExtraCuts, vector<TString> labels )
- *     1D efficiency plots
- *   void plotAllVars( TString histExtraName, vector<TString> allExtraCuts, vector<TString> labels )
- *   void makeOtherPlots()
  *
  */
 
@@ -54,16 +59,14 @@
 #include "AnalysisMethods/PlotUtils/interface/PlotStuff.h" 
 
   // settings - subdirectory structure (four sets of trees) {id,iso}/{sr/cr} assumed
-  const TString treedir = "/uscms_data/d1/apatters/trees/20161214-lepsf-try2/";
-  //const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/20072016-LepEff/";
-  //const TString treedir = "/uscms_data/d1/apatters/SUSY_2016/CMSSW_8_0_10_patch2/src/AnalysisMethods/macros/run/ntuples/LepEff/80X-22062016/merged/";
-  //const TString treedir = "/eos/uscms/store/user/apatters/ntuples/LepEff/80X-22062016/merged/";
-  //const TString treedir = "/eos/uscms/store/user/mullin/13TeV/lepCor/trees/160201_madgraph_SR_Iso/"; // Sam's trees to reproduce AN plot. change for {CR,SR}x{Id,Iso}.
+  const TString treedir = "/eos/uscms/store/user/apatters/trees/20170205-moriond-lepeff-test/"; // apatters, new FW, jan 29th latest ntuples
+  //const TString treedir = "/eos/uscms/store/user/apatters/trees/20170203-ichep/"; // apatters, new FW, ichep ntuples (FAT JETS TURNED OFF)
   const TString outdir = "./lepCorEffs/";
-  const TString outHistPrefix = "lepCorMCEff_"; // final roots will be eg lepCorMCEff_HM.root
+  const TString outHistPrefix = "lepCorMCEff_";
   TFile * fout;
 
-  //const bool isId  = lowerTString(treedir).Contains("id"); //outdated method, keeping in case useful
+  // these are outdated:
+  //const bool isId  = lowerTString(treedir).Contains("id");
   //const bool isSR  = lowerTString(treedir).Contains("sr");
   //TFile* f = TFile::Open(treedir + ((isSR) ? "/sr/" : "/cr/") + "ttbarplusw_tree.root","READONLY");
   //TTree* t = (TTree*)f->Get("Events");
@@ -80,8 +83,6 @@
   const TString dphij4met  = " && dphij4met>0.5";
   const TString dphij34met = " && dphij3met>0.5 && dphij4met>0.5";
   const TString dphij123   = " && dphij12met>1 && dphij3met>0.5 && dphij4met>0.5";
-  //const TString anbaseline   = trig + passvetoes + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
-  //const TString baseline1lcr = trig + lepcrsel   + met + njets75 + njets + nlbjets + nbjets + dphij12met + dphij34met;
 
   // moriond17
   const TString trig       = "passmetfilters";
@@ -95,29 +96,28 @@
   const TString zerotopw     = " && nsdtop==0 && nsdw==0 && nrestop==0";
   const TString isr300       = " && ak8isrpt>300 && dphiisrmet>2";
   const TString metovsqrtht= " && metovsqrtht>10";
+  const TString pu10to20 = " && npv>10 && npv<20";
 
-  // ichep16
+  // ichep16 - CHANGEME - uncomment for ichep16 cuts
   //const TString nearHMbasenodphi   = trig +              met + njets + nlbjets + nbjets; // ICHEP16
   //const TString nearLMbasenodphi   = trig +              met + njets2  + njl + j1lpt + dphij1lmet + metovsqrtht; // ICHEP16
-  //  const TString commonbase   = trig +              met + njets2;
-  //const TString lepeffbase   = "1==1" + met + njets75 + njets + nlbjets + nbjets; // triggers removed
 
-  // moriond17
-  const TString nearHMbase         = trig + njets + met + nbjets + dphij1234met;
+  // moriond17 - CHANGEME - uncomment for moriond17 cuts
   const TString nearHMbasenodphi   = trig + njets + met + nbjets;
-  const TString nearLMbase         = trig + njets2 + met + zerotopw + metovsqrtht + isr300 + dphiLM;
   const TString nearLMbasenodphi   = trig + njets2 + met + zerotopw + metovsqrtht + isr300;
 
+  // CHANGEME - change 'weight'
   const TString lumistr  = "36.2";
-  const TString mcwgt    = lumistr + "*weight"; // not used by default
-  const TString weight   = lumistr + "*weight*truePUWeight*topptWeight*btagWeight*sdMVAWeight*resTopWeight"; // Moriond17 //CHANGEME
+  const TString mcwgt    = lumistr + "*weight";
+  const TString weight   = lumistr + "*weight*truePUWeight*topptWeight*btagWeight*sdMVAWeight*resTopWeight"; // Moriond17
   //const TString weight = lumistr + "*weight*truePUWeight*btagWeight"; // ICHEP16
+  //const TString weight = mcwgt;
 
-  bool inHM = true; //CHANGEME high delta-M? chooses baseline cut
-  bool nodphi = true; //CHANGEME remove dphi cut? 
-  const TString baseline = (inHM ? (nodphi ? nearHMbasenodphi : nearHMbase) : (nodphi ? nearLMbasenodphi : nearLMbase) ); //CHANGEME
+  // CHANGEME - select LM or HM baseline. used elsewhere.
+  bool inHM = true;
+  const TString baseline = !inHM ? nearLMbasenodphi : nearHMbasenodphi;
 
-  // set bins of histograms
+  // CHANGEME - set bins of histograms
   std::vector<float> binsPt       { 5, 10, 20, 30, 40, 50, 60, 80, 120};
   std::vector<float> binsPtEl     { 5, 10, 20, 30, 40, 50,         120};
   std::vector<float> binsPtMu     { 5, 10, 20, 25, 30, 40, 50, 60, 120};
@@ -320,12 +320,19 @@ void createEff2D( TTree* t, bool isId, bool isSR, TString outPlotFileName,
 
   // set __plotting__ min/max to produce consistent "colz" plots
   h_eff->SetMaximum(1.0);
-  if( isMu && isId ) { // only for muon ID
-    h_eff->SetMinimum( (isSR) ? 0.90 : 0.75 ); // mu id sr was 0.94
-  }else { // el/mu iso, and ele id
-    h_eff->SetMinimum( (isSR) ? 0.60 : 0.40 );
+  if( isMu ){
+    if(isId){
+      h_eff->SetMinimum(0.60);
+    }else{
+      h_eff->SetMinimum(0.70);
+    }
+  }else{
+    if(isId){
+      h_eff->SetMinimum(0.30);
+    }else{
+      h_eff->SetMinimum(0.50);
+    }
   }
-
   // save histo to root file. will be used in data directory
 //  TString outRootFileName = outdir + outHistPrefix + lepTypeRegSuffix + ".root";
 //  std::cout << "Saving data root to : " << outRootFileName << std::endl;
@@ -418,7 +425,7 @@ void getLepCorEffs() {
     bool isSR  = (bool)i;
     for(unsigned int j = 0; j <= 1; ++j) {
       bool isId  = (bool)j;
-//      isId = 1; isSR = 1; //hack if want to test one region quickly
+      //isId = 1; isSR = 1; //hack if want to test one region quickly
       TFile* f = TFile::Open(treedir + "/" + ((isId) ? "id" : "iso") + "/" + ((isSR) ? "sr" : "cr") + "/" + "ttbarplusw_tree.root","READONLY");
       if (f->IsZombie()) {
         std::cout << "Error opening file" << std::endl;
@@ -432,6 +439,7 @@ void getLepCorEffs() {
       plotAll2D(t, isId, isSR);
 
       f->Close();
+      //break; // see previous hack
     }
   }
   fout->Close();

@@ -2,6 +2,7 @@
 // strategy as of jan 30 2017
 // by event reweighting
 // per https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods#1a_Event_reweighting_using_scale
+// and recommendations per https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
 //
 //   eff(j,WP) refers to MC efficiency of the jet j to pass working point WP, 
 //   sf() refers to data/MC SF of that eff, sfeff refers to product.
@@ -17,6 +18,9 @@
 //
 //   implementation looks like: for each jet, a loop over the working points forming the above product.
 //     then a product over all the jets.
+//
+// Systematics may be asked for DOWN or UP. The reader automatically doubles the systematics if the 
+//   pT exceeds the max.
 //
 
 #include "AnalysisBase/TreeAnalyzer/interface/BTagCorrectionSet.h"
@@ -136,15 +140,31 @@ double BTagByEvtWeightCorr::getJetEffSF(double jetPT, double jetETA, JetFlavorIn
   else{ throw std::range_error("BTagByEvtWeightCorr::getJetEffSF: wp from defaults:: does not match any operating point from csv reader!"); }
 
   const BTagCalibrationReader * reader = corrReadersByOp[sfOp];
-  if(systType == DOWN || systType == UP){
+  if(systType == DOWN){
+    return reader->eval_auto_bounds("down", sfFlavor, jetETA, jetPT); // eval_auto_bounds automatically doubles syst error if pT is out-of-bounds
+  }else if(systType == UP){
     return reader->eval_auto_bounds("up", sfFlavor, jetETA, jetPT); // eval_auto_bounds automatically doubles syst error if pT is out-of-bounds
+  }else{
+    return reader->eval_auto_bounds("central", sfFlavor, jetETA, jetPT);
   }
-  return reader->eval_auto_bounds("central", sfFlavor, jetETA, jetPT);
 }
 
 double BTagByEvtWeightCorr::getJetFastSimEffSF(double jetPT, double jetETA, JetFlavorInfo::JetFlavor flavor,defaults::CSVWPs wp, CORRTYPE systType) const {
-  // no longer special cases to read fastsim file. just "fastsim" measurement type.
-  return getJetEffSF(jetPT, jetETA, flavor, wp, systType);
+
+  // handle special FastSim cases for tight WP. make flavor malleable.
+  JetFlavorInfo::JetFlavor fastSimFlavor = flavor;
+
+  // map our enum JetFlavorInfo::JetFlavor to their BTagEntry::FLAV_X flavors...
+  BTagEntry::JetFlavor sfFlavor = BTagEntry::FLAV_UDSG; // covers several cases: JetFlavorInfo::{g,ps_g,uds,ps_uds}
+  if(     fastSimFlavor == JetFlavorInfo::c_jet){ sfFlavor = BTagEntry::FLAV_C; }
+  else if(fastSimFlavor == JetFlavorInfo::b_jet){ sfFlavor = BTagEntry::FLAV_B; }
+
+  // tight WP: scale factor of 1 for light jets
+  if(wp == defaults::CSVT && sfFlavor == BTagEntry::FLAV_UDSG) return 1;
+  // tight WP: give b-jet correction to c-jets
+  if(wp == defaults::CSVT && sfFlavor == BTagEntry::FLAV_C) fastSimFlavor = JetFlavorInfo::b_jet;
+
+  return getJetEffSF(jetPT, jetETA, fastSimFlavor, wp, systType);
 }
 
 double BTagByEvtWeightCorr::getJetWeight(const BaseTreeAnalyzer * ana, const RecoJetF* j, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool isTtbarLike) const {
