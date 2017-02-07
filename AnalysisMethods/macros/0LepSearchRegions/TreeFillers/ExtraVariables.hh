@@ -648,8 +648,40 @@ struct ExtraVarsFiller {
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
     i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
+
+    //PU
     data->add<float>("truePUWeight_UP",0);
     data->add<float>("truePUWeight_DOWN",0);
+
+    //LEP
+    data->add<float>("lepvetoweightLM_UP",0);
+    data->add<float>("lepvetoweightLM_DOWN",0);
+    data->add<float>("lepselweightLM_UP",0);
+    data->add<float>("lepselweightLM_DOWN",0);
+    data->add<float>("lepvetoweightHM_UP",0);
+    data->add<float>("lepvetoweightHM_DOWN",0);
+    data->add<float>("lepselweightHM_UP",0);
+    data->add<float>("lepselweightHM_DOWN",0);
+
+    data->add<float>("leptnpweightLM_ELE_UP",0);
+    data->add<float>("leptnpweightLM_ELE_DOWN",0);
+    data->add<float>("leptnpweightHM_ELE_UP",0);
+    data->add<float>("leptnpweightHM_ELE_DOWN",0);
+
+    data->add<float>("leptnpweightLM_MU_UP",0);
+    data->add<float>("leptnpweightLM_MU_DOWN",0);
+    data->add<float>("leptnpweightHM_MU_UP",0);
+    data->add<float>("leptnpweightHM_MU_DOWN",0);
+
+    //BTAGS
+    data->add<float>("btagWeight_HEAVYUP",0);
+    data->add<float>("btagWeight_HEAVYDOWN",0);
+    data->add<float>("btagWeight_LIGHTUP",0);
+    data->add<float>("btagWeight_LIGHTDOWN",0);
+    data->add<float>("btagFastSimWeight_HEAVYUP",0);
+    data->add<float>("btagFastSimWeight_HEAVYDOWN",0);
+    data->add<float>("btagFastSimWeight_LIGHTUP",0);
+    data->add<float>("btagFastSimWeight_LIGHTDOWN",0);
   }
 
   void bookPDFScaleSyst(TreeWriterData* data){
@@ -1444,8 +1476,42 @@ struct ExtraVarsFiller {
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
+
+    //PU
     data->fill<float>("truePUWeight_UP",   ana->eventCorrections.getTruePUWeight(UP));
     data->fill<float>("truePUWeight_DOWN", ana->eventCorrections.getTruePUWeight(DOWN));
+
+    //LEP 
+    // args are tau corr type, isLM, isVetoWeight
+    data->fill<float>("lepvetoweightLM_UP",  ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  true,true));
+    data->fill<float>("lepvetoweightLM_DOWN",ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,true,true));
+    data->fill<float>("lepselweightLM_UP",   ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  true,false));
+    data->fill<float>("lepselweightLM_DOWN", ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,true,false));
+    data->fill<float>("lepvetoweightHM_UP",  ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  false,true));
+    data->fill<float>("lepvetoweightHM_DOWN",ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,false,true));
+    data->fill<float>("lepselweightHM_UP",   ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  false,false));
+    data->fill<float>("lepselweightHM_DOWN", ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,false,false));
+
+    // args are ele corr type, mu corr type, isLM
+    data->fill<float>("leptnpweightLM_ELE_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::UP,ucsbsusy::NOMINAL,true));
+    data->fill<float>("leptnpweightLM_ELE_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::DOWN,ucsbsusy::NOMINAL,true));
+    data->fill<float>("leptnpweightHM_ELE_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::UP,ucsbsusy::NOMINAL,false));
+    data->fill<float>("leptnpweightHM_ELE_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::DOWN,ucsbsusy::NOMINAL,false));
+    data->fill<float>("leptnpweightLM_MU_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::UP,true));
+    data->fill<float>("leptnpweightLM_MU_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::DOWN,true));
+    data->fill<float>("leptnpweightHM_MU_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::UP,false));
+    data->fill<float>("leptnpweightHM_MU_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::DOWN,false));
+
+    //BTAGS
+    // args are CORRTYPE lightCorrType, CORRTYPE heavyCorrType, wantFastSim
+    data->fill<float>("btagWeight_HEAVYUP",         ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,UP,false));
+    data->fill<float>("btagWeight_HEAVYDOWN",       ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,DOWN,false));
+    data->fill<float>("btagWeight_LIGHTUP",         ana->bTagCorrections.getBTagByEvtWeightAny(ana,UP,NOMINAL,false));
+    data->fill<float>("btagWeight_LIGHTDOWN",       ana->bTagCorrections.getBTagByEvtWeightAny(ana,DOWN,NOMINAL,false));
+    data->fill<float>("btagFastSimWeight_HEAVYUP",  ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,UP,true));
+    data->fill<float>("btagFastSimWeight_HEAVYDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,DOWN,true));
+    data->fill<float>("btagFastSimWeight_LIGHTUP",  ana->bTagCorrections.getBTagByEvtWeightAny(ana,UP,NOMINAL,true));
+    data->fill<float>("btagFastSimWeight_LIGHTDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,DOWN,NOMINAL,true));
   }
 
   void fillPDFScaleSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){

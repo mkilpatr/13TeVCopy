@@ -255,6 +255,28 @@ void BTagCorrectionSet::load(TString effFileName,TString sfFileName,TString fast
   }
 }
 
+float BTagCorrectionSet::getBTagByEvtWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool wantFastSim) const{
+  bool dbg = false;
+  if(!ana->isMC()) return 1;
+
+  bool isFastSim = ana->evtInfoReader.isfastsim;
+  const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+
+  float weight;
+  if(!wantFastSim){
+    weight = bTagByEvtWeightCorr->getEvtWeight(ana, ana->jets,lightCorrType,heavyCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
+  }else if(wantFastSim && isFastSim){
+    weight = bTagFastSimByEvtWeightCorr->getEvtWeight(ana, ana->jets,lightCorrType,heavyCorrType,isTtbarLike,cfg.jets.maxBJetEta,cfg.jets.minBJetPt);
+  }else{
+    weight = 1; // wantFastSim but not fastsim process -> fastsim weight of 1
+  }
+
+  if(dbg) std::cout << "[BTagCorrectionSet::getBTagByEvtWeightAny] " << TString::Format("Syst btag weight: light type %d, heavy type %d, wantFastSim %d, value %.3f",
+                                                                                     lightCorrType,heavyCorrType,wantFastSim,weight) << std::endl;
+
+  return weight;
+}
+
 void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   bool dbg = false;
 
@@ -263,10 +285,10 @@ void BTagCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(!ana->isMC()) return;
 
   bool isFastSim = ana->evtInfoReader.isfastsim;
-  bool isTtbarLike = ana->process == defaults::TTBAR || 
-                     ana->process == defaults::SINGLE_T || 
-                     ana->process == defaults::TTZ || 
-                     ana->process == defaults::TTW;
+  isTtbarLike = ana->process == defaults::TTBAR || 
+                ana->process == defaults::SINGLE_T || 
+                ana->process == defaults::TTZ || 
+                ana->process == defaults::TTW;
   isTtbarLike |= (ana->evtInfoReader.signalType == defaults::T2tt || 
                   ana->evtInfoReader.signalType == defaults::T2bW ||
                   ana->evtInfoReader.signalType == defaults::T2fb ||

@@ -124,7 +124,6 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //      extraFiller.fillSystInfo(&data, this);
 //      extraFiller.fillLeptonInfo(&data, this);
 //      extraFiller.fillGenInfo(&data, this);
-
       return true;
     }
 

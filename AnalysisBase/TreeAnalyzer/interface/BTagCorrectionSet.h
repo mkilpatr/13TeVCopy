@@ -81,6 +81,8 @@ public:
   const BTagByEvtWeightCorr* getBTagByEvtWeightCorrector() const { return bTagByEvtWeightCorr; }
   const BTagByEvtWeightCorr* getBTagFastSimByEvtWeightCorrector() const { return bTagFastSimByEvtWeightCorr; }
 
+  // systematics accessors
+  float getBTagByEvtWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE lightCorrType, CORRTYPE heavyCorrType, bool wantFastSim) const;
 
 private:
   //Correction list
@@ -90,6 +92,8 @@ private:
   //output values
   float bTagByEvtWeight;
   float bTagFastSimByEvtWeight;
+
+  bool isTtbarLike;
 };
 
 

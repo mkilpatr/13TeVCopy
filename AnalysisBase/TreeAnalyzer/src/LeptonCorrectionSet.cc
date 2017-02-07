@@ -563,70 +563,8 @@ float TnPCorr::getEvtWeight(const std::vector<LeptonF*>& allLeptons, const std::
   return weight;
 }
 
-void LeptonCorrectionSet::load(const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
-                               const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel,
-                               int correctionOptions)
-{
-  name = "LEP";
-  options_ = correctionOptions;
-
-  if(correctionOptions & USE_HPSTAUS){ // user may switch back to HPS taus
-    setUseHPSTaus(true);
-  }
-
-  if(correctionOptions & LEP) {
-    lepCorr = new LepCorr();
-    corrections.push_back(lepCorr);
-  }
-  if(correctionOptions & TNP) {
-    tnpCorr = new TnPCorr(elSel, secElSel, muSel, secMuSel);
-    corrections.push_back(tnpCorr);
-  }
-}
-
-void countRecoLepsAndGenTaus(const BaseTreeAnalyzer * ana, int &nPromptGenTaus, int &nSelectedElectrons, int &nSelectedMuons){
-  nPromptGenTaus = 0, nSelectedElectrons = 0, nSelectedMuons = 0;
-
-  // count reco leptons
-  for(auto* i : ana->selectedLeptons) {
-    if(fabs(i->pdgid()) == 11) { nSelectedElectrons++; }
-    if(fabs(i->pdgid()) == 13) { nSelectedMuons++;     }
-  }
-
-  // count gen hadronic taus
-  for(auto* p : ana->genParts) {
-    const GenParticleF * genPartMom = 0;
-    if(p->numberOfMothers() < 1) continue;
-    genPartMom = p->mother(0);
-
-    // tau from W/Z
-    if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
-      bool lepDecay = false;
-      // hadronic?
-      for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
-        const GenParticleF* dau = p->daughter(itd);
-        if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
-      }
-      if(!lepDecay) { nPromptGenTaus++; }
-    }
-  }
-
-}
-
-void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-  bool dbg = false;
-  if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection]" << std::endl;
-
-  selLepWeightLM  = 1.;
-  selLepWeightHM  = 1.;
-  vetoLepWeightLM = 1.;
-  vetoLepWeightHM = 1.;
-  tnpEvtWeightLM  = 1.;
-  tnpEvtWeightHM  = 1.;
-  if(!ana->isMC()) return;
-
-  if(options_ & LEP) {
-    if(dbg) std::cout << std::endl << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
+void LepCorr::getEvtWeight(const BaseTreeAnalyzer * ana, CORRTYPE tauCorrType, float &outVetoLepWeightLM, float &outSelLepWeightLM, float &outVetoLepWeightHM, float &outSelLepWeightHM, bool useHPS){
+    bool dbg = false;
 
     // lep histo bins
     const std::vector<double> eleCorrPtBins = {0., 20., 30., 40., 70., 100., 1000.};
@@ -656,10 +594,10 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     else if( nSelectedMuons >= 1 || nSelectedElectrons >= 1 || ana->nVetoedTracks >= 1) region = REGION::FAKE;
     else region = REGION::VETO;
 
-    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " 
+    if(dbg) std::cout << "[LepCorr::getEvtWeight] " 
                       << TString::Format("Region %d. Found %d vetoed tracks, %d prompt hadronic gen taus, %d selected electrons, %d selected muons", 
                                          region, ana->nVetoedTracks, nPromptGenTaus, nSelectedElectrons, nSelectedMuons) << std::endl;
-    //if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] lepCorr bins: " << TString::Format("binEleFirst is %d, binMuFirst %d, binTauFirst %d, binFakes %d, binDefaultZeroCorr %d",
+    //if(dbg) std::cout << "[LepCorr::getEvtWeight] lepCorr bins: " << TString::Format("binEleFirst is %d, binMuFirst %d, binTauFirst %d, binFakes %d, binDefaultZeroCorr %d",
     //                                                                                      binEleFirst,binMuFirst,binTauFirst,binFakes,binDefaultZeroCorr) << std::endl;
 
     // determine bin in Lep hists to use
@@ -667,7 +605,7 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     if(region == TAU_SELECTED){
       // several pT bins. seek out bin corresponding to our tau pt
       float trackPt = ana->vetoedTracks[0]->pt();
-      if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] region is TAU_SELECTED, searching for pT bin for " << trackPt << std::endl;
+      if(dbg) std::cout << "[LepCorr::getEvtWeight] region is TAU_SELECTED, searching for pT bin for " << trackPt << std::endl;
       for(unsigned int iBin = binTauFirst; iBin <= binTauLast; iBin++){
         //float binLowPt  = tauCorrPtBins[iBin - binTauFirst];
         float binHighPt = tauCorrPtBins[iBin - binTauFirst + 1];
@@ -684,28 +622,135 @@ void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
     }else{ assert(!"Possible: region altered outside enum"); }
 
     // fetch corr from Lep hists
-    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] fetching Corr from bin " << bin << std::endl;
+    if(dbg) std::cout << "[LepCorr::getEvtWeight] fetching Corr from bin " << bin << std::endl;
     float corrLM, corrHM, uncCorrLM, uncCorrHM;
-    corrLM = lepCorr->histLepLM->GetBinContent(bin);
-    corrHM = lepCorr->histLepHM->GetBinContent(bin);
-    uncCorrLM = lepCorr->histLepLM->GetBinError(bin);
-    uncCorrHM = lepCorr->histLepHM->GetBinError(bin);
-    if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " << TString::Format("corrLM %.3f +/- %.3f, corrHM %.3f +/- %.3f", corrLM, uncCorrLM, corrHM, uncCorrHM) << std::endl;
+    corrLM = histLepLM->GetBinContent(bin);
+    corrHM = histLepHM->GetBinContent(bin);
+    uncCorrLM = histLepLM->GetBinError(bin);
+    uncCorrHM = histLepHM->GetBinError(bin);
+    if(dbg) std::cout << "[LepCorr::getEvtWeight] " << TString::Format("corrLM %.3f +/- %.3f, corrHM %.3f +/- %.3f", corrLM, uncCorrLM, corrHM, uncCorrHM) << std::endl;
 
     // apply systematics to Corr
     if(region == TAU_SELECTED || region == HPS_SELECTED){
-      if( (options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP) ){
+      //if( (options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP) ){
+      if(tauCorrType == ucsbsusy::UP){
         corrLM += uncCorrLM; corrHM += uncCorrHM;
-      }else if( (options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN) ){
+      //}else if( (options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN) ){
+      }else if(tauCorrType == ucsbsusy::DOWN){
         corrLM -= uncCorrLM; corrHM -= uncCorrHM;
       }
     }
 
-    // determine weights (Corr or 1-Corr)
-    vetoLepWeightLM = 1 - corrLM;
-    selLepWeightLM  = corrLM;
-    vetoLepWeightHM = 1 - corrHM;
-    selLepWeightHM  = corrHM;
+    // return them
+    outVetoLepWeightLM = 1 - corrLM;
+    outSelLepWeightLM  = corrLM;
+    outVetoLepWeightHM = 1 - corrHM;
+    outSelLepWeightHM  = corrHM;
+}
+
+void LeptonCorrectionSet::load(const LeptonSelection::Electron elSel, const LeptonSelection::Electron secElSel,
+                               const LeptonSelection::Muon     muSel, const LeptonSelection::Muon     secMuSel,
+                               int correctionOptions)
+{
+  name = "LEP";
+  options_ = correctionOptions;
+
+  if(correctionOptions & USE_HPSTAUS){ // user may switch back to HPS taus
+    setUseHPSTaus(true);
+  }
+
+  if(correctionOptions & LEP) {
+    lepCorr = new LepCorr();
+    corrections.push_back(lepCorr);
+  }
+  if(correctionOptions & TNP) {
+    tnpCorr = new TnPCorr(elSel, secElSel, muSel, secMuSel);
+    corrections.push_back(tnpCorr);
+  }
+}
+
+void LepCorr::countRecoLepsAndGenTaus(const BaseTreeAnalyzer * ana, int &nPromptGenTaus, int &nSelectedElectrons, int &nSelectedMuons){
+  nPromptGenTaus = 0, nSelectedElectrons = 0, nSelectedMuons = 0;
+
+  // count reco leptons
+  for(auto* i : ana->selectedLeptons) {
+    if(fabs(i->pdgid()) == 11) { nSelectedElectrons++; }
+    if(fabs(i->pdgid()) == 13) { nSelectedMuons++;     }
+  }
+
+  // count gen hadronic taus
+  for(auto* p : ana->genParts) {
+    const GenParticleF * genPartMom = 0;
+    if(p->numberOfMothers() < 1) continue;
+    genPartMom = p->mother(0);
+
+    // tau from W/Z
+    if (ParticleInfo::isA(ParticleInfo::p_tauminus, p) && (ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom))) {
+      bool lepDecay = false;
+      // hadronic?
+      for(unsigned int itd = 0; itd < p->numberOfDaughters(); itd++) {
+        const GenParticleF* dau = p->daughter(itd);
+        if(ParticleInfo::isA(ParticleInfo::p_eminus, dau) || ParticleInfo::isA(ParticleInfo::p_muminus, dau)) lepDecay = true;
+      }
+      if(!lepDecay) { nPromptGenTaus++; }
+    }
+  }
+
+}
+
+float LeptonCorrectionSet::getTnPWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE elCorrType, CORRTYPE muCorrType, bool isLM) const{
+  bool dbg = false;
+  if(!ana->isMC()) return 1;
+
+  //const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+  bool isFastSim = ana->evtInfoReader.isfastsim;
+  bool isCR = tnpCorr->isCR;
+  int nPV = ana->nPV;
+  float tnpweight = tnpCorr->getEvtWeight(ana->allLeptons, ana->selectedLeptons,ana->genParts, elCorrType, muCorrType, isLM, isFastSim, isCR, nPV);
+  if(dbg) std::cout << "[LeptonCorrectionSet::getTnPWeightAny] " << TString::Format("Syst TnP weight: elCorrType %d, muCorrType %d, isLM %d, isFastSim %d, isCR %d, nPV %d, value %.3f",
+                                                                                     elCorrType, muCorrType, isLM, isFastSim, isCR, nPV,tnpweight) << std::endl;
+  return tnpweight;
+}
+
+float LeptonCorrectionSet::getLepWeightAny(const BaseTreeAnalyzer * ana, CORRTYPE tauCorrType, bool isLM, bool isVetoWeight) const {
+  bool dbg = false;
+  if(!ana->isMC()) return 1;
+
+  float lepweight, vetolm, sellm, vetohm, selhm;
+  lepCorr->getEvtWeight(ana, tauCorrType, vetolm, sellm, vetohm, selhm);
+  if(isLM){
+    lepweight = (isVetoWeight) ? vetolm : sellm;
+  }else{
+    lepweight = (isVetoWeight) ? vetohm : selhm;
+  }
+  if(dbg) std::cout << "[LeptonCorrectionSet::getLepWeightAny] " << TString::Format("Syst Lep weight: tauCorrType %d, isLM %d, isVetoWeight %d, value %.3f",
+                                                                                     tauCorrType, isLM, isVetoWeight, lepweight) << std::endl;
+  return lepweight;
+}
+
+void LeptonCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
+  bool dbg = false;
+  if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection]" << std::endl;
+
+  selLepWeightLM  = 1.;
+  selLepWeightHM  = 1.;
+  vetoLepWeightLM = 1.;
+  vetoLepWeightHM = 1.;
+  tnpEvtWeightLM  = 1.;
+  tnpEvtWeightHM  = 1.;
+  if(!ana->isMC()) return;
+
+  if(options_ & LEP) {
+    if(dbg) std::cout << std::endl << "[LeptonCorrectionSet::processCorrection] option LEP" << std::endl;
+
+    // set weights (Corr or 1-Corr)
+    ucsbsusy::CORRTYPE tauCorrType =     ((options_ & LEP_VARY_UP) || (options_ & TAU_VARY_UP)) ? ucsbsusy::UP
+                      : (
+                          ((options_ & LEP_VARY_DOWN) || (options_ & TAU_VARY_DOWN)) ? ucsbsusy::DOWN
+                            : ucsbsusy::NOMINAL
+                        );
+    lepCorr->getEvtWeight(ana, tauCorrType, vetoLepWeightLM, selLepWeightLM, vetoLepWeightHM, selLepWeightHM, useHPS);
+
     if(dbg) std::cout << "[LeptonCorrectionSet::processCorrection] " << TString::Format("LEP weights finally: vetoLM  %.3f / selLM  %.3f / vetoHM  %.3f / selHM  %.3f", vetoLepWeightLM, selLepWeightLM, vetoLepWeightHM, selLepWeightHM) << std::endl;
 
   }//if option LEP
