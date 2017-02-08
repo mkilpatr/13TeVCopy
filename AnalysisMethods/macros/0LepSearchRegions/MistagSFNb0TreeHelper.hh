@@ -94,7 +94,7 @@ public :
     }
     if (!(tightmuons.size()==1)) return false;
 
-  
+    /*  
     // veto events with loose b-jets
     std::vector<MomentumF> csvjets;
     for(unsigned int i0=0; i0<jets.size(); ++i0) {
@@ -104,7 +104,7 @@ public :
         csvjets.push_back(tmpVecCSVJets); }
     }
     if (csvjets.size()>0) return false;
-
+    */
 
     // get a probe jet away from muon
     bool ak8away2lep_ = false;

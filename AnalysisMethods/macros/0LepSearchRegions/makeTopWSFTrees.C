@@ -1,11 +1,12 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 //#include "AnalysisMethods/macros/0LepSearchRegions/TopWSFTreeHelper.hh"
-//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFNb0TreeHelper.hh"
-//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSF0LepTreeHelper.hh"
-//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFGammaTreeHelper.hh"
-//#include "AnalysisMethods/macros/0LepSearchRegions/TopWSFDiJetTreeHelper.hh"
 //#include "AnalysisMethods/macros/0LepSearchRegions/ResTopSFTreeHelper.hh"
-#include "AnalysisMethods/macros/0LepSearchRegions/MistagResTopSF0LepTreeHelper.hh"
+#include "AnalysisMethods/macros/0LepSearchRegions/MistagSF0LepTreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/MistagResTopSF0LepTreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFGammaTreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/MistagSFNb0TreeHelper.hh"
+//#include "AnalysisMethods/macros/0LepSearchRegions/TopWSFDiJetTreeHelper.hh"
+
 #endif
 
 using namespace ucsbsusy;
@@ -29,6 +30,7 @@ void makeTopWSFTrees(TString sname = "T2tt_750_100",
   gSystem->mkdir(outputdir,true);
   TString outfilename = outputdir+"/"+sname+"_tree.root";
   cfgSet::ConfigSet pars = pars0lep(json);
+  //  cfgSet::ConfigSet pars = pars0LepPhoton(json);
 
   pars.corrections.ttbarCorrections |= ucsbsusy::TtbarCorrectionSet::TOPPAIRPT;
 
