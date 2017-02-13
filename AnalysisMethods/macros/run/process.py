@@ -105,7 +105,7 @@ Log                     = logs/{sname}_{num}.log
 use_x509userproxy       = true
 initialdir              = {outdir}
 Should_Transfer_Files   = YES
-transfer_input_files    = {workdir}/{macro},{workdir}/rootlogon.C{addjson}
+transfer_input_files    = {workdir}/../CMSSW.tar.gz,{workdir}/{macro},{workdir}/rootlogon.C{addjson}
 transfer_output_files   = {outname}
 WhenToTransferOutput    = ON_EXIT
 Queue

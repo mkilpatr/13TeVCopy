@@ -82,12 +82,13 @@ SdMVACorr::SdMVACorr() : Correction("SdMVA") {
   sdMVA_Full_systs_w_mis_d   = (TH1F*)( sdMVASystsFile->Get("w-sys-mistagsf-1") );
 
   // full/fastsim SFs
-  sdMVAFullFastSF            = (TH1F*)( sdMVAFullFastInputFile->Get("dummy") );
+  sdMVAFullFastSF_t            = (TH1F*)( sdMVAFullFastInputFile->Get("ak8_top_fullsim_by_fastsim_sf_vs_pt") );
+  sdMVAFullFastSF_w            = (TH1F*)( sdMVAFullFastInputFile->Get("ak8_w_fullsim_by_fastsim_sf_vs_pt") );
 
   if(sdMVA_DataFull_toptagSF.empty()) throw std::invalid_argument("SdMVACorr::SdMVACorr: data/fullsim eff SF histograms could not be found!");
   if(sdMVA_Full_toptagEff.empty())    throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim eff histograms could not be found!");
   if(!sdMVA_Full_systs_t_ps)   throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim systs histograms could not be found!");
-  if(!sdMVAFullFastSF)         throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim/fastsim eff SF histograms could not be found!");
+  if(!sdMVAFullFastSF_t)       throw std::invalid_argument("SdMVACorr::SdMVACorr: fullsim/fastsim eff SF histograms could not be found!");
 }
 SdMVACorr::~SdMVACorr(){
   sdMVAInputFile->Close();
@@ -97,7 +98,7 @@ SdMVACorr::~SdMVACorr(){
   sdMVASystsFile->Close();
   delete sdMVASystsFile;
 }
-float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fatjets){
+float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fatjets, bool isFastSim){
   bool dbg = false;
   if(correctionOptions == TopWCorrectionSet::NULLOPT) return 1;
 
@@ -173,6 +174,19 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       float eff  = getbincontent(fjpt, (*effhist)[fjeta_str]);
       float sfunc  = getbinerror(fjpt, (*sfhist)[fjeta_str]);
       if(dbg) std::cout << "  sf, sfunc, eff " << sf << " " << sfunc << " " << eff << " " << std::endl;
+
+      ////// FASTSIM /////
+      if(isFastSim && (recotop && gentop)){
+        float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "   full/fast top sf " << fullfastsf << std::endl;
+        sf *= fullfastsf;
+      }
+      if(isFastSim && (recow && genw)){
+        float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "   full/fast w sf " << fullfastsf << std::endl;
+        sf *= fullfastsf;
+      }
+      ////// END FASTSIM /////
 
       ///// SYSTEMATICS /////
       // the SF is in 'sf'. check if SF category is top or w and apply corresponding systematic.
@@ -270,6 +284,18 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(dbg) std::cout << "  sft, sfunct, efft, " << sft << " " << sftunc << " " << efft << " " << std::endl;
       if(dbg) std::cout << "  sfw, sfuncw, effw, " << sfw << " " << sfwunc << " " << effw << " " << std::endl;
 
+      ////// FASTSIM /////
+      if(isFastSim && gentop){
+        float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "   fullfast sf top: " << fullfastsf << std::endl;
+        sft *= fullfastsf;
+      }
+      if(isFastSim && genw){
+        float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "   fullfast sf w: " << fullfastsf << std::endl;
+        sfw *= fullfastsf;
+      }
+      ////// END FASTSIM /////
 
 
       ///// SYSTEMATICS /////
@@ -372,7 +398,7 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   resTop_Full_systs_mis_u        = (TH1F*)( resMVASystsFile->Get("rest-sys-mistagsf-0") );
   resTop_Full_systs_mis_d        = (TH1F*)( resMVASystsFile->Get("rest-sys-mistagsf-1") );
 
-  resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("dummy") );
+  resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("res_top_fullsim_by_fastsim_sf_vs_pt") );
 
   if(resTop_DataFull_toptagSF.empty()) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: data/fullsim eff SF histograms could not be found!");
   if(resTop_Full_toptagEff.empty()) throw std::invalid_argument("ResMVATopCorr::ResMVATopCorr: fullsim eff histograms could not be found!");
@@ -387,7 +413,7 @@ ResMVATopCorr::~ResMVATopCorr(){
   resMVAFullFastInputFile->Close();
   delete resMVAFullFastInputFile;
 }
-float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops){
+float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops, bool isFastSim){
   bool dbg = false;
   if(dbg) std::cout << "working with n resTops " << resMVATops.size() << std::endl;
 
@@ -451,6 +477,14 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       float sfunc  = getbinerror(candpt, (*sfhist)[candeta_str]);
       if(dbg) std::cout << "  sf, sfunc, eff,  " << sf << " " << sfunc << " " << eff << " " << std::endl;
 
+      ///// FASTSIM /////
+      if(isFastSim && gentop){
+        float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
+        sf *= fullfastsf;
+      }
+      ///// END FASTSIM /////
+
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved tagged systs: " << std::endl;
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_STATS) && gentop){
@@ -509,6 +543,14 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       float efft = getbincontent(candpt, (*effhistt)[candeta_str]);
       float sftunc  = getbinerror(candpt, (*sfhistt)[candeta_str]);
       if(dbg) std::cout << "  sft, sfunct, efft,  " << sft << " " << sftunc << " " << efft << " " << std::endl;
+
+      ///// FASTSIM /////
+      if(isFastSim && gentop){
+        float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
+        sft *= fullfastsf;
+      }
+      ///// END FASTSIM /////
 
       ///// SYSTEMATICS /////
       if(dbg) std::cout << "  resolved untagged systs: " << std::endl;
@@ -716,17 +758,16 @@ void TopWCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
   if(!ana->isMC()) return;
 
   defaults::SignalType type = ana->evtInfoReader.signalType;
-  //bool isFastSim = false;
-  //if(ana->process == defaults::SIGNAL){ isFastSim=true; }
+  bool isFastSim = ana->evtInfoReader.isfastsim;
 
   if(options_ & SDMVA) {
     if(dbg) std::cout << "Processing systs for SDMVA for n fatjets: " << ana->fatJets.size() << std::endl;
-    sdMVAWeight = sdMVACorr->process(options_, ana->fatJets);
+    sdMVAWeight = sdMVACorr->process(options_, ana->fatJets, isFastSim);
   }
 
   if(options_ & RESMVATOP) {
     if(dbg) std::cout << "Processing systs for RESMVATOP for n res cands: " << ana->resMVATopCands.size() << std::endl;
-    resMVATopWeight = resMVATopCorr->process(options_, ana->resMVATopCands, ana->hadronicGenTops);
+    resMVATopWeight = resMVATopCorr->process(options_, ana->resMVATopCands, ana->hadronicGenTops, isFastSim);
   }
 
   ///// ICHEP16 OUTDATED /////

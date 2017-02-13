@@ -1578,52 +1578,52 @@ struct ExtraVarsFiller {
 
     // merged
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_W; // STATS_W
-    data->fill<float>("sdMVAWeight_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_T; // STATS_T
-    data->fill<float>("sdMVAWeight_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_PS; // PS
-    data->fill<float>("sdMVAWeight_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_GEN; // GEN
-    data->fill<float>("sdMVAWeight_GEN", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_GEN", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_W; // MISTAG_UP_W
-    data->fill<float>("sdMVAWeight_MISTAG_UP_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_MISTAG_UP_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_T; // MISTAG_UP_T
-    data->fill<float>("sdMVAWeight_MISTAG_UP_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_MISTAG_UP_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     // mistag
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_W; // MISTAG_STAT_W
-    data->fill<float>("sdMVAWeight_MISTAG_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_T; // MISTAG_STAT_T
-    data->fill<float>("sdMVAWeight_MISTAG_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB; // MISTAG_NB
-    data->fill<float>("sdMVAWeight_MISTAG_NB", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets));
+    data->fill<float>("sdMVAWeight_MISTAG_NB", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
 
     // resolved
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_STATS; // STATS
-    data->fill<float>("resTopWeight_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_PS; // PS
-    data->fill<float>("resTopWeight_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_GEN; // GEN
-    data->fill<float>("resTopWeight_GEN", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_GEN", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP; // MISTAG_UP
-    data->fill<float>("resTopWeight_MISTAG_UP", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_MISTAG_UP", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
     // mistag
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS; // MISTAG_STATS
-    data->fill<float>("resTopWeight_MISTAG_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_MISTAG_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB; // MISTAG_NB
-    data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops));
+    data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){

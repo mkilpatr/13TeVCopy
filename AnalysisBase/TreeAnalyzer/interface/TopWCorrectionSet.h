@@ -18,13 +18,13 @@ class SdMVACorr : public Correction {
   public:
     SdMVACorr();
     ~SdMVACorr();
-    float process(int correctionOptions, const std::vector<FatJetF*> &fatjets);
+    float process(int correctionOptions, const std::vector<FatJetF*> &fatjets, bool isFastSim);
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",defaults::CMSSW_BASE.c_str());
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14 2016
     TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Jan 30 2017
     TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str());
-    TString fileNameFullFast = TString::Format("%s/src/data/corrections/dummy.root",defaults::CMSSW_BASE.c_str());
+    TString fileNameFullFast = TString::Format("%s/src/data/corrections/2017/sdtopw/merged_fastsim_sf_20170212.root",defaults::CMSSW_BASE.c_str());
 
     TFile * sdMVAInputFile;
     TFile * sdMVAFullFastInputFile;
@@ -57,19 +57,20 @@ class SdMVACorr : public Correction {
     TH1F  * sdMVA_Full_systs_w_mis_d;
 
     // fullsim/fastsim scale factors
-    TH1F  * sdMVAFullFastSF;            // dummy
+    TH1F  * sdMVAFullFastSF_t;
+    TH1F  * sdMVAFullFastSF_w;
 };
 
 class ResMVATopCorr : public Correction {
   public:
     ResMVATopCorr();
     ~ResMVATopCorr();
-    float process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops);
+    float process(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops, bool isFastSim);
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_sf_20161201.root",defaults::CMSSW_BASE.c_str());
     TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Feb 1
     TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str()); //NOT A BUG - systs are stored in same file as merged
-    TString fileNameFullFast = TString::Format("%s/src/data/corrections/dummy.root",defaults::CMSSW_BASE.c_str());
+    TString fileNameFullFast = TString::Format("%s/src/data/corrections/2017/restop/resolved_fastsim_sf_20170212.root",defaults::CMSSW_BASE.c_str());
 
     TFile * resMVATopInputFile;
     TFile * resMVAFullFastInputFile;
@@ -162,8 +163,8 @@ public:
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
 
   //individual accessors
-  float getAnySdMVAWeight(int correctionOptions, const std::vector<FatJetF*> &fatjets) const { return sdMVACorr->process(correctionOptions,fatjets); }
-  float getAnyResMVATopWeight(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops) const { return resMVATopCorr->process(correctionOptions,resMVATops, hadronicGenTops); }
+  float getAnySdMVAWeight(int correctionOptions, const std::vector<FatJetF*> &fatjets, bool isFastSim) const { return sdMVACorr->process(correctionOptions,fatjets,isFastSim); }
+  float getAnyResMVATopWeight(int correctionOptions, const std::vector<TopCand> &resMVATops, const std::vector<PartonMatching::TopDecay*>& hadronicGenTops, bool isFastSim) const { return resMVATopCorr->process(correctionOptions,resMVATops, hadronicGenTops, isFastSim); }
   float getSdMVAWeight() const {return sdMVAWeight;}
   float getResMVATopWeight() const {return resMVATopWeight;}
   float getSdTopWeight() const {return sdTopWeight;} ///// ICHEP16 OUTDATED /////
