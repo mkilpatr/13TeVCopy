@@ -57,7 +57,7 @@ struct ResolvedMVAFiller {
   size i_res_b_pt;
   size i_res_b_mass;
   size i_res_b_csv;
-  size i_res_b_csvb;
+  size i_res_b_cvsl;
   size i_res_b_qgl;
   size i_res_b_ptD;
   size i_res_b_axis1;
@@ -67,7 +67,7 @@ struct ResolvedMVAFiller {
   size i_res_j2_pt;
   size i_res_j2_mass;
   size i_res_j2_csv;
-  size i_res_j2_csvb;
+  size i_res_j2_cvsl;
   size i_res_j2_qgl;
   size i_res_j2_ptD;
   size i_res_j2_axis1;
@@ -77,7 +77,7 @@ struct ResolvedMVAFiller {
   size i_res_j3_pt;
   size i_res_j3_mass;
   size i_res_j3_csv;
-  size i_res_j3_csvb;
+  size i_res_j3_cvsl;
   size i_res_j3_qgl;
   size i_res_j3_ptD;
   size i_res_j3_axis1;
@@ -119,7 +119,7 @@ struct ResolvedMVAFiller {
     i_res_b_pt      = data->addMulti<float>("","res_b_pt", -9);
     i_res_b_mass    = data->addMulti<float>("","res_b_mass", -9);
     i_res_b_csv     = data->addMulti<float>("","res_b_csv", -9);
-    i_res_b_csvb    = data->addMulti<float>("","res_b_csvb", -9);
+    i_res_b_cvsl    = data->addMulti<float>("","res_b_cvsl", -9);
     i_res_b_qgl     = data->addMulti<float>("","res_b_qgl", -9);
     i_res_b_ptD     = data->addMulti<float>("","res_b_ptD", -9);
     i_res_b_axis1   = data->addMulti<float>("","res_b_axis1", -9);
@@ -129,7 +129,7 @@ struct ResolvedMVAFiller {
     i_res_j2_pt     = data->addMulti<float>("","res_j2_pt", -9);
     i_res_j2_mass   = data->addMulti<float>("","res_j2_mass", -9);
     i_res_j2_csv    = data->addMulti<float>("","res_j2_csv", -9);
-    i_res_j2_csvb   = data->addMulti<float>("","res_j2_csvb", -9);
+    i_res_j2_cvsl   = data->addMulti<float>("","res_j2_cvsl", -9);
     i_res_j2_qgl    = data->addMulti<float>("","res_j2_qgl", -9);
     i_res_j2_ptD    = data->addMulti<float>("","res_j2_ptD", -9);
     i_res_j2_axis1  = data->addMulti<float>("","res_j2_axis1", -9);
@@ -139,7 +139,7 @@ struct ResolvedMVAFiller {
     i_res_j3_pt     = data->addMulti<float>("","res_j3_pt", -9);
     i_res_j3_mass   = data->addMulti<float>("","res_j3_mass", -9);
     i_res_j3_csv    = data->addMulti<float>("","res_j3_csv", -9);
-    i_res_j3_csvb   = data->addMulti<float>("","res_j3_csvb", -9);
+    i_res_j3_cvsl   = data->addMulti<float>("","res_j3_cvsl", -9);
     i_res_j3_qgl    = data->addMulti<float>("","res_j3_qgl", -9);
     i_res_j3_ptD    = data->addMulti<float>("","res_j3_ptD", -9);
     i_res_j3_axis1  = data->addMulti<float>("","res_j3_axis1", -9);
@@ -160,8 +160,8 @@ struct ResolvedMVAFiller {
     i_res_sd_n1p5        = data->addMulti<float>("","res_sd_n1p5", -9);
     i_res_sd_n2          = data->addMulti<float>("","res_sd_n2", -9);
 
-    i_res_b_j2_mass      = data->addMulti<float>("","res_b_j2", -9);
-    i_res_b_j3_mass      = data->addMulti<float>("","res_b_j3", -9);
+    i_res_b_j2_mass      = data->addMulti<float>("","res_b_j2_mass", -9);
+    i_res_b_j3_mass      = data->addMulti<float>("","res_b_j3_mass", -9);
 
   }
 
@@ -178,7 +178,7 @@ struct ResolvedMVAFiller {
     data->fillMulti<float>(i_res_b_pt,            varMap["var_b_pt"]);
     data->fillMulti<float>(i_res_b_mass,          varMap["var_b_mass"]);
     data->fillMulti<float>(i_res_b_csv,           varMap["var_b_csv"]);
-    data->fillMulti<float>(i_res_b_csvb,          varMap["var_b_csvb"]);
+    data->fillMulti<float>(i_res_b_cvsl,          varMap["var_b_cvsl"]);
     data->fillMulti<float>(i_res_b_qgl,           varMap["var_b_qgl"]);
     data->fillMulti<float>(i_res_b_ptD,           varMap["var_b_ptD"]);
     data->fillMulti<float>(i_res_b_axis1,         varMap["var_b_axis1"]);
@@ -188,7 +188,7 @@ struct ResolvedMVAFiller {
     data->fillMulti<float>(i_res_j2_pt,            varMap["var_j2_pt"]);
     data->fillMulti<float>(i_res_j2_mass,          varMap["var_j2_mass"]);
     data->fillMulti<float>(i_res_j2_csv,           varMap["var_j2_csv"]);
-    data->fillMulti<float>(i_res_j2_csvb,          varMap["var_j2_csvb"]);
+    data->fillMulti<float>(i_res_j2_cvsl,          varMap["var_j2_cvsl"]);
     data->fillMulti<float>(i_res_j2_qgl,           varMap["var_j2_qgl"]);
     data->fillMulti<float>(i_res_j2_ptD,           varMap["var_j2_ptD"]);
     data->fillMulti<float>(i_res_j2_axis1,         varMap["var_j2_axis1"]);
@@ -198,7 +198,7 @@ struct ResolvedMVAFiller {
     data->fillMulti<float>(i_res_j3_pt,            varMap["var_j3_pt"]);
     data->fillMulti<float>(i_res_j3_mass,          varMap["var_j3_mass"]);
     data->fillMulti<float>(i_res_j3_csv,           varMap["var_j3_csv"]);
-    data->fillMulti<float>(i_res_j3_csvb,          varMap["var_j3_csvb"]);
+    data->fillMulti<float>(i_res_j3_cvsl,          varMap["var_j3_cvsl"]);
     data->fillMulti<float>(i_res_j3_qgl,           varMap["var_j3_qgl"]);
     data->fillMulti<float>(i_res_j3_ptD,           varMap["var_j3_ptD"]);
     data->fillMulti<float>(i_res_j3_axis1,         varMap["var_j3_axis1"]);
@@ -220,7 +220,7 @@ struct ResolvedMVAFiller {
     data->fillMulti<float>(i_res_sd_n2,            varMap["var_sd_n2"]);
 
     data->fillMulti<float>(i_res_b_j2_mass,        varMap["var_b_j2_mass"]);
-    data->fillMulti<float>(i_res_b_j3_mass,        varMap["var_b_j3"]);
+    data->fillMulti<float>(i_res_b_j3_mass,        varMap["var_b_j3_mass"]);
 
   }
 

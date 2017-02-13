@@ -344,6 +344,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_sd_n1p5,           varMap["ak8_sd_n1p5"]);
     data->fillMulti<float>(i_ak8_sd_n2,             varMap["ak8_sd_n2"]);
 
+
     // CSV ranked
 
     data->fillMulti<float>(i_ak8_csv1_pt,            varMap["ak8_csv1_pt"]);
@@ -362,6 +363,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_csv2_axis2,         varMap["ak8_csv2_axis2"]);
     data->fillMulti<int>  (i_ak8_csv2_mult,          int(varMap["ak8_csv2_mult"]));
 
+/* // not used for training...
     // mass ranked
 
     data->fillMulti<float>(i_ak8_mass1_pt,            varMap["ak8_mass1_pt"]);
@@ -379,6 +381,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_mass2_axis1,         varMap["ak8_mass2_axis1"]);
     data->fillMulti<float>(i_ak8_mass2_axis2,         varMap["ak8_mass2_axis2"]);
     data->fillMulti<int>  (i_ak8_mass2_mult,          int(varMap["ak8_mass2_mult"]));
+*/
   }
 
   template<class FatJet>
