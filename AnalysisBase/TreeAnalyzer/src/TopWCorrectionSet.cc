@@ -179,12 +179,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && (recotop && gentop)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   full/fast top sf " << fullfastsf << std::endl;
-        sf *= fullfastsf;
+        eff *= fullfastsf;
       }
       if(isFastSim && (recow && genw)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   full/fast w sf " << fullfastsf << std::endl;
-        sf *= fullfastsf;
+        eff *= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -288,12 +288,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   fullfast sf top: " << fullfastsf << std::endl;
-        sft *= fullfastsf;
+        efft *= fullfastsf;
       }
       if(isFastSim && genw){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   fullfast sf w: " << fullfastsf << std::endl;
-        sfw *= fullfastsf;
+        effw *= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -481,7 +481,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        sf *= fullfastsf;
+        eff *= fullfastsf;
       }
       ///// END FASTSIM /////
 
@@ -548,7 +548,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        sft *= fullfastsf;
+        efft *= fullfastsf;
       }
       ///// END FASTSIM /////
 
