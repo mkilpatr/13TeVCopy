@@ -1,41 +1,21 @@
 /*
-  Softdrop MVA Tagger
+  updated feb 10 2017
 
-  Diffs of SoftdropMVA.hh from HTTMVA.hh
-    variables filling and calculation
-    matching/exclusion radii 0.8/0.8 instead of ropt+0.1/ropt
-    preselectedFatJets filling
+  softdrop mva tops and ws
+  treefiller for mva variables, either just a few basic variables or all variables used in training
 
-  Struct:
-    filler SoftdropMVAFiller
-  Methods:
-    book / fillBasicInfo for basics (# loose, # tight, pt, eta, sd mass, mva)
-    bookTrain / fillTrainInfo for everything
-  Filling scheme:
-    fillMulti is used to fill every variable for every preselected fatjet in the event (pt 200, eta 2.4, softdrop mass 50, min subjet pt 20)
-    thus if there are 5 preselected fatjets in the event every variable is filled exactly 5 times
-    defaults are -9 -9. or false
-    all csv of <=0 ( from failure of csv algo, few percent ) are set to 0 to save the MVA
-    all eta are NOT abs(eta)
-    a matching hadr. gen top quark is looked for only if process is ttbar(0l,1l) or signal. if one is found matches_gen = true and gen variables are non-default (>=0)
-    preselected fatjets are sorted by descending MVA score, thus so are all variables. use [0] to flatten all variables to best MVA scoring fatjet
-  Matching scheme:
-    for each preselected fatjet if the process is ttbar(0l,1l) or signal we look for a top quark satisfying
-      "matching" : gen_maxdrqfj < 0.8, meaning this top quark's b/w1/w2 quarks are contained within the fatjet 0.8 cone
-        --> gen_maxdrqfj is defined as MAX dR( the b/w1/w2 quarks from this hadr. top quark decay, the preselected fatjet to which this hadr. top quark is matched )
-      "exclusion": gen_mindrtq > 0.8, meaning no b/w1/w2 quarks from other hadr. top quark decays in the 0.8 cone
-        --> gen_mindrtq is defined as min dR( this hadr. top quark , the b/w1/w2 quarks from other hadr. top quark decays )
-    if both are satisfied, matches_gen is filled with true. if not, false.
-  Variables:
-    variables and the fatjet preselections are calculated in ONE place, AnalysisTools/ObjectSelection/src/SoftdropMVA.hh
-    for gen properties see *gen* and combine with matches_gen (or else you'll get the default value), eg Scan("gen_top_pt", "met>200 && matches_gen")
-    for preselected fat jet properties *fj*, their subjet properties *bydef* (by default method) and *bycsv* (by csv method), nick variables *nick*
-    if wonky quickly check that vector variables are all filling correctly in parallel:
-      tree->Scan("event:fj_pt:matches_gen:gen_toppt")
-                   1 : 100 : 0 : -9
-                   1 : 150 : 1 : 160
-                   2 : ...
-      using two sets of vector variables, say if leptonpt were fillMulti and you did "fj_pt>400 && leptonpt>20", can cause shit to hit the fan
+  use in ZeroLeptonTreeHelper:
+    SoftdropMVAFiller softdropMVAFiller;
+    softdropMVAFiller.book() for basics or bookTrain() for all
+    softdropMVAFiller.fillBasicInfo() or fillTrainInfo()
+
+  filling of variables is PER-JET for all fatjets passing our standard PRESELECTION fxns
+    AnalysisTools/ObjectSelection/src/SoftdropTopMVA.cc / SoftdropWMVA.cc:
+    SoftdropTopMVA::isPreselected(fatjet) selects fatjets with pt 200, abseta 2.4, ==2 subjets, softdrop mass 50, subjet pt 20
+    SoftdropWMVA::isPreselected(fatjet) selects fatjets with same --
+
+  all calculations for Softdrop MVA variables are done centrally in AnalysisTools/ObjectSelection/src/SoftdropMVA.hh to avoid bugs
+  all calculations for gen matching are done centrally in https://github.com/UCSBSusy/13TeVAnalysis/blob/80X_Moriond17/AnalysisBase/TreeAnalyzer/src/BaseTreeAnalyzer.cc#L560
 */
 
 #ifndef SOFTDROPMVA_HH
@@ -53,7 +33,7 @@
 #include "Math/VectorUtil.h"
 
 #include "AnalysisTools/Utilities/interface/PartonMatching.h"
-#include "AnalysisTools/ObjectSelection/src/SoftdropTopMVA.cc"
+#include "AnalysisTools/ObjectSelection/interface/SoftdropTopMVA.h"
 #include "MVACommon.hh"
 
 using namespace ucsbsusy;
@@ -75,9 +55,23 @@ struct SoftdropMVAFiller {
   size i_basic_ak8_pt;
   size i_basic_ak8_eta;
   size i_basic_ak8_sdmass;
-  size i_basic_ak8_mva;
+  size i_basic_ak8_top_mva;
+  size i_basic_ak8_w_mva;
 
   //// train variables
+
+  size i_ak8_recocat_istop;
+  size i_ak8_recocat_isw;
+  size i_ak8_gencat_istop;
+  size i_ak8_gencat_isw;
+  size i_ak8_gencat_iscontainedtop;
+  size i_ak8_gencat_iscontainedw;
+
+  size i_ak8_gen_nearleppt;
+  size i_ak8_gen_nearlepeta;
+  size i_ak8_gen_nearlepdr;
+  size i_ak8_gen_nearlepid;
+
   size i_ak8_matches_gen;
 
   size i_ak8_gen_top_pt;
@@ -173,10 +167,24 @@ struct SoftdropMVAFiller {
     i_basic_ak8_pt          = data->addMulti<float>("","basic_ak8_pt",-9);
     i_basic_ak8_eta         = data->addMulti<float>("","basic_ak8_eta",-9);
     i_basic_ak8_sdmass      = data->addMulti<float>("","basic_ak8_sdmass",-9);
-    i_basic_ak8_mva         = data->addMulti<float>("","basic_ak8_mva",-9);
+    i_basic_ak8_top_mva         = data->addMulti<float>("","basic_ak8_top_mva",-9);
+    i_basic_ak8_w_mva         = data->addMulti<float>("","basic_ak8_w_mva",-9);
   }
 
   void bookTrain(TreeWriterData* data) {
+
+    // cats    
+    i_ak8_recocat_istop            = data->addMulti<bool>("","ak8_recocat_istop",false);
+    i_ak8_recocat_isw              = data->addMulti<bool>("","ak8_recocat_isw",false);
+    i_ak8_gencat_istop             = data->addMulti<bool>("","ak8_gencat_istop",false);
+    i_ak8_gencat_isw               = data->addMulti<bool>("","ak8_gencat_isw",false);
+    i_ak8_gencat_iscontainedtop    = data->addMulti<bool>("","ak8_gencat_iscontainedtop",false);
+    i_ak8_gencat_iscontainedw      = data->addMulti<bool>("","ak8_gencat_iscontainedw",false);
+
+    i_ak8_gen_nearleppt            = data->addMulti<float>("","ak8_gen_nearleppt",-9);
+    i_ak8_gen_nearlepeta           = data->addMulti<float>("","ak8_gen_nearlepeta",-9);
+    i_ak8_gen_nearlepdr            = data->addMulti<float>("","ak8_gen_nearlepdr",-9);
+    i_ak8_gen_nearlepid            = data->addMulti<int  >("","ak8_gen_nearlepid",-9);
 
     // of gen top quark, if match found
     i_ak8_gen_top_pt           = data->addMulti<float>("","ak8_gen_top_pt",-9);
@@ -271,12 +279,22 @@ struct SoftdropMVAFiller {
 
   }
 
+  void fillCats(TreeWriterData* data, const FatJetF *fatjet){
+    // AnalysisTools/DataFormats/interface/FatJet.h
+    data->fillMulti<bool>(i_ak8_recocat_istop, fatjet->recoCategory() & FatJetRecoCategory::SDMVATOP);
+    data->fillMulti<bool>(i_ak8_recocat_isw,   fatjet->recoCategory() & FatJetRecoCategory::SDMVAW);
+    data->fillMulti<bool>(i_ak8_gencat_istop, fatjet->genCategory() & FatJetGenCategory::GENTOP);
+    data->fillMulti<bool>(i_ak8_gencat_isw,   fatjet->genCategory() & FatJetGenCategory::GENW);
+    data->fillMulti<bool>(i_ak8_gencat_iscontainedtop, fatjet->genCategory() & FatJetGenCategory::GENTOP_CONTAINED);
+    data->fillMulti<bool>(i_ak8_gencat_iscontainedw,   fatjet->genCategory() & FatJetGenCategory::GENW_CONTAINED);
+  }
+
+
   void fillFatJetTrainInfo(TreeWriterData* data, const FatJetF *fatjet, bool matchesGen){
     bool dbg = false;
     if(dbg) std::cout << "[Sd MVA]     fillFatJetTrainInfo for fatjet pt " << fatjet->pt() << std::endl;
     assert(fatjet->nSubjets()==2); // preselected fatjet. if not, MUST fill all vars with default values, or else have vector vars of different lengths.
     data->fillMulti<bool> (i_ak8_matches_gen, matchesGen);
-    data->fillMulti<float>(i_ak8_mva,         fatjet->mva());
     //if(dbg) std::cout << "[Sd MVA]     fillFatJetTrainInfo pass cutbasedsd, ichep " << cfgSet::isSoftDropTagged(fatjet, 400, 110, 210, 0.69, 1e9) << " " << cfgSet::isSoftDropTagged(fatjet, 400, 105, 220, 0.67, 1e9, 0.46) << std::endl;
     //if(dbg) std::cout << "[Sd MVA]     fillFatJetTrainInfo pt, sd mass, tau3/2 " << fatjet->pt() << " " << fatjet->softDropMass() << " " << fatjet->tau3()/fatjet->tau2() << std::endl;
     data->fillMulti<bool >(i_ak8_passCutBasedSd,     cfgSet::isSoftDropTagged(fatjet, 400, 110, 210, 0.69, 1e9));
@@ -326,6 +344,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_sd_n1p5,           varMap["ak8_sd_n1p5"]);
     data->fillMulti<float>(i_ak8_sd_n2,             varMap["ak8_sd_n2"]);
 
+
     // CSV ranked
 
     data->fillMulti<float>(i_ak8_csv1_pt,            varMap["ak8_csv1_pt"]);
@@ -344,6 +363,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_csv2_axis2,         varMap["ak8_csv2_axis2"]);
     data->fillMulti<int>  (i_ak8_csv2_mult,          int(varMap["ak8_csv2_mult"]));
 
+/* // not used for training...
     // mass ranked
 
     data->fillMulti<float>(i_ak8_mass1_pt,            varMap["ak8_mass1_pt"]);
@@ -361,6 +381,7 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_mass2_axis1,         varMap["ak8_mass2_axis1"]);
     data->fillMulti<float>(i_ak8_mass2_axis2,         varMap["ak8_mass2_axis2"]);
     data->fillMulti<int>  (i_ak8_mass2_mult,          int(varMap["ak8_mass2_mult"]));
+*/
   }
 
   template<class FatJet>
@@ -383,6 +404,43 @@ struct SoftdropMVAFiller {
     data->fillMulti<float>(i_ak8_gen_quarkalarmpt, (top ? quarkalarmpt : -9));
   }
 
+  void fillGenLepInfo(TreeWriterData* data, BaseTreeAnalyzer * ana, const FatJetF *fatjet){
+    // find nearby prompt gen leps
+    if(!ana->isMC()) return;
+
+    float mindr = 99.;
+    GenParticleF* closestlep = 0;
+    for(auto* p : ana->genParts) {
+      float dr = PhysicsUtilities::deltaR(fatjet->p4(), p->p4());
+      //if(dr > 0.8) continue;
+      if (p->numberOfMothers()==0) continue;
+      const auto *genPartMom = p->mother(0);
+
+      bool isLep = ( ParticleInfo::isA(ParticleInfo::p_eminus, p) || 
+                     ParticleInfo::isA(ParticleInfo::p_muminus, p) || 
+                     ParticleInfo::isA(ParticleInfo::p_tauminus, p) );
+      bool isPrompt    = ( ParticleInfo::isA(ParticleInfo::p_Z0, genPartMom) || 
+                           ParticleInfo::isA(ParticleInfo::p_Wplus, genPartMom) || 
+                           ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom) );
+
+      if(!isLep || !isPrompt) continue;
+      if(dr < mindr) { closestlep = p; mindr = dr; }
+    }
+    float genpt = -9., geneta = -9., gendr = -9.;
+    int absid = -1;
+    if(closestlep){
+      genpt = closestlep->pt();
+      geneta = closestlep->eta();
+      gendr = PhysicsUtilities::deltaR(fatjet->p4(), closestlep->p4());
+      absid = abs(closestlep->pdgId());
+    }
+
+    data->fillMulti<float>(i_ak8_gen_nearleppt, genpt);
+    data->fillMulti<float>(i_ak8_gen_nearlepeta, geneta);
+    data->fillMulti<float>(i_ak8_gen_nearlepdr, mindr);
+    data->fillMulti<int  >(i_ak8_gen_nearlepid, absid);
+  }
+
   void preparePreselectedFatjets(BaseTreeAnalyzer* ana) {
     bool dbg = false;
     if(dbg) std::cout << "[Sd MVA] Preparing preselected fatjets" << std::endl;
@@ -390,16 +448,16 @@ struct SoftdropMVAFiller {
     preselectedFatjets.clear();
     for (const auto *fatjet : ana->fatJets){
       if(dbg) std::cout << "[Sd MVA]     sd Top has pt, sd, raw masses: " << fatjet->pt() << " " << fatjet->softDropMass() << " " <<  fatjet->p4().mass() << std::endl;
-      if(dbg) std::cout << "[Sd MVA]               MVA score, isPreselected? " << fatjet->mva() << " " << SoftdropTopMVA::isPreselected(fatjet) << std::endl;
+      if(dbg) std::cout << "[Sd MVA]             top/W  MVA score, isPreselected? " << fatjet->top_mva() << " " << fatjet->w_mva() << " " << SoftdropTopMVA::isPreselected(fatjet) << std::endl;
       if(SoftdropTopMVA::isPreselected(fatjet)) {
         preselectedFatjets.push_back(fatjet);
       }
-    }\
+    }
 
-    if(dbg) std::cout << "[Sd MVA]     Sorting by MVA score: " << gentops.size() << std::endl;
+    //if(dbg) std::cout << "[Sd MVA]     Sorting by MVA score: " << gentops.size() << std::endl;
 
     // sort by descending MVA score
-    std::sort(preselectedFatjets.begin(), preselectedFatjets.end(), [&](const FatJetF *a, const FatJetF *b){ return a->mva() > b->mva(); });
+    //std::sort(preselectedFatjets.begin(), preselectedFatjets.end(), [&](const FatJetF *a, const FatJetF *b){ return a->mva() > b->mva(); });
   }
 
   void prepareGenTops(BaseTreeAnalyzer* ana){
@@ -425,16 +483,19 @@ struct SoftdropMVAFiller {
     preparePreselectedFatjets(ana);
     prepareGenTops(ana);
 
-    data->fill<int  >(i_nLooseSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_LOOSE; }));
-    data->fill<int  >(i_nMediumSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_MEDIUM; }));
-    data->fill<int  >(i_nTightSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_TIGHT; }));
+    //data->fill<int  >(i_nLooseSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_LOOSE; }));
+    //data->fill<int  >(i_nMediumSoftdropMVA, std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_MEDIUM; }));
+    //data->fill<int  >(i_nTightSoftdropMVA,  std::count_if( preselectedFatjets.begin(), preselectedFatjets.end(), [](const FatJetF* fatjet){ return fatjet->mva() > SoftdropTopMVA::WP_TIGHT; }));
     for(const auto &fatjet : preselectedFatjets) {
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, 0.8, 0.8) : 0); // if not top process don't try to match
       data->fillMulti<bool >(i_basic_ak8_matches_gen, (top ? true : false));
       data->fillMulti<float>(i_basic_ak8_pt, fatjet->pt());
       data->fillMulti<float>(i_basic_ak8_eta, fatjet->eta());
       data->fillMulti<float>(i_basic_ak8_sdmass, fatjet->softDropMass());
-      data->fillMulti<float>(i_basic_ak8_mva, fatjet->mva());
+
+      data->fillMulti<float>(i_basic_ak8_top_mva, fatjet->top_mva());
+      data->fillMulti<float>(i_basic_ak8_w_mva, fatjet->w_mva());
+
     }
     delete partonEvent;
   }//fillBasicInfo
@@ -457,7 +518,9 @@ struct SoftdropMVAFiller {
       const PartonMatching::TopDecay * top = (topProcess ? MVACommon::getTopCand(fatjet, gentops, 0.8, 0.8) : 0); // if not top process don't try to match
       if(dbg) std::cout << "[Sd MVA]     return of getTopCand gen pt, process: " << (top ? top->top->pt() : 0) << " " << topProcess << " " << std::endl;
       //matchPairs.emplace_back(top,fatjet);
-      fillGenInfo(data, top, gentops, fatjet);
+      //fillGenInfo(data, top, gentops, fatjet);
+      fillGenLepInfo(data, ana, fatjet);
+      fillCats(data, fatjet);
       fillFatJetTrainInfo(data, fatjet, (top ? true : false));
     }
     delete partonEvent;
