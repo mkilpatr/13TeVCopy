@@ -12,9 +12,6 @@ json=$9
 
 workdir=`pwd`
 
-### Do copy CMSSW tarball
-tar -xf CMSSW.tar.gz
-
 echo `hostname`
 echo "${_CONDOR_SCRATCH_DIR}"
 echo "scramdir: $scramdir"
@@ -23,19 +20,9 @@ echo "args: $*"
 ls -l
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-
-### Don't copy CMSSW tarball
-#cd $scramdir/src/
-#SCRAM_ARCH=slc6_amd64_gcc491
-#eval `scramv1 runtime -sh`
-
-### Do copy CMSSW tarball
-cd CMSSW_*/src/
+cd $scramdir/src/
 SCRAM_ARCH=slc6_amd64_gcc491
 eval `scramv1 runtime -sh`
-scramdir=`pwd`
-echo "New scramdir: $scramdir"
-
 cd $workdir
 
 ### done in the transfer_input_files ###
