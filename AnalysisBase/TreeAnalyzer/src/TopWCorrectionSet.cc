@@ -1,3 +1,52 @@
+  // strategy feb 2017
+  //   "method 1", or "reweighting via product"
+  //   sfeff(X | gY) means SF(X | gY)*Eff(X | gY) where X is reco category and gY is gen category
+  //
+  // MERGED CASE:
+  //   four categories for SFs and effs, two reco ( t or w exclusive ) and two gen ( t or w nonexclusive )
+  //       P(data)  = product of sfeff( t | gt) for every fj in the ( t | gt ) category, true top tags
+  //                * product of sfeff( w | gw) for -- , true w tags
+  //                * product of sfeff( t | !gt) for --, top mistags
+  //                * product of sfeff( w | !gw) for --, w mistags
+  //                * product of ( 1 - sfeff( t | gt ) - sfeff( w | !gw ) ) for every fj in the ( !t!w | gt !gw ) category, missed opportunity tops (no overlapping w)
+  //                * product of ( 1 - sfeff( t | !gt ) - sfeff( w | gw ) ) for every fj in the ( !t!w | !gt gw ) category, missed opportunity ws (no overlapping top)
+  //                * product of ( 1 - sfeff( t | gt ) - sfeff( w | gw ) )  for every fj in the ( !t!w | gt gw  ) category, missed opportunity top and w overlapping
+  //                * product of ( 1 - sfeff( t | !gt ) - sfeff( w | !gw) ) for every fj in the ( !t!w | !gt !gw ) category, darkness
+  //       P(MC) = same, replacing sfeff by eff
+  //    ---> event weight = P(data)/P(MC)
+  //
+  // RESOLVED CASE:
+  //   two categories for SFs and effs, one reco (t) and one gen (t)
+  //       P(data)  = product of sfeff( t | gt) for every candidate in the (t | gt) category, true tags
+  //                * product of sfeff( t | !gt) for every candidate in the (t | !gt) category, mistags
+  //                * product of ( 1 - sfeff( t | gt ) ) for every candidate in the (!t | gt) category, missed opportunity tops
+  //                * product of ( 1 - sfeff( t | !gt ) ) for every candidate in the (!t | !gt) category, darkness
+  //       P(MC) = same, replacing sfeff by eff
+  //    ---> event weight = P(data)/P(MC)
+  //
+  //    stat uncertainties on effs and SFs (not systs!)
+  //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
+  //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
+  //      we can thus keep a running uncertainty on the pmc and pdata products (the arg of sqrt)
+  //
+  //    syst uncertainties
+  //      ALL ARE DERIVED WITH DENOMINATOR THE NOMINAL CASE
+  //      To apply (eg jump from usual madgraph to alternate powheg via powheg/madgraph MC effs ratio) must DIVIDE the usual SF by the systs histo:
+  //        (new MC eff) = (powheg / madgraph)*(old MC eff), which means
+  //        (new data/MC SF) = (data eff)/(new MC eff) = [(data eff)/(old MC eff)] / (powheg / madgraph), ie DIVIDE
+  //
+  //    FastSim
+  //      DERIVED AS FULLSIM/FASTSIM
+  //      we measure full/fastsim SFs to correct fastsim tagging efficiencies.
+  //      when running on fastsim MC we want P(data) = E(data), and P(mc) = E(fast), and we have on file E(full) and SF(data/full) and E(full/fast).
+  //        P(data) = E(data) = SF(data/full)*E(full)
+  //                          = SF(data/full)*[E(full)/E(fast)] * E(full)/[E(full)/E(fast)]
+  //        P(mc)   = E(fast) = E(full)/[E(full)/E(fast)]
+  //      thus we need to take the SF from file and multiply it by the full/fast SF, and simultaneously divide the E from file by the same.
+  //      this leaves P(data) unchanged and brings P(mc) to equal E(fast)
+  // 
+  //  if you ever do unc = 1/2 the distance please use consistently TMath::Abs(1.0 - sf)*0.5;
+
 #include "AnalysisBase/TreeAnalyzer/interface/TopWCorrectionSet.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisBase/TreeAnalyzer/interface/DefaultProcessing.h"
@@ -43,34 +92,6 @@ SdMVACorr::SdMVACorr() : Correction("SdMVA") {
   sdMVA_Full_wmistagEff["highEta"]     = (TH1F*)( sdMVAInputFile->Get("mc_mistag_w_barrel") );
   sdMVA_Full_wmistagEff["lowEta"]      = (TH1F*)( sdMVAInputFile->Get("mc_mistag_w_endcap") );
 
-/*
-  // this comment block is valid for sdMVAInputFile of data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root, replaced Jan 30 2017
-
-  // data/mc fullsim tag SFs
-  sdMVA_DataFull_toptagSF["lowEta"]  = (TH1F*)( sdMVAInputFile->Get("ratio-t-efnl1-nb1") );
-  sdMVA_DataFull_toptagSF["highEta"] = (TH1F*)( sdMVAInputFile->Get("ratio-t-efnl1-nb1") );
-  sdMVA_DataFull_wtagSF["lowEta"]    = (TH1F*)( sdMVAInputFile->Get("ratio-w-efnl1-nb1") );
-  sdMVA_DataFull_wtagSF["highEta"]   = (TH1F*)( sdMVAInputFile->Get("ratio-w-efnl1-nb1") );
-
-  // data/mc fullsim mistag SFs
-  sdMVA_DataFull_topmistagSF["lowEta"]  = (TH1F*)( sdMVAInputFile->Get("ratio-t-mtnl0-nb1") );
-  sdMVA_DataFull_topmistagSF["highEta"] = (TH1F*)( sdMVAInputFile->Get("ratio-t-mtnl0-nb1") );
-  sdMVA_DataFull_wmistagSF["lowEta"]    = (TH1F*)( sdMVAInputFile->Get("ratio-w-mtnl0-nb1") );
-  sdMVA_DataFull_wmistagSF["highEta"]   = (TH1F*)( sdMVAInputFile->Get("ratio-w-mtnl0-nb1") );
-
-  // fullsim mc tagging effs
-  sdMVA_Full_toptagEff["lowEta"]       = (TH1F*)( sdMVAInputFile->Get("eff-mc-t-efnl1-nb1") );
-  sdMVA_Full_toptagEff["highEta"]      = (TH1F*)( sdMVAInputFile->Get("eff-mc-t-efnl1-nb1") );
-  sdMVA_Full_wtagEff["highEta"]        = (TH1F*)( sdMVAInputFile->Get("eff-mc-w-efnl1-nb1") );
-  sdMVA_Full_wtagEff["lowEta"]         = (TH1F*)( sdMVAInputFile->Get("eff-mc-w-efnl1-nb1") );
-
-  // fullsim mc mistagging effs
-  sdMVA_Full_topmistagEff["lowEta"]    = (TH1F*)( sdMVAInputFile->Get("eff-mc-t-mtnl0-nb1") );
-  sdMVA_Full_topmistagEff["highEta"]   = (TH1F*)( sdMVAInputFile->Get("eff-mc-t-mtnl0-nb1") );
-  sdMVA_Full_wmistagEff["highEta"]     = (TH1F*)( sdMVAInputFile->Get("eff-mc-w-mtnl0-nb1") );
-  sdMVA_Full_wmistagEff["lowEta"]      = (TH1F*)( sdMVAInputFile->Get("eff-mc-w-mtnl0-nb1") );
-*/
-
   // fullsim systematics
   sdMVA_Full_systs_t_ps      = (TH1F*)( sdMVASystsFile->Get("t-sys-ps-0") );
   sdMVA_Full_systs_w_ps      = (TH1F*)( sdMVASystsFile->Get("w-sys-ps-0") );
@@ -106,34 +127,6 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
   auto getbin = [](float value, const TH1F * hist) -> int {return std::min(std::max(hist->FindFixBin(value),1),hist->GetNbinsX());  };
   auto getbincontent = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinContent(getbin(value,hist)); };
   auto getbinerror   = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinError(getbin(value,hist)); };
-
-  // strategy nov 2016
-  //   "method 1", or "reweighting via product"
-  //   sfeff(X | Y) means SF(X | Y)*Eff(X | gY) where X is reco category and Y is gen category
-  //   four categories for SFs and effs, two reco ( t or w exclusive ) and two gen ( t or w nonexclusive )
-  //       P(data)  = product of sfeff( t | gt) for every fj in the ( t | gt ) category, true top tags
-  //                * product of sfeff( w | gw) for -- , true w tags
-  //                * product of sfeff( t | !gt) for --, top mistags
-  //                * product of sfeff( w | !gw) for --, w mistags
-  //                * product of ( 1 - sfeff( t | gt ) - sfeff( w | !gw ) ) for every fj in the ( !t!w | gt !gw ) category, missed opportunity tops (no overlapping w)
-  //                * product of ( 1 - sfeff( t | !gt ) - sfeff( w | gw ) ) for every fj in the ( !t!w | !gt gw ) category, missed opportunity ws (no overlapping top)
-  //                * product of ( 1 - sfeff( t | gt ) - sfeff( w | gw ) )  for every fj in the ( !t!w | gt gw  ) category, missed opportunity top and w overlapping
-  //                * product of ( 1 - sfeff( t | !gt ) - sfeff( w | !gw) ) for every fj in the ( !t!w | !gt !gw ) category, darkness
-  //       P(MC) = same, replacing sfeff by eff
-  //    ---> event weight = P(data)/P(MC)
-  //
-  //    stat uncertainties on effs and SFs (not systs!)
-  //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
-  //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
-  //      we can thus keep a running uncertainty on the pmc and pdata products (the arg of sqrt)
-  //
-  //    syst uncertainties
-  //      sources: parton showering, generator, mistag SF (up/down 20% the mistag SF applied to the unmatched MC subtracted in the calculation of the tagging SF)
-  //      NOMINAL IS DENOMINATOR. So to apply (eg jump from usual madgraph to alternate powheg via powheg/madgraph MC effs ratio) must DIVIDE the usual SF by the systs histo:
-  //        (new MC eff) = (powheg / madgraph)*(old MC eff), which means
-  //        (new data/MC SF) = (data eff)/(new MC eff) = [(data eff)/(old MC eff)] / (powheg / madgraph), ie DIVIDE
-  //
-  //  if you ever do unc = 1/2 the distance please use consistently TMath::Abs(1.0 - sf)*0.5;
 
   float wgt = 1, pdata = 1, pmc = 1, wgtunc = 0, pdataunc = 0, pmcunc = 0;
   for(auto fj : fatjets){
@@ -179,12 +172,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && (recotop && gentop)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   full/fast top sf " << fullfastsf << std::endl;
-        eff *= fullfastsf;
+        sf *= fullfastsf; eff /= fullfastsf;
       }
       if(isFastSim && (recow && genw)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   full/fast w sf " << fullfastsf << std::endl;
-        eff *= fullfastsf;
+        sf *= fullfastsf; eff /= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -233,6 +226,16 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
         float syst = 1.2; // flat 20%
         if(dbg) std::cout << "    merged mistag nb systs, factor on sf of " << syst << std::endl;
         sf /= syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw && recow){
+        float syst = getbinerror(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << eff+syst << std::endl;
+        eff  += syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T) && gentop && recotop){
+        float syst = getbinerror(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << eff+syst << std::endl;
+        eff  += syst;
       }
       ///// END SYSTEMATICS /////
 
@@ -288,12 +291,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   fullfast sf top: " << fullfastsf << std::endl;
-        efft *= fullfastsf;
+        sft *= fullfastsf; efft /= fullfastsf;
       }
       if(isFastSim && genw){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   fullfast sf w: " << fullfastsf << std::endl;
-        effw *= fullfastsf;
+        sfw *= fullfastsf; effw /= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -349,6 +352,16 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
         if(dbg) std::cout << "    merged mistag nb systs, factor on sft, sfw of " << systt << " " << systw << std::endl;
         sft /= systt;
         sfw /= systw;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw){
+        float syst = getbinerror(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << effw+syst << std::endl;
+        effw  += syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T) && gentop){
+        float syst = getbinerror(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << efft+syst << std::endl;
+        efft  += syst;
       }
       ///// END SYSTEMATICS /////
 
@@ -424,30 +437,6 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
   auto getbincontent = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinContent(getbin(value,hist)); };
   auto getbinerror   = [getbin](float value, const TH1F * hist) -> float {return hist->GetBinError(getbin(value,hist)); };
 
-  // strategy nov 2016 - same as merged case above but fewer categories
-  //   "method 1", or "reweighting via product"
-  //   sfeff(X | Y) means SF(X | Y)*Eff(X | gY) where X is reco category and Y is gen category
-  //   two categories for SFs and effs, one reco (t) and one gen (t)
-  //       P(data)  = product of sfeff( t | gt) for every candidate in the (t | gt) category, true tags
-  //                * product of sfeff( t | !gt) for every candidate in the (t | !gt) category, mistags
-  //                * product of ( 1 - sfeff( t | gt ) ) for every candidate in the (!t | gt) category, missed opportunity tops
-  //                * product of ( 1 - sfeff( t | !gt ) ) for every candidate in the (!t | !gt) category, darkness
-  //       P(MC) = same, replacing sfeff by eff
-  //    ---> event weight = P(data)/P(MC)
-  //
-  //    stat uncertainties on effs and SFs (not systs!)
-  //      generically sf = A*B*(1-C-D) etc, so combining product and sum rules,
-  //        sf_unc/sf = sqrt( (A_unc/A)^2 + (b_unc/B)^2 + (C_unc^2 + D_unc^2)/(1-C-D)^2 )
-  //      we can thus keep a running uncertainty on the pmc and pdata products (the arg of sqrt)
-  //
-  //    syst uncertainties
-  //      sources: parton showering, generator, mistag SF (up/down 20% the mistag SF applied to the unmatched MC subtracted in the calculation of the tagging SF)
-  //      NOMINAL IS DENOMINATOR. So to apply (eg jump from usual madgraph to alternate powheg via powheg/madgraph MC effs ratio) must DIVIDE the usual SF by the systs histo:
-  //        (new MC eff) = (powheg / madgraph)*(old MC eff), which means
-  //        (new data/MC SF) = (data eff)/(new MC eff) = [(data eff)/(old MC eff)] / (powheg / madgraph), ie DIVIDE
-  //
-  //  if you ever do unc = 1/2 the distance please use consistently TMath::Abs(1.0 - sf)*0.5;
-
   float wgt = 1, pdata = 1, pmc = 1, wgtunc = 0, pdataunc = 0, pmcunc = 0;
   for(auto &cand : resMVATops){
     float candpt = cand.topcand.pt();
@@ -481,7 +470,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        eff *= fullfastsf;
+        sf *= fullfastsf; eff /= fullfastsf;
       }
       ///// END FASTSIM /////
 
@@ -516,6 +505,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
+        float syst = getbinerror(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << eff+syst << std::endl;
+        eff  += syst;
+      }
       ///// END SYSTEMATICS /////
 
       pdata    *= sf*eff;
@@ -548,7 +542,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        efft *= fullfastsf;
+        sft *= fullfastsf; efft /= fullfastsf;
       }
       ///// END FASTSIM /////
 
@@ -582,6 +576,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         float syst = 1.2;
         if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
         sft /= syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
+        float syst = getbinerror(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << efft+syst << std::endl;
+        efft  += syst;
       }
       ///// END SYSTEMATICS /////
 

@@ -154,7 +154,11 @@ public:
                         // variations on resolved top mistag eff
                         , SYSTS_RESOLVED_MISTAG_STATS= (1 << 17)   // systs - RESOLVED - mistag SF - stat
                         , SYSTS_RESOLVED_MISTAG_NB   = (1 << 18)   // systs - RESOLVED - mistag SF - nb
-  };
+                        // fastsim
+                        , SYSTS_MERGED_FASTSIM_STATS_T = (1 << 19)   // systs - merged - fullsim/fastsim SF stats T
+                        , SYSTS_MERGED_FASTSIM_STATS_W = (1 << 20)   // systs - merged - fullsim/fastsim SF stats W
+                        , SYSTS_RESOLVED_FASTSIM_STATS = (1 << 21)   // systs - resolved - fullsim/fastsim SF stats
+   };
 
   TopWCorrectionSet(): sdMVACorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), sdMVAWeight(1), resMVATopWeight(1), sdTopWeight(1), sdWWeight(1){}
 
