@@ -4,6 +4,7 @@
 #include "AnalysisTools/QuickRefold/interface/Refold.h"
 #include "AnalysisBase/TreeAnalyzer/interface/BaseTreeAnalyzer.h"
 #include "AnalysisTools/Utilities/interface/PartonMatching.h"
+#include "AnalysisTools/Utilities/interface/ParticleInfo.h"
 
 #include "TFile.h"
 
@@ -11,7 +12,7 @@
 namespace ucsbsusy {
 
 
-ISRCorr::ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TString>& sigNormNames ) : Correction("ISR"), corrFile(0), sigNormFile(0)
+ISRCorr::ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TString>& sigNormNames, const std::vector<TString>& bkgNormNames ) : Correction("ISR"), corrFile(0), sigNormFile(0)
 {
   //Fill SF reading
   std::clog << "Loading correction file: "<< corrInput<<std::endl;
@@ -20,10 +21,13 @@ ISRCorr::ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TStri
   corr = (const TH1*)(corrFile->Get("Corr") );
   if(!corr) throw std::invalid_argument("ISRCorr::ISRCorr: Correction could not be found!");
 
+  if(sigNormNames.size() + bkgNormNames.size()){
+	    std::clog << "Loading normalization file: "<< sigNormInput<<std::endl;
+	    sigNormFile = TFile::Open(sigNormInput,"read");
+	    if(!sigNormInput) throw std::invalid_argument("ISRCorr::ISRCorr: Normalization file not found!");
+  }
+
   if(sigNormNames.size()){
-    std::clog << "Loading normalization file: "<< sigNormInput<<std::endl;
-    sigNormFile = TFile::Open(sigNormInput,"read");
-    if(!sigNormInput) throw std::invalid_argument("ISRCorr::ISRCorr: Normalization file not found!");
     std::clog << "And normalizations for: ";
     for(unsigned int iN = 0; iN < sigNormNames.size(); ++iN){
       std::clog << sigNormNames[iN] <<" ";
@@ -41,7 +45,29 @@ ISRCorr::ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TStri
       sigNorms[type] = norm;
     }
     std::clog << std::endl;
-  } else{
+  }
+
+  if(bkgNormNames.size()){
+    std::clog << "And normalizations for: ";
+    for(unsigned int iN = 0; iN < bkgNormNames.size(); ++iN){
+      std::clog << bkgNormNames[iN] <<" ";
+
+      defaults::Process type = defaults::NUMPROCESSES;
+      for(int iS = 0; iS < defaults::NUMPROCESSES; ++iS  ){
+        if(bkgNormNames[iN] != defaults::PROCESS_NAMES[iS]) continue;
+        type = defaults::Process(iS);
+        break;
+      }
+      if(type == defaults::NUMPROCESSES) throw std::invalid_argument(TString::Format("ISRCorr::ISRCorr: Normalization (%s) is not in the list of defaults::Process!",bkgNormNames[iN].Data()));
+
+      const auto * norm = (const QuickRefold::Refold*)(sigNormFile->Get(bkgNormNames[iN]) );
+      if(!norm)  throw std::invalid_argument(TString::Format("ISRCorr::ISRCorr: Normalization (%s) could not be found!",bkgNormNames[iN].Data()));
+      bkgNorms[type] = norm;
+    }
+    std::clog << std::endl;
+  }
+
+  if(sigNormNames.size() + bkgNormNames.size() == 0){
     std::clog << "Warning: Not loading any ISR normalizations!"<< sigNormInput<<std::endl;
   }
 }
@@ -85,16 +111,27 @@ double ISRCorr::getSignalNormFactor(CORRTYPE type, const defaults::SignalType si
   return norm->getValue();
 }
 
-void ISRCorrectionSet::load(TString corrInput,TString normInput, TString normTightInput, const std::vector<TString>& normNames, int correctionOptions)
+double ISRCorr::getBKGNormFactor(CORRTYPE type, const defaults::Process process) const {
+  if(type == NONE) return 1;
+  auto normIt = bkgNorms.find(process);
+  if(normIt == bkgNorms.end()){
+    return -1;
+  }
+  const auto* norm = normIt->second;
+  norm->setBin(MASS1,type); //ICKY....only one axis for bkg!!
+  return norm->getValue();
+}
+
+void ISRCorrectionSet::load(TString corrInput,TString normInput, TString normTightInput, const std::vector<TString>& normNames,const std::vector<TString>& bkgNormNames, int correctionOptions)
 {
   loadSimple("ISRCorrection",correctionOptions);
 
   if(options_ & ISRCORR){
-    isrCorr = new ISRCorr(corrInput,normInput, normNames);
+    isrCorr = new ISRCorr(corrInput,normInput, normNames,bkgNormNames);
     corrections.push_back(isrCorr);
   }
   if(options_ & ISRCORRTIGHT){
-    isrCorrTight = new ISRCorr(corrInput,normTightInput, normNames);
+    isrCorrTight = new ISRCorr(corrInput,normTightInput, normNames,bkgNormNames);
     corrections.push_back(isrCorrTight);
   }
 }
@@ -104,44 +141,30 @@ int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana, bool tight) cons
   const double minJetPT = 30;
   const double maxJetETA = 2.4;
 
+  //For the tight version, let's count W/Z->leptons
+  std::vector<MomentumF> leptons;
+  if(tight)
+  for(const auto& p : ana->genParticleReader.genParticles){
+	if(!ParticleInfo::isLepton(p.pdgId())) continue;
+	if(p.numberOfMothers() != 1) continue;
+	if(!(ParticleInfo::isEWKBoson(p.mother(0)->pdgId()) || ParticleInfo::isBSM(p.mother(0)->pdgId()) )) continue;
+	leptons.emplace_back(p.p4());
+  }
+
   int nISRJets = 0;
-  //Please forgive me for what I am about to do
-  auto& recoJetReader = *const_cast<JetReader*>(&ana->ak4Reader);
-  auto& genPartReader = *const_cast<GenParticleReader*>(&ana->genParticleReader);
-
-  std::vector<GenJetF*> genJets;
-  std::vector<ucsbsusy::RecoJetF*> recoJets;
-  std::vector<PartonMatching::DecayID> decays;
-
-  recoJets.clear();
-  decays.clear();
-  std::vector<int> genIDX;
-  for(auto& j : recoJetReader.recoJets){
+  for(const auto& j : ana->ak4Reader.recoJets){
     if(j.pt() < minJetPT) continue;
     if(j.absEta() > maxJetETA) continue;
     if(ana->process != defaults::SIGNAL && !j.looseid()) continue;
-    recoJets.push_back(&j);
-    genIDX.push_back(-1);
-    if(j.genJet() == 0)  continue;
-    genIDX.back() = genJets.size();
-    genJets.push_back(j.genJet());
-  }
-//
-  PartonMatching::PartonEvent * partonEvent = new PartonMatching::PartonEvent(genPartReader,recoJetReader,genJets);
-  partonEvent->processSubtractedJetPTs();
-
-  for(unsigned int iJ = 0; iJ < recoJets.size(); ++iJ){
-    if(genIDX[iJ] < 0 ){
-      nISRJets++;
-      continue;
+    if(j.decayMatch()) continue;
+    bool lepMatch = false;
+    for(const auto& l : leptons){
+    	if(PhysicsUtilities::deltaR2(l,j) < 0.3*0.3 ) {lepMatch = true; break;}
     }
-    double newGenJETPT = partonEvent->subtractedJetPTs[genIDX[iJ]];
-    double originalGENJetPT = genJets[genIDX[iJ]]->pt();
-    double recoCF = originalGENJetPT == 0 ? 1 : newGenJETPT/originalGENJetPT;
-    if(tight && newGenJETPT/originalGENJetPT <= 0.5) continue;
-    if(recoJets[iJ]->pt()*recoCF >= minJetPT) nISRJets++;
+    if(lepMatch) continue;
+    nISRJets++;
   }
-  delete partonEvent;
+
   return nISRJets;
 
 }
@@ -149,25 +172,26 @@ int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana, bool tight) cons
 void ISRCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
 
   isrWeight =1;
-  nISRJetsTight = 1;
   nISRJets = 0;
   nISRJetsTight = 0;
 
   if(!ana->isMC()) return;
-  if(ana->process != defaults::SIGNAL) return;
+  if(!(ana->process == defaults::SIGNAL || ana->process == defaults::TTBAR)) return;
   const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
   massParams[0] = ana->evtInfoReader.massparams->size() > 0 ? ana->evtInfoReader.massparams->at(0) : 0;
   massParams[1] = ana->evtInfoReader.massparams->size() > 1 ? ana->evtInfoReader.massparams->at(1) : 0;
   massParams[2] = ana->evtInfoReader.massparams->size() > 2 ? ana->evtInfoReader.massparams->at(2) : 0;
 
-  if( (options_ & ISRCORR) && ana->process == defaults::SIGNAL){
+  if( (options_ & ISRCORR)) {
     nISRJets = getNISRJets(ana);
-    isrWeight = isrCorr->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJets);
+    isrWeight = ana->process == defaults::SIGNAL ? isrCorr->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJets)
+    		:isrCorr->getBKGNormCorrFactor(cfg.corrections.isrType, ana->process,nISRJets);
     if(isrWeight < 0) isrWeight = 1;
   }
-  if( (options_ & ISRCORRTIGHT) && ana->process == defaults::SIGNAL){
+  if( (options_ & ISRCORRTIGHT)){
     nISRJetsTight = getNISRJets(ana,true);
-    isrWeightTight = isrCorrTight->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJetsTight);
+    isrWeightTight = ana->process == defaults::SIGNAL ? isrCorrTight->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJetsTight)
+    		: isrCorrTight->getBKGNormCorrFactor(cfg.corrections.isrType, ana->process,nISRJetsTight);
     if(nISRJetsTight < 0) nISRJetsTight = 1;
   }
 }

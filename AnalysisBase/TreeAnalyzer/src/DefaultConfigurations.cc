@@ -157,10 +157,10 @@ void cfgSet::loadDefaultCorrections() {
 
 
   standardCorrections.isrCorrections     = ucsbsusy::ISRCorrectionSet::ISRCORR | ucsbsusy::ISRCorrectionSet::ISRCORRTIGHT;
-  standardCorrections.isrCorrFile        =  TString::Format("%s/src/data/corrections/2016/isrCorr.root",CMSSW_BASE);
-  standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNorms.root",CMSSW_BASE);
-  standardCorrections.isrSigNormTightFile     =  TString::Format("%s/src/data/corrections/2016/isrSigNormsTight.root",CMSSW_BASE);
-  standardCorrections.isrSigNorms.push_back("T2tt"); standardCorrections.isrSigNorms.push_back("T2bW"); standardCorrections.isrSigNorms.push_back("T2fb");
+  standardCorrections.isrCorrFile        =  TString::Format("%s/src/data/corrections/2017/isrCorr.root",CMSSW_BASE);
+  standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2017/isrNorms.root",CMSSW_BASE);
+  standardCorrections.isrSigNormTightFile     =  TString::Format("%s/src/data/corrections/2017/isrNormsTight.root",CMSSW_BASE);
+  standardCorrections.isrSigNorms.push_back("T2tt");  standardCorrections.isrSigNorms.push_back("T2fb"); standardCorrections.isrBKGNorms.push_back("ttbar");
   standardCorrections.isrType = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();
 }

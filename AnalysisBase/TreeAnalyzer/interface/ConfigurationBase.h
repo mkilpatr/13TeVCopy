@@ -249,6 +249,7 @@ namespace cfgSet {
     TString isrSigNormFile;
     TString isrSigNormTightFile;
     std::vector<TString> isrSigNorms;
+    std::vector<TString> isrBKGNorms;
     ucsbsusy::CORRTYPE isrType;
 
     CorrectionConfig(TString inName = "NULL") :BaseConfig(inName),
@@ -399,12 +400,18 @@ namespace cfgSet {
           for(unsigned int iN = 0; iN < a.isrSigNorms.size(); ++iN){
             os << a.isrSigNorms[iN] <<" ";
           }
+          for(unsigned int iN = 0; iN < a.isrBKGNorms.size(); ++iN){
+              os << a.isrBKGNorms[iN] <<" ";
+            }
           os <<")"<<std::endl;
         }
         if(a.isrCorrections & ucsbsusy::ISRCorrectionSet::ISRCORRTIGHT){
           os << "Applying ISR corrections from " << a.isrCorrFile.Data()<<","<<a.isrSigNormTightFile.Data() <<" -> (";
           for(unsigned int iN = 0; iN < a.isrSigNorms.size(); ++iN){
             os << a.isrSigNorms[iN] <<" ";
+          }
+          for(unsigned int iN = 0; iN < a.isrBKGNorms.size(); ++iN){
+            os << a.isrBKGNorms[iN] <<" ";
           }
           os <<")"<<std::endl;
         }

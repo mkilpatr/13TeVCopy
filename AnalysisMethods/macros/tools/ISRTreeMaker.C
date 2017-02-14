@@ -19,6 +19,7 @@ public:
   i_mass1   (0),
   i_mass2   (0),
   i_mass3   (0),
+  i_weight   (0),
   i_stdCorr (0),
   i_upCorr  (0),
   i_downCorr(0),
@@ -105,7 +106,7 @@ public:
 
     cout <<" -------  "<<endl;
     ParticleInfo::printGenInfo(genParticleReader.genParticles);
-    int nISRJets = getNISRJets(this);
+    int nISRJets = isrCorrections.getNISRJets(this);
     float corr = isrCorrections.getISRCorrector()->getCorrFactor(NOMINAL,nISRJets);
     float corrUp = isrCorrections.getISRCorrector()->getCorrFactor(UP,nISRJets);
     float corrDown = isrCorrections.getISRCorrector()->getCorrFactor(DOWN,nISRJets);
@@ -123,13 +124,13 @@ public:
     float corr = isrCorrections.getISRCorrector()->getCorrFactor(NOMINAL,nISRJets);
     float corrUp = isrCorrections.getISRCorrector()->getCorrFactor(UP,nISRJets);
     float corrDown = isrCorrections.getISRCorrector()->getCorrFactor(DOWN,nISRJets);
-
+//    cout << nISRJets <<" "<< corr<<" "<<corrUp<<" "<<corrDown <<" "<< isrCorrections.getISRWeight()<<endl;
 
     int nISRJetsTight = isrCorrections.getNumberOfISRJetsTight();
     float corrTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(NOMINAL,nISRJetsTight);
     float corrUpTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(UP,nISRJetsTight);
     float corrDownTight = isrCorrections.getISRCorrectorTight()->getCorrFactor(DOWN,nISRJetsTight);
-
+//    cout << nISRJetsTight <<" "<< corrTight<<" "<<corrUpTight<<" "<<corrDownTight <<" "<< isrCorrections.getISRWeightTight()<<endl;
 
     data.fill<unsigned int>(i_process,process);
     data.fill<unsigned int>(  i_sigType,size(evtInfoReader.signalType));
@@ -137,6 +138,7 @@ public:
     data.fill<float>(  i_mass1 ,evtInfoReader.massparams->size() > 0 ? evtInfoReader.massparams->at(0) : 0 );
     data.fill<float>(  i_mass2 ,evtInfoReader.massparams->size() > 1 ? evtInfoReader.massparams->at(1) : 0);
     data.fill<float>(  i_mass3 ,evtInfoReader.massparams->size() > 2 ? evtInfoReader.massparams->at(2) : 0);
+    data.fill<float>(i_weight, weight);
     data.fill<float>(  i_stdCorr,corr);
     data.fill<float>(  i_upCorr,corrUp);
     data.fill<float>(  i_downCorr,corrDown);
@@ -157,6 +159,7 @@ public:
     i_mass1         = data.add<float>("","mass1"                       ,"F",0);
     i_mass2         = data.add<float>("","mass2"                       ,"F",0);
     i_mass3         = data.add<float>("","mass3"                       ,"F",0);
+    i_weight        = data.add<float>("","weight"                       ,"F",0);
     i_stdCorr       = data.add<float>("","corrWeight"              ,"F",0);
     i_upCorr        = data.add<float>("","upCorrWeight"            ,"F",0);
     i_downCorr      = data.add<float>("","downCorrWeight"          ,"F",0);
@@ -175,6 +178,7 @@ public:
   size i_mass1    ;
   size i_mass2    ;
   size i_mass3    ;
+  size i_weight    ;
   size i_stdCorr  ;
   size i_upCorr   ;
   size i_downCorr ;
@@ -190,10 +194,10 @@ public:
 
 #endif
 
-void ISRTreeMaker(TString sname = "T2bW",
+void ISRTreeMaker(TString sname = "ttbar",
                              const int fileindex = -1,
                              const bool isMC = true,
-                             const TString fname = "/store/user/lpcstop/noreplica/13TeV/120716/signals/merged/T2bW_1000_650_ntuple_postproc.root",
+                             const TString fname = "/eos/uscms/store/user/lpcstop/noreplica/13TeV/290117/Moriond17/apatters/merged/ttbar-t1l-madgraph-ext_12_ntuple_postproc.root",
                              const TString outputdir = "trees",
                              const TString fileprefix = "root://cmseos:1094/",
                              const TString json=TString::Format("%s/src/data/JSON/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt",getenv("CMSSW_BASE")))
