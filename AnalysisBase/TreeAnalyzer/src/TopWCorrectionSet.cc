@@ -228,14 +228,14 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
         sf /= syst;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw && recow){
-        float syst = getbinerror(fjpt, sdMVAFullFastSF_w);
-        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << eff+syst << std::endl;
-        eff  += syst;
+        float percent = getbinerror(fjpt, sdMVAFullFastSF_w)/getbincontent(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << eff*(1+percent) << std::endl;
+        eff  *= (1+percent);
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T) && gentop && recotop){
-        float syst = getbinerror(fjpt, sdMVAFullFastSF_t);
-        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << eff+syst << std::endl;
-        eff  += syst;
+        float percent = getbinerror(fjpt, sdMVAFullFastSF_t)/getbincontent(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << eff*(1+percent) << std::endl;
+        eff  *= (1+percent);
       }
       ///// END SYSTEMATICS /////
 
@@ -354,14 +354,14 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
         sfw /= systw;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw){
-        float syst = getbinerror(fjpt, sdMVAFullFastSF_w);
-        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << effw+syst << std::endl;
-        effw  += syst;
+        float percent = getbinerror(fjpt, sdMVAFullFastSF_w)/ getbincontent(fjpt, sdMVAFullFastSF_w);
+        if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << effw*(1+percent) << std::endl;
+        effw  *= (1+percent);
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T) && gentop){
-        float syst = getbinerror(fjpt, sdMVAFullFastSF_t);
-        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << efft+syst << std::endl;
-        efft  += syst;
+        float percent = getbinerror(fjpt, sdMVAFullFastSF_t)/getbincontent(fjpt, sdMVAFullFastSF_t);
+        if(dbg) std::cout << "    merged fastsim stats T systs, eff after variation is " << efft*(1+percent) << std::endl;
+        efft  *= (1+percent);
       }
       ///// END SYSTEMATICS /////
 
@@ -506,9 +506,9 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         sf /= syst;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
-        float syst = getbinerror(candpt, resMVATopFullFastSF);
-        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << eff+syst << std::endl;
-        eff  += syst;
+        float percent = getbinerror(candpt, resMVATopFullFastSF)/ getbincontent(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << eff*(1+percent) << std::endl;
+        eff  *= (1+percent);
       }
       ///// END SYSTEMATICS /////
 
@@ -578,9 +578,9 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         sft /= syst;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
-        float syst = getbinerror(candpt, resMVATopFullFastSF);
-        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << efft+syst << std::endl;
-        efft  += syst;
+        float percent = getbinerror(candpt, resMVATopFullFastSF)/getbincontent(candpt, resMVATopFullFastSF);
+        if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << efft*(1+percent) << std::endl;
+        efft  *= (1+percent);
       }
       ///// END SYSTEMATICS /////
 
