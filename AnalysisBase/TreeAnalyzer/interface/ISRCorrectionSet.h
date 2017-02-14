@@ -16,19 +16,31 @@ class ISRCorr : public Correction {
 public:
   enum sigAxes {MASS1,MASS2,MASS3,TYPE};
 
-  ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TString>& sigNormNames  );
+  ISRCorr(TString corrInput,TString sigNormInput, const std::vector<TString>& sigNormNames, const std::vector<TString>& bkgNormNames  );
   ~ISRCorr();
 
   double getCorrFactor(CORRTYPE type, int nISRJets) const;
   double getSignalNormFactor(CORRTYPE type, const defaults::SignalType sigType, const std::vector<int>& massParams ) const;
+  double getBKGNormFactor(CORRTYPE type, const defaults::Process process) const ;
   double getSignalNormCorrFactor(CORRTYPE type,  const defaults::SignalType sigType, const std::vector<int>& massParams, int nISRJets) const
-    {return getSignalNormFactor(type,sigType,massParams)*getCorrFactor(type,nISRJets);}
+    {
+	  const double norm = getSignalNormFactor(type,sigType,massParams);
+	  if(norm < 0) return -1;
+	  return norm*getCorrFactor(type,nISRJets);
+    }
+  double getBKGNormCorrFactor(CORRTYPE type,  const defaults::Process process, int nISRJets) const
+    {
+	  const double norm =  getBKGNormFactor(type,process);
+	  if(norm < 0) return -1;
+	  return norm*getCorrFactor(type,nISRJets);
+    }
 
   TFile * corrFile;
   const TH1 * corr;
 
   TFile * sigNormFile;
   std::map<defaults::SignalType,const QuickRefold::Refold *> sigNorms;
+  std::map<defaults::Process,const QuickRefold::Refold *> bkgNorms;
 
 };
 
@@ -43,7 +55,7 @@ public:
   ISRCorrectionSet(): isrCorr(0),isrCorrTight(0), isrWeight(1), nISRJets(0), massParams(3),isrWeightTight(1),nISRJetsTight(0) {}
 
   virtual ~ISRCorrectionSet() {};
-  virtual void load(TString corrInput,TString normInput,TString normTightInput, const std::vector<TString>& normNames, int correctionOptions = NULLOPT);
+  virtual void load(TString corrInput,TString normInput,TString normTightInput, const std::vector<TString>& normNames,const std::vector<TString>& bkgNormNames, int correctionOptions = NULLOPT);
   virtual void processCorrection(const BaseTreeAnalyzer * ana);
   int getNISRJets(const BaseTreeAnalyzer * ana, bool tight = false) const;
 

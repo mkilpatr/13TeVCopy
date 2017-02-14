@@ -21,6 +21,15 @@ TH2D * getHistogram(TTree * tree, TString name, TString sel, TString weight,  TS
   return h;
 }
 
+TH1D * getHistogram1D(TTree * tree, TString name, TString sel, TString weight,  TString xAxis, int nXBins, double xMin, double xMax){
+  TString selection = TString::Format("%s*(%s)",weight.Data(),sel.Data());
+
+  TH1D * h = new TH1D(name,name,nXBins,xMin,xMax);
+  tree->Draw(TString::Format("%s>>+%s",xAxis.Data(),name.Data()),selection,"goff");
+  if(h) h = (TH1D*)h->Clone();
+  return h;
+}
+
 void go(TTree * tree,TFile* oF){
 
   enum SignalType {T2tt, T2bW, T2fb, T2tb, NUM_SIGTYPES};
@@ -28,11 +37,12 @@ void go(TTree * tree,TFile* oF){
   enum sigAxes {MASS1,MASS2,MASS3,TYPE};
   enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
   const std::string CORR_NAMES[]  {"NOMINAL", "UP", "DOWN","",""};
-//  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
-  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
+  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
+//  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
 
   for(unsigned int iS = 0; iS <= T2fb; ++iS){
     TString sel = TString::Format("sigType == %u",iS);
+	  if(iS != T2tt && iS != T2fb) continue;
 
     QuickRefold::Refold * a = new QuickRefold::Refold(SIGNAL_NAMES[iS].c_str(),4);
     a->addAxis(MASS1,"MASS1",1051,149.5,1200.5);
@@ -68,19 +78,67 @@ void go(TTree * tree,TFile* oF){
     delete a;
   }
 }
+
+void gobkg(TTree * tree,TFile* oF){
+
+	  enum Process {DATA, QCD, TTBAR, SINGLE_W, SINGLE_Z, SINGLE_G, SINGLE_T, TTZ, TTW, DIBOSON, SIGNAL, DATA_SINGLEEL, DATA_SINGLEMU, DATA_SINGLEPHO, DATA_DOUBLEEG, DATA_DOUBLEMU, DATA_MUEG, DATA_MET, DATA_JETHT, DATA_HTMHT, NUMPROCESSES };
+	  const std::string PROCESS_NAMES[]   = {"data","qcd","ttbar","w","z","g","t","ttZ","ttW","diboson","signal","singleel","singlemu","singlepho","doubleeg","doublemu","mueg","met","jetht","htmht",""};
+  enum sigAxes {TYPE};
+  enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
+  const std::string CORR_NAMES[]  {"NOMINAL", "UP", "DOWN","",""};
+  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
+//  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
+
+  for(unsigned int iS = 0; iS < NUMPROCESSES; ++iS){
+	  if(iS != TTBAR) continue;
+    TString sel = TString::Format("process == %u",iS);
+
+    QuickRefold::Refold * a = new QuickRefold::Refold(PROCESS_NAMES[iS].c_str(),1);
+    a->addAxis(TYPE,"TYPE",4,-.5,3.5);
+    a->stopSetup();
+
+    TString name = TString::Format("%s_%s",PROCESS_NAMES[iS].c_str(),"num");
+    TH1D * num = getHistogram1D(tree,name,sel,"weight","process",1,-1,100);
+
+    for(unsigned int iT = 0; iT <= DOWN; ++iT){
+      a->setBin(TYPE,iT);
+      TString denomName = TString::Format("%s_%s",PROCESS_NAMES[iS].c_str(),CORR_NAMES[iT].c_str());
+      TString weightString = TString::Format("(%s*weight)",WEIGHTS[iT].c_str());
+      TH1D * denom = getHistogram1D(tree,denomName,sel,weightString,"process",1,-1,100);
+
+      for(unsigned int iX = 1; iX <= num->GetNbinsX(); ++iX ){
+          double denCount = denom->GetBinContent(iX);
+          double numCount = num->GetBinContent(iX);
+          if(denCount == 0) continue;
+          cout << iS <<" "<<iT<<" "<<denom->GetXaxis()->GetBinCenter(iX) <<" "<<numCount<<" "<< denCount<<" "<<numCount/denCount<<endl;
+          a->setValue(numCount/denCount);
+      }
+    }
+    oF->cd();
+    a->Write();
+    delete a;
+  }
+}
 #endif
 
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_orig_CombinedSample.root", const TString treeName = "Events", const TString outFile = "resTailOut_puWeight_weight.root")
-void GetISRNorm(const TString inFile="isr_all.root",  const TString outFile = "isrSigNorms.root")
+//void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNorms.root")
+void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNormsTight.root")
 {
   TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();
+
   TFile * mf = new TFile(inFile,"read");
   TTree * mt =0;
   mf->GetObject("Events",mt);
 
+  TFile * bf = new TFile(bkgFile,"read");
+  TTree * bt =0;
+  bf->GetObject("Events",bt);
+
 //  getRes(mt,oF);
   go(mt,oF);
+  gobkg(bt,oF);
 
   oF->Close();
 }
