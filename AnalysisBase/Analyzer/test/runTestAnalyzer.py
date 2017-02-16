@@ -27,8 +27,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/0023AF2C-D7CD-E611-9247-002590E7D7CE.root'
 #options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/GJets_DR-0p4_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_qcut19_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/047C04F9-11BF-E611-B984-E41D2D08DDC0.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
-options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
+#options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
 #options.inputFiles = '/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/036/00000/0E02D50E-989F-E611-A962-FA163EE15C80.root'
+options.inputFiles = '/store/data/Run2016H/DoubleMuon/MINIAOD/03Feb2017_ver3-v1/50000/44C1C1FB-4AEB-E611-9597-008CFA1113F4.root'
 
 options.maxEvents = -1
 
@@ -95,7 +96,7 @@ ISDATA = False
 ISFASTSIM = False
 runMetCorrAndUnc = True
 updateJECs = True
-usePrivateSQlite = True
+usePrivateSQlite = False
 JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt' # not used
 updateBTagging = True
 
@@ -121,20 +122,27 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     ISDATA = True
     runMetCorrAndUnc = True
     updateJECs = True
-    usePrivateSQlite = True
+    usePrivateSQlite = False
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
     jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v4')
-    if 'PromptReco' in DatasetName:
-        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_v14')
+    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v7')
+    if 'Run2016H' in DatasetName:
+        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_v16')
+    process.TestAnalyzer.dataRecoVersion = re.search(r'/(Run[0-9]{4}[A-Z]\-|)([a-zA-Z0-9_]+\-v[0-9]+)/', DatasetName).group(2)
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
+    # for 03Feb2017 ReMiniAOD
+    if '03Feb2017' in DatasetName:
+        runMetCorrAndUnc = False
+        updateJECs = False
+        process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsMuEGClean', '', 'PAT')
+
 
 # Import of standard configurations
 process.load("Configuration.EventContent.EventContent_cff")

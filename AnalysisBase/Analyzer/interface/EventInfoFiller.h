@@ -43,7 +43,8 @@ namespace ucsbsusy {
         LOADLHE     = (1 << 1),
         LOADPUINFO  = (1 << 2),
         SAVEMASSES  = (1 << 3),
-        LOADGENJETS = (1 << 4)
+        LOADGENJETS = (1 << 4),
+        LOADEXTRAMETS = (1 << 5), // 03Feb2017 ReMiniAOD: save additional mets w/ different cleaning
       };
       static const int defaultOptions = NULLOPT;
 
@@ -69,6 +70,11 @@ namespace ucsbsusy {
       edm::EDGetTokenT<LHEEventProduct>                 lheEvtInfoToken_;
       std::vector<unsigned int>                         systWgtIndices_;
       edm::EDGetTokenT<reco::GenJetCollection>          stdGenJetToken_;
+
+      edm::EDGetTokenT<pat::METCollection>              metEGCleanToken_;
+      edm::EDGetTokenT<pat::METCollection>              metMuCleanToken_;
+      edm::EDGetTokenT<pat::METCollection>              metNoCleanToken_;
+
 
       std::string modelString_;
 
@@ -117,6 +123,17 @@ namespace ucsbsusy {
       size imetunclustrun2uppt_ ;
       size imetunclustrun2dnpt_ ;
 
+      // for 03Feb2017 ReMiniAOD data
+      size imetEGCleanpt_        ;
+      size imetEGCleanphi_       ;
+      size imetEGCleansumEt_     ;
+      size imetMuCleanpt_        ;
+      size imetMuCleanphi_       ;
+      size imetMuCleansumEt_     ;
+      size imetNoCleanpt_        ;
+      size imetNoCleanphi_       ;
+      size imetNoCleansumEt_     ;
+
     public:
       // Data members
       EventCoords    eventCoords;
@@ -137,6 +154,10 @@ namespace ucsbsusy {
       edm::Handle<reco::GenJetCollection>          stdGenJets_;
       bool isFastSim_;
 
+      // for 03Feb2017 ReMiniAOD data
+      edm::Handle<pat::METCollection>              metsEGClean_;
+      edm::Handle<pat::METCollection>              metsMuClean_;
+      edm::Handle<pat::METCollection>              metsNoClean_;
   };
 
 }

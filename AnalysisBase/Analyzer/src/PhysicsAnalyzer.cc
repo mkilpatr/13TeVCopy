@@ -15,6 +15,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 : BaseAnalyzer(iConfig)
 , isRealData          (iConfig.getParameter<int             >("isData"                 ))
 , globalTag           (iConfig.getParameter<string          >("globalTag"       ).data())
+, dataRecoVersion     (iConfig.getParameter<string          >("dataRecoVersion" ).data())
 , printLHERunInfo     (iConfig.getUntrackedParameter<bool   >("printLHERunInfo",false))
 , printGenLumiInfo    (iConfig.getUntrackedParameter<bool   >("printGenLumiInfo",false))
 , getGenLumiHeader    (iConfig.getUntrackedParameter<bool   >("getGenLumiHeader",false))
@@ -151,6 +152,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       if(isMC() && cfg.getUntrackedParameter<bool>("saveSystematicWeights")) defaultOptions |= EventInfoFiller::LOADLHE;
       if(isMC() && cfg.getUntrackedParameter<bool>("isMassScan")) defaultOptions |= EventInfoFiller::SAVEMASSES;
       if(isMC() && cfg.getUntrackedParameter<bool>("fillNumStdGenJets")) defaultOptions |= EventInfoFiller::LOADGENJETS;
+      if (dataRecoVersion.Contains("03Feb2017")) defaultOptions |= EventInfoFiller::LOADEXTRAMETS;
       eventInfo = new EventInfoFiller(cfg, consumesCollector(),
                                       options < 0 ? defaultOptions : options
                                       );
@@ -370,6 +372,7 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
 
     case METFILTERS : {
       int defaultOptions = METFiltersFiller::defaultOptions;
+      if (dataRecoVersion.Contains("03Feb2017")) defaultOptions |= (METFiltersFiller::LOADPATFILTERS | METFiltersFiller::LOADECALFIXFLAGS);
       metfilters = new METFiltersFiller(cfg, consumesCollector(),
                                         options < 0 ? defaultOptions : options,
 				        branchName == "" ? defaults::BRANCH_METFILTERS : branchName

@@ -80,12 +80,12 @@ namespace ucsbsusy {
     public :
       const int     isRealData;            // Whether or not processing real data; deduced from input file name and verified once first event is loaded
       const TString globalTag;             // Global tag name
+      const TString dataRecoVersion;       // dataset reco version name, e.g., "03Feb2017_ver2-v2"
       const bool    printLHERunInfo;       // print LHERunInfo: useful to determine which systematic weights are available
       const bool    printGenLumiInfo;      // print GenLumiInfo: print info contained in lumi header for signal
       const bool    getGenLumiHeader;      // get GenLumiHeader: relevant to get signal model info
       edm::EDGetTokenT<LHERunInfoProduct> lheInfoToken_;
       edm::EDGetTokenT<GenLumiInfoHeader> genLumiHeaderToken_;
-
       //--------------------------------------------------------------------------------------------------
       // "Filler" classes to store event information
       //--------------------------------------------------------------------------------------------------

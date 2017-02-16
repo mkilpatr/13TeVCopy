@@ -28,3 +28,6 @@
 [submodule "RecoEgamma"]
 	path = RecoEgamma
 	url = git@github.com:hqucms/RecoEgamma.git
+[submodule "CommonTools"]
+	path = CommonTools
+	url = git@github.com:hqucms/CommonTools.git
