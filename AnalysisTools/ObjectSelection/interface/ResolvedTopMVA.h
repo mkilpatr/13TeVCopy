@@ -50,9 +50,9 @@ public:
   }
 
   // max number of subjets of one hadronic gen top which match j1,j2,j3
-  static int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops, const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) {
+  static std::pair<int, const PartonMatching::TopDecay*> nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops, const RecoJetF* j1, const RecoJetF* j2, const RecoJetF* j3, float matchdr = 0.4, float matchpt = 1e6) {
     //if( j1 == 0 || j2 == 0 || j3 == 0) return -1;
-    if(matchpt < 0 || matchdr < 0) return -1;
+    if(matchpt < 0 || matchdr < 0) return std::make_pair(-1, nullptr);
 
     //check if a single jet can be matched to a single parton
     auto jetMatchesParton = [&](const GenParticleF* part, const RecoJetF* jet)->bool {
@@ -69,7 +69,7 @@ public:
       return -1; // no match
     };
 
-    int maxmatchedsubjets = 0;
+    int maxmatchedsubjets = 0; const PartonMatching::TopDecay *matchedTop = nullptr;
     for(const auto &top : tops){
       int matchedsubjets = 0;
       std::vector<int> matchcodes;
@@ -82,13 +82,20 @@ public:
       std::set<int> s( matchcodes.begin(), matchcodes.end() ); // trick to remove duplicates (two reco jets matching same parton)
       matchcodes.assign( s.begin(), s.end() );
       matchedsubjets = matchcodes.size();
-      maxmatchedsubjets = std::max(maxmatchedsubjets, matchedsubjets);
+      if (matchedsubjets > maxmatchedsubjets){
+        maxmatchedsubjets = matchedsubjets;
+        matchedTop = top;
+      }
     }
-    return maxmatchedsubjets;
+    return std::make_pair(maxmatchedsubjets, matchedTop);
   }
 
 
   int nMatchedSubjets(const std::vector<PartonMatching::TopDecay*> &tops) const {
+    return nMatchedSubjets(tops, b, j2, j3).first;
+  }
+
+  std::pair<int, const PartonMatching::TopDecay*> genMatchResult(const std::vector<PartonMatching::TopDecay*> &tops) const {
     return nMatchedSubjets(tops, b, j2, j3);
   }
 

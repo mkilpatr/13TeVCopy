@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "AnalysisTools/DataFormats/interface/Jet.h"
+#include "AnalysisTools/DataFormats/interface/GenParticle.h"
 
 namespace ucsbsusy {
 
@@ -224,6 +225,15 @@ class FatJet : public Jet<CoordSystem>
   void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ |= inGenCategory;}
   void setRecoCategory(const FatJetRecoCategory inRecoCategory) {recoCategory_ |= inRecoCategory;}
 
+  const GenParticleF* matchedGenParticle(FatJetGenCategory genCat) {
+    try {
+      return genMatch_.at(genCat);
+    }catch (std::out_of_range &e){
+      return nullptr;
+    }
+  }
+  void setMatchedGenParticle(FatJetGenCategory genCat, const GenParticleF *genPart) { genMatch_[genCat] = genPart; }
+
     ~FatJet(){}
 
   public:
@@ -244,6 +254,8 @@ class FatJet : public Jet<CoordSystem>
     bool looseid_ = false;
     bool tightid_ = false;
     bool passMuEnFrac_ = false;
+
+    std::map<FatJetGenCategory, const GenParticleF*> genMatch_;
 
     Momentum<CoordSystem> puppiMomentum;
     float puppi_softDropMass_;

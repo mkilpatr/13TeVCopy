@@ -106,7 +106,7 @@ void JetResolutionCorr::correctJetsAndMET(const CORRTYPE corrType, const double 
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
 }
 
-void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const {
+void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, std::vector<FatJetF>& fatjets, MomentumF& met) const {
   if(corrType == NONE || corrType == NOMINAL) return;
 
   // Not bothering to correct the SumEt
@@ -132,6 +132,24 @@ void JetScaleCorr::correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& j
   }
   std::sort(jets.begin(), jets.end(), PhysicsUtilities::greaterPT<RecoJetF>());
   met.setP4(CylLorentzVectorF(metvec.pt(), metvec.eta(), metvec.phi(), 0.0));
+
+  // tmp fix for ak8
+  for (auto &fj : fatjets){
+    CylLorentzVectorF orig, mod;
+    for (const auto &j : jets){
+      if (PhysicsUtilities::deltaR(j, fj) > 0.8) continue;
+      if(j.uncertainty() <= 0.0) continue;
+      double JESFactor = 1.0;
+      if(corrType == UP)
+        JESFactor += j.uncertainty();
+      else if (corrType == DOWN)
+        JESFactor -= j.uncertainty();
+      orig += j.p4();
+      mod += JESFactor*j.p4();
+    }
+    auto fj_newP4 = fj.p4() + mod - orig;
+    fj.setP4(fj_newP4);
+  }
 }
 
 void RespTailCorr::process(const std::vector<RecoJetF>& jets, const std::vector<GenJetF>& genJets, const MomentumF& met){
@@ -469,10 +487,10 @@ void JetAndMETCorrectionSet::correctJetResolution(const BaseTreeAnalyzer * ana, 
   jetResolution->correctJetsAndMET(ana->getAnaCfg().corrections.jetResCorrType,ana->rho,jets,met);
 }
 
-void JetAndMETCorrectionSet::correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met){
+void JetAndMETCorrectionSet::correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, FatJetFCollection& fatjets, MomentumF& met){
   if(!jetScale) return;
   if(!ana->isMC()) return;
-  jetScale->correctJetsAndMET(ana->getAnaCfg().corrections.jetScaleCorr,jets,met);
+  jetScale->correctJetsAndMET(ana->getAnaCfg().corrections.jetScaleCorr,jets,fatjets,met);
 }
 
 void JetAndMETCorrectionSet::processRespTail(const BaseTreeAnalyzer * ana, const JetReader& jetReader, const MomentumF& met) {
