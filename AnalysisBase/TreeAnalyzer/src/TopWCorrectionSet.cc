@@ -93,14 +93,18 @@ SdMVACorr::SdMVACorr() : Correction("SdMVA") {
   sdMVA_Full_wmistagEff["lowEta"]      = (TH1F*)( sdMVAInputFile->Get("mc_mistag_w_endcap") );
 
   // fullsim systematics
-  sdMVA_Full_systs_t_ps      = (TH1F*)( sdMVASystsFile->Get("t-sys-ps-0") );
-  sdMVA_Full_systs_w_ps      = (TH1F*)( sdMVASystsFile->Get("w-sys-ps-0") );
-  sdMVA_Full_systs_t_gen     = (TH1F*)( sdMVASystsFile->Get("t-sys-generator-0") );
-  sdMVA_Full_systs_w_gen     = (TH1F*)( sdMVASystsFile->Get("w-sys-generator-0") );
-  sdMVA_Full_systs_t_mis_u   = (TH1F*)( sdMVASystsFile->Get("t-sys-mistagsf-0") );
-  sdMVA_Full_systs_t_mis_d   = (TH1F*)( sdMVASystsFile->Get("t-sys-mistagsf-1") );
-  sdMVA_Full_systs_w_mis_u   = (TH1F*)( sdMVASystsFile->Get("w-sys-mistagsf-0") );
-  sdMVA_Full_systs_w_mis_d   = (TH1F*)( sdMVASystsFile->Get("w-sys-mistagsf-1") );
+  sdMVA_Full_systs_t_ps      = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_t_sys_ps_0") );
+  sdMVA_Full_systs_w_ps      = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_w_sys_ps_0") );
+  sdMVA_Full_systs_t_gen     = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_t_sys_generator_0") );
+  sdMVA_Full_systs_w_gen     = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_w_sys_generator_0") );
+  sdMVA_Full_systs_t_mis_u   = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_t_sys_mistagsf_0") );
+  sdMVA_Full_systs_t_mis_d   = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_t_sys_mistagsf-1") );
+  sdMVA_Full_systs_w_mis_u   = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_w_sys_mistagsf_0") );
+  sdMVA_Full_systs_w_mis_d   = (TH1F*)( sdMVASystsFile->Get("efnl1__tt_w_sys_mistagsf-1") );
+  sdMVA_Full_systs_t_mis_ps["lowEta"]  = (TH1F*) sdMVASystsFile->Get("mtnl0__qcd_t_sys_ps_0");
+  sdMVA_Full_systs_t_mis_ps["highEta"] = (TH1F*) sdMVASystsFile->Get("mtnl0__qcd_t_sys_ps_1");
+  sdMVA_Full_systs_w_mis_ps["lowEta"]  = (TH1F*) sdMVASystsFile->Get("mtnl0__qcd_w_sys_ps_0");
+  sdMVA_Full_systs_w_mis_ps["highEta"] = (TH1F*) sdMVASystsFile->Get("mtnl0__qcd_w_sys_ps_1");
 
   // full/fastsim SFs
   sdMVAFullFastSF_t            = (TH1F*)( sdMVAFullFastInputFile->Get("ak8_top_fullsim_by_fastsim_sf_vs_pt") );
@@ -225,6 +229,11 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB) && ((!gentop && recotop) || (!genw && recow))){
         float syst = 1.2; // flat 20%
         if(dbg) std::cout << "    merged mistag nb systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_PS) && ((!genw && recow) || (!gentop && recotop))){
+        float syst = getbincontent(fjpt, (recotop) ? sdMVA_Full_systs_t_mis_ps[fjeta_str] : sdMVA_Full_systs_w_mis_ps[fjeta_str] );
+        if(dbg) std::cout << "    merged mistag ps systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw && recow){
@@ -353,6 +362,13 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
         sft /= systt;
         sfw /= systw;
       }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_MISTAG_PS)){
+        float systt = (!gentop) ? getbincontent(fjpt, sdMVA_Full_systs_t_mis_ps[fjeta_str] ) : 1.;
+        float systw = (!genw) ? getbincontent(fjpt, sdMVA_Full_systs_w_mis_ps[fjeta_str] ) : 1.;
+        if(dbg) std::cout << "    merged mistag ps systs, factor on sft, sfw of " << systt << " " << systw << std::endl;
+        sft /= systt;
+        sfw /= systw;
+      }
       if((correctionOptions & TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W) && genw){
         float percent = getbinerror(fjpt, sdMVAFullFastSF_w)/ getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "    merged fastsim stats W systs, eff after variation is " << effw*(1+percent) << std::endl;
@@ -406,10 +422,11 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   resTop_Full_topmistagEff["lowEta"]     = (TH1F*)( resMVATopInputFile->Get("mc_mistag_restop") );
   resTop_Full_topmistagEff["highEta"]    = (TH1F*)( resMVATopInputFile->Get("mc_mistag_restop") );
 
-  resTop_Full_systs_ps           = (TH1F*)( resMVASystsFile->Get("rest-sys-ps-0") );
-  resTop_Full_systs_gen          = (TH1F*)( resMVASystsFile->Get("rest-sys-generator-0") );
-  resTop_Full_systs_mis_u        = (TH1F*)( resMVASystsFile->Get("rest-sys-mistagsf-0") );
-  resTop_Full_systs_mis_d        = (TH1F*)( resMVASystsFile->Get("rest-sys-mistagsf-1") );
+  resTop_Full_systs_ps           = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_ps_0") );
+  resTop_Full_systs_gen          = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_generator_0") );
+  resTop_Full_systs_mis_u        = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_mistagsf_0") );
+  resTop_Full_systs_mis_d        = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_mistagsf-1") );
+  resTop_Full_systs_nmatch       = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_nmatch_0") );
 
   resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("res_top_fullsim_by_fastsim_sf_vs_pt") );
 
@@ -495,6 +512,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         if(dbg) std::cout << "    RESOLVED mistag t up systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_NMATCH) && gentop){
+        float syst = getbincontent(candpt, resTop_Full_systs_nmatch);
+        if(dbg) std::cout << "    RESOLVED nmatch systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
+      }
       // mistag
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS) && (!gentop)){
         if(dbg) std::cout << "    RESOLVED mistag stats systs, sf after variation is " << sf + sfunc << std::endl;
@@ -565,6 +587,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP) && gentop){
         float syst = getbincontent(candpt, resTop_Full_systs_mis_u);
         if(dbg) std::cout << "    RESOLVED mistag t up systs, factor on sf of " << syst << std::endl;
+        sft /= syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_NMATCH) && gentop){
+        float syst = getbincontent(candpt, resTop_Full_systs_nmatch);
+        if(dbg) std::cout << "    RESOLVED nmatch systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
       // mistag

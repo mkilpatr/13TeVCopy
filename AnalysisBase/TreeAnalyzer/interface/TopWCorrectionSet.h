@@ -23,7 +23,8 @@ class SdMVACorr : public Correction {
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_sf_eff_20161201.root",defaults::CMSSW_BASE.c_str());
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sf-normcor-20161214-plus-20161201.root",defaults::CMSSW_BASE.c_str()); // updated Dec 14 2016
     TString fileName         = TString::Format("%s/src/data/corrections/2017/sdtopw/topw_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Jan 30 2017
-    TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str());
+    //TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str());
+    TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20170211.root",defaults::CMSSW_BASE.c_str()); // updated Feb 20 2017
     TString fileNameFullFast = TString::Format("%s/src/data/corrections/2017/sdtopw/merged_fastsim_sf_20170212.root",defaults::CMSSW_BASE.c_str());
 
     TFile * sdMVAInputFile;
@@ -55,6 +56,8 @@ class SdMVACorr : public Correction {
     TH1F  * sdMVA_Full_systs_t_mis_d;   // up, down, ...
     TH1F  * sdMVA_Full_systs_w_mis_u;
     TH1F  * sdMVA_Full_systs_w_mis_d;
+    std::map<std::string, TH1F*> sdMVA_Full_systs_t_mis_ps; // parton showering on mistag rate
+    std::map<std::string, TH1F*> sdMVA_Full_systs_w_mis_ps;
 
     // fullsim/fastsim scale factors
     TH1F  * sdMVAFullFastSF_t;
@@ -69,7 +72,7 @@ class ResMVATopCorr : public Correction {
 
     //TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_sf_20161201.root",defaults::CMSSW_BASE.c_str());
     TString fileName         = TString::Format("%s/src/data/corrections/2017/restop/restop_corr_20170130.root",defaults::CMSSW_BASE.c_str()); // updated Feb 1
-    TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20161213.root",defaults::CMSSW_BASE.c_str()); //NOT A BUG - systs are stored in same file as merged
+    TString fileNameSysts    = TString::Format("%s/src/data/corrections/2017/sdtopw/topw-sys-20170211.root",defaults::CMSSW_BASE.c_str()); //NOT A BUG - systs are stored in same file as merged
     TString fileNameFullFast = TString::Format("%s/src/data/corrections/2017/restop/resolved_fastsim_sf_20170212.root",defaults::CMSSW_BASE.c_str());
 
     TFile * resMVATopInputFile;
@@ -94,6 +97,7 @@ class ResMVATopCorr : public Correction {
     TH1F  * resTop_Full_systs_gen;       // generator (powheg/mg)
     TH1F  * resTop_Full_systs_mis_u;     // scaling mistag SF for the subtraction of unmatched MC in the SF calculation
     TH1F  * resTop_Full_systs_mis_d;     // up, down, ...
+    TH1F  * resTop_Full_systs_nmatch;
 
     // fullsim/fastsim scale factors
     TH1F  * resMVATopFullFastSF;
@@ -146,18 +150,20 @@ public:
                         , SYSTS_MERGED_MISTAG_STATS_W= (1 << 10)   // systs - merged - mistag - stats - w
                         , SYSTS_MERGED_MISTAG_STATS_T= (1 << 11)   // systs - merged - mistag - stats - top
                         , SYSTS_MERGED_MISTAG_NB     = (1 << 12)   // systs - merged - mistag - nb
+                        , SYSTS_MERGED_MISTAG_PS     = (1 << 13)   // systs - merged - mistag- parton showering
                         // variations on resolved top eff
-                        , SYSTS_RESOLVED_STATS       = (1 << 13)   // systs - resolved - stats - up
-                        , SYSTS_RESOLVED_PS          = (1 << 14)   // systs - RESOLVED - parton showering
-                        , SYSTS_RESOLVED_GEN         = (1 << 15)   // systs - RESOLVED - generator
-                        , SYSTS_RESOLVED_MISTAG_UP   = (1 << 16)   // systs - RESOLVED - mistag SF up by 20%
+                        , SYSTS_RESOLVED_STATS       = (1 << 14)   // systs - resolved - stats - up
+                        , SYSTS_RESOLVED_PS          = (1 << 15)   // systs - RESOLVED - parton showering
+                        , SYSTS_RESOLVED_GEN         = (1 << 16)   // systs - RESOLVED - generator
+                        , SYSTS_RESOLVED_MISTAG_UP   = (1 << 17)   // systs - RESOLVED - mistag SF up by 20%
+                        , SYSTS_RESOLVED_NMATCH      = (1 << 18)   // systs - RESOLVED - n matched subjets
                         // variations on resolved top mistag eff
-                        , SYSTS_RESOLVED_MISTAG_STATS= (1 << 17)   // systs - RESOLVED - mistag SF - stat
-                        , SYSTS_RESOLVED_MISTAG_NB   = (1 << 18)   // systs - RESOLVED - mistag SF - nb
+                        , SYSTS_RESOLVED_MISTAG_STATS= (1 << 19)   // systs - RESOLVED - mistag SF - stat
+                        , SYSTS_RESOLVED_MISTAG_NB   = (1 << 20)   // systs - RESOLVED - mistag SF - nb
                         // fastsim
-                        , SYSTS_MERGED_FASTSIM_STATS_T = (1 << 19)   // systs - merged - fullsim/fastsim SF stats T
-                        , SYSTS_MERGED_FASTSIM_STATS_W = (1 << 20)   // systs - merged - fullsim/fastsim SF stats W
-                        , SYSTS_RESOLVED_FASTSIM_STATS = (1 << 21)   // systs - resolved - fullsim/fastsim SF stats
+                        , SYSTS_MERGED_FASTSIM_STATS_T = (1 << 21)   // systs - merged - fullsim/fastsim SF stats T
+                        , SYSTS_MERGED_FASTSIM_STATS_W = (1 << 22)   // systs - merged - fullsim/fastsim SF stats W
+                        , SYSTS_RESOLVED_FASTSIM_STATS = (1 << 23)   // systs - resolved - fullsim/fastsim SF stats
    };
 
   TopWCorrectionSet(): sdMVACorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), sdMVAWeight(1), resMVATopWeight(1), sdTopWeight(1), sdWWeight(1){}
