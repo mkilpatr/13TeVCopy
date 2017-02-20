@@ -44,7 +44,7 @@
   //        P(mc)   = E(fast) = E(full)/[E(full)/E(fast)]
   //      thus we need to take the SF from file and multiply it by the full/fast SF, and simultaneously divide the E from file by the same.
   //      this leaves P(data) unchanged and brings P(mc) to equal E(fast)
-  // 
+  //
   //  if you ever do unc = 1/2 the distance please use consistently TMath::Abs(1.0 - sf)*0.5;
 
 #include "AnalysisBase/TreeAnalyzer/interface/TopWCorrectionSet.h"
@@ -172,12 +172,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && (recotop && gentop)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   full/fast top sf " << fullfastsf << std::endl;
-        sf *= fullfastsf; eff /= fullfastsf;
+        sf *= fullfastsf; sfunc*= fullfastsf; eff /= fullfastsf;
       }
       if(isFastSim && (recow && genw)){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   full/fast w sf " << fullfastsf << std::endl;
-        sf *= fullfastsf; eff /= fullfastsf;
+        sf *= fullfastsf; sfunc*= fullfastsf; eff /= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -291,12 +291,12 @@ float SdMVACorr::process(int correctionOptions, const std::vector<FatJetF*> &fat
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_t);
         if(dbg) std::cout << "   fullfast sf top: " << fullfastsf << std::endl;
-        sft *= fullfastsf; efft /= fullfastsf;
+        sft *= fullfastsf; sftunc *= fullfastsf; efft /= fullfastsf;
       }
       if(isFastSim && genw){
         float fullfastsf = getbincontent(fjpt, sdMVAFullFastSF_w);
         if(dbg) std::cout << "   fullfast sf w: " << fullfastsf << std::endl;
-        sfw *= fullfastsf; effw /= fullfastsf;
+        sfw *= fullfastsf; sfwunc *= fullfastsf; effw /= fullfastsf;
       }
       ////// END FASTSIM /////
 
@@ -470,7 +470,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        sf *= fullfastsf; eff /= fullfastsf;
+        sf *= fullfastsf; sfunc *= fullfastsf; eff /= fullfastsf;
       }
       ///// END FASTSIM /////
 
@@ -542,7 +542,7 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if(isFastSim && gentop){
         float fullfastsf = getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "   fullfast sf res top: " << fullfastsf << std::endl;
-        sft *= fullfastsf; efft /= fullfastsf;
+        sft *= fullfastsf; sftunc *= fullfastsf; efft /= fullfastsf;
       }
       ///// END FASTSIM /////
 

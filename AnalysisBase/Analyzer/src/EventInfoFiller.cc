@@ -31,6 +31,9 @@ EventInfoFiller::EventInfoFiller(
   lheEvtInfoToken_   (cc.consumes<LHEEventProduct>       (cfg.getParameter<edm::InputTag>("lheEvtInfo"))),
   systWgtIndices_    (cfg.getUntrackedParameter<std::vector<unsigned int> >              ("whichSystematicWeights")),
   stdGenJetToken_    (cc.consumes<reco::GenJetCollection>(cfg.getParameter<edm::InputTag>("stdGenJets"))),
+  metEGCleanToken_   (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsEGClean"))),
+  metMuCleanToken_   (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsMuClean"))),
+  metNoCleanToken_   (cc.consumes<pat::METCollection>    (cfg.getParameter<edm::InputTag>("metsNoClean"))),
   primaryVertexIndex_(-1),
   met_(0),
   metOOB_(0),
@@ -83,6 +86,18 @@ EventInfoFiller::EventInfoFiller(
   if(options_ & LOADLHE && options_ & SAVEMASSES)
     imasspar_     =  data.addMulti<size16> (branchName_,"massparams",0);
 
+  if(options_ & LOADEXTRAMETS){
+    imetEGCleanpt_         =  data.add<float>       (branchName_,"metEGClean_pt"    ,"F",0);
+    imetEGCleanphi_        =  data.add<float>       (branchName_,"metEGClean_phi"   ,"F",0);
+    imetEGCleansumEt_      =  data.add<float>       (branchName_,"metEGClean_sumEt" ,"F",0);
+    imetMuCleanpt_         =  data.add<float>       (branchName_,"metMuClean_pt"    ,"F",0);
+    imetMuCleanphi_        =  data.add<float>       (branchName_,"metMuClean_phi"   ,"F",0);
+    imetMuCleansumEt_      =  data.add<float>       (branchName_,"metMuClean_sumEt" ,"F",0);
+    imetNoCleanpt_         =  data.add<float>       (branchName_,"metNoClean_pt"    ,"F",0);
+    imetNoCleanphi_        =  data.add<float>       (branchName_,"metNoClean_phi"   ,"F",0);
+    imetNoCleansumEt_      =  data.add<float>       (branchName_,"metNoClean_sumEt" ,"F",0);
+  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -104,6 +119,11 @@ void EventInfoFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSet
     iEvent.getByToken(lheEvtInfoToken_, lheEvtInfo_);
   if(options_ & LOADGENJETS)
     iEvent.getByToken(stdGenJetToken_, stdGenJets_);
+  if(options_ & LOADEXTRAMETS){
+    iEvent.getByToken(metEGCleanToken_, metsEGClean_);
+    iEvent.getByToken(metMuCleanToken_, metsMuClean_);
+    iEvent.getByToken(metNoCleanToken_, metsNoClean_);
+  }
 
   if(vertices_->size() > 0)
     primaryVertexIndex_ = 0;
@@ -182,6 +202,18 @@ void EventInfoFiller::fill()
   data.fill<float>       (ipuppimetsumEt_    ,puppimet_->sumEt());
   data.fill<float>       (imetunclustrun2uppt_, met_->shiftedPt(pat::MET::UnclusteredEnUp));
   data.fill<float>       (imetunclustrun2dnpt_, met_->shiftedPt(pat::MET::UnclusteredEnDown));
+
+  if(options_ & LOADEXTRAMETS){
+    data.fill<float>       (imetEGCleanpt_            ,metsEGClean_->front().pt());
+    data.fill<float>       (imetEGCleanphi_           ,metsEGClean_->front().phi());
+    data.fill<float>       (imetEGCleansumEt_         ,metsEGClean_->front().sumEt());
+    data.fill<float>       (imetMuCleanpt_            ,metsMuClean_->front().pt());
+    data.fill<float>       (imetMuCleanphi_           ,metsMuClean_->front().phi());
+    data.fill<float>       (imetMuCleansumEt_         ,metsMuClean_->front().sumEt());
+    data.fill<float>       (imetNoCleanpt_            ,metsNoClean_->front().pt());
+    data.fill<float>       (imetNoCleanphi_           ,metsNoClean_->front().phi());
+    data.fill<float>       (imetNoCleansumEt_         ,metsNoClean_->front().sumEt());
+  }
 
   if(options_ & LOADGEN) {
     data.fill<float>     (igenmetpt_    ,metOOB_->genMET()->pt());

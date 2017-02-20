@@ -241,7 +241,10 @@ namespace ucsbsusy {
     fFlag_hcalLaserEventFilter = 1UL<<12,
     fFlag_CSCTightHalo2015Filter = 1UL<<13,
     fFlag_HBHENoiseIsoFilter     = 1UL<<14,
-    fFlag_globalTightHalo2016Filter = 1UL<<15
+    fFlag_globalTightHalo2016Filter = 1UL<<15,
+    fFlag_badMuons = 1UL<<16, // the event contained at least one PF muon of pT > 20 GeV that is flagged as bad
+    fFlag_duplicateMuons = 1UL<<17, // the event contained at least one PF muon of pT > 20 GeV that is flagged as duplicate
+    fFlag_noBadMuons = 1UL<<18, // the event does not contain any PF muon of pT > 20 GeV flagged as bad or duplicate (i.e. the event is safe)
   };
 
 

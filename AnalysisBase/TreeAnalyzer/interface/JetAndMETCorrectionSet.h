@@ -11,6 +11,7 @@
 
 #include "AnalysisBase/TreeAnalyzer/interface/CorrectionSet.h"
 #include "AnalysisTools/TreeReader/interface/EventInfoReader.h"
+#include "AnalysisTools/DataFormats/interface/FatJet.h"
 
 class TRandom3;
 class TFormula;
@@ -68,7 +69,7 @@ public:
   JetScaleCorr() : Correction("JetScale") {}
   ~JetScaleCorr() {}
 
-  void correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, MomentumF& met) const;
+  void correctJetsAndMET(CORRTYPE corrType, std::vector<RecoJetF>& jets, std::vector<FatJetF>& fatjets, MomentumF& met) const;
 };
 
 class RespTailCorr : public Histogram2DCorrection {
@@ -146,7 +147,7 @@ public:
   virtual void load(int correctionOptions = NULLOPT, TString jetResolutionFile = "",TString jetResolutionCorrFile = "",TString jetResponseTailFile ="", TRandom3 * randomGenerator = 0);
   virtual void processMET(const BaseTreeAnalyzer * ana);
   virtual void correctJetResolution(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
-  virtual void correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, MomentumF& met);
+  virtual void correctJetScale(const BaseTreeAnalyzer * ana, RecoJetFCollection& jets, FatJetFCollection& fatjets, MomentumF& met);
   void processRespTail(const BaseTreeAnalyzer * ana, const JetReader& jetReader, const MomentumF& met);
   virtual void processCorrection(const BaseTreeAnalyzer * ana) {}; //does not apply to this guy, must process corrections when he wants
 

@@ -366,7 +366,7 @@ void BaseTreeAnalyzer::processVariables()
       (*met) = jetAndMETCorrections.getCorrectedMET();
       (*metNoHF) = jetAndMETCorrections.getCorrectedMETNoHF();
       if(defaultJets && defaultJets->isLoaded()) {
-        jetAndMETCorrections.correctJetScale(this,defaultJets->recoJets,*met);
+        jetAndMETCorrections.correctJetScale(this,defaultJets->recoJets,fatJetReader.fatJets,*met);
         jetAndMETCorrections.correctJetResolution(this,defaultJets->recoJets,*met);
         jetAndMETCorrections.processRespTail(this,*defaultJets, *met);
       }
@@ -566,11 +566,13 @@ void BaseTreeAnalyzer::processMoreVariables(){
         float nearDR = PhysicsUtilities::deltaR(*(top->top), *fj);
         if(nearDR < 0.8) {
           fj->setGenCategory(FatJetGenCategory::GENTOP);
+          fj->setMatchedGenParticle(FatJetGenCategory::GENTOP, top->top);
           // are top products contained?
           if(PhysicsUtilities::deltaR(*(top->b->parton), *fj) > 0.8) continue;
           if(PhysicsUtilities::deltaR(*(top->W_dau1->parton), *fj) > 0.8) continue;
           if(PhysicsUtilities::deltaR(*(top->W_dau2->parton), *fj) > 0.8) continue;
           fj->setGenCategory(FatJetGenCategory::GENTOP_CONTAINED);
+          fj->setMatchedGenParticle(FatJetGenCategory::GENTOP_CONTAINED, top->top);
           break; // categories saturated -- move on!
         }
       }
@@ -578,10 +580,12 @@ void BaseTreeAnalyzer::processMoreVariables(){
         float nearDR = PhysicsUtilities::deltaR(*(w->boson), *fj);
         if(nearDR < 0.8){
           fj->setGenCategory(FatJetGenCategory::GENW);
+          fj->setMatchedGenParticle(FatJetGenCategory::GENW, w->boson);
           // are w products contained?
           if(PhysicsUtilities::deltaR(*(w->boson_dau1->parton), *fj) > 0.8) continue;
           if(PhysicsUtilities::deltaR(*(w->boson_dau2->parton), *fj) > 0.8) continue;
           fj->setGenCategory(FatJetGenCategory::GENW_CONTAINED);
+          fj->setMatchedGenParticle(FatJetGenCategory::GENW_CONTAINED, w->boson);
           break; // categories saturated -- move on!
         }
       }
