@@ -88,14 +88,14 @@ struct ExtraVarsFiller {
 
 
       if ( (abs(p->pdgId())==1)  || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ||
-           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||  
+           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||
            (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) ||
            (abs(p->pdgId())==21) || (abs(p->pdgId())==22)
            ) {
 
         if (p->pt()>maxpt_) {
           maxpt_ = p->pt();
-          if ( (abs(p->pdgId())==21) )                                                { matchedId_ = 1; } // is a gluon 
+          if ( (abs(p->pdgId())==21) )                                                { matchedId_ = 1; } // is a gluon
           if ( (abs(p->pdgId())==1) || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ) {
             if ( (p->numberOfMothers()>0) && (abs(p->mother(0)->pdgId())==6))         { matchedId_ = 4; } // is a top
             else                                                                      { matchedId_ = 2; } // is a light quark
@@ -123,11 +123,11 @@ struct ExtraVarsFiller {
       if (drak8gen_ > 0.8) { continue; }
 
       if ( (abs(p->pdgId())==1)  || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ||
-           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||                                                                                  
+           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||
            (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) ||
            (abs(p->pdgId())==21) || (abs(p->pdgId())==22)
            ) {
- 
+
         if (p->pt()>maxpt_) {
           maxpt_ = p->pt();
           if ( (abs(p->pdgId())==21) )                                                { matchedId_ = 1; } // is a gluon
@@ -751,6 +751,7 @@ struct ExtraVarsFiller {
 
     data->add<float>("resTopWeight_MISTAG_STATS",1);
     data->add<float>("resTopWeight_MISTAG_NB",1);
+    data->add<float>("resTopWeight_MISTAG_PS",1);
 
     data->add<float>("sdMVAWeight_FASTSIM_STATS_T",1);
     data->add<float>("sdMVAWeight_FASTSIM_STATS_W",1);
@@ -1473,7 +1474,7 @@ struct ExtraVarsFiller {
 
 
     // === make the probes ===
-    int   match2parton_ = -9; 
+    int   match2parton_ = -9;
     bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
     bool  ak8passtopl_ = false; bool ak8passtopm_ = false; bool ak8passtopt_ = false;
     float ak8pt_   = 0.; float ak8eta_  = 0.; float ak8mass_ = 0.;
@@ -1484,7 +1485,7 @@ struct ExtraVarsFiller {
 
       if (fabs(fj->eta())>2.4) { continue; }
       if (fabs(fj->pt())<200.) { continue; }
-      //cout << " cand pt = " << fj->pt() << "\n";                                                                                                                           
+      //cout << " cand pt = " << fj->pt() << "\n";
 
       float drak8gentb = 9.;
       bool  wFromTop = false;
@@ -1512,7 +1513,7 @@ struct ExtraVarsFiller {
       if (fj->w_mva() > SoftdropWTagMVA::WP_MEDIUM) { ak8passwm_ = true; }
       if (fj->w_mva() > SoftdropWTagMVA::WP_TIGHT ) { ak8passwt_ = true; }
 
-      // top-tags 
+      // top-tags
       if (fj->top_mva() > SoftdropTopMVA::WP_LOOSE ) { ak8passtopl_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_MEDIUM) { ak8passtopm_ = true; }
       if (fj->top_mva() > SoftdropTopMVA::WP_TIGHT ) { ak8passtopt_ = true; }
@@ -1637,6 +1638,9 @@ struct ExtraVarsFiller {
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB; // MISTAG_NB
     data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
 
+    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_PS; // MISTAG_PS
+    data->fill<float>("resTopWeight_MISTAG_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+
     // fastsim
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T; // FASTSIM STATS T
     data->fill<float>("sdMVAWeight_FASTSIM_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
@@ -1658,7 +1662,7 @@ struct ExtraVarsFiller {
     data->fill<float>("truePUWeight_UP",   ana->eventCorrections.getTruePUWeight(UP));
     data->fill<float>("truePUWeight_DOWN", ana->eventCorrections.getTruePUWeight(DOWN));
 
-    //LEP 
+    //LEP
     // args are tau corr type, isLM, isVetoWeight
     data->fill<float>("lepvetoweightLM_UP",  ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  true,true));
     data->fill<float>("lepvetoweightLM_DOWN",ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,true,true));

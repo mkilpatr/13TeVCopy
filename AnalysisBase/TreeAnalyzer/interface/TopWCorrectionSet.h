@@ -98,6 +98,7 @@ class ResMVATopCorr : public Correction {
     TH1F  * resTop_Full_systs_mis_u;     // scaling mistag SF for the subtraction of unmatched MC in the SF calculation
     TH1F  * resTop_Full_systs_mis_d;     // up, down, ...
     TH1F  * resTop_Full_systs_nmatch;
+    TH1F  * resTop_Full_systs_mis_ps;    // mistag ps
 
     // fullsim/fastsim scale factors
     TH1F  * resMVATopFullFastSF;
@@ -160,10 +161,11 @@ public:
                         // variations on resolved top mistag eff
                         , SYSTS_RESOLVED_MISTAG_STATS= (1 << 19)   // systs - RESOLVED - mistag SF - stat
                         , SYSTS_RESOLVED_MISTAG_NB   = (1 << 20)   // systs - RESOLVED - mistag SF - nb
+                        , SYSTS_RESOLVED_MISTAG_PS   = (1 << 21)   // systs - RESOLVED - mistag SF - parton showering
                         // fastsim
-                        , SYSTS_MERGED_FASTSIM_STATS_T = (1 << 21)   // systs - merged - fullsim/fastsim SF stats T
-                        , SYSTS_MERGED_FASTSIM_STATS_W = (1 << 22)   // systs - merged - fullsim/fastsim SF stats W
-                        , SYSTS_RESOLVED_FASTSIM_STATS = (1 << 23)   // systs - resolved - fullsim/fastsim SF stats
+                        , SYSTS_MERGED_FASTSIM_STATS_T = (1 << 22)   // systs - merged - fullsim/fastsim SF stats T
+                        , SYSTS_MERGED_FASTSIM_STATS_W = (1 << 23)   // systs - merged - fullsim/fastsim SF stats W
+                        , SYSTS_RESOLVED_FASTSIM_STATS = (1 << 24)   // systs - resolved - fullsim/fastsim SF stats
    };
 
   TopWCorrectionSet(): sdMVACorr(0), resMVATopCorr(0), sdTopCorr(0), sdWCorr(0), sdMVAWeight(1), resMVATopWeight(1), sdTopWeight(1), sdWWeight(1){}

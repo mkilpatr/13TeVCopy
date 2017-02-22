@@ -427,6 +427,7 @@ ResMVATopCorr::ResMVATopCorr() : Correction("ResMVATop") {
   resTop_Full_systs_mis_u        = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_mistagsf_0") );
   resTop_Full_systs_mis_d        = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_mistagsf-1") );
   resTop_Full_systs_nmatch       = (TH1F*)( resMVASystsFile->Get("efnl1_res__tt_rest_sys_nmatch_0") );
+  resTop_Full_systs_mis_ps       = (TH1F*)( resMVASystsFile->Get("mtnl0_res__qcd_rest_sys_ps_0") );
 
   resMVATopFullFastSF         = (TH1F*)( resMVAFullFastInputFile->Get("res_top_fullsim_by_fastsim_sf_vs_pt") );
 
@@ -527,6 +528,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
         if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
         sf /= syst;
       }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_PS) && (!gentop)){
+        float syst = getbincontent(candpt, resTop_Full_systs_mis_ps);
+        if(dbg) std::cout << "    RESOLVED mistag PS systs, factor on sf of " << syst << std::endl;
+        sf /= syst;
+      }
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
         float percent = getbinerror(candpt, resMVATopFullFastSF)/ getbincontent(candpt, resMVATopFullFastSF);
         if(dbg) std::cout << "    resolved fastsim stats T systs, eff after variation is " << eff*(1+percent) << std::endl;
@@ -602,6 +608,11 @@ float ResMVATopCorr::process(int correctionOptions, const std::vector<TopCand> &
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB) && (!gentop)){
         float syst = 1.2;
         if(dbg) std::cout << "    RESOLVED mistag nb systs, factor on sf of " << syst << std::endl;
+        sft /= syst;
+      }
+      if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_PS) && (!gentop)){
+        float syst = getbincontent(candpt, resTop_Full_systs_mis_ps);
+        if(dbg) std::cout << "    RESOLVED mistag PS systs, factor on sf of " << syst << std::endl;
         sft /= syst;
       }
       if((correctionOptions & TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS) && gentop){
