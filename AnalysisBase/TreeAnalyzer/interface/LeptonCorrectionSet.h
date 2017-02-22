@@ -48,6 +48,7 @@ namespace ucsbsusy {
       template<typename H> int getbinx(float xvalue,  H * hist) {return std::min(std::max(hist->GetXaxis()->FindFixBin(xvalue),1),hist->GetNbinsX());  }
       template<typename H> int getbiny(float yvalue,  H * hist) {return std::min(std::max(hist->GetYaxis()->FindFixBin(yvalue),1),hist->GetNbinsY());  }
       template<typename H> int getbinz(float zvalue,  H * hist) {return std::min(std::max(hist->GetZaxis()->FindFixBin(zvalue),1),hist->GetNbinsZ());  }
+      float getgraphcontent1d(float value,  TGraphAsymmErrors * graph) {return graph->Eval(value); }
       float getbincontent1d(float value,  TH1F * hist) {return hist->GetBinContent(getbinx(value,hist)); }
       float getbinerror1d(  float value,  TH1F * hist) {return hist->GetBinError(getbinx(value,hist)); }
       float getbincontent2d(float xvalue, float yvalue,  TH2F * hist) {return hist->GetBinContent(getbinx(xvalue,hist),getbiny(yvalue,hist)); }
@@ -105,8 +106,8 @@ namespace ucsbsusy {
       TH2F * histMuSfId;
       TH2F * histMuSfIso;
       TH2F * histMuSfIp2d;
-      TH1F * histMuSfTrackerGt10;
-      TH1F * histMuSfTrackerLt10;
+      TGraphAsymmErrors * histMuSfTrackerGt10;
+      TGraphAsymmErrors * histMuSfTrackerLt10;
       //TH2F * histMuSfFullFastId;
       TH3D * histMuSfFullFastIdIso;
       //TH2F * histMuSfFullFastIp2d;

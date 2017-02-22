@@ -202,7 +202,7 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
                                                   "TnP_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
   TString strMuSfIp2d                  = (isCR) ? "TnP_NUM_TightIP2D_DENOM_MediumID_VAR_map_pt_eta.root" : // MediumIp2D (0l), TightIp2D(1l) over diff IDs
                                                   "TnP_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
-  TString strMuSfTracker               = "dummyMuSfTracker.root"; // "general_tracks_and_early_general_tracks_corr_ratio.root"; // NOT YET AVAILABLE (Jan 30). created dummy with SF 1 err 0
+  TString strMuSfTracker               = "Tracking_EfficienciesAndSF_BCDEFGH.root"; // Feb 22 2017 edition
   //TString strMuSfFullFastId            = (isCR) ? "sf_mu_medium.root"             : "sf_mu_loose.root";
   TString strMuSfFullFastIdIso         = (isCR) ? "sf_mu_mediumID_mini02.root"    : "sf_mu_looseID_mini02.root";
   //TString strMuSfFullFastIp2d          = (isCR) ? "sf_mu_tightIP2D.root"          : "sf_mu_looseIP2D.root";
@@ -245,8 +245,8 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   TString strHistMuSfId                = "SF"; // yup
   TString strHistMuSfIso               = "SF";
   TString strHistMuSfIp2d              = "SF";
-  TString strHistMuSfTrackerGt10       = "mutrksfptg10"; // pt>10 tracker corrections
-  TString strHistMuSfTrackerLt10       = "mutrksfptl10"; // pt<10
+  TString strHistMuSfTrackerGt10       = "ratio_eff_eta3_dr030e030_corr"; // pt>10 tracker corrections
+  TString strHistMuSfTrackerLt10       = "ratio_eff_eta3_tk0_dr030e030_corr"; // pt<10 tracker corrections
   //TString strHistMuSfFullFastId        = "histo2D";
   TString strHistMuSfFullFastIdIso     = "histo3D";
   //TString strHistMuSfFullFastIp2d      = "histo2D"; // hey! that's the combination to my luggage!
@@ -255,8 +255,8 @@ TnPCorr::TnPCorr(const LeptonSelection::Electron elSel, const LeptonSelection::E
   histMuSfId                           = (TH2F*)(fileMuSfId->Get(strHistMuSfId));
   histMuSfIso                          = (TH2F*)(fileMuSfIso->Get(strHistMuSfIso));
   histMuSfIp2d                         = (TH2F*)(fileMuSfIp2d->Get(strHistMuSfIp2d));
-  histMuSfTrackerGt10                  = (TH1F*)(fileMuSfTracker->Get(strHistMuSfTrackerGt10));
-  histMuSfTrackerLt10                  = (TH1F*)(fileMuSfTracker->Get(strHistMuSfTrackerLt10));
+  histMuSfTrackerGt10                  = (TGraphAsymmErrors*)(fileMuSfTracker->Get(strHistMuSfTrackerGt10));
+  histMuSfTrackerLt10                  = (TGraphAsymmErrors*)(fileMuSfTracker->Get(strHistMuSfTrackerLt10));
   //histMuSfFullFastId                   = (TH2F*)(fileMuSfFullFastId->Get(strHistMuSfFullFastId));
   histMuSfFullFastIdIso                = (TH3D*)(fileMuSfFullFastIdIso->Get(strHistMuSfFullFastIdIso));
   //histMuSfFullFastIp2d                 = (TH2F*)(fileMuSfFullFastIp2d->Get(strHistMuSfFullFastIp2d));
@@ -417,8 +417,9 @@ float TnPCorr::getLepWeight(LeptonF* lep, CORRTYPE elCorrType, CORRTYPE muCorrTy
     UncSfId            = getbinerror2d  (pt,abseta,histMuSfId);
     SfIso              = getbincontent2d(pt,abseta,histMuSfIso);  // (pt,abseta)
     UncSfIso           = getbinerror2d  (pt,abseta,histMuSfIso);
-    //SfTracker          = getbincontent2d(eta,pt,histMuSfTracker); // (**eta**,pt), a 1d graph is available
-    //UncSfTracker       = getbinerror2d(pt,abseta,histMuSfTracker);
+    TGraphAsymmErrors * histMuSfTracker = (pt < 10) ? histMuSfTrackerLt10 : histMuSfTrackerGt10;
+    SfTracker          = getgraphcontent1d(eta,histMuSfTracker); // signed eta
+    UncSfTracker       = 0.; // Feb 22 2017 recommendation
     SfFullFastIdIso    = (!isFastSim) ? 1 : getbincontent3d(pt,abseta,nPV,histMuSfFullFastIdIso); // (pt,abseta,npv)
     SfMCEffsId         = (isLM) ? getbincontent2d(pt,abseta,histMuMCEffsLMId) // (pt,abseta)
                                 : getbincontent2d(pt,abseta,histMuMCEffsHMId);
