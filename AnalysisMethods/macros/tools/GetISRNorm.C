@@ -32,34 +32,34 @@ TH1D * getHistogram1D(TTree * tree, TString name, TString sel, TString weight,  
 
 void go(TTree * tree,TFile* oF){
 
-  enum SignalType {T2tt, T2bW, T2fb, T2tb, NUM_SIGTYPES};
-  const std::string SIGNAL_NAMES[]  {"T2tt", "T2bW", "T2fb","T2tb",""};
+	  enum SignalType {T2tt, T2bW, T2fb, T2tb, T2cc, NUM_SIGTYPES};
+	  const std::string SIGNAL_NAMES[]  {"T2tt", "T2bW", "T2fb","T2tb","T2cc",""};
   enum sigAxes {MASS1,MASS2,MASS3,TYPE};
   enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
   const std::string CORR_NAMES[]  {"NOMINAL", "UP", "DOWN","",""};
-  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
-//  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
+//  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
+  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
 
-  for(unsigned int iS = 0; iS <= T2fb; ++iS){
+  for(unsigned int iS = 0; iS < NUM_SIGTYPES; ++iS){
     TString sel = TString::Format("sigType == %u",iS);
-	  if(iS != T2tt && iS != T2fb) continue;
+	  if(iS == T2bW) continue;
 
     QuickRefold::Refold * a = new QuickRefold::Refold(SIGNAL_NAMES[iS].c_str(),4);
-    a->addAxis(MASS1,"MASS1",1051,149.5,1200.5);
+    a->addAxis(MASS1,"MASS1",2001,-0.5,2000.5);
     a->addAxis(MASS2,"MASS2",801,-0.5,800.5);
     a->addAxis(MASS3,"MASS3",1,-12.5,12.5);
-    a->addAxis(TYPE,"TYPE",4,-.5,3.5);
+    a->addAxis(TYPE,"TYPE",5,-.5,4.5);
     a->stopSetup();
 
     a->setBin(MASS3,0);
 
     TString name = TString::Format("%s_%s",SIGNAL_NAMES[iS].c_str(),"num");
-    TH2D * num = getHistogram(tree,name,sel,"1.0","mass1",1051,149.5,1200.5,"mass2",801,-0.5,800.5);
+    TH2D * num = getHistogram(tree,name,sel,"1.0","mass1",2001,-0.5,2000.5,"mass2",801,-0.5,800.5);
 
     for(unsigned int iT = 0; iT <= DOWN; ++iT){
       a->setBin(TYPE,iT);
       TString denomName = TString::Format("%s_%s",SIGNAL_NAMES[iS].c_str(),CORR_NAMES[iT].c_str());
-      TH2D * denom = getHistogram(tree,denomName,sel,WEIGHTS[iT],"mass1",1051,149.5,1200.5,"mass2",801,-0.5,800.5);
+      TH2D * denom = getHistogram(tree,denomName,sel,WEIGHTS[iT],"mass1",2001,-0.5,2000.5,"mass2",801,-0.5,800.5);
 
       for(unsigned int iX = 1; iX <= num->GetNbinsX(); ++iX ){
         for(unsigned int iY = 1; iY <= num->GetNbinsY(); ++iY ){
@@ -86,8 +86,8 @@ void gobkg(TTree * tree,TFile* oF){
   enum sigAxes {TYPE};
   enum CORRTYPE {NOMINAL, UP, DOWN, NONE};
   const std::string CORR_NAMES[]  {"NOMINAL", "UP", "DOWN","",""};
-  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
-//  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
+//  const std::string WEIGHTS[]  {"corrWeightTight", "upCorrWeightTight", "downCorrWeightTight","",""};
+  const std::string WEIGHTS[]  {"corrWeight", "upCorrWeight", "downCorrWeight","",""};
 
   for(unsigned int iS = 0; iS < NUMPROCESSES; ++iS){
 	  if(iS != TTBAR) continue;
@@ -122,8 +122,8 @@ void gobkg(TTree * tree,TFile* oF){
 #endif
 
 //void GetJetResForTailSmear(const TString inFile="jetResSkim_orig_CombinedSample.root", const TString treeName = "Events", const TString outFile = "resTailOut_puWeight_weight.root")
-//void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNorms.root")
-void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNormsTight.root")
+void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNorms.root")
+//void GetISRNorm(const TString inFile="isr_all.root",  const TString bkgFile= "isr_bkg.root",const TString outFile = "isrNormsTight.root")
 {
   TFile * oF = new TFile(outFile,"recreate");
   StyleTools::SetStyle();

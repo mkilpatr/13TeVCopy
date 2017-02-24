@@ -170,29 +170,38 @@ int ISRCorrectionSet::getNISRJets(const BaseTreeAnalyzer * ana, bool tight) cons
 }
 
 void ISRCorrectionSet::processCorrection(const BaseTreeAnalyzer * ana) {
-
-  isrWeight =1;
+  const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+  defType = cfg.corrections.isrType;
+  for(auto& i : isrWeight) i =1;
+  for(auto& i : isrWeightTight) i =1;
   nISRJets = 0;
   nISRJetsTight = 0;
 
   if(!ana->isMC()) return;
   if(!(ana->process == defaults::SIGNAL || ana->process == defaults::TTBAR)) return;
-  const cfgSet::ConfigSet& cfg = ana->getAnaCfg();
+
   massParams[0] = ana->evtInfoReader.massparams->size() > 0 ? ana->evtInfoReader.massparams->at(0) : 0;
   massParams[1] = ana->evtInfoReader.massparams->size() > 1 ? ana->evtInfoReader.massparams->at(1) : 0;
   massParams[2] = ana->evtInfoReader.massparams->size() > 2 ? ana->evtInfoReader.massparams->at(2) : 0;
 
   if( (options_ & ISRCORR)) {
     nISRJets = getNISRJets(ana);
-    isrWeight = ana->process == defaults::SIGNAL ? isrCorr->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJets)
-    		:isrCorr->getBKGNormCorrFactor(cfg.corrections.isrType, ana->process,nISRJets);
-    if(isrWeight < 0) isrWeight = 1;
+
+    for(unsigned int iC = NOMINAL; iC != NONE; ++iC){
+        isrWeight[iC] = ana->process == defaults::SIGNAL ? isrCorr->getSignalNormCorrFactor(CORRTYPE(iC),ana->evtInfoReader.signalType,massParams,nISRJets)
+        		:isrCorr->getBKGNormCorrFactor(CORRTYPE(iC), ana->process,nISRJets);
+        if(isrWeight[iC] < 0 ) isrWeight[iC] = 1;
+    }
+
+
   }
   if( (options_ & ISRCORRTIGHT)){
     nISRJetsTight = getNISRJets(ana,true);
-    isrWeightTight = ana->process == defaults::SIGNAL ? isrCorrTight->getSignalNormCorrFactor(cfg.corrections.isrType,ana->evtInfoReader.signalType,massParams,nISRJetsTight)
-    		: isrCorrTight->getBKGNormCorrFactor(cfg.corrections.isrType, ana->process,nISRJetsTight);
-    if(nISRJetsTight < 0) nISRJetsTight = 1;
+    for(unsigned int  iC = NOMINAL; iC != NONE; ++iC){
+    	isrWeightTight[iC] = ana->process == defaults::SIGNAL ? isrCorrTight->getSignalNormCorrFactor(CORRTYPE(iC),ana->evtInfoReader.signalType,massParams,nISRJetsTight)
+        		:isrCorrTight->getBKGNormCorrFactor(CORRTYPE(iC), ana->process,nISRJetsTight);
+        if(isrWeightTight[iC] < 0 ) isrWeightTight[iC] = 1;
+    }
   }
 }
 } /* namespace ucsbsusy */
