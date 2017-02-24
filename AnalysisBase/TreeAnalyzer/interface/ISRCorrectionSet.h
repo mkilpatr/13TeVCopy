@@ -52,7 +52,7 @@ public:
                           , ISRCORR        = (1 <<  0)
                           , ISRCORRTIGHT   = (1 <<  1)
   };
-  ISRCorrectionSet(): isrCorr(0),isrCorrTight(0), isrWeight(1), nISRJets(0), massParams(3),isrWeightTight(1),nISRJetsTight(0) {}
+  ISRCorrectionSet(): isrCorr(0),isrCorrTight(0), defType(NOMINAL), isrWeight(NONE+1,1), nISRJets(0), massParams(3),isrWeightTight(NONE+1,1),nISRJetsTight(0) {}
 
   virtual ~ISRCorrectionSet() {};
   virtual void load(TString corrInput,TString normInput,TString normTightInput, const std::vector<TString>& normNames,const std::vector<TString>& bkgNormNames, int correctionOptions = NULLOPT);
@@ -60,10 +60,12 @@ public:
   int getNISRJets(const BaseTreeAnalyzer * ana, bool tight = false) const;
 
   //individual accessors
-  float getISRWeight() const { return isrWeight; }
+  float getISRWeight() const { return isrWeight[defType]; }
+  float getISRWeight(CORRTYPE type) const { return isrWeight[type]; }
   const ISRCorr* getISRCorrector() const { return isrCorr; }
   int getNumberOfISRJets() const {return nISRJets;}
-  float getISRWeightTight() const { return isrWeightTight; }
+  float getISRWeightTight() const { return isrWeightTight[defType]; }
+  float getISRWeightTight(CORRTYPE type) const { return isrWeightTight[type]; }
   const ISRCorr* getISRCorrectorTight() const { return isrCorrTight; }
   int getNumberOfISRJetsTight() const {return nISRJetsTight;}
 
@@ -73,11 +75,14 @@ private:
   ISRCorr * isrCorrTight;
 
   //output values
-  float isrWeight;
+  CORRTYPE defType;
+
+  std::vector<float> isrWeight;
   int nISRJets;
   std::vector<int> massParams;
 
-  float isrWeightTight;
+
+  std::vector<float> isrWeightTight;
   int nISRJetsTight;
 
 
