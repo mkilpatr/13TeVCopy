@@ -115,10 +115,10 @@ public:
   virtual ~ResolvedTopMVA();
 
   std::vector<TopCand> getTopCandidates(const std::vector<RecoJetF*> &jets, double WP=WP_TIGHT);
+  static std::map<TString, float> calcTopCandVars(const TopCand *topcand);
 
 private:
   void initTopMVA();
-  std::map<TString, float> calcTopCandVars(const TopCand *topcand);
   std::vector<TopCand> removeOverlap(std::vector<TopCand> &cands, double threshold);
 
 public:

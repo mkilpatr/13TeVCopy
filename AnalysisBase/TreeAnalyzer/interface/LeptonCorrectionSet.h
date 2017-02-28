@@ -67,8 +67,8 @@ namespace ucsbsusy {
       // electron files
       TFile * fileElSf;
       TFile * fileElSfTracker;
-      //TFile * fileElSfFullFastId;
-      TFile * fileElSfFullFastIdIso;
+      TFile * fileElSfFullFastId;
+      TFile * fileElSfFullFastIso;
       TFile * fileElMCEffsLM;
       TFile * fileElMCEffsHM;
       //TFile * fileElMCEffsLMId;
@@ -80,8 +80,8 @@ namespace ucsbsusy {
       TH2F * histElSfId;
       TH2F * histElSfIso;
       TH2F * histElSfTracker;
-      //TH2F * histElSfFullFastId;
-      TH3D * histElSfFullFastIdIso;
+      TH2F * histElSfFullFastId;
+      TH2F * histElSfFullFastIso;
       TH2F * histElMCEffsLMId;
       TH2F * histElMCEffsLMIso;
       TH2F * histElMCEffsHMId;
@@ -92,9 +92,9 @@ namespace ucsbsusy {
       TFile * fileMuSfIso;
       TFile * fileMuSfIp2d;
       TFile * fileMuSfTracker;
-      //TFile * fileMuSfFullFastId;
-      TFile * fileMuSfFullFastIdIso;
-      //TFile * fileMuSfFullFastIp2d;
+      TFile * fileMuSfFullFastId;
+      TFile * fileMuSfFullFastIso;
+      TFile * fileMuSfFullFastIp2d;
       TFile * fileMuMCEffsLM;
       TFile * fileMuMCEffsHM;
       //TFile * fileMuMCEffsLMId;
@@ -108,9 +108,9 @@ namespace ucsbsusy {
       TH2F * histMuSfIp2d;
       TGraphAsymmErrors * histMuSfTrackerGt10;
       TGraphAsymmErrors * histMuSfTrackerLt10;
-      //TH2F * histMuSfFullFastId;
-      TH3D * histMuSfFullFastIdIso;
-      //TH2F * histMuSfFullFastIp2d;
+      TH2F * histMuSfFullFastId;
+      TH2F * histMuSfFullFastIso;
+      TH2F * histMuSfFullFastIp2d;
       TH2F * histMuMCEffsLMId;
       TH2F * histMuMCEffsLMIso;
       TH2F * histMuMCEffsHMId;
