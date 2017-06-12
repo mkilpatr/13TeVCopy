@@ -53,6 +53,8 @@ class smsPlotABS(object):
         self.emptyHisto.GetXaxis().SetTitleSize(0.05)
         self.emptyHisto.GetXaxis().SetTitleOffset(1.2)
         self.emptyHisto.GetXaxis().SetTitle(self.model.sParticle)
+        if self.model.modelname in ('T2tb', 'T2bW'):
+            self.emptyHisto.GetXaxis().SetNdivisions(505)
         #self.emptyHisto.GetXaxis().CenterTitle(True)
 
         # set y axis
@@ -89,7 +91,7 @@ class smsPlotABS(object):
        	CMS_lumi.writeExtraText = 1
 	CMS_lumi.extraText = "Preliminary"
 	#CMS_lumi.lumi_13TeV="2.3 fb^{-1}"
-	CMS_lumi.lumi_13TeV="12.9 fb^{-1}"
+	CMS_lumi.lumi_13TeV="35.9 fb^{-1}"
 
 	CMS_lumi.lumi_sqrtS = "13 TeV"  
 	iPos=0
@@ -106,7 +108,7 @@ class smsPlotABS(object):
         if self.model.extraText :
             textModelLabel= rt.TLatex(0.15,0.915,"%s" %self.model.label)
         else :
-            textModelLabel= rt.TLatex(0.15,0.90,"%s   NLO+NLL exclusion" %self.model.label)
+            textModelLabel = rt.TLatex(0.15, 0.90, "%s   NLO+NLL exclusion" % self.model.label)
         textModelLabel.SetNDC()
         textModelLabel.SetTextAlign(13)
         textModelLabel.SetTextFont(42)
@@ -115,7 +117,7 @@ class smsPlotABS(object):
         textModelLabel.Draw()
         self.c.textModelLabel = textModelLabel
         # NLO NLL XSEC
-        textNLONLL= rt.TLatex(0.15,0.8625,"NLO+NLL exclusion")
+        textNLONLL = rt.TLatex(0.15, 0.855, "NLO+NLL exclusion")
         textNLONLL.SetNDC()
         textNLONLL.SetTextAlign(13)
         textNLONLL.SetTextFont(42)
@@ -268,41 +270,77 @@ class smsPlotABS(object):
         self.c.LExpP = LExpP
 
     def DrawDiagonal(self):
-        #diagonal = rt.TGraph(3, self.model.diagX, self.model.diagY)
-        diagonal = rt.TGraph(4)
-        #diagonal.SetPoint(0,150.0+self.model.Ymin,self.model.Ymin)
-        #diagonal.SetPoint(1,150.0+self.model.Ymax,self.model.Ymax)
-        #diagonal.SetPoint(2,200.0+self.model.Ymax,self.model.Ymax)
-        #diagonal.SetPoint(3,200.0+self.model.Ymin,self.model.Ymin)
-        diagonal.SetPoint(0,150.0,0.0)
-        diagonal.SetPoint(1,262.5,112.5)
-        diagonal.SetPoint(2,287.5,87.5)
-        diagonal.SetPoint(3,200.0,0.0)
-        diagonal.SetName("diagonal")
-        diagonal.SetFillColor(rt.kWhite)
-        diagonal.SetLineColor(rt.kGray)
-        diagonal.SetLineStyle(2)
-        diagonal.Draw("FSAME")
-        diagonal.Draw("LSAME")
-        self.c.diagonal = diagonal
-        diagLine = rt.TGraph(2)
-        diagLine.SetName("diagLine")
-        diagLine.SetTitle("diagLine")
-        diagLine.SetLineColor(rt.kGray)
-        diagLine.SetLineStyle(2)
-        diagLine.SetLineWidth(2)
-        diagLine.SetMarkerStyle(20)
-        diagLine.SetPoint(0,172.5+self.model.Ymin,self.model.Ymin)
-        diagLine.SetPoint(1,172.5+self.model.Ymax,self.model.Ymax)
-        #diagLine.Draw("LSAME")
-        self.c.diagLine = diagLine
-        tdiagonal = rt.TLatex(450, 450-172.5,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}")
-        tdiagonal.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
-        tdiagonal.SetTextColor(rt.kGray+2)
-        tdiagonal.SetTextAlign(11)
-        tdiagonal.SetTextSize(0.025)
-        #tdiagonal.Draw("SAME")
-        self.c.tdiagonal = tdiagonal
+        if self.model.modelname == 'T2tt':
+            diagLineMW = rt.TGraph(2)
+            diagLineMW.SetName("diagLineMW")
+            diagLineMW.SetTitle("diagLineMW")
+            diagLineMW.SetLineColor(rt.kGray)
+            diagLineMW.SetLineStyle(2)
+            diagLineMW.SetLineWidth(2)
+            diagLineMW.SetMarkerStyle(20)
+            diagLineMW.SetPoint(0,80+self.model.Ymin,self.model.Ymin)
+            diagLineMW.SetPoint(1,80+self.model.Ymax,self.model.Ymax)
+            diagLineMW.Draw("LSAME")
+            self.c.diagLineMW = diagLineMW
+            tdiagonalMW = rt.TLatex(540, 540-75,"m_{#tilde{t}} = m_{W} + m_{#tilde{#chi}_{1}^{0}}")
+            tdiagonalMW.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
+            tdiagonalMW.SetTextColor(rt.kGray+2)
+            tdiagonalMW.SetTextAlign(11)
+            tdiagonalMW.SetTextSize(0.025)
+            tdiagonalMW.Draw("SAME")
+            self.c.tdiagonalMW = tdiagonalMW
+
+            diagLine = rt.TGraph(2)
+            diagLine.SetName("diagLine")
+            diagLine.SetTitle("diagLine")
+            diagLine.SetLineColor(rt.kGray)
+            diagLine.SetLineStyle(2)
+            diagLine.SetLineWidth(2)
+            diagLine.SetMarkerStyle(20)
+            diagLine.SetPoint(0,172.5+self.model.Ymin,self.model.Ymin)
+            diagLine.SetPoint(1,172.5+self.model.Ymax,self.model.Ymax)
+            diagLine.Draw("LSAME")
+            self.c.diagLine = diagLine
+            tdiagonal = rt.TLatex(640, 640-172.5,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}")
+            tdiagonal.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
+            tdiagonal.SetTextColor(rt.kGray+2)
+            tdiagonal.SetTextAlign(11)
+            tdiagonal.SetTextSize(0.025)
+            tdiagonal.Draw("SAME")
+            self.c.tdiagonal = tdiagonal
+
+            diagonal = rt.TGraph(4)
+            diagonal.SetPoint(0,150.0,0.0)
+            diagonal.SetPoint(1,262.5,112.5)
+            diagonal.SetPoint(2,287.5,87.5)
+            diagonal.SetPoint(3,200.0,0.0)
+            diagonal.SetName("diagonal")
+            diagonal.SetFillColor(rt.kWhite)
+            diagonal.SetLineColor(rt.kWhite)
+            diagonal.SetLineStyle(2)
+            diagonal.Draw("FSAME")
+            diagonal.Draw("LSAME")
+            self.c.diagonal = diagonal
+
+        if self.model.modelname in ('T2bW','T2tb'):
+            diagLine = rt.TGraph(2)
+            diagLine.SetName("diagLine")
+            diagLine.SetTitle("diagLine")
+            diagLine.SetLineColor(rt.kGray)
+            diagLine.SetLineStyle(2)
+            diagLine.SetLineWidth(2)
+            diagLine.SetMarkerStyle(20)
+            diagLine.SetPoint(0,172.5+self.model.Ymin,self.model.Ymin)
+            diagLine.SetPoint(1,172.5+self.model.Ymax,self.model.Ymax)
+            diagLine.Draw("LSAME")
+            self.c.diagLine = diagLine
+            tdiagonal = rt.TLatex(350, 350-172.5,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}")
+            tdiagonal.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
+            tdiagonal.SetTextColor(rt.kGray+2)
+            tdiagonal.SetTextAlign(11)
+            tdiagonal.SetTextSize(0.025)
+            tdiagonal.Draw("SAME")
+            self.c.tdiagonal = tdiagonal
         
     def DrawLines(self):
         # observed
