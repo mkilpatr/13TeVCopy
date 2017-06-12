@@ -137,11 +137,6 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
-    # for 03Feb2017 ReMiniAOD
-    if '03Feb2017' in DatasetName:
-        runMetCorrAndUnc = False
-        updateJECs = False
-        process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsMuEGClean', '', 'PAT')
 
 
 # Import of standard configurations
@@ -328,6 +323,32 @@ if runMetCorrAndUnc :
               process.patPFMetT2SmearCorrNoHF.jetCorrLabelRes = cms.InputTag("L3Absolute")
               process.shiftedPatJetEnDownNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
               process.shiftedPatJetEnUpNoHF.jetCorrLabelUpToL3Res = cms.InputTag("ak4PFCHSL1FastL2L3Corrector")
+
+    # for 03Feb2017 ReMiniAOD: rerun MuEGClean MET
+    if '03Feb2017' in DatasetName:
+        print 'Rerunning MuEGClean MET'
+        # Now you are creating the e/g corrected MET on top of the bad muon corrected MET (on re-miniaod)
+        # https://twiki.cern.ch/twiki/bin/view/CMSPublic/ReMiniAOD03Feb2017Notes
+        from PhysicsTools.PatUtils.tools.corMETFromMuonAndEG import corMETFromMuonAndEG
+        corMETFromMuonAndEG(process,
+                            pfCandCollection="", #not needed
+                            electronCollection="slimmedElectronsBeforeGSFix",
+                            photonCollection="slimmedPhotonsBeforeGSFix",
+                            corElectronCollection="slimmedElectrons",
+                            corPhotonCollection="slimmedPhotons",
+                            allMETEGCorrected=True,
+                            muCorrection=False,
+                            eGCorrection=True,
+                            runOnMiniAOD=True,
+                            postfix="MuEGClean"
+                            )
+        process.slimmedMETsMuEGClean = process.slimmedMETs.clone()
+        process.slimmedMETsMuEGClean.src = cms.InputTag("patPFMetT1MuEGClean")
+        process.slimmedMETsMuEGClean.rawVariation =  cms.InputTag("patPFMetRawMuEGClean")
+        process.slimmedMETsMuEGClean.t1Uncertainties = cms.InputTag("patPFMetT1%sMuEGClean")
+        del process.slimmedMETsMuEGClean.caloMET
+        # "slimmedMETsMuEGClean"        ""                "PROCESSNAME" --> Reclustered MET for the bad muons + e/gamma + Re-corrected for JEC
+        process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsMuEGClean', '', 'run')
 
 #==============================================================================================================================#
 # Filter to remove super large MET events
