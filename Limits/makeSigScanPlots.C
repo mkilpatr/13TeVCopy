@@ -57,8 +57,8 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root", c
   double xmax = *max_element(mstops.cbegin(), mstops.cend());
   double ymin = *min_element(mlsps.cbegin(), mlsps.cend());
   double ymax = *max_element(mlsps.cbegin(), mlsps.cend());
-  double xbin_size = 25;
-  double ybin_size = name=="T2tt" ? 25 : 10;
+  double xbin_size = 12.5;
+  double ybin_size = (name=="T2tt" || name=="T2bW" || name=="T2tb") ? 12.5 : 5;
   int nxbins = max(1, min(500, static_cast<int>(ceil((xmax-xmin)/xbin_size))));
   int nybins = max(1, min(500, static_cast<int>(ceil((ymax-ymin)/ybin_size))));
   printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
@@ -84,6 +84,15 @@ void makeSigScanPlots(const TString inputFileName = "significances_T2tt.root", c
   //l.SetBorderSize(0);
 //  dots.Draw("p same");
   c.Print("sig_scan_"+name+".pdf");
+
+  // set empty bins to -99
+  for (int ix=1; ix<hsigcorr->GetNbinsX()+1; ++ix){
+    for (int iy=1; iy<hsigcorr->GetNbinsY()+1; ++iy){
+      if (hsigcorr->GetBinContent(ix, iy)==0){
+        hsigcorr->SetBinContent(ix, iy, -99);
+      }
+    }
+  }
 
   TFile file("sig_scan_"+name+".root","recreate");
   hsigcorr->Write("hsig_corr");

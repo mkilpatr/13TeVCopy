@@ -11,22 +11,23 @@ class sms():
         if modelname.find("T1tttt") != -1: self.T1tttt()
         if modelname.find("T1bbbb") != -1: self.T1bbbb()
         if modelname.find("T1qqqq") != -1: self.T1qqqq()
+        if modelname.find("T2bWL") != -1: self.T2bWL()
 
 
     def T2tt(self):
         # model name
         self.modelname = "T2tt"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow t #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 150.
         self.Xmax = 1200.
         self.Ymin = 0.
-        self.Ymax = 700.
+        self.Ymax = 800.
         self.Zmin = 0.001
         self.Zmax = 100.
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} [GeV]"
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
         # LSP
         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
         # turn off diagonal lines
@@ -37,16 +38,16 @@ class sms():
         # model name
         self.modelname = "T2tb"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1} #rightarrow b W^{#pm} #tilde{#chi}^{0}_{1} or #tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}"
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow b #tilde{#chi}^{#pm}_{1} #rightarrow b W^{#pm} #tilde{#chi}^{0}_{1} or #tilde{t}_{1} #rightarrow t #tilde{#chi}^{0}_{1}"
         # scan range to plot
         self.Xmin = 200.
-        self.Xmax = 900.
+        self.Xmax = 1200.
         self.Ymin = 0.
-        self.Ymax = 500.
-        self.Zmin = 0.02
+        self.Ymax = 800.
+        self.Zmin = 0.001
         self.Zmax = 100.
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} [GeV]"
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
         # LSP
         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
         # turn off diagonal lines
@@ -55,46 +56,75 @@ class sms():
         self.mTopDiagOn = True
         self.extraText = True
         self.extratext1 = "m_{#tilde{#chi}_{1}^{#pm}}-m_{#tilde{#chi}_{1}^{0}} = 5 GeV"
-        self.extratext2 = "BR(#tilde{t} #rightarrow t #tilde{#chi}^{0}_{1}) = 50%"
+        self.extratext2 = "BR(#tilde{t}_{1} #rightarrow t #tilde{#chi}^{0}_{1}) = 50%"
 
     def T2bW(self):
         # model name
         self.modelname = "T2bW"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm} #tilde{#chi}_{1}^{0}";
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm} #tilde{#chi}_{1}^{0}";
         # scan range to plot
         self.Xmin = 200.
-        self.Xmax = 1000.
+        self.Xmax = 1200.
         self.Ymin = 0.
-        self.Ymax = 500.
+        self.Ymax = 800.
         self.Zmin = 0.001
         self.Zmax = 100.
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} [GeV]"
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
         # LSP
         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
         # turn off diagonal lines
+        self.diagOn = True
+        self.extraText = True
+        self.extratext1 = "m_{#tilde{#chi}_{1}^{#pm}} = (m_{#tilde{t}_{1}} + m_{#tilde{#chi}_{1}^{0}})/2"
+        self.extratext2 = ""
+
+    def T2bWL(self):
+        # model name
+        self.modelname = "T2bWL"
+        # decay chain
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow b #tilde{#chi}^{#pm}_{1}, #tilde{#chi}^{#pm}_{1} #rightarrow W^{#pm(*)} #tilde{#chi}_{1}^{0}"
+        # scan range to plot
+        self.Xmin = 300.
+        self.Xmax = 750.
+#         self.Ymin = 300.
+#         self.Ymax = 1000.
+        self.Ymin = 10.
+        self.Ymax = 110.
+        self.Zmin = 0.05
+        self.Zmax = 1.
+        # produce sparticle
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
+        # LSP
+#         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+        self.LSP = "#Deltam( #tilde{t}_{1}, #tilde{#chi}_{1}^{0} ) [GeV]"
+        # turn off diagonal lines
         self.diagOn = False
         self.extraText = True
-        self.extratext1 = "m_{#tilde{#chi}_{1}^{#pm}} = (m_{#tilde{t}} + m_{#tilde{#chi}_{1}^{0}})/2"
+        self.extratext1 = "m_{#tilde{#chi}_{1}^{#pm}} = (m_{#tilde{t}_{1}} + m_{#tilde{#chi}_{1}^{0}})/2"
         self.extratext2 = ""
+        self.preliminary = "Preliminary"
 
     def T2fbd(self):
         # model name
         self.modelname = "T2fbd"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #bar{#tilde{t}}, #tilde{t} #rightarrow b W^{+(*)} #tilde{#chi}^{0}_{1}"
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow b f #bar{f}' #tilde{#chi}^{0}_{1}"
         # scan range to plot
-        self.Xmin = 250.
-        self.Xmax = 600.
-        self.Ymin = 100.
-        self.Ymax = 700.
+        self.Xmin = 300.
+        self.Xmax = 750.
+#         self.Ymin = 300.
+#         self.Ymax = 1000.
+        self.Ymin = 10.
+        self.Ymax = 110.
         self.Zmin = 0.1
-        self.Zmax = 20.
+        self.Zmax = 2.
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} [GeV]"
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
         # LSP
-        self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+#         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+        self.LSP = "#Deltam( #tilde{t}_{1}, #tilde{#chi}_{1}^{0} ) [GeV]"
         # turn off diagonal lines
         self.diagOn = False
         self.extraText = False
@@ -104,18 +134,21 @@ class sms():
         # model name
         self.modelname = "T2cc"
         # decay chain
-        self.label= "pp #rightarrow #tilde{t} #tilde{t}*, #tilde{t} #rightarrow c #tilde{#chi}^{0}_{1}"
+        self.label = "pp #rightarrow #tilde{t}_{1} #bar{#tilde{t}}_{1}, #tilde{t}_{1} #rightarrow c #tilde{#chi}^{0}_{1}"
         # scan range to plot
-        self.Xmin = 100.
-        self.Xmax = 600.
-        self.Ymin = 0.
-        self.Ymax = 600.
-        self.Zmin = 0.02
-        self.Zmax = 100.
+        self.Xmin = 300.
+        self.Xmax = 650.
+#         self.Ymin = 200.
+#         self.Ymax = 800.
+        self.Ymin = 10.
+        self.Ymax = 110.
+        self.Zmin = 0.1
+        self.Zmax = 10.
         # produce sparticle
-        self.sParticle = "m_{#tilde{t}} [GeV]"
+        self.sParticle = "m_{#tilde{t}_{1}} [GeV]"
         # LSP
-        self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+#         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+        self.LSP = "#Deltam( #tilde{t}_{1}, #tilde{#chi}_{1}^{0} ) [GeV]"
         # turn off diagonal lines
         self.diagOn = False
         self.extraText = False

@@ -5,6 +5,8 @@
 #include "interpolate.h"
 #endif
 
+using namespace std;
+
 vector<TGraph*> DrawContours(TGraph2D &g2, int color, int style,
                     TLegend *leg = 0, const string &name = ""){
   vector<TGraph*> out;
@@ -137,10 +139,14 @@ void makeScanPlots(const TString inputFileName = "results_T2tt.root", const TStr
   double xmax = *max_element(mstops.cbegin(), mstops.cend());
   double ymin = *min_element(mlsps.cbegin(), mlsps.cend());
   double ymax = *max_element(mlsps.cbegin(), mlsps.cend());
-  double bin_size = 12.5;
+  double xbin_size = 12.5, ybin_size = 12.5;
 
-  int nxbins = max(1, min(1000, static_cast<int>(ceil((xmax-xmin)/bin_size))));
-  int nybins = max(1, min(1000, static_cast<int>(ceil((ymax-ymin)/bin_size))));
+  if (inputFileName.Contains("T2fbd") || inputFileName.Contains("T2bWL") || inputFileName.Contains("T2cc")){
+    ybin_size = 5;
+  }
+
+  int nxbins = max(1, min(1000, static_cast<int>(ceil((xmax-xmin)/xbin_size))));
+  int nybins = max(1, min(1000, static_cast<int>(ceil((ymax-ymin)/ybin_size))));
   printf("XMin: %4.2f, XMax: %4.2f, YMin: %4.2f, YMax: %4.2f, NXBins: %d, NYBins: %d\n", xmin, xmax, ymin, ymax, nxbins, nybins);
   glimexp.SetNpx(nxbins);
   glimexp.SetNpy(nybins);
