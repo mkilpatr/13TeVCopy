@@ -161,7 +161,7 @@ void cfgSet::loadDefaultCorrections() {
   standardCorrections.isrSigNormFile     =  TString::Format("%s/src/data/corrections/2017/isrNorms.root",CMSSW_BASE);
   standardCorrections.isrSigNormTightFile     =  TString::Format("%s/src/data/corrections/2017/isrNormsTight.root",CMSSW_BASE);
   standardCorrections.isrSigNorms.push_back("T2tt");  standardCorrections.isrSigNorms.push_back("T2tb"); standardCorrections.isrSigNorms.push_back("T2cc"); standardCorrections.isrSigNorms.push_back("T2fb");
-//  standardCorrections.isrSigNorms.push_back("T2bW");
+  standardCorrections.isrSigNorms.push_back("T2bW");
   standardCorrections.isrBKGNorms.push_back("ttbar");
   standardCorrections.isrType = ucsbsusy::NOMINAL;
   standardCorrections.setConfig();

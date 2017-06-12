@@ -796,6 +796,10 @@ struct ExtraVarsFiller {
     data->add<float>("btagFastSimWeight_HEAVYDOWN",0);
     data->add<float>("btagFastSimWeight_LIGHTUP",0);
     data->add<float>("btagFastSimWeight_LIGHTDOWN",0);
+
+    //ISR reweight
+    data->add<float>("isrWeightTight_UP",0);
+    data->add<float>("isrWeightTight_DOWN",0);
   }
 
   void bookPDFScaleSyst(TreeWriterData* data){
@@ -1693,11 +1697,18 @@ struct ExtraVarsFiller {
     data->fill<float>("btagFastSimWeight_HEAVYDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,DOWN,true));
     data->fill<float>("btagFastSimWeight_LIGHTUP",  ana->bTagCorrections.getBTagByEvtWeightAny(ana,UP,NOMINAL,true));
     data->fill<float>("btagFastSimWeight_LIGHTDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,DOWN,NOMINAL,true));
+
+    //ISR reweight
+    data->fill<float>("isrWeightTight_UP",   ana->isrCorrections.getISRWeightTight(UP));
+    data->fill<float>("isrWeightTight_DOWN", ana->isrCorrections.getISRWeightTight(DOWN));
   }
 
-  void fillPDFScaleSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+  void fillPDFScaleSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, int maxIndex = -1){
+    unsigned idx = 0;
     for(auto wgt : *ana->evtInfoReader.systweights) {
       data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+      if (maxIndex>0 && idx>maxIndex) break;
+      ++idx;
     }
   }
 
