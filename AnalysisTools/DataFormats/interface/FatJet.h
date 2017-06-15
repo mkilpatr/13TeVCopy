@@ -27,7 +27,7 @@ class SubJet : public Jet<CoordSystem>
 
   template <class InputCoordSystem>
   SubJet(const ROOT::Math::LorentzVector<InputCoordSystem> &inMomentum, const int inIndex = -1, const float inCSV = -10)
-      : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
+    : Jet<CoordSystem>(inMomentum, inIndex), csv_(inCSV) {}
   ~SubJet() {}
 
   float csv()  const { return csv_;  }
@@ -160,6 +160,7 @@ class FatJet : public Jet<CoordSystem>
   bool  looseid()              const { return looseid_; }
   bool  tightid()              const { return tightid_; }
   bool  passMuEnFrac()         const { return passMuEnFrac_; }
+  float csvBoosted()           const { return csvBoosted_;  }
 
 
   const SubJet<CoordSystem>& subJet(const size idx) const {
@@ -220,6 +221,7 @@ class FatJet : public Jet<CoordSystem>
   void setLooseid(bool looseid) { looseid_ = looseid; }
   void setTightid(bool tightid) { tightid_ = tightid; }
   void setPassMuEnFrac(bool passMuEnFrac) { passMuEnFrac_ = passMuEnFrac; }
+  void setCsvBoosted(float inCsvBoosted)  { csvBoosted_  = inCsvBoosted; }
 
 
   void setGenCategory(const FatJetGenCategory inGenCategory) {genCategory_ |= inGenCategory;}
@@ -254,6 +256,7 @@ class FatJet : public Jet<CoordSystem>
     bool looseid_ = false;
     bool tightid_ = false;
     bool passMuEnFrac_ = false;
+    float csvBoosted_ = -10;
 
     std::map<FatJetGenCategory, const GenParticleF*> genMatch_;
 

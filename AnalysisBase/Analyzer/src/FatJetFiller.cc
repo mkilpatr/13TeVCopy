@@ -45,6 +45,7 @@ FatJetFiller::FatJetFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector 
   ifj_csv_           = data.addMulti<float> (branchName_,"fatjet_csv",0);
   ifj_cvsl_          = data.addMulti<float> (branchName_,"fatjet_cvsl",0);
   ifj_cvsb_          = data.addMulti<float> (branchName_,"fatjet_cvsb",0);
+  ifj_csvboosted_    = data.addMulti<float> (branchName_,"fatjet_csvboosted",0);
   ifj_nsoftdropsubjets_ = data.addMulti<int>(branchName_,"fatjet_nsoftdropsubjets",0);
   ifj_sdsubjet1_pt_     = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_pt",0);
   ifj_sdsubjet1_eta_    = data.addMulti<float> (branchName_,"fatjet_sdsubjet1_eta",0);
@@ -162,6 +163,7 @@ void FatJetFiller::fill()
     data.fillMulti<float>(ifj_csv_             , fatjet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
     data.fillMulti<float>(ifj_cvsl_            , fatjet.bDiscriminator("pfCombinedCvsLJetTags"));
     data.fillMulti<float>(ifj_cvsb_            , fatjet.bDiscriminator("pfCombinedCvsBJetTags"));
+    data.fillMulti<float>(ifj_csvboosted_      , fatjet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
 
     // fill puppi related variables from miniaod
     data.fillMulti<float>(ifj_puppi_pt_   , fatjet.userFloat("ak8PFJetsPuppiValueMap:pt"));

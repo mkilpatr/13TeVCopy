@@ -99,6 +99,7 @@ updateJECs = True
 usePrivateSQlite = False
 JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt' # not used
 updateBTagging = True
+updateBTaggingAK8 = True
 
 # FastSim samples
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'PUSpring16Fast' in DatasetName :
@@ -392,7 +393,7 @@ process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', pro
 
 #==============================================================================================================================#
 # Also update jets with different JECs if needed
-if updateJECs or updateBTagging:
+if updateJECs or updateBTagging or updateBTaggingAK8:
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 
     print 'Adding sequence to update JECs'
@@ -415,8 +416,18 @@ if updateJECs or updateBTagging:
             'deepFlavourCMVAJetTags:probcc',
         ]
 
-    jetToolbox(process, 'ak4', 'jetSequence', 'out', PUMethod = 'CHS', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels = JETCorrLevels, runOnMC=(not ISDATA), bTagDiscriminators=bTagDiscriminators)
-    jetToolbox(process, 'ak8', 'jetSequence', 'out', PUMethod = 'CHS', updateCollection='slimmedJetsAK8', JETCorrPayload = 'AK8PFchs', JETCorrLevels = JETCorrLevels, runOnMC=(not ISDATA))
+    bTagDiscriminatorsAK8 = None
+    if updateBTaggingAK8:
+        print 'Adding sequence to update b-tagging'
+        bTagDiscriminatorsAK8 = [
+            'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+        ]
+
+    if updateJECs or updateBTagging:
+        jetToolbox(process, 'ak4', 'jetSequence', 'out', PUMethod='CHS', updateCollection='slimmedJets', JETCorrPayload='AK4PFchs', JETCorrLevels=JETCorrLevels, runOnMC=(not ISDATA), bTagDiscriminators=bTagDiscriminators)
+
+    if updateJECs or updateBTaggingAK8:
+        jetToolbox(process, 'ak8', 'jetSequence', 'out', PUMethod='CHS', updateCollection='slimmedJetsAK8', JETCorrPayload='AK8PFchs', JETCorrLevels=JETCorrLevels, runOnMC=(not ISDATA), bTagDiscriminators=bTagDiscriminatorsAK8)
 
 ### old updateJEC ###
 #     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import updatedPatJetCorrFactors

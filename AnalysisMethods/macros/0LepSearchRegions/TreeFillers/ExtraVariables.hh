@@ -151,7 +151,7 @@ struct ExtraVarsFiller {
 
 
   void getgeninfo(const BaseTreeAnalyzer *ana, std::vector<GenHadTop> &genhadtopp4_, std::vector<GenHadW> &genhadwp4_) {
-
+    // FIX ME: need a fix for the latest ntuples -> the gen chain changed!!!
     for(auto* p : ana->genParts) {
 
       const GenParticleF * tmpgenhadt_ = 0;
@@ -1461,8 +1461,8 @@ struct ExtraVarsFiller {
   void fillMergeMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     // === get the gen info ===
-    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
-    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();     
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();     
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
 
     // photon info
@@ -1505,7 +1505,7 @@ struct ExtraVarsFiller {
       ak8drgentb_   = drak8gentb;
       ak8drgenw_    = drak8togenw(fj,genhadwp4_);
       ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
-      ak8genwfromt_ = drak8gentb;
+      ak8genwfromt_ = drak8gentb; 
       match2parton_ = match2parton(ana,fj);
 
       if (ana->selectedPhotons.size()>0) {

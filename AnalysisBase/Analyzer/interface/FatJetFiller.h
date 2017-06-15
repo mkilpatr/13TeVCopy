@@ -65,6 +65,7 @@ class SoftdropWTagMVA;
     size ifj_csv_;
     size ifj_cvsl_;
     size ifj_cvsb_;
+    size ifj_csvboosted_;
     size ifj_nsoftdropsubjets_;
     size ifj_sdsubjet1_pt_;
     size ifj_sdsubjet1_eta_;
