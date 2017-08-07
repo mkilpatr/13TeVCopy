@@ -42,6 +42,7 @@ namespace ucsbsusy {
     edm::EDGetTokenT<edm::TriggerResults>                    triggerBitToken_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjToken_;
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            triggerPrescaleToken_;
+    const edm::EventBase * iEvent_ = 0;
     const edm::TriggerNames * triggerNames_;
     TrigIdMap                 trigIds_;
     TrigIdMap                 trigFilterIds_;

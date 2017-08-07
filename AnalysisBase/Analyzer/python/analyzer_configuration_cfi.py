@@ -12,7 +12,7 @@ physicsAnalyzer_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_TrancheIV_v8'),
+                                      globalTag        = cms.string ('92X_dataRun2_Prompt_v5'),
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
                                       crossSection     = cms.double (-99),                      #Input process cross section
@@ -26,7 +26,7 @@ nominal_configuration = cms.PSet(
                                       randomSeed       = cms.uint32 (1234),                     #random seed for the event
                                                                                               
                                       isData           = cms.int32  (0),                        #True if running on data
-                                      globalTag        = cms.string ('80X_mcRun2_asymptotic_2016_TrancheIV_v8'),      #Global tag
+                                      globalTag        = cms.string ('92X_dataRun2_Prompt_v5'),      #Global tag
                                       dataRecoVersion  = cms.string ('?'),                      #Data RECO version name
                                       process          = cms.string ('?'),                      #Physics process (QCD, TTBAR..)
                                       dataset          = cms.string ('?'),                      #Full dataset name
@@ -84,7 +84,7 @@ nominal_configuration = cms.PSet(
                                       fillJetShapeInfo  = cms.untracked.bool(True),
                                       fillDeepFlavor    = cms.untracked.bool(True),
                                       fillTopJetAssoc   = cms.untracked.bool(True),
-                                      fillqgl           = cms.untracked.bool(True),
+                                      fillqgl           = cms.untracked.bool(False),
                                       superJets         = cms.untracked.InputTag(''),
                                       superJetAssoc     = cms.untracked.InputTag(''),
                                       superJetNsub      = cms.untracked.InputTag(''),
@@ -306,7 +306,7 @@ nominal_configuration = cms.PSet(
                                       isFilled  = cms.untracked.bool(True),
                                       isFastSim = cms.untracked.bool(False),
                                       bits      = cms.InputTag('TriggerResults','','HLT'),
-                                      objects   = cms.InputTag('selectedPatTrigger'),
+                                      objects   = cms.InputTag('slimmedPatTrigger'),
                                       prescales = cms.InputTag('patTrigger'),
                                       printTriggerNames = cms.untracked.bool(False)
                                       ),

@@ -76,82 +76,9 @@ struct ExtraVarsFiller {
     return drak8w_;
   }
 
-  int match2parton(const BaseTreeAnalyzer *ana,FatJetF *fj) {
-
-    int matchedId_ = -1;
-    float maxpt_   = 0.;
-
-    for(auto* p : ana->genParts) {
-
-      float drak8gen_ = PhysicsUtilities::deltaR(fj->p4(),p->p4());
-      if (drak8gen_ > 0.8) { continue; }
-
-
-      if ( (abs(p->pdgId())==1)  || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ||
-           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||
-           (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) ||
-           (abs(p->pdgId())==21) || (abs(p->pdgId())==22)
-           ) {
-
-        if (p->pt()>maxpt_) {
-          maxpt_ = p->pt();
-          if ( (abs(p->pdgId())==21) )                                                { matchedId_ = 1; } // is a gluon
-          if ( (abs(p->pdgId())==1) || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ) {
-            if ( (p->numberOfMothers()>0) && (abs(p->mother(0)->pdgId())==6))         { matchedId_ = 4; } // is a top
-            else                                                                      { matchedId_ = 2; } // is a light quark
-          }
-          if ( (abs(p->pdgId())==4) || (abs(p->pdgId())==5) )                         {  // is a c or b quark
-	    if ( (p->numberOfMothers()>0) && (abs(p->mother(0)->pdgId())==6))           { matchedId_ = 4; } // is a top
-	    else                                                                        { matchedId_ = 3; } // is a c or b quark
-          }
-          if ( (abs(p->pdgId())==22) )                                                { matchedId_ = 5; } // is a photon
-        }
-      }
-      else { matchedId_ = 0; } // is something else but a quark or a gluon or a photon
-    }
-    return matchedId_;
-  } // end of int match2parton(..)
-
-
-  int match2partonRes(const BaseTreeAnalyzer *ana,TopCand fj) {
-
-    int matchedId_ = -1;
-    float maxpt_   = 0.;
-    for(auto* p : ana->genParts) {
-
-      float drak8gen_ = PhysicsUtilities::deltaR(fj.topcand.p4(),p->p4());
-      if (drak8gen_ > 0.8) { continue; }
-
-      if ( (abs(p->pdgId())==1)  || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ||
-           //      (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) || (abs(p->pdgId())==6) ||
-           (abs(p->pdgId())==4)  || (abs(p->pdgId())==5) ||
-           (abs(p->pdgId())==21) || (abs(p->pdgId())==22)
-           ) {
-
-        if (p->pt()>maxpt_) {
-          maxpt_ = p->pt();
-          if ( (abs(p->pdgId())==21) )                                                { matchedId_ = 1; } // is a gluon
-          if ( (abs(p->pdgId())==1) || (abs(p->pdgId())==2) || (abs(p->pdgId())==3) ) {
-            if ( (p->numberOfMothers()>0) && (abs(p->mother(0)->pdgId())==6))         { matchedId_ = 4; } // is a top
-            else                                                                      { matchedId_ = 2; } // is a light quark
-          }
-          if ( (abs(p->pdgId())==4) || (abs(p->pdgId())==5) )                         {  // is a c or b quark
-	    if ( (p->numberOfMothers()>0) && (abs(p->mother(0)->pdgId())==6))           { matchedId_ = 4; } // is a top
-	    else                                                                        { matchedId_ = 3; } // is a c or b quark
-          }
-          if ( (abs(p->pdgId())==22) )                                                { matchedId_ = 5; } // is a photon
-	}
-      }
-      else { matchedId_ = 0; } // is something else but a quark or a gluon or a photon
-
-    }
-
-    return matchedId_;
-  } // end of int match2partonRes(..)
-
 
   void getgeninfo(const BaseTreeAnalyzer *ana, std::vector<GenHadTop> &genhadtopp4_, std::vector<GenHadW> &genhadwp4_) {
-    // FIX ME: need a fix for the latest ntuples -> the gen chain changed!!!
+
     for(auto* p : ana->genParts) {
 
       const GenParticleF * tmpgenhadt_ = 0;
@@ -467,6 +394,40 @@ struct ExtraVarsFiller {
   size i_efnl0_ak8passtopm_2;
   size i_efnl0_ak8passtopt_2;
 
+  // QCD Angular variables
+  size i_dphimetj1  ;
+  size i_dphistarmetj1;
+  size i_dphistarmetj1_tilde;
+  size i_omegametj1 ;
+  size i_omegametj1_tilde;
+  size i_chimetj1   ;
+  size i_metj1      ;
+  size i_dphimetj2  ;
+  size i_dphistarmetj2;
+  size i_dphistarmetj2_tilde;
+  size i_omegametj2 ;
+  size i_omegametj2_tilde;
+  size i_chimetj2   ;
+  size i_metj2      ;
+  size i_dphimetj3  ;
+  size i_dphistarmetj3;
+  size i_dphistarmetj3_tilde;
+  size i_omegametj3 ;
+  size i_omegametj3_tilde;
+  size i_chimetj3   ;
+  size i_metj3      ;
+  size i_dphimetj4  ;
+  size i_dphistarmetj4;
+  size i_dphistarmetj4_tilde;
+  size i_omegametj4 ;
+  size i_omegametj4_tilde;
+  size i_chimetj4   ;
+  size i_metj4      ;
+  size i_badj1	    ;
+  size i_badj2      ;
+  size i_badj3      ;
+  size i_badj4      ;
+
   // TopWSF
   size i_efnl1_res_ntightmus;
   size i_efnl1_res_dphitmumet;
@@ -502,10 +463,6 @@ struct ExtraVarsFiller {
   size i_mtnb0_ak8passtopm;
   size i_mtnb0_ak8passtopt;
   size i_mtnb0_ak8dphimet;
-  size i_mtnb0_njclose2mu;
-  size i_mtnb0_nlbclose2mu;
-  size i_mtnb0_nmbclose2mu;
-  size i_mtnb0_match2parton;
 
   size i_mtnl0_ntightmus;
   size i_mtnl0_dphitmumet;
@@ -529,11 +486,6 @@ struct ExtraVarsFiller {
   size i_mtnl0_ak8passtopl;
   size i_mtnl0_ak8passtopm;
   size i_mtnl0_ak8passtopt;
-  size i_mtnl0_match2parton;
-  size i_mtnl0_npho;
-  size i_mtnl0_phopt;
-  size i_mtnl0_phoeta;
-  size i_mtnl0_drphojet;
 
   size i_mtnl0_res_ntightmus;
   size i_mtnl0_res_dphitmumet;
@@ -544,11 +496,6 @@ struct ExtraVarsFiller {
   size i_mtnl0_res_bclose2lep;
   size i_mtnl0_res_away2lep;
   size i_mtnl0_res_dphimet;
-  size i_mtnl0_res_match2parton;
-  size i_mtnl0_res_npho;
-  size i_mtnl0_res_phopt;
-  size i_mtnl0_res_phoeta;
-  size i_mtnl0_res_drphojet;
 
 
   void bookHist(TFile *outFile){
@@ -593,7 +540,6 @@ struct ExtraVarsFiller {
     i_efnl1_ak8passtopm   = data->add<bool>        ("","efnl1_ak8passtopm"  ,"O",0);
     i_efnl1_ak8passtopt   = data->add<bool>        ("","efnl1_ak8passtopt"  ,"O",0);
     i_efnl1_ak8dphimet    = data->add<float>       ("","efnl1_ak8dphimet"   ,"F",0);
-
   }
 
 
@@ -608,7 +554,6 @@ struct ExtraVarsFiller {
     i_efnl1_res_bclose2lep = data->add<bool >       ("","efnl1_res_bclose2lep" ,"O",0);
     i_efnl1_res_away2lep   = data->add<bool >       ("","efnl1_res_away2lep"   ,"O",0);
     i_efnl1_res_dphimet    = data->add<float>       ("","efnl1_res_dphimet"    ,"F",0);
-
   }
 
 
@@ -639,27 +584,20 @@ struct ExtraVarsFiller {
     i_efnl0_ak8passtopl_2 = data->add<bool> ("","efnl0_ak8passtopl_2","O",0);
     i_efnl0_ak8passtopm_2 = data->add<bool> ("","efnl0_ak8passtopm_2","O",0);
     i_efnl0_ak8passtopt_2 = data->add<bool> ("","efnl0_ak8passtopt_2","O",0);
-
   }
 
 
   void bookResTopMistagSF0Lep(TreeWriterData* data){
 
-    i_mtnl0_res_ntightmus    = data->add<unsigned int>("","mtnl0_res_ntightmus"   ,"i",0);
-    i_mtnl0_res_dphitmumet   = data->add<float>       ("","mtnl0_res_dphitmumet"  ,"F",0);
-    i_mtnl0_res_pt           = data->add<float>       ("","mtnl0_res_pt"          ,"F",0);
-    i_mtnl0_res_eta          = data->add<float>       ("","mtnl0_res_eta"         ,"F",0);
-    i_mtnl0_res_mass         = data->add<float>       ("","mtnl0_res_mass"        ,"F",0);
-    i_mtnl0_res_nmatchsj     = data->add<int  >       ("","mtnl0_res_nmatchsj"    ,"I",-1);
-    i_mtnl0_res_bclose2lep   = data->add<bool >       ("","mtnl0_res_bclose2lep"  ,"O",0);
-    i_mtnl0_res_away2lep     = data->add<bool >       ("","mtnl0_res_away2lep"    ,"O",0);
-    i_mtnl0_res_dphimet      = data->add<float>       ("","mtnl0_res_dphimet"     ,"F",0);
-    i_mtnl0_res_match2parton = data->add<int  >       ("","mtnl0_res_match2parton","I",0);
-    i_mtnl0_res_npho         = data->add<int  >       ("","mtnl0_res_npho"        ,"I",0);
-    i_mtnl0_res_phopt        = data->add<float>       ("","mtnl0_res_phopt"       ,"F",0);
-    i_mtnl0_res_phoeta       = data->add<float>       ("","mtnl0_res_phoeta"      ,"F",0);
-    i_mtnl0_res_drphojet     = data->add<float>       ("","mtnl0_res_drphojet"    ,"F",0);
-
+    i_mtnl0_res_ntightmus  = data->add<unsigned int>("","mtnl0_res_ntightmus"  ,"i",0);
+    i_mtnl0_res_dphitmumet = data->add<float>       ("","mtnl0_res_dphitmumet" ,"F",0);
+    i_mtnl0_res_pt         = data->add<float>       ("","mtnl0_res_pt"         ,"F",0);
+    i_mtnl0_res_eta        = data->add<float>       ("","mtnl0_res_eta"        ,"F",0);
+    i_mtnl0_res_mass       = data->add<float>       ("","mtnl0_res_mass"       ,"F",0);
+    i_mtnl0_res_nmatchsj   = data->add<int  >       ("","mtnl0_res_nmatchsj"   ,"I",-1);
+    i_mtnl0_res_bclose2lep = data->add<bool >       ("","mtnl0_res_bclose2lep" ,"O",0);
+    i_mtnl0_res_away2lep   = data->add<bool >       ("","mtnl0_res_away2lep"   ,"O",0);
+    i_mtnl0_res_dphimet    = data->add<float>       ("","mtnl0_res_dphimet"    ,"F",0);
   }
 
 
@@ -688,11 +626,6 @@ struct ExtraVarsFiller {
     i_mtnb0_ak8passtopm   = data->add<bool>        ("","mtnb0_ak8passtopm"  ,"O",0);
     i_mtnb0_ak8passtopt   = data->add<bool>        ("","mtnb0_ak8passtopt"  ,"O",0);
     i_mtnb0_ak8dphimet    = data->add<float>       ("","mtnb0_ak8dphimet"   ,"F",0);
-    i_mtnb0_njclose2mu    = data->add<unsigned int>("","mtnb0_njclose2mu"   ,"i",0);
-    i_mtnb0_nlbclose2mu   = data->add<unsigned int>("","mtnb0_nlbclose2mu"  ,"i",0);
-    i_mtnb0_nmbclose2mu   = data->add<unsigned int>("","mtnb0_nmbclose2mu"  ,"i",0);
-    i_mtnb0_match2parton  = data->add<int  >       ("","mtnb0_match2parton" ,"I",0);
-
   }
 
 
@@ -720,12 +653,6 @@ struct ExtraVarsFiller {
     i_mtnl0_ak8passtopl   = data->add<bool>        ("","mtnl0_ak8passtopl"  ,"O",0);
     i_mtnl0_ak8passtopm   = data->add<bool>        ("","mtnl0_ak8passtopm"  ,"O",0);
     i_mtnl0_ak8passtopt   = data->add<bool>        ("","mtnl0_ak8passtopt"  ,"O",0);
-    i_mtnl0_match2parton  = data->add<int  >       ("","mtnl0_match2parton" ,"I",0);
-    i_mtnl0_npho          = data->add<int  >       ("","mtnl0_npho"         ,"I",0);
-    i_mtnl0_phopt         = data->add<float>       ("","mtnl0_phopt"        ,"F",0);
-    i_mtnl0_phoeta        = data->add<float>       ("","mtnl0_phoeta"       ,"F",0);
-    i_mtnl0_drphojet      = data->add<float>       ("","mtnl0_drphojet"     ,"F",0);
-
   }
 
   void bookTopWSyst(TreeWriterData* data){
@@ -740,70 +667,22 @@ struct ExtraVarsFiller {
     data->add<float>("sdMVAWeight_MISTAG_STATS_W",1);
     data->add<float>("sdMVAWeight_MISTAG_STATS_T",1);
     data->add<float>("sdMVAWeight_MISTAG_NB",1);
-    data->add<float>("sdMVAWeight_MISTAG_PS",1);
 
 
     data->add<float>("resTopWeight_STATS",1);
     data->add<float>("resTopWeight_PS",1);
     data->add<float>("resTopWeight_GEN",1);
     data->add<float>("resTopWeight_MISTAG_UP",1);
-    data->add<float>("resTopWeight_NMATCH",1);
 
     data->add<float>("resTopWeight_MISTAG_STATS",1);
     data->add<float>("resTopWeight_MISTAG_NB",1);
-    data->add<float>("resTopWeight_MISTAG_PS",1);
-
-    data->add<float>("sdMVAWeight_FASTSIM_STATS_T",1);
-    data->add<float>("sdMVAWeight_FASTSIM_STATS_W",1);
-    data->add<float>("resTopWeight_FASTSIM_STATS",1);
   }
 
   void bookSyst(TreeWriterData* data){
+    i_systweights       = data->addMulti<float>("","systweights",0);
     i_wpolWeightUp      = data->add<float>("","wpolWeightUp","F",1);
     i_wpolWeightDn      = data->add<float>("","wpolWeightDn","F",1);
     i_costhetastar      = data->add<float>("","costhetastar","F",-1);
-
-    //PU
-    data->add<float>("truePUWeight_UP",0);
-    data->add<float>("truePUWeight_DOWN",0);
-
-    //LEP
-    data->add<float>("lepvetoweightLM_UP",0);
-    data->add<float>("lepvetoweightLM_DOWN",0);
-    data->add<float>("lepselweightLM_UP",0);
-    data->add<float>("lepselweightLM_DOWN",0);
-    data->add<float>("lepvetoweightHM_UP",0);
-    data->add<float>("lepvetoweightHM_DOWN",0);
-    data->add<float>("lepselweightHM_UP",0);
-    data->add<float>("lepselweightHM_DOWN",0);
-
-    data->add<float>("leptnpweightLM_ELE_UP",0);
-    data->add<float>("leptnpweightLM_ELE_DOWN",0);
-    data->add<float>("leptnpweightHM_ELE_UP",0);
-    data->add<float>("leptnpweightHM_ELE_DOWN",0);
-
-    data->add<float>("leptnpweightLM_MU_UP",0);
-    data->add<float>("leptnpweightLM_MU_DOWN",0);
-    data->add<float>("leptnpweightHM_MU_UP",0);
-    data->add<float>("leptnpweightHM_MU_DOWN",0);
-
-    //BTAGS
-    data->add<float>("btagWeight_HEAVYUP",0);
-    data->add<float>("btagWeight_HEAVYDOWN",0);
-    data->add<float>("btagWeight_LIGHTUP",0);
-    data->add<float>("btagWeight_LIGHTDOWN",0);
-    data->add<float>("btagFastSimWeight_HEAVYUP",0);
-    data->add<float>("btagFastSimWeight_HEAVYDOWN",0);
-    data->add<float>("btagFastSimWeight_LIGHTUP",0);
-    data->add<float>("btagFastSimWeight_LIGHTDOWN",0);
-
-    //ISR reweight
-    data->add<float>("isrWeightTight_UP",0);
-    data->add<float>("isrWeightTight_DOWN",0);
-  }
-
-  void bookPDFScaleSyst(TreeWriterData* data){
-    i_systweights       = data->addMulti<float>("","systweights",0);
   }
 
   void bookJetMET(TreeWriterData* data){
@@ -838,6 +717,44 @@ struct ExtraVarsFiller {
     i_j1chhadn4      = data->add<int>("","j1chhadn4","I",0);
     i_j1chhadn6      = data->add<int>("","j1chhadn6","I",0);
 
+  }
+
+ void bookQCDAngles(TreeWriterData* data){
+    i_dphimetj1             = data->add<float>("","dphimetj1","F",0);
+    i_dphistarmetj1         = data->add<float>("","dphistarmetj1","F",0);
+    i_dphistarmetj1_tilde   = data->add<float>("","dphistarmetj1_tilde","F",0);
+    i_omegametj1            = data->add<float>("","omegametj1","F",0);
+    i_omegametj1_tilde      = data->add<float>("","omegametj1_tilde","F",0);
+    i_chimetj1              = data->add<float>("","chimetj1","F",0);
+    i_metj1                 = data->add<float>("","metj1","F",0);
+    i_metj2                 = data->add<float>("","metj2","F",0);
+    i_metj3                 = data->add<float>("","metj3","F",3);
+    i_metj4                 = data->add<float>("","metj4","F",3);
+    i_dphimetj2             = data->add<float>("","dphimetj2","F",0);
+    i_dphistarmetj2         = data->add<float>("","dphistarmetj2","F",0);
+    i_dphistarmetj2_tilde   = data->add<float>("","dphistarmetj2_tilde","F",0);
+    i_omegametj2            = data->add<float>("","omegametj2","F",0);
+    i_omegametj2_tilde      = data->add<float>("","omegametj2_tilde","F",0);
+    i_chimetj2              = data->add<float>("","chimetj2","F",0);
+    i_dphimetj3             = data->add<float>("","dphimetj3","F",3);
+    i_dphistarmetj3         = data->add<float>("","dphistarmetj3","F",3);
+    i_dphistarmetj3_tilde   = data->add<float>("","dphistarmetj3_tilde","F",3);
+    i_omegametj3            = data->add<float>("","omegametj3","F",3);
+    i_omegametj3_tilde      = data->add<float>("","omegametj3_tilde","F",3);
+    i_chimetj3              = data->add<float>("","chimetj3","F",3);
+    i_dphimetj4             = data->add<float>("","dphimetj4","F",3);
+    i_dphistarmetj4         = data->add<float>("","dphistarmetj4","F",3);
+    i_dphistarmetj4_tilde   = data->add<float>("","dphistarmetj4_tilde","F",3);
+    i_omegametj4            = data->add<float>("","omegametj4","F",3);
+    i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",3);
+    i_chimetj4              = data->add<float>("","chimetj4","F",3);
+  }
+
+  void bookCheckJets(TreeWriterData* data){
+    i_badj1		    = data->add<unsigned int>("","badj1","I",0);
+    i_badj2		    = data->add<unsigned int>("","badj2","I",0);
+    i_badj3		    = data->add<unsigned int>("","badj3","I",0);
+    i_badj4		    = data->add<unsigned int>("","badj4","I",0);
   }
 
   void bookLepton(TreeWriterData* data){
@@ -1037,10 +954,15 @@ struct ExtraVarsFiller {
 
   void fillMergeTopWSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
+
     // === get the gen info ===
     std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
     std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
+    //    std::cout << "size after = " << genhadtopp4_.size() << "\n";
+    //    std::cout << genhadtopp4_[0].bp4.pt() << " " << genhadtopp4_[0].wj1p4.pt() << "\n";
+
+
 
     // === make the tags ===
 
@@ -1060,7 +982,6 @@ struct ExtraVarsFiller {
 
       tightmuons.push_back(tmpTightMuons);
     } // end of looping over the leptons
-
     data->fill<unsigned int>(i_efnl1_ntightmus, tightmuons.size());
     float dphitmumet_ = -9.;
     if (tightmuons.size()>0) { dphitmumet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*ana->met)); }
@@ -1074,18 +995,22 @@ struct ExtraVarsFiller {
         csvtjets.push_back(tmpVecCSVTJets); }
     }
 
+
     // find a b close to the lepton
     bool ak8bclose2lep_ = false;
     if (tightmuons.size()>0 && csvtjets.size()>0 ) {
       for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
-        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
+	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
         float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvtjets[i0]);
-        if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { ak8bclose2lep_ = true; }
+	if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { ak8bclose2lep_ = true; }
       }
     } // end of finding a b-tag close to the tight lep
     data->fill<bool>(i_efnl1_ak8bclose2lep, ak8bclose2lep_);
 
+
+
     // === make the probes ===
+
     bool  ak8away2lep_ = false;
     bool  ak8drgentop_ = false;
     bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
@@ -1162,7 +1087,10 @@ struct ExtraVarsFiller {
   } // end of fillMergeTopWSF
 
 
+
+
   void fillResTopSF(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
 
     // === make the tags ===
 
@@ -1182,7 +1110,6 @@ struct ExtraVarsFiller {
 
       tightmuons.push_back(tmpTightMuons);
     } // end of looping over the leptons
-
     data->fill<unsigned int>(i_efnl1_res_ntightmus, tightmuons.size());
     float dphitmumet_ = -9.;
     if (tightmuons.size()>0) { dphitmumet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),*ana->met)); }
@@ -1196,18 +1123,22 @@ struct ExtraVarsFiller {
         csvtjets.push_back(tmpVecCSVTJets); }
     }
 
+
     // find a b close to the lepton
     bool bclose2lep_ = false;
     if (tightmuons.size()>0 && csvtjets.size()>0 ) {
       for (unsigned int i0=0; i0<csvtjets.size(); ++i0) {
-        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
+	float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvtjets[i0]));
         float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvtjets[i0]);
-        if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { bclose2lep_ = true; }
+	if ( (dphilepbjet_<1.) && (drlepbjet_<1.) ) { bclose2lep_ = true; }
       }
     } // end of finding a b-tag close to the tight lep
     data->fill<bool>(i_efnl1_res_bclose2lep, bclose2lep_);
 
+
+
     // === make the probes ===
+
     bool  away2lep_ = false;
     int   nmatchsj_ = -1.;
     float pt_   = 0.; float eta_  = 0.; float mass_ = 0.;
@@ -1220,6 +1151,8 @@ struct ExtraVarsFiller {
       float dphilep_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),fj.topcand));
       if (dphilep_ < 2.) { continue; }
       away2lep_ = true;
+
+
 
       pt_         = fj.topcand.pt();
       eta_        = fj.topcand.eta();
@@ -1309,6 +1242,7 @@ struct ExtraVarsFiller {
     std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
 
+
     // === make the tags ===
 
     // get a tight muon collection
@@ -1334,56 +1268,8 @@ struct ExtraVarsFiller {
     data->fill<float>(i_mtnb0_dphitmumet, dphitmumet_);
     data->fill<bool>(i_mtnb0_ak8bclose2lep, true);
 
-    // get the loose and medium bjets
-    std::vector<MomentumF> csvljets;
-    std::vector<MomentumF> csvmjets;
-    for(auto* j : ana->jets) {
-
-      if(j->csv() > defaults::CSV_LOOSE) {
-        MomentumF tmpVecCSVLJets; tmpVecCSVLJets = j->p4();
-        csvljets.push_back(tmpVecCSVLJets); }
-
-      if(j->csv() > defaults::CSV_MEDIUM) {
-        MomentumF tmpVecCSVMJets; tmpVecCSVMJets = j->p4();
-        csvmjets.push_back(tmpVecCSVMJets); }
-
-    }
-
-    // find jets close to muon
-    unsigned int njclose2mu = 0;
-    if (tightmuons.size()>0 && ana->jets.size()>0 ) {
-      for(auto* j : ana->jets) {
-        MomentumF tmpVecJets; tmpVecJets = j->p4();
-        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),tmpVecJets));
-        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),tmpVecJets);
-        if ( (dphilepbjet_<1.) || (drlepbjet_<1.) ) { ++njclose2mu; }
-      }
-    }
-    data->fill<unsigned int>(i_mtnb0_njclose2mu, njclose2mu);
-
-    // find a bottoms close to muon
-    unsigned int nlbclose2mu = 0;
-    if (tightmuons.size()>0 && csvljets.size()>0 ) {
-      for (unsigned int i0=0; i0<csvljets.size(); ++i0) {
-        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvljets[i0]));
-        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvljets[i0]);
-        if ( (dphilepbjet_<1.) || (drlepbjet_<1.) ) { ++nlbclose2mu; }
-      }
-    }
-    data->fill<unsigned int>(i_mtnb0_nlbclose2mu, nlbclose2mu);
-
-    unsigned int nmbclose2mu = 0;
-    if (tightmuons.size()>0 && csvmjets.size()>0 ) {
-      for (unsigned int i0=0; i0<csvmjets.size(); ++i0) {
-        float dphilepbjet_ = fabs(PhysicsUtilities::deltaPhi(tightmuons.at(0),csvmjets[i0]));
-        float drlepbjet_   = PhysicsUtilities::deltaR(tightmuons.at(0),csvmjets[i0]);
-        if ( (dphilepbjet_<1.) || (drlepbjet_<1.) ) { ++nmbclose2mu; }
-      }
-    } // end of finding a b-tag close to the tight lep
-    data->fill<unsigned int>(i_mtnb0_nmbclose2mu, nmbclose2mu);
-
     // === make the probes ===
-    int   match2parton_ = -9;
+
     bool  ak8away2lep_ = false;
     bool  ak8drgentop_ = false;
     bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
@@ -1417,7 +1303,10 @@ struct ExtraVarsFiller {
       ak8drgenw_    = drak8togenw(fj,genhadwp4_);
       ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
       ak8genwfromt_ = drak8gentb;
-      match2parton_ = match2parton(ana,fj);
+
+      // distance to gen had top
+      //if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_t)) { ak8drgentop_ = true; }
+      //      if(doesFatJetMatch(ana, fj, 0.6, ParticleInfo::p_Wplus)) {ak8fromgenhadw_ = true; }
 
       // w-tags
       if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { ak8passwl_ = true; }
@@ -1452,33 +1341,20 @@ struct ExtraVarsFiller {
     data->fill<bool >(i_mtnb0_ak8passtopm ,ak8passtopm_ );
     data->fill<bool >(i_mtnb0_ak8passtopt ,ak8passtopt_ );
     data->fill<float>(i_mtnb0_ak8dphimet  ,ak8dphimet_  );
-    data->fill<int  >(i_mtnb0_match2parton,match2parton_);
 
   } // end of fillMergeMistagSFNb0
-
 
 
   void fillMergeMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
 
     // === get the gen info ===
-    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();     
-    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();     
+    std::vector<GenHadTop> genhadtp4_; genhadtp4_.clear();
+    std::vector<GenHadW>   genhadwp4_; genhadwp4_.clear();
     if (ana->isMC()) { getgeninfo(ana,genhadtp4_,genhadwp4_); }
-
-    // photon info
-    PhotonF* pho    = nullptr;
-    float phopt_    = -1.;
-    float phoeta_   = -5.;
-    float phodrak8_ = 999.;
-    if (!(ana->selectedPhotons.empty())) {
-      pho = ana->selectedPhotons.front();
-      phopt_  = pho->pt();
-      phoeta_ = pho->eta();
-    }
 
 
     // === make the probes ===
-    int   match2parton_ = -9;
+
     bool  ak8passwl_   = false; bool ak8passwm_ = false;   bool ak8passwt_ = false;
     bool  ak8passtopl_ = false; bool ak8passtopm_ = false; bool ak8passtopt_ = false;
     float ak8pt_   = 0.; float ak8eta_  = 0.; float ak8mass_ = 0.;
@@ -1489,7 +1365,7 @@ struct ExtraVarsFiller {
 
       if (fabs(fj->eta())>2.4) { continue; }
       if (fabs(fj->pt())<200.) { continue; }
-      //cout << " cand pt = " << fj->pt() << "\n";
+
 
       float drak8gentb = 9.;
       bool  wFromTop = false;
@@ -1505,12 +1381,7 @@ struct ExtraVarsFiller {
       ak8drgentb_   = drak8gentb;
       ak8drgenw_    = drak8togenw(fj,genhadwp4_);
       ak8drgenwq_   = drak8togenwq(fj,genhadwp4_,wFromTop);
-      ak8genwfromt_ = drak8gentb; 
-      match2parton_ = match2parton(ana,fj);
-
-      if (ana->selectedPhotons.size()>0) {
-        phodrak8_ = PhysicsUtilities::deltaR(*pho, *fj);
-      }
+      ak8genwfromt_ = drak8gentb;
 
       // w-tags
       if (fj->w_mva() > SoftdropWTagMVA::WP_LOOSE ) { ak8passwl_ = true; }
@@ -1544,39 +1415,38 @@ struct ExtraVarsFiller {
     data->fill<bool >(i_mtnl0_ak8passtopl ,ak8passtopl_ );
     data->fill<bool >(i_mtnl0_ak8passtopm ,ak8passtopm_ );
     data->fill<bool >(i_mtnl0_ak8passtopt ,ak8passtopt_ );
-    data->fill<int  >(i_mtnl0_match2parton,match2parton_);
-    data->fill<int  >(i_mtnl0_npho        , ana->selectedPhotons.size());
-    data->fill<float>(i_mtnl0_phopt       , phopt_      );
-    data->fill<float>(i_mtnl0_phoeta      , phoeta_     );
-    data->fill<float>(i_mtnl0_drphojet    , phodrak8_   );
 
   } // end of fillMergeMistagSF0Lep
 
 
+
+
+
   void fillResTopMistagSF0Lep(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+
 
     // === make the probes ===
     float pt_   = 0.; float eta_  = 0.; float mass_ = 0.;
     int   nmatchsj_ = -1.;
-    int   match2parton_ = -9;
+
     for (auto &fj : ana->resMVATopCands) {
 
+
       if (fabs(fj.topcand.eta())>2.4) { continue; }
-      pt_           = fj.topcand.pt();
-      eta_          = fj.topcand.eta();
-      mass_         = fj.topcand.mass();
-      nmatchsj_     = fj.nMatchedSubjets(ana->hadronicGenTops);
-      match2parton_ = match2partonRes(ana,fj);
+      //      if (fabs(fj->pt())<200.) { continue; }
+      pt_       = fj.topcand.pt();
+      eta_      = fj.topcand.eta();
+      mass_     = fj.topcand.mass();
+      nmatchsj_   = fj.nMatchedSubjets(ana->hadronicGenTops);
 
       break;
 
     } // end of looping over ak8 jets
 
-    data->fill<float>(i_mtnl0_res_pt          ,pt_          );
-    data->fill<float>(i_mtnl0_res_eta         ,eta_         );
-    data->fill<float>(i_mtnl0_res_mass        ,mass_        );
-    data->fill<int  >(i_mtnl0_res_nmatchsj    ,nmatchsj_    );
-    data->fill<int  >(i_mtnl0_res_match2parton,match2parton_);
+    data->fill<float>(i_mtnl0_res_pt       ,pt_       );
+    data->fill<float>(i_mtnl0_res_eta      ,eta_      );
+    data->fill<float>(i_mtnl0_res_mass     ,mass_     );
+    data->fill<int  >(i_mtnl0_res_nmatchsj ,nmatchsj_ );
 
   } // end of fillResTopMistagSF0Lep
 
@@ -1589,127 +1459,61 @@ struct ExtraVarsFiller {
 
     // merged
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_W; // STATS_W
-    data->fill<float>("sdMVAWeight_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_STATS_T; // STATS_T
-    data->fill<float>("sdMVAWeight_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_PS; // PS
-    data->fill<float>("sdMVAWeight_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_GEN; // GEN
-    data->fill<float>("sdMVAWeight_GEN", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_GEN", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_W; // MISTAG_UP_W
-    data->fill<float>("sdMVAWeight_MISTAG_UP_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_MISTAG_UP_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_UP_T; // MISTAG_UP_T
-    data->fill<float>("sdMVAWeight_MISTAG_UP_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_PS; // MISTAG_PS
-    data->fill<float>("sdMVAWeight_MISTAG_PS", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_MISTAG_UP_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     // mistag
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_W; // MISTAG_STAT_W
-    data->fill<float>("sdMVAWeight_MISTAG_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_STATS_T; // MISTAG_STAT_T
-    data->fill<float>("sdMVAWeight_MISTAG_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_MISTAG_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_MISTAG_NB; // MISTAG_NB
-    data->fill<float>("sdMVAWeight_MISTAG_NB", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
+    data->fill<float>("sdMVAWeight_MISTAG_NB", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets, true));
 
     // resolved
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_STATS; // STATS
-    data->fill<float>("resTopWeight_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+    data->fill<float>("resTopWeight_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_PS; // PS
-    data->fill<float>("resTopWeight_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+    data->fill<float>("resTopWeight_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_GEN; // GEN
-    data->fill<float>("resTopWeight_GEN", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+    data->fill<float>("resTopWeight_GEN", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_UP; // MISTAG_UP
-    data->fill<float>("resTopWeight_MISTAG_UP", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_NMATCH; // NMATCH
-    data->fill<float>("resTopWeight_NMATCH", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+    data->fill<float>("resTopWeight_MISTAG_UP", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
 
     // mistag
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_STATS; // MISTAG_STATS
-    data->fill<float>("resTopWeight_MISTAG_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
+    data->fill<float>("resTopWeight_MISTAG_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
 
     options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_NB; // MISTAG_NB
-    data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_MISTAG_PS; // MISTAG_PS
-    data->fill<float>("resTopWeight_MISTAG_PS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
-
-    // fastsim
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_T; // FASTSIM STATS T
-    data->fill<float>("sdMVAWeight_FASTSIM_STATS_T", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_MERGED_FASTSIM_STATS_W; // FASTSIM STATS W
-    data->fill<float>("sdMVAWeight_FASTSIM_STATS_W", ana->topWCorrections.getAnySdMVAWeight(options, ana->fatJets,ana->evtInfoReader.isfastsim));
-
-    options = TopWCorrectionSet::SDMVA | TopWCorrectionSet::RESMVATOP | TopWCorrectionSet::SYSTS_RESOLVED_FASTSIM_STATS; // FASTIM STATS
-    data->fill<float>("resTopWeight_FASTSIM_STATS", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops,ana->evtInfoReader.isfastsim));
-
+    data->fill<float>("resTopWeight_MISTAG_NB", ana->topWCorrections.getAnyResMVATopWeight(options, ana->resMVATopCands, ana->hadronicGenTops, true));
   }
 
   void fillSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
+    for(auto wgt : *ana->evtInfoReader.systweights) {
+      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
+    }
     data->fill<float>(i_wpolWeightUp, ana->wpolCorrections.getWpolWeightUp());
     data->fill<float>(i_wpolWeightDn, ana->wpolCorrections.getWpolWeightDn());
     data->fill<float>(i_costhetastar, ana->wpolCorrections.getCosThetaStar());
-
-    //PU
-    data->fill<float>("truePUWeight_UP",   ana->eventCorrections.getTruePUWeight(UP));
-    data->fill<float>("truePUWeight_DOWN", ana->eventCorrections.getTruePUWeight(DOWN));
-
-    //LEP
-    // args are tau corr type, isLM, isVetoWeight
-    data->fill<float>("lepvetoweightLM_UP",  ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  true,true));
-    data->fill<float>("lepvetoweightLM_DOWN",ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,true,true));
-    data->fill<float>("lepselweightLM_UP",   ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  true,false));
-    data->fill<float>("lepselweightLM_DOWN", ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,true,false));
-    data->fill<float>("lepvetoweightHM_UP",  ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  false,true));
-    data->fill<float>("lepvetoweightHM_DOWN",ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,false,true));
-    data->fill<float>("lepselweightHM_UP",   ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::UP,  false,false));
-    data->fill<float>("lepselweightHM_DOWN", ana->leptonCorrections.getLepWeightAny(ana,ucsbsusy::DOWN,false,false));
-
-    // args are ele corr type, mu corr type, isLM
-    data->fill<float>("leptnpweightLM_ELE_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::UP,ucsbsusy::NOMINAL,true));
-    data->fill<float>("leptnpweightLM_ELE_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::DOWN,ucsbsusy::NOMINAL,true));
-    data->fill<float>("leptnpweightHM_ELE_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::UP,ucsbsusy::NOMINAL,false));
-    data->fill<float>("leptnpweightHM_ELE_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::DOWN,ucsbsusy::NOMINAL,false));
-    data->fill<float>("leptnpweightLM_MU_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::UP,true));
-    data->fill<float>("leptnpweightLM_MU_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::DOWN,true));
-    data->fill<float>("leptnpweightHM_MU_UP",  ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::UP,false));
-    data->fill<float>("leptnpweightHM_MU_DOWN",ana->leptonCorrections.getTnPWeightAny(ana,ucsbsusy::NOMINAL,ucsbsusy::DOWN,false));
-
-    //BTAGS
-    // args are CORRTYPE lightCorrType, CORRTYPE heavyCorrType, wantFastSim
-    data->fill<float>("btagWeight_HEAVYUP",         ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,UP,false));
-    data->fill<float>("btagWeight_HEAVYDOWN",       ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,DOWN,false));
-    data->fill<float>("btagWeight_LIGHTUP",         ana->bTagCorrections.getBTagByEvtWeightAny(ana,UP,NOMINAL,false));
-    data->fill<float>("btagWeight_LIGHTDOWN",       ana->bTagCorrections.getBTagByEvtWeightAny(ana,DOWN,NOMINAL,false));
-    data->fill<float>("btagFastSimWeight_HEAVYUP",  ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,UP,true));
-    data->fill<float>("btagFastSimWeight_HEAVYDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,NOMINAL,DOWN,true));
-    data->fill<float>("btagFastSimWeight_LIGHTUP",  ana->bTagCorrections.getBTagByEvtWeightAny(ana,UP,NOMINAL,true));
-    data->fill<float>("btagFastSimWeight_LIGHTDOWN",ana->bTagCorrections.getBTagByEvtWeightAny(ana,DOWN,NOMINAL,true));
-
-    //ISR reweight
-    data->fill<float>("isrWeightTight_UP",   ana->isrCorrections.getISRWeightTight(UP));
-    data->fill<float>("isrWeightTight_DOWN", ana->isrCorrections.getISRWeightTight(DOWN));
-  }
-
-  void fillPDFScaleSystInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, int maxIndex = -1){
-    unsigned idx = 0;
-    for(auto wgt : *ana->evtInfoReader.systweights) {
-      data->fillMulti<float>(i_systweights, wgt/ana->evtInfoReader.lhecentralweight);
-      if (maxIndex>0 && idx>maxIndex) break;
-      ++idx;
-    }
   }
 
   void fillJetMETInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
@@ -1790,6 +1594,58 @@ struct ExtraVarsFiller {
     data->fill<int>(i_j1chhadn4, j1chhadn4_);
     data->fill<int>(i_j1chhadn6, j1chhadn6_);
 
+  }
+
+  void fillQCDAngles(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
+    const auto &jets = ana->jets;
+    const MomentumF *met = useModifiedMET ? metn : ana->met;
+
+    if(jets.size() > 0) {
+      data->fill<float>(i_dphimetj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
+      data->fill<float>(i_dphistarmetj1, JetKinematics::absDPhiStarMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj1_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_omegametj1, JetKinematics::OmegaMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_omegametj1_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_chimetj1, JetKinematics::ChiMETJ(*met, *jets[0], 30.0, 2.4));
+      data->fill<float>(i_metj1, (jets[0]->p4() + met->p4()).pt());
+    }
+    if(jets.size() > 1) {
+      data->fill<float>(i_dphimetj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
+      data->fill<float>(i_dphistarmetj2, JetKinematics::absDPhiStarMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj2_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_omegametj2, JetKinematics::OmegaMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_omegametj2_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_chimetj2, JetKinematics::ChiMETJ(*met, *jets[1], 30.0, 2.4));
+      data->fill<float>(i_metj2, (jets[1]->p4() + met->p4()).pt());
+    }
+    if(jets.size() > 2) {
+      data->fill<float>(i_dphimetj3, fabs(PhysicsUtilities::deltaPhi(*jets[2], *met)));
+      data->fill<float>(i_dphistarmetj3, JetKinematics::absDPhiStarMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj3_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_omegametj3, JetKinematics::OmegaMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_omegametj3_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_chimetj3, JetKinematics::ChiMETJ(*met, *jets[2], 30.0, 2.4));
+      data->fill<float>(i_metj3, (jets[2]->p4() + met->p4()).pt());
+    }
+    if(jets.size() > 3) {
+      data->fill<float>(i_dphimetj4, fabs(PhysicsUtilities::deltaPhi(*jets[3], *met)));
+      data->fill<float>(i_dphistarmetj4, JetKinematics::absDPhiStarMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_dphistarmetj4_tilde, JetKinematics::absDPhiStarMETJ_tilde(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_omegametj4, JetKinematics::OmegaMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_omegametj4_tilde, JetKinematics::OmegaMETJ_tilde(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_chimetj4, JetKinematics::ChiMETJ(*met, *jets[3], 30.0, 2.4));
+      data->fill<float>(i_metj4, (jets[3]->p4() + met->p4()).pt());
+    }
+  }
+
+  void fillCheckJets(TreeWriterData* data, const BaseTreeAnalyzer* ana, vector<unsigned int>& badJet,  bool useModifiedMET = false, MomentumF* metn = 0){
+    const auto &jets = ana->jets;
+
+    if(jets.size() > 0) data->fill<unsigned int>(i_badj1, badJet[0]);
+    if(jets.size() > 1) data->fill<unsigned int>(i_badj2, badJet[1]);
+    if(jets.size() > 2) data->fill<unsigned int>(i_badj3, badJet[2]);
+    if(jets.size() > 3) data->fill<unsigned int>(i_badj4, badJet[3]);
+    
   }
 
   void fillLeptonInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
@@ -2177,7 +2033,7 @@ struct ExtraVarsFiller {
   }
 
   void fillGenInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana){
-    if(!ana->isMC()) return;
+    //if(!ana->isMC()) return;
 
     int ngenmu_ = 0; int ngenel_ = 0; int ngentau_ = 0; int ngenlep_ = 0; int genlepq_ = -9.;
     GenParticleF *stop1 = nullptr, *stop2 = nullptr;
@@ -2189,10 +2045,14 @@ struct ExtraVarsFiller {
       }
       else if (abs(p->pdgId())==5) { genb.push_back(p); }
       else if (abs(p->pdgId())==6) { gent.push_back(p); }
+      const GenParticleF *genPartMom = p->mother(0);
+	cout << "abs(p->pdgId()): " << abs(p->pdgId()) << endl;
+	cout << "abs(genPartMom->pdgId()): " << abs(genPartMom->pdgId()) << endl;
 
       if (p->numberOfMothers()==0) continue;
 
-      const GenParticleF *genPartMom = p->mother(0);
+      //const GenParticleF *genPartMom = p->mother(0);
+      
       if ( (abs(p->pdgId())==11) && (abs(genPartMom->pdgId())==24) ) {
         ++ngenel_;  ++ngenlep_; genlepq_=p->pdgId()>0 ? -1 : 1;
         data->fillMulti<float>(i_genelpt, p->pt());

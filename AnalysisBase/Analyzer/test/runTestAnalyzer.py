@@ -5,7 +5,7 @@ process = cms.Process('run')
 
 process.options = cms.untracked.PSet(
     allowUnscheduled=cms.untracked.bool(True),
-    wantSummary=cms.untracked.bool(False)
+    wantSummary=cms.untracked.bool(False),
 )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
@@ -29,7 +29,9 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
 #options.inputFiles = '/store/data/Run2016H/SingleMuon/MINIAOD/PromptReco-v3/000/284/036/00000/0E02D50E-989F-E611-A962-FA163EE15C80.root'
-options.inputFiles = '/store/data/Run2016H/DoubleMuon/MINIAOD/03Feb2017_ver3-v1/50000/44C1C1FB-4AEB-E611-9597-008CFA1113F4.root'
+#options.inputFiles = '/store/data/Run2016H/DoubleMuon/MINIAOD/03Feb2017_ver3-v1/50000/44C1C1FB-4AEB-E611-9597-008CFA1113F4.root'
+#options.inputFiles = '/store/data/Run2017B/MET/MINIAOD/PromptReco-v2/000/298/641/00000/545B12BB-3D66-E711-B420-02163E012150.root'
+options.inputFiles = 'root://cmsxrootd.fnal.gov///store/data/Run2017B/MET/MINIAOD/PromptReco-v1/000/297/722/00000/0EF38132-C65E-E711-98A6-02163E0126D0.root'
 
 options.maxEvents = -1
 
@@ -94,12 +96,12 @@ if 'QCD' in DatasetName:
 # Settings: default for FullSim MC
 ISDATA = False
 ISFASTSIM = False
-runMetCorrAndUnc = True
-updateJECs = True
+runMetCorrAndUnc = False
+updateJECs = False
 usePrivateSQlite = False
 JECUNCFILE = 'data/JEC/Spring16_23Sep2016V2_MC_Uncertainty_AK4PFchs.txt' # not used
-updateBTagging = True
-updateBTaggingAK8 = True
+updateBTagging = False
+updateBTaggingAK8 = False
 
 # FastSim samples
 if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 'PUSpring16Fast' in DatasetName :
@@ -109,7 +111,7 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
     updateJECs = True
     usePrivateSQlite = True
     JECUNCFILE = 'data/JEC/Spring16_FastSimV1_MC_Uncertainty_AK4PFchs.txt'
-    process.TestAnalyzer.globalTag = cms.string('80X_mcRun2_asymptotic_2016_miniAODv2_v1')
+    process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
     process.TestAnalyzer.getGenLumiHeader = cms.untracked.bool(True)
     process.TestAnalyzer.Triggers.isFastSim = cms.untracked.bool(True)
     process.TestAnalyzer.EventInfo.lheEvtInfo = cms.InputTag('source')
@@ -121,18 +123,18 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
 # Specific to data
 if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
     ISDATA = True
-    runMetCorrAndUnc = True
-    updateJECs = True
+    runMetCorrAndUnc = False
+    updateJECs = False
     usePrivateSQlite = False
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("$CMSSW_BASE/src/data/JSON/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
+    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-297723_13TeV_PromptReco_Collisions17_JSON.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
-    process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_2016SeptRepro_v7')
+    process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
     if 'Run2016H' in DatasetName:
-        process.TestAnalyzer.globalTag = cms.string('80X_dataRun2_Prompt_v16')
+        process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
     process.TestAnalyzer.dataRecoVersion = re.search(r'/(Run[0-9]{4}[A-Z]\-|)([a-zA-Z0-9_]+\-v[0-9]+)/', DatasetName).group(2)
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
@@ -226,7 +228,7 @@ if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' i
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
-process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
+#process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 
 if ISDATA :
     process.ak4Jets.produceGen = cms.bool(False)
@@ -404,16 +406,16 @@ if updateJECs or updateBTagging or updateBTaggingAK8:
     if updateBTagging:
         print 'Adding sequence to update b-tagging'
         bTagDiscriminators = [
-            'deepFlavourJetTags:probudsg',
-            'deepFlavourJetTags:probb',
-            'deepFlavourJetTags:probc',
-            'deepFlavourJetTags:probbb',
-            'deepFlavourJetTags:probcc',
-            'deepFlavourCMVAJetTags:probudsg',
-            'deepFlavourCMVAJetTags:probb',
-            'deepFlavourCMVAJetTags:probc',
-            'deepFlavourCMVAJetTags:probbb',
-            'deepFlavourCMVAJetTags:probcc',
+            'pfDeepCSVJetTags:probudsg',
+            'pfDeepCSVJetTags:probb',
+            'pfDeepCSVJetTags:probc',
+            'pfDeepCSVJetTags:probbb',
+            'pfDeepCSVJetTags:probcc',
+            'pfDeepCMVAJetTags:probudsg',
+            'pfDeepCMVAJetTags:probb',
+            'pfDeepCMVAJetTags:probc',
+            'pfDeepCMVAJetTags:probbb',
+            'pfDeepCMVAJetTags:probcc',
         ]
 
     bTagDiscriminatorsAK8 = None
@@ -464,7 +466,7 @@ if updateJECs or updateBTagging or updateBTaggingAK8:
     process.TestAnalyzer.Photons.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     process.TestAnalyzer.PFCandidates.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     #process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
-    process.QGTagger.srcJets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    #process.QGTagger.srcJets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
 

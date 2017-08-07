@@ -3,7 +3,8 @@
 #include "AnalysisBase/Analyzer/interface/PhysicsAnalyzer.h"
 #include "AnalysisBase/Analyzer/interface/FileUtilities.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
-
+#include "FWCore/Framework/interface/Run.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
 using namespace ucsbsusy;
 using namespace std;
 

@@ -88,7 +88,7 @@ void convertPackedCandToRecoCand::produce(edm::Event& iEvent,const edm::EventSet
   
   size_t nCands = (size_t)packedCands_->size();
   
-  auto_ptr<reco::PFCandidateCollection> recoCands(new vector<reco::PFCandidate>);
+  unique_ptr<reco::PFCandidateCollection> recoCands(new vector<reco::PFCandidate>);
 
   reco::PFCandidate dummy;
     
@@ -104,7 +104,7 @@ void convertPackedCandToRecoCand::produce(edm::Event& iEvent,const edm::EventSet
   }
   
   //iEvent.put(recoCands,"convertedPackedPFCandidates");
-  iEvent.put(recoCands);
+  iEvent.put(move(recoCands));
 }
 
 

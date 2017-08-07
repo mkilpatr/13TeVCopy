@@ -74,13 +74,14 @@ void RecoGenJetAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iS
     }
   }
 
-  std::auto_ptr<edm::ValueMap<reco::CandidatePtr> > valMap(new edm::ValueMap<reco::CandidatePtr>());
+  //std::auto_ptr<edm::ValueMap<reco::CandidatePtr> > valMap(new edm::ValueMap<reco::CandidatePtr>());
+  std::unique_ptr<edm::ValueMap<reco::CandidatePtr> > valMap(new edm::ValueMap<reco::CandidatePtr>());
   edm::ValueMap<reco::CandidatePtr>::Filler valMapFiller(*valMap);
 
   valMapFiller.insert(recoJets, ptrs.begin(), ptrs.end());
   valMapFiller.fill();
 
-  iEvent.put(valMap, redGenJetTag);
+  iEvent.put(move(valMap), redGenJetTag);
 
 }
 

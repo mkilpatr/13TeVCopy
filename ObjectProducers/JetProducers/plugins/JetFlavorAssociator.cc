@@ -92,8 +92,10 @@ void JetFlavorAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iSe
 
   std::vector<JetFlavorInfo::JetFlavor>                          flavors          (genJets->size(),JetFlavorInfo::unmatched_jet);
   std::vector<std::vector<JetFlavorMatching::ParticleDecayRef> > matchedParticles (genJets->size());
-  std::auto_ptr<std::vector<float> >                             bHadronPTs       (new std::vector<float>(genJets->size(),0));
-  std::auto_ptr<std::vector<float> >                             cHadronPTs       (new std::vector<float>(genJets->size(),0));
+  //std::auto_ptr<std::vector<float> >                             bHadronPTs       (new std::vector<float>(genJets->size(),0));
+  //std::auto_ptr<std::vector<float> >                             cHadronPTs       (new std::vector<float>(genJets->size(),0));
+  std::unique_ptr<std::vector<float> >                             bHadronPTs       (new std::vector<float>(genJets->size(),0));
+  std::unique_ptr<std::vector<float> >                             cHadronPTs       (new std::vector<float>(genJets->size(),0));
 
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::b_jet, mainBHadrons,satelliteBHadrons,flavors,*bHadronPTs,matchedParticles);
   JetFlavorMatching::assignJetHadronFlavors(*genJets,JetFlavorInfo::c_jet, mainCHadrons,satelliteCHadrons,flavors,*cHadronPTs,matchedParticles);
@@ -119,13 +121,14 @@ void JetFlavorAssociator::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   JetFlavorMatching::assignJetPartonFlavors(partonJetPtrs,*genJets,flavors,true);
 
 
-  std::auto_ptr<std::vector<size8> >   outFlavors(new std::vector<size8>(flavors.size()) );
+  //std::auto_ptr<std::vector<size8> >   outFlavors(new std::vector<size8>(flavors.size()) );
+  std::unique_ptr<std::vector<size8> >   outFlavors(new std::vector<size8>(flavors.size()) );
   for(unsigned int iF = 0; iF < flavors.size(); ++iF)
     outFlavors->at(iF) = flavors[iF];
 
-  iEvent.put(outFlavors, "flavors");
-  iEvent.put(bHadronPTs, "bHadronPTs");
-  iEvent.put(cHadronPTs, "cHadronPTs");
+  iEvent.put(move(outFlavors), "flavors");
+  iEvent.put(move(bHadronPTs), "bHadronPTs");
+  iEvent.put(move(cHadronPTs), "cHadronPTs");
 
 }
 

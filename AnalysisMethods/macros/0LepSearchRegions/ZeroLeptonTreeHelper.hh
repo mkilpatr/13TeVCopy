@@ -91,6 +91,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(!goodvertex) return false;
 
+	cout << "goodvertex" << endl;
       if(nJets < minnjets_) return false;
 
       if (applyTightPresel){
@@ -101,6 +102,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
       if(applyCHFFilter && !cfgSet::passCHFFilter(jets)) return false;
 
+	cout << "PassFilter" << endl;
       if (islepcr) {
         if (nSelLeptons < 1    )        return false;
 
@@ -120,6 +122,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 //        extraFiller.fillJetMETInfo(&data, this);
       }
 
+	cout << "Fill TestVars" << endl;
       extraFiller.fillTestVars(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
 //      extraFiller.fillLeptonInfo(&data, this);

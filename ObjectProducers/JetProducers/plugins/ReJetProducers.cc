@@ -26,8 +26,8 @@ public:
 
     clusterJets(clusterer,recoCandidates,edm::Handle<reco::PFCandidateCollection >());
 
-    std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
-    std::auto_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
+    std::unique_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
+    std::unique_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
     if(useSubjetCountingCA) {
       if(outputSuperJets) {
         superJetIndices.reset(new std::vector<int>(clusterer.getCompoundJets().size(), -1));
@@ -38,13 +38,14 @@ public:
     }
     else clusterer.distillJets<reco::PFCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup, 0, true);
 
-    std::auto_ptr<reco::GenJetCollection>               genJets ;
+    std::unique_ptr<reco::GenJetCollection>               genJets ;
     if (produceGen){
       genJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<pat::PackedGenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genParticles, clusterer.getCompoundJets(), *genJets, iSetup, 0, true);
       else clusterer.distillJets<pat::PackedGenParticle, reco::GenJet>(genParticles, *genJets , iSetup,0, true);
     }
-    std::auto_ptr<reco::GenJetCollection>               partonJets ;
+    std::unique_ptr<reco::PFJetCollection>                dummyJets ;
+    std::unique_ptr<reco::GenJetCollection>               partonJets ;
     if(producePartonJets){
       partonJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<reco::GenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genMotherParticles, clusterer.getCompoundJets(), *partonJets, iSetup, 0, true);
@@ -53,20 +54,20 @@ public:
     }
 
     if(outputSuperJets){
-      std::auto_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
+      std::unique_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
       clusterer.distillSuperJets<reco::PFCandidate, reco::PFJet>(recoCandidates  , *superJets, iSetup,0, true);
-      iEvent.put(superJets, "Super");
+      iEvent.put(move(superJets), "Super");
       if(useSubjetCountingCA) {
-        std::auto_ptr<std::vector<unsigned int> > nSubjetsCA(new std::vector<unsigned int>(clusterer.getSuperJets().size(), 0));
+        std::unique_ptr<std::vector<unsigned int> > nSubjetsCA(new std::vector<unsigned int>(clusterer.getSuperJets().size(), 0));
         std::vector<unsigned int> nsubjets = clusterer.getNSubjetsCA();
         for(unsigned int iJ = 0; iJ < nsubjets.size(); ++iJ) {
           nSubjetsCA->at(iJ) = nsubjets[iJ];
         }
-        iEvent.put(nSubjetsCA, "NCASubjets");
+        iEvent.put(move(nSubjetsCA), "NCASubjets");
       }
     }
 
-    putJets(iEvent,recoJets,genJets,partonJets, std::auto_ptr<reco::PFJetCollection>(0), superJetIndices);
+    putJets(iEvent,recoJets,genJets,partonJets, dummyJets, superJetIndices);
   }
 
 protected:
@@ -102,8 +103,8 @@ public:
     producePU ? clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle, &isPUParticle)
               : clusterJets(clusterer,recoCandidates,edm::Handle<pat::PackedCandidateCollection >(0),  &isNonPUParticle);
 
-    std::auto_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
-    std::auto_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
+    std::unique_ptr<reco::PFJetCollection>                recoJets  (new reco::PFJetCollection);
+    std::unique_ptr<std::vector<int> > superJetIndices (new std::vector<int> );
     if(useSubjetCountingCA) {
       if(outputSuperJets) {
         superJetIndices.reset(new std::vector<int>(clusterer.getCompoundJets().size(), -1));
@@ -114,13 +115,13 @@ public:
     }
     else clusterer.distillJets<pat::PackedCandidate, reco::PFJet>(recoCandidates  , *recoJets, iSetup,&isNonPUParticle, true);
 
-    std::auto_ptr<reco::GenJetCollection>               genJets ;
+    std::unique_ptr<reco::GenJetCollection>               genJets ;
     if (produceGen){
       genJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<pat::PackedGenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genParticles, clusterer.getCompoundJets(), *genJets, iSetup, 0, true);
       else clusterer.distillJets<pat::PackedGenParticle, reco::GenJet>(genParticles, *genJets , iSetup,0, true);
     }
-    std::auto_ptr<reco::GenJetCollection>               partonJets ;
+    std::unique_ptr<reco::GenJetCollection>               partonJets ;
     if(producePartonJets){
       partonJets.reset(new reco::GenJetCollection);
       if(useSubjetCountingCA) clusterer.distillJets<reco::GenParticle, FastJetClusterer::CompoundPseudoJet, reco::GenJet>(genMotherParticles, clusterer.getCompoundJets(), *partonJets, iSetup, 0, true);
@@ -128,23 +129,23 @@ public:
       //std::auto_ptr<reco::GenJetCollection>                partonJets  (new reco::GenJetCollection);
     }
 
-      std::auto_ptr<reco::PFJetCollection>                puInJets;
+      std::unique_ptr<reco::PFJetCollection>                puInJets;
       if (producePU){
         puInJets.reset(new reco::PFJetCollection);
         clusterer.distillJets(recoCandidates  , *puInJets, iSetup,&isPUParticle, true);
       }
 
      if(outputSuperJets){
-       std::auto_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
+       std::unique_ptr<reco::PFJetCollection>                superJets  (new reco::PFJetCollection);
        clusterer.distillSuperJets<pat::PackedCandidate, reco::PFJet>(recoCandidates  , *superJets, iSetup,&isNonPUParticle, true);
-       iEvent.put(superJets, "Super");
+       iEvent.put(move(superJets), "Super");
        if(useSubjetCountingCA) {
-         std::auto_ptr<std::vector<unsigned int> > nSubjetsCA(new std::vector<unsigned int>(clusterer.getSuperJets().size(), 0));
+         std::unique_ptr<std::vector<unsigned int> > nSubjetsCA(new std::vector<unsigned int>(clusterer.getSuperJets().size(), 0));
          std::vector<unsigned int> nsubjets = clusterer.getNSubjetsCA();
          for(unsigned int iJ = 0; iJ < nsubjets.size(); ++iJ) {
            nSubjetsCA->at(iJ) = nsubjets[iJ];
          }
-         iEvent.put(nSubjetsCA, "NCASubjets");
+         iEvent.put(move(nSubjetsCA), "NCASubjets");
        }
      }
 

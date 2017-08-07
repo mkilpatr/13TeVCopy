@@ -86,7 +86,7 @@ public:
     if(useSubjetCountingCA)clusterer.applySubjetCountingCA(mCutoff, yCut, rMin, ptCut);
   }
 
-  void putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets, std::auto_ptr<std::vector<int> > superJetIndices);
+  void putJets(edm::Event& iEvent, std::unique_ptr<reco::PFJetCollection>& recoJets, std::unique_ptr<reco::GenJetCollection>& genJets,std::unique_ptr<reco::GenJetCollection>& partonJets, std::unique_ptr<reco::PFJetCollection>& puJets, std::unique_ptr<std::vector<int> >& superJetIndices);
   template<typename recoJetCol, typename ptrJetCol >
   void putPointer(edm::Event& iEvent, edm::OrphanHandle<recoJetCol> recoJetHandle,edm::OrphanHandle<ptrJetCol> ptrJetHandle, std::string const& label, const std::vector<JetSorter> * sortedJets = 0){
     std::vector<reco::CandidatePtr>                     vPUPtr(ptrJetHandle->size());
@@ -97,11 +97,11 @@ public:
       for (unsigned int iPU = 0; iPU < vPUPtr.size(); ++iPU)
         vPUPtr[iPU]                                       = reco::CandidatePtr(ptrJetHandle, iPU);
     }
-    std::auto_ptr<edm::ValueMap<reco::CandidatePtr> >   puJetPtr(new edm::ValueMap<reco::CandidatePtr>);
+    std::unique_ptr<edm::ValueMap<reco::CandidatePtr> >   puJetPtr(new edm::ValueMap<reco::CandidatePtr>);
     edm::ValueMap<reco::CandidatePtr>::Filler           fPUPtr  (*puJetPtr);
     fPUPtr.insert(recoJetHandle, vPUPtr.begin(), vPUPtr.end());
     fPUPtr.fill();
-    iEvent.put(puJetPtr,label);
+    iEvent.put(move(puJetPtr),label);
   }
   void vetoGenPart(std::vector<bool>& vetoes) const;
 

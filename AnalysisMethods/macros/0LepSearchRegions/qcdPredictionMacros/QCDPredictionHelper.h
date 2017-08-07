@@ -29,7 +29,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
 }
 
 
-  const TString header = "#sqrt{s} = 13 TeV, L = 2.3 fb^{-1}";
+  const TString header = "#sqrt{s} = 13 TeV, L = 35.6 fb^{-1}";
   const TString METPresel = "passjson && passeebadscflt && passhbhefltloose && passcscbeamhaloflt && passeebadsc4flt && passhbheisoflt && passdijetmet && passaddmetflts && met >= 250 && j2pt >= 75";
   const TString ResTailExtraCuts = "(dphij12met < .1 || dphij3met < .1) && nvetolep == 0 && pseudoRespPassFilter == 1";
   const TString BaselineExtraCuts = "njets >= 5 && nlbjets>= 2 && nbjets>=1";

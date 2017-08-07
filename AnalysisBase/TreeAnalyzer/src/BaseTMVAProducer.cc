@@ -123,6 +123,7 @@ void BaseTMVAProducer::runVarSet(size iSet){
 
     Panvariate*     mva         = iterator.get();
     TMVA::Factory*  factory     = mva->getFactory();
+    TMVA::DataLoader* data      = mva->getDataLoader();
 
     cout << "_____________________________________________________________________________________________________\n" << endl;
     cout << "  " << iterator.getBinTitle()                                                                            << endl;
@@ -131,9 +132,11 @@ void BaseTMVAProducer::runVarSet(size iSet){
     (TMVA::gConfig().GetVariablePlotting()).fMaxNumOfAllowedVariablesForScatterPlots = 0;
 
 
-    if(config.weightExpr != "") factory->SetWeightExpression(config.weightExpr);
+    //if(config.weightExpr != "") factory->SetWeightExpression(config.weightExpr);
+    if(config.weightExpr != "") data->SetWeightExpression(config.weightExpr);
 
-    factory->PrepareTrainingAndTestTree("", config.splittingOptions);
+    //factory->PrepareTrainingAndTestTree("", config.splittingOptions);
+    data->PrepareTrainingAndTestTree("", config.splittingOptions);
 
     for(unsigned int iF = 0; iF < config.factories.size(); ++iF)
       mva    ->bookMethod         ( config.factories[iF].type, config.factories[iF].title, config.factories[iF].options  );

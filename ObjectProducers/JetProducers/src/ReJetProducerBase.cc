@@ -105,16 +105,16 @@ void ReJetProducer::load(edm::Event& iEvent, const edm::EventSetup& iSetup){
   if(producePartonJets || (produceGen && ignoreBosonInv) ) iEvent.getByToken(genMotherParticlesToken_,genMotherParticles);
 }
 
-void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollection> recoJets, std::auto_ptr<reco::GenJetCollection> genJets,std::auto_ptr<reco::GenJetCollection> partonJets, std::auto_ptr<reco::PFJetCollection> puJets, std::auto_ptr<std::vector<int> > superJetIndices){
+void ReJetProducer::putJets(edm::Event& iEvent, std::unique_ptr<reco::PFJetCollection>& recoJets, std::unique_ptr<reco::GenJetCollection>& genJets,std::unique_ptr<reco::GenJetCollection>& partonJets, std::unique_ptr<reco::PFJetCollection>& puJets, std::unique_ptr<std::vector<int> >& superJetIndices){
   edm::OrphanHandle<reco::PFJetCollection>            jetsHandle;
   edm::OrphanHandle<reco::PFJetCollection>            puJetsHandle;
   edm::OrphanHandle<reco::GenJetCollection>           genJetsHandle;
   edm::OrphanHandle<reco::GenJetCollection>           partonJetsHandle;
 
-  std::auto_ptr<reco::PFJetCollection>                sortedRecoJets  (new reco::PFJetCollection);
-  std::auto_ptr<reco::PFJetCollection>                sortedPuInJets  (new reco::PFJetCollection);
-  std::auto_ptr<reco::GenJetCollection>               sortedPartonInJets  (new reco::GenJetCollection);
-  std::auto_ptr<std::vector<int> >                    sortedSuperJetIndices  (new std::vector<int>);
+  std::unique_ptr<reco::PFJetCollection>                sortedRecoJets  (new reco::PFJetCollection);
+  std::unique_ptr<reco::PFJetCollection>                sortedPuInJets  (new reco::PFJetCollection);
+  std::unique_ptr<reco::GenJetCollection>               sortedPartonInJets  (new reco::GenJetCollection);
+  std::unique_ptr<std::vector<int> >                    sortedSuperJetIndices  (new std::vector<int>);
 
   //If we produce gen jets we need to make sure to drop jets that fall below the pT threshold
   //of both collections
@@ -138,25 +138,25 @@ void ReJetProducer::putJets(edm::Event& iEvent, std::auto_ptr<reco::PFJetCollect
     }
     std::sort(rankedGenJets.begin(), rankedGenJets.end(), JetSorter());
 
-    std::auto_ptr<reco::GenJetCollection>             sortedGen (new reco::GenJetCollection);
+    std::unique_ptr<reco::GenJetCollection>             sortedGen (new reco::GenJetCollection);
     sortedGen->reserve(rankedGenJets.size());
 
     for(const auto& iR : rankedGenJets)
       sortedGen->push_back((*genJets)[iR.origIndex]);
 
-    genJetsHandle = iEvent.put(sortedGen, "Gen");
-    jetsHandle = iEvent.put(sortedRecoJets);
-    if(puJets.get()) puJetsHandle  = iEvent.put(sortedPuInJets, "PU");
-    if(partonJets.get()) partonJetsHandle  = iEvent.put(sortedPartonInJets, "parton");
-    if(superJetIndices.get() && superJetIndices->size()) iEvent.put(sortedSuperJetIndices, "SuperJetIndex");
+    genJetsHandle = iEvent.put(move(sortedGen), "Gen");
+    jetsHandle = iEvent.put(move(sortedRecoJets));
+    if(puJets.get()) puJetsHandle  = iEvent.put(move(sortedPuInJets), "PU");
+    if(partonJets.get()) partonJetsHandle  = iEvent.put(move(sortedPartonInJets), "parton");
+    if(superJetIndices.get() && superJetIndices->size()) iEvent.put(move(sortedSuperJetIndices), "SuperJetIndex");
 
     //Make pointers to reco jets
     putPointer(iEvent,jetsHandle,genJetsHandle,"GenPtr",&rankedGenJets);
   } else {
-    jetsHandle  = iEvent.put(recoJets);
-    if(puJets.get()) puJetsHandle  = iEvent.put(puJets, "PU");
-    if(partonJets.get()) partonJetsHandle  = iEvent.put(partonJets, "parton");
-    if(superJetIndices.get() && superJetIndices->size()) iEvent.put(superJetIndices, "SuperJetIndex");
+    jetsHandle  = iEvent.put(move(recoJets));
+    if(puJets.get()) puJetsHandle  = iEvent.put(move(puJets), "PU");
+    if(partonJets.get()) partonJetsHandle  = iEvent.put(move(partonJets), "parton");
+    if(superJetIndices.get() && superJetIndices->size()) iEvent.put(move(superJetIndices), "SuperJetIndex");
   }
 
   if(puJets.get()){

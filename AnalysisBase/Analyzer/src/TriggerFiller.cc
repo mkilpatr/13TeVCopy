@@ -150,6 +150,7 @@ void TriggerFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup
   reset();
   iEvent.getByToken(triggerBitToken_, triggerBits_);
   iEvent.getByToken(triggerObjToken_, triggerObjects_);
+  iEvent_ = &iEvent;
   if( ! isFastSim_ ) {
     iEvent.getByToken(triggerPrescaleToken_, triggerPrescales_);
   }
@@ -181,6 +182,7 @@ void TriggerFiller::fill()
 
   for (pat::TriggerObjectStandAlone obj : *triggerObjects_) {
     obj.unpackPathNames(*triggerNames_);
+    obj.unpackFilterLabels(*iEvent_, *triggerBits_);
     unsigned long trigflags = 0;
     unsigned long trigfilterflags = 0;
     for (unsigned h = 0; h < obj.filterLabels().size(); ++h) {

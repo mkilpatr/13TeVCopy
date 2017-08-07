@@ -228,6 +228,7 @@ struct BasicVarsFiller {
      * else: use original met for everything, but the "met" variable will be *metn* if given
      */
 
+    cout << "Start to fill events" << endl;
 
     // Process and weights
     data->fill<unsigned int>(i_run, ana->run);
