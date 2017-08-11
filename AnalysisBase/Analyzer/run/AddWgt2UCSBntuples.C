@@ -154,8 +154,8 @@ void AddWgt2UCSBntuples(string fileName, string processName, double crossSection
     if (recostr.Index(ext1) != TString::kNPOS) recostr.Remove(recostr.Index(ext1));
     TRegexp ext2("-v*[1-9]$");
     if (recostr.Index(ext2) != TString::kNPOS) recostr.Remove(recostr.Index(ext2));
-//    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP] != "invalid"; ++iP) if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);
-//    if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
+    for(unsigned int iP = 0; defaults::DATA_RECO_NAMES[iP] != "invalid"; ++iP) if(defaults::DATA_RECO_NAMES[iP] == recostr) datareco = static_cast<defaults::DataReco>(iP);
+    if(datareco == defaults::MC) throw std::invalid_argument("Did not provide a valid data reco name (see defaults::DATA_RECO_NAMES)");
   }
 
   Copier a(fileName,treeName,outName.Data(),isMC,nPosEvents,nNegEvents,xsecFile,filterEffFile);
