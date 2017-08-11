@@ -48,8 +48,9 @@ bool TreeReader::nextEvent(int reportFrequency)
   if(eventNumber%reportFrequency == 0)
     clog << "Processing event " << eventNumber << endl;
 
-  for(auto reader : readers)
+  for(auto reader : readers){
     reader->refresh();
+  }
 
   eventNumber++;
   return true;

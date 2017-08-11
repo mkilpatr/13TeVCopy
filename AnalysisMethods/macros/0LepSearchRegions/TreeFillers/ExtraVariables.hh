@@ -1600,6 +1600,7 @@ struct ExtraVarsFiller {
     const auto &jets = ana->jets;
     const MomentumF *met = useModifiedMET ? metn : ana->met;
 
+    cout << "Before angle fill" << endl;
     if(jets.size() > 0) {
       data->fill<float>(i_dphimetj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
       data->fill<float>(i_dphistarmetj1, JetKinematics::absDPhiStarMETJ(*met, *jets[0], 30.0, 2.4));
@@ -1609,6 +1610,7 @@ struct ExtraVarsFiller {
       data->fill<float>(i_chimetj1, JetKinematics::ChiMETJ(*met, *jets[0], 30.0, 2.4));
       data->fill<float>(i_metj1, (jets[0]->p4() + met->p4()).pt());
     }
+    cout << "middle" << endl;
     if(jets.size() > 1) {
       data->fill<float>(i_dphimetj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
       data->fill<float>(i_dphistarmetj2, JetKinematics::absDPhiStarMETJ(*met, *jets[1], 30.0, 2.4));

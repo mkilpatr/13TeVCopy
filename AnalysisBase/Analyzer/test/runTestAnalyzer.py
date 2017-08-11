@@ -32,6 +32,7 @@ options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/data/Run2016H/DoubleMuon/MINIAOD/03Feb2017_ver3-v1/50000/44C1C1FB-4AEB-E611-9597-008CFA1113F4.root'
 #options.inputFiles = '/store/data/Run2017B/MET/MINIAOD/PromptReco-v2/000/298/641/00000/545B12BB-3D66-E711-B420-02163E012150.root'
 options.inputFiles = 'root://cmsxrootd.fnal.gov///store/data/Run2017B/MET/MINIAOD/PromptReco-v1/000/297/722/00000/0EF38132-C65E-E711-98A6-02163E0126D0.root'
+#options.inputFiles = 'file://../run/009FE63B-E759-E711-A9F8-0CC47A4DEDD2.root'
 
 options.maxEvents = -1
 
@@ -228,7 +229,7 @@ if not 'Photon' in DatasetName and not 'GJets' in DatasetName and not 'DYToEE' i
 #==============================================================================================================================#
 # Jets and quark-gluon tagging
 process.load('ObjectProducers.JetProducers.jet_producer_sequences_cfi')
-#process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
+process.load('ObjectProducers.JetProducers.jet_qgtagging_cfi')
 
 if ISDATA :
     process.ak4Jets.produceGen = cms.bool(False)
@@ -466,7 +467,7 @@ if updateJECs or updateBTagging or updateBTaggingAK8:
     process.TestAnalyzer.Photons.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     process.TestAnalyzer.PFCandidates.jets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     #process.TestAnalyzer.EventInfo.mets = cms.InputTag('slimmedMETsNewJEC')
-    #process.QGTagger.srcJets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
+    process.QGTagger.srcJets = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
     if not ISDATA :
         process.redGenAssoc.recoJetsSrc = cms.InputTag('selectedUpdatedPatJetsAK4PFCHS')
 

@@ -343,7 +343,9 @@ void BaseTreeAnalyzer::processVariables()
 {
   isProcessed_ = true;
 
+
   clearVariables();
+
 
   if(evtInfoReader.isLoaded()) {
     run   = evtInfoReader.run;
@@ -373,10 +375,12 @@ void BaseTreeAnalyzer::processVariables()
     }
   }
 
+
   if(genParticleReader.isLoaded()){
     genParts.reserve(genParticleReader.genParticles.size());
     for(auto& p : genParticleReader.genParticles) genParts.push_back(&p);
   }
+
 
   if(trigObjReader.isLoaded()){
     triggerflag =  trigObjReader.triggerflag;
@@ -388,6 +392,7 @@ void BaseTreeAnalyzer::processVariables()
       triggerInfo.push_back(&tI);
   }
 
+
   if(svReader.isLoaded()){
     SVs.reserve(svReader.SVs.size());
     for(auto& p : svReader.SVs) SVs.push_back(&p);
@@ -396,6 +401,7 @@ void BaseTreeAnalyzer::processVariables()
   if(httReader.isLoaded()){
     for(auto& fj : httReader.fatJets) httTops.push_back(&fj);
   }
+
 
   selectedLepton = 0;
   if(muonReader.isLoaded() || electronReader.isLoaded()){
@@ -417,6 +423,7 @@ void BaseTreeAnalyzer::processVariables()
           configSet.secondaryElectrons,configSet.secondaryMuons);
   }
 
+
   for(auto* lep : primaryLeptons)
     selectedLeptons.push_back(lep);
   for(auto* lep : secondaryLeptons)
@@ -428,6 +435,7 @@ void BaseTreeAnalyzer::processVariables()
   nPrimaryLeptons = primaryLeptons.size();
   nSecondaryLeptons = secondaryLeptons.size();
   if(nSelLeptons > 0) selectedLepton = nSelLeptons == 1 ? selectedLeptons.front() : selectedLeptons[randGen->Uniform(0,nSelLeptons)];
+
 
   if(pfcandReader.isLoaded() && configSet.tracks.isConfig())
     cfgSet::selectTracks(vetoedTracks, pfcandReader.pfcands, met, configSet.tracks);

@@ -96,7 +96,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       if(met->pt() < metcut_) return false;
       if(nJets < minnjets_)   return false;
 
-	cout << "Pass baseline" << endl;
 
       if (applyTightPresel){
         bool passLM = met->pt()/(std::sqrt(JetKinematics::ht(jets)))>10;
@@ -105,7 +104,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       }
       processMoreVariables(); // call this before filling, but after all preselections
 
-	cout << "Before isMC statement" << endl;
 //get leading and second leading MM information
       if(isMC()){
         vector <pair <float, pair <int, int> > > jetMisMeasurementsByIdx;
@@ -197,7 +195,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
         }
       }
 
-	cout << "Get True Response" << endl;
 
       // True response info
       int trueRespInd = process == defaults::QCD ? jetAndMETCorrections.getQCDRespTailCorrector()->mmInd : -1;
@@ -218,7 +215,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<float>       (i_trueRespGenPT,trueRespGenPT);
 
 
-	cout << "Fill reco Jets" << endl;
       //pseudo response info
       int jetNearMETInd = -1, MMJetDPhi = -1;
       for(unsigned int iJ = 0; iJ < defaultJets->recoJets.size() && iJ < 3; ++iJ){
@@ -245,7 +241,6 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<float>(i_upTailWeight    ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(UP));
       data.fill<float>(i_downTailWeight  ,jetAndMETCorrections.getQCDRespTailCorrector()->getWeight(DOWN));
 
-	cout << "Btagging" << endl;
       //re-calculate b-tag SF
       {
         bool isTTBARLike = false;
@@ -255,12 +250,10 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
         data.fill<float>(i_upBTagHeavyWeight , float(bTagCorrections.getBTagByEvtWeightCorrector()->getEvtWeight(this,jets,NOMINAL,UP,isTTBARLike, configSet.jets.maxBJetEta,configSet.jets.minBJetPt)));
       }
 
-	cout << "Save smear" << endl;
       //copy the bootstrapweights
       for(auto i : *savedSmearWeights)
         data.fillMulti<ucsbsusy::size8>(i_bs,i);
 
-	cout << "Lep Filter" << endl;
       //filter
       float maxMuPT      = -1;
       float removeMuFrac = -10;
@@ -285,14 +278,13 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
           removeMuFrac = 1 - metNoLep.pt()/met->pt();
         }
       }
-	cout << "Start Fill" << endl;
       data.fill<float>(i_maxMuPT,maxMuPT);
       data.fill<float>(i_removeMuFrac,removeMuFrac);
       data.fill<int>(i_whichQCD_HT_Sample, whichQCD_HT_Sample);
       data.fill<int>(i_whichQCD_Sample,    whichQCD_Sample);
 
       filler.fillEventInfo(&data, this);
-      extraFiller.fillQCDAngles(&data, this);
+      //extraFiller.fillQCDAngles(&data, this);
       return true;
     }
 
@@ -346,7 +338,7 @@ void makeZeroLeptonQCDTrees(TString sname = "qcd",
                            const TString fname = "/store/user/lpcstop/noreplica/13TeV/130117/Moriond17/qcd_orig/qcd_ht1000to1500-ext_10_ntuple_postproc.root",
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://cmseos:1094/",
-                           const TString json="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt")
+                           const TString json="Cert_294927-297723_13TeV_PromptReco_Collisions17_JSON.txt")
 {
   int whichQCD_HT_Sample = 0;
   int whichQCD_Sample    = 0;

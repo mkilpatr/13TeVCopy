@@ -228,7 +228,6 @@ struct BasicVarsFiller {
      * else: use original met for everything, but the "met" variable will be *metn* if given
      */
 
-    cout << "Start to fill events" << endl;
 
     // Process and weights
     data->fill<unsigned int>(i_run, ana->run);
@@ -257,6 +256,7 @@ struct BasicVarsFiller {
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));
+
 
     // HT trigger:
     bool passTrigPFHT900 = ana->triggerflag & kHLT_PFHT900;
