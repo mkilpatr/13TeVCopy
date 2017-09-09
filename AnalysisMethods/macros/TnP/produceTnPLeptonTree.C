@@ -43,6 +43,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     size i_passtrige ;
     size i_passtrigmu;
     size i_passmetfilters;
+    size i_passmetfilters2017;
     // tnp vars
     size i_diMass      ;
     size i_probePt        ;
@@ -84,6 +85,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       i_passtrige      = data.add<bool>("","passtrige","O",0);
       i_passtrigmu     = data.add<bool>("","passtrigmu","O",0);
       i_passmetfilters = data.add<bool>("","passmetfilters","O",0);
+      i_passmetfilters2017 = data.add<bool>("","passmetfilters2017","O",0);
       // tnp vars
       i_diMass          = data.addMulti<float>("","diMass",-9);
       i_probePt            = data.addMulti<float>("","probePt",-9);
@@ -122,7 +124,9 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       data.fill<bool>(i_passtrige,      this->isMC() || (this->process==defaults::DATA_SINGLEEL ? (passTrigEl && (!passTrigMu)) : false));
       const auto &evt = this->evtInfoReader;
       bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
+      bool passmetfilters2017 = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalSuperTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
       data.fill<bool>(i_passmetfilters,  passmetfilters);
+      data.fill<bool>(i_passmetfilters2017,  passmetfilters2017);
 
       // require event to pass trigger, so that we can match tags to trigger objects
       if (!(passTrigEl || passTrigMu)) return false;

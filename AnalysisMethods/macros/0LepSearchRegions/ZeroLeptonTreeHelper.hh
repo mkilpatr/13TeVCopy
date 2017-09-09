@@ -113,20 +113,21 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
-//        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
+        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;
 
         processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this);
-//        extraFiller.fillJetMETInfo(&data, this);
+        extraFiller.fillJetMETInfo(&data, this);
       }
 
 	cout << "Fill TestVars" << endl;
       extraFiller.fillTestVars(&data, this);
+      extraFiller.fillQCDAngles(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
-//      extraFiller.fillLeptonInfo(&data, this);
-//      extraFiller.fillGenInfo(&data, this);
+      extraFiller.fillLeptonInfo(&data, this);
+      extraFiller.fillGenInfo(&data, this);
       return true;
     }
 

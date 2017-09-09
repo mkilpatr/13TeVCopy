@@ -242,6 +242,7 @@ namespace ucsbsusy {
     fFlag_CSCTightHalo2015Filter = 1UL<<13,
     fFlag_HBHENoiseIsoFilter     = 1UL<<14,
     fFlag_globalTightHalo2016Filter = 1UL<<15,
+    fFlag_globalSuperTightHalo2016Filter = 1UL<<15,
     fFlag_badMuons = 1UL<<16, // the event contained at least one PF muon of pT > 20 GeV that is flagged as bad
     fFlag_duplicateMuons = 1UL<<17, // the event contained at least one PF muon of pT > 20 GeV that is flagged as duplicate
     fFlag_noBadMuons = 1UL<<18, // the event does not contain any PF muon of pT > 20 GeV flagged as bad or duplicate (i.e. the event is safe)
@@ -254,16 +255,17 @@ namespace ucsbsusy {
      fFlag_idx_CSCTightHaloFilter                 = 2,
      fFlag_idx_CSCTightHalo2015Filter             = 3,
      fFlag_idx_globalTightHalo2016Filter          = 4,
-     fFlag_idx_hcalLaserEventFilter               = 5,
-     fFlag_idx_EcalDeadCellTriggerPrimitiveFilter = 6,
-     fFlag_idx_goodVertices                      = 7,
-     fFlag_idx_eeBadScFilter                     = 8,
-     fFlag_idx_ecalLaserCorrFilter               = 9,
-     fFlag_idx_trkPOGFilters                     = 10,
-     fFlag_idx_trkPOG_manystripclus53X           = 11,
-     fFlag_idx_trkPOG_toomanystripclus53X        = 12,
-     fFlag_idx_trkPOG_logErrorTooManyClusters    = 13,
-     fFlag_idx_METFilters                        = 14
+     fFlag_idx_globalSuperTightHalo2016Filter     = 5,
+     fFlag_idx_hcalLaserEventFilter               = 6,
+     fFlag_idx_EcalDeadCellTriggerPrimitiveFilter = 7,
+     fFlag_idx_goodVertices                      = 8,
+     fFlag_idx_eeBadScFilter                     = 9,
+     fFlag_idx_ecalLaserCorrFilter               = 10,
+     fFlag_idx_trkPOGFilters                     = 11,
+     fFlag_idx_trkPOG_manystripclus53X           = 12,
+     fFlag_idx_trkPOG_toomanystripclus53X        = 13,
+     fFlag_idx_trkPOG_logErrorTooManyClusters    = 14,
+     fFlag_idx_METFilters                        = 15
 
 
   };

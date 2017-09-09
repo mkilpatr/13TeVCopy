@@ -77,6 +77,7 @@ namespace ucsbsusy {
       bool HBHENoiseFilter;
       bool HBHENoiseIsoFilter;
       bool globalTightHalo2016Filter;
+      bool globalSuperTightHalo2016Filter;
       bool EcalDeadCellTriggerPrimitiveFilter;
       bool goodVertices;
       bool eeBadScFilter;

@@ -53,6 +53,7 @@ void METFiltersFiller::initTriggerNames()
   trigIds_["Flag_CSCTightHalo2015Filter"]             = fFlag_CSCTightHalo2015Filter;
   trigIds_["Flag_HBHENoiseIsoFilter"]                 = fFlag_HBHENoiseIsoFilter;
   trigIds_["Flag_globalTightHalo2016Filter"]          = fFlag_globalTightHalo2016Filter;
+  trigIds_["Flag_globalSuperTightHalo2016Filter"]     = fFlag_globalSuperTightHalo2016Filter;
   // bad/duplicate muons: https://twiki.cern.ch/twiki/bin/view/CMSPublic/ReMiniAOD03Feb2017Notes#Muons_and_PF_Candidates
   trigIds_["Flag_badMuons"]                           = fFlag_badMuons;       // the event contained at least one PF muon of pT > 20 GeV that is flagged as bad
   trigIds_["Flag_duplicateMuons"]                     = fFlag_duplicateMuons; // the event contained at least one PF muon of pT > 20 GeV that is flagged as duplicate

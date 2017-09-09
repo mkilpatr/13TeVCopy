@@ -48,6 +48,7 @@ struct BasicVarsFiller {
   size i_passtrigdilepOR;
   size i_j1chEnFrac  ;
   size i_passmetfilters;
+  size i_passmetfilters2017;
 //  size i_pass_HBHENoiseFilter                    ;
 //  size i_pass_HBHENoiseIsoFilter                 ;
 //  size i_pass_globalTightHalo2016Filter          ;
@@ -101,6 +102,8 @@ struct BasicVarsFiller {
   size i_dileppt   ;
   size i_dilepmass ;
   size i_recolepinwortop;
+  size i_drlepw;
+  size i_drleptop;
 
   // Gen-level variables
   size i_ngoodgenmu;
@@ -146,6 +149,7 @@ struct BasicVarsFiller {
     i_passtrigdilepOR   = data->add<bool>("", "passtrigdilepOR", "O", 0);
     i_j1chEnFrac     = data->add<float>("","j1chEnFrac","F",2);
     i_passmetfilters = data->add<bool>("","passmetfilters","O",0);
+    i_passmetfilters2017 = data->add<bool>("","passmetfilters2017","O",0);
 //    i_pass_HBHENoiseFilter                      = data->add<bool>("","pass_HBHENoiseFilter"                   ,"O",0);
 //    i_pass_HBHENoiseIsoFilter                   = data->add<bool>("","pass_HBHENoiseIsoFilter"                ,"O",0);
 //    i_pass_globalTightHalo2016Filter            = data->add<bool>("","pass_globalTightHalo2016Filter"         ,"O",0);
@@ -208,6 +212,8 @@ struct BasicVarsFiller {
     i_dileppt        = data->add<float>("","dileppt","F",0);
     i_dilepmass      = data->add<float>("","dilepmass","F",0);
     i_recolepinwortop = data->add<bool>("","recolepinwortop","O",0);
+    i_drlepw         = data->add<float>("","drlepw","O",0);
+    i_drleptop       = data->add<float>("","drleptop","O",0);
 
     // Gen-level variables
     i_ngoodgenmu     = data->add<int>("","ngoodgenmu","I",0);
@@ -326,16 +332,20 @@ struct BasicVarsFiller {
 
     const auto &evt = ana->evtInfoReader;
     bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
+    bool passmetfilters2017 = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalSuperTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
     if (ana->isMC()){
       if (evt.isfastsim){
         // FastSim MC
         passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
+        passmetfilters2017 = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
       }else{
         // FullSim MC
         passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
+        passmetfilters2017 = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalSuperTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.badChCand && evt.badPFMuon;
       }
     }
     data->fill<bool>(i_passmetfilters,  passmetfilters);
+    data->fill<bool>(i_passmetfilters2017,  passmetfilters2017);
 //    data->fill<bool>(i_pass_HBHENoiseFilter                   ,ana->evtInfoReader.HBHENoiseFilter                   );
 //    data->fill<bool>(i_pass_HBHENoiseIsoFilter                ,ana->evtInfoReader.HBHENoiseIsoFilter                );
 //    data->fill<bool>(i_pass_globalTightHalo2016Filter         ,ana->evtInfoReader.globalTightHalo2016Filter         );
@@ -458,11 +468,13 @@ struct BasicVarsFiller {
       double drrecoleprecotop_ = 999.;
       for (const auto *fj : ana->selectedSdWs) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
+	data->fill<float>(i_drlepw, (float)tmdr_);
         if (tmdr_<drrecoleprecow_) { drrecoleprecow_ = tmdr_; }
       }
 
       for (const auto *fj : ana->selectedSdTops) {
         double tmdr_ = PhysicsUtilities::deltaR(*fj, *lep);
+	data->fill<float>(i_drleptop, (float)tmdr_);
         if (tmdr_<drrecoleprecotop_) { drrecoleprecotop_ = tmdr_; }
       }
       if ((drrecoleprecow_<0.8) || (drrecoleprecotop_<0.8)) { data->fill<bool>(i_recolepinwortop, true); }

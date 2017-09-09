@@ -49,6 +49,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
     size i_ismc      ;
     size i_passtrige ;
     size i_passmetfilters;
+    size i_passmetfilters2017;
     // tnp vars
     size i_mass;
     size i_pt;
@@ -98,6 +99,7 @@ class TnPAnalyzer : public TreeCopierManualBranches {
       // Trigger and filters
       i_passtrige      = data.add<bool>("","passtrige","O",0);
       i_passmetfilters = data.add<bool>("","passmetfilters","O",0);
+      i_passmetfilters2017 = data.add<bool>("","passmetfilters2017","O",0);
       // tnp vars
       i_mass          = data.add<float>("","mass","F",0);
       i_pt            = data.add<float>("","pt","F",0);
@@ -136,7 +138,9 @@ class TnPAnalyzer : public TreeCopierManualBranches {
 
       const auto &evt = evtInfoReader;
       bool passmetfilters = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
+      bool passmetfilters2017 = evt.HBHENoiseFilter && evt.HBHENoiseIsoFilter && evt.globalSuperTightHalo2016Filter && evt.EcalDeadCellTriggerPrimitiveFilter && evt.goodVertices && evt.eeBadScFilter && evt.badChCand && evt.badPFMuon;
       data.fill<bool>(i_passmetfilters,  passmetfilters);
+      data.fill<bool>(i_passmetfilters2017,  passmetfilters2017);
 
       // require event to pass trigger, so that we can match tags to trigger objects
       if(!(isMC() || passTrigEl)) return false;
