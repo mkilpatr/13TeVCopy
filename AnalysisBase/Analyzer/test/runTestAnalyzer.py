@@ -130,7 +130,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-299420_13TeV_PromptReco_Collisions17_JSON.txt")
+    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-301997_13TeV_PromptReco_Collisions17_JSON.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
     process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
