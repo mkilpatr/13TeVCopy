@@ -125,6 +125,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 	cout << "Fill TestVars" << endl;
       extraFiller.fillTestVars(&data, this);
       extraFiller.fillQCDAngles(&data, this);
+      extraFiller.fillMergeTopWSF(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
       extraFiller.fillLeptonInfo(&data, this);
       extraFiller.fillGenInfo(&data, this);
