@@ -271,6 +271,7 @@ struct BasicVarsFiller {
     // METMHT trigger: not applied on MC (for signals)
     bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight)
         || (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
+    //bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight);
     data->fill<bool>(i_passmetmht   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT : false));
 
     // photon trigger: HLT_Photon165_HE10 || HLT_CaloJet500_NoJetID(JetHT)

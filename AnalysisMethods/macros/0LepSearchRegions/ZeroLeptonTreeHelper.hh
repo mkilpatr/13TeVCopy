@@ -75,10 +75,14 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       filler.book(&data);
       extraFiller.bookHist(outFile_);
       extraFiller.bookTest(&data);
+      extraFiller.bookMHTTest(&data);
+//      extraFiller.bookMergeTopWSF(&data);
+      extraFiller.bookQCDAngles(&data);
+      extraFiller.bookTopFrameTagger(&data);
 //      extraFiller.bookSyst(&data);
-//      extraFiller.bookJetMET(&data);
-//      extraFiller.bookLepton(&data);
-//      extraFiller.bookGen(&data);
+      extraFiller.bookJetMET(&data);
+      extraFiller.bookLepton(&data);
+      extraFiller.bookGen(&data);
     }
 
     bool fillEvent() {
@@ -125,7 +129,9 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 	cout << "Fill TestVars" << endl;
       extraFiller.fillTestVars(&data, this);
       extraFiller.fillQCDAngles(&data, this);
-      extraFiller.fillMergeTopWSF(&data, this);
+//      extraFiller.fillMergeTopWSF(&data, this);
+      extraFiller.fillMHTTest(&data, this);
+      extraFiller.fillTopFrameTaggerInfo(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
       extraFiller.fillLeptonInfo(&data, this);
       extraFiller.fillGenInfo(&data, this);

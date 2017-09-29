@@ -428,6 +428,12 @@ struct ExtraVarsFiller {
   size i_badj3      ;
   size i_badj4      ;
 
+  // Test MHT and HT variables
+  size i_ht_test    ;
+  size i_htInc      ;
+  size i_mht        ;
+  size i_mhtInc     ;
+
   // TopWSF
   size i_efnl1_res_ntightmus;
   size i_efnl1_res_dphitmumet;
@@ -748,6 +754,13 @@ struct ExtraVarsFiller {
     i_omegametj4            = data->add<float>("","omegametj4","F",3);
     i_omegametj4_tilde      = data->add<float>("","omegametj4_tilde","F",3);
     i_chimetj4              = data->add<float>("","chimetj4","F",3);
+  }
+
+  void bookMHTTest(TreeWriterData* data){
+    i_ht_test		    = data->add<float>("","ht_test","F",0);
+    i_htInc		    = data->add<float>("","htInc","F",0);
+    i_mht		    = data->add<float>("","mht","F",0);
+    i_mhtInc		    = data->add<float>("","mhtInc","F",0);
   }
 
   void bookCheckJets(TreeWriterData* data){
@@ -1638,6 +1651,33 @@ struct ExtraVarsFiller {
       data->fill<float>(i_chimetj4, JetKinematics::ChiMETJ(*met, *jets[3], 30.0, 2.4));
       data->fill<float>(i_metj4, (jets[3]->p4() + met->p4()).pt());
     }
+  }
+
+  void fillMHTTest(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
+    const auto &jets = ana->jets;
+    const MomentumF *met = useModifiedMET ? metn : ana->met;
+
+    float ht    = 0;
+    float htInc = 0;
+
+    CylLorentzVectorF mhtVec;
+    CylLorentzVectorF mhtIncVec;
+    for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
+      if(jets[iJ]->pt() < 20) continue;
+      htInc += jets[iJ]->pt();
+      mhtIncVec -= jets[iJ]->p4();
+      if(TMath::Abs(jets[iJ]->eta()) > 2.4) continue;
+      ht += jets[iJ]->pt();
+      mhtVec -= jets[iJ]->p4();
+    }
+
+    float mht    = mhtVec.pt();
+    float mhtInc = mhtIncVec.pt();
+
+    data->fill<float>(i_ht_test ,ht      );
+    data->fill<float>(i_htInc   ,htInc   );
+    data->fill<float>(i_mht     ,mht     );
+    data->fill<float>(i_mhtInc  ,mhtInc  );
   }
 
   void fillCheckJets(TreeWriterData* data, const BaseTreeAnalyzer* ana, vector<unsigned int>& badJet,  bool useModifiedMET = false, MomentumF* metn = 0){

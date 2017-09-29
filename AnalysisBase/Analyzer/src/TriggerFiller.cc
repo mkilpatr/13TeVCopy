@@ -168,6 +168,7 @@ void TriggerFiller::fill()
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     const auto &trigname = triggerNames_->triggerName(i);
     if(options_ & PRINTTRIGGERNAMES) cout << trigname << endl;
+    cout << trigname << endl;
 
     for (const auto &trigindex : trigIds_){
       if(trigname.find(trigindex.first+"_v") != std::string::npos){
@@ -196,6 +197,8 @@ void TriggerFiller::fill()
         }
       }
     }
+	  cout << trigflags << endl;
+	  cout << trigfilterflags << endl;
     data.fillMulti<float>(itrig_obj_pt, obj.pt());
     data.fillMulti<float>(itrig_obj_eta, obj.eta());
     data.fillMulti<float>(itrig_obj_phi, obj.phi());

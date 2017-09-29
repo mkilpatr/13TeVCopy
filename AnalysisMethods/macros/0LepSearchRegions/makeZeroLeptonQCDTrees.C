@@ -186,7 +186,7 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
                               this->evtInfoReader.badChCand &&
                               this->evtInfoReader.badPFMuon;
         float ljCHEF = defaultJets->jetchHadEnFrac_->size() ? defaultJets->jetchHadEnFrac_->at(defaultJets->recoJets[0].index()) : 10;
-        if(passmetfilters2017 && (ljCHEF > 0.1) && (ljCHEF < 0.99)){
+        if((passmetfilters2017 || passmetfilters) && (ljCHEF > 0.1) && (ljCHEF < 0.99)){
 //          for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
           for(unsigned int iJ = 0; iJ < 2; ++iJ){
             const auto& gJ = defaultJets->genJets[iJ];

@@ -242,7 +242,7 @@ void FatJetFiller::fill()
           -1,
           fatjet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
           fatjet.userFloat("ak8PFJetsCHSValueMap:ak8PFJets"+puRemoval_+"PrunedMass"),fatjet.userFloat("ak8PFJetsCHSValueMap:ak8PFJets"+puRemoval_+"SoftDropMass"),
-          fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1"),fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2"),fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1"));
+          fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1"),fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2"),fatjet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3"));
       for(unsigned isub=0; isub<sdsubjets.size(); ++isub){
         const auto &subj = sdsubjets.at(isub);
         decltype(qgTaggingVar_->getQGVars()) qg;
