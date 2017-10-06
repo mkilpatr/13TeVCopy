@@ -90,7 +90,7 @@ void METFiltersFiller::fill()
     if(trigindex != trigIds_.end() && triggerBits_->accept(i)) {
       trigPass |= trigindex->second;
     }
-    cout << "Met TrigName: " << triggerNames_->triggerName(i) << endl;
+    cout << "Met TrigName: " << triggerNames_->triggerName(i) << " trigPass: " << trigPass << endl;
   }
 
   if (options_ & LOADPATFILTERS){

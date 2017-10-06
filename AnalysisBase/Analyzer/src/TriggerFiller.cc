@@ -168,7 +168,6 @@ void TriggerFiller::fill()
   for(unsigned int i = 0; i < triggerBits_->size(); ++i) {
     const auto &trigname = triggerNames_->triggerName(i);
     if(options_ & PRINTTRIGGERNAMES) cout << trigname << endl;
-    cout << trigname << endl;
 
     for (const auto &trigindex : trigIds_){
       if(trigname.find(trigindex.first+"_v") != std::string::npos){
@@ -177,8 +176,8 @@ void TriggerFiller::fill()
         data.fillMulti<unsigned int >(itrig_bit_prescale, isFastSim_ ? 1 : triggerPrescales_->getPrescaleForIndex(i));
         verTrigIds[trigname] = trigindex.second;
       }
-	cout << "trig_bit_pass: " << itrig_bit_pass << endl;
     }
+    cout << trigname << " trig_bit_pass: " << itrig_bit_pass << endl;
   }
 
   for (pat::TriggerObjectStandAlone obj : *triggerObjects_) {
@@ -197,8 +196,6 @@ void TriggerFiller::fill()
         }
       }
     }
-	  cout << trigflags << endl;
-	  cout << trigfilterflags << endl;
     data.fillMulti<float>(itrig_obj_pt, obj.pt());
     data.fillMulti<float>(itrig_obj_eta, obj.eta());
     data.fillMulti<float>(itrig_obj_phi, obj.phi());
