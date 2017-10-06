@@ -177,8 +177,8 @@ void TriggerFiller::fill()
         data.fillMulti<unsigned int >(itrig_bit_prescale, isFastSim_ ? 1 : triggerPrescales_->getPrescaleForIndex(i));
         verTrigIds[trigname] = trigindex.second;
       }
+	cout << "trig_bit_pass: " << itrig_bit_pass << endl;
     }
-
   }
 
   for (pat::TriggerObjectStandAlone obj : *triggerObjects_) {
