@@ -9,6 +9,7 @@ outputdir=$6
 prefix=$7
 scramdir=$8
 json=$9
+outdir=${10}
 
 workdir=`pwd`
 
@@ -19,11 +20,21 @@ echo "workdir: $workdir"
 echo "args: $*"
 ls -l
 
+user=${scramdir%/CMSSW*}
+user=${user##*/}
+
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd $scramdir/src/
-SCRAM_ARCH=slc6_amd64_gcc491
+export SCRAM_ARCH=slc6_amd64_gcc530
+eval `scramv1 project CMSSW CMSSW_9_2_6`
+cd CMSSW_9_2_6/src/
 eval `scramv1 runtime -sh`
-cd $workdir
+scramv1 b ProjectRename
+echo "CMSSW: "$CMSSW_BASE
+cd ../../
+
+xrdcp root://cmseos.fnal.gov//store/user/${user}/CMSSW926.tgz .
+tar -xf CMSSW926.tgz
+rm CMSSW926.tgz
 
 ### done in the transfer_input_files ###
 #cp $scramdir/rootlogon.C .
@@ -32,9 +43,21 @@ cd $workdir
 #  cp $scramdir/$json .
 #fi
 
+cd ${_CONDOR_SCRATCH_DIR}
+echo $outdir
+
+#xrdcp root://cmseos.fnal.gov/${filename} .
 root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",\"${outputdir}\",\"${prefix}\",\"${json}\"\)
+if [ $index -eq -1]
+then
+	xrdcp ${sname}_tree.root root://cmseos.fnal.gov//store/user/${user}/13TeV/${outdir}/${sname}_tree.root
+else
+	xrdcp ${sname}_${index}_tree.root root://cmseos.fnal.gov//store/user/${user}/13TeV/${outdir}/${sname}_${index}_tree.root
+fi
+ls -a
 
 status=`echo $?`
 echo "Status = $status"
+#rm ${sname}_${index}_tree.root
 
 exit $status

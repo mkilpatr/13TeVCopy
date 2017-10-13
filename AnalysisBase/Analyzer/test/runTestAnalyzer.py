@@ -190,10 +190,10 @@ if process.TestAnalyzer.Electrons.isFilled:
         setupAllVIDIdsInModule(process, idmod, setupVIDElectronSelection)
 
 # Set ID tags
-process.TestAnalyzer.Electrons.vetoId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
-process.TestAnalyzer.Electrons.looseId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
-process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
-process.TestAnalyzer.Electrons.tightId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+process.TestAnalyzer.Electrons.vetoId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto")
+process.TestAnalyzer.Electrons.looseId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose")
+process.TestAnalyzer.Electrons.mediumId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium")
+process.TestAnalyzer.Electrons.tightId = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight")
 process.TestAnalyzer.Electrons.mvanontrigwp90Id = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp90")
 process.TestAnalyzer.Electrons.mvanontrigwp80Id = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp80")
 process.TestAnalyzer.Electrons.mvanontrigValuesMap = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values")

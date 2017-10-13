@@ -39,6 +39,7 @@ struct BasicVarsFiller {
   // Trigger and filters
   size i_passjson  ;
   size i_passmetmht;
+  size i_passmetmht_120trig;
   size i_passtriglep;
   size i_passtriglepOR;
   size i_passtrigphoton;
@@ -140,6 +141,7 @@ struct BasicVarsFiller {
     // Trigger and filters
     i_passjson       = data->add<bool>("","passjson","O",0);
     i_passmetmht     = data->add<bool>("","passmetmht","O",0);
+    i_passmetmht_120trig = data->add<bool>("","passmetmht_120trig","O",0);
     i_passtriglep    = data->add<bool>("","passtriglep","O",0);
     i_passtriglepOR  = data->add<bool>("","passtriglepOR","O",0);
     i_passtrigphoton = data->add<bool>("","passtrigphoton", "O",0);
@@ -271,8 +273,9 @@ struct BasicVarsFiller {
     // METMHT trigger: not applied on MC (for signals)
     bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu110_PFMHTNoMu110_IDTight)
         || (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
-    //bool passTrigMETMHT = (ana->triggerflag & kHLT_PFMET110_PFMHT110_IDTight);
+    bool passTrigMETMHT_120trig = (ana->triggerflag & kHLT_PFMET120_PFMHT120_IDTight) || (ana->triggerflag & kHLT_PFMETNoMu120_PFMHTNoMu120_IDTight);
     data->fill<bool>(i_passmetmht   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT : false));
+    data->fill<bool>(i_passmetmht_120trig   ,  ana->isMC() || (ana->process==defaults::DATA_MET ? passTrigMETMHT_120trig : false));
 
     // photon trigger: HLT_Photon165_HE10 || HLT_CaloJet500_NoJetID(JetHT)
     bool passTrigPho165 = ana->triggerflag & kHLT_Photon165_HE10;

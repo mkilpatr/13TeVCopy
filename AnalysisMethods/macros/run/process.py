@@ -66,6 +66,8 @@ if [ ! "$CMSSW_BASE" ]; then
   exit 1
 fi
 
+source tarCMSSW.sh
+
 cp {rootlogon} $workdir
 cp {pathtomacro}/$runmacro $workdir
 """.format(pathtomacro=args.path,runscript=args.script,stype=args.submittype,rootlogon=args.rootlogon))
@@ -98,11 +100,11 @@ universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = {runscript}{stype}.sh
-Arguments               = {macro} {sname} {index} {mc} {file} . {prefix} {workdir} {json}
+Arguments               = {macro} {sname} {index} {mc} {file} . {prefix} {workdir} {json} {outdir}
 Output                  = logs/{sname}_{num}.out
 Error                   = logs/{sname}_{num}.err
 Log                     = logs/{sname}_{num}.log
-use_x509userproxy       = true
+use_x509userproxy       = $ENV(X509_USER_PROXY)
 initialdir              = {outdir}
 Should_Transfer_Files   = YES
 transfer_input_files    = {workdir}/{macro},{workdir}/rootlogon.C{addjson}

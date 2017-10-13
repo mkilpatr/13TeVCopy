@@ -53,7 +53,7 @@ public:
     bool passmetfilters2017 = this->evtInfoReader.HBHENoiseFilter && this->evtInfoReader.HBHENoiseIsoFilter && this->evtInfoReader.globalSuperTightHalo2016Filter && this->evtInfoReader.EcalDeadCellTriggerPrimitiveFilter && this->evtInfoReader.goodVertices && this->evtInfoReader.eeBadScFilter && this->evtInfoReader.badChCand && this->evtInfoReader.badPFMuon;
     float ljCHEF = defaultJets->jetchHadEnFrac_->size() ? defaultJets->jetchHadEnFrac_->at(defaultJets->recoJets[0].index()) : 10;
 //    if(passmetfilters && (ljCHEF > 0.1) && (ljCHEF < 0.95)){
-    if(passmetfilters2017 && (ljCHEF > 0.1) && (ljCHEF < 0.99)){
+    if((passmetfilters2017 || passmetfilters) && (ljCHEF > 0.1) && (ljCHEF < 0.99)){
       for(unsigned int iJ = 0; iJ < defaultJets->genJets.size(); ++iJ){
         const auto& gJ = defaultJets->genJets[iJ];
         if (gJ.pt()  < 20) continue;
