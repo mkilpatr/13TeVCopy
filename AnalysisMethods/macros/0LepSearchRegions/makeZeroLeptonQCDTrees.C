@@ -292,6 +292,13 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<int>(i_whichQCD_Sample,    whichQCD_Sample);
 
       filler.fillEventInfo(&data, this);
+      extraFiller.fillQCDAngles(&data, this);
+      extraFiller.fillWTagInfo(&data, this);
+      extraFiller.fillJetMETInfo(&data, this);
+//      extraFiller.fillSystInfo(&data, this);
+      extraFiller.fillLeptonInfo(&data, this);
+//      extraFiller.fillGenInfo(&data, this);
+      extraFiller.fillTopFrameTaggerInfo(&data, this);
       return true;
     }
 

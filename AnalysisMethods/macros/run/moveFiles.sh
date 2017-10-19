@@ -3,9 +3,6 @@
 end=$((SECONDS+3600))
 count=$(./checkCondor.sh)
 
-user=${CMSSW_BASE%/CMSSW*}
-user=${user##*/}
-
 if [[ $# -eq 0 ]] ; then
     echo 'You need to give directory where files are located'
     return
@@ -18,7 +15,7 @@ done
 
 if [ $count -eq 0 ]
 then
-	mv /eos/uscms/store/user/${user}/13TeV/$1 $CMSSW_BASE/src/AnalysisMethods/macros/run/
+	mv /eos/uscms/store/user/${USER}/13TeV/$1 $CMSSW_BASE/src/AnalysisMethods/macros/run/$1
 fi
 
 

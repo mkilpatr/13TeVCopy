@@ -73,16 +73,14 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
     void book() {
       filler.book(&data);
-      extraFiller.bookHist(outFile_);
-      extraFiller.bookTest(&data);
-      extraFiller.bookMHTTest(&data);
-//      extraFiller.bookMergeTopWSF(&data);
       extraFiller.bookQCDAngles(&data);
-      extraFiller.bookTopFrameTagger(&data);
+      extraFiller.bookWTag(&data);
 //      extraFiller.bookSyst(&data);
       extraFiller.bookJetMET(&data);
       extraFiller.bookLepton(&data);
       extraFiller.bookGen(&data);
+      extraFiller.bookTopFrameTagger(&data);
+      extraFiller.bookHist(outFile_);
     }
 
     bool fillEvent() {
@@ -117,24 +115,21 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
 
         processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this, addlep2met, &lepplusmet);
-        extraFiller.fillJetMETInfo(&data, this, true, &lepplusmet);
       } else {
         if(met->pt() < metcut_  ) return false;
 
         processMoreVariables(); // call this before filling, but after all preselections
         filler.fillEventInfo(&data, this);
-        extraFiller.fillJetMETInfo(&data, this);
       }
 
 	cout << "Fill TestVars" << endl;
-      extraFiller.fillTestVars(&data, this);
-      extraFiller.fillQCDAngles(&data, this);
-//      extraFiller.fillMergeTopWSF(&data, this);
-      extraFiller.fillMHTTest(&data, this);
-      extraFiller.fillTopFrameTaggerInfo(&data, this);
-//      extraFiller.fillSystInfo(&data, this);
-      extraFiller.fillLeptonInfo(&data, this);
-      extraFiller.fillGenInfo(&data, this);
+//      extraFiller.fillTestVars(&data, this);
+//      extraFiller.fillQCDAngles(&data, this);
+////      extraFiller.fillSystInfo(&data, this);
+//      extraFiller.fillWTagInfo(&data, this);
+//      extraFiller.fillLeptonInfo(&data, this);
+//      extraFiller.fillGenInfo(&data, this);
+//      extraFiller.fillTopFrameTaggerInfo(&data, this);
       return true;
     }
 

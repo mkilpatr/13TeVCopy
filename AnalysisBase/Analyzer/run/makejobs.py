@@ -327,6 +327,8 @@ if [ ! "$CMSSW_BASE" ]; then
   exit 1
 fi
 
+source $CMSSW_BASE/src/AnalysisMethods/macros/run/tarCMSSW.sh
+
 cp AddWgt2UCSBntuples.C $workdir
 cp rootlogon.C $workdir
 
@@ -457,6 +459,8 @@ if [ ! "$CMSSW_BASE" ]; then
   exit 1
 fi
 
+source $CMSSW_BASE/src/AnalysisMethods/macros/run/tarCMSSW.sh
+
 cp MergeNtuples.C $workdir
 cp rootlogon.C $workdir
 
@@ -483,7 +487,7 @@ universe                = vanilla
 Requirements            = (Arch == "X86_64") && (OpSys == "LINUX")
 request_disk            = 10000000
 Executable              = runmergecondor.sh
-Arguments               = {macro} {infile} {outfile} {outdir} {workdir}
+Arguments               = {macro} {infile} {inputdir} {outfile} {outdir} {workdir}
 Output                  = logs/{sname}_runmerge.out
 Error                   = logs/{sname}_runmerge.err
 Log                     = logs/{sname}_runmerge.log
@@ -497,7 +501,7 @@ EOF
 
 condor_submit submit.cmd;
 rm submit.cmd""".format(
-            macro="MergeNtuples.C", infile=submitfile, outfile=outfilename, outdir=args.outdir, workdir="${CMSSW_BASE}", jobdir=args.jobdir, sname=jobname
+            macro="MergeNtuples.C", infile=submitfile, inputdir=args.inputdir, outfile=outfilename, outdir=args.outdir, workdir="${CMSSW_BASE}", jobdir=args.jobdir, sname=jobname
             ))
             jobscript.close()
             script.write("cp {jobdir}/{infile} $workdir\n./{jobdir}/submit_{sname}_runmerge.sh\n".format(jobdir=args.jobdir, infile=submitfile, sname=jobname))

@@ -76,6 +76,7 @@ struct BasicVarsFiller {
   size i_nlbjets   ;
   size i_ntbjets   ;
   size i_ht        ;
+  size i_mht       ;
   size i_j1pt      ;
   size i_j2pt      ;
   size i_dphij1met ;
@@ -92,6 +93,15 @@ struct BasicVarsFiller {
   size i_csvj2pt   ;
   size i_dphij1lmet;
   size i_nivf;
+  size i_ivf_IP2D  ;
+  size i_ivf_svCosSVPV;
+  size i_ivf_pt    ;
+  size i_ivf_svNtrack;
+  size i_ivf_SIP3D ;
+  size i_ivf_DRak4j1;
+  size i_ivf_DRak4j2;
+  size i_ivf_DRak4j3;
+  size i_ivf_DRak4j4;
 
   // Lepton variables
   size i_leptonpt  ;
@@ -184,6 +194,7 @@ struct BasicVarsFiller {
     i_nlbjets        = data->add<int>("","nlbjets","I",0);
     i_ntbjets        = data->add<int>("","ntbjets","I",0);
     i_ht             = data->add<float>("","ht","F",0);
+    i_mht            = data->add<float>("","mht","F",0);
     i_j1pt           = data->add<float>("","j1pt","F",0);
     i_j2pt           = data->add<float>("","j2pt","F",0);
     i_dphij1met      = data->add<float>("","dphij1met","F",0);
@@ -200,6 +211,15 @@ struct BasicVarsFiller {
     i_csvj1pt        = data->add<float>("","csvj1pt","F",0);
     i_csvj2pt        = data->add<float>("","csvj2pt","F",0);
     i_nivf           = data->add<int>("","nivf","I",0);
+    i_ivf_IP2D       = data->add<float>("","ivf_IP2D","F",0);
+    i_ivf_svCosSVPV  = data->add<float>("","ivf_svCosSVPV","F",0);
+    i_ivf_pt         = data->add<float>("","ivf_pt","F",0);
+    i_ivf_svNtrack   = data->add<float>("","ivf_svNtrack","F",0);
+    i_ivf_SIP3D      = data->add<float>("","ivf_SIP3D","F",0);
+    i_ivf_DRak4j1    = data->add<float>("","ivf_DRak4j1","F",0);
+    i_ivf_DRak4j2    = data->add<float>("","ivf_DRak4j2","F",0);
+    i_ivf_DRak4j3    = data->add<float>("","ivf_DRak4j3","F",0);
+    i_ivf_DRak4j4    = data->add<float>("","ivf_DRak4j4","F",0);
 
     data->add<float>("ak8isrpt", -1);
     data->add<float>("dphiisrmet", -1);
@@ -387,7 +407,9 @@ struct BasicVarsFiller {
     data->fill<int>(i_nlbjets,  nlbjets);
     data->fill<int>(i_ntbjets,  ntbjets);
     auto ht = JetKinematics::ht(jets, 20.0, 2.4);
+    float mht = JetKinematics::mht(jets, 20.0, 2.4).pt();
     data->fill<float>(i_ht,     ht);
+    data->fill<float>(i_mht,   mht);
     data->fill<float>(i_metovsqrtht, (met->pt())/(sqrt(ht)));
 
     if(jets.size() > 0) {
@@ -436,6 +458,7 @@ struct BasicVarsFiller {
     }
 
     int nivf_ = 0; vector<SVF*> ivfs_;
+    float ivf_DRak4j1_ = 999999., ivf_DRak4j2_ = 999999., ivf_DRak4j3_ = 999999., ivf_DRak4j4_ = 999999.;
     for (unsigned int iivf=0; iivf<ana->SVs.size(); ++iivf) {
 
       //DR between jets
@@ -445,8 +468,23 @@ struct BasicVarsFiller {
         if ( (ana->jets[ij]->pt()>20.)  && (fabs(ana->jets[ij]->eta())<2.4)) {
           float tmpdr =  PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[ij]->p4());
           if (tmpdr<mindrjetivf) { mindrjetivf = tmpdr; }
-        }
+          if(ana->jets.size() > 0) ivf_DRak4j1_ = PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[0]->p4());
+          if(ana->jets.size() > 1) ivf_DRak4j2_ = PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[1]->p4());
+          if(ana->jets.size() > 2) ivf_DRak4j3_ = PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[2]->p4());
+          if(ana->jets.size() > 3) ivf_DRak4j4_ = PhysicsUtilities::deltaR(ana->SVs[iivf]->p4(), ana->jets[3]->p4());
+	}
       }
+
+      data->fill<float>("ivf_DRak4j1",   ivf_DRak4j1_);
+      data->fill<float>("ivf_DRak4j2",   ivf_DRak4j2_);
+      data->fill<float>("ivf_DRak4j3",   ivf_DRak4j3_);
+      data->fill<float>("ivf_DRak4j4",   ivf_DRak4j4_);
+      data->fill<float>("ivf_IP2D",      ana->SVs[iivf]->svdxy());
+      data->fill<float>("ivf_svCosSVPV", ana->SVs[iivf]->svCosSVPV());
+      data->fill<float>("ivf_pt",        ana->SVs[iivf]->pt());
+      data->fill<float>("ivf_svNtrack",  ana->SVs[iivf]->svNTracks());
+      float ivf_SIP3D_ = (ana->SVs[iivf]->svd3D())/(ana->SVs[iivf]->svd3Derr());
+      data->fill<float>("ivf_SIP3D",     ivf_SIP3D_);
 
       if (fabs(ana->SVs[iivf]->svdxy()) < 3  &&
           ana->SVs[iivf]->svCosSVPV() > 0.98 &&

@@ -26,13 +26,23 @@ echo "args: $*"
 ls -l
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd $scramdir/src/
-SCRAM_ARCH=slc6_amd64_gcc491
+SCRAM_ARCH=slc6_amd64_gcc530
+eval `scramv1 project CMSSW CMSSW_9_2_6`
+cd CMSSW_9_2_6/src/
 eval `scramv1 runtime -sh`
-cd $workdir
+echo "CMSSW: "$CMSSW_BASE
+cd ../../
 
-cp ${scramdir}/${runmacro} .
-cp ${scramdir}/rootlogon.C .
+xrdcp root://cmseos.fnal.gov//store/user/${USER}/CMSSW926.tgz .
+tar -xf CMSSW926.tgz
+rm CMSSW926.tgz
+
+cd ${_CONDOR_SCRATCH_DIR}
+echo $outputdir
+
+xrdcp -np root://cmseos.fnal.gov/${scramdir}/${runmacro} .
+xrdcp -np root://cmseos.fnal.gov/${scramdir}/rootlogon.C .
+ls -a
 
 root -l -b -q $runmacro+\(\"${filename}\",\"${process}\",$xsec,$lumi,$totposevents,$totnegevents,\"${treename}\",\"${suffix}\",\"${xsecfile}\",\"${filterfile}\",$wgtsf\)
 

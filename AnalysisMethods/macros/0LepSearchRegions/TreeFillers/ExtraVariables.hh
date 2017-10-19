@@ -428,12 +428,6 @@ struct ExtraVarsFiller {
   size i_badj3      ;
   size i_badj4      ;
 
-  // Test MHT and HT variables
-  size i_ht_test    ;
-  size i_htInc      ;
-  size i_mht        ;
-  size i_mhtInc     ;
-
   // TopWSF
   size i_efnl1_res_ntightmus;
   size i_efnl1_res_dphitmumet;
@@ -509,9 +503,6 @@ struct ExtraVarsFiller {
     hsys = new TH1D("hsys", "syst weights", 1000, 0.5, 1000.5);
     hpartonht = new TH1D("hpartonht", ";parton HT;Events", 300, 0, 3000);
     htopptweight = new TH1D("htopptweight", ";dummy;Events", 1, 0, 10);
-  }
-
-  void bookTest(TreeWriterData* data){
   }
 
   void bookMulticlassWTopMVA(TreeWriterData* data){
@@ -756,13 +747,6 @@ struct ExtraVarsFiller {
     i_chimetj4              = data->add<float>("","chimetj4","F",3);
   }
 
-  void bookMHTTest(TreeWriterData* data){
-    i_ht_test		    = data->add<float>("","ht_test","F",0);
-    i_htInc		    = data->add<float>("","htInc","F",0);
-    i_mht		    = data->add<float>("","mht","F",0);
-    i_mhtInc		    = data->add<float>("","mhtInc","F",0);
-  }
-
   void bookCheckJets(TreeWriterData* data){
     i_badj1		    = data->add<unsigned int>("","badj1","I",0);
     i_badj2		    = data->add<unsigned int>("","badj2","I",0);
@@ -912,9 +896,6 @@ struct ExtraVarsFiller {
 
       htopptweight->Fill(1, ana->weight * ana->ttbarCorrections.getTopPTWeight());
     }
-  }
-
-  void fillTestVars(TreeWriterData* data, const BaseTreeAnalyzer* ana){
   }
 
   void fillMulticlassWTopMVA(TreeWriterData* data, BaseTreeAnalyzer* ana){
@@ -1613,7 +1594,6 @@ struct ExtraVarsFiller {
     const auto &jets = ana->jets;
     const MomentumF *met = useModifiedMET ? metn : ana->met;
 
-    cout << "Before angle fill" << endl;
     if(jets.size() > 0) {
       data->fill<float>(i_dphimetj1, fabs(PhysicsUtilities::deltaPhi(*jets[0], *met)));
       data->fill<float>(i_dphistarmetj1, JetKinematics::absDPhiStarMETJ(*met, *jets[0], 30.0, 2.4));
@@ -1623,7 +1603,6 @@ struct ExtraVarsFiller {
       data->fill<float>(i_chimetj1, JetKinematics::ChiMETJ(*met, *jets[0], 30.0, 2.4));
       data->fill<float>(i_metj1, (jets[0]->p4() + met->p4()).pt());
     }
-    cout << "middle" << endl;
     if(jets.size() > 1) {
       data->fill<float>(i_dphimetj2, fabs(PhysicsUtilities::deltaPhi(*jets[1], *met)));
       data->fill<float>(i_dphistarmetj2, JetKinematics::absDPhiStarMETJ(*met, *jets[1], 30.0, 2.4));
@@ -1651,33 +1630,6 @@ struct ExtraVarsFiller {
       data->fill<float>(i_chimetj4, JetKinematics::ChiMETJ(*met, *jets[3], 30.0, 2.4));
       data->fill<float>(i_metj4, (jets[3]->p4() + met->p4()).pt());
     }
-  }
-
-  void fillMHTTest(TreeWriterData* data, const BaseTreeAnalyzer* ana, bool useModifiedMET = false, MomentumF* metn = 0){
-    const auto &jets = ana->jets;
-    const MomentumF *met = useModifiedMET ? metn : ana->met;
-
-    float ht    = 0;
-    float htInc = 0;
-
-    CylLorentzVectorF mhtVec;
-    CylLorentzVectorF mhtIncVec;
-    for(unsigned int iJ = 0; iJ < jets.size(); ++iJ){
-      if(jets[iJ]->pt() < 20) continue;
-      htInc += jets[iJ]->pt();
-      mhtIncVec -= jets[iJ]->p4();
-      if(TMath::Abs(jets[iJ]->eta()) > 2.4) continue;
-      ht += jets[iJ]->pt();
-      mhtVec -= jets[iJ]->p4();
-    }
-
-    float mht    = mhtVec.pt();
-    float mhtInc = mhtIncVec.pt();
-
-    data->fill<float>(i_ht_test ,ht      );
-    data->fill<float>(i_htInc   ,htInc   );
-    data->fill<float>(i_mht     ,mht     );
-    data->fill<float>(i_mhtInc  ,mhtInc  );
   }
 
   void fillCheckJets(TreeWriterData* data, const BaseTreeAnalyzer* ana, vector<unsigned int>& badJet,  bool useModifiedMET = false, MomentumF* metn = 0){
@@ -1944,8 +1896,8 @@ struct ExtraVarsFiller {
       // if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.45)) { ++nsdwjmewp1tight_; }
       // if (passSoftDropTaggerFJ(fj,60.,110.,10.,0.60)) { ++nsdwjmewp1loose_; }
 
-      data->fillMulti<float>(i_ak8pt      , fj->pt());
-      data->fillMulti<float>(i_ak8eta     , fj->eta());
+      data->fillMulti<float>(i_ak8ptt     , fj->pt());
+      data->fillMulti<float>(i_ak8etat    , fj->eta());
       data->fillMulti<float>(i_ak8phi     , fj->phi());
       data->fillMulti<float>(i_ak8rawmass , fj->fjRawMass());
       data->fillMulti<float>(i_ak8prunmass, fj->fjPrunedMass());
@@ -1953,8 +1905,8 @@ struct ExtraVarsFiller {
       data->fillMulti<float>(i_ak8tau21   , (fj->fjTau2())/(fj->fjTau1()));
       data->fillMulti<float>(i_ak8tau31   , (fj->fjTau3())/(fj->fjTau1()));
       data->fillMulti<float>(i_ak8tau32   , (fj->fjTau3())/(fj->fjTau2()));
-    }
-  */
+    }*/
+  
   }
 
 
@@ -1979,7 +1931,8 @@ struct ExtraVarsFiller {
 	// get the fatjet and subjet p4
 	TLorentzVector sj1p4_; if(fj->nSubjets() > 0 ) sj1p4_.SetPtEtaPhiM(fj->subJet(0).pt(),fj->subJet(0).eta(),fj->subJet(0).phi(),fj->subJet(0).mass());
 	TLorentzVector sj2p4_; if(fj->nSubjets() > 1 ) sj2p4_.SetPtEtaPhiM(fj->subJet(1).pt(),fj->subJet(1).eta(),fj->subJet(1).phi(),fj->subJet(1).mass());
-	TLorentzVector ak8p4_ = sj1p4_ + sj2p4_;
+	//TLorentzVector ak8p4_ = sj1p4_ + sj2p4_;
+	TLorentzVector ak8p4_ = sj1p4_;
 
 	// match the subjet to the W boson
 	float drsj1genhadw = ROOT::Math::VectorUtil::DeltaR(genhadwp4_,sj1p4_);

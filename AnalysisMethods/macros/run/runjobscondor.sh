@@ -20,9 +20,6 @@ echo "workdir: $workdir"
 echo "args: $*"
 ls -l
 
-user=${scramdir%/CMSSW*}
-user=${user##*/}
-
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 export SCRAM_ARCH=slc6_amd64_gcc530
 eval `scramv1 project CMSSW CMSSW_9_2_6`
@@ -32,7 +29,7 @@ scramv1 b ProjectRename
 echo "CMSSW: "$CMSSW_BASE
 cd ../../
 
-xrdcp root://cmseos.fnal.gov//store/user/${user}/CMSSW926.tgz .
+xrdcp root://cmseos.fnal.gov//store/user/${USER}/CMSSW926.tgz .
 tar -xf CMSSW926.tgz
 rm CMSSW926.tgz
 
@@ -46,18 +43,16 @@ rm CMSSW926.tgz
 cd ${_CONDOR_SCRATCH_DIR}
 echo $outdir
 
-#xrdcp root://cmseos.fnal.gov/${filename} .
 root -l -b -q $runmacro+\(\"${sname}\",$index,$ismc,\"${filename}\",\"${outputdir}\",\"${prefix}\",\"${json}\"\)
-if [ $index -eq -1]
-then
-	xrdcp ${sname}_tree.root root://cmseos.fnal.gov//store/user/${user}/13TeV/${outdir}/${sname}_tree.root
-else
-	xrdcp ${sname}_${index}_tree.root root://cmseos.fnal.gov//store/user/${user}/13TeV/${outdir}/${sname}_${index}_tree.root
-fi
+#if [ $index -eq -1 ]
+#then
+#	xrdcp -np ${sname}_tree.root root://cmseos.fnal.gov//store/user/${USER}/13TeV/${outdir}/${sname}_tree.root
+#else
+#	xrdcp -np ${sname}_${index}_tree.root root://cmseos.fnal.gov//store/user/${USER}/13TeV/${outdir}/${sname}_${index}_tree.root
+#fi
 ls -a
 
 status=`echo $?`
 echo "Status = $status"
-#rm ${sname}_${index}_tree.root
 
 exit $status
