@@ -2,10 +2,12 @@
 #include "AnalysisTools/Utilities/interface/JetFlavorInfo.h"
 #include "AnalysisTools/TreeReader/interface/Defaults.h"
 #include "AnalysisMethods/PlotUtils/interface/Plot.hh"
+#include "AnalysisMethods/EstTools/utils/Estimator.hh"
 #include "AnalysisMethods/EstTools/utils/HistGetter.hh"
 #include "AnalysisMethods/EstTools/Moriond2017/SRParameters.hh"
+//#include "AnalysisMethods/EstMethods/LLBEstimator.hh"
 //#include "AnalysisMethods/macros/JetMETStudies/GetQCDPrediction.C"
-//#include "QCDPredictionHelper.h"
+//#include "LLPredictionHelper.h"
 
 using namespace std;
 using namespace EstTools;
@@ -16,7 +18,7 @@ vector<int> colors;
 
 TString local_stdwgt = "1.0";
 TString local_wgtvar = wgtvar;
-TString local_wgtvar_2016 = wgtvar2016;
+//TString local_wgtvar_2016 = wgtvar2016;
 TString local_qcdwgt = qcdwgt;
 
 TTree* getTree(TString filename);
@@ -39,13 +41,16 @@ void printTFPlots(TTree* p_qcdTree, TString p_Prefix, TString p_Sel, vector <pai
 void ValidateLepton();
 void makeLepShape_Plots();
 void makeJetLepStuct_Plots();
+void LLTransferFactor();
 
 #endif
 
 void OneLepDistributions(){
   SetTDRStyle();
 
-  ValidateLepton();
+//  ValidateLepton();
+  LLTransferFactor();
+//  makeLLBPrediction();
 //  makeLepShape_Plots();
 //  makeJetLepStuct_Plots();
 }
@@ -242,7 +247,7 @@ void ValidateLepton(){
 //  HistogramGetter* drleptop_shape= new HistogramGetter("drleptop",        "drleptop",				       "#DeltaR(l, t)",					 16,     0., 1.6);
   //HistogramGetter* metht_shape   = new HistogramGetter("met_ht",          "(met + ht)",                                "#slash{#it{E}}_{T} + h_{T} [GeV]",               nHT_bins - 1, ht_bins);
   
-//  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, "baseline_CR", "Events", true, true);
+  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, "baseline_CR", "Events", true, true);
 //  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, passmetmht_bins, "Events", true, true);
 ////  printComparison(sampleTrees, met_shape    , "_baseline",   local_baseline_CR,    "LepShape", "Events", true, true);
 ////  printComparison(sampleTrees, dphi12_shape , "_baseline",   local_baseline,    met_bins,          "Events", true, true);
@@ -273,15 +278,15 @@ void ValidateLepton(){
 ////  printStack(stackTrees, mht_shape      , "baseline_CR",    dataMC_selsAndNames, 		   "baseline_CR",        "Events", true, true);
 //  printStack(stackTrees, ht_shape            , "baseline_CR",    dataMC_selsAndNames, passmetmht_bins,        "Events", true, true);
 //  printStack(stackTrees, mht_shape           , "baseline_CR",    dataMC_selsAndNames, passmetmht_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_IP2D_shape      , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_svCosSVPV_shape , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_pt_shape        , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_svNtrack_shape  , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_SIP3D_shape     , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_DRak4j1_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_DRak4j2_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_DRak4j3_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees, ivf_DRak4j4_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_IP2D_shape      , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_svCosSVPV_shape , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_pt_shape        , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_svNtrack_shape  , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_SIP3D_shape     , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j1_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j2_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j3_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j4_shape   , "baseline_CR",    dataMC_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
 //  printStack(stackTrees, fj_mass_shape       , "baseline_CR",    dataMC_selsAndNames, 		  "baseline_CR",        "Events", true, true);
 //  printStack(stackTrees, fj_pt_shape         , "baseline_CR",    dataMC_selsAndNames, 		  "baseline_CR",        "Events", true, true);
 //  printStack(stackTrees, fj_tau12_shape      , "baseline_CR",    dataMC_selsAndNames, 		  "baseline_CR",        "Events", true, true);
@@ -290,8 +295,7 @@ void ValidateLepton(){
   colors.clear();
   colors.push_back(1);
   colors.push_back(kRed);
-//  printStack(stackTrees_data, met_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames,                "baseline_CR_data_comp",        "Events", true, true);
-////  printComparison(sampleTrees, met_shape       , "baseline_CR_data_comparison",    local_baseline_CR,                "baseline_CR_data_comparison",        "Events", true, true);
+////  printStack(stackTrees_data, met_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames,                "baseline_CR_data_comp",        "Events", true, true);
 //  printStack(stackTrees_data, met_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames, passmetmht_bins,     "Events", true, true);
 //  printStack(stackTrees_data, njet_shape     , "baseline_CR_data_comp",    dataVData_selsAndNames, 		  "baseline_CR_data_comp",        "Events", true, true);
 //  printStack(stackTrees_data, j1pt_shape     , "baseline_CR_data_comp",    dataVData_selsAndNames, 		  "baseline_CR_data_comp",        "Events", true, true);
@@ -311,15 +315,15 @@ void ValidateLepton(){
 //  printStack(stackTrees_data, ht_shape       , "baseline_CR_data_comp",    dataVData_selsAndNames, passmetmht_bins,	        "Events", true, true);
 //  printStack(stackTrees_data, mht_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames, passmetmht_bins,	        "Events", true, true);
 //
-  printStack(stackTrees_data, ivf_IP2D_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_svCosSVPV_shape , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_pt_shape        , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_svNtrack_shape  , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_SIP3D_shape     , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_DRak4j1_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_DRak4j2_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_DRak4j3_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
-  printStack(stackTrees_data, ivf_DRak4j4_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_IP2D_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_svCosSVPV_shape , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_pt_shape        , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_svNtrack_shape  , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_SIP3D_shape     , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_DRak4j1_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_DRak4j2_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_DRak4j3_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
+//  printStack(stackTrees_data, ivf_DRak4j4_shape   , "baseline_CR_data_comp",    dataVData_selsAndNames, ivfDeltaR_bins,        "Events", true, true);
 //  printStack(stackTrees_data, fj_mass_shape       , "baseline_CR_data_comp",    dataVData_selsAndNames, 		  "baseline_CR_data_comp",        "Events", true, true);
 //  printStack(stackTrees_data, fj_pt_shape         , "baseline_CR_data_comp",    dataVData_selsAndNames, 		  "baseline_CR_data_comp",        "Events", true, true);
 //  printStack(stackTrees_data, fj_tau12_shape      , "baseline_CR_data_comp",    dataVData_selsAndNames, 		  "baseline_CR_data_comp",        "Events", true, true);
@@ -347,6 +351,89 @@ void ValidateLepton(){
 
 //  printComparison(sampleTrees, ht_shape, "baseline_met_lt_250", local_baseline_200 + " && met < 250", "baseline", "Events", true, true);
 //  printStack(stackTrees,       ht_shape, "baseline_met_lt_250", local_baseline_200 + " && met < 250", "baseline", "Events", true, true);
+}
+
+void LLTransferFactor(){
+  outputDir = "TFactor";
+  gSystem->mkdir(outputDir, true);
+//  TString local_baseline     = "met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && ak8isrpt>300 && dphiisrmet>2 && nsdtop==0 && nsdw==0 && nrestop==0 && metovsqrtht>10";
+//  TString local_baseline_200 = "met>200 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && ak8isrpt>300 && dphiisrmet>2 && nsdtop==0 && nsdw==0 && nrestop==0 && metovsqrtht>10";
+//  TString local_baseline_CR  = local_baseline + dphi_invert;
+//  TString local_baseline_SR  = local_baseline + "&& dphij1met>0.5 && dphij2met>0.15";
+  TString local_baseline     = "met>250 && mht > 120 && njets>=2  && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99";
+  TString local_baseline2017 = "met>250 && mht > 120 && njets>=2  && (passmetfilters2017 || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99";
+  TString local_baseline_200 = "met>200 && ht>250 && njets>=2  && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99";
+  TString local_baseline_CR2017 = local_baseline2017 + lepcrsel + " && dphij1met>0.5 && dphij2met>0.15";
+  TString local_baseline_CR     = local_baseline + lepcrsel + " && dphij1met>0.5 && dphij2met>0.15";
+  TString local_baseline_SR  = local_baseline + "&& dphij1met>0.5 && dphij2met>0.15";
+  TString ivfDeltaR = "ivf_DRak4j1 > 0.4";
+//  TString ivfDeltaR = "max(max(ivf_DRak4j1, ivf_DRak4j2),max(ivf_DRak4j3, ivf_DRak4j4)) > 0.4";
+//  TString local_baseline_ht  = "met >= 200 && met < 250 && ht > 1000 && njets>=5 && (passtright || ismc) && j1chEnFrac>0.1 && j1chEnFrac<0.99";
+//  TString old_sel            = "passjson && (passmetfilters || process == 10) && met >= 250 && (passmetmht || ismc) && njl>=1 && njets>=5 && dphij1lmet>2. && j1lpt>=250 && met/sqrt(ht)>=10 && j1chEnFrac>0.1 && j1chEnFrac<0.99";
+  
+  vector <pair <TTree*, TString> > stackTrees;
+  stackTrees.emplace_back(getTree(originalTreeDir + "/../plots_17_10_18_data/met_tree.root"),                        "Data 2017");            colors.push_back(1);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/ttbar_tree.root"),    					     "ttbar");                colors.push_back(color_ttbar);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/wjets_tree.root"),    					     "wjets");                colors.push_back(color_wjets);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/znunu_tree.root"),    					     "znunu");                colors.push_back(kMagenta);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/ttOther_tree.root"),  					     "other");                colors.push_back(color_tW);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"), 					     "With orig. QCD MC");    colors.push_back(color_qcd);
+  
+  vector <pair <TString, TString> > dataMC_selsAndNames = {
+         								   make_pair(local_baseline_CR2017,                local_wgtvar),
+									   make_pair(local_baseline_CR    ,                local_wgtvar),
+         								   make_pair(local_baseline_CR    ,                local_wgtvar),
+         								   make_pair(local_baseline_CR    ,                local_wgtvar),
+         								   make_pair(local_baseline_CR    ,                local_wgtvar),
+         								   make_pair(local_baseline_CR    ,                local_wgtvar),
+							}; 
+  vector <pair <TString, pair <TString, TString> > > multiplicity_bins = { make_pair("nj_2_to_5",          make_pair("njets >= 2 && njets <= 5", "2 #leq N_{jets} #leq 5")), 
+                                                                           make_pair("nj_geq_6",           make_pair("njets >= 6",               "N_{jets} #geq 6")), 
+                                                                           make_pair("nj_geq_7",           make_pair("njets >= 7",               "N_{jets} #geq 7")), 
+                                                                           make_pair("nb_0",               make_pair("nbjets == 0",              "N_{b} = 0")), 
+                                                                           make_pair("nb_1",               make_pair("nbjets == 1",              "N_{b} = 1")), 
+                                                                           make_pair("nb_geq_2",           make_pair("nbjets >= 2",              "N_{b} #geq 2")), 
+                                                                           make_pair("nsv_0",              make_pair("nivf == 0",                "N_{SV} = 0")), 
+                                                                           make_pair("nsv_geq_1",          make_pair("nivf >= 1",                "N_{SV} #geq 1")), 
+                                                                           make_pair("nt_0",               make_pair("nsdtop == 0",              "N_{t} = 0")), 
+                                                                           make_pair("nt_1",               make_pair("nsdtop == 1",              "N_{t} = 1")), 
+                                                                           make_pair("nt_geq_2",           make_pair("nsdtop >= 2",              "N_{t} #geq 2")), 
+                                                                           make_pair("nw_0",               make_pair("nsdw == 0",                "N_{W} = 0")), 
+                                                                           make_pair("nw_1",               make_pair("nsdw == 1",                "N_{W} = 1")), 
+                                                                           make_pair("nw_geq_2",           make_pair("nsdw >= 2",                "N_{W} #geq 2")), 
+                                                                           make_pair("nrt_0",              make_pair("nrestop == 0",             "N_{res} = 0")), 
+                                                                           make_pair("nrt_1",              make_pair("nrestop == 1",             "N_{res} = 1")), 
+                                                                           make_pair("nrt_geq_2",          make_pair("nrestop >= 2",             "N_{res} #geq 2")),
+                                                                         };
+  vector <pair <TString, pair <TString, TString> > >           SV_bins = { make_pair("nsv_0",              make_pair("nivf == 0",                "N_{SV} = 0")),
+									   make_pair("nsv_geq_1",          make_pair("nivf >= 1",                "N_{SV} #geq 1"))
+									 };
+  vector <pair <TString, pair <TString, TString> > >          jet_bins = { make_pair("nj_2_to_5",          make_pair("njets >= 2 && njets <= 5", "2 #leq N_{jets} #leq 5")),
+                                                                           make_pair("nj_geq_6",           make_pair("njets >= 6",               "N_{jets} #geq 6")) 
+									 };
+  vector <pair <TString, pair <TString, TString> > >          met_bins = { make_pair("met_450_to_550",     make_pair("met >= 450 && met < 550",  "450 #leq #slash{#it{E}}_{T} #leq 550")), 
+                                                                           make_pair("met_550_to_650",     make_pair("met >= 550 && met < 650",  "550 #leq #slash{#it{E}}_{T} #leq 650")), 
+                                                                           make_pair("met_650_to_750",     make_pair("met >= 650 && met < 750",  "650 #leq #slash{#it{E}}_{T} #leq 750")), 
+                                                                           make_pair("met_ge_750",         make_pair("met >= 750",               "#slash{#it{E}}_{T} #geq 750")) };
+  vector <pair <TString, pair <TString, TString> > >        nb_binning = { make_pair("nb_eq_0",            make_pair("nbjets == 0",              "n_{b} = 0")),
+                                                                           make_pair("nb_eq_1",            make_pair("nbjets == 1",              "n_{b} = 1")),
+                                                                           make_pair("nb_ge_2",            make_pair("nbjets >= 2",              "n_{b} #geq 2")) };
+  vector <pair <TString, pair <TString, TString> > >      dphi_binning = { make_pair("CR_123",             make_pair(dphi_invert,                                                        "CR")),
+                                                                           make_pair("SR_12",              make_pair("dphij1met >= 0.5 && dphij2met>=0.15",                              "SR (low mass)")),
+                                                                           make_pair("SR_1234",            make_pair("dphij1met>0.5 && dphij2met>0.5 && dphij3met>0.5 && dphij4met>0.5", "SR (high mass)"))};
+  vector <pair <TString, pair <TString, TString> > >       met_binning = { make_pair("met_250_to_400",     make_pair("met >= 250 && met < 400", "250 #leq #slash{#it{E}}_{T} < 400")),
+                                                                           make_pair("met_ge_400",         make_pair("met >= 400",              "#slash{#it{E}}_{T} #geq 400")) };
+  
+  HistogramGetter* met_shape     = new HistogramGetter("met",             "met",                                       "#slash{#it{E}}_{T} [GeV]",                       20, 200., 1000.);
+ 
+  vector <pair <TString, pair <TString, TString> > >        lepCR_bins;
+  for(auto it = lepcrCuts.cbegin(); it != lepcrCuts.cend(); ++it)
+  {
+     lepCR_bins.push_back(make_pair(it->first,     make_pair(it->second, it->first)));
+     std::cout << it->first << " " << it->second << "\n";
+  }
+ 
+  printStack(stackTrees, met_shape    , "lep_CR",   dataMC_selsAndNames, lepCR_bins, "Events", true, true);
 }
 
 void makeLepShape_Plots(){
@@ -457,6 +544,25 @@ void makeJetLepStuct_Plots(){
   colors.push_back(color_tW);
   colors.push_back(kBlue);
   printLepPlots(lepShape_wjetsTree, met_HG, "TauShape", lepShape_baseline, lepShape_localSels, tauShape_selsAndNames, true, true, true);
+}
+
+void makeLLBPrediction(){
+  outputDir = "LLBPrediction";
+  gSystem->mkdir(outputDir, true);
+  vector <pair <TTree*, TString> > stackTrees;
+  stackTrees.emplace_back(getTree(originalTreeDir + "/../plots_17_10_18_data/met_tree.root"),                        "Data 2017");            colors.push_back(1);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/ttbar_tree.root"),    					     "ttbar");                colors.push_back(color_ttbar);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/wjets_tree.root"),    					     "wjets");                colors.push_back(color_wjets);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/tw_tree.root"),    					     "tW");                   colors.push_back(color_tW);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/ttW_tree.root"),  					     "ttW");                  colors.push_back(kMagenta);
+  TString lepShape_wjetsLabel = "Lepton Shape";
+
+  TString LLBcr = datasel + trigSR + revert_vetoes;
+
+  vector<HistogramGetter *> met_HG; 
+  met_HG.push_back(new HistogramGetter("met",             "met",                                       "#slash{#it{E}}_{T} [GeV]",                       20, 200., 1000.));
+  
+  //printLepPlots(lepShape_wjetsTree, met_HG, "LepShape", lepShape_baseline, lepShape_localSels, lepShape_selsAndNames, true, true, true);
 }
 
 TTree* getTree(TString filename){
