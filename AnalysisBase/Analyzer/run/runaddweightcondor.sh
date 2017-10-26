@@ -30,6 +30,7 @@ SCRAM_ARCH=slc6_amd64_gcc530
 eval `scramv1 project CMSSW CMSSW_9_2_6`
 cd CMSSW_9_2_6/src/
 eval `scramv1 runtime -sh`
+scramv1 b ProjectRename
 echo "CMSSW: "$CMSSW_BASE
 cd ../../
 
@@ -40,8 +41,8 @@ rm CMSSW926.tgz
 cd ${_CONDOR_SCRATCH_DIR}
 echo $outputdir
 
-xrdcp -np root://cmseos.fnal.gov/${scramdir}/${runmacro} .
-xrdcp -np root://cmseos.fnal.gov/${scramdir}/rootlogon.C .
+#xrdcp -np root://cmseos.fnal.gov/${scramdir}/${runmacro} .
+#xrdcp -np root://cmseos.fnal.gov/${scramdir}/rootlogon.C .
 ls -a
 
 root -l -b -q $runmacro+\(\"${filename}\",\"${process}\",$xsec,$lumi,$totposevents,$totnegevents,\"${treename}\",\"${suffix}\",\"${xsecfile}\",\"${filterfile}\",$wgtsf\)
