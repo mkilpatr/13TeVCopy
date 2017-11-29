@@ -15,7 +15,7 @@
 <use name="MagneticField/Records"/>
 <use name="MagneticField/Engine"/>
 <use name="TrackingTools/IPTools"/>
-<use name="MagneticField/UniformEngine"/>
+<!--use name="MagneticField/UniformEngine"/-->
 <use name="MagneticField/ParametrizedEngine"/>
 <use name="root"/>
 <lib name="Geom"/>

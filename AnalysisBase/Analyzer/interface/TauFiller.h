@@ -30,7 +30,8 @@ namespace ucsbsusy {
                     NULLOPT      = 0,
                     FILLCANDINFO = (1 << 0),  // whether or not to store information about the leading (charged) candidate 
                     FILLRAWDISCS = (1 << 1),  // whether or not to store the raw HPS discriminator outputs 
-                    PRINTIDS     = (1 << 2)   // check which HPS Tau IDs are available
+                    FILLPRODISOTRKS = (1 << 2), //whether or not to store the prodIsoTrks Variables
+		    PRINTIDS     = (1 << 2)   // check which HPS Tau IDs are available
                    };
       static const int defaultOptions = NULLOPT;
 

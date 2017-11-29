@@ -86,6 +86,8 @@ namespace ucsbsusy {
       size icontJetCSV_;
       size itaudisc_mtpresel_;
       size itaudisc_dphipresel_;
+      size itauisotrks_mtpresel_;
+      size itauisotrks_dphipresel_;
       size itrackiso_;
     public :
       edm::Handle<pat::PackedCandidateCollection> pfcands_;

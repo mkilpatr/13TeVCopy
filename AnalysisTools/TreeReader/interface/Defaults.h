@@ -43,6 +43,7 @@ namespace defaults {
   const std::string BRANCH_HTTJETS    = "htt";
   const std::string BRANCH_TRIGGERS   = "trig";
   const std::string BRANCH_METFILTERS = "metfilter";
+  const std::string BRANCH_PRODISOTRKSFILTERS = "prodisotrksfilters";
   const std::string BRANCH_SV         = "sv";
 
   const double CSV_LOOSE        = 0.5426;

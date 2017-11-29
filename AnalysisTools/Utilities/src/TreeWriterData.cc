@@ -15,5 +15,6 @@ TreeWriterData::TypeMap TreeWriterData::type_names = []{
     tmap[std::type_index(typeid(long long))]           = "L";
     tmap[std::type_index(typeid(unsigned long long))]  = "l";
     tmap[std::type_index(typeid(bool))]                = "O";
+    tmap[std::type_index(typeid(TLorentzVector))]      = "lv";
     return tmap;
 }();

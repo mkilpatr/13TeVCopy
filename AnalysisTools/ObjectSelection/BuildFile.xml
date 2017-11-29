@@ -4,7 +4,12 @@
 <use name="DataFormats/EgammaCandidates"/>
 <use name="RecoEgamma/EgammaTools"/>
 <use name="AnalysisTools/Parang"/>
+<use name="root"/>
+<use name="rootmath"/>
 <use name="roottmva"/>
+<flags LCG_DICT_HEADER="classes.h"/>
+<flags LCG_DICT_XML="classes_def.xml"/>
+
 <export>
   <lib   name="1"/>
 </export>

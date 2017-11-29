@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import physicsAnalyzer_configuration
 from AnalysisBase.Analyzer.analyzer_configuration_cfi import nominal_configuration
-                            
+
 hadronicTTBarEventFilter = cms.EDFilter('HadronicTTBarEventFilter',
   physicsAnalyzer_configuration,                                  
   Gen = cms.untracked.PSet(

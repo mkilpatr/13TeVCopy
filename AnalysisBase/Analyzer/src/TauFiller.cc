@@ -57,7 +57,7 @@ TauFiller::TauFiller(const edm::ParameterSet& cfg, edm::ConsumesCollector && cc,
     iantimumvaraw_  = data.addMulti<float>(branchName_,"antimumvaraw",0);
     iantimumvacat_  = data.addMulti<int  >(branchName_,"antimumvacat",0);
   }
-
+  
 }
 
 
@@ -198,8 +198,6 @@ void TauFiller::fill()
       data.fillMulti<float>(iantimumvaraw_, tau.isTauIDAvailable("againstMuonMVAraw") ? tau.tauID("againstMuonMVAraw") : 0.0);
       data.fillMulti<int  >(iantimumvacat_, tau.isTauIDAvailable("againstMuonMVAcategory") ? tau.tauID("againstMuonMVAcategory") : 0.0);
     }
-
-
   }
   isFilled_ = true;
 }

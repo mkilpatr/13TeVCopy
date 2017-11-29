@@ -76,6 +76,9 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
 
+from AnalysisBase.Analyzer.prodIsoTrks_cfi import prodIsoTrks
+process.prodIsoTrks = prodIsoTrks
+
 # dataset name
 runCRAB = True if options.inputDataset else False
 DatasetName = options.inputDataset if options.inputDataset else options.inputFiles[0]
@@ -122,7 +125,7 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
         process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
 
 # Specific to data
-if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName):
+if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName) or '009FE63B-E759-E711-A9F8-0CC47A4DEDD2.root' in DatasetName:
     ISDATA = True
     runMetCorrAndUnc = False
     updateJECs = False
@@ -130,7 +133,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-302343_13TeV_PromptReco_Collisions17_JSON.txt")
+    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-305185_13TeV_PromptReco_Collisions17_JSON.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
     process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
@@ -141,7 +144,7 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
-
+    process.TestAnalyzer.prodIsoTrksFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
 
 # Import of standard configurations
 process.load("Configuration.EventContent.EventContent_cff")
@@ -369,6 +372,25 @@ process.met131TeVFilter.EventInfo.metsOOB = cms.InputTag('slimmedMETs', processN
 process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', processName=cms.InputTag.skipCurrentProcess())
 
 #==============================================================================================================================#
+# Tau prodIsoTrks Inclusion
+#from AnalysisBase.Analyzer.prodIsoTrks_cfi import prodIsoTrks
+#process.prodIsoTrks = prodIsoTrks
+process.load("AnalysisBase.Analyzer.prodIsoTrks_cfi")
+process.prodIsoTrks.globalTag = process.TestAnalyzer.globalTag
+process.prodIsoTrks.isData = process.TestAnalyzer.isData
+process.prodIsoTrks.vectorTLorentzVector.append(cms.InputTag("prodIsoTrks:trksForIsoVetoLVec"))
+process.prodIsoTrks.vectorDouble.extend([cms.InputTag("prodIsoTrks:trksForIsoVetocharge"), cms.InputTag("prodIsoTrks:trksForIsoVetodz"), cms.InputTag("prodIsoTrks:trksForIsoVetoiso"), cms.InputTag("prodIsoTrks:trksForIsoVetopfActivity"), cms.InputTag("prodIsoTrks:looseisoTrkscharge"), cms.InputTag("prodIsoTrks:looseisoTrksdz"), cms.InputTag("prodIsoTrks:looseisoTrksiso"), cms.InputTag("prodIsoTrks:looseisoTrksmtw"), cms.InputTag("prodIsoTrks:looseisoTrkspfActivity")])
+process.prodIsoTrks.vectorDoubleNamesInTree.extend(["prodIsoTrks:trksForIsoVetocharge|trksForIsoVeto_charge", "prodIsoTrks:trksForIsoVetodz|trksForIsoVeto_dz", "prodIsoTrks:trksForIsoVetoiso|trksForIsoVeto_iso", "prodIsoTrks:trksForIsoVetopfActivity|trksForIsoVeto_pfActivity", "prodIsoTrks:looseisoTrkscharge|loose_isoTrks_charge", "prodIsoTrks:looseisoTrksdz|loose_isoTrks_dz", "prodIsoTrks:looseisoTrksiso|loose_isoTrks_iso", "prodIsoTrks:looseisoTrksmtw|loose_isoTrks_mtw", "prodIsoTrks:looseisoTrkspfActivity|loose_isoTrks_pfActivity"])
+process.prodIsoTrks.vectorInt.extend([cms.InputTag("prodIsoTrks:trksForIsoVetopdgId"), cms.InputTag("prodIsoTrks:trksForIsoVetoidx"), cms.InputTag("prodIsoTrks:looseisoTrkspdgId"), cms.InputTag("prodIsoTrks:looseisoTrksidx"), cms.InputTag("prodIsoTrks:forVetoIsoTrksidx")])
+process.prodIsoTrks.vectorIntNamesInTree.extend(["prodIsoTrks:trksForIsoVetopdgId|trksForIsoVeto_pdgId", "prodIsoTrks:trksForIsoVetoidx|trksForIsoVeto_idx", "prodIsoTrks:looseisoTrkspdgId|loose_isoTrks_pdgId", "prodIsoTrks:looseisoTrksidx|loose_isoTrks_idx"])
+
+process.prodIsoTrks.vectorTLorentzVector.append(cms.InputTag("prodIsoTrks:looseisoTrksLVec"))
+process.prodIsoTrks.vectorTLorentzVectorNamesInTree.append("prodIsoTrks:looseisoTrksLVec|loose_isoTrksLVec")
+
+process.prodIsoTrks.varsInt.extend([cms.InputTag("prodIsoTrks:loosenIsoTrks"), cms.InputTag("prodIsoTrks:nIsoTrksForVeto")])
+process.prodIsoTrks.varsIntNamesInTree.extend(["prodIsoTrks:loosenIsoTrks|loose_nIsoTrks", "prodIsoTrks:nIsoTrksForVeto|nIsoTrks_CUT"]) 
+
+#==============================================================================================================================#
 # Get puppi corrected ak8 jets using jettoolbox
 # from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 # 
@@ -481,8 +503,10 @@ process.seq = cms.Sequence(process.met131TeVFilter *
                            process.egmGsfElectronIDSequence *
                            process.egmPhotonIDSequence *
                            process.BadChargedCandidateFilter *
-                           process.BadPFMuonFilter)
+                           process.BadPFMuonFilter *
+			   process.prodIsoTrks)
 
+#process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.p = cms.Path(process.seq * process.TestAnalyzer)
 
