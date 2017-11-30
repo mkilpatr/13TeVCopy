@@ -218,7 +218,6 @@ nominal_configuration = cms.PSet(
                                       printTauIDs               = cms.untracked.bool(False),
                                       fillCandInfo              = cms.untracked.bool(False),
                                       fillRawTauDiscriminators  = cms.untracked.bool(False),
-                                      fillProdIsoTrks           = cms.untracked.bool(True),
                                   ),
                                  
                                   Photons = cms.untracked.PSet(
@@ -320,10 +319,14 @@ nominal_configuration = cms.PSet(
                                       badpfmuonfilter = cms.InputTag('BadPFMuonFilter'),
                                       ),
 
-				  prodIsoTrksFilters = cms.untracked.PSet(
+				  prodIsoTrks = cms.untracked.PSet(
 				      isFilled = cms.untracked.bool(True),
-                                      bits     = cms.InputTag('TriggerResults','','PAT'),
-                                      patTriggerBits  = cms.InputTag('TriggerResults','','PAT'),
+                                      pfcands                   = cms.InputTag('packedPFCandidates'),
+                                      taus                      = cms.InputTag('slimmedTaus'),
+                                      minCandPt                 = cms.untracked.double(9.0),
+                                      maxCandEta                = cms.untracked.double(2.6),
+                                      saveAllCandidates         = cms.untracked.bool(False),
+                                      fillProdIsoTrks           = cms.untracked.bool(True),
 				      ),
 
                                   SecondaryVertices = cms.untracked.PSet(

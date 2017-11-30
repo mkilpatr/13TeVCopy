@@ -41,7 +41,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
-, prodisotrksfilters  (0)
+, prodisotrks  (0)
 , sv                  (0)
 {
 
@@ -295,7 +295,6 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
       int defaultOptions = TauFiller::defaultOptions;
       if(cfg.getUntrackedParameter<bool>("fillCandInfo"))             defaultOptions |= TauFiller::FILLCANDINFO;
       if(cfg.getUntrackedParameter<bool>("fillRawTauDiscriminators")) defaultOptions |= TauFiller::FILLRAWDISCS;
-      if(cfg.getUntrackedParameter<bool>("fillProdIsoTrks"))          defaultOptions |= TauFiller::FILLPRODISOTRKS;
       if(cfg.getUntrackedParameter<bool>("printTauIDs"))              defaultOptions |= TauFiller::PRINTIDS;
 
       taus = new TauFiller(cfg, consumesCollector(),
@@ -304,18 +303,6 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                            eventInfo
                            );
       initializedFillers.push_back(taus);
-      
-      if(cfg.getUntrackedParameter<bool>("fillProdIsoTrks")){
-        int defaultOptions = prodIsoTrksFiller::defaultOptions;
-        prodisotrksfilters = new prodIsoTrksFiller(cfg, consumesCollector(),
-          				  options < 0 ? defaultOptions : options,
-          				  branchName == "" ? defaults::BRANCH_PRODISOTRKSFILTERS : branchName,
-          				  eventInfo
-          				  );
-
-        initializedFillers.push_back(prodisotrksfilters);
-      }
-
       break;
     }
 
@@ -329,6 +316,20 @@ void PhysicsAnalyzer::initialize(const edm::ParameterSet& cfg, const VarType typ
                                       eventInfo
                                       );
       initializedFillers.push_back(pfcands);
+      break;
+    }
+
+    case PRODISOTRKS : {
+      int defaultOptions = prodIsoTrksFiller::defaultOptions;
+      if(cfg.getUntrackedParameter<bool>("fillProdIsoTrks"))          defaultOptions |= prodIsoTrksFiller::FILLPRODISOTRKS;
+      
+      prodisotrks = new prodIsoTrksFiller(cfg, consumesCollector(),
+        				  options < 0 ? defaultOptions : options,
+        				  branchName == "" ? defaults::BRANCH_PRODISOTRKS : branchName,
+        				  eventInfo
+        				  );
+
+      initializedFillers.push_back(prodisotrks);
       break;
     }
 

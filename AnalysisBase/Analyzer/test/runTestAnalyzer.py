@@ -76,9 +76,6 @@ process.TestAnalyzer = cms.EDFilter('TestAnalyzer',
   nominal_configuration
 )
 
-from AnalysisBase.Analyzer.prodIsoTrks_cfi import prodIsoTrks
-process.prodIsoTrks = prodIsoTrks
-
 # dataset name
 runCRAB = True if options.inputDataset else False
 DatasetName = options.inputDataset if options.inputDataset else options.inputFiles[0]
@@ -144,7 +141,6 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.METFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
-    process.TestAnalyzer.prodIsoTrksFilters.bits = cms.InputTag('TriggerResults', '', 'RECO')
 
 # Import of standard configurations
 process.load("Configuration.EventContent.EventContent_cff")
@@ -373,8 +369,8 @@ process.met131TeVFilter.EventInfo.metsNoHF = cms.InputTag('slimmedMETsNoHF', pro
 
 #==============================================================================================================================#
 # Tau prodIsoTrks Inclusion
-#from AnalysisBase.Analyzer.prodIsoTrks_cfi import prodIsoTrks
-#process.prodIsoTrks = prodIsoTrks
+from AnalysisBase.Analyzer.prodIsoTrks_cfi import prodIsoTrks
+process.prodIsoTrks = prodIsoTrks
 process.load("AnalysisBase.Analyzer.prodIsoTrks_cfi")
 process.prodIsoTrks.globalTag = process.TestAnalyzer.globalTag
 process.prodIsoTrks.isData = process.TestAnalyzer.isData

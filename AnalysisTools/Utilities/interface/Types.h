@@ -270,14 +270,6 @@ namespace ucsbsusy {
 
   };
 
-  enum prodIsoTrksFilterBits {
-     
-  };
-
-  enum prodIsoTrksFilterBits_VectorVersion {
-
-  };
-
 }
 
 #endif

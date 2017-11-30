@@ -72,7 +72,6 @@ namespace ucsbsusy {
 
       std::vector<bool>          * metfilterbitpass_old;
       size                         metfilterbitpass;
-      size                         prodIsoTrksbitpass;
       std::vector<size16>        * massparams;
 
       bool HBHENoiseFilter;

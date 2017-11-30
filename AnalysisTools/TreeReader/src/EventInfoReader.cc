@@ -61,7 +61,6 @@ EventInfoReader::EventInfoReader()
   isfastsim = false;
   metfilterbitpass_old = new vector<bool>;
   metfilterbitpass = 0;
-  prodIsoTrksbitpass = 0;
   massparams = new vector<size16>;
   HBHENoiseFilter                      = false;
   HBHENoiseIsoFilter                   = false;
@@ -126,7 +125,6 @@ void EventInfoReader::load(TreeReader *treeReader, int options, string branchNam
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"int_bit_pass", &metfilterbitpass);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badchcand", &badChCand);
   treeReader->setBranchAddress(defaults::BRANCH_METFILTERS,"badpfmuon", &badPFMuon);
-  treeReader->setBranchAddress(defaults::BRANCH_PRODISOTRKSFILTERS,"int_bit_pass", &prodIsoTrksbitpass);
 
   clog << endl;
 }

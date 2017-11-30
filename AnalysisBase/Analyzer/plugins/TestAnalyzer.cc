@@ -36,7 +36,7 @@ class TestAnalyzer : public PhysicsAnalyzer {
       initialize(cfg, "AK8PuppiFatJets", AK8PUPPIFATJETS);
       initialize(cfg, "Triggers", TRIGGERS);
       initialize(cfg, "METFilters", METFILTERS);
-      initialize(cfg, "prodIsoTrksFilters", PRODISOTRKSFILTERS);
+      initialize(cfg, "prodIsoTrks", PRODISOTRKS);
       initialize(cfg, "SecondaryVertices", SV);
       initialize(cfg, "CA15HTT",HTTJETS);
       book();
