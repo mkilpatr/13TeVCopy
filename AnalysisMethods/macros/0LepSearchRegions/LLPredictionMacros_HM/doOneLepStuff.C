@@ -172,6 +172,85 @@ cout << tauSelHadr   << endl;
   }
 }
 
+void MakeLumiShapePlots(QCDSupport::SRegInfo& srinfo, vector<TString>& names, vector<TTree*>& trees, vector<int>& colors) {
+  cout << "MakeLumiShapePlots..." << endl;
+  const TString outputDir = "MakeLumiShapePlots";
+  gSystem->mkdir(outputDir, true);
+
+  HistogramGetter* lumi_HG = new HistogramGetter("lumi", "lumi", "lumi [nb^{-1}]", 20, 0., 1000.);
+  for(unsigned int iSR = 0; iSR < 1/*srinfo.nSR*/; ++iSR){
+    TString title = TString::Format("%s", srinfo.srSelNames[iSR].Data());
+    TString intTitle = TString::Format("%s_integral", srinfo.srSelNames[iSR].Data());
+    TString name  = TString::Format("lumi_shape");
+    //TString name  = TString::Format("met_%s", srinfo.srRegBinNames[iSR].Data());
+    TString intName = TString::Format("lumi_shape_integral");
+    TString sel          = "";//TString::Format("%s && %s",       	       QCDSupport::METPresel.Data(), QCDSupport::BaselineExtraCuts.Data());
+//cout << title << endl;
+cout << name  << endl;
+cout << sel   << endl;
+    Plot* plot_allLumi = new Plot(name, title, lumi_HG->plotInfo->xTitle, "Events");
+    Plot* plot_int = new Plot(intName, intTitle, lumi_HG->plotInfo->xTitle, "Events");
+    float yMin = 99999., yMax = 0., yMinInt = 99999., yMaxInt = 0., yMaxTotal = 0.;
+    float totMCYield = 0;
+    TH1F* hist_nonQCD_bkg = 0;
+    TH1F* hist = 0;
+    TH1F* intHist_nonQCD = 0;
+    for(unsigned int iT = 0; iT < trees.size(); ++iT){
+      if(names[iT] == "Data"){
+        TH1F* hist = lumi_HG->getHistogram(trees[iT], sel, "1.0", TString::Format("data_%s", name.Data()));
+        //for(int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) if(hist->GetBinLowEdge(iBin) + hist->GetBinWidth(iBin) > CR_cutoff) hist->SetBinContent(iBin, -999);
+        plot_allLumi->addHist(hist, names[iT], "E0", colors[iT], 0, colors[iT]);
+        TH1F* intHist = (TH1F*) hist->Clone();
+        if(yMin > hist->GetMinimum()) yMin = hist->GetMinimum();
+        if(yMax < hist->GetMaximum()) yMax = hist->GetMaximum();
+        for(unsigned int iBin = 1; iBin <= hist->GetNbinsX(); ++iBin) intHist->SetBinContent(iBin, hist->Integral(0, iBin));
+        plot_int->addHist(intHist, names[iT], "E0", colors[iT], 0, colors[iT]);
+        if(yMinInt > intHist->GetMinimum()) yMinInt = intHist->GetMinimum();
+        if(yMaxInt < intHist->GetMaximum()) yMaxInt = intHist->GetMaximum();
+      }
+    }
+
+    //Double_t ks = hist_elec->KolmogorovTest(hist_muon, "D");
+    //cout << "Kolmogorov Test Muon/Electron: " << std::dec << ks << endl;
+	
+    TCanvas* c = new TCanvas;
+    plot_allLumi->setLogy();
+    plot_allLumi->setDrawCMSLumi();
+    //plot_allLumi->setUsePoisson();
+    if(yMin <= 0) yMin = 0.1;
+    plot_allLumi->setYRange(0.1 * yMin, 10 * yMax);
+    plot_allLumi->setLogy();
+    //plot_allLumi->setYRange(0, 1.4 * yMax);
+    plot_allLumi->setTitle(" ");
+    //plot_allLumi->setLegend(.6,.58,.90,.88);
+    c->cd();
+    plot_allLumi->drawRatios(c);
+    plot_allLumi->draw(c,false,QCDSupport::format);
+    c->cd();
+    c->Modified();
+    TLatex *tl = new TLatex();
+    tl->SetTextSize(0.03);
+    //tl->DrawLatexNDC(0.2, 0.7, srinfo.srSelLabels[iSR]);
+    QCDSupport::setTitleOffset(c);
+    c->Update();
+    c->SaveAs(outputDir + "/" + plot_allLumi->getName() + TString(".") + QCDSupport::format);
+    plot_int->setDrawCMSLumi();
+    plot_int->setYRange(0.1*yMinInt, 10*yMaxInt);
+    plot_int->setLogy();
+    plot_int->setTitle(" ");
+    //plot_int->setLegend(.6,.58,.90,.88);
+    c->cd();
+    plot_int->draw(c,false,QCDSupport::format);
+    c->cd();
+    c->Modified();
+    tl->SetTextSize(0.03);
+    //tl->DrawLatexNDC(0.2, 0.7, srinfo.srSelLabels[iSR]);
+    QCDSupport::setTitleOffset(c);
+    c->Update();
+    c->SaveAs(outputDir + "/" + plot_int->getName() + TString(".") + QCDSupport::format);
+  }
+}
+
 #endif
 
 void doOneLepStuff(){
@@ -202,13 +281,13 @@ void doOneLepStuff(){
   vector<TString> names;
   vector<TTree*> trees;
   vector<int> colors;
-  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/met_tree.root"));                                     names.push_back("Data");              colors.push_back(1);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Total");              colors.push_back(kAzure + 10);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Elec");       colors.push_back(color_qcd);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Muon");       colors.push_back(color_tW);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Hadr");       colors.push_back(kBlue);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Electron");       colors.push_back(kMagenta);
-  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Muon");           colors.push_back(kRed);
+  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/met_tree.root"));                                     names.push_back("Data");              colors.push_back(1);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Total");              colors.push_back(kAzure + 10);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Elec");       colors.push_back(color_qcd);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Muon");       colors.push_back(color_tW);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Tau Hadr");       colors.push_back(kBlue);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Electron");       colors.push_back(kMagenta);
+  //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/ttbarplusw_tree.root"));                             names.push_back("Lep Muon");           colors.push_back(kRed);
   //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/qcd_tree.root"));                names.push_back("Smeared QCD MC");    colors.push_back(color_qcd);
 //  trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/qcd_smeared_CHEF_tree_skimmed_baseline.root"));  names.push_back("Smeared QCD MC");    colors.push_back(color_qcd);
   //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/../plots_16_11_15_NoSmear/qcd_orig_tree.root")); names.push_back("With orig. QCD MC"); colors.push_back(color_tW);
@@ -217,5 +296,6 @@ void doOneLepStuff(){
   //trees.emplace_back(QCDSupport::getTree(QCDSupport::inputDir + "/T2tt_800_100_tree.root"));                       names.push_back("T2tt(800, 100)");    colors.push_back(kBlue);
 
   //GetQCDTable(crinfo, srinfo);
-  MakeLepShapePlots(    srinfo, names, trees, colors);
+//  MakeLepShapePlots(    srinfo, names, trees, colors);
+  MakeLumiShapePlots(    srinfo, names, trees, colors);
 }

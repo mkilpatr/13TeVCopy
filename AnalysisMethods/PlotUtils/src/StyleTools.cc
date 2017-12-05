@@ -373,6 +373,7 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText, 
   float extraOverCmsTextSize  = 0.76;
 
   TString lumi_13TeV   = "2.3 fb^{-1}";
+  TString lumi_13TeV_Run2   = "29.02 fb^{-1}";
   TString lumi_13TeV_2 = "12.9 fb^{-1}";
   TString lumi_8TeV    = "19.7 fb^{-1}";
   TString lumi_7TeV    = "5.1 fb^{-1}";
@@ -451,6 +452,10 @@ void StyleTools::CMS_lumi(TPad* pad, int iPeriod, int iPosX, TString extraText, 
   }
   else if ( iPeriod==0 ) {
     lumiText += lumi_sqrtS;
+  }
+  else if ( iPeriod==8 ) {
+    lumiText += lumi_13TeV_Run2;
+    lumiText += " (13 TeV)";
   }
    
   std::cout << lumiText << std::endl;

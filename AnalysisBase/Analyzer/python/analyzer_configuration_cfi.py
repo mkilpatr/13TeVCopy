@@ -320,13 +320,14 @@ nominal_configuration = cms.PSet(
                                       ),
 
 				  prodIsoTrks = cms.untracked.PSet(
-				      isFilled = cms.untracked.bool(True),
-                                      pfcands                   = cms.InputTag('packedPFCandidates'),
-                                      taus                      = cms.InputTag('slimmedTaus'),
-                                      minCandPt                 = cms.untracked.double(9.0),
-                                      maxCandEta                = cms.untracked.double(2.6),
-                                      saveAllCandidates         = cms.untracked.bool(False),
-                                      fillProdIsoTrks           = cms.untracked.bool(True),
+				      isFilled 		= cms.untracked.bool(True),
+				      metSrc 		= cms.InputTag('slimmedMETs'),
+				      forVetoIsoTrkSrc 	= cms.InputTag("trackIsolation"),
+				      loose_isoTrkSrc 	= cms.InputTag("loosetrackIsolation"),
+				      loose_isotrk_isoVecSrc = cms.InputTag("loosetrackIsolation:pfcandstrkiso"),
+				      loose_isotrk_dzpvVecSrc = cms.InputTag("loosetrackIsolation:pfcandsdzpv"),
+                                      saveAllCandidates = cms.untracked.bool(False),
+                                      fillProdIsoTrks   = cms.untracked.bool(True),
 				      ),
 
                                   SecondaryVertices = cms.untracked.PSet(

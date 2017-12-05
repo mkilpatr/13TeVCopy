@@ -10,7 +10,6 @@
 #include <stdexcept>
 
 #include "AnalysisTools/Utilities/interface/TreeWriter.h"
-#include "AnalysisBase/Analyzer/interface/prodIsoTrksTest.h"
 
 namespace ucsbsusy {
 class TreeWriter;

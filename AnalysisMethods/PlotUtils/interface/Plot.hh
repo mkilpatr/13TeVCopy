@@ -174,7 +174,7 @@ class Plot {
     void setUsePoisson()                     { fUsePoisson = true; }         // Poisson statistics for data points
     void setPlotRatioUncertaintyBand()       { fPlotRatioUncertaintyBand = true; } // Add uncertainty band to ratio plot
     void setPlotStackUncertainty()           { fPlotStackUncertainty = true; }
-    void setDrawCMSLumi(int iPosX=10, TString extraText = "Preliminary", int iPer=4)   { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; fCMSLumiPeriod=iPer; } // Draw CMS lumi header (and change its position)
+    void setDrawCMSLumi(int iPosX=10, TString extraText = "Preliminary", int iPer=8)   { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; fCMSLumiPeriod=iPer; } // Draw CMS lumi header (and change its position)
     void setDrawCMSLumi(TString lumi, int iPosX=10, TString extraText = "Preliminary") { fDrawCMSLumi = true; fCMSLumiPosX=iPosX; fCMSLumiExtraText = extraText; fCMSLumiPeriod=-1; fCMSLumiText = lumi; } // Draw CMS lumi header (and change its position)
 
     TGraphAsymmErrors* getAsymmErrors(TH1F* hist);

@@ -40,6 +40,7 @@
 
 namespace ucsbsusy {
 
+  class prodIsoTrksFiller;
   class PhysicsAnalyzer : public BaseAnalyzer {
   public:
 
