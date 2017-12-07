@@ -497,6 +497,17 @@ struct ExtraVarsFiller {
   size i_mtnl0_res_away2lep;
   size i_mtnl0_res_dphimet;
 
+  size i_looseIsoTrks_pt;
+  size i_looseIsoTrks_eta;
+  size i_looseIsoTrks_phi;
+  size i_looseIsoTrks_mass;
+  size i_looseIsoTrks_charge;
+  size i_looseIsoTrks_dz;
+  size i_looseIsoTrks_pdgId;
+  size i_looseIsoTrks_iso;
+  size i_looseIsoTrks_mtw;
+  size i_loosenIsoTrks;
+  size i_nIsoTrksForVeto;
 
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -877,6 +888,20 @@ struct ExtraVarsFiller {
     i_subjettopframebpl     = data->add<float>("","subjettopframebpl","F",0);
     i_subjettopframebeta    = data->add<float>("","subjettopframebeta","F",0);
     i_subjettopframebphi    = data->add<float>("","subjettopframebphi","F",0);
+  }
+
+  void bookProdIsoTrks(TreeWriterData* data) {
+    i_looseIsoTrks_pt		= data->add<float>("","looseIsoTrks_pt","F",0);
+    i_looseIsoTrks_eta		= data->add<float>("","looseIsoTrks_eta","F",0);
+    i_looseIsoTrks_phi		= data->add<float>("","looseIsoTrks_phi","F",0);
+    i_looseIsoTrks_mass		= data->add<float>("","looseIsoTrks_mass","F",0);
+    i_looseIsoTrks_charge	= data->add<double>("","looseIsoTrks_charge","D",99);
+    i_looseIsoTrks_dz		= data->add<double>("","looseIsoTrks_dz","D",0);
+    i_looseIsoTrks_pdgId	= data->add<int>("","looseIsoTrks_pdgId","I",0);
+    i_looseIsoTrks_iso		= data->add<double>("","looseIsoTrks_iso","D",0);
+    i_looseIsoTrks_mtw		= data->add<double>("","looseIsoTrks_mtw","D",0);
+    i_loosenIsoTrks		= data->add<unsigned int>("","loosenIsoTrks","i",0);
+    i_nIsoTrksForVeto		= data->add<unsigned int>("","nIsoTrksForVeto","i",0);
   }
 
 

@@ -12,7 +12,8 @@
 using namespace std;
 using namespace EstTools;
 
-const TString originalTreeDir = "../../run/plots_17_10_18_MC";
+//const TString originalTreeDir = "../../run/plots_17_10_18_MC";
+const TString originalTreeDir = "../../run/plots_17_12_07_MC_test";
 TString outputDir = "";
 vector<int> colors;
 
@@ -29,7 +30,7 @@ void printComparison(vector <pair <TTree*, TString> >& p_SampleTrees, HistogramG
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, TString p_Sel, TString p_Desc, TString p_yTitle, bool p_drawRatio, bool p_logY);
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, TString p_Desc, TString p_yTitle, bool p_drawRatio, bool p_logY, bool findPUEnable = false);
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, TString p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false);
-void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false);
+void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false, bool findPUEnable = false);
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, TString p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_1, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_2, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false);
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_1, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_2, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false);
 void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, TString p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_1, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_2, vector <pair <TString, pair <TString, TString> > >& p_BinInfo_3, TString p_yTitle, bool p_drawRatio = false, bool p_logY = false);
@@ -58,7 +59,7 @@ void OneLepDistributions(){
 }
 
 void ValidateLepton(){
-  outputDir = "validate_CR_test3";
+  outputDir = "validate_CR_test4";
   gSystem->mkdir(outputDir, true);
 //  TString local_baseline     = "met>250 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && ak8isrpt>300 && dphiisrmet>2 && nsdtop==0 && nsdw==0 && nrestop==0 && metovsqrtht>10";
 //  TString local_baseline_200 = "met>200 && njets>=2 && (passmetfilters || process==10) && j1chEnFrac>0.1 && j1chEnFrac<0.99 && ak8isrpt>300 && dphiisrmet>2 && nsdtop==0 && nsdw==0 && nrestop==0 && metovsqrtht>10";
@@ -135,7 +136,7 @@ void ValidateLepton(){
                                                                            make_pair("DR4_",             make_pair(ivfDeltaR,                   "DR4_"))
 									 };
   vector <pair <TString, pair <TString, TString> > >       lepCR_bins = {  make_pair("1Lep_CR",    make_pair(oneLepData, "m_{T}(l, #slash{#it{E}}) < 100 GeV, n_{l} = 1")),
-									   make_pair("zeroLep_SR", make_pair(zeroLepData, "n_{l} = 0")),
+									   //make_pair("zeroLep_SR", make_pair(zeroLepData, "n_{l} = 0")),
 									};
 
  
@@ -258,53 +259,53 @@ void ValidateLepton(){
 //  HistogramGetter* drleptop_shape= new HistogramGetter("drleptop",        "drleptop",				       "#DeltaR(l, t)",					 16,     0., 1.6);
   //HistogramGetter* metht_shape   = new HistogramGetter("met_ht",          "(met + ht)",                                "#slash{#it{E}}_{T} + h_{T} [GeV]",               nHT_bins - 1, ht_bins);
   
-////  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, "baseline_CR", "Events", true, true);
-//  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, lepCR_bins, "Events", true, true);
-////  printStack(stackTrees, met_shape    , "new_baseline_CR_nofilter",   dataMC_selsAndNames_nofilter, lepCR_bins, "Events", true, true);
-////  printStack(stackTrees, met_shape    , "new_baseline_CR_passmet_passmht",   dataMC_selsAndNames, lepCR_bins, passmetmht_bins, "Events", true, true);
-////  printStack(stackTrees, met_shape    , "new_baseline_CR_passmht",   dataMC_selsAndNames_nofilter, lepCR_bins, passmetmht_bins, "Events", true, true);
-////  printComparison(sampleTrees, met_shape    , "_baseline",   local_baseline_CR,    "LepShape", "Events", true, true);
-////  printComparison(sampleTrees, dphi12_shape , "_baseline",   local_baseline,    met_bins,          "Events", true, true);
-////  printComparison(sampleTrees, dphi123_shape, "_baseline",   local_baseline,    met_bins,          "Events", true, true);
-////  printComparison(sampleTrees, dphi12_shape,  "_old_sel",    old_sel,           nb_binning,  met_binning, "Events", true, true);
-////  printComparison(sampleTrees, dphi123_shape, "_old_sel",    old_sel,           nb_binning,  met_binning, "Events", true, true);
-////  printComparison(sampleTrees, dphi12_shape , "baseline",    local_baseline,    "baseline",        "Events", true, true);
-////  printComparison(sampleTrees, dphi123_shape, "baseline",    local_baseline,    "baseline",        "Events", true, true);
-//  printStack(stackTrees, njet_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, j1pt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, j2pt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, leppt_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nlbjet_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nb_shape       , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nsdt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nrest_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nsdw_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, nsv_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-  printStack(stackTrees, npv_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true, true);
-////  printStack(stackTrees, drlepw_shape   , "baseline_CR",    local_baseline_CR + " && " + nt1, "baseline_CR",        "Events", true, true);
-////  printStack(stackTrees, drleptop_shape , "baseline_CR",    local_baseline_CR + " && " + nt1, "baseline_CR",        "Events", true, true);
-//  printStack(stackTrees, ptisr_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printComparison(sampleTrees, ptisr_shape  , "baseline_SR", local_baseline_SR, "baseline_SR",     "Events", true, true);
-//  printStack(stackTrees, mtb_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ptb_shape    , "baseline_CR",    local_baseline_CR, 		   "baseline_CR",        "Events", true, true);
-////  printStack(stackTrees, ptb12_shape  , "baseline_CR",    local_baseline_CR, 		   "baseline_CR",        "Events", true, true);
-////  printStack(stackTrees, ht_shape       , "baseline_CR",    dataMC_selsAndNames, 		   "baseline_CR",        "Events", true, true);
-////  printStack(stackTrees, mht_shape      , "baseline_CR",    dataMC_selsAndNames, 		   "baseline_CR",        "Events", true, true);
-//  printStack(stackTrees, ht_shape            , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-//  printStack(stackTrees, mht_shape           , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_IP2D_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_svCosSVPV_shape , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_pt_shape        , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_svNtrack_shape  , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_SIP3D_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_DRak4j1_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_DRak4j2_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_DRak4j3_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, ivf_DRak4j4_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, fj_mass_shape       , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, fj_pt_shape         , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, fj_tau12_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
-////  printStack(stackTrees, fj_tau23_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, "baseline_CR", "Events", true, true);
+  printStack(stackTrees, met_shape    , "baseline_CR",   dataMC_selsAndNames, lepCR_bins, "Events", true, true);
+//  printStack(stackTrees, met_shape    , "new_baseline_CR_nofilter",   dataMC_selsAndNames_nofilter, lepCR_bins, "Events", true, true);
+//  printStack(stackTrees, met_shape    , "new_baseline_CR_passmet_passmht",   dataMC_selsAndNames, lepCR_bins, passmetmht_bins, "Events", true, true);
+//  printStack(stackTrees, met_shape    , "new_baseline_CR_passmht",   dataMC_selsAndNames_nofilter, lepCR_bins, passmetmht_bins, "Events", true, true);
+//  printComparison(sampleTrees, met_shape    , "_baseline",   local_baseline_CR,    "LepShape", "Events", true, true);
+//  printComparison(sampleTrees, dphi12_shape , "_baseline",   local_baseline,    met_bins,          "Events", true, true);
+//  printComparison(sampleTrees, dphi123_shape, "_baseline",   local_baseline,    met_bins,          "Events", true, true);
+//  printComparison(sampleTrees, dphi12_shape,  "_old_sel",    old_sel,           nb_binning,  met_binning, "Events", true, true);
+//  printComparison(sampleTrees, dphi123_shape, "_old_sel",    old_sel,           nb_binning,  met_binning, "Events", true, true);
+//  printComparison(sampleTrees, dphi12_shape , "baseline",    local_baseline,    "baseline",        "Events", true, true);
+//  printComparison(sampleTrees, dphi123_shape, "baseline",    local_baseline,    "baseline",        "Events", true, true);
+  printStack(stackTrees, njet_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, j1pt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, j2pt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, leppt_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nlbjet_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nb_shape       , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nsdt_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nrest_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nsdw_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, nsv_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, npv_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, drlepw_shape   , "baseline_CR",    local_baseline_CR + " && " + nt1, "baseline_CR",        "Events", true, true);
+//  printStack(stackTrees, drleptop_shape , "baseline_CR",    local_baseline_CR + " && " + nt1, "baseline_CR",        "Events", true, true);
+  printStack(stackTrees, ptisr_shape    , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printComparison(sampleTrees, ptisr_shape  , "baseline_SR", local_baseline_SR, "baseline_SR",     "Events", true, true);
+  printStack(stackTrees, mtb_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ptb_shape    , "baseline_CR",    local_baseline_CR, 		   "baseline_CR",        "Events", true, true);
+//  printStack(stackTrees, ptb12_shape  , "baseline_CR",    local_baseline_CR, 		   "baseline_CR",        "Events", true, true);
+//  printStack(stackTrees, ht_shape       , "baseline_CR",    dataMC_selsAndNames, 		   "baseline_CR",        "Events", true, true);
+//  printStack(stackTrees, mht_shape      , "baseline_CR",    dataMC_selsAndNames, 		   "baseline_CR",        "Events", true, true);
+  printStack(stackTrees, ht_shape            , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+  printStack(stackTrees, mht_shape           , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_IP2D_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_svCosSVPV_shape , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_pt_shape        , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_svNtrack_shape  , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_SIP3D_shape     , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j1_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j2_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j3_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, ivf_DRak4j4_shape   , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, fj_mass_shape       , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, fj_pt_shape         , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, fj_tau12_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
+//  printStack(stackTrees, fj_tau23_shape      , "baseline_CR",    dataMC_selsAndNames, lepCR_bins,        "Events", true, true);
 
   colors.clear();
   colors.push_back(1);
@@ -898,6 +899,7 @@ cout << local_wgtvar << "*(" << p_Sel[iS].first << ")" << endl;
  
   if(findPUEnable){ 
     std::vector<float> PUscaleVec;
+    MC_pu_hist->Scale(dataInt / MC_pu_hist->Integral(0, MC_pu_hist->GetNbinsX() + 1));
     data_pu_hist->Divide(MC_pu_hist);
     for(int i = 0; i != data_pu_hist->GetNbinsX() + 1; i++){
       float PUscale = data_pu_hist->GetBinContent(i);
@@ -906,10 +908,10 @@ cout << local_wgtvar << "*(" << p_Sel[iS].first << ")" << endl;
     }
     float PUavg = 0;
     float numAvg = 0;
-    for(int i = 40; i != PUscaleVec.size(); i++){
+    for(int i = 50; i != PUscaleVec.size(); i++){
       if(PUscaleVec.at(i) != 0){
         PUavg += PUscaleVec.at(i);
-        numAvg++;
+        numAvg = i - 50;
       }
       else continue;
     }
@@ -936,7 +938,7 @@ void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter*
   }
 }
 
-void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo, TString p_yTitle, bool p_drawRatio, bool p_logY){
+void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter* p_HistG, TString p_Suffix, vector <pair <TString, TString> >& p_Sel, vector <pair <TString, pair <TString, TString> > >& p_BinInfo, TString p_yTitle, bool p_drawRatio, bool p_logY, bool findPUEnable){
   for(int iB = 0; iB < p_BinInfo.size(); iB++){
     vector <pair <TString, TString> > sel;
     TString sel_ = "";
@@ -944,7 +946,7 @@ void printStack(vector <pair <TTree*, TString> >& p_StackTrees, HistogramGetter*
       	sel_ = TString::Format("%s && %s", p_Sel[iS].first.Data(), p_BinInfo[iB].second.first.Data());
     	sel.push_back(make_pair(sel_, p_Sel[iS].second.Data()));
     }
-    printStack(p_StackTrees, p_HistG, p_BinInfo[iB].first + p_Suffix, sel, p_BinInfo[iB].second.second, p_yTitle, p_drawRatio, p_logY);
+    printStack(p_StackTrees, p_HistG, p_BinInfo[iB].first + p_Suffix, sel, p_BinInfo[iB].second.second, p_yTitle, p_drawRatio, p_logY, findPUEnable);
   }
 }
 
