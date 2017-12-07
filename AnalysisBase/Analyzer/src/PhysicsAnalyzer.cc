@@ -41,7 +41,7 @@ PhysicsAnalyzer::PhysicsAnalyzer(const edm::ParameterSet& iConfig)
 , ak8puppifatjets     (0)
 , triggers            (0)
 , metfilters          (0)
-, prodisotrks  (0)
+, prodisotrks         (0)
 , sv                  (0)
 {
 

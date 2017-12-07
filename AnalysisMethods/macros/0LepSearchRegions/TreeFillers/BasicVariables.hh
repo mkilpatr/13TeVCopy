@@ -21,6 +21,7 @@ struct BasicVarsFiller {
   size i_ismc      ;
   size i_weight    ;
   size i_truePUWeight;
+  size i_PUScale2017;
   size i_btagWeight;
   size i_btagFastSimWeight;
   size i_qcdRespTailWeight;
@@ -131,6 +132,7 @@ struct BasicVarsFiller {
     i_ismc           = data->add<bool >("","ismc","O",0);
     i_weight         = data->add<float>("","weight","F",0);
     i_truePUWeight   = data->add<float>("","truePUWeight","F",0);
+    i_PUScale2017    = data->add<float>("","PUScale2017","F",0);
     i_btagWeight     = data->add<float>("","btagWeight","F",0);
     i_btagFastSimWeight = data->add<float>("","btagFastSimWeight","F",0);
     i_qcdRespTailWeight = data->add<float>("","qcdRespTailWeight","F",0);
@@ -281,6 +283,56 @@ struct BasicVarsFiller {
     data->fill<float>(i_sdwFastSimWeight,   ana->topWCorrections.getSdWWeight());
     data->fill<float>("sdMVAWeight",        ana->topWCorrections.getSdMVAWeight());
     data->fill<float>("resTopWeight",       ana->topWCorrections.getResMVATopWeight());
+
+    //create PU scaling for MC
+    std::vector<float> PUScale;
+    PUScale.push_back(0.0000000);
+    PUScale.push_back(0.0000000);
+    PUScale.push_back(0.215802);
+    PUScale.push_back(0.283812);
+    PUScale.push_back(0.273299);
+    PUScale.push_back(0.0369549);
+    PUScale.push_back(0.0751169);
+    PUScale.push_back(0.0730688);
+    PUScale.push_back(0.104427);
+    PUScale.push_back(0.107377);
+    PUScale.push_back(0.123755);
+    PUScale.push_back(0.143837);
+    PUScale.push_back(0.14943);
+    PUScale.push_back(0.180725);
+    PUScale.push_back(0.194563);
+    PUScale.push_back(0.234142);
+    PUScale.push_back(0.260569);
+    PUScale.push_back(0.292001);
+    PUScale.push_back(0.328468);
+    PUScale.push_back(0.403308);
+    PUScale.push_back(0.44134);
+    PUScale.push_back(0.517259);
+    PUScale.push_back(0.573503);
+    PUScale.push_back(0.662195);
+    PUScale.push_back(0.747452);
+    PUScale.push_back(0.840062);
+    PUScale.push_back(0.945127);
+    PUScale.push_back(1.02875);
+    PUScale.push_back(1.18621);
+    PUScale.push_back(1.36098);
+    PUScale.push_back(1.53044);
+    PUScale.push_back(1.75281);
+    PUScale.push_back(1.93775);
+    PUScale.push_back(2.13343);
+    PUScale.push_back(2.37223);
+    PUScale.push_back(2.73779);
+    PUScale.push_back(3.04381);
+    PUScale.push_back(3.51028);
+    PUScale.push_back(4.03012);
+    PUScale.push_back(4.64442);
+    PUScale.push_back(4.58484);
+    PUScale.push_back(22.6556);
+
+    if(ana->isMC()){
+      if((ana->nPV - 1) <= 39) data->fill<float>(i_PUScale2017,        PUScale.at(ana->nPV - 1));
+      else	               data->fill<float>(i_PUScale2017,        PUScale.back());
+    }
 
     // Trigger and filters
     data->fill<bool>(i_passjson,       ana->isMC() || (ana->hasJSONFile() && ana->passesLumiMask()));

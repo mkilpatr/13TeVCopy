@@ -292,7 +292,7 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
       data.fill<int>(i_whichQCD_Sample,    whichQCD_Sample);
 
       filler.fillEventInfo(&data, this);
-      extraFiller.fillQCDAngles(&data, this);
+//      extraFiller.fillQCDAngles(&data, this);
 //      extraFiller.fillWTagInfo(&data, this);
       extraFiller.fillJetMETInfo(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
@@ -352,7 +352,7 @@ void makeZeroLeptonQCDTrees(TString sname = "qcd",
                            const TString fname = "/store/user/lpcstop/noreplica/13TeV/130117/Moriond17/qcd_orig/qcd_ht1000to1500-ext_10_ntuple_postproc.root",
                            const TString outputdir = "trees",
                            const TString fileprefix = "root://cmseos:1094/",
-                           const TString json="Cert_294927-297723_13TeV_PromptReco_Collisions17_JSON.txt")
+                           const TString json="Cert_294927-305185_13TeV_PromptReco_Collisions17_JSON.txt")
 {
   int whichQCD_HT_Sample = 0;
   int whichQCD_Sample    = 0;

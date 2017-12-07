@@ -91,6 +91,7 @@ namespace ucsbsusy {
 
     private :
       const EventInfoFiller * evtInfoFiller_;
+      edm::EDGetTokenT< std::vector<reco::Vertex> >VtxTok_;
       edm::EDGetTokenT<edm::View<reco::MET> >MetTok_;
       edm::EDGetTokenT<pat::PackedCandidateCollection> Loose_IsoTrksHandle_Tok_;
       edm::EDGetTokenT<pat::PackedCandidateCollection> ForVetoIsoTrks_Tok_;
@@ -115,16 +116,14 @@ namespace ucsbsusy {
       size iloosenIsoTrks_;                
       size inIsoTrksForVeto_;              
 
+      std::vector<int> exclPdgIdVec_;
+      double isotrk_dR_, isotrk_dz_;
       unsigned int loose_nIsoTrks, nIsoTrksForVeto;
 
     public :
       // Data members
-
-      //edm::InputTag vtxSrc_, metSrc_;
-
-      //edm::InputTag forVetoIsoTrkSrc_;
-  
       edm::InputTag pfCandSrc_, loose_isoTrkSrc_, loose_isotrk_isoVecSrc_, loose_isotrk_dzpvVecSrc_;
+      edm::Handle< std::vector<reco::Vertex> > vertices;
       edm::Handle<edm::View<reco::MET> > met;
       edm::Handle<std::vector<double> >  loose_isotrk_isoVecHandle, loose_isotrk_dzpvVecHandle; 
  
