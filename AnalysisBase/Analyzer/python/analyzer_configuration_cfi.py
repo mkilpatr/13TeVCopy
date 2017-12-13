@@ -330,8 +330,10 @@ nominal_configuration = cms.PSet(
                                       saveAllCandidates = cms.untracked.bool(False),
                                       fillProdIsoTrks   = cms.untracked.bool(True),
 				      exclPdgIdVec 	= cms.vint32(),
-				      isotrk_dR 	= cms.double(0.5),
-				      isotrk_dz 	= cms.double(0.15),
+				      dR_ConeSize	= cms.double(0.3),
+				      dz_CutValue	= cms.double(0.1),
+				      minPt_PFCandidate = cms.double(5.0),
+				      isoCut            = cms.double(0.5),
 				      debug             = cms.bool(False),
 				      ),
 

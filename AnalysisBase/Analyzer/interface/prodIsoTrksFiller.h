@@ -66,8 +66,10 @@
 #include <DataFormats/Math/interface/deltaR.h>
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
+//#include "DataFormats/PatCandidates/interface/IsolatedTrack.h"
+#include "DataFormats/PatCandidates/interface/PFIsolation.h"
 
-#include "AnalysisBase/Analyzer/interface/prodIsoTrksTest.h"
+//#include "AnalysisBase/Analyzer/interface/prodIsoTrksTest.h"
 #include "AnalysisBase/Analyzer/interface/PhysicsAnalyzer.h"
 
 namespace ucsbsusy {
@@ -117,7 +119,8 @@ namespace ucsbsusy {
       size inIsoTrksForVeto_;              
 
       std::vector<int> exclPdgIdVec_;
-      double isotrk_dR_, isotrk_dz_;
+      double dR_, dzcut_;
+      double minPt_, isoCut_;
       unsigned int loose_nIsoTrks, nIsoTrksForVeto;
 
     public :

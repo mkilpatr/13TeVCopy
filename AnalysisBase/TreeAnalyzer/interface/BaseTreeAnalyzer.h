@@ -31,6 +31,7 @@
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 #include "AnalysisTools/TreeReader/interface/SVReader.h"
 #include "AnalysisTools/TreeReader/interface/HTTReader.h"
+//#include "AnalysisTools/TreeReader/interface/prodIsoTrksReader.h"
 
 #include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 #include "AnalysisTools/ObjectSelection/interface/SoftdropWTopMulticlassMVA.h"
@@ -132,6 +133,7 @@ public:
     TauReader           tauReader           ;
     PhotonReader        photonReader        ;
     PFCandidateReader   pfcandReader        ;
+    //prodIsoTrksReader   prodisotrksReader   ;
     GenParticleReader   genParticleReader   ;
     FatJetReader        fatJetReader        ;
     //FatJetReader        fatJetPuppiReader   ;

@@ -12,11 +12,11 @@ prodIsoTrksFiller::prodIsoTrksFiller(const edm::ParameterSet& cfg, edm::Consumes
   Loose_IsoTrksHandle_Tok_		(cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("loose_isoTrkSrc"))),
   ForVetoIsoTrks_Tok_			(cc.consumes<pat::PackedCandidateCollection>(cfg.getParameter<edm::InputTag>("forVetoIsoTrkSrc"))),
   exclPdgIdVec_				(cfg.getParameter<std::vector<int>>	    ("exclPdgIdVec")),
-  isotrk_dR_				(cfg.getParameter<double>          	    ("isotrk_dR")),
-  isotrk_dz_				(cfg.getParameter<double>          	    ("isotrk_dz")),
+  dR_					(cfg.getParameter<double>          	    ("dR_ConeSize")),
+  dzcut_				(cfg.getParameter<double>          	    ("dz_CutValue")),
+  minPt_				(cfg.getParameter<double>		    ("minPt_PFCandidate")),
+  isoCut_				(cfg.getParameter<double>		    ("isoCut")),	
   debug_				(cfg.getParameter<bool>			    ("debug"))
-//  Loose_Isotrk_IsoVecHandle_Tok_	(cc.consumes<std::vector<double>>(cfg.getParameter<edm::InputTag>("loose_isotrk_isoVecSrc")))
-//  Loose_Isotrk_DzpvVecHandle_Tok_	(cc.consumes<std::vector<double>>(cfg.getParameter<edm::InputTag>("loose_isotrk_dzpvVecSrc")))
 {
 
   ilooseIsoTrks_pt_              = data.addMulti<float>(branchName_,"looseIsoTrks_pt",0);
@@ -38,23 +38,6 @@ prodIsoTrksFiller::prodIsoTrksFiller(const edm::ParameterSet& cfg, edm::Consumes
 
 }
 
-
-//double prodIsoTrksFiller::GetTrackActivity(const edm::Handle<pat::PackedCandidateCollection> & other_pfcands, const pat::PackedCandidate* track) {
-//  if (track->pt()<5.) return -1.0;
-//  double trkiso(0.); 
-//  double r_iso = 0.3;
-//  for (const pat::PackedCandidate &other_pfc : *other_pfcands) {
-//      if (other_pfc.charge()==0) continue;
-//      double dr = deltaR(other_pfc, *track);
-//      if (dr < r_iso || dr > 0.4) continue; // activity annulus
-//      float dz_other = other_pfc.dz();
-//      if( fabs(dz_other) > 0.1 ) continue;
-//      trkiso += other_pfc.pt();
-//    }
-//    double activity = trkiso/track->pt();
-//    return activity;
-//}
-
 //--------------------------------------------------------------------------------------------------
 void prodIsoTrksFiller::load(const edm::Event& iEvent, const edm::EventSetup &iSetup)
 {
@@ -63,8 +46,6 @@ void prodIsoTrksFiller::load(const edm::Event& iEvent, const edm::EventSetup &iS
   iEvent.getByToken(MetTok_, met);
   iEvent.getByToken(Loose_IsoTrksHandle_Tok_, loose_isoTrksHandle_); 
   iEvent.getByToken(ForVetoIsoTrks_Tok_, forVetoIsoTrks_); 
-//  iEvent.getByToken(Loose_Isotrk_IsoVecHandle_Tok_, loose_isotrk_isoVecHandle);
-//  iEvent.getByToken(Loose_Isotrk_DzpvVecHandle_Tok_, loose_isotrk_dzpvVecHandle);
   isLoaded_ = true;
 }
 
@@ -83,103 +64,84 @@ void prodIsoTrksFiller::fill()
   std::vector<double>  loose_isoTrks_iso;
   std::vector<double>  loose_isoTrks_mtw;
   std::vector<double>  loose_isoTrks_pfActivity;
-
   std::vector<int>  forVetoIsoTrks_idx;
 
   if( loose_isoTrksHandle_.isValid() ) loose_nIsoTrks = loose_isoTrksHandle_->size(); else loose_nIsoTrks =0;
   if( forVetoIsoTrks_.isValid() ) nIsoTrksForVeto = forVetoIsoTrks_->size(); else nIsoTrksForVeto =0;
 
-  if( loose_isoTrksHandle_.isValid() ){
-     //if( loose_nIsoTrks != loose_isotrk_isoVecHandle->size() || loose_nIsoTrks != loose_isotrk_dzpvVecHandle->size() ){
-     //   std::cout<<"ERROR ... mis-matching between loose_nIsoTrks : "<<loose_nIsoTrks<<"  loose_isotrk_isoVecHandle->size : "<<loose_isotrk_isoVecHandle->size()<<"  loose_isotrk_dzpvVecHandle->size : "<<loose_isotrk_dzpvVecHandle->size()<<std::endl;
-     //}
+  if( vertices->size() > 0) {
+    if( debug_ ) std::cout<<"\nloose_nIsoTrks : "<<loose_nIsoTrks<<"  nIsoTrksForVeto : "<<nIsoTrksForVeto<<std::endl;
+    
+    for(unsigned int is=0; is<loose_nIsoTrks; is++){
+       const pat::PackedCandidate isoTrk = (*loose_isoTrksHandle_)[is];
+
+       if( isoTrk.charge() == 0 ) continue;
+       if( std::isnan(isoTrk.pt()) || std::isinf(isoTrk.pt()) ) continue;
+       if( isoTrk.pt() < minPt_ ) continue;
+
+       if(isoTrk.charge() != 0){
+         double trkiso = 0.0;
+         for(unsigned int iP=0; iP<loose_nIsoTrks; iP++){
+            const pat::PackedCandidate isoTrk_other = (*loose_isoTrksHandle_)[iP];
+
+            // don't count the PFCandidate in its own isolation sum
+            if( is == iP ) continue;
+            if( isoTrk_other.charge() == 0 ) continue;
+
+            // cut on dR between the PFCandidates
+            double dR = PhysicsUtilities::deltaR(isoTrk.eta(), isoTrk.phi(), isoTrk_other.eta(), isoTrk_other.phi());
+            if( dR > dR_ ) continue;
+
+            // cut on the PFCandidate dz
+            double dz_other = isoTrk_other.dz();
+            if( fabs(dz_other) > dzcut_ ) continue;
+            if( std::find( exclPdgIdVec_.begin(), exclPdgIdVec_.end(), isoTrk_other.pdgId() ) != exclPdgIdVec_.end() ) continue;
+
+            trkiso += isoTrk_other.pt();
+         }
+
+         float pat::PFIsolation isolate = isoTrk.chargedHadronIso();
+	 if(!((isoTrk.pt()>5 && (fabs(isoTrk.pdgId()) == 11 || fabs(isoTrk.pdgId()) == 13)) || isoTrk.pt() > 10)) continue; 
+         if(!(fabs(isoTrk.pdgId()) < 15 || fabs(isoTrk.eta()) < 2.5)) continue;
+         if(!(fabs(isoTrk.dxy() < 0.2))) continue;
+         std::cout << "chargedHadronIso: " << isoTrk.chargedHadronIso() << std::endl;
+	 //if(!((pat::IsolatedTrack::pfIsolationDR03().chargedHadronIso < 5 && isoTrk.pt() < 25) || pat::IsolatedTrack::pfIsolationDR03().chargedHadronIso/isoTrk.pt() < 0.2)) continue;
+	 if( trkiso/isoTrk.pt() > isoCut_ ) continue;
+         if( std::abs(isoTrk.dz()) > dzcut_ ) continue;
+
+         double mtw = sqrt( 2*( (*met)[0].pt()*isoTrk.pt() -( (*met)[0].px()*isoTrk.px() + (*met)[0].py()*isoTrk.py() ) ) );
+
+         loose_isoTrks_pt.push_back(isoTrk.pt());
+         loose_isoTrks_eta.push_back(isoTrk.eta());
+         loose_isoTrks_phi.push_back(isoTrk.phi());
+         loose_isoTrks_mass.push_back(isoTrk.energy());
+         loose_isoTrks_charge.push_back(isoTrk.charge());
+         loose_isoTrks_dz.push_back(isoTrk.dz());
+         loose_isoTrks_pdgId.push_back(isoTrk.pdgId());
+         loose_isoTrks_iso.push_back(trkiso);
+         loose_isoTrks_mtw.push_back(mtw);
+
+         if( debug_ ){
+            std::cout<<"  --> is : "<<is<<"  pt/eta/phi/chg : "<<isoTrk.pt()<<"/"<<isoTrk.eta()<<"/"<<isoTrk.phi()<<"/"<<isoTrk.charge()<<"  mtw : "<<mtw<<"  pdgId : "<<(*loose_isoTrksHandle_)[is].pdgId()<<"  dz : " << isoTrk.dz()<<"  iso/pt : "<<trkiso/isoTrk.pt()<<std::endl;
+         }
+       }else{
+             //neutral particle, set trkiso and dzpv to 9999
+       }
+    }
+    if( debug_ ) std::cout<<std::endl;
+    for (unsigned int i = 0; i != loose_isoTrks_dz.size(); i++){
+      data.fillMulti<float>(ilooseIsoTrks_pt_, loose_isoTrks_pt[i]);
+      data.fillMulti<float>(ilooseIsoTrks_eta_, loose_isoTrks_eta[i]);
+      data.fillMulti<float>(ilooseIsoTrks_phi_, loose_isoTrks_phi[i]);
+      data.fillMulti<float>(ilooseIsoTrks_mass_, loose_isoTrks_mass[i]);
+      data.fillMulti<double>(ilooseIsoTrks_charge_, loose_isoTrks_charge[i]);
+      data.fillMulti<double>(ilooseIsoTrks_dz_, loose_isoTrks_dz[i]);
+      data.fillMulti<int>(ilooseIsoTrks_pdgId_, loose_isoTrks_pdgId[i]);
+      data.fillMulti<double>(ilooseIsoTrks_iso_, loose_isoTrks_iso[i]);
+      data.fillMulti<double>(ilooseIsoTrks_mtw_, loose_isoTrks_mtw[i]);
+      if(i == 0) data.fill<unsigned int>(iloosenIsoTrks_, loose_nIsoTrks);
+      if(i == 0) data.fill<unsigned int>(inIsoTrksForVeto_, nIsoTrksForVeto);
+    }
+    isFilled_ = true;
   }
-
-  if( debug_ ) std::cout<<"\nloose_nIsoTrks : "<<loose_nIsoTrks<<"  nIsoTrksForVeto : "<<nIsoTrksForVeto<<std::endl;
-  for(unsigned int is=0; is<loose_nIsoTrks; is++){
-     const pat::PackedCandidate isoTrk = (*loose_isoTrksHandle_)[is];
-     double isoTrkpt = isoTrk.pt(), isoTrketa = isoTrk.eta(), isoTrkphi = isoTrk.phi(), isoTrkenergy = isoTrk.energy();
-     double isoTrkcharge = isoTrk.charge();
-     double isoTrkdz = isoTrk.dz();
-
-     double trkiso = 0.0;
-     for(unsigned int iP=0; iP<loose_nIsoTrks; iP++){
-     //for( pat::PackedCandidate::const_iterator isoTrk_other = isoTrk.begin(); isoTrk_other != isoTrk.end(); isoTrk_other++ ) {
-        const pat::PackedCandidate isoTrk_other = (*loose_isoTrksHandle_)[iP];
-
-        // don't count the PFCandidate in its own isolation sum
-        if( is == iP ) continue;
-
-        // require the PFCandidate to be charged
-        if( isoTrk_other.charge() == 0 ) continue;
-
-        // cut on dR between the PFCandidates
-        double dR = deltaR(isoTrk.eta(), isoTrk.phi(), isoTrk_other.eta(), isoTrk_other.phi());
-        if( dR > isotrk_dR_ ) continue;
-
-        // cut on the PFCandidate dz
-        double dz_other = isoTrk_other.dz();
-
-        if( fabs(dz_other) > isotrk_dz_ ) continue;
-
-        if( std::find( exclPdgIdVec_.begin(), exclPdgIdVec_.end(), isoTrk_other.pdgId() ) != exclPdgIdVec_.end() ) continue;
-
-        trkiso += isoTrk_other.pt();
-     }
-
-     //TLorentzVector perIsoTrkLVec;
-     //perIsoTrkLVec.SetPtEtaPhiE(isoTrkpt, isoTrketa, isoTrkphi, isoTrkenergy);
-     //loose_isoTrksLVec.push_back(perIsoTrkLVec);
-     loose_isoTrks_pt.push_back(isoTrkpt);
-     loose_isoTrks_eta.push_back(isoTrketa);
-     loose_isoTrks_phi.push_back(isoTrkphi);
-     loose_isoTrks_mass.push_back(isoTrkenergy);
-
-     double mtw = sqrt( 2*( (*met)[0].pt()*isoTrk.pt() -( (*met)[0].px()*isoTrk.px() + (*met)[0].py()*isoTrk.py() ) ) );
-
-     loose_isoTrks_charge.push_back(isoTrkcharge);
-     loose_isoTrks_dz.push_back(isoTrkdz);
-     loose_isoTrks_pdgId.push_back(isoTrk.pdgId());
-     loose_isoTrks_iso.push_back(trkiso);
-     loose_isoTrks_mtw.push_back(mtw);
-
-     if( debug_ ){
-        std::cout<<"  --> is : "<<is<<"  pt/eta/phi/chg : "<<isoTrkpt<<"/"<<isoTrketa<<"/"<<isoTrkphi<<"/"<<isoTrkcharge<<"  mtw : "<<mtw<<"  pdgId : "<<(*loose_isoTrksHandle_)[is].pdgId()<<"  dz : " << isoTrkdz<<"  iso/pt : "<<trkiso/isoTrkpt<<std::endl;
-     }
-  }
-  if( debug_ ) std::cout<<std::endl;
-  // store in the event
-
-  //std::unique_ptr<int>  loose_nIsoTrksPtr(new int);
-  //unsigned int loose_nIsoTrksPtr = loose_nIsoTrks;
-
-  //std::unique_ptr<int> nIsoTrksForVetoPtr(new int);
-  //unsigned int nIsoTrksForVetoPtr = nIsoTrksForVeto;
-  
-  for (unsigned int i = 0; i != loose_nIsoTrks; i++){
-    std::cout << "Fill float" << endl;
-    data.fillMulti<float>(ilooseIsoTrks_pt_, loose_isoTrks_pt[i]);
-    data.fillMulti<float>(ilooseIsoTrks_eta_, loose_isoTrks_eta[i]);
-    data.fillMulti<float>(ilooseIsoTrks_phi_, loose_isoTrks_phi[i]);
-    data.fillMulti<float>(ilooseIsoTrks_mass_, loose_isoTrks_mass[i]);
-    std::cout << "Fill double" << endl;
-    data.fillMulti<double>(ilooseIsoTrks_charge_, loose_isoTrks_charge[i]);
-    data.fillMulti<double>(ilooseIsoTrks_dz_, loose_isoTrks_dz[i]);
-    std::cout << "Fill int" << endl;
-    data.fillMulti<int>(ilooseIsoTrks_pdgId_, loose_isoTrks_pdgId[i]);
-    //data.fillMulti<int>(ilooseIsoTrks_idx_, loose_isoTrks_idx[i]);
-    std::cout << "Fill double" << endl;
-    data.fillMulti<double>(ilooseIsoTrks_iso_, loose_isoTrks_iso[i]);
-    data.fillMulti<double>(ilooseIsoTrks_mtw_, loose_isoTrks_mtw[i]);
-    //data.fillMulti<double>(ilooseIsoTrks_pfActivity_, loose_isoTrks_pfActivity[i]);
-     
-    std::cout << "Fill int" << endl;
-    //data.fillMulti<int>(iforVetoIsoTrks_idx_, forVetoIsoTrks_idx[i]);
-    std::cout << "Fill prodIsoTrks vector" << endl;
-  }
-  data.fill<unsigned int>(iloosenIsoTrks_, loose_nIsoTrks);
-  data.fill<unsigned int>(inIsoTrksForVeto_, nIsoTrksForVeto);
- 
-  std::cout << "end of filling" << endl; 
-  isFilled_ = true;
 }
