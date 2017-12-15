@@ -80,6 +80,7 @@ class ZeroLeptonAnalyzer : public TreeCopierManualBranches {
       extraFiller.bookLepton(&data);
       extraFiller.bookGen(&data);
       extraFiller.bookTopFrameTagger(&data);
+      extraFiller.bookProdIsoTrks(&data);
       extraFiller.bookHist(outFile_);
     }
 

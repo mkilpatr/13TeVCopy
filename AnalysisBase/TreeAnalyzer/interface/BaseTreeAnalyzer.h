@@ -25,13 +25,13 @@
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
 #include "AnalysisTools/TreeReader/interface/PhotonReader.h"
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
+#include "AnalysisTools/TreeReader/interface/prodIsoTrksReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
 #include "AnalysisTools/TreeReader/interface/FatJetReader.h"
 #include "AnalysisTools/TreeReader/interface/SVReader.h"
 #include "AnalysisTools/TreeReader/interface/HTTReader.h"
-//#include "AnalysisTools/TreeReader/interface/prodIsoTrksReader.h"
 
 #include "AnalysisTools/ObjectSelection/interface/ResolvedTopMVA.h"
 #include "AnalysisTools/ObjectSelection/interface/SoftdropWTopMulticlassMVA.h"
@@ -45,6 +45,7 @@ public:
 };
 
 
+//class prodIsoTrksReader;
 
 class BaseTreeAnalyzer {
 public:
@@ -133,7 +134,7 @@ public:
     TauReader           tauReader           ;
     PhotonReader        photonReader        ;
     PFCandidateReader   pfcandReader        ;
-    //prodIsoTrksReader   prodisotrksReader   ;
+    prodIsoTrksReader   prodisotrksReader   ;
     GenParticleReader   genParticleReader   ;
     FatJetReader        fatJetReader        ;
     //FatJetReader        fatJetPuppiReader   ;
@@ -192,6 +193,7 @@ public:
     std::vector<LeptonF*>        primaryLeptons    ; //All leptons that pass the primary (tighter) selection
     std::vector<LeptonF*>        secondaryLeptons  ; //All leptons that pass the secondary (looser) selection but do not pass the primary selection
     std::vector<PFCandidateF*>   vetoedTracks      ;
+    std::vector<prodIsoTrksF*>   isoTrks           ;
     std::vector<TauF*>           vetoedTaus        ;
     std::vector<PhotonF*>        selectedPhotons   ;
     std::vector<RecoJetF*>       jets              ;

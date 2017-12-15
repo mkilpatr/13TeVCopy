@@ -497,6 +497,7 @@ struct ExtraVarsFiller {
   size i_mtnl0_res_away2lep;
   size i_mtnl0_res_dphimet;
 
+  //added prodIsoTrks variables for Tau study
   size i_looseIsoTrks_pt;
   size i_looseIsoTrks_eta;
   size i_looseIsoTrks_phi;
@@ -2024,6 +2025,25 @@ struct ExtraVarsFiller {
 
     }
   } // end of topframetagging
+
+  void fillProdIsoTrksInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana) {
+    //for(auto& isoTrks : ana->prodisotrksReader.prodisotrks) {
+    for (unsigned int iTrks=0; iTrks<ana->isoTrks.size(); ++iTrks) {
+      if(ana->isoTrks[iTrks]->looseIsoTrks_pt() < 5.0 || fabs(ana->isoTrks[iTrks]->looseIsoTrks_eta()) > 2.4) continue;
+      data->fillMulti<float>(i_looseIsoTrks_pt,      ana->isoTrks[iTrks]->looseIsoTrks_pt());
+      data->fillMulti<float>(i_looseIsoTrks_eta,     ana->isoTrks[iTrks]->looseIsoTrks_eta());
+      data->fillMulti<float>(i_looseIsoTrks_phi,     ana->isoTrks[iTrks]->looseIsoTrks_phi());
+      data->fillMulti<float>(i_looseIsoTrks_mass,    ana->isoTrks[iTrks]->looseIsoTrks_mass());
+      data->fillMulti<double>(i_looseIsoTrks_charge, ana->isoTrks[iTrks]->looseIsoTrks_charge());
+      data->fillMulti<double>(i_looseIsoTrks_dz,     ana->isoTrks[iTrks]->looseIsoTrks_dz());
+      data->fillMulti<int>(i_looseIsoTrks_pdgId,     ana->isoTrks[iTrks]->looseIsoTrks_pdgId());
+      data->fillMulti<double>(i_looseIsoTrks_iso,    ana->isoTrks[iTrks]->looseIsoTrks_iso());
+      data->fillMulti<double>(i_looseIsoTrks_mtw,    ana->isoTrks[iTrks]->looseIsoTrks_mtw());
+    }
+    data->fillMulti<unsigned int>(i_loosenIsoTrks, ana->isoTrks.loosenIsoTrks());
+    data->fillMulti<unsigned int>(i_nIsoTrksForVeto, ana->isoTrks.nIsoTrksForVeto());
+    
+  }
 
   bool whadronicdecay(const GenParticleF* genw) {
     bool whadronicdecay_ = true;

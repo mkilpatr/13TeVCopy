@@ -100,11 +100,11 @@ void prodIsoTrksFiller::fill()
             trkiso += isoTrk_other.pt();
          }
 
-         float pat::PFIsolation isolate = isoTrk.chargedHadronIso();
+         //float pat::PFIsolation isolate = isoTrk.chargedHadronIso();
 	 if(!((isoTrk.pt()>5 && (fabs(isoTrk.pdgId()) == 11 || fabs(isoTrk.pdgId()) == 13)) || isoTrk.pt() > 10)) continue; 
          if(!(fabs(isoTrk.pdgId()) < 15 || fabs(isoTrk.eta()) < 2.5)) continue;
          if(!(fabs(isoTrk.dxy() < 0.2))) continue;
-         std::cout << "chargedHadronIso: " << isoTrk.chargedHadronIso() << std::endl;
+         //std::cout << "chargedHadronIso: " << isoTrk.chargedHadronIso() << std::endl;
 	 //if(!((pat::IsolatedTrack::pfIsolationDR03().chargedHadronIso < 5 && isoTrk.pt() < 25) || pat::IsolatedTrack::pfIsolationDR03().chargedHadronIso/isoTrk.pt() < 0.2)) continue;
 	 if( trkiso/isoTrk.pt() > isoCut_ ) continue;
          if( std::abs(isoTrk.dz()) > dzcut_ ) continue;

@@ -295,6 +295,7 @@ class ZeroLeptonQCDAnalyzer : public ZeroLeptonAnalyzer {
 //      extraFiller.fillQCDAngles(&data, this);
 //      extraFiller.fillWTagInfo(&data, this);
       extraFiller.fillJetMETInfo(&data, this);
+      extraFiller.fillProdIsoTrksInfo(&data, this);
 //      extraFiller.fillSystInfo(&data, this);
       extraFiller.fillLeptonInfo(&data, this);
 //      extraFiller.fillGenInfo(&data, this);

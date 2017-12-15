@@ -6,6 +6,7 @@
 #include "AnalysisTools/ObjectSelection/interface/LeptonId.h"
 #include "AnalysisTools/DataFormats/interface/Tau.h"
 #include "AnalysisTools/DataFormats/interface/PFCandidate.h"
+#include "AnalysisTools/DataFormats/interface/prodIsoTrks.h"
 #include "AnalysisTools/DataFormats/interface/Photon.h"
 #include "AnalysisBase/TreeAnalyzer/interface/JSONProcessing.h"
 #include "AnalysisBase/TreeAnalyzer/interface/TtbarCorrectionSet.h"
@@ -22,7 +23,7 @@
 
 namespace cfgSet {
 
-  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, CORRAL, TRIGOBJS, SV, HTT};
+  enum VarType {NONE, EVTINFO, AK4JETS,PUPPIJETS,PICKYJETS,CASUBJETS, ELECTRONS, MUONS, TAUS, PHOTONS, PFCANDS, PRODISOTRKS, GENPARTICLES, CMSTOPS, AK8FATJETS, AK8PUPPIFATJETS, CORRAL, TRIGOBJS, SV, HTT};
 
   //base used for all future ConfigSets
   class BaseConfig {
