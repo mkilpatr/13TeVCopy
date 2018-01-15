@@ -25,11 +25,11 @@ prodIsoTrksReader::prodIsoTrksReader() : BaseReader(){
   looseIsoTrks_charge       = new vector<double>;
   looseIsoTrks_dz           = new vector<double>;
   looseIsoTrks_pdgId        = new vector<int>   ;
-  looseIsoTrks_idx          = new vector<int>   ;
+  //looseIsoTrks_idx          = new vector<int>   ;
   looseIsoTrks_iso          = new vector<double>;
   looseIsoTrks_mtw          = new vector<double>;
-  looseIsoTrks_pfActivity   = new vector<double>;
-  forVetoIsoTrks_idx        = new vector<int>   ;
+  //looseIsoTrks_pfActivity   = new vector<double>;
+  //forVetoIsoTrks_idx        = new vector<int>   ;
   //loosenIsoTrks		    = new vector<unsigned int>   ;
   //nIsoTrksForVeto	    = new vector<unsigned int>   ;
   loosenIsoTrks		    = 0;
@@ -55,11 +55,11 @@ void prodIsoTrksReader::load(TreeReader *treeReader, int options, string branchN
     treeReader->setBranchAddress(branchName , "looseIsoTrks_charge"      , &looseIsoTrks_charge      , true);
     treeReader->setBranchAddress(branchName , "looseIsoTrks_dz"          , &looseIsoTrks_dz          , true);
     treeReader->setBranchAddress(branchName , "looseIsoTrks_pdgId"       , &looseIsoTrks_pdgId       , true);
-    treeReader->setBranchAddress(branchName , "looseIsoTrks_idx  "       , &looseIsoTrks_idx         , true);
+    //treeReader->setBranchAddress(branchName , "looseIsoTrks_idx  "       , &looseIsoTrks_idx         , true);
     treeReader->setBranchAddress(branchName , "looseIsoTrks_iso"         , &looseIsoTrks_iso         , true);
     treeReader->setBranchAddress(branchName , "looseIsoTrks_mtw"         , &looseIsoTrks_mtw         , true);
-    treeReader->setBranchAddress(branchName , "looseIsoTrks_pfActivity"  , &looseIsoTrks_pfActivity  , true);
-    treeReader->setBranchAddress(branchName , "forVetoIsoTrks_idx"       , &forVetoIsoTrks_idx       , true);
+    //treeReader->setBranchAddress(branchName , "looseIsoTrks_pfActivity"  , &looseIsoTrks_pfActivity  , true);
+    //treeReader->setBranchAddress(branchName , "forVetoIsoTrks_idx"       , &forVetoIsoTrks_idx       , true);
     treeReader->setBranchAddress(branchName , "loosenIsoTrks"            , &loosenIsoTrks            , true);
     treeReader->setBranchAddress(branchName , "nIsoTrksForVeto"          , &nIsoTrksForVeto          , true);
   }
@@ -72,7 +72,7 @@ void prodIsoTrksReader::load(TreeReader *treeReader, int options, string branchN
 void prodIsoTrksReader::refresh(){
   if(!(options_ & FILLOBJ)) return;
 
-  if(options_ & LOADRECO){
+  //if(options_ & LOADRECO){
     prodisotrks.clear();
     prodisotrks.reserve(looseIsoTrks_pt->size());
     for(unsigned int iL = 0; iL < looseIsoTrks_pt->size(); ++iL){
@@ -80,14 +80,14 @@ void prodIsoTrksReader::refresh(){
       prodisotrks.back().setCharge(looseIsoTrks_charge->at(iL));
       prodisotrks.back().setDz(looseIsoTrks_dz->at(iL));
       prodisotrks.back().setPdgId(looseIsoTrks_pdgId->at(iL));
-      prodisotrks.back().setIdx(looseIsoTrks_idx->at(iL));
+      //prodisotrks.back().setIdx(looseIsoTrks_idx->at(iL));
       prodisotrks.back().setIso(looseIsoTrks_iso->at(iL));
       prodisotrks.back().setMtw(looseIsoTrks_mtw->at(iL));
-      prodisotrks.back().setPfActivity(looseIsoTrks_pfActivity->at(iL));
-      prodisotrks.back().setVetoIsoTrks(forVetoIsoTrks_idx->at(iL));
+      //prodisotrks.back().setPfActivity(looseIsoTrks_pfActivity->at(iL));
+      //prodisotrks.back().setVetoIsoTrks(forVetoIsoTrks_idx->at(iL));
+      prodisotrks.back().setNLooseIsoTrks(loosenIsoTrks);
+      prodisotrks.back().setTrksForVeto(nIsoTrksForVeto);
     }
-    prodisotrks.back().setNLooseIsoTrks(loosenIsoTrks);
-    prodisotrks.back().setTrksForVeto(nIsoTrksForVeto);
-  }
+  //}
 }
 

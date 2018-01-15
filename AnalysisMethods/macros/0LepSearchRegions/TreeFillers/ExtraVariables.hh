@@ -159,6 +159,40 @@ struct ExtraVarsFiller {
     }
   }
 
+  bool passIsoTrk(const float isoTrkpt, const float isoTrketa, const double isoTrkIso, const double isoTrkMtw, const bool isLep)
+  {
+    //double isoLepTrksArr[6] = {   -1,       2.5,       5,     -1,       0.2,    100  };
+    //double isoHadTrksArr[6] = {   -1,       2.5,      10,     -1,       0.1,    100  };
+
+    std::vector<double> isoLepTrksArr;
+    isoLepTrksArr.push_back(-1);
+    isoLepTrksArr.push_back(2.5);
+    isoLepTrksArr.push_back(5);
+    isoLepTrksArr.push_back(-1);
+    isoLepTrksArr.push_back(0.2);
+    isoLepTrksArr.push_back(100);
+
+    std::vector<double> isoHadTrksArr;
+    isoHadTrksArr.push_back(-1);
+    isoHadTrksArr.push_back(2.5);
+    isoHadTrksArr.push_back(10);
+    isoHadTrksArr.push_back(-1);
+    isoHadTrksArr.push_back(0.1);
+    isoHadTrksArr.push_back(100);
+
+    std::vector<double> isoTrksArr;;
+    if(isLep) isoTrksArr = isoLepTrksArr;
+    else      isoTrksArr = isoHadTrksArr;
+
+    const double minAbsEta = isoTrksArr[0], maxAbsEta = isoTrksArr[1], minPt = isoTrksArr[2], maxPt = isoTrksArr[3], maxIso = isoTrksArr[4], maxMtw = isoTrksArr[5];
+    double perisotrkpt = isoTrkpt, perisotrketa = isoTrketa;
+    return ( minAbsEta == -1 || fabs(perisotrketa) >= minAbsEta )
+      && ( maxAbsEta == -1 || fabs(perisotrketa) < maxAbsEta )
+      && (     minPt == -1 || perisotrkpt >= minPt )
+      && (     maxPt == -1 || perisotrkpt < maxPt ) 
+      && (    maxIso == -1 || isoTrkIso/perisotrkpt < maxIso )
+      && (    maxMtw == -1 || isoTrkMtw < maxMtw );
+  }
 
   struct Ak8Jet {
     float ak8pt;
@@ -174,7 +208,6 @@ struct ExtraVarsFiller {
     bool  ak8passtopm;
     bool  ak8passtopt;
   };
-
 
   ExtraVarsFiller() {}
 
@@ -509,6 +542,8 @@ struct ExtraVarsFiller {
   size i_looseIsoTrks_mtw;
   size i_loosenIsoTrks;
   size i_nIsoTrksForVeto;
+  size i_cntIsoLepTrks;
+  size i_cntIsoPionTrks;
 
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -892,17 +927,19 @@ struct ExtraVarsFiller {
   }
 
   void bookProdIsoTrks(TreeWriterData* data) {
-    i_looseIsoTrks_pt		= data->add<float>("","looseIsoTrks_pt","F",0);
-    i_looseIsoTrks_eta		= data->add<float>("","looseIsoTrks_eta","F",0);
-    i_looseIsoTrks_phi		= data->add<float>("","looseIsoTrks_phi","F",0);
-    i_looseIsoTrks_mass		= data->add<float>("","looseIsoTrks_mass","F",0);
-    i_looseIsoTrks_charge	= data->add<double>("","looseIsoTrks_charge","D",99);
-    i_looseIsoTrks_dz		= data->add<double>("","looseIsoTrks_dz","D",0);
-    i_looseIsoTrks_pdgId	= data->add<int>("","looseIsoTrks_pdgId","I",0);
-    i_looseIsoTrks_iso		= data->add<double>("","looseIsoTrks_iso","D",0);
-    i_looseIsoTrks_mtw		= data->add<double>("","looseIsoTrks_mtw","D",0);
+    i_looseIsoTrks_pt		= data->addMulti<float>("","looseIsoTrks_pt",0);
+    i_looseIsoTrks_eta		= data->addMulti<float>("","looseIsoTrks_eta",0);
+    i_looseIsoTrks_phi		= data->addMulti<float>("","looseIsoTrks_phi",0);
+    i_looseIsoTrks_mass		= data->addMulti<float>("","looseIsoTrks_mass",0);
+    i_looseIsoTrks_charge	= data->addMulti<double>("","looseIsoTrks_charge",99);
+    i_looseIsoTrks_dz		= data->addMulti<double>("","looseIsoTrks_dz",0);
+    i_looseIsoTrks_pdgId	= data->addMulti<int>("","looseIsoTrks_pdgId",0);
+    i_looseIsoTrks_iso		= data->addMulti<double>("","looseIsoTrks_iso",0);
+    i_looseIsoTrks_mtw		= data->addMulti<double>("","looseIsoTrks_mtw",0);
     i_loosenIsoTrks		= data->add<unsigned int>("","loosenIsoTrks","i",0);
     i_nIsoTrksForVeto		= data->add<unsigned int>("","nIsoTrksForVeto","i",0);
+    i_cntIsoLepTrks		= data->add<int>("","cntIsoLepTrks","i",0);
+    i_cntIsoPionTrks		= data->add<int>("","cntIsoPionTrks","i",0);
   }
 
 
@@ -2029,20 +2066,35 @@ struct ExtraVarsFiller {
   void fillProdIsoTrksInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana) {
     //for(auto& isoTrks : ana->prodisotrksReader.prodisotrks) {
     for (unsigned int iTrks=0; iTrks<ana->isoTrks.size(); ++iTrks) {
-      if(ana->isoTrks[iTrks]->looseIsoTrks_pt() < 5.0 || fabs(ana->isoTrks[iTrks]->looseIsoTrks_eta()) > 2.4) continue;
-      data->fillMulti<float>(i_looseIsoTrks_pt,      ana->isoTrks[iTrks]->looseIsoTrks_pt());
-      data->fillMulti<float>(i_looseIsoTrks_eta,     ana->isoTrks[iTrks]->looseIsoTrks_eta());
-      data->fillMulti<float>(i_looseIsoTrks_phi,     ana->isoTrks[iTrks]->looseIsoTrks_phi());
-      data->fillMulti<float>(i_looseIsoTrks_mass,    ana->isoTrks[iTrks]->looseIsoTrks_mass());
+      if(ana->isoTrks[iTrks]->pt() < 5.0 || fabs(ana->isoTrks[iTrks]->eta()) > 2.4) continue;
+      data->fillMulti<float>(i_looseIsoTrks_pt,      ana->isoTrks[iTrks]->pt());
+      data->fillMulti<float>(i_looseIsoTrks_eta,     ana->isoTrks[iTrks]->eta());
+      data->fillMulti<float>(i_looseIsoTrks_phi,     ana->isoTrks[iTrks]->phi());
+      data->fillMulti<float>(i_looseIsoTrks_mass,    ana->isoTrks[iTrks]->mass());
       data->fillMulti<double>(i_looseIsoTrks_charge, ana->isoTrks[iTrks]->looseIsoTrks_charge());
       data->fillMulti<double>(i_looseIsoTrks_dz,     ana->isoTrks[iTrks]->looseIsoTrks_dz());
-      data->fillMulti<int>(i_looseIsoTrks_pdgId,     ana->isoTrks[iTrks]->looseIsoTrks_pdgId());
+      data->fillMulti<int>(i_looseIsoTrks_pdgId,     ana->isoTrks[iTrks]->looseIsoTrks_pdgid());
       data->fillMulti<double>(i_looseIsoTrks_iso,    ana->isoTrks[iTrks]->looseIsoTrks_iso());
       data->fillMulti<double>(i_looseIsoTrks_mtw,    ana->isoTrks[iTrks]->looseIsoTrks_mtw());
+      if(iTrks == 0) data->fill<unsigned int>(i_loosenIsoTrks, ana->isoTrks[iTrks]->loosenIsoTrks());
+      if(iTrks == 0) data->fill<unsigned int>(i_nIsoTrksForVeto, ana->isoTrks[iTrks]->nIsoTrksForVeto());
     }
-    data->fillMulti<unsigned int>(i_loosenIsoTrks, ana->isoTrks.loosenIsoTrks());
-    data->fillMulti<unsigned int>(i_nIsoTrksForVeto, ana->isoTrks.nIsoTrksForVeto());
-    
+   
+    int cntNIsoTrks = 0;
+    for(unsigned int iTrks=0; iTrks<ana->isoTrks.size(); iTrks++){
+      if( std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 11 || std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 13 ){
+        if( passIsoTrk(ana->isoTrks[iTrks]->pt(), ana->isoTrks[iTrks]->eta(), ana->isoTrks[iTrks]->looseIsoTrks_iso(), ana->isoTrks[iTrks]->looseIsoTrks_mtw(), true ) ) cntNIsoTrks ++;
+      }
+    }
+    data->fill<int>(i_cntIsoLepTrks,  cntNIsoTrks);
+
+    cntNIsoTrks = 0;
+    for(unsigned int iTrks=0; iTrks<ana->isoTrks.size(); iTrks++){
+      if( std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 211 ){
+        if( passIsoTrk(ana->isoTrks[iTrks]->pt(), ana->isoTrks[iTrks]->eta(), ana->isoTrks[iTrks]->looseIsoTrks_iso(), ana->isoTrks[iTrks]->looseIsoTrks_mtw(), false ) ) cntNIsoTrks ++;
+      }
+    } 
+    data->fill<int>(i_cntIsoPionTrks,  cntNIsoTrks);
   }
 
   bool whadronicdecay(const GenParticleF* genw) {
