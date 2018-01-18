@@ -25,7 +25,7 @@
 #include "AnalysisTools/TreeReader/interface/TauReader.h"
 #include "AnalysisTools/TreeReader/interface/PhotonReader.h"
 #include "AnalysisTools/TreeReader/interface/PFCandidateReader.h"
-#include "AnalysisTools/TreeReader/interface/prodIsoTrksReader.h"
+//#include "AnalysisTools/TreeReader/interface/prodIsoTrksReader.h"
 #include "AnalysisTools/TreeReader/interface/GenParticleReader.h"
 #include "AnalysisTools/TreeReader/interface/CORRALReader.h"
 #include "AnalysisTools/TreeReader/interface/TriggerObjectReader.h"
@@ -132,7 +132,7 @@ public:
     TauReader           tauReader           ;
     PhotonReader        photonReader        ;
     PFCandidateReader   pfcandReader        ;
-    prodIsoTrksReader   prodisotrksReader   ;
+    //prodIsoTrksReader   prodisotrksReader   ;
     GenParticleReader   genParticleReader   ;
     FatJetReader        fatJetReader        ;
     //FatJetReader        fatJetPuppiReader   ;

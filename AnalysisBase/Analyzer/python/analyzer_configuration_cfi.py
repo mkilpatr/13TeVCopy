@@ -320,7 +320,7 @@ nominal_configuration = cms.PSet(
                                       ),
 
 				  prodIsoTrks = cms.untracked.PSet(
-				      isFilled 		= cms.untracked.bool(True),
+				      isFilled 		= cms.untracked.bool(False),
 				      vtxSrc 		= cms.InputTag('offlineSlimmedPrimaryVertices'),#prodGoodVertices'),#goodVertices'),
 				      metSrc 		= cms.InputTag('slimmedMETs'),
 				      forVetoIsoTrkSrc 	= cms.InputTag("trackIsolation"),
@@ -328,7 +328,7 @@ nominal_configuration = cms.PSet(
 				      #loose_isotrk_isoVecSrc = cms.InputTag("packedPFCandidates:pfcandstrkiso"),
 				      #loose_isotrk_dzpvVecSrc = cms.InputTag("packedPFCandidates:pfcands_dzpv"),
                                       saveAllCandidates = cms.untracked.bool(False),
-                                      fillProdIsoTrks   = cms.untracked.bool(True),
+                                      fillProdIsoTrks   = cms.untracked.bool(False),
 				      exclPdgIdVec 	= cms.vint32(),
 				      dR_ConeSize	= cms.double(0.3),
 				      dz_CutValue	= cms.double(0.1),

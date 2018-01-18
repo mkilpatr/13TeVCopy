@@ -21,17 +21,18 @@ echo "args: $*"
 ls -l
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=slc6_amd64_gcc530
-eval `scramv1 project CMSSW CMSSW_9_2_6`
-cd CMSSW_9_2_6/src/
+export SCRAM_ARCH=slc6_amd64_gcc630
+eval `scramv1 project CMSSW CMSSW_9_4_2`
+cd CMSSW_9_4_2/src/
 eval `scramv1 runtime -sh`
 scramv1 b ProjectRename
 echo "CMSSW: "$CMSSW_BASE
 cd ../../
+CMSSW=${CMSSW_BASE##*/}
 
-xrdcp root://cmseos.fnal.gov//store/user/${USER}/CMSSW926.tgz .
-tar -xf CMSSW926.tgz
-rm CMSSW926.tgz
+xrdcp root://cmseos.fnal.gov//store/user/${USER}/${CMSSW}.tgz .
+tar -xf ${CMSSW}.tgz
+rm ${CMSSW}.tgz
 
 ### done in the transfer_input_files ###
 #cp $scramdir/rootlogon.C .

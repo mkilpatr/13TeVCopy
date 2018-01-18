@@ -234,13 +234,13 @@ void BaseTreeAnalyzer::load(cfgSet::VarType type, int options, string branchName
       reader.load(&pfcandReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PFCANDS : branchName );
       break;
     }
-    case cfgSet::PRODISOTRKS : {
-      int defaultOptions = prodIsoTrksReader::defaultOptions;
-      if(configSet.tracks.isConfig())
-        defaultOptions = prodIsoTrksReader::LOADRECO | prodIsoTrksReader::FILLOBJ;
-      reader.load(&prodisotrksReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PRODISOTRKS : branchName );
-      break;
-    }
+    //case cfgSet::PRODISOTRKS : {
+    //  int defaultOptions = prodIsoTrksReader::defaultOptions;
+    //  if(configSet.tracks.isConfig())
+    //    defaultOptions = prodIsoTrksReader::LOADRECO | prodIsoTrksReader::FILLOBJ;
+    //  reader.load(&prodisotrksReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_PRODISOTRKS : branchName );
+    //  break;
+    //}
     case cfgSet::GENPARTICLES : {
       int defaultOptions = GenParticleReader::defaultOptions;
       reader.load(&genParticleReader, options < 0 ? defaultOptions : options, branchName == "" ? defaults::BRANCH_GENPARTS : branchName );
@@ -305,7 +305,7 @@ void BaseTreeAnalyzer::loadVariables()
   load(cfgSet::PHOTONS);
   load(cfgSet::TAUS);
   load(cfgSet::PFCANDS);
-  load(cfgSet::PRODISOTRKS);
+  //load(cfgSet::PRODISOTRKS);
   load(cfgSet::AK8FATJETS);
   //  load(cfgSet::AK8PUPPIFATJETS);
   load(cfgSet::TRIGOBJS);
@@ -407,10 +407,10 @@ void BaseTreeAnalyzer::processVariables()
     for(auto& p : svReader.SVs) SVs.push_back(&p);
   }
 
-  if(prodisotrksReader.isLoaded()){
-    isoTrks.reserve(prodisotrksReader.prodisotrks.size());
-    for(auto& iso : prodisotrksReader.prodisotrks) isoTrks.push_back(&iso);
-  }
+  //if(prodisotrksReader.isLoaded()){
+  //  isoTrks.reserve(prodisotrksReader.prodisotrks.size());
+  //  for(auto& iso : prodisotrksReader.prodisotrks) isoTrks.push_back(&iso);
+  //}
 
   if(httReader.isLoaded()){
     for(auto& fj : httReader.fatJets) httTops.push_back(&fj);
