@@ -18,7 +18,7 @@ void JetFlavorMatching::getHadronDecays(const edm::Handle<vector<reco::GenPartic
   bDecays.clear();
   cDecays.clear();
 
-  for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+  for (ucsbsusy::size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
     const reco::GenParticle&              particle      = (*particles)[iPtcl];
     const int                             pdgId         = TMath::Abs(particle.pdgId());
 
@@ -53,7 +53,7 @@ void JetFlavorMatching::getHadronDecays(const edm::Handle<vector<reco::GenPartic
 void JetFlavorMatching::getPartons(const edm::Handle<std::vector<reco::GenParticle> >& particles, std::vector<ParticleDecay>& partonDecays, const bool skipHeavyFlavor){
   partonDecays.clear();
 
-  for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+  for (ucsbsusy::size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
     const reco::GenParticle&              particle      = (*particles)[iPtcl];
     const int                             pdgId         = TMath::Abs(particle.pdgId());
 
@@ -130,7 +130,7 @@ void JetFlavorMatching::associateDecayProducts(const edm::Handle<std::vector<rec
 //  }
 
   //Sanity checks
-//  for (size iHadron = 0; iHadron < bDecays.size(); ++iHadron) {
+//  for (ucsbsusy::size iHadron = 0; iHadron < bDecays.size(); ++iHadron) {
 //    HadronDecay&                          decay         = bDecays[iHadron];
 //    if (decay.decayInts.empty())
 //      throw cms::Exception("JetFlavorMatching::associateDecayProducts()", TString::Format("Encountered an undecayed hadron (pdgId = %d, pT = %.4g, eta = %.4g).", decay.hadron->pdgId(), decay.hadron->pt(), decay.hadron->eta()).Data());

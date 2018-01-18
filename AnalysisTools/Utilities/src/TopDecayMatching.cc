@@ -65,8 +65,8 @@ void ColorSinglet::addSingletPrt( Partons& partons,Partons& incomingPartons, con
 }
 //_____________________________________________________________________________
 void ColorSinglet::cleanupInPartons(){
-  size i1 = 0;
-  size i2 = 0;
+  ucsbsusy::size i1 = 0;
+  ucsbsusy::size i2 = 0;
   while(i1 < inPartons.size()){
     i2 =i1 + 1;
     while(i2 < inPartons.size()){
@@ -103,7 +103,7 @@ void ColorSinglet::fillMatchIdxs(){
 void TopDecayMatching::getMatchingPartons(const edm::Handle<reco::GenParticleCollection>& particles, TopDecayMatching::Partons& partons){
   partons.clear();
 
-  for (size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
+  for (ucsbsusy::size iPtcl = 0; iPtcl < particles->size(); ++iPtcl) {
     const reco::GenParticle&              particle      = (*particles)[iPtcl];
     const int                             pdgId         = TMath::Abs(particle.pdgId());
 
@@ -172,7 +172,7 @@ void TopDecayMatching::getColorSinglets(const edm::Handle<reco::GenParticleColle
 //_____________________________________________________________________________
 bool TopDecayMatching::outgoingLeptonDaughter(const reco::GenParticle * p){
   if(ParticleInfo::isDocOutgoing(p->status()) && ParticleInfo::isLeptonOrNeutrino(p->pdgId())  ) return true;
-  for(size iM = 0; iM < p->numberOfMothers(); ++iM){
+  for(ucsbsusy::size iM = 0; iM < p->numberOfMothers(); ++iM){
     if(outgoingLeptonDaughter(&(*p->motherRef(iM)))) return true;
   }
   return false;
@@ -187,7 +187,7 @@ void TopDecayMatching::associateFinalParticles(const edm::Handle<reco::GenPartic
 
   //first map every orig gen particle to a singlet
   vector<int> assocList(particles->size(), -1);
-  for(size iC = 0; iC < colorSinglets.size(); ++iC){
+  for(ucsbsusy::size iC = 0; iC < colorSinglets.size(); ++iC){
     for(const auto iI : colorSinglets[iC].matchIdxs ){
       if(assocList[iI] >= 0){
         ParticleInfo::printGenInfo(*particles,-1);
@@ -212,7 +212,7 @@ void TopDecayMatching::associateFinalParticles(const edm::Handle<reco::GenPartic
 }
 //_____________________________________________________________________________
 void TopDecayMatching::matchDecayProducts(std::vector<Parton*>& matchingPartons, std::vector<pat::PackedGenParticleRef>& finalParticles, const double maxDR){
-  size iF = 0;
+  ucsbsusy::size iF = 0;
   while(iF < finalParticles.size()){
     double nearest = 9999;
     int match = PhysicsUtilities::findNearestDRDeref(*finalParticles[iF],matchingPartons,nearest,maxDR);
@@ -247,7 +247,7 @@ void TopDecayMatching::associateToNearestPartons(Partons& partons, const ColorSi
     std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets, std::vector<pat::PackedGenParticleRef>& nonAssoc){
 
   //first fo over the color singlets
-  for(size iS = 0; iS < colorSinglets.size(); ++iS){
+  for(ucsbsusy::size iS = 0; iS < colorSinglets.size(); ++iS){
     vector<Parton*> singletPartons;
     singletPartons.reserve(colorSinglets[iS].inPartons.size());
     for(const auto& p : colorSinglets[iS].inPartons) singletPartons.push_back(&partons[p.key()]);
@@ -270,7 +270,7 @@ void TopDecayMatching::associateToNearestPartons(Partons& partons, const ColorSi
 //_____________________________________________________________________________
 void TopDecayMatching::associateSingletsLoosely(Partons& partons,Partons& incomingPartons,  const ColorSinglets& colorSinglets,const double maxDR,const double maxRelE,
     const edm::Handle<pat::PackedGenParticleCollection>& finalParticles,std::vector<std::vector<pat::PackedGenParticleRef>>& assocToColorSinglets){
-  for(size iS = 0; iS < colorSinglets.size(); ++iS){
+  for(ucsbsusy::size iS = 0; iS < colorSinglets.size(); ++iS){
     vector<Parton*> allSingletParticles;
     allSingletParticles.reserve(colorSinglets[iS].inPartons.size() + colorSinglets[iS].incomingParticles.size() );
     for(const auto& p : colorSinglets[iS].inPartons) allSingletParticles.push_back(&partons[p.key()]);
@@ -287,8 +287,8 @@ void TopDecayMatching::associateRemaining(Partons& partons,Partons& incomingPart
     )
 {
   //Start by taking the rest of the assoc particles and adding them to the non assoc ones
-  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
-    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
+  for(ucsbsusy::size iS = 0; iS < assocToColorSinglets.size(); ++iS){
+    for(ucsbsusy::size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
       nonAssoc.push_back(assocToColorSinglets[iS][iF]);
     }
     assocToColorSinglets[iS].clear();
@@ -308,7 +308,7 @@ void TopDecayMatching::associateRemaining(Partons& partons,Partons& incomingPart
 void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollection>& particles,const Partons& partons, TopDecays& topDecays){
   topDecays.clear();
 
-  for(size iP = 0; iP < particles->size(); ++iP){
+  for(ucsbsusy::size iP = 0; iP < particles->size(); ++iP){
     const auto& p = particles->at(iP);
     if(TMath::Abs(p.pdgId()) != ParticleInfo::p_t )continue;
     if(!ParticleUtilities::isLastInChain(&p)) continue;
@@ -323,7 +323,7 @@ void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollecti
       ParticleInfo::printGenParticleInfo(*t.top,t.top.key());
       throw cms::Exception("TopDecayMatching.fillTopDecays()","Wrong top daughter number!");
     }
-    for(size iD = 0; iD < t.top->numberOfDaughters(); ++iD){
+    for(ucsbsusy::size iD = 0; iD < t.top->numberOfDaughters(); ++iD){
       auto d = t.top->daughterRef(iD);
       int pdgID = TMath::Abs(d->pdgId());
       if(pdgID == ParticleInfo::p_b){
@@ -347,7 +347,7 @@ void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollecti
     t.W_dau2 = t.W->daughterRef(1);
 
     //fill PartonRefs
-    for(size i = 0; i < partons.size(); ++i)
+    for(ucsbsusy::size i = 0; i < partons.size(); ++i)
       if(partons[i].parton.key() == t.b.key()){
         t.b_decay = PartonRef(&partons,i);
       }
@@ -360,7 +360,7 @@ void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollecti
     if(ParticleInfo::isLeptonOrNeutrino(t.W_dau1->pdgId())){
       t.isLeptonic = true;
     } else {
-      for(size i = 0; i < partons.size(); ++i){
+      for(ucsbsusy::size i = 0; i < partons.size(); ++i){
         if(partons[i].parton.key() == t.W_dau1.key())
           t.w1_decay = PartonRef(&partons,i);
         if(partons[i].parton.key() == t.W_dau2.key())
@@ -380,7 +380,7 @@ void TopDecayMatching::fillTopDecays(const edm::Handle<reco::GenParticleCollecti
 void TopDecayMatching::labelPartonOwnership(const Partons& partons,const edm::Handle<pat::PackedGenParticleCollection>& finalParticles, std::vector<int>& assocMap){
   assocMap.resize(finalParticles->size());
   for(auto& i : assocMap) i = -1;
-  for(size iP = 0; iP < partons.size(); ++iP){
+  for(ucsbsusy::size iP = 0; iP < partons.size(); ++iP){
     for(auto d : partons[iP].finalPrts){
       assocMap[d.key()] = iP;
     }
@@ -393,9 +393,9 @@ void TopDecayMatching::associatePartonsToJets(const Partons& partons,const reco:
   for(auto& p : partons){
     p.jetAssoc.clear();
   }
-  for(size iJ = 0; iJ < jets.size(); ++iJ){
+  for(ucsbsusy::size iJ = 0; iJ < jets.size(); ++iJ){
     const auto& j = jets[iJ];
-    for (size iDau = 0; iDau < j.numberOfDaughters(); ++iDau) {
+    for (ucsbsusy::size iDau = 0; iDau < j.numberOfDaughters(); ++iDau) {
       if(j.daughterPtr(iDau).isNull()) continue;
       int pIdx = (j.daughterPtr(iDau).key() < prtPartonAssoc.size()) ? prtPartonAssoc.at(j.daughterPtr(iDau).key()) : -1;
       if(pIdx < 0) continue;

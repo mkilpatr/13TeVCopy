@@ -193,7 +193,7 @@ void ElectronFiller::fill()
     double sip3d=fabs(el->dB(el->PV3D) / el->edB(el->PV3D));
     data.fillMulti<float>(isip3d_, sip3d);
 
-    data.fillMulti<int  >(inExpHitsInner_, el->gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS));
+    data.fillMulti<int  >(inExpHitsInner_, el->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS));
     data.fillMulti<int  >(inLostHitsInner_, el->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS));
     data.fillMulti<bool >(ipassConvVeto_, el->passConversionVeto());
 

@@ -75,7 +75,7 @@ double TauMVA::evaluateMVA(float pt, float eta, float dz, float chiso0p1, float 
   assert(mvaReader);
 
   mvaReader->setVariable(index_pt, std::min(pt,float(300.0)));
-  mvaReader->setVariable(index_abseta, std::min(fabs(eta),2.4));
+  mvaReader->setVariable(index_abseta, std::min(fabs(eta),float(2.4)));
   mvaReader->setVariable(index_chiso0p1 , std::min(chiso0p1 ,float(700)));
   mvaReader->setVariable(index_chiso0p2 , std::min(chiso0p2 ,float(700)));
   mvaReader->setVariable(index_chiso0p3 , std::min(chiso0p3 ,float(700)));

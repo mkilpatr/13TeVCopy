@@ -118,35 +118,35 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
     }
 
     TreeWriterData data;
-    size nVert                ;
-    size isGoodSplit          ;
-    size isGen                ;
-    size numSplits            ;
-    size superJet_pt          ;
-    size superJet_eta         ;
-    size superJet_phi         ;
-    size superJet_mass        ;
-    size superJet_purity      ;
-    size tau1                 ;
-    size tau2                 ;
-    size subJet_1_pt          ;
-    size subJet_1_eta         ;
-    size subJet_1_phi         ;
-    size subJet_1_mass        ;
-    size subJet_1_purity      ;
-    size subJet_2_pt          ;
-    size subJet_2_eta         ;
-    size subJet_2_phi         ;
-    size subJet_2_mass        ;
-    size subJet_2_purity      ;
-    size highest_peak         ;
-    size lowest_peak          ;
-    size minimum_value        ;
-    size lowest_peak_location ;
-    size highest_peak_location;
-    size minimum_location     ;
-    size splitDisc            ;
-    size shouldSplit          ;
+    ucsbsusy::size nVert                ;
+    ucsbsusy::size isGoodSplit          ;
+    ucsbsusy::size isGen                ;
+    ucsbsusy::size numSplits            ;
+    ucsbsusy::size superJet_pt          ;
+    ucsbsusy::size superJet_eta         ;
+    ucsbsusy::size superJet_phi         ;
+    ucsbsusy::size superJet_mass        ;
+    ucsbsusy::size superJet_purity      ;
+    ucsbsusy::size tau1                 ;
+    ucsbsusy::size tau2                 ;
+    ucsbsusy::size subJet_1_pt          ;
+    ucsbsusy::size subJet_1_eta         ;
+    ucsbsusy::size subJet_1_phi         ;
+    ucsbsusy::size subJet_1_mass        ;
+    ucsbsusy::size subJet_1_purity      ;
+    ucsbsusy::size subJet_2_pt          ;
+    ucsbsusy::size subJet_2_eta         ;
+    ucsbsusy::size subJet_2_phi         ;
+    ucsbsusy::size subJet_2_mass        ;
+    ucsbsusy::size subJet_2_purity      ;
+    ucsbsusy::size highest_peak         ;
+    ucsbsusy::size lowest_peak          ;
+    ucsbsusy::size minimum_value        ;
+    ucsbsusy::size lowest_peak_location ;
+    ucsbsusy::size highest_peak_location;
+    ucsbsusy::size minimum_location     ;
+    ucsbsusy::size splitDisc            ;
+    ucsbsusy::size shouldSplit          ;
 
 
     //For a single jet, get the list of signficant parton containments
@@ -209,9 +209,9 @@ class PickyJetTreeProducer : public PhysicsAnalyzer {
 
       //Now we clear out the partons that don't matter
       //and compute our purity
-      size nJetsWithPureSplits = 0;
-      size nJetsWithSigSplits = 0;
-      size nPureSplits = 0;
+      ucsbsusy::size nJetsWithPureSplits = 0;
+      ucsbsusy::size nJetsWithSigSplits = 0;
+      ucsbsusy::size nPureSplits = 0;
       for(unsigned int iS = 0; iS < subJets.size(); ++iS){
         bool hasPureSplit = false;
         bool hasSigSplit = false;

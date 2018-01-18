@@ -277,7 +277,7 @@ void PartonEvent::getPartonsAndContaiment(const std::vector<ucsbsusy::size16 >* 
 
 //  //fill jet containments!
   int conIndex = -1;
-  for(size iJ = 0; iJ < genAssocCon->size(); ++iJ){
+  for(ucsbsusy::size iJ = 0; iJ < genAssocCon->size(); ++iJ){
     conType con = genAssocCon->at(iJ);
     //if it is a new parton, the assoc is less than 0;
     if(con < 0){

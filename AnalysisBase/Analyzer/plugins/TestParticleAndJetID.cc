@@ -342,7 +342,7 @@ void testDecayProximity() {
   }
 
 
-  for(size iP = 0; iP < docPartons.size(); ++iP){
+  for(ucsbsusy::size iP = 0; iP < docPartons.size(); ++iP){
     if(matchesToBHadrons[iP] < 0) continue;
     const auto& p = *docPartons[iP];
 
@@ -408,7 +408,7 @@ void testDecayProximity() {
 
     double partonPT = 0;
     int realMatch = -1;
-    for(size iP = 0; iP < matchesToBHadrons.size(); ++iP){
+    for(ucsbsusy::size iP = 0; iP < matchesToBHadrons.size(); ++iP){
       if(matchesToBHadrons[iP] != int(iH)) continue;
       partonPT = docPartons[iP]->pt();
       realMatch = iP;
@@ -494,15 +494,15 @@ void testTopAssociation() {
 
 
 
-  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
+  for(ucsbsusy::size iS = 0; iS < assocToColorSinglets.size(); ++iS){
     cout << iS <<" : ";
-    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
+    for(ucsbsusy::size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
       cout << assocToColorSinglets[iS][iF].key() <<" ";
     }
     cout << endl;
   }
   cout <<"non : ";
-  for(size iF = 0; iF < nonAssoc.size(); ++iF){
+  for(ucsbsusy::size iF = 0; iF < nonAssoc.size(); ++iF){
     cout << nonAssoc[iF].key() <<" ";
   }
   cout << endl;
@@ -517,15 +517,15 @@ void testTopAssociation() {
 //    cout << endl;
 //  }
 //
-//  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
+//  for(ucsbsusy::size iS = 0; iS < assocToColorSinglets.size(); ++iS){
 //    cout << iS <<" : ";
-//    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
+//    for(ucsbsusy::size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
 //      cout << assocToColorSinglets[iS][iF].key() <<" ";
 //    }
 //    cout << endl;
 //  }
 //  cout <<"non : ";
-//  for(size iF = 0; iF < nonAssoc.size(); ++iF){
+//  for(ucsbsusy::size iF = 0; iF < nonAssoc.size(); ++iF){
 //    cout << nonAssoc[iF].key() <<" ";
 //  }
 //  cout << endl;
@@ -540,15 +540,15 @@ void testTopAssociation() {
     cout << endl;
   }
 
-  for(size iS = 0; iS < assocToColorSinglets.size(); ++iS){
+  for(ucsbsusy::size iS = 0; iS < assocToColorSinglets.size(); ++iS){
     cout << iS <<" : ";
-    for(size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
+    for(ucsbsusy::size iF = 0; iF < assocToColorSinglets[iS].size(); ++iF){
       cout << assocToColorSinglets[iS][iF].key() <<" ";
     }
     cout << endl;
   }
   cout <<"non : ";
-  for(size iF = 0; iF < nonAssoc.size(); ++iF){
+  for(ucsbsusy::size iF = 0; iF < nonAssoc.size(); ++iF){
     cout << nonAssoc[iF].key() <<" ";
   }
   cout << endl;
@@ -563,7 +563,7 @@ void testTopAssociation() {
   }
 
   cout <<"non : ";
-  for(size iF = 0; iF < nonAssoc.size(); ++iF){
+  for(ucsbsusy::size iF = 0; iF < nonAssoc.size(); ++iF){
     cout << nonAssoc[iF].key() <<" ";
   }
   cout << endl;

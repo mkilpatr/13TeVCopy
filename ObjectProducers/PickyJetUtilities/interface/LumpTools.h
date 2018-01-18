@@ -26,7 +26,7 @@
 
 //#define DEBUG_DUMP
 
-  typedef   unsigned int                  size;
+typedef unsigned int size;
 
 //_____________________________________________________________________________
 class KernelDensityEstimate
@@ -45,7 +45,7 @@ public:
   double                  sumWeights;
   AscendingQueue          orderedWeights;
 
-  KernelDensityEstimate(size reserve = 0, double maxNSigmas = 10, size numTopWeights = 10)
+  KernelDensityEstimate(unsigned int reserve = 0, double maxNSigmas = 10, unsigned int numTopWeights = 10)
     : maxNSigmas    (maxNSigmas)
     , minPointWeight(0     )
     , uniformKernel (-999  )
@@ -85,7 +85,7 @@ protected:
   double                            axisLength    ;
   KernelDensityEstimate             kernelDensity ;
   std::vector<PStatistics>          locationStats ;
-  std::vector<size>                 classBoundary ;
+  std::vector<unsigned int>         classBoundary ;
 
   double                            minimumLoc     ;
   double                            minimumValue   ;
@@ -105,7 +105,7 @@ protected:
   void  finalize(double regularization, double kernelScale);
 
 public:
-  BimodalShape1D(size dimension, size expectedNumData, double maxKernelNSigmas, ...);
+  BimodalShape1D(unsigned int dimension, unsigned int expectedNumData, double maxKernelNSigmas, ...);
   ~BimodalShape1D();
 
   const MetricVector&               getAxis                 () const { return axis;             }
@@ -113,9 +113,9 @@ public:
   KernelDensityEstimate&            getDensity              ()       { return kernelDensity;    }
   const KernelDensityEstimate&      getDensity              () const { return kernelDensity;    }
 
-  size                              numClasses              ()            const { return classBoundary.size();  }
-  size                              numDataInClass          (size iClass) const { return classBoundary[iClass] - (iClass ? classBoundary[iClass-1] : 0); }
-  const PStatistics&                getStatistics           (size iClass) const { return locationStats[iClass]; }
+  unsigned int                              numClasses              ()            const { return classBoundary.size();  }
+  unsigned int                              numDataInClass          (unsigned int iClass) const { return classBoundary[iClass] - (iClass ? classBoundary[iClass-1] : 0); }
+  const PStatistics&                getStatistics           (unsigned int iClass) const { return locationStats[iClass]; }
 
   double                            getMinimumLocation      () const { return minimumLoc     ;  }
   double                            getMinimumValue         () const { return minimumValue   ;  }
@@ -226,7 +226,7 @@ public:
 //  const double                  maxNumSigmas  ;
 //  const double                  scale         ;
 //
-//  EtaPhiKernelDensityEstimate(double significantPT, size reserve = 0, double scale = 1, double maxNumSigmas = 100);
+//  EtaPhiKernelDensityEstimate(double significantPT, unsigned int reserve = 0, double scale = 1, double maxNumSigmas = 100);
 //
 //  template<typename Particle>
 //  void  addData       (const Particle& particle, double scale = 1) {
