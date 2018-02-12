@@ -544,6 +544,13 @@ struct ExtraVarsFiller {
   size i_nIsoTrksForVeto;
   size i_cntIsoLepTrks;
   size i_cntIsoPionTrks;
+  size i_isoTrkEff_hadVeto;
+  size i_isoTrkEff_notHadVeto;
+  size i_isoTrk_pdgId;
+  size i_isoTrk_nMoms;
+  size i_isoTrk_nDaughter;
+  size i_ngoodtauhad;
+  size i_ngoodtaulep;
 
   void bookHist(TFile *outFile){
     outFile->cd();
@@ -940,6 +947,14 @@ struct ExtraVarsFiller {
     i_nIsoTrksForVeto		= data->add<unsigned int>("","nIsoTrksForVeto","i",0);
     i_cntIsoLepTrks		= data->add<int>("","cntIsoLepTrks","i",0);
     i_cntIsoPionTrks		= data->add<int>("","cntIsoPionTrks","i",0);
+    i_isoTrkEff_hadVeto		= data->add<float>("","isoTrkEff_hadVeto","f",-1);
+    i_isoTrkEff_notHadVeto	= data->add<float>("","isoTrkEff_notHadVeto","f",-1);
+    i_isoTrk_pdgId		= data->addMulti<int>("","isoTrk_pdgId",0);
+    i_isoTrk_nMoms		= data->addMulti<int>("","isoTrk_nMoms",0);
+    i_isoTrk_nDaughter		= data->addMulti<int>("","isoTrk_nDaughter",0);
+    i_ngoodtauhad		= data->add<int>("","ngoodtauhad","i",0);
+    i_ngoodtaulep		= data->add<int>("","ngoodtaulep","i",0);
+
   }
 
 
@@ -2064,37 +2079,61 @@ struct ExtraVarsFiller {
   } // end of topframetagging
 
   void fillProdIsoTrksInfo(TreeWriterData* data, const BaseTreeAnalyzer* ana) {
-    //for(auto& isoTrks : ana->prodisotrksReader.prodisotrks) {
-    for (unsigned int iTrks=0; iTrks<ana->isoTrks.size(); ++iTrks) {
-      if(ana->isoTrks[iTrks]->pt() < 5.0 || fabs(ana->isoTrks[iTrks]->eta()) > 2.4) continue;
-      data->fillMulti<float>(i_looseIsoTrks_pt,      ana->isoTrks[iTrks]->pt());
-      data->fillMulti<float>(i_looseIsoTrks_eta,     ana->isoTrks[iTrks]->eta());
-      data->fillMulti<float>(i_looseIsoTrks_phi,     ana->isoTrks[iTrks]->phi());
-      data->fillMulti<float>(i_looseIsoTrks_mass,    ana->isoTrks[iTrks]->mass());
-      data->fillMulti<double>(i_looseIsoTrks_charge, ana->isoTrks[iTrks]->looseIsoTrks_charge());
-      data->fillMulti<double>(i_looseIsoTrks_dz,     ana->isoTrks[iTrks]->looseIsoTrks_dz());
-      data->fillMulti<int>(i_looseIsoTrks_pdgId,     ana->isoTrks[iTrks]->looseIsoTrks_pdgid());
-      data->fillMulti<double>(i_looseIsoTrks_iso,    ana->isoTrks[iTrks]->looseIsoTrks_iso());
-      data->fillMulti<double>(i_looseIsoTrks_mtw,    ana->isoTrks[iTrks]->looseIsoTrks_mtw());
-      if(iTrks == 0) data->fill<unsigned int>(i_loosenIsoTrks, ana->isoTrks[iTrks]->loosenIsoTrks());
-      if(iTrks == 0) data->fill<unsigned int>(i_nIsoTrksForVeto, ana->isoTrks[iTrks]->nIsoTrksForVeto());
+    //for (unsigned int iTrks=0; iTrks<ana->isoTrks.size(); ++iTrks) {
+    for (auto* Trks : ana->isoTrks){
+      if(Trks->pt() < 5.0 || fabs(Trks->eta()) > 2.4) continue;
+      data->fillMulti<float>(i_looseIsoTrks_pt,      Trks->pt());
+      data->fillMulti<float>(i_looseIsoTrks_eta,     Trks->eta());
+      data->fillMulti<float>(i_looseIsoTrks_phi,     Trks->phi());
+      data->fillMulti<float>(i_looseIsoTrks_mass,    Trks->mass());
+      data->fillMulti<double>(i_looseIsoTrks_charge, Trks->looseIsoTrks_charge());
+      data->fillMulti<double>(i_looseIsoTrks_dz,     Trks->looseIsoTrks_dz());
+      data->fillMulti<int>(i_looseIsoTrks_pdgId,     Trks->looseIsoTrks_pdgid());
+      data->fillMulti<double>(i_looseIsoTrks_iso,    Trks->looseIsoTrks_iso());
+      data->fillMulti<double>(i_looseIsoTrks_mtw,    Trks->looseIsoTrks_mtw());
     }
+    data->fill<unsigned int>(i_loosenIsoTrks,   ana->isoTrks[0]->loosenIsoTrks());
+    data->fill<unsigned int>(i_nIsoTrksForVeto, ana->isoTrks[0]->nIsoTrksForVeto());
    
-    int cntNIsoTrks = 0;
-    for(unsigned int iTrks=0; iTrks<ana->isoTrks.size(); iTrks++){
-      if( std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 11 || std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 13 ){
-        if( passIsoTrk(ana->isoTrks[iTrks]->pt(), ana->isoTrks[iTrks]->eta(), ana->isoTrks[iTrks]->looseIsoTrks_iso(), ana->isoTrks[iTrks]->looseIsoTrks_mtw(), true ) ) cntNIsoTrks ++;
+    int cntNIsoLepTrks = 0;
+    for (auto* Trks : ana->isoTrks){
+      if( std::abs(Trks->looseIsoTrks_pdgid()) == 11 || std::abs(Trks->looseIsoTrks_pdgid()) == 13 ){
+        if( passIsoTrk(Trks->pt(), Trks->eta(), Trks->looseIsoTrks_iso(), Trks->looseIsoTrks_mtw(), true ) ) cntNIsoLepTrks ++;
       }
     }
-    data->fill<int>(i_cntIsoLepTrks,  cntNIsoTrks);
+    data->fill<int>(i_cntIsoLepTrks,  cntNIsoLepTrks);
 
-    cntNIsoTrks = 0;
-    for(unsigned int iTrks=0; iTrks<ana->isoTrks.size(); iTrks++){
-      if( std::abs(ana->isoTrks[iTrks]->looseIsoTrks_pdgid()) == 211 ){
-        if( passIsoTrk(ana->isoTrks[iTrks]->pt(), ana->isoTrks[iTrks]->eta(), ana->isoTrks[iTrks]->looseIsoTrks_iso(), ana->isoTrks[iTrks]->looseIsoTrks_mtw(), false ) ) cntNIsoTrks ++;
+    int cntNIsoPionTrks = 0;
+    for (auto* Trks : ana->isoTrks){
+      if( std::abs(Trks->looseIsoTrks_pdgid()) == 211 ){
+        if( passIsoTrk(Trks->pt(), Trks->eta(), Trks->looseIsoTrks_iso(), Trks->looseIsoTrks_mtw(), false ) ) cntNIsoPionTrks ++;
       }
     } 
-    data->fill<int>(i_cntIsoPionTrks,  cntNIsoTrks);
+    data->fill<int>(i_cntIsoPionTrks,  cntNIsoPionTrks);
+
+    if(ana->isMC()) {
+      int ngoodtauhad = 0, ngoodtaulep = 0;
+      for(auto* p : ana->genParts) {
+	if (p->numberOfMothers()==0) continue;
+
+	const auto *genPartMom = p->mother(0);
+	if(ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom) && !(ParticleInfo::isA(ParticleInfo::p_eminus, p) || ParticleInfo::isA(ParticleInfo::p_muminus, p))) ngoodtauhad++;	
+	else if(ParticleInfo::isA(ParticleInfo::p_tauminus, genPartMom) && (ParticleInfo::isA(ParticleInfo::p_eminus, p) || ParticleInfo::isA(ParticleInfo::p_muminus, p))) ngoodtaulep++;
+
+        data->fillMulti<int>(i_isoTrk_pdgId,       p->pdgId());
+        data->fillMulti<int>(i_isoTrk_nMoms,       p->numberOfMothers());
+        data->fillMulti<int>(i_isoTrk_nDaughter,   p->numberOfDaughters());
+ 
+      }
+
+      data->fill<int>(i_ngoodtauhad,        ngoodtauhad);       
+      data->fill<int>(i_ngoodtaulep,        ngoodtaulep);       
+
+      float hadVeto = (float)ngoodtauhad / (float)(ngoodtauhad + ngoodtaulep);
+      float notHadVeto = (float)ngoodtaulep / (float)(ngoodtauhad + ngoodtaulep);
+      data->fill<float>(i_isoTrkEff_hadVeto, hadVeto);
+      data->fill<float>(i_isoTrkEff_notHadVeto, notHadVeto);
+    }
   }
 
   bool whadronicdecay(const GenParticleF* genw) {

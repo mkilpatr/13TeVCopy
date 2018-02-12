@@ -8,7 +8,7 @@
 using namespace std;
 using namespace EstTools;
 
-const TString originalTreeDir = "../../run/plots_17_01_30_Smear/";
+const TString originalTreeDir = "../../run/plots_18_01_18_MC";
 TString outputDir = "";
 vector<int> colors;
 
@@ -42,8 +42,8 @@ void EvaluateDistributions(){
   SetTDRStyle();
 
 //  OutputCRandSRCutStrings();
-//  ValidateSmearing();
-  makeRank_Plots();
+  ValidateSmearing();
+//  makeRank_Plots();
 //  makeJetRes_Plots();
 //  makeLepFakeRate_Plots();
 }
@@ -85,17 +85,17 @@ void ValidateSmearing(){
 //  TString old_sel            = "passjson && (passmetfilters || process == 10) && met >= 250 && (passmetmht || ismc) && njl>=1 && njets>=5 && dphij1lmet>2. && j1lpt>=250 && met/sqrt(ht)>=10 && j1chEnFrac>0.1 && j1chEnFrac<0.99";
 
   vector <pair <TTree*, TString> > sampleTrees;
-  sampleTrees.emplace_back(getTree(originalTreeDir + "/qcd_tree.root"),      "Smeared (puWeight*weight)");
+  sampleTrees.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"),      "Smeared (puWeight*weight)");
   //sampleTrees.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"), "With orig. QCD MC");
   vector <pair <TTree*, TString> > stackTrees;
-  stackTrees.emplace_back(getTree(originalTreeDir + "/met_tree.root"),      "Data");              colors.push_back(1);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/../plots_18_01_18_Data/met_tree.root"),      "Data");              colors.push_back(1);
   stackTrees.emplace_back(getTree(originalTreeDir + "/nonQCD_tree.root"),   "Non-QCD bkg");       colors.push_back(color_ttbar);
-  stackTrees.emplace_back(getTree(originalTreeDir + "/qcd_tree.root"),      "Smeared QCD MC");    colors.push_back(color_qcd);
+  stackTrees.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"),      "Smeared QCD MC");    colors.push_back(color_qcd);
   //stackTrees.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"), "With orig. QCD MC"); colors.push_back(color_tW);
   vector <pair <TTree*, TString> > stackTrees_jetht;
   //stackTrees_jetht.emplace_back(getTree(originalTreeDir + "/jetht_tree.root"),      "Data");            colors.push_back(1);
   stackTrees_jetht.emplace_back(getTree(originalTreeDir + "/nonQCD_tree.root"),   "Non-QCD bkg");       colors.push_back(color_ttbar);
-  stackTrees_jetht.emplace_back(getTree(originalTreeDir + "/qcd_tree.root"),      "Smeared QCD MC");    colors.push_back(color_qcd);
+  stackTrees_jetht.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"),      "Smeared QCD MC");    colors.push_back(color_qcd);
   //stackTrees_jetht.emplace_back(getTree(originalTreeDir + "/qcd_orig_tree.root"), "With orig. QCD MC"); colors.push_back(color_tW);
 
   vector <pair <TString, pair <TString, TString> > > multiplicity_bins = { make_pair("nj_2_to_5",          make_pair("njets >= 2 && njets <= 5", "2 #leq N_{jets} #leq 5")), 
@@ -319,33 +319,33 @@ void makeJetRes_Plots(){
   printLocalPlots(jetResp_qcdTree, jetResp_histGs, "jetRespPlot", jetResp_baseline, jetResp_localSels, jetResp_selsAndNames, true, true, true);
 }
 
-void makeLepFakeRate_Plots(){
-  outputDir = "lepFakeRate_plots";
-  gSystem->mkdir(outputDir, true);
-  TTree* lepFakeRate_qcdTree = getTree(originalTreeDir + "/qcd_tree.root");
-//  TTree* lepFakeRate_qcdTree = getTree(originalTreeDir + "/new_trees_wo_MMJ/qcd_tree.root");
-  TString lepFakeRate_qcdTreeLabel = "Smeared (puWeight*weight)";
-
-  TString lepFakeRate_baseline = baseline;
-  vector <pair <pair <TString, TString>, pair <TString, TString> > > lepFakeRate_localSels_CR, lepFakeRate_localSels_SR;
-  vector <vector <double> > METbins;
-  for(unsigned int iReg = 0; iReg < srbins.size(); iReg++){
-    if(qcdcrlabels.at(srbins.at(iReg)).Contains("hm")){
-      lepFakeRate_localSels_CR.push_back(make_pair(make_pair(qcdcrCuts.at(srbins.at(iReg)), "1.0"), make_pair(qcdcrlabels_Root.at(srbins.at(iReg)), qcdcrlabels.at(srbins.at(iReg)))));
-      lepFakeRate_localSels_SR.push_back(make_pair(make_pair(   srcuts.at(srbins.at(iReg)), "1.0"), make_pair(   srlabels_Root.at(srbins.at(iReg)),    srlabels.at(srbins.at(iReg)))));
-      vector <double> temp_bins;
-      for(auto &n : srMETbins.at(srbins.at(iReg))) temp_bins.push_back(n);
-      METbins.push_back(temp_bins);
-    }
-  }
-
-  vector <pair <pair <TString, TString>, pair <TString, TString> > > lepFakeRate_selsAndNames = {
-         make_pair(make_pair("nvetolep==0 && nvetotau==0", qcdvetowgt), make_pair("With Vetoes", "veto")),
-         make_pair(make_pair("nvetolep>=0 && nvetotau>=0", qcdwgt),     make_pair("w/o Vetoes",  "no_veto")),
-                                                                                                };
-
-  printTFPlots(lepFakeRate_qcdTree, "TF_lepFakeRate", lepFakeRate_baseline, lepFakeRate_localSels_CR, lepFakeRate_localSels_SR, METbins, lepFakeRate_selsAndNames, false);
-}
+//void makeLepFakeRate_Plots(){
+//  outputDir = "lepFakeRate_plots";
+//  gSystem->mkdir(outputDir, true);
+//  TTree* lepFakeRate_qcdTree = getTree(originalTreeDir + "/qcd_tree.root");
+////  TTree* lepFakeRate_qcdTree = getTree(originalTreeDir + "/new_trees_wo_MMJ/qcd_tree.root");
+//  TString lepFakeRate_qcdTreeLabel = "Smeared (puWeight*weight)";
+//
+//  TString lepFakeRate_baseline = baseline;
+//  vector <pair <pair <TString, TString>, pair <TString, TString> > > lepFakeRate_localSels_CR, lepFakeRate_localSels_SR;
+//  vector <vector <double> > METbins;
+//  for(unsigned int iReg = 0; iReg < srbins.size(); iReg++){
+//    if(qcdcrlabels.at(srbins.at(iReg)).Contains("hm")){
+//      lepFakeRate_localSels_CR.push_back(make_pair(make_pair(qcdcrCuts.at(srbins.at(iReg)), "1.0"), make_pair(qcdcrlabels_Root.at(srbins.at(iReg)), qcdcrlabels.at(srbins.at(iReg)))));
+//      lepFakeRate_localSels_SR.push_back(make_pair(make_pair(   srcuts.at(srbins.at(iReg)), "1.0"), make_pair(   srlabels_Root.at(srbins.at(iReg)),    srlabels.at(srbins.at(iReg)))));
+//      vector <double> temp_bins;
+//      for(auto &n : srMETbins.at(srbins.at(iReg))) temp_bins.push_back(n);
+//      METbins.push_back(temp_bins);
+//    }
+//  }
+//
+//  vector <pair <pair <TString, TString>, pair <TString, TString> > > lepFakeRate_selsAndNames = {
+//         make_pair(make_pair("nvetolep==0 && nvetotau==0", qcdvetowgt), make_pair("With Vetoes", "veto")),
+//         make_pair(make_pair("nvetolep>=0 && nvetotau>=0", qcdwgt),     make_pair("w/o Vetoes",  "no_veto")),
+//                                                                                                };
+//
+//  printTFPlots(lepFakeRate_qcdTree, "TF_lepFakeRate", lepFakeRate_baseline, lepFakeRate_localSels_CR, lepFakeRate_localSels_SR, METbins, lepFakeRate_selsAndNames, false);
+//}
 
 TTree* getTree(TString filename){
   TFile* sf = new TFile(filename,"read");
@@ -367,6 +367,16 @@ float getMaximum(TH1F* p_Hist){
   max = 0.;
   for(int iB = 2; iB < p_Hist->GetNbinsX(); iB++) if(max <= p_Hist->GetBinContent(iB)) max = p_Hist->GetBinContent(iB);
   return max;
+}
+
+void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
+  TList * list = c->GetListOfPrimitives();
+  for(unsigned int iP = 0; iP < list->GetSize(); ++iP){
+    TH1 * h = dynamic_cast<TH1*>(list->At(iP));
+    if(h == 0) continue;
+   h->GetXaxis()->SetTitleOffset(xOff);
+    h->GetYaxis()->SetTitleOffset(yOff);
+  }
 }
 
 void drawPlot(Plot* p_Plot, float yMin, float yMax, bool p_drawRatio, bool p_drawStack){

@@ -15,7 +15,7 @@ import pwd
 if  sys.version_info < (2, 6):
     raise Exception("DAS requires python 2.6 or greater")
 
-DAS_CLIENT = 'das-client/1.1::python/%s.%s' % sys.version_info[:2]
+DAS_CLIENT = 'dasgoclient/1.1::python/%s.%s' % sys.version_info[:2]
 
 import os
 import re

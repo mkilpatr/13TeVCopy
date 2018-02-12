@@ -32,7 +32,8 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
 
   bool integrating_over_met = true;
   double integrating_met_systematic = 0;
-  const TString inputDir = "../../run/plots_17_01_30_Smear/";
+  const TString inputDir = "../../run/plots_18_02_05_prodIso";
+  const TString inputDir_old = "../../run/plots_18_01_25_prodIso";
   const TString format = "pdf";
   const TString lumi = "35.6";
   const TString header = "#sqrt{s} = 13 TeV, L = 35.6 fb^{-1}";
@@ -61,6 +62,7 @@ void setTitleOffset(TCanvas *c, double xOff = .950, double yOff = 1.400){
   const TString tauSel  = "(ismc && npromptgentau == 1)";
   const TString zeroLep = "(nvetolep == 0 && nvetotau == 0)";
   const TString oneLep  = "(nvetolep == 1 && mtlepmet < 100)";
+  const TString threeLep  = "(nvetolep == 3 && mtlepmet < 100)";
 
 
   const TString mtb_lt_175 = "(mtcsv12met<175)";               const TString mtb_lt_175_R = "M_{T}(b_{1,2},#slash{E}_{T}) < 175";        const TString mtb_lt_175_L = "\\mtb < 175";    

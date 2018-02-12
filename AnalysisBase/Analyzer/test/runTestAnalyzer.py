@@ -25,7 +25,7 @@ options = VarParsing('analysis')
 
 options.outputFile = 'evttree.root'
 #options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/0023AF2C-D7CD-E611-9247-002590E7D7CE.root'
-options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/TTJets_HT-1200to2500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/70F65588-91BE-E611-A499-441EA1733CCC.root'
+#options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/TTJets_HT-1200to2500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/70F65588-91BE-E611-A499-441EA1733CCC.root'
 #options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/GJets_DR-0p4_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_qcut19_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/047C04F9-11BF-E611-B984-E41D2D08DDC0.root'
 #options.inputFiles = '/store/mc/RunIISpring16MiniAODv2/SMS-T2tt_mStop-400to1200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16Fast_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/10000/00212097-BA34-E611-A687-003048F35112.root'
 #options.inputFiles = '/store/data/Run2016G/SinglePhoton/MINIAOD/23Sep2016-v1/50000/005B4B20-4787-E611-989B-008CFAF75356.root'
@@ -33,7 +33,7 @@ options.inputFiles = '/store/mc/RunIISummer16MiniAODv2/TTJets_HT-1200to2500_Tune
 #options.inputFiles = '/store/data/Run2016H/DoubleMuon/MINIAOD/03Feb2017_ver3-v1/50000/44C1C1FB-4AEB-E611-9597-008CFA1113F4.root'
 #options.inputFiles = '/store/data/Run2017B/MET/MINIAOD/PromptReco-v2/000/298/641/00000/545B12BB-3D66-E711-B420-02163E012150.root'
 #options.inputFiles = 'root://cmsxrootd.fnal.gov///store/data/Run2017B/MET/MINIAOD/PromptReco-v1/000/297/722/00000/0EF38132-C65E-E711-98A6-02163E0126D0.root'
-#options.inputFiles = 'file://../run/009FE63B-E759-E711-A9F8-0CC47A4DEDD2.root'
+options.inputFiles = 'file://9EE984CF-39E7-E711-A918-001E67DFF67C.root'
 
 options.maxEvents = -1
 
@@ -123,7 +123,7 @@ if 'FastAsympt25ns' in DatasetName or 'RunIISpring15FSPremix' in DatasetName or 
         process.TestAnalyzer.EventInfo.isMassScan = cms.untracked.bool(True)
 
 # Specific to data
-if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName) or '009FE63B-E759-E711-A9F8-0CC47A4DEDD2.root' in DatasetName:
+if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', DatasetName) or '9EE984CF-39E7-E711-A918-001E67DFF67C.root' in DatasetName:
     ISDATA = True
     runMetCorrAndUnc = False
     updateJECs = False
@@ -131,13 +131,13 @@ if '/store/data' in DatasetName or re.match(r'^/[a-zA-Z]+/Run[0-9]{4}[A-Z]', Dat
 #     JECUNCFILE = 'data/JEC/Spring16_23Sep2016BCDV2_DATA_Uncertainty_AK4PFchs.txt' #FIXME: IOV dependence - not used
     import FWCore.PythonUtilities.LumiList as LumiList
     import os
-    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-305185_13TeV_PromptReco_Collisions17_JSON.txt")
+    jsonFile = os.path.expandvars("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PromptReco/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt")
     process.source.lumisToProcess = LumiList.LumiList(filename=jsonFile).getVLuminosityBlockRange()
     process.TestAnalyzer.isData = cms.int32(1)
     process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
     if 'Run2016H' in DatasetName:
         process.TestAnalyzer.globalTag = cms.string('92X_dataRun2_Prompt_v5')
-    process.TestAnalyzer.dataRecoVersion = re.search(r'/(Run[0-9]{4}[A-Z]\-|)([a-zA-Z0-9_]+\-v[0-9]+)/', DatasetName).group(2)
+    #process.TestAnalyzer.dataRecoVersion = re.search(r'/(Run[0-9]{4}[A-Z]\-|)([a-zA-Z0-9_]+\-v[0-9]+)/', DatasetName).group(2)
     process.TestAnalyzer.Jets.fillJetGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Muons.fillMuonGenInfo = cms.untracked.bool(False)
     process.TestAnalyzer.Electrons.fillElectronGenInfo = cms.untracked.bool(False)
